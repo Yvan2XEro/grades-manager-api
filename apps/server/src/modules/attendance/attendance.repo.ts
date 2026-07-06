@@ -466,11 +466,13 @@ export async function getClassAttendanceOverview(
 	classId: string,
 	institutionId: string,
 	academicYearId: string,
+	teacherId?: string,
 ) {
 	const classCourses = await db.query.classCourses.findMany({
 		where: and(
 			eq(schema.classCourses.class, classId),
 			eq(schema.classCourses.institutionId, institutionId),
+			teacherId ? eq(schema.classCourses.teacher, teacherId) : undefined,
 		),
 		with: {
 			courseRef: { columns: { name: true } },

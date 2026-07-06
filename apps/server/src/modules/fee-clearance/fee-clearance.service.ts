@@ -1423,21 +1423,30 @@ export async function generateReceiptDocument(
 }
 
 export async function getStudentFinancialHistory(
-	studentId: string,
+	profileId: string,
 	institutionId: string,
 ) {
 	const { db } = await import("@/db");
 	const { eq, and, desc } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");
 
+	const student = await db.query.students.findFirst({
+		where: and(
+			eq(schema.students.domainUserId, profileId),
+			eq(schema.students.institutionId, institutionId),
+		),
+		columns: { id: true },
+	});
+	if (!student) return [];
+
 	// All assignments for this student in this institution
 	const assignments = await db.query.studentFeeAssignments.findMany({
 		where: and(
-			eq(schema.studentFeeAssignments.studentId, studentId),
+			eq(schema.studentFeeAssignments.studentId, student.id),
 			eq(schema.studentFeeAssignments.institutionId, institutionId),
 		),
 		with: {
-			feeStructure: true,
+			feeStructure: { with: { installments: true } },
 			academicYear: true,
 			payments: { orderBy: desc(schema.feePayments.createdAt) },
 			orders: { orderBy: desc(schema.feePaymentOrders.createdAt) },
@@ -1447,6 +1456,16 @@ export async function getStudentFinancialHistory(
 
 	return assignments.map((a) => {
 		const paidAmount = a.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+		const confirmedInstallmentIds = new Set(
+			a.orders
+				.filter((order) => order.status === "confirmed")
+				.flatMap((order) => order.installmentIds),
+		);
+		const pendingInstallmentIds = new Set(
+			a.orders
+				.filter((order) => order.status === "pending")
+				.flatMap((order) => order.installmentIds),
+		);
 		return {
 			id: a.id,
 			status: a.status,
@@ -1456,7 +1475,23 @@ export async function getStudentFinancialHistory(
 			currency: a.currency,
 			clearedAt: a.clearedAt,
 			feeStructure: a.feeStructure
-				? { id: a.feeStructure.id, name: a.feeStructure.name }
+				? {
+						id: a.feeStructure.id,
+						name: a.feeStructure.name,
+						installments: a.feeStructure.installments
+							.sort((left, right) => left.orderIndex - right.orderIndex)
+							.map((installment) => ({
+								id: installment.id,
+								label: installment.label,
+								amount: Number(installment.amount),
+								dueDate: installment.dueDate,
+								status: confirmedInstallmentIds.has(installment.id)
+									? "paid"
+									: pendingInstallmentIds.has(installment.id)
+										? "pending"
+										: "payable",
+							})),
+					}
 				: null,
 			academicYear: a.academicYear
 				? { id: a.academicYear.id, name: a.academicYear.name }
@@ -1473,7 +1508,7 @@ export async function myCreateOrder(
 	profileId: string,
 	institutionId: string,
 	feeAssignmentId: string,
-	amount: number,
+	input: { amount?: number; installmentIds: string[] },
 ) {
 	const assignment = await repo.findAssignmentById(
 		feeAssignmentId,
@@ -1483,11 +1518,70 @@ export async function myCreateOrder(
 	if (assignment.student?.profile?.id !== profileId) {
 		throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
 	}
+	const installmentIds = [...new Set(input.installmentIds)];
+	const installments = assignment.feeStructure.installments.filter((item) =>
+		installmentIds.includes(item.id),
+	);
+	if (
+		installmentIds.length > 0 &&
+		installments.length !== installmentIds.length
+	) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "One or more installments do not belong to this fee assignment",
+		});
+	}
+	const orders = (
+		await repo.listOrders(institutionId, {
+			feeAssignmentId,
+			limit: 100,
+		})
+	).items;
+	const confirmedIds = new Set(
+		orders
+			.filter((order) => order.status === "confirmed")
+			.flatMap((order) => order.installmentIds),
+	);
+	if (installmentIds.some((id) => confirmedIds.has(id))) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "A selected installment is already paid",
+		});
+	}
+	const pendingIds = new Set(
+		orders
+			.filter((order) => order.status === "pending")
+			.flatMap((order) => order.installmentIds),
+	);
+	if (installmentIds.some((id) => pendingIds.has(id))) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "A payment order already exists for a selected installment",
+		});
+	}
+	const paidAmount = assignment.payments.reduce(
+		(sum, payment) => sum + Number(payment.amount),
+		0,
+	);
+	const remaining = Number(assignment.effectiveAmount) - paidAmount;
+	const amount =
+		installments.length > 0
+			? Math.min(
+					installments.reduce((sum, item) => sum + Number(item.amount), 0),
+					remaining,
+				)
+			: input.amount;
+	if (!amount || amount <= 0) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Select at least one payable installment",
+		});
+	}
 	return createOrder(institutionId, profileId, {
 		feeAssignmentId,
 		amount,
 		currency: assignment.currency,
-		installmentIds: [],
+		installmentIds,
 	});
 }
 

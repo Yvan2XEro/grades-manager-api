@@ -52,6 +52,7 @@ export default function ExamParticipationRoster() {
 		queryKey: ["classCourses-for-participation", academicYearId],
 		queryFn: async () => {
 			const { items } = await trpcClient.classCourses.list.query({
+				academicYearId: academicYearId ?? undefined,
 				limit: 500,
 			});
 			return items as ClassCourseItem[];

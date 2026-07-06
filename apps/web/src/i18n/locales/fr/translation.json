@@ -4227,6 +4227,7 @@
       "courseSubtitle": "Dernières notes pour l'année active",
       "coursePlaceholder": "Les moyennes détaillées apparaîtront une fois les notes publiées.",
       "deliberationDecision": "Décision de délibération",
+	  "downloadDocuments": "Télécharger les documents académiques",
       "average": "Moyenne",
       "projection": "Projection fin d'année",
       "projectionNote": "Sur les UEs déjà notées, {{rate}}% sont au-dessus du seuil de validation. Données partielles.",
@@ -4342,6 +4343,10 @@
       "description": "Votre parcours complet — inscriptions, délibérations et jalons",
       "empty": "Aucun événement",
       "emptyHint": "Votre historique académique apparaîtra ici au fil de votre parcours.",
+	  "allAcademicYears": "Toutes les années académiques",
+	  "eventCount_one": "{{count}} événement",
+	  "eventCount_other": "{{count}} événements",
+	  "average": "Moy.",
       "event": {
         "enrollment": "Inscription",
         "enrollment_transfer": "Transfert",
@@ -4766,6 +4771,11 @@
       "paid": "Payé",
       "academicYear": "Année académique",
       "pendingOrders": "Ordres en attente"
+	  ,"installmentStatus": {
+		"payable": "À payer",
+		"pending": "Ordre en attente",
+		"paid": "Payée"
+	  }
     },
     "history": {
       "title": "Historique financier",

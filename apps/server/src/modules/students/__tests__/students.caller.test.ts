@@ -11,6 +11,7 @@ import {
 	createClass,
 	createFaculty,
 	createProgram,
+	createStudent,
 	makeTestContext,
 } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
@@ -26,6 +27,34 @@ const baseStudent = {
 };
 
 describe("students router", () => {
+	it("filters the current student's timeline by academic year", async () => {
+		const year1 = await createAcademicYear();
+		const year2 = await createAcademicYear();
+		const class1 = await createClass({ academicYear: year1.id });
+		const class2 = await createClass({ academicYear: year2.id });
+		const student = await createStudent({ class: class1.id });
+		await db.insert(schema.enrollments).values({
+			studentId: student.id,
+			classId: class2.id,
+			academicYearId: year2.id,
+			institutionId: class2.institutionId,
+			status: "active",
+		});
+		const caller = createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: student.domainUserId },
+			}),
+		);
+
+		const events = await caller.students.myTimeline({
+			academicYearId: year1.id,
+		});
+
+		expect(events).toHaveLength(1);
+		expect(events[0]?.academicYear).toBe(year1.name);
+	});
+
 	it("requires auth", async () => {
 		const caller = createCaller(makeTestContext());
 		await expect(caller.students.list({})).rejects.toHaveProperty(

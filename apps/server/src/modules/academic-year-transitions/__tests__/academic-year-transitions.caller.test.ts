@@ -124,6 +124,28 @@ async function setupTwoLevelTransition() {
 }
 
 describe("academicYearTransitions", () => {
+	it("enforces one active plan per institution and academic-year pair at the database boundary", async () => {
+		const fixture = await setupTwoLevelTransition();
+		const values = {
+			institutionId: fixture.admin.institution.id,
+			sourceAcademicYearId: fixture.sourceYear.id,
+			targetAcademicYearId: fixture.targetYear.id,
+			generatedBy: fixture.admin.profile!.id,
+		} satisfies schema.NewAcademicYearTransition;
+
+		const results = await Promise.allSettled([
+			db.insert(schema.academicYearTransitions).values(values).returning(),
+			db.insert(schema.academicYearTransitions).values(values).returning(),
+		]);
+
+		expect(
+			results.filter((result) => result.status === "fulfilled"),
+		).toHaveLength(1);
+		expect(
+			results.filter((result) => result.status === "rejected"),
+		).toHaveLength(1);
+	});
+
 	it("plans and executes promotion and repeat outcomes for every student", async () => {
 		const fixture = await setupTwoLevelTransition();
 		const promoted = await createStudent({ class: fixture.sourceClass.id });

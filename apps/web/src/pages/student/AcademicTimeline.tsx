@@ -11,7 +11,9 @@ import {
 	RotateCcw,
 	XCircle,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -155,7 +157,11 @@ function TimelineEventCard({ event }: { event: TimelineEvent }) {
 					{event.className && <span>{event.className}</span>}
 					{event.generalAverage !== null &&
 						event.generalAverage !== undefined && (
-							<span>Moy. {event.generalAverage.toFixed(2)}/20</span>
+							<span>
+								{t("student.timeline.average")}{" "}
+								{event.generalAverage.toFixed(2)}
+								/20
+							</span>
 						)}
 					{event.mention && <span>{event.mention}</span>}
 				</div>
@@ -181,9 +187,12 @@ function groupByYear(events: TimelineEvent[]) {
 
 export default function AcademicTimeline() {
 	const { t } = useTranslation();
+	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 
 	const { data: events, isPending } = useQuery(
-		trpc.students.myTimeline.queryOptions(),
+		trpc.students.myTimeline.queryOptions({
+			academicYearId: academicYearId ?? undefined,
+		}),
 	);
 
 	return (
@@ -192,6 +201,13 @@ export default function AcademicTimeline() {
 				title={t("student.timeline.title")}
 				description={t("student.timeline.description")}
 			/>
+			<div className="w-64">
+				<AcademicYearSelect
+					value={academicYearId ?? undefined}
+					onChange={setAcademicYearId}
+					placeholder={t("student.timeline.allAcademicYears")}
+				/>
+			</div>
 
 			{isPending ? (
 				<div className="space-y-4">
@@ -221,8 +237,9 @@ export default function AcademicTimeline() {
 									{year}
 								</h2>
 								<span className="text-muted-foreground text-xs">
-									· {yearEvents.length} événement
-									{yearEvents.length > 1 ? "s" : ""}
+									{t("student.timeline.eventCount", {
+										count: yearEvents.length,
+									})}
 								</span>
 							</div>
 							<div>

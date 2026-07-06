@@ -123,6 +123,61 @@ describe("feeClearance router", () => {
 	// ── Installments ──────────────────────────────────────────────────
 
 	describe("installments", () => {
+		it("lets a student create an order for one selected installment", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const year = await createAcademicYear();
+			const klass = await createClass({ academicYear: year.id });
+			const student = await createStudent({ class: klass.id });
+			const structure = await admin.feeClearance.createStructure({
+				academicYearId: year.id,
+				name: "Two installments",
+				totalAmount: 200000,
+				currency: "XAF",
+			});
+			const first = await admin.feeClearance.addInstallment({
+				feeStructureId: structure.id,
+				label: "First",
+				amount: 80000,
+				orderIndex: 0,
+			});
+			await admin.feeClearance.addInstallment({
+				feeStructureId: structure.id,
+				label: "Second",
+				amount: 120000,
+				orderIndex: 1,
+			});
+			const assignment = await admin.feeClearance.assignStudent({
+				studentId: student.id,
+				academicYearId: year.id,
+				feeStructureId: structure.id,
+				discountAmount: 0,
+			});
+			const studentCaller = createCaller(
+				makeTestContext({
+					role: "student",
+					profileOverrides: { id: student.domainUserId },
+				}),
+			);
+
+			const order = await studentCaller.feeClearance.myCreateOrder({
+				feeAssignmentId: assignment.id,
+				installmentIds: [first.id],
+			});
+			const history = await studentCaller.feeClearance.myFinancialHistory();
+
+			expect(Number(order.amount)).toBe(80000);
+			expect(order.installmentIds).toEqual([first.id]);
+			expect(history[0]?.balance).toBe(200000);
+			expect(history[0]?.feeStructure?.installments).toHaveLength(2);
+			await expect(
+				studentCaller.feeClearance.myCreateOrder({
+					feeAssignmentId: assignment.id,
+					installmentIds: [first.id],
+				}),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		});
+
 		it("adds and removes installments", async () => {
 			const ctx = await adminWithRealProfile();
 			const caller = createCaller(ctx);

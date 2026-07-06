@@ -11,6 +11,7 @@ import {
 	createClass,
 	createClassCourse,
 	createDomainUser,
+	createExam,
 	createStudent,
 	makeTestContext,
 } from "../../../lib/test-utils";
@@ -30,6 +31,26 @@ async function makeAdmin() {
 	});
 	return createCaller(ctx);
 }
+
+describe("exam participation roster", () => {
+	it("cannot regenerate a locked roster", async () => {
+		const admin = await makeAdmin();
+		const classCourse = await createClassCourse();
+		const student = await createStudent({ class: classCourse.class });
+		await enrollStudent(student.id, classCourse.id);
+		const exam = await createExam({ classCourse: classCourse.id });
+
+		await admin.attendance.generateExamRoster({ examId: exam.id });
+		await admin.attendance.lockExamRoster({ examId: exam.id });
+
+		await expect(
+			admin.attendance.generateExamRoster({ examId: exam.id }),
+		).rejects.toHaveProperty("code", "CONFLICT");
+		const roster = await admin.attendance.getExamRoster({ examId: exam.id });
+		expect(roster).toHaveLength(1);
+		expect(roster[0]?.lockedAt).toBeInstanceOf(Date);
+	});
+});
 
 /** Enroll a student into a classCourse so they appear on the roster. */
 async function enrollStudent(studentId: string, classCourseId: string) {
@@ -1114,5 +1135,32 @@ describe("myCoursesRates academicYearId filter", () => {
 		const ids = results.map((r) => r.classCourseId);
 		expect(ids).toContain(cc1.id);
 		expect(ids).not.toContain(cc2.id);
+	});
+});
+
+describe("class attendance overview teacher scoping", () => {
+	it("returns only courses assigned to the requesting teacher", async () => {
+		const teacher = await createDomainUser();
+		const otherTeacher = await createDomainUser();
+		const year = await createAcademicYear();
+		const klass = await createClass({ academicYear: year.id });
+		const ownCourse = await createClassCourse({
+			class: klass.id,
+			teacher: teacher.id,
+		});
+		await createClassCourse({ class: klass.id, teacher: otherTeacher.id });
+		const teacherCaller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: teacher.id },
+			}),
+		);
+
+		const overview = await teacherCaller.attendance.getClassAttendanceOverview({
+			classId: klass.id,
+			academicYearId: year.id,
+		});
+
+		expect(overview.map((row) => row.classCourseId)).toEqual([ownCourse.id]);
 	});
 });

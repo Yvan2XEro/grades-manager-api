@@ -3565,13 +3565,14 @@ interface Resources {
 				};
 				logs: {
 					title: "Activity log";
+					by: "by {{name}}";
 					created: "Deliberation created";
 					opened: "Deliberation opened";
 					computed: "Results computed";
 					override_decision: "Decision overridden";
-					closed: "Deliberation closed";
+					closed: "Results published to students";
 					signed: "Deliberation signed";
-					reopened: "Deliberation reopened";
+					reopened: "Deliberation reopened (results hidden)";
 					exported: "Diplomation exported";
 					promoted: "Students promoted";
 				};
@@ -3620,11 +3621,13 @@ interface Resources {
 				};
 				confirm: {
 					delete: "Are you sure you want to delete this deliberation?";
-					close: "Close this deliberation? Students will no longer be modifiable.";
+					close: "Close this deliberation and publish results to students? Students will immediately see their deliberation decision. Grades will be locked.";
 					sign: "Sign this deliberation? This marks it as officially validated.";
-					closeTitle: "Close deliberation?";
+					reopen: "Reopen this deliberation? Results will be hidden from students and grades will become editable again.";
+					closeTitle: "Close & publish to students?";
 					signTitle: "Sign deliberation?";
 					deleteTitle: "Delete deliberation?";
+					reopenTitle: "Reopen deliberation?";
 				};
 				rules: {
 					title: "Deliberation rules";
@@ -4206,6 +4209,7 @@ interface Resources {
 				courseSubtitle: "Latest scores for the active academic year";
 				coursePlaceholder: "Detailed course averages will appear once instructors publish grades for the current session.";
 				deliberationDecision: "Deliberation decision";
+				downloadDocuments: "Download academic documents";
 				average: "Average";
 				projection: "Year-end projection";
 				projectionNote: "Of graded UEs so far, {{rate}}% are above the passing threshold. Partial data.";
@@ -4272,9 +4276,23 @@ interface Resources {
 				gradesApproved: "Grade sheet approved";
 				gradesRejected: "Grade sheet rejected";
 				paymentConfirmed: "Payment confirmed";
+				paymentPending: "Payment required";
+				enrollmentWindowOpen: "Enrollment window open";
 				jobCompleted: "Background job completed";
 				jobFailed: "Background job failed";
 				generic: "New notification";
+				documentAvailable: "Document available for download";
+				empty: "No pending actions";
+				sectionActions: "Required actions";
+				sectionInfo: "Notifications";
+				act: "Take action";
+				categories: {
+					academic: "Academic";
+					financial: "Financial";
+					enrollment: "Enrollment";
+					documents: "Documents";
+					system: "System";
+				};
 			};
 			documents: {
 				title: "My documents";
@@ -4288,9 +4306,18 @@ interface Resources {
 					blocked: "Financial clearance required to download this document.";
 				};
 				attestation: {
-					title: "Enrollment certificate";
-					description: "Certificate confirming your enrollment for the current academic year.";
+					title: "Enrollment Attestation";
+					description: "Attestation confirming your enrollment for the current academic year.";
 					blocked: "Financial clearance required to download this document.";
+				};
+				enrollment_certificate: {
+					title: "Enrollment Certificate";
+					description: "Official certificate of enrollment (Certificat de scolarité) for the current academic year.";
+					blocked: "Financial clearance required to download this document.";
+				};
+				history: {
+					title: "Download history";
+					empty: "No documents downloaded yet.";
 				};
 			};
 			timeline: {
@@ -4298,6 +4325,10 @@ interface Resources {
 				description: "Your full academic history — enrollments, decisions, and milestones";
 				empty: "No events yet";
 				emptyHint: "Your academic history will appear here as you progress through your studies.";
+				allAcademicYears: "All academic years";
+				eventCount_one: "{{count}} event";
+				eventCount_other: "{{count}} events";
+				average: "Avg.";
 				event: {
 					enrollment: "Enrolled";
 					enrollment_transfer: "Transferred";
@@ -4316,6 +4347,16 @@ interface Resources {
 					excluded: "Excluded";
 					pending: "Pending";
 				};
+			};
+			enrollment: {
+				title: "Enrollment";
+				program: "Program";
+				class: "Class";
+				year: "Academic year";
+				level: "Level";
+				windowOpen: "Course enrollment is open";
+				windowOpenHint: "You can register for courses during the current enrollment window.";
+				enroll: "Register for courses";
 			};
 		};
 		retakes: {
@@ -4520,6 +4561,7 @@ interface Resources {
 				unknown: "Unknown decision.";
 				overridden: "Overridden";
 			};
+			publishedAt: "Published on {{date}}";
 		};
 		exam: {
 			status: {
@@ -4711,6 +4753,11 @@ interface Resources {
 				paid: "Paid";
 				academicYear: "Academic year";
 				pendingOrders: "Pending orders";
+				installmentStatus: {
+					payable: "Payable";
+					pending: "Order pending";
+					paid: "Paid";
+				};
 			};
 			history: {
 				title: "Financial history";
@@ -4743,6 +4790,9 @@ interface Resources {
 				batch_job_completed: "Job completed";
 				batch_job_failed: "Job failed";
 				generic: "Notification";
+				payment_pending: "Payment pending";
+				enrollment_window_open: "Enrollment window open";
+				document_available: "Document available";
 			};
 			batchJob: {
 				completedSubtitle: "{{jobType}} — {{itemsProcessed}} items";

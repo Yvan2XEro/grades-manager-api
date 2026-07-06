@@ -380,7 +380,11 @@ export const feeClearanceRouter = router({
 
 	myCreateOrder: protectedProcedure
 		.input(
-			z.object({ feeAssignmentId: z.string(), amount: z.number().positive() }),
+			z.object({
+				feeAssignmentId: z.string(),
+				amount: z.number().positive().optional(),
+				installmentIds: z.array(z.string()).default([]),
+			}),
 		)
 		.mutation(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new Error("Profile required");
@@ -388,7 +392,7 @@ export const feeClearanceRouter = router({
 				ctx.profile.id,
 				ctx.institution.id,
 				input.feeAssignmentId,
-				input.amount,
+				{ amount: input.amount, installmentIds: input.installmentIds },
 			);
 		}),
 

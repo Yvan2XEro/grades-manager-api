@@ -524,11 +524,13 @@ export async function getClassAttendanceOverview(
 	classId: string,
 	institutionId: string,
 	academicYearId: string,
+	teacherId?: string,
 ) {
 	const rows = await repo.getClassAttendanceOverview(
 		classId,
 		institutionId,
 		academicYearId,
+		teacherId,
 	);
 
 	return rows.map((cc) => {
@@ -572,6 +574,13 @@ export async function generateExamRoster(
 	examId: string,
 	institutionId: string,
 ) {
+	if (await rosterRepo.isRosterLocked(examId, institutionId)) {
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: "The participation roster is locked and cannot be regenerated",
+		});
+	}
+
 	const { db } = await import("@/db");
 	const { and, eq } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");

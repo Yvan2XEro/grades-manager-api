@@ -1858,6 +1858,11 @@ export const academicYearTransitions = pgTable(
 			t.targetAcademicYearId,
 		),
 		index("idx_academic_year_transitions_status").on(t.status),
+		uniqueIndex("uq_active_academic_year_transition")
+			.on(t.institutionId, t.sourceAcademicYearId, t.targetAcademicYearId)
+			.where(
+				sql`${t.status} IN ('draft', 'ready', 'pending_approval', 'approved', 'running')`,
+			),
 	],
 );
 

@@ -636,6 +636,16 @@ function DeliberationDecisionCard({
 					)}
 				</>
 			)}
+			{decision.closedAt && (
+				<div className="border-t px-4 py-3">
+					<Button asChild size="sm" variant="outline">
+						<Link to="/student/documents">
+							<FileText className="mr-2 h-4 w-4" />
+							{t("student.performance.downloadDocuments")}
+						</Link>
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 }

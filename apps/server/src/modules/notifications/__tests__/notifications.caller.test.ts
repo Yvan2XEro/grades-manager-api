@@ -354,6 +354,71 @@ describe("notifications — retry and failure handling", () => {
 		}
 	});
 
+	it("markRead only updates the recipient notification and persists readAt", async () => {
+		const profileA = await createDomainUser({
+			primaryEmail: "mark-read-a@example.com",
+		});
+		const profileB = await createDomainUser({
+			primaryEmail: "mark-read-b@example.com",
+		});
+		const notification = await service.queueInApp(profileA.id, "mark_read", {});
+		const callerB = appRouter.createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: profileB.id },
+			}),
+		);
+
+		await expect(
+			callerB.notifications.markRead({ id: notification.id }),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
+		const unchanged = await db.query.notifications.findFirst({
+			where: eq(notifications.id, notification.id),
+		});
+		expect(unchanged?.readAt).toBeNull();
+
+		const callerA = appRouter.createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: profileA.id },
+			}),
+		);
+		await callerA.notifications.markRead({ id: notification.id });
+		const persisted = await db.query.notifications.findFirst({
+			where: eq(notifications.id, notification.id),
+		});
+		expect(persisted?.readAt).toBeInstanceOf(Date);
+		expect(await callerA.notifications.unreadCount()).toBe(0);
+	});
+
+	it("markAllRead only updates the current recipient notifications", async () => {
+		const profileA = await createDomainUser({
+			primaryEmail: "mark-all-a@example.com",
+		});
+		const profileB = await createDomainUser({
+			primaryEmail: "mark-all-b@example.com",
+		});
+		await service.queueInApp(profileA.id, "mark_all_a", {});
+		await service.queueInApp(profileB.id, "mark_all_b", {});
+		const callerA = appRouter.createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: profileA.id },
+			}),
+		);
+		const callerB = appRouter.createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: profileB.id },
+			}),
+		);
+
+		await callerA.notifications.markAllRead();
+
+		expect(await callerA.notifications.unreadCount()).toBe(0);
+		expect(await callerB.notifications.unreadCount()).toBe(1);
+	});
+
 	it("stats endpoint returns aggregate counts by status", async () => {
 		const profile = await createDomainUser({
 			primaryEmail: "stats@example.com",

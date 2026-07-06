@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -435,6 +435,7 @@ export type TimelineEvent = {
 export async function getStudentTimeline(
 	studentId: string,
 	institutionId: string,
+	academicYearId?: string,
 ): Promise<TimelineEvent[]> {
 	const events: TimelineEvent[] = [];
 
@@ -443,6 +444,9 @@ export async function getStudentTimeline(
 		where: and(
 			eq(schema.enrollments.studentId, studentId),
 			eq(schema.enrollments.institutionId, institutionId),
+			academicYearId
+				? eq(schema.enrollments.academicYearId, academicYearId)
+				: undefined,
 		),
 		with: {
 			classRef: true,
@@ -479,8 +483,29 @@ export async function getStudentTimeline(
 	}
 
 	// ── Deliberation results ──────────────────────────────────────────────
+	const deliberationIds = academicYearId
+		? (
+				await db.query.deliberations.findMany({
+					where: and(
+						eq(schema.deliberations.institutionId, institutionId),
+						eq(schema.deliberations.academicYearId, academicYearId),
+					),
+					columns: { id: true },
+				})
+			).map((row) => row.id)
+		: null;
 	const decisions = await db.query.deliberationStudentResults.findMany({
-		where: eq(schema.deliberationStudentResults.studentId, studentId),
+		where: and(
+			eq(schema.deliberationStudentResults.studentId, studentId),
+			deliberationIds
+				? deliberationIds.length > 0
+					? inArray(
+							schema.deliberationStudentResults.deliberationId,
+							deliberationIds,
+						)
+					: sql`false`
+				: undefined,
+		),
 		with: {
 			deliberation: { with: { classRef: true, academicYear: true } },
 		},
@@ -505,6 +530,9 @@ export async function getStudentTimeline(
 		where: and(
 			eq(schema.studentFeeAssignments.studentId, studentId),
 			eq(schema.studentFeeAssignments.institutionId, institutionId),
+			academicYearId
+				? eq(schema.studentFeeAssignments.academicYearId, academicYearId)
+				: undefined,
 		),
 		with: { academicYear: true },
 	});

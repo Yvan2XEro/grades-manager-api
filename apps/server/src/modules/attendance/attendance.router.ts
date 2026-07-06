@@ -376,6 +376,7 @@ export const router = createRouter({
 				input.classId,
 				ctx.institution.id,
 				input.academicYearId,
+				ctx.permissions.canManageCatalog ? undefined : ctx.profile!.id,
 			);
 		}),
 

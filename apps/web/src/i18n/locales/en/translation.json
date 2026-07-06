@@ -4208,6 +4208,7 @@
       "courseSubtitle": "Latest scores for the active academic year",
       "coursePlaceholder": "Detailed course averages will appear once instructors publish grades for the current session.",
       "deliberationDecision": "Deliberation decision",
+	  "downloadDocuments": "Download academic documents",
       "average": "Average",
       "projection": "Year-end projection",
       "projectionNote": "Of graded UEs so far, {{rate}}% are above the passing threshold. Partial data.",
@@ -4323,6 +4324,10 @@
       "description": "Your full academic history — enrollments, decisions, and milestones",
       "empty": "No events yet",
       "emptyHint": "Your academic history will appear here as you progress through your studies.",
+	  "allAcademicYears": "All academic years",
+	  "eventCount_one": "{{count}} event",
+	  "eventCount_other": "{{count}} events",
+	  "average": "Avg.",
       "event": {
         "enrollment": "Enrolled",
         "enrollment_transfer": "Transferred",
@@ -4747,6 +4752,11 @@
       "paid": "Paid",
       "academicYear": "Academic year",
       "pendingOrders": "Pending orders"
+	  ,"installmentStatus": {
+		"payable": "Payable",
+		"pending": "Order pending",
+		"paid": "Paid"
+	  }
     },
     "history": {
       "title": "Financial history",

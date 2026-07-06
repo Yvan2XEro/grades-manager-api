@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
 	router,
 	tenantAdminProcedure,
@@ -119,13 +120,19 @@ export const studentsRouter = router({
 		return service.getStudentByDomainUserId(ctx.profile.id, ctx.institution.id);
 	}),
 
-	myTimeline: tenantProtectedProcedure.query(async ({ ctx }) => {
-		if (!ctx.profile) return [];
-		const student = await service.getStudentByDomainUserId(
-			ctx.profile.id,
-			ctx.institution.id,
-		);
-		if (!student) return [];
-		return service.getStudentTimeline(student.id, ctx.institution.id);
-	}),
+	myTimeline: tenantProtectedProcedure
+		.input(z.object({ academicYearId: z.string().optional() }))
+		.query(async ({ ctx, input }) => {
+			if (!ctx.profile) return [];
+			const student = await service.getStudentByDomainUserId(
+				ctx.profile.id,
+				ctx.institution.id,
+			);
+			if (!student) return [];
+			return service.getStudentTimeline(
+				student.id,
+				ctx.institution.id,
+				input.academicYearId,
+			);
+		}),
 });

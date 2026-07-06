@@ -378,115 +378,133 @@ export async function createDraft(
 		);
 	}
 
-	const transition = await db.transaction(async (tx) => {
-		const [created] = await tx
-			.insert(schema.academicYearTransitions)
-			.values({
-				institutionId,
-				sourceAcademicYearId: input.sourceAcademicYearId,
-				targetAcademicYearId: input.targetAcademicYearId,
-				scopeClassIds: input.classIds,
-				deferredOutcome: input.deferredOutcome,
-				generatedBy: actorId,
-			})
-			.returning();
+	let transition: schema.AcademicYearTransition;
+	try {
+		transition = await db.transaction(async (tx) => {
+			const [created] = await tx
+				.insert(schema.academicYearTransitions)
+				.values({
+					institutionId,
+					sourceAcademicYearId: input.sourceAcademicYearId,
+					targetAcademicYearId: input.targetAcademicYearId,
+					scopeClassIds: input.classIds,
+					deferredOutcome: input.deferredOutcome,
+					generatedBy: actorId,
+				})
+				.returning();
 
-		const items: PlannedItem[] = population.map((row) => {
-			const deliberation = deliberationByClass.get(row.classId);
-			const result = deliberation
-				? resultByKey.get(`${deliberation.id}:${row.studentId}`)
-				: undefined;
-			let outcome: schema.AcademicYearTransitionOutcome = "review";
-			let targetClassId: string | null = null;
-			let blockerCode: string | null = null;
-			let blockerDetails: Record<string, unknown> = {};
+			const items: PlannedItem[] = population.map((row) => {
+				const deliberation = deliberationByClass.get(row.classId);
+				const result = deliberation
+					? resultByKey.get(`${deliberation.id}:${row.studentId}`)
+					: undefined;
+				let outcome: schema.AcademicYearTransitionOutcome = "review";
+				let targetClassId: string | null = null;
+				let blockerCode: string | null = null;
+				let blockerDetails: Record<string, unknown> = {};
 
-			if (!deliberation) {
-				blockerCode = "missing_signed_deliberation";
-			} else if (!result?.finalDecision) {
-				blockerCode = "missing_student_decision";
-			} else if (existingTargetStudents.has(row.studentId)) {
-				blockerCode = "existing_target_enrollment";
-				blockerDetails = { targetAcademicYearId: input.targetAcademicYearId };
-			} else if (
-				result.finalDecision === "admitted" ||
-				result.finalDecision === "compensated"
-			) {
-				const nextLevel = levelByCycleOrder.get(
-					`${row.cycleId}:${row.levelOrder + 1}`,
-				);
-				if (!nextLevel) {
-					outcome = "graduate";
-				} else {
-					outcome = "promote";
-					const candidates = resolveTarget(row, nextLevel.id);
+				if (!deliberation) {
+					blockerCode = "missing_signed_deliberation";
+				} else if (!result?.finalDecision) {
+					blockerCode = "missing_student_decision";
+				} else if (existingTargetStudents.has(row.studentId)) {
+					blockerCode = "existing_target_enrollment";
+					blockerDetails = { targetAcademicYearId: input.targetAcademicYearId };
+				} else if (
+					result.finalDecision === "admitted" ||
+					result.finalDecision === "compensated"
+				) {
+					const nextLevel = levelByCycleOrder.get(
+						`${row.cycleId}:${row.levelOrder + 1}`,
+					);
+					if (!nextLevel) {
+						outcome = "graduate";
+					} else {
+						outcome = "promote";
+						const candidates = resolveTarget(row, nextLevel.id);
+						if (candidates.length === 1) targetClassId = candidates[0].id;
+						else {
+							outcome = "review";
+							blockerCode =
+								candidates.length === 0
+									? "missing_promotion_target"
+									: "ambiguous_promotion_target";
+							blockerDetails = {
+								candidateIds: candidates.map((item) => item.id),
+							};
+						}
+					}
+				} else if (
+					result.finalDecision === "repeat" ||
+					(result.finalDecision === "deferred" &&
+						input.deferredOutcome === "repeat")
+				) {
+					outcome = "repeat";
+					const candidates = resolveTarget(row, row.cycleLevelId);
 					if (candidates.length === 1) targetClassId = candidates[0].id;
 					else {
 						outcome = "review";
 						blockerCode =
 							candidates.length === 0
-								? "missing_promotion_target"
-								: "ambiguous_promotion_target";
+								? "missing_repeat_target"
+								: "ambiguous_repeat_target";
 						blockerDetails = {
 							candidateIds: candidates.map((item) => item.id),
 						};
 					}
-				}
-			} else if (
-				result.finalDecision === "repeat" ||
-				(result.finalDecision === "deferred" &&
-					input.deferredOutcome === "repeat")
-			) {
-				outcome = "repeat";
-				const candidates = resolveTarget(row, row.cycleLevelId);
-				if (candidates.length === 1) targetClassId = candidates[0].id;
-				else {
-					outcome = "review";
+				} else if (result.finalDecision === "excluded") {
+					outcome = "exclude";
+				} else {
 					blockerCode =
-						candidates.length === 0
-							? "missing_repeat_target"
-							: "ambiguous_repeat_target";
-					blockerDetails = { candidateIds: candidates.map((item) => item.id) };
+						result.finalDecision === "deferred"
+							? "deferred_requires_review"
+							: "pending_decision";
 				}
-			} else if (result.finalDecision === "excluded") {
-				outcome = "exclude";
-			} else {
-				blockerCode =
-					result.finalDecision === "deferred"
-						? "deferred_requires_review"
-						: "pending_decision";
-			}
 
-			return {
-				institutionId,
-				transitionId: created.id,
-				studentId: row.studentId,
-				sourceEnrollmentId: row.enrollmentId,
-				deliberationId: deliberation?.id ?? null,
-				deliberationStudentResultId: result?.id ?? null,
-				decision: result?.finalDecision ?? null,
-				proposedOutcome: outcome,
-				finalOutcome: outcome,
-				proposedTargetClassId: targetClassId,
-				finalTargetClassId: targetClassId,
-				status: blockerCode ? "blocked" : "ready",
-				blockerCode,
-				blockerDetails,
-			};
+				return {
+					institutionId,
+					transitionId: created.id,
+					studentId: row.studentId,
+					sourceEnrollmentId: row.enrollmentId,
+					deliberationId: deliberation?.id ?? null,
+					deliberationStudentResultId: result?.id ?? null,
+					decision: result?.finalDecision ?? null,
+					proposedOutcome: outcome,
+					finalOutcome: outcome,
+					proposedTargetClassId: targetClassId,
+					finalTargetClassId: targetClassId,
+					status: blockerCode ? "blocked" : "ready",
+					blockerCode,
+					blockerDetails,
+				};
+			});
+			await tx.insert(schema.academicYearTransitionItems).values(items);
+			const summary = summarize(items);
+			const [updated] = await tx
+				.update(schema.academicYearTransitions)
+				.set({
+					summary,
+					status: summary.blocked === 0 ? "ready" : "draft",
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.academicYearTransitions.id, created.id))
+				.returning();
+			return updated;
 		});
-		await tx.insert(schema.academicYearTransitionItems).values(items);
-		const summary = summarize(items);
-		const [updated] = await tx
-			.update(schema.academicYearTransitions)
-			.set({
-				summary,
-				status: summary.blocked === 0 ? "ready" : "draft",
-				updatedAt: new Date(),
-			})
-			.where(eq(schema.academicYearTransitions.id, created.id))
-			.returning();
-		return updated;
-	});
+	} catch (error: unknown) {
+		const pgError = (error as { cause?: unknown })?.cause ?? error;
+		if (
+			(pgError as { constraint?: string })?.constraint ===
+			"uq_active_academic_year_transition"
+		) {
+			throw new TRPCError({
+				code: "CONFLICT",
+				message:
+					"An active transition plan already exists for this academic-year pair. Cancel or complete it before creating another one.",
+			});
+		}
+		throw error;
+	}
 
 	return getById(transition.id, institutionId);
 }
