@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { admissionApplicationStatuses } from "@/db/schema/app-schema";
+import {
+	admissionApplicationStatuses,
+	admissionDocumentStatuses,
+} from "@/db/schema/app-schema";
 
 export const applicantProfileSchema = z.object({
 	firstName: z.string().min(1).max(100),
@@ -23,6 +26,47 @@ export const submitApplicationSchema = z.object({
 export const reviewApplicationSchema = z.object({
 	id: z.string().uuid(),
 	status: z.enum(["accepted", "rejected", "waitlisted"]),
+	reviewNotes: z.string().max(2000).nullish(),
+});
+
+export const convertApplicationSchema = z.object({
+	id: z.string().uuid(),
+	classId: z.string().uuid().nullish(),
+	registrationNumber: z.string().min(1).max(100).nullish(),
+	registrationFormatId: z.string().uuid().nullish(),
+});
+
+export const upsertRequirementSchema = z.object({
+	id: z.string().uuid().nullish(),
+	programId: z.string().uuid().nullish(),
+	code: z.string().min(1).max(80),
+	label: z.string().min(1).max(200),
+	description: z.string().max(1000).nullish(),
+	isRequired: z.boolean().default(true),
+	allowedMimeTypes: z.array(z.string().min(1).max(120)).default([]),
+	maxSizeBytes: z.number().int().positive().nullish(),
+	isActive: z.boolean().default(true),
+});
+
+export const listRequirementsSchema = z.object({
+	programId: z.string().uuid().nullish(),
+	includeInactive: z.boolean().default(false),
+});
+
+export const submitDocumentSchema = z.object({
+	applicationId: z.string().uuid(),
+	requirementId: z.string().uuid().nullish(),
+	code: z.string().min(1).max(80),
+	label: z.string().min(1).max(200),
+	fileName: z.string().min(1).max(255),
+	fileUrl: z.string().min(1).max(2000),
+	mimeType: z.string().max(120).nullish(),
+	sizeBytes: z.number().int().nonnegative().nullish(),
+});
+
+export const reviewDocumentSchema = z.object({
+	id: z.string().uuid(),
+	status: z.enum(admissionDocumentStatuses),
 	reviewNotes: z.string().max(2000).nullish(),
 });
 

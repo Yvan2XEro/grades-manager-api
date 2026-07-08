@@ -176,6 +176,13 @@
       "when": 1783347824181,
       "tag": "0024_next_professor_monster",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1783505793050,
+      "tag": "0025_special_cerebro",
+      "breakpoints": true
     }
   ]
 }

@@ -1,9 +1,20 @@
 import { TRPCError } from "@trpc/server";
 import type { z } from "zod";
 import type { AdmissionApplicationStatus } from "@/db/schema/app-schema";
+import * as schema from "@/db/schema/app-schema";
+import { transaction } from "../_shared/db-transaction";
 import { conflict, notFound } from "../_shared/errors";
+import * as classesRepo from "../classes/classes.repo";
+import * as registrationNumbersService from "../registration-numbers/registration-numbers.service";
 import * as repo from "./admissions.repo";
-import type { submitApplicationSchema } from "./admissions.zod";
+import type {
+	convertApplicationSchema,
+	listRequirementsSchema,
+	reviewDocumentSchema,
+	submitApplicationSchema,
+	submitDocumentSchema,
+	upsertRequirementSchema,
+} from "./admissions.zod";
 
 // Statuses from which an admin can render a final decision.
 const REVIEWABLE_STATUSES: AdmissionApplicationStatus[] = [
@@ -214,4 +225,274 @@ export async function setUnderReview(
 		reviewedById: reviewerId,
 		reviewedAt: new Date(),
 	});
+}
+
+export async function convertAcceptedApplication(
+	institutionId: string,
+	input: z.infer<typeof convertApplicationSchema>,
+) {
+	const app = await repo.findApplicationById(institutionId, input.id);
+	if (!app) throw notFound("Application not found");
+
+	if (app.status !== "accepted") {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: "Only accepted applications can be converted to students",
+		});
+	}
+	if (app.convertedStudentId) {
+		throw conflict("Application has already been converted to a student");
+	}
+
+	const classId = input.classId ?? app.classId;
+	if (!classId) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "A target class is required to convert this application",
+		});
+	}
+
+	const klass = await classesRepo.findById(classId, institutionId);
+	if (!klass) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Target class not found for this institution",
+		});
+	}
+	if (
+		klass.program !== app.programId ||
+		klass.academicYear !== app.academicYearId
+	) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message:
+				"Target class must match the accepted application program and academic year",
+		});
+	}
+
+	const studentId = await transaction(async (tx) => {
+		const registrationNumber =
+			input.registrationNumber ??
+			(await registrationNumbersService.issueRegistrationNumber({
+				klass,
+				profile: {
+					firstName: app.applicant.firstName,
+					lastName: app.applicant.lastName,
+					nationality: app.applicant.nationality,
+				},
+				tx,
+				formatId: input.registrationFormatId ?? undefined,
+			}));
+
+		const [profile] = await tx
+			.insert(schema.domainUsers)
+			.values({
+				firstName: app.applicant.firstName,
+				lastName: app.applicant.lastName,
+				primaryEmail: app.applicant.email,
+				phone: app.applicant.phone ?? null,
+				dateOfBirth: app.applicant.dateOfBirth ?? null,
+				placeOfBirth: null,
+				gender: null,
+				nationality: app.applicant.nationality ?? null,
+				status: "active",
+			})
+			.returning();
+
+		const [student] = await tx
+			.insert(schema.students)
+			.values({
+				class: classId,
+				registrationNumber,
+				domainUserId: profile!.id,
+				institutionId,
+			})
+			.returning();
+
+		await tx.insert(schema.enrollments).values({
+			studentId: student!.id,
+			classId,
+			academicYearId: app.academicYearId,
+			institutionId,
+			status: "active",
+			admissionType: "normal",
+			admissionDate: new Date(),
+			admissionJustification: app.reviewNotes ?? null,
+			admissionMetadata: {
+				source: "admission_application",
+				applicationId: app.id,
+				applicantId: app.applicantId,
+				referenceCode: app.applicant.referenceCode,
+			},
+		});
+
+		const converted = await repo.setConvertedStudentId(
+			tx,
+			institutionId,
+			app.id,
+			student!.id,
+		);
+		if (!converted) {
+			throw conflict("Application has already been converted to a student");
+		}
+
+		return student!.id;
+	});
+
+	const converted = await repo.findApplicationById(institutionId, input.id);
+	return {
+		application: converted,
+		studentId,
+	};
+}
+
+export async function listDocumentRequirements(
+	institutionId: string,
+	input: z.infer<typeof listRequirementsSchema>,
+) {
+	return repo.listDocumentRequirements(institutionId, input);
+}
+
+export async function upsertDocumentRequirement(
+	institutionId: string,
+	input: z.infer<typeof upsertRequirementSchema>,
+) {
+	if (input.programId) {
+		const program = await repo.requireProgramForInstitution(
+			institutionId,
+			input.programId,
+		);
+		if (!program) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Program not found for this institution",
+			});
+		}
+	}
+	const requirement = await repo.upsertDocumentRequirement(institutionId, {
+		id: input.id ?? null,
+		programId: input.programId ?? null,
+		code: input.code.trim().toLowerCase(),
+		label: input.label.trim(),
+		description: input.description ?? null,
+		isRequired: input.isRequired,
+		allowedMimeTypes: input.allowedMimeTypes,
+		maxSizeBytes: input.maxSizeBytes ?? null,
+		isActive: input.isActive,
+	});
+	if (!requirement) throw notFound("Document requirement not found");
+	return requirement;
+}
+
+export async function getApplicationChecklist(
+	institutionId: string,
+	applicationId: string,
+) {
+	const application = await repo.findApplicationById(
+		institutionId,
+		applicationId,
+	);
+	if (!application) throw notFound("Application not found");
+	const [requirements, documents] = await Promise.all([
+		repo.listDocumentRequirements(institutionId, {
+			programId: application.programId,
+			includeInactive: false,
+		}),
+		repo.listApplicationDocuments(institutionId, applicationId),
+	]);
+	const documentsByCode = new Map(documents.map((doc) => [doc.code, doc]));
+	const items = requirements.map((requirement) => {
+		const document = documentsByCode.get(requirement.code) ?? null;
+		return {
+			requirement,
+			document,
+			missing: requirement.isRequired && !document,
+			valid: document?.status === "valid",
+		};
+	});
+	return {
+		applicationId,
+		items,
+		missingRequiredCount: items.filter((item) => item.missing).length,
+		invalidCount: items.filter((item) => item.document?.status === "invalid")
+			.length,
+	};
+}
+
+export async function submitApplicationDocument(
+	institutionId: string,
+	input: z.infer<typeof submitDocumentSchema>,
+) {
+	const application = await repo.findApplicationById(
+		institutionId,
+		input.applicationId,
+	);
+	if (!application) throw notFound("Application not found");
+
+	let requirement = null;
+	if (input.requirementId) {
+		requirement = await repo.findRequirementById(
+			institutionId,
+			input.requirementId,
+		);
+		if (!requirement) throw notFound("Document requirement not found");
+		if (
+			requirement.programId &&
+			requirement.programId !== application.programId
+		) {
+			throw new TRPCError({
+				code: "PRECONDITION_FAILED",
+				message: "Document requirement does not apply to this application",
+			});
+		}
+		if (
+			requirement.allowedMimeTypes?.length &&
+			input.mimeType &&
+			!requirement.allowedMimeTypes.includes(input.mimeType)
+		) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Document file type is not allowed for this requirement",
+			});
+		}
+		if (
+			requirement.maxSizeBytes &&
+			input.sizeBytes &&
+			input.sizeBytes > requirement.maxSizeBytes
+		) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Document file is larger than the configured limit",
+			});
+		}
+	}
+
+	return repo.upsertApplicationDocument(institutionId, {
+		applicationId: input.applicationId,
+		requirementId: requirement?.id ?? input.requirementId ?? null,
+		code: (requirement?.code ?? input.code).trim().toLowerCase(),
+		label: requirement?.label ?? input.label.trim(),
+		fileName: input.fileName,
+		fileUrl: input.fileUrl,
+		mimeType: input.mimeType ?? null,
+		sizeBytes: input.sizeBytes ?? null,
+	});
+}
+
+export async function reviewApplicationDocument(
+	institutionId: string,
+	reviewerId: string,
+	input: z.infer<typeof reviewDocumentSchema>,
+) {
+	const document = await repo.reviewApplicationDocument(
+		institutionId,
+		input.id,
+		{
+			status: input.status,
+			reviewNotes: input.reviewNotes ?? null,
+			reviewedById: reviewerId,
+		},
+	);
+	if (!document) throw notFound("Application document not found");
+	return document;
 }

@@ -2,9 +2,14 @@ import { z } from "zod";
 import { adminProcedure, router, tenantProcedure } from "@/lib/trpc";
 import * as service from "./admissions.service";
 import {
+	convertApplicationSchema,
 	listApplicationsSchema,
+	listRequirementsSchema,
 	reviewApplicationSchema,
+	reviewDocumentSchema,
 	submitApplicationSchema,
+	submitDocumentSchema,
+	upsertRequirementSchema,
 } from "./admissions.zod";
 
 export const admissionsRouter = router({
@@ -22,6 +27,20 @@ export const admissionsRouter = router({
 			service.getByReferenceCode(ctx.institution.id, input.referenceCode),
 		),
 
+	/** Public: list admission document requirements for a program. */
+	listRequirements: tenantProcedure
+		.input(listRequirementsSchema)
+		.query(({ ctx, input }) =>
+			service.listDocumentRequirements(ctx.institution.id, input),
+		),
+
+	/** Public: submit/update a document reference for an application. */
+	submitDocument: tenantProcedure
+		.input(submitDocumentSchema)
+		.mutation(({ ctx, input }) =>
+			service.submitApplicationDocument(ctx.institution.id, input),
+		),
+
 	/** Admin: paginated list of applications with optional filters. */
 	list: adminProcedure
 		.input(listApplicationsSchema)
@@ -34,6 +53,20 @@ export const admissionsRouter = router({
 		.input(z.object({ id: z.string().uuid() }))
 		.query(({ ctx, input }) =>
 			service.getApplication(ctx.institution.id, input.id),
+		),
+
+	/** Admin: configure admission supporting-document requirements. */
+	upsertRequirement: adminProcedure
+		.input(upsertRequirementSchema)
+		.mutation(({ ctx, input }) =>
+			service.upsertDocumentRequirement(ctx.institution.id, input),
+		),
+
+	/** Admin: checklist view with missing/invalid documents. */
+	getChecklist: adminProcedure
+		.input(z.object({ applicationId: z.string().uuid() }))
+		.query(({ ctx, input }) =>
+			service.getApplicationChecklist(ctx.institution.id, input.applicationId),
 		),
 
 	/** Admin: move a submitted application to "under review". */
@@ -59,4 +92,23 @@ export const admissionsRouter = router({
 				input,
 			);
 		}),
+
+	/** Admin: validate or invalidate an uploaded application document. */
+	reviewDocument: adminProcedure
+		.input(reviewDocumentSchema)
+		.mutation(({ ctx, input }) => {
+			if (!ctx.profile?.id) throw new Error("Profile required");
+			return service.reviewApplicationDocument(
+				ctx.institution.id,
+				ctx.profile.id,
+				input,
+			);
+		}),
+
+	/** Admin: convert an accepted application into a student + enrollment once. */
+	convert: adminProcedure
+		.input(convertApplicationSchema)
+		.mutation(({ ctx, input }) =>
+			service.convertAcceptedApplication(ctx.institution.id, input),
+		),
 });

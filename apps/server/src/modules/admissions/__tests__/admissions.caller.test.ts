@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, setDefaultTimeout } from "bun:test";
 import type { Context } from "@/lib/context";
 import {
 	createAcademicYear,
+	createClass,
 	createDomainUser,
 	createProgram,
 	makeTestContext,
@@ -297,6 +298,179 @@ describe("admissions.setUnderReview", () => {
 		await expect(
 			caller(ctx).admissions.setUnderReview({
 				id: "00000000-0000-0000-0000-000000000000",
+			}),
+		).rejects.toThrow();
+	});
+});
+
+describe("admissions.convert", () => {
+	it("converts an accepted application into a student and active enrollment", async () => {
+		const klass = await createClass({
+			program: programId,
+			academicYear: academicYearId,
+		});
+		const publicCtx = makeTestContext();
+		const { application } = await caller(publicCtx).admissions.submit({
+			applicant: { ...baseApplicant, email: "convert-ok@example.com" },
+			programId,
+			academicYearId,
+			classId: klass.id,
+		});
+
+		const adminCtx = asRealAdmin();
+		await caller(adminCtx).admissions.review({
+			id: application.id,
+			status: "accepted",
+			reviewNotes: "Accepted for intake",
+		});
+
+		const converted = await caller(adminCtx).admissions.convert({
+			id: application.id,
+			registrationNumber: "ADM-2026-001",
+		});
+
+		expect(converted.studentId).toBeTruthy();
+		expect(converted.application?.convertedStudentId).toBe(converted.studentId);
+
+		const student = await caller(adminCtx).students.getById({
+			id: converted.studentId,
+		});
+		expect(student.registrationNumber).toBe("ADM-2026-001");
+		expect(student.class).toBe(klass.id);
+		expect(student.profile.primaryEmail).toBe("convert-ok@example.com");
+	});
+
+	it("rejects conversion before the application is accepted", async () => {
+		const klass = await createClass({
+			program: programId,
+			academicYear: academicYearId,
+		});
+		const publicCtx = makeTestContext();
+		const { application } = await caller(publicCtx).admissions.submit({
+			applicant: {
+				...baseApplicant,
+				email: "convert-not-accepted@example.com",
+			},
+			programId,
+			academicYearId,
+			classId: klass.id,
+		});
+
+		await expect(
+			caller(asRealAdmin()).admissions.convert({ id: application.id }),
+		).rejects.toThrow();
+	});
+
+	it("rejects duplicate conversion of the same accepted application", async () => {
+		const klass = await createClass({
+			program: programId,
+			academicYear: academicYearId,
+		});
+		const publicCtx = makeTestContext();
+		const { application } = await caller(publicCtx).admissions.submit({
+			applicant: { ...baseApplicant, email: "convert-once@example.com" },
+			programId,
+			academicYearId,
+			classId: klass.id,
+		});
+
+		const adminCtx = asRealAdmin();
+		await caller(adminCtx).admissions.review({
+			id: application.id,
+			status: "accepted",
+		});
+		await caller(adminCtx).admissions.convert({
+			id: application.id,
+			registrationNumber: "ADM-2026-002",
+		});
+
+		await expect(
+			caller(adminCtx).admissions.convert({
+				id: application.id,
+				registrationNumber: "ADM-2026-003",
+			}),
+		).rejects.toThrow();
+	});
+});
+
+describe("admissions document checklist", () => {
+	it("reports missing required documents and validates submitted documents", async () => {
+		const publicCtx = makeTestContext();
+		const { application } = await caller(publicCtx).admissions.submit({
+			applicant: { ...baseApplicant, email: "docs-ok@example.com" },
+			programId,
+			academicYearId,
+		});
+		const adminCtx = asRealAdmin();
+
+		const requirement = await caller(adminCtx).admissions.upsertRequirement({
+			programId,
+			code: "identity",
+			label: "Identity document",
+			isRequired: true,
+			allowedMimeTypes: ["application/pdf"],
+			maxSizeBytes: 1_000_000,
+			isActive: true,
+		});
+
+		const before = await caller(adminCtx).admissions.getChecklist({
+			applicationId: application.id,
+		});
+		expect(before.missingRequiredCount).toBe(1);
+
+		const document = await caller(publicCtx).admissions.submitDocument({
+			applicationId: application.id,
+			requirementId: requirement.id,
+			code: "identity",
+			label: "Identity document",
+			fileName: "identity.pdf",
+			fileUrl: "https://example.com/identity.pdf",
+			mimeType: "application/pdf",
+			sizeBytes: 500_000,
+		});
+		expect(document.status).toBe("pending");
+
+		const reviewed = await caller(adminCtx).admissions.reviewDocument({
+			id: document.id,
+			status: "valid",
+			reviewNotes: "Readable",
+		});
+		expect(reviewed.status).toBe("valid");
+
+		const after = await caller(adminCtx).admissions.getChecklist({
+			applicationId: application.id,
+		});
+		expect(after.missingRequiredCount).toBe(0);
+		expect(after.items[0]?.valid).toBe(true);
+	});
+
+	it("rejects a submitted document with a disallowed MIME type", async () => {
+		const publicCtx = makeTestContext();
+		const { application } = await caller(publicCtx).admissions.submit({
+			applicant: { ...baseApplicant, email: "docs-mime@example.com" },
+			programId,
+			academicYearId,
+		});
+		const requirement = await caller(
+			asRealAdmin(),
+		).admissions.upsertRequirement({
+			programId,
+			code: "photo",
+			label: "Photo",
+			isRequired: true,
+			allowedMimeTypes: ["image/png"],
+			isActive: true,
+		});
+
+		await expect(
+			caller(publicCtx).admissions.submitDocument({
+				applicationId: application.id,
+				requirementId: requirement.id,
+				code: "photo",
+				label: "Photo",
+				fileName: "photo.exe",
+				fileUrl: "https://example.com/photo.exe",
+				mimeType: "application/x-msdownload",
 			}),
 		).rejects.toThrow();
 	});

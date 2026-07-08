@@ -4168,6 +4168,14 @@ export const admissionApplicationStatuses = [
 export type AdmissionApplicationStatus =
 	(typeof admissionApplicationStatuses)[number];
 
+export const admissionDocumentStatuses = [
+	"pending",
+	"valid",
+	"invalid",
+] as const;
+export type AdmissionDocumentStatus =
+	(typeof admissionDocumentStatuses)[number];
+
 /** A person who has applied for admission — separate from a student profile. */
 export const applicants = pgTable(
 	"applicants",
@@ -4259,6 +4267,98 @@ export type NewAdmissionApplication = InferInsertModel<
 	typeof admissionApplications
 >;
 
+/** Configurable supporting document required during admission review. */
+export const admissionDocumentRequirements = pgTable(
+	"admission_document_requirements",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "cascade",
+		}),
+		code: text("code").notNull(),
+		label: text("label").notNull(),
+		description: text("description"),
+		isRequired: boolean("is_required").notNull().default(true),
+		allowedMimeTypes: jsonb("allowed_mime_types").$type<string[]>().default([]),
+		maxSizeBytes: integer("max_size_bytes"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_admission_doc_req_scope_code").on(
+			t.institutionId,
+			t.programId,
+			t.code,
+		),
+		index("idx_admission_doc_req_institution").on(t.institutionId),
+		index("idx_admission_doc_req_program").on(t.programId),
+	],
+);
+export type AdmissionDocumentRequirement = InferSelectModel<
+	typeof admissionDocumentRequirements
+>;
+export type NewAdmissionDocumentRequirement = InferInsertModel<
+	typeof admissionDocumentRequirements
+>;
+
+/** A supporting document reference submitted by an applicant. */
+export const admissionApplicationDocuments = pgTable(
+	"admission_application_documents",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		applicationId: text("application_id")
+			.notNull()
+			.references(() => admissionApplications.id, { onDelete: "cascade" }),
+		requirementId: text("requirement_id").references(
+			() => admissionDocumentRequirements.id,
+			{ onDelete: "set null" },
+		),
+		code: text("code").notNull(),
+		label: text("label").notNull(),
+		fileName: text("file_name").notNull(),
+		fileUrl: text("file_url").notNull(),
+		mimeType: text("mime_type"),
+		sizeBytes: integer("size_bytes"),
+		status: text("status")
+			.$type<AdmissionDocumentStatus>()
+			.notNull()
+			.default("pending"),
+		reviewNotes: text("review_notes"),
+		reviewedById: text("reviewed_by_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_admission_app_doc_code").on(t.applicationId, t.code),
+		index("idx_admission_app_docs_application").on(t.applicationId),
+		index("idx_admission_app_docs_institution").on(t.institutionId),
+	],
+);
+export type AdmissionApplicationDocument = InferSelectModel<
+	typeof admissionApplicationDocuments
+>;
+export type NewAdmissionApplicationDocument = InferInsertModel<
+	typeof admissionApplicationDocuments
+>;
+
 export const applicantsRelations = relations(applicants, ({ one, many }) => ({
 	institution: one(institutions, {
 		fields: [applicants.institutionId],
@@ -4269,7 +4369,7 @@ export const applicantsRelations = relations(applicants, ({ one, many }) => ({
 
 export const admissionApplicationsRelations = relations(
 	admissionApplications,
-	({ one }) => ({
+	({ one, many }) => ({
 		institution: one(institutions, {
 			fields: [admissionApplications.institutionId],
 			references: [institutions.id],
@@ -4297,6 +4397,43 @@ export const admissionApplicationsRelations = relations(
 		convertedStudent: one(students, {
 			fields: [admissionApplications.convertedStudentId],
 			references: [students.id],
+		}),
+		documents: many(admissionApplicationDocuments),
+	}),
+);
+
+export const admissionDocumentRequirementsRelations = relations(
+	admissionDocumentRequirements,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [admissionDocumentRequirements.institutionId],
+			references: [institutions.id],
+		}),
+		program: one(programs, {
+			fields: [admissionDocumentRequirements.programId],
+			references: [programs.id],
+		}),
+	}),
+);
+
+export const admissionApplicationDocumentsRelations = relations(
+	admissionApplicationDocuments,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [admissionApplicationDocuments.institutionId],
+			references: [institutions.id],
+		}),
+		application: one(admissionApplications, {
+			fields: [admissionApplicationDocuments.applicationId],
+			references: [admissionApplications.id],
+		}),
+		requirement: one(admissionDocumentRequirements, {
+			fields: [admissionApplicationDocuments.requirementId],
+			references: [admissionDocumentRequirements.id],
+		}),
+		reviewedBy: one(domainUsers, {
+			fields: [admissionApplicationDocuments.reviewedById],
+			references: [domainUsers.id],
 		}),
 	}),
 );
