@@ -130,6 +130,53 @@ describe("admissions.getByReferenceCode", () => {
 	});
 });
 
+describe("admissions.getStatus", () => {
+	it("returns the latest application with its public document checklist", async () => {
+		const publicCtx = makeTestContext();
+		const adminCtx = asRealAdmin();
+		const { application, referenceCode } = await caller(
+			publicCtx,
+		).admissions.submit({
+			applicant: { ...baseApplicant, email: "status-portal@example.com" },
+			programId,
+			academicYearId,
+		});
+
+		await caller(adminCtx).admissions.upsertRequirement({
+			programId,
+			code: "identity",
+			label: "Identity document",
+			isRequired: true,
+			isActive: true,
+		});
+
+		const status = await caller(publicCtx).admissions.getStatus({
+			referenceCode,
+		});
+
+		expect(status.applicant.referenceCode).toBe(referenceCode);
+		expect(status.application.id).toBe(application.id);
+		expect(status.application.status).toBe("submitted");
+		expect(status.checklist.missingRequiredCount).toBe(1);
+		expect(status.checklist.items[0]?.requirement.code).toBe("identity");
+	});
+});
+
+describe("admissions.publicOptions", () => {
+	it("returns tenant-scoped programs and academic years for the public form", async () => {
+		const ctx = makeTestContext();
+
+		const options = await caller(ctx).admissions.publicOptions();
+
+		expect(options.programs.some((program) => program.id === programId)).toBe(
+			true,
+		);
+		expect(
+			options.academicYears.some((year) => year.id === academicYearId),
+		).toBe(true);
+	});
+});
+
 describe("admissions.list (admin)", () => {
 	it("returns applications filtered by status", async () => {
 		const ctx = makeTestContext();

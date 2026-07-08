@@ -27,6 +27,18 @@ export const admissionsRouter = router({
 			service.getByReferenceCode(ctx.institution.id, input.referenceCode),
 		),
 
+	/** Public: applicant-safe status lookup with the latest checklist. */
+	getStatus: tenantProcedure
+		.input(z.object({ referenceCode: z.string().min(1) }))
+		.query(({ ctx, input }) =>
+			service.getStatus(ctx.institution.id, input.referenceCode),
+		),
+
+	/** Public: tenant-scoped options needed by the applicant form. */
+	publicOptions: tenantProcedure.query(({ ctx }) =>
+		service.getPublicOptions(ctx.institution.id),
+	),
+
 	/** Public: list admission document requirements for a program. */
 	listRequirements: tenantProcedure
 		.input(listRequirementsSchema)

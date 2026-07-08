@@ -1110,7 +1110,8 @@
         "gradeManagement": "Grade management",
         "promotion": "Year transition",
         "configuration": "Configuration",
-        "timetable": "Timetable"
+        "timetable": "Timetable",
+        "admissions": "Admissions"
       },
       "groups": {
         "overview": "Overview",
@@ -4208,7 +4209,7 @@
       "courseSubtitle": "Latest scores for the active academic year",
       "coursePlaceholder": "Detailed course averages will appear once instructors publish grades for the current session.",
       "deliberationDecision": "Deliberation decision",
-	  "downloadDocuments": "Download academic documents",
+      "downloadDocuments": "Download academic documents",
       "average": "Average",
       "projection": "Year-end projection",
       "projectionNote": "Of graded UEs so far, {{rate}}% are above the passing threshold. Partial data.",
@@ -4324,10 +4325,10 @@
       "description": "Your full academic history — enrollments, decisions, and milestones",
       "empty": "No events yet",
       "emptyHint": "Your academic history will appear here as you progress through your studies.",
-	  "allAcademicYears": "All academic years",
-	  "eventCount_one": "{{count}} event",
-	  "eventCount_other": "{{count}} events",
-	  "average": "Avg.",
+      "allAcademicYears": "All academic years",
+      "eventCount_one": "{{count}} event",
+      "eventCount_other": "{{count}} events",
+      "average": "Avg.",
       "event": {
         "enrollment": "Enrolled",
         "enrollment_transfer": "Transferred",
@@ -4751,12 +4752,12 @@
       "totalDue": "Total due",
       "paid": "Paid",
       "academicYear": "Academic year",
-      "pendingOrders": "Pending orders"
-	  ,"installmentStatus": {
-		"payable": "Payable",
-		"pending": "Order pending",
-		"paid": "Paid"
-	  }
+      "pendingOrders": "Pending orders",
+      "installmentStatus": {
+        "payable": "Payable",
+        "pending": "Order pending",
+        "paid": "Paid"
+      }
     },
     "history": {
       "title": "Financial history",
@@ -4839,6 +4840,96 @@
       "types": "Exam Types",
       "scheduler": "Scheduler",
       "participation": "Participation"
+    }
+  },
+  "admissions": {
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone",
+      "dateOfBirth": "Date of birth",
+      "nationality": "Nationality",
+      "previousDiploma": "Previous diploma",
+      "previousInstitution": "Previous institution",
+      "program": "Program",
+      "academicYear": "Academic year",
+      "class": "Requested class",
+      "personalStatement": "Personal statement"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "under_review": "Under review",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "waitlisted": "Waitlisted"
+    },
+    "documentStatuses": {
+      "pending": "Pending review",
+      "valid": "Valid",
+      "invalid": "Invalid"
+    },
+    "public": {
+      "title": "Apply for admission",
+      "subtitle": "Submit your application online and keep the reference code to track progress.",
+      "selectProgram": "Select a program",
+      "selectYear": "Select an academic year",
+      "selectClass": "Select a class",
+      "noClass": "No preferred class",
+      "submit": "Submit application",
+      "submitting": "Submitting...",
+      "submitSuccess": "Application submitted",
+      "successTitle": "Application received",
+      "successDescription": "Your application has been recorded. Keep this reference code for status tracking and document updates.",
+      "referenceLabel": "Reference code",
+      "trackApplication": "Track application"
+    },
+    "status": {
+      "title": "Application status",
+      "subtitle": "Enter your reference code to follow the review and document checklist.",
+      "search": "Search",
+      "checklist": "Document checklist",
+      "noRequirements": "No document requirement configured for this program.",
+      "missingDocuments": "Missing required documents",
+      "invalidDocuments": "Invalid documents",
+      "reference": "Reference",
+      "required": "Required",
+      "missing": "Missing",
+      "fileName": "File name",
+      "fileUrl": "File URL",
+      "submitDocument": "Submit document",
+      "documentSubmitted": "Document submitted"
+    },
+    "admin": {
+      "title": "Admissions",
+      "subtitle": "Review applications, validate documents, decide, and convert accepted candidates.",
+      "allStatuses": "All statuses",
+      "queue": "Application queue",
+      "empty": "No application found.",
+      "selectApplication": "Select an application to review.",
+      "reviewTitle": "Decision",
+      "reviewNotes": "Decision notes",
+      "markUnderReview": "Mark under review",
+      "accept": "Accept",
+      "waitlist": "Waitlist",
+      "reject": "Reject",
+      "documentsTitle": "Documents",
+      "missingFile": "No file submitted",
+      "valid": "Valid",
+      "invalid": "Invalid",
+      "convertTitle": "Convert to student",
+      "useApplicationClass": "Use application class",
+      "registrationNumber": "Registration number",
+      "autoRegistration": "Auto-generate if empty",
+      "convert": "Convert",
+      "converted": "Converted",
+      "toasts": {
+        "updated": "Application updated",
+        "reviewed": "Decision saved",
+        "documentReviewed": "Document reviewed",
+        "converted": "Application converted"
+      }
     }
   }
 }

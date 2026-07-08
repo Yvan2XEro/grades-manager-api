@@ -9,6 +9,7 @@ import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import AcademicYearTransitions from "./pages/admin/AcademicYearTransitions";
+import AdmissionsManagement from "./pages/admin/AdmissionsManagement";
 import AttendanceManagement from "./pages/admin/attendance/AttendanceManagement";
 import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
@@ -47,6 +48,8 @@ import StudentManagement from "./pages/admin/StudentManagement";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
 import TimetableHub from "./pages/admin/TimetableHub";
 import UsersHub from "./pages/admin/UsersHub";
+import ApplicationForm from "./pages/admissions/ApplicationForm";
+import ApplicationStatus from "./pages/admissions/ApplicationStatus";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -190,6 +193,8 @@ function App() {
 				<Route path="/auth/forgot" element={<ForgotPassword />} />
 				<Route path="/auth/reset" element={<ResetPassword />} />
 			</Route>
+			<Route path="/admissions/apply" element={<ApplicationForm />} />
+			<Route path="/admissions/status" element={<ApplicationStatus />} />
 
 			{!!memoUser && (
 				<>
@@ -197,6 +202,7 @@ function App() {
 					<Route path="/admin" element={<DashboardLayout />}>
 						<Route index element={<AdminDashboard />} />
 						<Route path="academic-years" element={<AcademicYearManagement />} />
+						<Route path="admissions" element={<AdmissionsManagement />} />
 						<Route path="students" element={<StudentManagement />} />
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="graduation" element={<GraduatedStudents />} />

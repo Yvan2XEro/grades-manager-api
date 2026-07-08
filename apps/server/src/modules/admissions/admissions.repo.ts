@@ -163,6 +163,28 @@ export async function findProgramsForInstitution(institutionId: string) {
 	});
 }
 
+export async function findAcademicYearsForInstitution(institutionId: string) {
+	return db.query.academicYears.findMany({
+		where: eq(academicYears.institutionId, institutionId),
+		columns: { id: true, name: true, startDate: true, endDate: true },
+		orderBy: [desc(academicYears.createdAt)],
+	});
+}
+
+export async function findClassesForInstitution(institutionId: string) {
+	return db.query.classes.findMany({
+		where: eq(classes.institutionId, institutionId),
+		columns: {
+			id: true,
+			name: true,
+			code: true,
+			program: true,
+			academicYear: true,
+		},
+		orderBy: [desc(classes.createdAt)],
+	});
+}
+
 export async function listDocumentRequirements(
 	institutionId: string,
 	opts: { programId?: string | null; includeInactive?: boolean },

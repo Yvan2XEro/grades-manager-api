@@ -1112,6 +1112,7 @@ interface Resources {
 					promotion: "Year transition";
 					configuration: "Configuration";
 					timetable: "Timetable";
+					admissions: "Admissions";
 				};
 				groups: {
 					overview: "Overview";
@@ -4840,6 +4841,96 @@ interface Resources {
 				types: "Exam Types";
 				scheduler: "Scheduler";
 				participation: "Participation";
+			};
+		};
+		admissions: {
+			fields: {
+				firstName: "First name";
+				lastName: "Last name";
+				email: "Email";
+				phone: "Phone";
+				dateOfBirth: "Date of birth";
+				nationality: "Nationality";
+				previousDiploma: "Previous diploma";
+				previousInstitution: "Previous institution";
+				program: "Program";
+				academicYear: "Academic year";
+				class: "Requested class";
+				personalStatement: "Personal statement";
+			};
+			statuses: {
+				draft: "Draft";
+				submitted: "Submitted";
+				under_review: "Under review";
+				accepted: "Accepted";
+				rejected: "Rejected";
+				waitlisted: "Waitlisted";
+			};
+			documentStatuses: {
+				pending: "Pending review";
+				valid: "Valid";
+				invalid: "Invalid";
+			};
+			public: {
+				title: "Apply for admission";
+				subtitle: "Submit your application online and keep the reference code to track progress.";
+				selectProgram: "Select a program";
+				selectYear: "Select an academic year";
+				selectClass: "Select a class";
+				noClass: "No preferred class";
+				submit: "Submit application";
+				submitting: "Submitting...";
+				submitSuccess: "Application submitted";
+				successTitle: "Application received";
+				successDescription: "Your application has been recorded. Keep this reference code for status tracking and document updates.";
+				referenceLabel: "Reference code";
+				trackApplication: "Track application";
+			};
+			status: {
+				title: "Application status";
+				subtitle: "Enter your reference code to follow the review and document checklist.";
+				search: "Search";
+				checklist: "Document checklist";
+				noRequirements: "No document requirement configured for this program.";
+				missingDocuments: "Missing required documents";
+				invalidDocuments: "Invalid documents";
+				reference: "Reference";
+				required: "Required";
+				missing: "Missing";
+				fileName: "File name";
+				fileUrl: "File URL";
+				submitDocument: "Submit document";
+				documentSubmitted: "Document submitted";
+			};
+			admin: {
+				title: "Admissions";
+				subtitle: "Review applications, validate documents, decide, and convert accepted candidates.";
+				allStatuses: "All statuses";
+				queue: "Application queue";
+				empty: "No application found.";
+				selectApplication: "Select an application to review.";
+				reviewTitle: "Decision";
+				reviewNotes: "Decision notes";
+				markUnderReview: "Mark under review";
+				accept: "Accept";
+				waitlist: "Waitlist";
+				reject: "Reject";
+				documentsTitle: "Documents";
+				missingFile: "No file submitted";
+				valid: "Valid";
+				invalid: "Invalid";
+				convertTitle: "Convert to student";
+				useApplicationClass: "Use application class";
+				registrationNumber: "Registration number";
+				autoRegistration: "Auto-generate if empty";
+				convert: "Convert";
+				converted: "Converted";
+				toasts: {
+					updated: "Application updated";
+					reviewed: "Decision saved";
+					documentReviewed: "Document reviewed";
+					converted: "Application converted";
+				};
 			};
 		};
 	};

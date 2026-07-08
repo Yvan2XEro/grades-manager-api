@@ -151,6 +151,31 @@ export async function getByReferenceCode(
 	return applicant;
 }
 
+export async function getStatus(institutionId: string, referenceCode: string) {
+	const applicant = await getByReferenceCode(institutionId, referenceCode);
+	const application = applicant.applications[0];
+	if (!application) {
+		throw notFound("No application found for this reference code");
+	}
+	const checklist = await getApplicationChecklist(
+		institutionId,
+		application.id,
+	);
+
+	return {
+		applicant: {
+			id: applicant.id,
+			referenceCode: applicant.referenceCode,
+			firstName: applicant.firstName,
+			lastName: applicant.lastName,
+			email: applicant.email,
+			phone: applicant.phone,
+		},
+		application,
+		checklist,
+	};
+}
+
 export async function listApplications(
 	institutionId: string,
 	filters: {
@@ -165,6 +190,20 @@ export async function listApplications(
 		...filters,
 		status: filters.status as AdmissionApplicationStatus | null,
 	});
+}
+
+export async function getPublicOptions(institutionId: string) {
+	const [programs, academicYears, classes] = await Promise.all([
+		repo.findProgramsForInstitution(institutionId),
+		repo.findAcademicYearsForInstitution(institutionId),
+		repo.findClassesForInstitution(institutionId),
+	]);
+
+	return {
+		programs,
+		academicYears,
+		classes,
+	};
 }
 
 export async function getApplication(institutionId: string, id: string) {

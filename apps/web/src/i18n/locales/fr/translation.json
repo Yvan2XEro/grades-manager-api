@@ -182,7 +182,8 @@
         "gradeManagement": "Gestion des notes",
         "promotion": "Passage d'annee",
         "configuration": "Configuration",
-        "timetable": "Emploi du temps"
+        "timetable": "Emploi du temps",
+        "admissions": "Admissions"
       },
       "groups": {
         "overview": "Vue d'ensemble",
@@ -4227,7 +4228,7 @@
       "courseSubtitle": "Dernières notes pour l'année active",
       "coursePlaceholder": "Les moyennes détaillées apparaîtront une fois les notes publiées.",
       "deliberationDecision": "Décision de délibération",
-	  "downloadDocuments": "Télécharger les documents académiques",
+      "downloadDocuments": "Télécharger les documents académiques",
       "average": "Moyenne",
       "projection": "Projection fin d'année",
       "projectionNote": "Sur les UEs déjà notées, {{rate}}% sont au-dessus du seuil de validation. Données partielles.",
@@ -4343,10 +4344,10 @@
       "description": "Votre parcours complet — inscriptions, délibérations et jalons",
       "empty": "Aucun événement",
       "emptyHint": "Votre historique académique apparaîtra ici au fil de votre parcours.",
-	  "allAcademicYears": "Toutes les années académiques",
-	  "eventCount_one": "{{count}} événement",
-	  "eventCount_other": "{{count}} événements",
-	  "average": "Moy.",
+      "allAcademicYears": "Toutes les années académiques",
+      "eventCount_one": "{{count}} événement",
+      "eventCount_other": "{{count}} événements",
+      "average": "Moy.",
       "event": {
         "enrollment": "Inscription",
         "enrollment_transfer": "Transfert",
@@ -4770,12 +4771,12 @@
       "totalDue": "Total dû",
       "paid": "Payé",
       "academicYear": "Année académique",
-      "pendingOrders": "Ordres en attente"
-	  ,"installmentStatus": {
-		"payable": "À payer",
-		"pending": "Ordre en attente",
-		"paid": "Payée"
-	  }
+      "pendingOrders": "Ordres en attente",
+      "installmentStatus": {
+        "payable": "À payer",
+        "pending": "Ordre en attente",
+        "paid": "Payée"
+      }
     },
     "history": {
       "title": "Historique financier",
@@ -4858,6 +4859,96 @@
       "types": "Types d'examen",
       "scheduler": "Programmation",
       "participation": "Participation"
+    }
+  },
+  "admissions": {
+    "fields": {
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "dateOfBirth": "Date de naissance",
+      "nationality": "Nationalité",
+      "previousDiploma": "Dernier diplôme",
+      "previousInstitution": "Établissement précédent",
+      "program": "Programme",
+      "academicYear": "Année académique",
+      "class": "Classe souhaitée",
+      "personalStatement": "Motivation"
+    },
+    "statuses": {
+      "draft": "Brouillon",
+      "submitted": "Soumise",
+      "under_review": "En étude",
+      "accepted": "Acceptée",
+      "rejected": "Rejetée",
+      "waitlisted": "Liste d’attente"
+    },
+    "documentStatuses": {
+      "pending": "En attente",
+      "valid": "Valide",
+      "invalid": "Invalide"
+    },
+    "public": {
+      "title": "Demande d’admission",
+      "subtitle": "Soumettez votre dossier en ligne et gardez le code de référence pour suivre l’avancement.",
+      "selectProgram": "Choisir un programme",
+      "selectYear": "Choisir une année académique",
+      "selectClass": "Choisir une classe",
+      "noClass": "Aucune classe préférée",
+      "submit": "Soumettre la demande",
+      "submitting": "Soumission...",
+      "submitSuccess": "Demande soumise",
+      "successTitle": "Demande reçue",
+      "successDescription": "Votre demande a été enregistrée. Conservez ce code de référence pour suivre le dossier et compléter les documents.",
+      "referenceLabel": "Code de référence",
+      "trackApplication": "Suivre la demande"
+    },
+    "status": {
+      "title": "Suivi de candidature",
+      "subtitle": "Entrez votre code de référence pour suivre la revue et la checklist documentaire.",
+      "search": "Rechercher",
+      "checklist": "Checklist documentaire",
+      "noRequirements": "Aucune pièce requise configurée pour ce programme.",
+      "missingDocuments": "Documents requis manquants",
+      "invalidDocuments": "Documents invalides",
+      "reference": "Référence",
+      "required": "Requis",
+      "missing": "Manquant",
+      "fileName": "Nom du fichier",
+      "fileUrl": "URL du fichier",
+      "submitDocument": "Soumettre",
+      "documentSubmitted": "Document soumis"
+    },
+    "admin": {
+      "title": "Admissions",
+      "subtitle": "Étudier les candidatures, valider les documents, décider et convertir les candidats acceptés.",
+      "allStatuses": "Tous les statuts",
+      "queue": "File des candidatures",
+      "empty": "Aucune candidature trouvée.",
+      "selectApplication": "Sélectionnez une candidature à traiter.",
+      "reviewTitle": "Décision",
+      "reviewNotes": "Notes de décision",
+      "markUnderReview": "Mettre en étude",
+      "accept": "Accepter",
+      "waitlist": "Liste d’attente",
+      "reject": "Rejeter",
+      "documentsTitle": "Documents",
+      "missingFile": "Aucun fichier soumis",
+      "valid": "Valide",
+      "invalid": "Invalide",
+      "convertTitle": "Convertir en étudiant",
+      "useApplicationClass": "Utiliser la classe demandée",
+      "registrationNumber": "Matricule",
+      "autoRegistration": "Auto-généré si vide",
+      "convert": "Convertir",
+      "converted": "Converti",
+      "toasts": {
+        "updated": "Candidature mise à jour",
+        "reviewed": "Décision enregistrée",
+        "documentReviewed": "Document revu",
+        "converted": "Candidature convertie"
+      }
     }
   }
 }

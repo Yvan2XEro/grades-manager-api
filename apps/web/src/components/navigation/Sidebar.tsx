@@ -128,6 +128,12 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.students",
 					},
 					{
+						to: "/admin/admissions",
+						icon: <ClipboardList className={IC} />,
+						labelKey: "navigation.sidebar.admin.admissions",
+						badge: "new" as NavBadgeType,
+					},
+					{
 						to: "/admin/users",
 						icon: <UserCog className={IC} />,
 						labelKey: "navigation.sidebar.admin.users",
