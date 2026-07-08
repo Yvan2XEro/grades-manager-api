@@ -13,6 +13,7 @@ import { feeClearanceRouter } from "@/modules/fee-clearance";
 import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
 import { gradeScalesRouter } from "@/modules/grade-scales";
 import { gradesRouter } from "@/modules/grades";
+import { guardiansRouter } from "@/modules/guardians";
 import { roomsRouter } from "@/modules/rooms";
 import { router as timetableRouter } from "@/modules/timetable";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
@@ -74,6 +75,7 @@ export const appRouter = router({
 	files: filesRouter,
 	institutions: institutionsRouter,
 	grades: gradesRouter,
+	guardians: guardiansRouter,
 	exports: exportsRouter,
 	exportTemplates: exportTemplatesRouter,
 	users: usersRouter,

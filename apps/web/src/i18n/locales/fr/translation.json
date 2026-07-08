@@ -183,7 +183,8 @@
         "promotion": "Passage d'annee",
         "configuration": "Configuration",
         "timetable": "Emploi du temps",
-        "admissions": "Admissions"
+        "admissions": "Admissions",
+        "guardians": "Parents"
       },
       "groups": {
         "overview": "Vue d'ensemble",
@@ -4859,6 +4860,60 @@
       "types": "Types d'examen",
       "scheduler": "Programmation",
       "participation": "Participation"
+    }
+  },
+  "guardians": {
+    "fields": {
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "relationshipType": "Lien",
+      "isPrimary": "Contact principal",
+      "isEmergencyContact": "Contact d’urgence"
+    },
+    "relationships": {
+      "mother": "Mère",
+      "father": "Père",
+      "guardian": "Tuteur",
+      "uncle": "Oncle",
+      "aunt": "Tante",
+      "other": "Autre"
+    },
+    "preferences": {
+      "resultsPublished": "Publication des résultats",
+      "attendanceThreshold": "Alertes d’assiduité",
+      "feeClearance": "Quitus financier",
+      "documentsAvailable": "Documents disponibles"
+    },
+    "admin": {
+      "title": "Parents et tuteurs",
+      "subtitle": "Créer les profils parents, les lier aux étudiants et contrôler les préférences de communication.",
+      "students": "Étudiants",
+      "noMatricule": "Aucun matricule",
+      "createTitle": "Créer ou lier un parent",
+      "save": "Enregistrer le parent",
+      "linkedTitle": "Parents liés à {{name}}",
+      "copyPortalLink": "Copier le lien portail",
+      "empty": "Aucun parent n’est encore lié à cet étudiant.",
+      "selectStudent": "Sélectionnez un étudiant pour gérer l’accès parent.",
+      "toasts": {
+        "saved": "Parent enregistré",
+        "preferencesSaved": "Préférences mises à jour",
+        "linkCopied": "Lien portail copié"
+      }
+    },
+    "portal": {
+      "badge": "Portail parent",
+      "title": "Suivre les étudiants liés à votre profil",
+      "subtitle": "Utilisez le jeton d’accès sécurisé fourni par l’institution pour consulter les étudiants liés et leurs paramètres de communication.",
+      "tokenPlaceholder": "Jeton d’accès",
+      "open": "Ouvrir",
+      "invalid": "Ce jeton d’accès parent est invalide ou inactif.",
+      "profile": "Profil parent",
+      "students": "Étudiants liés",
+      "noMatricule": "Aucun matricule",
+      "empty": "Aucun étudiant n’est lié à ce profil parent."
     }
   },
   "admissions": {

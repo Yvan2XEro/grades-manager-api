@@ -38,6 +38,7 @@ import FeeStructuresList from "./pages/admin/fee-clearance/FeeStructuresList";
 import StudentFinancialHistory from "./pages/admin/fee-clearance/StudentFinancialHistory";
 import GradesHub from "./pages/admin/GradesHub";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
+import GuardiansManagement from "./pages/admin/GuardiansManagement";
 import InstitutionHub from "./pages/admin/InstitutionHub";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
@@ -58,6 +59,7 @@ import ApprovalHistory from "./pages/dean/ApprovalHistory";
 import CohortDashboard from "./pages/dean/CohortDashboard";
 import DeanDashboard from "./pages/dean/DeanDashboard";
 import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
+import GuardianPortal from "./pages/guardian/GuardianPortal";
 import NotificationsPage from "./pages/NotificationsPage";
 import AcademicTimeline from "./pages/student/AcademicTimeline";
 import CourseEnrollment from "./pages/student/CourseEnrollment";
@@ -195,6 +197,7 @@ function App() {
 			</Route>
 			<Route path="/admissions/apply" element={<ApplicationForm />} />
 			<Route path="/admissions/status" element={<ApplicationStatus />} />
+			<Route path="/guardian/portal" element={<GuardianPortal />} />
 
 			{!!memoUser && (
 				<>
@@ -203,6 +206,7 @@ function App() {
 						<Route index element={<AdminDashboard />} />
 						<Route path="academic-years" element={<AcademicYearManagement />} />
 						<Route path="admissions" element={<AdmissionsManagement />} />
+						<Route path="guardians" element={<GuardiansManagement />} />
 						<Route path="students" element={<StudentManagement />} />
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="graduation" element={<GraduatedStudents />} />

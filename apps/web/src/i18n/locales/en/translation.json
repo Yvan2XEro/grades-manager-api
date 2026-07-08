@@ -1111,7 +1111,8 @@
         "promotion": "Year transition",
         "configuration": "Configuration",
         "timetable": "Timetable",
-        "admissions": "Admissions"
+        "admissions": "Admissions",
+        "guardians": "Guardians"
       },
       "groups": {
         "overview": "Overview",
@@ -4840,6 +4841,60 @@
       "types": "Exam Types",
       "scheduler": "Scheduler",
       "participation": "Participation"
+    }
+  },
+  "guardians": {
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone",
+      "relationshipType": "Relationship",
+      "isPrimary": "Primary contact",
+      "isEmergencyContact": "Emergency contact"
+    },
+    "relationships": {
+      "mother": "Mother",
+      "father": "Father",
+      "guardian": "Guardian",
+      "uncle": "Uncle",
+      "aunt": "Aunt",
+      "other": "Other"
+    },
+    "preferences": {
+      "resultsPublished": "Results publication",
+      "attendanceThreshold": "Attendance alerts",
+      "feeClearance": "Fee clearance",
+      "documentsAvailable": "Documents available"
+    },
+    "admin": {
+      "title": "Guardians",
+      "subtitle": "Create parent profiles, link them to students, and control communication preferences.",
+      "students": "Students",
+      "noMatricule": "No registration number",
+      "createTitle": "Create or link a guardian",
+      "save": "Save guardian",
+      "linkedTitle": "Guardians linked to {{name}}",
+      "copyPortalLink": "Copy portal link",
+      "empty": "No guardian linked to this student yet.",
+      "selectStudent": "Select a student to manage guardian access.",
+      "toasts": {
+        "saved": "Guardian saved",
+        "preferencesSaved": "Preferences updated",
+        "linkCopied": "Portal link copied"
+      }
+    },
+    "portal": {
+      "badge": "Guardian portal",
+      "title": "Follow the students linked to your profile",
+      "subtitle": "Use the secure access token provided by the institution to view linked students and their communication settings.",
+      "tokenPlaceholder": "Access token",
+      "open": "Open",
+      "invalid": "This guardian access token is invalid or inactive.",
+      "profile": "Guardian profile",
+      "students": "Linked students",
+      "noMatricule": "No registration number",
+      "empty": "No student is linked to this guardian profile."
     }
   },
   "admissions": {

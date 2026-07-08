@@ -134,6 +134,12 @@ const Sidebar: React.FC = () => {
 						badge: "new" as NavBadgeType,
 					},
 					{
+						to: "/admin/guardians",
+						icon: <Users className={IC} />,
+						labelKey: "navigation.sidebar.admin.guardians",
+						badge: "new" as NavBadgeType,
+					},
+					{
 						to: "/admin/users",
 						icon: <UserCog className={IC} />,
 						labelKey: "navigation.sidebar.admin.users",

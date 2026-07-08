@@ -873,6 +873,42 @@ export const admissionTypes = [
 ] as const;
 export type AdmissionType = (typeof admissionTypes)[number];
 
+export const guardianRelationshipTypes = [
+	"mother",
+	"father",
+	"guardian",
+	"uncle",
+	"aunt",
+	"other",
+] as const;
+export type GuardianRelationshipType =
+	(typeof guardianRelationshipTypes)[number];
+
+export type GuardianCommunicationPreferences = {
+	resultsPublished?: boolean;
+	attendanceThreshold?: boolean;
+	feeClearance?: boolean;
+	documentsAvailable?: boolean;
+};
+
+export const guardianCommunicationTypes = [
+	"results_published",
+	"attendance_threshold",
+	"fee_clearance",
+	"document_available",
+] as const;
+export type GuardianCommunicationType =
+	(typeof guardianCommunicationTypes)[number];
+
+export const guardianCommunicationStatuses = [
+	"queued",
+	"sent",
+	"skipped",
+	"failed",
+] as const;
+export type GuardianCommunicationStatus =
+	(typeof guardianCommunicationStatuses)[number];
+
 /** Student records referencing domain profiles. */
 export const students = pgTable(
 	"students",
@@ -900,6 +936,114 @@ export const students = pgTable(
 		index("idx_students_domain_user_id").on(t.domainUserId),
 	],
 );
+
+/** Guardian/parent profiles with controlled portal access. */
+export const guardians = pgTable(
+	"guardians",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		firstName: text("first_name").notNull(),
+		lastName: text("last_name").notNull(),
+		email: text("email").notNull(),
+		phone: text("phone"),
+		accessToken: text("access_token").notNull(),
+		preferences: jsonb("preferences")
+			.$type<GuardianCommunicationPreferences>()
+			.notNull()
+			.default({}),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_guardians_institution_email").on(t.institutionId, t.email),
+		unique("uq_guardians_access_token").on(t.accessToken),
+		index("idx_guardians_institution").on(t.institutionId),
+	],
+);
+export type Guardian = InferSelectModel<typeof guardians>;
+export type NewGuardian = InferInsertModel<typeof guardians>;
+
+/** Many-to-many guardian ↔ student relationship. */
+export const studentGuardians = pgTable(
+	"student_guardians",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		guardianId: text("guardian_id")
+			.notNull()
+			.references(() => guardians.id, { onDelete: "cascade" }),
+		relationshipType: text("relationship_type")
+			.$type<GuardianRelationshipType>()
+			.notNull(),
+		isPrimary: boolean("is_primary").notNull().default(false),
+		isEmergencyContact: boolean("is_emergency_contact")
+			.notNull()
+			.default(false),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_student_guardians_pair").on(t.studentId, t.guardianId),
+		index("idx_student_guardians_institution").on(t.institutionId),
+		index("idx_student_guardians_student").on(t.studentId),
+		index("idx_student_guardians_guardian").on(t.guardianId),
+	],
+);
+export type StudentGuardian = InferSelectModel<typeof studentGuardians>;
+export type NewStudentGuardian = InferInsertModel<typeof studentGuardians>;
+
+/** Audit trail for guardian communications and skipped notifications. */
+export const guardianCommunicationEvents = pgTable(
+	"guardian_communication_events",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		guardianId: text("guardian_id")
+			.notNull()
+			.references(() => guardians.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		type: text("type").$type<GuardianCommunicationType>().notNull(),
+		channel: text("channel").notNull(),
+		status: text("status").$type<GuardianCommunicationStatus>().notNull(),
+		reason: text("reason"),
+		payload: jsonb("payload").$type<Record<string, unknown>>().default({}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_guardian_comm_events_guardian").on(t.guardianId),
+		index("idx_guardian_comm_events_student").on(t.studentId),
+		index("idx_guardian_comm_events_institution").on(t.institutionId),
+	],
+);
+export type GuardianCommunicationEvent = InferSelectModel<
+	typeof guardianCommunicationEvents
+>;
+export type NewGuardianCommunicationEvent = InferInsertModel<
+	typeof guardianCommunicationEvents
+>;
 
 /** Documents generated via DIPLOMATION integration. */
 export const diplomationDocuments = pgTable(
