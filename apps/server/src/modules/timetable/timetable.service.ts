@@ -114,6 +114,8 @@ export async function createSession(
 		room?: string;
 		roomId?: string;
 		semesterId?: string;
+		validFrom?: string;
+		validUntil?: string;
 	},
 	institutionId: string,
 ) {
@@ -204,6 +206,8 @@ export async function createSession(
 			classId,
 			academicYearId: input.academicYearId,
 			semesterId: input.semesterId,
+			validFrom: input.validFrom,
+			validUntil: input.validUntil,
 		},
 	);
 
@@ -226,6 +230,8 @@ export async function createSession(
 		room: roomName ?? null,
 		roomId: input.roomId ?? null,
 		semesterId: input.semesterId ?? null,
+		validFrom: input.validFrom ?? null,
+		validUntil: input.validUntil ?? null,
 		institutionId,
 	});
 
@@ -241,6 +247,8 @@ export async function updateSession(
 		room?: string | null;
 		roomId?: string | null;
 		semesterId?: string | null;
+		validFrom?: string | null;
+		validUntil?: string | null;
 	},
 	institutionId: string,
 ) {
@@ -295,6 +303,16 @@ export async function updateSession(
 
 	const nextSemesterId =
 		input.semesterId !== undefined ? input.semesterId : existing.semesterId;
+	const nextValidFrom =
+		input.validFrom !== undefined ? input.validFrom : existing.validFrom;
+	const nextValidUntil =
+		input.validUntil !== undefined ? input.validUntil : existing.validUntil;
+	if (nextValidFrom && nextValidUntil && nextValidFrom > nextValidUntil) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "validFrom must be before or equal to validUntil",
+		});
+	}
 
 	// Check conflicts BEFORE mutating, scoped to the same academic year + semester
 	const conflicts = await repo.findConflicts(
@@ -310,6 +328,8 @@ export async function updateSession(
 			excludeId: input.id,
 			academicYearId: existing.academicYearId,
 			semesterId: nextSemesterId ?? undefined,
+			validFrom: nextValidFrom,
+			validUntil: nextValidUntil,
 		},
 	);
 
@@ -426,6 +446,7 @@ export async function getStudentTimetable(
 // ── Bulk import ───────────────────────────────────────────────────────────────
 
 type ImportRow = {
+	id?: string;
 	classCourseId: string;
 	dayOfWeek: string;
 	startTime: string;
@@ -433,6 +454,8 @@ type ImportRow = {
 	room?: string;
 	roomId?: string;
 	semesterId?: string;
+	validFrom?: string;
+	validUntil?: string;
 };
 
 /** Check if a candidate session conflicts with any previously accepted in-batch session. */
@@ -447,6 +470,8 @@ function intraBatchConflict(
 		classId?: string;
 		academicYearId: string;
 		semesterId?: string;
+		validFrom?: string;
+		validUntil?: string;
 	},
 	batch: Array<typeof candidate & { rowIndex: number }>,
 ): number | null {
@@ -460,6 +485,11 @@ function intraBatchConflict(
 			b.semesterId !== candidate.semesterId
 		)
 			continue;
+		const candidateStart = candidate.validFrom ?? "0000-01-01";
+		const candidateEnd = candidate.validUntil ?? "9999-12-31";
+		const batchStart = b.validFrom ?? "0000-01-01";
+		const batchEnd = b.validUntil ?? "9999-12-31";
+		if (candidateStart > batchEnd || batchStart > candidateEnd) continue;
 		if (candidate.startTime >= b.endTime || candidate.endTime <= b.startTime)
 			continue;
 		const roomConflict =
@@ -499,6 +529,9 @@ async function validateImportRow(
 	if (!TIME_PATTERN.test(row.endTime))
 		return `Invalid endTime "${row.endTime}". Use HH:MM format.`;
 	if (row.startTime >= row.endTime) return "startTime must be before endTime";
+	if (row.validFrom && row.validUntil && row.validFrom > row.validUntil) {
+		return "validFrom must be before or equal to validUntil";
+	}
 
 	const cc = await db.query.classCourses.findFirst({
 		where: and(
@@ -529,6 +562,7 @@ async function validateImportRow(
 export async function previewBulkImport(
 	rows: ImportRow[],
 	institutionId: string,
+	mode: "create" | "update" = "create",
 ) {
 	const valid: (ImportRow & { rowIndex: number })[] = [];
 	const errors: { rowIndex: number; reason: string }[] = [];
@@ -549,6 +583,13 @@ export async function previewBulkImport(
 	for (let i = 0; i < rows.length; i++) {
 		const row = rows[i];
 		const rowNum = i + 1;
+		if (mode === "update" && !row.id) {
+			errors.push({
+				rowIndex: rowNum,
+				reason: "id is required in update mode",
+			});
+			continue;
+		}
 
 		// Format + DB existence validation
 		const validationError = await validateImportRow(row, institutionId);
@@ -578,8 +619,10 @@ export async function previewBulkImport(
 			row.endTime,
 			academicYearId,
 			row.semesterId ?? null,
+			row.validFrom ?? null,
+			row.validUntil ?? null,
 		);
-		if (duplicate) {
+		if (duplicate && duplicate.id !== row.id) {
 			errors.push({
 				rowIndex: rowNum,
 				reason: `Duplicate session already exists on ${day} ${row.startTime}–${row.endTime}`,
@@ -600,6 +643,9 @@ export async function previewBulkImport(
 				classId,
 				academicYearId,
 				semesterId: row.semesterId,
+				validFrom: row.validFrom,
+				validUntil: row.validUntil,
+				excludeId: mode === "update" ? row.id : undefined,
 			},
 		);
 		if (conflicts.length > 0) {
@@ -622,6 +668,8 @@ export async function previewBulkImport(
 			classId,
 			academicYearId,
 			semesterId: row.semesterId,
+			validFrom: row.validFrom,
+			validUntil: row.validUntil,
 		};
 		const batchConflictRow = intraBatchConflict(candidate, accepted);
 		if (batchConflictRow !== null) {
@@ -643,14 +691,23 @@ export async function executeBulkImport(
 	rows: ImportRow[],
 	institutionId: string,
 	skipDuplicates: boolean,
+	mode: "create" | "update" = "create",
 ) {
 	let created = 0;
+	let updated = 0;
 	let skipped = 0;
 	const errors: { rowIndex: number; reason: string }[] = [];
 
 	for (let i = 0; i < rows.length; i++) {
 		const row = rows[i];
 		const rowNum = i + 1;
+		if (mode === "update" && !row.id) {
+			errors.push({
+				rowIndex: rowNum,
+				reason: "id is required in update mode",
+			});
+			continue;
+		}
 
 		// Full re-validation (same rules as preview)
 		const validationError = await validateImportRow(row, institutionId);
@@ -674,8 +731,10 @@ export async function executeBulkImport(
 			row.endTime,
 			academicYearId,
 			row.semesterId ?? null,
+			row.validFrom ?? null,
+			row.validUntil ?? null,
 		);
-		if (duplicate) {
+		if (duplicate && duplicate.id !== row.id) {
 			if (skipDuplicates) {
 				skipped++;
 				continue;
@@ -705,6 +764,9 @@ export async function executeBulkImport(
 				classId,
 				academicYearId,
 				semesterId: row.semesterId,
+				validFrom: row.validFrom,
+				validUntil: row.validUntil,
+				excludeId: mode === "update" ? row.id : undefined,
 			},
 		);
 		if (conflicts.length > 0) {
@@ -716,7 +778,7 @@ export async function executeBulkImport(
 			continue;
 		}
 
-		await repo.create({
+		const payload = {
 			institutionId,
 			classCourseId: row.classCourseId,
 			academicYearId,
@@ -726,11 +788,27 @@ export async function executeBulkImport(
 			room: roomName ?? null,
 			roomId: row.roomId ?? null,
 			semesterId: row.semesterId ?? null,
-		});
-		created++;
+			validFrom: row.validFrom ?? null,
+			validUntil: row.validUntil ?? null,
+		};
+		if (mode === "update") {
+			const existing = await repo.findById(row.id!, institutionId);
+			if (!existing) {
+				errors.push({
+					rowIndex: rowNum,
+					reason: `Session ${row.id} not found`,
+				});
+				continue;
+			}
+			await repo.update(row.id!, payload, institutionId);
+			updated++;
+		} else {
+			await repo.create(payload);
+			created++;
+		}
 	}
 
-	return { created, skipped, errors };
+	return { created, updated, skipped, errors };
 }
 
 async function resolveAcademicYearFromClassCourse(

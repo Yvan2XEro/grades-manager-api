@@ -35,7 +35,8 @@
       "back": "Retour",
       "rename": "Renommer",
       "deselectAll": "Tout désélectionner",
-      "selectAll": "Tout sélectionner"
+      "selectAll": "Tout sélectionner",
+      "clear": "Clear"
     },
     "fields": {
       "email": "E-mail",
@@ -62,7 +63,8 @@
     },
     "pagination": {
       "next": "Suivant",
-      "previous": "Précédent"
+      "previous": "Précédent",
+      "page": "Page"
     },
     "errors": {
       "unknown": "Erreur inconnue"
@@ -102,7 +104,11 @@
     "confirmDelete": "Confirmer la suppression",
     "create": "Créer",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "add": "Add",
+    "error": "Error",
+    "hide": "Hide",
+    "total": "Total"
   },
   "navigation": {
     "breadcrumbs": {
@@ -253,7 +259,9 @@
       "error": "Impossible de vous connecter. Vérifiez vos identifiants.",
       "noAccount": "Pas de compte ?",
       "registerLink": "Créer un compte",
-      "notMember": "Vous n'êtes pas membre de cette organisation. Contactez votre administrateur."
+      "notMember": "Vous n'êtes pas membre de cette organisation. Contactez votre administrateur.",
+      "rememberMe": "Remember Me",
+      "subtitle": "Subtitle"
     },
     "register": {
       "title": "Créer un compte",
@@ -291,7 +299,10 @@
       "success": "Mot de passe mis à jour avec succès",
       "error": "Impossible de mettre à jour le mot de passe",
       "backToLogin": "Retour à la connexion",
-      "subtitle": "Choisissez un nouveau mot de passe sécurisé pour votre compte."
+      "subtitle": "Choisissez un nouveau mot de passe sécurisé pour votre compte.",
+      "signInNow": "Sign In Now",
+      "successMessage": "Success Message",
+      "successTitle": "Success Title"
     },
     "logout": {
       "success": "Déconnexion réussie",
@@ -305,6 +316,12 @@
       "passwordMin": "Le mot de passe doit comporter au moins {{count}} caractères",
       "confirmPassword": "La confirmation du mot de passe est obligatoire",
       "passwordsMismatch": "Les mots de passe ne correspondent pas"
+    },
+    "orgPicker": {
+      "back": "Back",
+      "noOrgs": "No Orgs",
+      "subtitle": "Subtitle",
+      "title": "Title"
     }
   },
   "admin": {
@@ -585,7 +602,17 @@
           "warn": "Avert.",
           "error": "Erreur"
         },
-        "logStep": "Étape"
+        "logStep": "Étape",
+        "failed": "Failed",
+        "failureSummary": "Failure Summary",
+        "items": "Items",
+        "notFound": "Not Found",
+        "originalJob": "Original Job",
+        "processed": "Processed",
+        "rollbackJob": "Rollback Job",
+        "skipped": "Skipped",
+        "step": "Step",
+        "unknownError": "Unknown Error"
       },
       "toast": {
         "previewSuccess": "Aperçu généré avec succès",
@@ -599,6 +626,12 @@
         "completed": "Terminé",
         "failed": "Échoué",
         "skipped": "Ignoré"
+      },
+      "confirm": {
+        "cancelMessage": "Cancel Message",
+        "cancelTitle": "Cancel Title",
+        "rollbackMessage": "Rollback Message",
+        "rollbackTitle": "Rollback Title"
       }
     },
     "academicYears": {
@@ -932,7 +965,9 @@
         "registrationFormatManagedHint": "Manage the active registration format from Registration Formats.",
         "signatoryName": "Signatory name",
         "signatoryTitle": "Signatory title",
-        "city": "City (for document date line)"
+        "city": "City (for document date line)",
+        "logoSvg": "Logo Svg",
+        "logoSvgHint": "Logo Svg Hint"
       },
       "sections": {
         "contact": "Contact",
@@ -1250,6 +1285,19 @@
           "deleteError": "Impossible de supprimer l'option",
           "update": "Option mise à jour",
           "updateError": "Impossible de mettre à jour l'option"
+        }
+      },
+      "duplicate": {
+        "button": "Button",
+        "cloneCurriculum": "Clone Curriculum",
+        "description": "Description",
+        "noCycles": "No Cycles",
+        "submit": "Submit",
+        "targetCycles": "Target Cycles",
+        "title": "Title",
+        "toast": {
+          "error": "Error",
+          "success": "Success"
         }
       }
     },
@@ -1794,7 +1842,9 @@
       "exams": {
         "title": "Sélectionnez les évaluations à inclure",
         "emptyTitle": "Aucune évaluation trouvée",
-        "emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe."
+        "emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe.",
+        "loadingDescription": "Loading Description",
+        "loadingTitle": "Loading Title"
       },
       "columns": {
         "lastName": "Nom",
@@ -1819,7 +1869,9 @@
         "uePreviewError": "Impossible de générer l'aperçu UE",
         "ueGenerateError": "Échec de la génération UE",
         "bulkEvaluationsError": "Échec de la génération en masse des évaluations",
-        "bulkUesError": "Échec de la génération en masse des UE"
+        "bulkUesError": "Échec de la génération en masse des UE",
+        "ecGenerateError": "Ec Generate Error",
+        "ecPreviewError": "Ec Preview Error"
       }
     },
     "students": {
@@ -2209,6 +2261,18 @@
         "pending": "En attente",
         "completed": "Terminé",
         "withdrawn": "Retiré"
+      },
+      "bulkEnroll": {
+        "classesLabel": "Classes Label",
+        "description": "Description",
+        "noClasses": "No Classes",
+        "noSelection": "No Selection",
+        "openButton": "Open Button",
+        "partial": "Partial",
+        "requireYear": "Require Year",
+        "run": "Run",
+        "success": "Success",
+        "title": "Title"
       }
     },
     "notifications": {
@@ -2241,10 +2305,12 @@
       },
       "actions": {
         "flush": "Vider la file",
-        "ack": "Accuser réception"
+        "ack": "Accuser réception",
+        "retry": "Retry"
       },
       "toast": {
-        "flushed": "Notifications en attente supprimées"
+        "flushed": "Notifications en attente supprimées",
+        "retried": "Retried"
       },
       "gradeValidated": "Validation des notes terminée",
       "gradeValidatedDesc": "Un examen a été validé et verrouillé pour publication.",
@@ -2737,7 +2803,9 @@
           "fix": "fix",
           "goToClasses": "goToClasses"
         },
-        "targetClassHint": "targetClassHint"
+        "targetClassHint": "targetClassHint",
+        "ctaDesc": "Cta Desc",
+        "ctaTitle": "Cta Title"
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -2857,7 +2925,10 @@
         "contactEmail": "Email",
         "country": "Pays",
         "addressFr": "Adresse (FR)",
-        "addressEn": "Adresse (EN)"
+        "addressEn": "Adresse (EN)",
+        "adminInstanceLogoSvg": "Admin Instance Logo Svg",
+        "logoSvg": "Logo Svg",
+        "watermarkLogoSvg": "Watermark Logo Svg"
       },
       "actions": {
         "addInstance": "Ajouter une instance",
@@ -3231,7 +3302,9 @@
         "deleteSuccess": "Évaluation supprimée avec succès",
         "deleteError": "Impossible de supprimer l'évaluation",
         "retakeError": "Impossible de créer l'examen de rattrapage",
-        "retakeSuccess": "Examen de rattrapage créé avec succès"
+        "retakeSuccess": "Examen de rattrapage créé avec succès",
+        "resubmitError": "Resubmit Error",
+        "resubmitSuccess": "Resubmit Success"
       },
       "delete": {
         "title": "Supprimer l'évaluation",
@@ -3258,7 +3331,9 @@
         "retake": "Rattrapage"
       },
       "rejection": {
-        "label": "Motif du rejet :"
+        "label": "Motif du rejet :",
+        "fixGrades": "Fix Grades",
+        "resubmit": "Resubmit"
       }
     },
     "courses": {
@@ -3267,7 +3342,8 @@
       "delegatedBadge": "Délégué",
       "delegatedDashboardBadge": "Délégué",
       "actions": {
-        "viewGrades": "Voir les notes"
+        "viewGrades": "Voir les notes",
+        "fastEntry": "Fast Entry"
       },
       "empty": {
         "title": "Aucun cours attribué",
@@ -3286,7 +3362,29 @@
         "validation": {
           "code": "Code is required"
         }
-      }
+      },
+      "filters": {
+        "allClasses": "All Classes",
+        "allDelegations": "All Delegations",
+        "allExamTypes": "All Exam Types",
+        "allPrograms": "All Programs",
+        "allSemesters": "All Semesters",
+        "allStatuses": "All Statuses",
+        "allTeachers": "All Teachers",
+        "class": "Class",
+        "delegated": "Delegated",
+        "delegation": "Delegation",
+        "examType": "Exam Type",
+        "mine": "Mine",
+        "program": "Program",
+        "semester": "Semester",
+        "status": "Status",
+        "teacher": "Teacher"
+      },
+      "noMatch": "No Match",
+      "noMatchHint": "No Match Hint",
+      "searchPlaceholder": "Search Placeholder",
+      "summary": "Summary"
     },
     "courses.manage": {
       "title": "Gestion des cours",
@@ -3388,7 +3486,8 @@
         "save": "Enregistrer les notes",
         "saving": "Enregistrement...",
         "exportTemplate": "Exporter le modèle",
-        "importGrades": "Importer les notes"
+        "importGrades": "Importer les notes",
+        "lockRequiresApproval": "Lock Requires Approval"
       },
       "info": {
         "title": "Informations de notation",
@@ -3803,10 +3902,16 @@
       "endTime": "Fin",
       "room": "Salle",
       "noRoom": "Aucune salle",
+      "validity": "Validité",
+      "validFrom": "Valide du",
+      "validUntil": "Valide jusqu'au",
       "export": "Exporter",
       "import": {
         "title": "Importer un emploi du temps",
-        "description": "Téléchargez le modèle CSV, remplissez-le, puis importez-le.",
+        "description": "Téléchargez le modèle CSV, renseignez le jour (mon–dim), les heures (HH:MM), la salle optionnelle et les dates validFrom/validUntil optionnelles. Utilisez le mode mise à jour si les lignes contiennent des IDs de sessions existantes.",
+        "mode": "Mode d'import",
+        "createMode": "Créer de nouvelles séances",
+        "updateMode": "Mettre à jour des séances existantes",
         "downloadTemplate": "Télécharger le modèle CSV",
         "file": "Fichier CSV",
         "preview": "Aperçu",
@@ -3814,7 +3919,7 @@
         "skipDuplicates": "Ignorer les sessions déjà existantes",
         "validRows": "valide(s)",
         "errorRows": "erreur(s)",
-        "success": "{{count}} session(s) créée(s)",
+        "success": "{{count}} séance(s) créée(s), {{updated}} mise(s) à jour, {{skipped}} ignorée(s)",
         "row": "Ligne",
         "error": "Erreur",
         "schedule": "Horaire",
@@ -4116,6 +4221,23 @@
         "removeError": "Impossible de supprimer la dérogation",
         "removeSuccess": "Dérogation supprimée"
       }
+    },
+    "spreadsheet": {
+      "errors": "Errors",
+      "filled": "Filled",
+      "invalidScore": "Invalid Score",
+      "legend": {
+        "hint": "Hint",
+        "title": "Title"
+      },
+      "matricule": "Matricule",
+      "noCourse": "No Course",
+      "noExams": "No Exams",
+      "noStudents": "No Students",
+      "pending": "Pending",
+      "perExamMode": "Per Exam Mode",
+      "searchStudent": "Search Student",
+      "studentCol": "Student Col"
     }
   },
   "dean": {
@@ -4126,11 +4248,13 @@
       "empty": "Aucun examen en attente.",
       "actions": {
         "validate": "Valider et verrouiller",
-        "bulkValidate": "Validation en masse"
+        "bulkValidate": "Validation en masse",
+        "reject": "Reject"
       },
       "toast": {
         "validated": "Examen approuvé",
-        "bulkValidated": "Examens validés avec succès"
+        "bulkValidated": "Examens validés avec succès",
+        "rejected": "Rejected"
       },
       "notifications": "Notifications du workflow",
       "notificationsEmpty": "Aucune notification",
@@ -4153,6 +4277,11 @@
         "title": "Valider et verrouiller ?",
         "bulkMessage": "bulkMessage",
         "singleMessage": "singleMessage"
+      },
+      "dateFrom": "Date From",
+      "rejectDialog": {
+        "subtitle": "Subtitle",
+        "title": "Title"
       }
     },
     "cohort": {
@@ -4209,7 +4338,18 @@
       "rejectionReason": "Motif",
       "searchPlaceholder": "Rechercher un examen...",
       "allClasses": "Toutes les classes",
-      "allYears": "Toutes les années"
+      "allYears": "Toutes les années",
+      "allTeachers": "All Teachers",
+      "dateFrom": "Date From",
+      "dateTo": "Date To",
+      "teacherFilter": "Teacher Filter"
+    },
+    "auditHistory": {
+      "by": "By",
+      "empty": "Empty",
+      "system": "System",
+      "title": "Title",
+      "toggle": "Toggle"
     }
   },
   "student": {
@@ -4366,7 +4506,8 @@
         "repeat": "Redoublement",
         "excluded": "Exclu",
         "pending": "En cours"
-      }
+      },
+      "eventCount": "Event Count"
     },
     "enrollment": {
       "title": "Inscription",
@@ -4664,7 +4805,10 @@
         "date": "Date",
         "student": "Étudiant",
         "status": "Statut"
-      }
+      },
+      "forceMatch": "Force Match",
+      "forced": "Forced",
+      "xlsxLoaded": "Xlsx Loaded"
     },
     "assignments": {
       "title": "Paiements étudiants",
@@ -4789,6 +4933,14 @@
       "noEvents": "Aucun événement financier.",
       "viewDetail": "Détail",
       "viewHistory": "Historique financier"
+    },
+    "payment": {
+      "methods": {
+        "bank_transfer": "Bank transfer",
+        "cash": "Cash",
+        "check": "Check",
+        "mobile_money": "Mobile money"
+      }
     }
   },
   "notifications": {
@@ -4839,7 +4991,11 @@
     "empty": "Sélectionnez un cours pour afficher les taux de présence.",
     "noData": "Aucune séance de présence enregistrée pour ce cours.",
     "title": "Taux de présence",
-    "exportFilename": "taux-presence.xlsx"
+    "exportFilename": "taux-presence.xlsx",
+    "export": "Export",
+    "rate": "Rate",
+    "student": "Student",
+    "subtitle": "Subtitle"
   },
   "timetableHub": {
     "title": "Emploi du temps & Présences",

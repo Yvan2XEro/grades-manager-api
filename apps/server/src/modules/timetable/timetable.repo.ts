@@ -3,6 +3,17 @@ import { db } from "@/db";
 import type { DayOfWeek, NewCourseSession } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
 
+function windowsOverlap(
+	left: { validFrom: string | null; validUntil: string | null },
+	right: { validFrom?: string | null; validUntil?: string | null },
+) {
+	const leftStart = left.validFrom ?? "0000-01-01";
+	const leftEnd = left.validUntil ?? "9999-12-31";
+	const rightStart = right.validFrom ?? "0000-01-01";
+	const rightEnd = right.validUntil ?? "9999-12-31";
+	return leftStart <= rightEnd && rightStart <= leftEnd;
+}
+
 export async function create(data: NewCourseSession) {
 	const [item] = await db
 		.insert(schema.courseSessions)
@@ -121,6 +132,8 @@ export async function findConflicts(
 		excludeId?: string;
 		academicYearId?: string;
 		semesterId?: string;
+		validFrom?: string | null;
+		validUntil?: string | null;
 	},
 ) {
 	const conditions = [
@@ -154,6 +167,13 @@ export async function findConflicts(
 			if (opts.excludeId && s.id === opts.excludeId) return false;
 			const overlaps = s.startTime < endTime && s.endTime > startTime;
 			if (!overlaps) return false;
+			if (
+				!windowsOverlap(
+					{ validFrom: s.validFrom, validUntil: s.validUntil },
+					{ validFrom: opts.validFrom, validUntil: opts.validUntil },
+				)
+			)
+				return false;
 			const roomConflict =
 				(opts.roomId && s.roomId && s.roomId === opts.roomId) ||
 				(!opts.roomId && opts.room && s.room && s.room === opts.room);
@@ -201,6 +221,8 @@ export async function findDuplicate(
 	endTime: string,
 	academicYearId: string,
 	semesterId?: string | null,
+	validFrom?: string | null,
+	validUntil?: string | null,
 ) {
 	const conditions = [
 		eq(schema.courseSessions.institutionId, institutionId),
@@ -216,6 +238,20 @@ export async function findDuplicate(
 			semesterId === null
 				? isNull(schema.courseSessions.semesterId)
 				: eq(schema.courseSessions.semesterId, semesterId),
+		);
+	}
+	if (validFrom !== undefined) {
+		conditions.push(
+			validFrom === null
+				? isNull(schema.courseSessions.validFrom)
+				: eq(schema.courseSessions.validFrom, validFrom),
+		);
+	}
+	if (validUntil !== undefined) {
+		conditions.push(
+			validUntil === null
+				? isNull(schema.courseSessions.validUntil)
+				: eq(schema.courseSessions.validUntil, validUntil),
 		);
 	}
 	return db.query.courseSessions.findFirst({

@@ -410,10 +410,16 @@ interface Resources {
 				endTime: "End";
 				room: "Room";
 				noRoom: "No room";
+				validity: "Validity";
+				validFrom: "Valid from";
+				validUntil: "Valid until";
 				export: "Export";
 				import: {
 					title: "Import Timetable";
-					description: "Download the template to get a pre-filled list of courses. Fill in dayOfWeek (mon–sun), startTime and endTime (HH:MM), and optionally a room name. The courseName and className columns are for reference only.";
+					description: "Download the template to get a pre-filled list of courses. Fill in dayOfWeek (mon–sun), startTime/endTime (HH:MM), optional room data, and optional validFrom/validUntil dates. Use update mode when rows contain existing session IDs.";
+					mode: "Import mode";
+					createMode: "Create new sessions";
+					updateMode: "Update existing sessions";
 					downloadTemplate: "Download CSV template";
 					file: "CSV file";
 					preview: "Preview";
@@ -421,7 +427,7 @@ interface Resources {
 					skipDuplicates: "Skip existing sessions";
 					validRows: "valid row(s)";
 					errorRows: "error(s)";
-					success: "{{count}} session(s) imported";
+					success: "{{count}} session(s) created, {{updated}} updated, {{skipped}} skipped";
 					row: "Row";
 					error: "Error";
 					schedule: "Time";

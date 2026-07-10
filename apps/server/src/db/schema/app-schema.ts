@@ -3797,6 +3797,8 @@ export const courseSessions = pgTable(
 		semesterId: text("semester_id").references(() => semesters.id, {
 			onDelete: "set null",
 		}),
+		validFrom: date("valid_from"),
+		validUntil: date("valid_until"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),

@@ -327,6 +327,81 @@ describe("conflict detection semester scoping", () => {
 	});
 });
 
+// ── Recurrence validity windows (JVL-76) ────────────────────────────────────
+
+describe("recurrence validity windows", () => {
+	it("allows same slot when recurrence validity windows do not overlap", async () => {
+		const admin = createCaller(asAdmin());
+		const cc1 = await createClassCourse();
+		const cc2 = await createClassCourse({
+			class: cc1.class,
+			teacher: cc1.teacher,
+		});
+		const room = await createRoom();
+		const academicYearId = await getAcademicYear(cc1.id);
+
+		await admin.timetable.create({
+			classCourseId: cc1.id,
+			academicYearId,
+			dayOfWeek: "mon",
+			startTime: "08:00",
+			endTime: "10:00",
+			roomId: room.id,
+			validFrom: "2026-09-01",
+			validUntil: "2026-12-31",
+		});
+
+		const { session } = await admin.timetable.create({
+			classCourseId: cc2.id,
+			academicYearId,
+			dayOfWeek: "mon",
+			startTime: "08:00",
+			endTime: "10:00",
+			roomId: room.id,
+			validFrom: "2027-01-01",
+			validUntil: "2027-06-30",
+		});
+
+		expect(session.validFrom).toBe("2027-01-01");
+		expect(session.validUntil).toBe("2027-06-30");
+	});
+
+	it("blocks same slot when recurrence validity windows overlap", async () => {
+		const admin = createCaller(asAdmin());
+		const cc1 = await createClassCourse();
+		const cc2 = await createClassCourse({
+			class: cc1.class,
+			teacher: cc1.teacher,
+		});
+		const room = await createRoom();
+		const academicYearId = await getAcademicYear(cc1.id);
+
+		await admin.timetable.create({
+			classCourseId: cc1.id,
+			academicYearId,
+			dayOfWeek: "tue",
+			startTime: "10:00",
+			endTime: "12:00",
+			roomId: room.id,
+			validFrom: "2026-09-01",
+			validUntil: "2026-12-31",
+		});
+
+		await expect(
+			admin.timetable.create({
+				classCourseId: cc2.id,
+				academicYearId,
+				dayOfWeek: "tue",
+				startTime: "10:00",
+				endTime: "12:00",
+				roomId: room.id,
+				validFrom: "2026-12-01",
+				validUntil: "2027-02-28",
+			}),
+		).rejects.toHaveProperty("code", "CONFLICT");
+	});
+});
+
 // ── Bulk import (JVL-49) ─────────────────────────────────────────────────────
 
 describe("bulk import", () => {
@@ -387,6 +462,44 @@ describe("bulk import", () => {
 		});
 		expect(sessions.length).toBeGreaterThanOrEqual(1);
 		expect(sessions[0].semesterId).toBe(sem.id);
+	});
+
+	it("updates existing sessions in bulk update mode", async () => {
+		const admin = createCaller(asAdmin());
+		const cc = await createClassCourse();
+		const academicYearId = await getAcademicYear(cc.id);
+
+		const { session } = await admin.timetable.create({
+			classCourseId: cc.id,
+			academicYearId,
+			dayOfWeek: "wed",
+			startTime: "08:00",
+			endTime: "10:00",
+			validFrom: "2026-09-01",
+			validUntil: "2026-12-31",
+		});
+
+		const result = await admin.timetable.executeBulkImport({
+			mode: "update",
+			rows: [
+				{
+					id: session.id,
+					classCourseId: cc.id,
+					dayOfWeek: "wed",
+					startTime: "09:00",
+					endTime: "11:00",
+					validFrom: "2027-01-01",
+					validUntil: "2027-06-30",
+				},
+			],
+			skipDuplicates: true,
+		});
+
+		expect(result.updated).toBe(1);
+		const sessions = await admin.timetable.list({ classCourseId: cc.id });
+		const updated = sessions.find((item) => item.id === session.id);
+		expect(updated?.startTime).toBe("09:00");
+		expect(updated?.validFrom).toBe("2027-01-01");
 	});
 });
 

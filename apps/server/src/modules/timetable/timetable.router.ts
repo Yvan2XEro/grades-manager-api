@@ -93,7 +93,7 @@ export const router = createRouter({
 	previewBulkImport: adminProcedure
 		.input(previewBulkImportSchema)
 		.mutation(({ ctx, input }) =>
-			service.previewBulkImport(input.rows, ctx.institution.id),
+			service.previewBulkImport(input.rows, ctx.institution.id, input.mode),
 		),
 
 	executeBulkImport: adminProcedure
@@ -103,6 +103,7 @@ export const router = createRouter({
 				input.rows,
 				ctx.institution.id,
 				input.skipDuplicates,
+				input.mode,
 			),
 		),
 });

@@ -69,10 +69,16 @@ const sessionSchema = z
 		startTime: z.string().regex(timeRe, "HH:MM required"),
 		endTime: z.string().regex(timeRe, "HH:MM required"),
 		roomId: z.string(),
+		validFrom: z.string(),
+		validUntil: z.string(),
 	})
 	.refine((d) => d.startTime < d.endTime, {
 		message: "End time must be after start time",
 		path: ["endTime"],
+	})
+	.refine((d) => !d.validFrom || !d.validUntil || d.validFrom <= d.validUntil, {
+		message: "Valid until must be after valid from",
+		path: ["validUntil"],
 	});
 type SessionForm = z.infer<typeof sessionSchema>;
 
@@ -81,6 +87,8 @@ const DEFAULT_SESSION: SessionForm = {
 	startTime: "08:00",
 	endTime: "10:00",
 	roomId: NO_ROOM_SENTINEL,
+	validFrom: "",
+	validUntil: "",
 };
 
 export default function TimetableManagement() {
@@ -192,6 +200,8 @@ export default function TimetableManagement() {
 			trpcClient.timetable.create.mutate({
 				...data,
 				roomId: data.roomId === NO_ROOM_SENTINEL ? undefined : data.roomId,
+				validFrom: data.validFrom || undefined,
+				validUntil: data.validUntil || undefined,
 				// semesterId intentionally omitted — backend derives it from the classCourse
 			}),
 		onSuccess: (res) => {
@@ -208,6 +218,8 @@ export default function TimetableManagement() {
 			trpcClient.timetable.update.mutate({
 				...data,
 				roomId: data.roomId === NO_ROOM_SENTINEL ? null : data.roomId,
+				validFrom: data.validFrom || null,
+				validUntil: data.validUntil || null,
 			}),
 		onSuccess: (res) => {
 			toast.success(t("teacher.timetable.toast.updated"));
@@ -235,6 +247,8 @@ export default function TimetableManagement() {
 			dayOfWeek: s.dayOfWeek,
 			startTime: s.startTime,
 			endTime: s.endTime,
+			validFrom: s.validFrom ?? "",
+			validUntil: s.validUntil ?? "",
 			[t("teacher.timetable.room")]: s.room ?? "",
 			roomId: s.roomId ?? "",
 		}));
@@ -259,6 +273,8 @@ export default function TimetableManagement() {
 			startTime: s.startTime,
 			endTime: s.endTime,
 			roomId: s.roomId ?? NO_ROOM_SENTINEL,
+			validFrom: s.validFrom ?? "",
+			validUntil: s.validUntil ?? "",
 		});
 		setIsDialogOpen(true);
 	}
@@ -483,6 +499,12 @@ export default function TimetableManagement() {
 											({s.roomRef?.name ?? s.room})
 										</span>
 									)}
+									{(s.validFrom || s.validUntil) && (
+										<span className="ml-2 text-muted-foreground text-xs">
+											{t("teacher.timetable.validity")}: {s.validFrom ?? "…"} →{" "}
+											{s.validUntil ?? "…"}
+										</span>
+									)}
 								</span>
 								<Button
 									variant="ghost"
@@ -590,6 +612,25 @@ export default function TimetableManagement() {
 										{t("teacher.timetable.warnings.noRoomSelected")}
 									</p>
 								)}
+							</div>
+							<div className="grid grid-cols-2 gap-3">
+								<div>
+									<label className="mb-1 block font-medium text-sm">
+										{t("teacher.timetable.validFrom")}
+									</label>
+									<Input type="date" {...sessionForm.register("validFrom")} />
+								</div>
+								<div>
+									<label className="mb-1 block font-medium text-sm">
+										{t("teacher.timetable.validUntil")}
+									</label>
+									<Input type="date" {...sessionForm.register("validUntil")} />
+									{sessionForm.formState.errors.validUntil && (
+										<p className="mt-1 text-destructive text-xs">
+											{sessionForm.formState.errors.validUntil.message}
+										</p>
+									)}
+								</div>
 							</div>
 						</DialogBody>
 						<DialogFooter>
