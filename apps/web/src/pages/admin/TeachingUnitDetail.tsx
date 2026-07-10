@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router";
+import { Link, Outlet, useParams } from "react-router";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -15,12 +15,14 @@ const TABS = [
 export default function TeachingUnitDetail() {
 	const { teachingUnitId } = useParams<{ teachingUnitId: string }>();
 	const { t } = useTranslation();
+	const isCreating = teachingUnitId === "new";
 
-	const { data: teachingUnit, isLoading } = useQuery(
-		trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId! }),
-	);
+	const { data: teachingUnit, isLoading } = useQuery({
+		...trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId! }),
+		enabled: !isCreating,
+	});
 
-	if (isLoading) {
+	if (!isCreating && isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-8 w-8" />
@@ -28,7 +30,7 @@ export default function TeachingUnitDetail() {
 		);
 	}
 
-	if (!teachingUnit) {
+	if (!isCreating && !teachingUnit) {
 		return (
 			<div className="py-12 text-center text-muted-foreground">
 				{t("common.notFound")}
@@ -47,15 +49,28 @@ export default function TeachingUnitDetail() {
 				<div className="flex items-center gap-3">
 					<BookOpen className="h-5 w-5 text-primary" />
 					<div>
-						<h1 className="font-semibold text-xl">{teachingUnit.name}</h1>
-						<p className="text-muted-foreground text-sm">{teachingUnit.code}</p>
+						<h1 className="font-semibold text-xl">
+							{isCreating
+								? t("admin.teachingUnits.actions.create", {
+										defaultValue: "Create UE",
+									})
+								: teachingUnit!.name}
+						</h1>
+						{!isCreating && (
+							<p className="text-muted-foreground text-sm">
+								{teachingUnit!.code}
+							</p>
+						)}
 					</div>
 				</div>
 			</div>
-			<HubNav
-				tabs={TABS}
-				basePath={`/admin/programs/teaching-units/${teachingUnitId}`}
-			/>
+			{!isCreating && (
+				<HubNav
+					tabs={TABS}
+					basePath={`/admin/programs/teaching-units/${teachingUnitId}`}
+				/>
+			)}
+			<Outlet />
 		</div>
 	);
 }

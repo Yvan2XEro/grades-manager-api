@@ -181,7 +181,7 @@ const TeachingUnitManagement = () => {
 						})}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/teaching-units/new")}>
+				<Button onClick={() => navigate("/admin/programs/teaching-units/new")}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.teachingUnits.actions.create", {
 						defaultValue: "Create UE",
@@ -311,7 +311,9 @@ const TeachingUnitManagement = () => {
 														<>
 															<ContextMenuItem
 																onSelect={() =>
-																	navigate(`/admin/teaching-units/${unit.id}`)
+																	navigate(
+																		`/admin/programs/teaching-units/${unit.id}/details`,
+																	)
 																}
 															>
 																<span>
@@ -376,7 +378,9 @@ const TeachingUnitManagement = () => {
 																variant="ghost"
 																size="sm"
 																onClick={() =>
-																	navigate(`/admin/teaching-units/${unit.id}`)
+																	navigate(
+																		`/admin/programs/teaching-units/${unit.id}/details`,
+																	)
 																}
 															>
 																{t("common.actions.open", {
@@ -420,7 +424,9 @@ const TeachingUnitManagement = () => {
 								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
-								<Button onClick={() => navigate("/admin/teaching-units/new")}>
+								<Button
+									onClick={() => navigate("/admin/programs/teaching-units/new")}
+								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.teachingUnits.actions.create", {
 										defaultValue: "Create UE",

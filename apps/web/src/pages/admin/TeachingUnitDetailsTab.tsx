@@ -73,14 +73,16 @@ export default function TeachingUnitDetailsTab() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { teachingUnitId } = useParams<{ teachingUnitId: string }>();
+	const isCreateMode = teachingUnitId === "new";
 
 	const unitSchema = useMemo(() => buildUnitSchema(t), [t]);
 
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 
-	const { data: teachingUnit } = useQuery(
-		trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId! }),
-	);
+	const { data: teachingUnit } = useQuery({
+		...trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId! }),
+		enabled: !isCreateMode,
+	});
 
 	const form = useForm<TeachingUnitFormData>({
 		resolver: zodResolver(unitSchema),
@@ -108,10 +110,27 @@ export default function TeachingUnitDetailsTab() {
 
 	const invalidateLists = () => {
 		queryClient.invalidateQueries(trpc.teachingUnits.list.queryKey({}));
-		queryClient.invalidateQueries(
-			trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId! }),
-		);
+		if (!isCreateMode) {
+			queryClient.invalidateQueries(
+				trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId! }),
+			);
+		}
 	};
+
+	const createMutation = useMutation({
+		mutationFn: (payload: TeachingUnitFormData) =>
+			trpcClient.teachingUnits.create.mutate(payload),
+		onSuccess: (unit) => {
+			toast.success(
+				t("admin.teachingUnits.toast.created", {
+					defaultValue: "Teaching unit created",
+				}),
+			);
+			invalidateLists();
+			navigate(`/admin/programs/teaching-units/${unit.id}/details`);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
 
 	const updateMutation = useMutation({
 		mutationFn: (payload: TeachingUnitFormData) =>
@@ -130,8 +149,14 @@ export default function TeachingUnitDetailsTab() {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
+	const isPending = createMutation.isPending || updateMutation.isPending;
+
 	const onSubmit = (values: TeachingUnitFormData) => {
-		updateMutation.mutate(values);
+		if (isCreateMode) {
+			createMutation.mutate(values);
+		} else {
+			updateMutation.mutate(values);
+		}
 	};
 
 	return (
@@ -306,15 +331,15 @@ export default function TeachingUnitDetailsTab() {
 							</Button>
 							<Button
 								type="submit"
-								disabled={
-									form.formState.isSubmitting || updateMutation.isPending
-								}
+								disabled={form.formState.isSubmitting || isPending}
 							>
-								{form.formState.isSubmitting || updateMutation.isPending
+								{form.formState.isSubmitting || isPending
 									? t("common.actions.saving", {
 											defaultValue: "Saving...",
 										})
-									: t("common.actions.saveChanges")}
+									: isCreateMode
+										? t("common.actions.create", { defaultValue: "Create" })
+										: t("common.actions.saveChanges")}
 							</Button>
 						</div>
 					</form>

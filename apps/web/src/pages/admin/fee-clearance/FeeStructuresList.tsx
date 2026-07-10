@@ -145,7 +145,7 @@ export default function FeeStructuresList() {
 								key={s.id}
 								className="cursor-pointer"
 								onClick={() =>
-									navigate(`/admin/fee-clearance/structures/${s.id}`)
+									navigate(`/admin/fee-clearance/structures/${s.id}/details`)
 								}
 							>
 								<TableCell className="font-medium">{s.name}</TableCell>
@@ -164,7 +164,9 @@ export default function FeeStructuresList() {
 										variant="ghost"
 										size="sm"
 										onClick={() =>
-											navigate(`/admin/fee-clearance/structures/${s.id}`)
+											navigate(
+												`/admin/fee-clearance/structures/${s.id}/details`,
+											)
 										}
 									>
 										<Edit2 className="h-4 w-4" />
