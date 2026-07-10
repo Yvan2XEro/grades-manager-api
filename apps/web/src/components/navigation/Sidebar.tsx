@@ -14,6 +14,7 @@ import {
 	FileText,
 	Gavel,
 	GraduationCap,
+	Heart,
 	History,
 	LayoutDashboard,
 	ListChecks,
@@ -123,7 +124,7 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.inscriptions",
 				items: [
 					{
-						to: "/admin/students",
+						to: "/admin/users/students",
 						icon: <GraduationCap className={IC} />,
 						labelKey: "navigation.sidebar.admin.students",
 					},
@@ -134,10 +135,20 @@ const Sidebar: React.FC = () => {
 						badge: "new" as NavBadgeType,
 					},
 					{
-						to: "/admin/guardians",
-						icon: <Users className={IC} />,
+						to: "/admin/users/guardians",
+						icon: <Heart className={IC} />,
 						labelKey: "navigation.sidebar.admin.guardians",
-						badge: "new" as NavBadgeType,
+					},
+				],
+			},
+			{
+				key: "people",
+				titleKey: "navigation.sidebar.groups.people",
+				items: [
+					{
+						to: "/admin/users",
+						icon: <UserCog className={IC} />,
+						labelKey: "navigation.sidebar.admin.users",
 					},
 				],
 			},
@@ -151,9 +162,9 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.exams",
 					},
 					{
-						to: "/admin/grades",
+						to: "/admin/exams/export",
 						icon: <FileSpreadsheet className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeManagement",
+						labelKey: "navigation.sidebar.admin.gradeExport",
 					},
 					{
 						to: "/admin/document-batch",
@@ -170,17 +181,6 @@ const Sidebar: React.FC = () => {
 						to: "/admin/academic-results",
 						icon: <Gavel className={IC} />,
 						labelKey: "navigation.sidebar.admin.academicResults",
-					},
-				],
-			},
-			{
-				key: "people",
-				titleKey: "navigation.sidebar.groups.people",
-				items: [
-					{
-						to: "/admin/users",
-						icon: <UserCog className={IC} />,
-						labelKey: "navigation.sidebar.admin.users",
 					},
 				],
 			},

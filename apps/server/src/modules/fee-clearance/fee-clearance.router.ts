@@ -225,6 +225,7 @@ export const feeClearanceRouter = router({
 		.query(({ ctx, input }) =>
 			service.listAssignments(ctx.institution.id, {
 				academicYearId: input.academicYearId,
+				feeStructureId: input.feeStructureId,
 				status: input.status as FeeAssignmentStatus[] | undefined,
 				classId: input.classId,
 				search: input.search,

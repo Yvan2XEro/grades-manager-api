@@ -1116,6 +1116,41 @@ interface Resources {
 				teacher: "Teacher";
 				dean: "Dean";
 				student: "Student";
+				configuration: "Configuration";
+				examList: "Exams";
+				examTypes: "Exam types";
+				participation: "Participation";
+				gradeExport: "Grade export";
+				gradeAccess: "Grade access";
+				retakes: "Retakes";
+				templates: "Templates";
+				classDocuments: "Class documents";
+				accounts: "Accounts";
+				apiKeys: "API Keys";
+				deliberations: "Deliberations";
+				promotion: "Year transition";
+				results: "Results";
+				jury: "Jury";
+				activity: "Activity";
+				overview: "Overview";
+				faculties: "Faculties";
+				cycles: "Cycles";
+				assignments: "Assignments";
+				regNumbers: "Registration numbers";
+				gradeScale: "Grade scale";
+				schedule: "Schedule";
+				rooms: "Rooms";
+				attendanceRates: "Attendance rates";
+				feeStructures: "Fee structures";
+				feeGating: "Fee gating";
+				profiles: "Profiles";
+				identity: "Identity";
+				finances: "Finances";
+				details: "Details";
+				logos: "Logos";
+				authorization: "Authorization";
+				instances: "Instances";
+				contact: "Contact";
 			};
 			command: {
 				placeholder: "Search a page…";
@@ -3254,6 +3289,10 @@ interface Resources {
 					formTitle: "Teaching unit details";
 					formSubtitle: "Edit code, semester, and description.";
 				};
+				tabs: {
+					details: "Details";
+					courses: "Courses";
+				};
 				validation: {
 					name: "Unit name is required.";
 					code: "Unit code is required.";
@@ -3682,6 +3721,11 @@ interface Resources {
 					batchSubmit: "batchSubmit";
 				};
 				detail: {
+					tabs: {
+						results: "Results";
+						jury: "Jury & Lifecycle";
+						activity: "Activity";
+					};
 					back: "Back to deliberations";
 					students: "Student results";
 					noResults: "No results computed yet. Open the deliberation and compute results.";
@@ -3906,6 +3950,13 @@ interface Resources {
 				};
 			};
 			centers: {
+				tabs: {
+					identity: "Identity";
+					logos: "Logos";
+					instances: "Admin Instances";
+					authorization: "Authorization";
+					contact: "Contact";
+				};
 				detail: {
 					title: "Gestion des Centres";
 					subtitle: "Configurez les centres de formation professionnelle";
@@ -3963,6 +4014,8 @@ interface Resources {
 				};
 				toast: {
 					deleteSuccess: "Centre supprimé";
+					createSuccess: "Centre créé";
+					updateSuccess: "Centre mis à jour";
 				};
 				title: "Nos centres";
 				subtitle: "Configure your institution's professional training centers.";
@@ -4801,6 +4854,12 @@ interface Resources {
 					noClasses: "No classes match the scope of this structure.";
 					class: "Class";
 				};
+				tabs: {
+					details: "Details";
+					installments: "Installments";
+					impact: "Impact";
+					assignments: "Assignments";
+				};
 			};
 			bankImport: {
 				button: "Bank import";
@@ -5025,13 +5084,18 @@ interface Resources {
 			};
 		};
 		examsHub: {
-			title: "Exams";
-			description: "Manage exams, exam types, scheduling and participation rosters";
+			title: "Exams & Grades";
+			description: "Manage exams, scheduling, grade exports, access delegation and document templates";
 			tabs: {
 				exams: "Exams";
 				types: "Exam Types";
 				scheduler: "Scheduler";
 				participation: "Participation";
+				gradeExport: "Grade Export";
+				gradeAccess: "Grade Access";
+				retakes: "Retakes";
+				gradeTemplates: "Export Templates";
+				classDocuments: "Class Documents";
 			};
 		};
 		guardians: {
@@ -5206,10 +5270,12 @@ interface Resources {
 			};
 		};
 		usersHub: {
-			title: "Users & Access";
-			description: "Manage users, roles and API keys";
+			title: "Users & Students";
+			description: "Manage accounts, students, guardians and API keys";
 			tabs: {
-				users: "Users";
+				accounts: "Accounts";
+				students: "Students";
+				guardians: "Guardians";
 				apiKeys: "API Keys";
 			};
 		};

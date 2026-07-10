@@ -817,6 +817,7 @@ export async function listAssignments(
 	institutionId: string,
 	opts: {
 		academicYearId?: string;
+		feeStructureId?: string;
 		status?: FeeAssignmentStatus[];
 		classId?: string;
 		search?: string;

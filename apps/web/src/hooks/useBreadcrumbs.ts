@@ -62,6 +62,15 @@ const segmentLabels: Record<string, string> = {
 	identity: "navigation.breadcrumbs.identity",
 	finances: "navigation.breadcrumbs.finances",
 
+	// TeachingUnitDetail sub-tabs
+	details: "navigation.breadcrumbs.details",
+
+	// CenterDetail sub-tabs
+	logos: "navigation.breadcrumbs.logos",
+	authorization: "navigation.breadcrumbs.authorization",
+	instances: "navigation.breadcrumbs.instances",
+	contact: "navigation.breadcrumbs.contact",
+
 	// InstitutionHub sub-tabs
 	overview: "navigation.breadcrumbs.overview",
 	faculties: "navigation.breadcrumbs.faculties",

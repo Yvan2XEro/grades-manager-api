@@ -146,6 +146,7 @@ export const getAssignmentSchema = z.object({
 
 export const listAssignmentsSchema = z.object({
 	academicYearId: z.string().optional(),
+	feeStructureId: z.string().optional(),
 	status: z
 		.array(z.enum(feeAssignmentStatuses as unknown as [string, ...string[]]))
 		.optional(),

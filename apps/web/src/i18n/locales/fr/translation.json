@@ -145,7 +145,12 @@
       "feeGating": "Restriction d'accès",
       "profiles": "Profils",
       "identity": "Identité",
-      "finances": "Finances"
+      "finances": "Finances",
+      "details": "Détails",
+      "logos": "Logos",
+      "authorization": "Autorisation",
+      "instances": "Instances",
+      "contact": "Contact"
     },
     "command": {
       "placeholder": "Rechercher une page…",
@@ -2409,6 +2414,10 @@
         "formTitle": "Détails de l'unité d'enseignement",
         "formSubtitle": "Modifiez le code, le semestre et la description."
       },
+      "tabs": {
+        "details": "Détails",
+        "courses": "Cours"
+      },
       "validation": {
         "name": "Le nom de l'unité est obligatoire.",
         "code": "Le code de l'unité est obligatoire.",
@@ -2938,6 +2947,13 @@
       }
     },
     "centers": {
+      "tabs": {
+        "identity": "Identité",
+        "logos": "Logos",
+        "instances": "Instances admin.",
+        "authorization": "Autorisation",
+        "contact": "Contact"
+      },
       "detail": {
         "title": "Gestion des Centres",
         "subtitle": "Configurez les centres de formation professionnelle",
@@ -2994,7 +3010,9 @@
         "itemTitle": "itemTitle"
       },
       "toast": {
-        "deleteSuccess": "Centre supprimé"
+        "deleteSuccess": "Centre supprimé",
+        "createSuccess": "Centre créé",
+        "updateSuccess": "Centre mis à jour"
       },
       "title": "Nos centres",
       "subtitle": "Configurez les centres de formation professionnelle de l'institution.",
@@ -4839,6 +4857,12 @@
         "alreadyAssigned": "Déjà affectés cette année",
         "noClasses": "Aucune classe ne correspond au scope de cette structure.",
         "class": "Classe"
+      },
+      "tabs": {
+        "details": "Détails",
+        "installments": "Échéances",
+        "impact": "Impact",
+        "assignments": "Affectations"
       }
     },
     "bankImport": {

@@ -1144,7 +1144,12 @@
       "feeGating": "Fee gating",
       "profiles": "Profiles",
       "identity": "Identity",
-      "finances": "Finances"
+      "finances": "Finances",
+      "details": "Details",
+      "logos": "Logos",
+      "authorization": "Authorization",
+      "instances": "Instances",
+      "contact": "Contact"
     },
     "command": {
       "placeholder": "Search a page…",
@@ -3283,6 +3288,10 @@
         "formTitle": "Teaching unit details",
         "formSubtitle": "Edit code, semester, and description."
       },
+      "tabs": {
+        "details": "Details",
+        "courses": "Courses"
+      },
       "validation": {
         "name": "Unit name is required.",
         "code": "Unit code is required.",
@@ -3940,6 +3949,13 @@
       }
     },
     "centers": {
+      "tabs": {
+        "identity": "Identity",
+        "logos": "Logos",
+        "instances": "Admin Instances",
+        "authorization": "Authorization",
+        "contact": "Contact"
+      },
       "detail": {
         "title": "Gestion des Centres",
         "subtitle": "Configurez les centres de formation professionnelle",
@@ -3996,7 +4012,9 @@
         "itemTitle": "itemTitle"
       },
       "toast": {
-        "deleteSuccess": "Centre supprimé"
+        "deleteSuccess": "Centre supprimé",
+        "createSuccess": "Centre créé",
+        "updateSuccess": "Centre mis à jour"
       },
       "title": "Nos centres",
       "subtitle": "Configure your institution's professional training centers.",
@@ -4834,6 +4852,12 @@
         "alreadyAssigned": "Already assigned this academic year",
         "noClasses": "No classes match the scope of this structure.",
         "class": "Class"
+      },
+      "tabs": {
+        "details": "Details",
+        "installments": "Installments",
+        "impact": "Impact",
+        "assignments": "Assignments"
       }
     },
     "bankImport": {

@@ -7,6 +7,11 @@ const tabs = [
 	{ path: "types", labelKey: "examsHub.tabs.types" },
 	{ path: "scheduler", labelKey: "examsHub.tabs.scheduler" },
 	{ path: "participation", labelKey: "examsHub.tabs.participation" },
+	{ path: "export", labelKey: "examsHub.tabs.gradeExport" },
+	{ path: "access", labelKey: "examsHub.tabs.gradeAccess" },
+	{ path: "retakes", labelKey: "examsHub.tabs.retakes" },
+	{ path: "templates", labelKey: "examsHub.tabs.gradeTemplates" },
+	{ path: "class-documents", labelKey: "examsHub.tabs.classDocuments" },
 ] as const;
 
 export default function ExamsHub() {

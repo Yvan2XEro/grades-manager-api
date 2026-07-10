@@ -179,6 +179,7 @@ export async function listAssignments(
 	institutionId: string,
 	opts: {
 		academicYearId?: string;
+		feeStructureId?: string;
 		status?: FeeAssignmentStatus[];
 		classId?: string;
 		programId?: string;
@@ -194,6 +195,10 @@ export async function listAssignments(
 	if (opts.academicYearId)
 		conditions.push(
 			eq(schema.studentFeeAssignments.academicYearId, opts.academicYearId),
+		);
+	if (opts.feeStructureId)
+		conditions.push(
+			eq(schema.studentFeeAssignments.feeStructureId, opts.feeStructureId),
 		);
 	if (opts.status?.length)
 		conditions.push(

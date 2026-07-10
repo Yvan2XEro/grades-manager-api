@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes, useParams } from "react-router";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import { Redirector } from "./components/navigation/Redirector";
@@ -18,7 +18,6 @@ import ClassAttendanceOverview from "./pages/admin/attendance/ClassAttendanceOve
 import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
-import CenterDetail from "./pages/admin/CenterDetail";
 import CenterManagement from "./pages/admin/CenterManagement";
 import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
 import ClassDocumentTemplates from "./pages/admin/ClassDocumentTemplates";
@@ -26,6 +25,14 @@ import ClassesHub from "./pages/admin/ClassesHub";
 import ClassManagement from "./pages/admin/ClassManagement";
 import ConfigurationHub from "./pages/admin/ConfigurationHub";
 import CourseManagement from "./pages/admin/CourseManagement";
+import {
+	CenterAuthorizationTab,
+	CenterContactTab,
+	CenterDetail,
+	CenterIdentityTab,
+	CenterInstancesTab,
+	CenterLogosTab,
+} from "./pages/admin/centers";
 import AdminDashboard from "./pages/admin/Dashboard";
 import {
 	DeliberationActivityTab,
@@ -50,7 +57,11 @@ import FeeAssignmentDetail from "./pages/admin/fee-clearance/FeeAssignmentDetail
 import FeeAssignmentsList from "./pages/admin/fee-clearance/FeeAssignmentsList";
 import FeeClearanceHub from "./pages/admin/fee-clearance/FeeClearanceHub";
 import FeeGatingSettings from "./pages/admin/fee-clearance/FeeGatingSettings";
+import FeeStructureAssignmentsTab from "./pages/admin/fee-clearance/FeeStructureAssignmentsTab";
 import FeeStructureDetail from "./pages/admin/fee-clearance/FeeStructureDetail";
+import FeeStructureDetailsTab from "./pages/admin/fee-clearance/FeeStructureDetailsTab";
+import FeeStructureImpactTab from "./pages/admin/fee-clearance/FeeStructureImpactTab";
+import FeeStructureInstallmentsTab from "./pages/admin/fee-clearance/FeeStructureInstallmentsTab";
 import FeeStructuresList from "./pages/admin/fee-clearance/FeeStructuresList";
 import StudentFinancialHistory from "./pages/admin/fee-clearance/StudentFinancialHistory";
 import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
@@ -79,7 +90,9 @@ import RoomsManagement from "./pages/admin/RoomsManagement";
 import RuleManagement from "./pages/admin/RuleManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
+import TeachingUnitCoursesTab from "./pages/admin/TeachingUnitCoursesTab";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
+import TeachingUnitDetailsTab from "./pages/admin/TeachingUnitDetailsTab";
 import TeachingUnitManagement from "./pages/admin/TeachingUnitManagement";
 import TimetableHub from "./pages/admin/TimetableHub";
 import TimetableManagement from "./pages/admin/TimetableManagement";
@@ -260,17 +273,34 @@ function App() {
 						<Route path="monitoring" element={<MonitoringDashboard />} />
 						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
 						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
-						<Route path="fee-clearance" element={<FeeClearanceHub />}>
-							<Route index element={<Navigate to="structures" replace />} />
-							<Route path="structures" element={<FeeStructuresList />} />
-							<Route path="structures/:id" element={<FeeStructureDetail />} />
-							<Route path="assignments" element={<FeeAssignmentsList />} />
-							<Route path="assignments/:id" element={<FeeAssignmentDetail />} />
-							<Route
-								path="students/:studentId/history"
-								element={<StudentFinancialHistory />}
-							/>
-							<Route path="gating" element={<FeeGatingSettings />} />
+						<Route path="fee-clearance">
+							<Route element={<FeeClearanceHub />}>
+								<Route index element={<Navigate to="structures" replace />} />
+								<Route path="structures" element={<FeeStructuresList />} />
+								<Route path="assignments" element={<FeeAssignmentsList />} />
+								<Route
+									path="assignments/:id"
+									element={<FeeAssignmentDetail />}
+								/>
+								<Route
+									path="students/:studentId/history"
+									element={<StudentFinancialHistory />}
+								/>
+								<Route path="gating" element={<FeeGatingSettings />} />
+							</Route>
+							<Route path="structures/:id" element={<FeeStructureDetail />}>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={<FeeStructureDetailsTab />} />
+								<Route
+									path="installments"
+									element={<FeeStructureInstallmentsTab />}
+								/>
+								<Route path="impact" element={<FeeStructureImpactTab />} />
+								<Route
+									path="assignments"
+									element={<FeeStructureAssignmentsTab />}
+								/>
+							</Route>
 						</Route>
 						<Route path="notifications" element={<NotificationsCenter />} />
 
@@ -315,14 +345,24 @@ function App() {
 						</Route>
 
 						{/* Programs hub */}
-						<Route path="programs" element={<ProgramsHub />}>
-							<Route index element={<Navigate to="programs" replace />} />
-							<Route path="programs" element={<ProgramManagement />} />
+						<Route path="programs">
+							<Route element={<ProgramsHub />}>
+								<Route index element={<Navigate to="programs" replace />} />
+								<Route path="programs" element={<ProgramManagement />} />
+								<Route
+									path="teaching-units"
+									element={<TeachingUnitManagement />}
+								/>
+								<Route path="courses" element={<CourseManagement />} />
+							</Route>
 							<Route
-								path="teaching-units"
-								element={<TeachingUnitManagement />}
-							/>
-							<Route path="courses" element={<CourseManagement />} />
+								path="teaching-units/:teachingUnitId"
+								element={<TeachingUnitDetail />}
+							>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={<TeachingUnitDetailsTab />} />
+								<Route path="courses" element={<TeachingUnitCoursesTab />} />
+							</Route>
 						</Route>
 
 						{/* Classes hub */}
@@ -430,7 +470,17 @@ function App() {
 						{/* Standalone pages still needed outside hubs */}
 						<Route path="centers" element={<CenterManagement />} />
 						<Route path="centers/new" element={<CenterDetail />} />
-						<Route path="centers/:centerId" element={<CenterDetail />} />
+						<Route path="centers/:centerId" element={<CenterDetail />}>
+							<Route index element={<Navigate to="identity" replace />} />
+							<Route path="identity" element={<CenterIdentityTab />} />
+							<Route path="logos" element={<CenterLogosTab />} />
+							<Route path="instances" element={<CenterInstancesTab />} />
+							<Route
+								path="authorization"
+								element={<CenterAuthorizationTab />}
+							/>
+							<Route path="contact" element={<CenterContactTab />} />
+						</Route>
 						<Route path="document-batch" element={<BulkDocumentGeneration />} />
 						<Route
 							path="export-templates/:templateId"
@@ -439,7 +489,7 @@ function App() {
 						<Route path="promotion-legacy" element={<PromotionHub />} />
 						<Route
 							path="teaching-units/:teachingUnitId"
-							element={<TeachingUnitDetail />}
+							element={<TeachingUnitLegacyRedirect />}
 						/>
 						<Route
 							path="registration-numbers/:formatId"
@@ -647,6 +697,16 @@ function App() {
 				element={<Redirector isPending={isPending} user={memoUser} />}
 			/>
 		</Routes>
+	);
+}
+
+function TeachingUnitLegacyRedirect() {
+	const { teachingUnitId } = useParams<{ teachingUnitId: string }>();
+	return (
+		<Navigate
+			to={`/admin/programs/teaching-units/${teachingUnitId}/details`}
+			replace
+		/>
 	);
 }
 
