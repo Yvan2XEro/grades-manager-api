@@ -1114,7 +1114,37 @@
       "admin": "Administration",
       "teacher": "Teacher",
       "dean": "Dean",
-      "student": "Student"
+      "student": "Student",
+      "configuration": "Configuration",
+      "examList": "Exams",
+      "examTypes": "Exam types",
+      "participation": "Participation",
+      "gradeExport": "Grade export",
+      "gradeAccess": "Grade access",
+      "retakes": "Retakes",
+      "templates": "Templates",
+      "classDocuments": "Class documents",
+      "accounts": "Accounts",
+      "apiKeys": "API Keys",
+      "deliberations": "Deliberations",
+      "promotion": "Year transition",
+      "results": "Results",
+      "jury": "Jury",
+      "activity": "Activity",
+      "overview": "Overview",
+      "faculties": "Faculties",
+      "cycles": "Cycles",
+      "assignments": "Assignments",
+      "regNumbers": "Registration numbers",
+      "gradeScale": "Grade scale",
+      "schedule": "Schedule",
+      "rooms": "Rooms",
+      "attendanceRates": "Attendance rates",
+      "feeStructures": "Fee structures",
+      "feeGating": "Fee gating",
+      "profiles": "Profiles",
+      "identity": "Identity",
+      "finances": "Finances"
     },
     "command": {
       "placeholder": "Search a page…",
@@ -3681,6 +3711,11 @@
         "batchSubmit": "batchSubmit"
       },
       "detail": {
+        "tabs": {
+          "results": "Results",
+          "jury": "Jury & Lifecycle",
+          "activity": "Activity"
+        },
         "back": "Back to deliberations",
         "students": "Student results",
         "noResults": "No results computed yet. Open the deliberation and compute results.",
@@ -5024,13 +5059,18 @@
     }
   },
   "examsHub": {
-    "title": "Exams",
-    "description": "Manage exams, exam types, scheduling and participation rosters",
+    "title": "Exams & Grades",
+    "description": "Manage exams, scheduling, grade exports, access delegation and document templates",
     "tabs": {
       "exams": "Exams",
       "types": "Exam Types",
       "scheduler": "Scheduler",
-      "participation": "Participation"
+      "participation": "Participation",
+      "gradeExport": "Grade Export",
+      "gradeAccess": "Grade Access",
+      "retakes": "Retakes",
+      "gradeTemplates": "Export Templates",
+      "classDocuments": "Class Documents"
     }
   },
   "guardians": {
@@ -5205,11 +5245,70 @@
     }
   },
   "usersHub": {
-    "title": "Users & Access",
-    "description": "Manage users, roles and API keys",
+    "title": "Users & Students",
+    "description": "Manage accounts, students, guardians and API keys",
     "tabs": {
-      "users": "Users",
+      "accounts": "Accounts",
+      "students": "Students",
+      "guardians": "Guardians",
       "apiKeys": "API Keys"
+    }
+  },
+  "profileHub": {
+    "studentBadge": "Student",
+    "tabs": {
+      "identity": "Identity",
+      "enrollments": "Enrollments",
+      "results": "Results",
+      "finances": "Finances",
+      "guardians": "Guardians"
+    },
+    "identity": {
+      "personalInfo": "Personal Information",
+      "birthInfo": "Birth Information",
+      "studentInfo": "Student Information",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "gender": "Gender",
+      "dateOfBirth": "Date of Birth",
+      "placeOfBirth": "Place of Birth",
+      "nationality": "Nationality",
+      "registrationNumber": "Registration Number"
+    },
+    "enrollments": {
+      "academicYear": "Academic Year",
+      "class": "Class",
+      "enrolledAt": "Enrolled At",
+      "status": "Status",
+      "empty": "No enrollments found."
+    },
+    "results": {
+      "course": "Course",
+      "teachingUnit": "Teaching Unit",
+      "academicYear": "Year",
+      "credits": "Credits",
+      "status": "Status",
+      "empty": "No course results found."
+    },
+    "finances": {
+      "academicYear": "Academic Year",
+      "amount": "Amount",
+      "discount": "Discount",
+      "status": "Status",
+      "clearedAt": "Cleared At",
+      "empty": "No fee records found."
+    },
+    "guardians": {
+      "name": "Name",
+      "relationship": "Relationship",
+      "email": "Email",
+      "phone": "Phone",
+      "flags": "Flags",
+      "primary": "Primary",
+      "emergency": "Emergency",
+      "empty": "No guardians linked."
     }
   },
   "gradesHub": {

@@ -9,6 +9,7 @@ import { KeyRound, Pencil, PlusIcon, RefreshCw, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { z } from "zod";
 import { DebouncedSearchField } from "@/components/inputs";
 import {
@@ -163,6 +164,7 @@ function generatePassword(length = 16) {
 export default function UserManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const userSchema = useMemo(() => buildUserSchema(t), [t]);
 	const [search, setSearch] = useState("");
 	const debouncedSearch = useDebounce(search, 500);
@@ -544,6 +546,8 @@ export default function UserManagement() {
 							{displayedUsers.map((user) => (
 								<TableRow
 									key={user.id}
+									onClick={() => navigate(`/admin/profiles/${user.id}`)}
+									className="cursor-pointer"
 									actions={
 										<>
 											<ContextMenuItem onSelect={() => openEdit(user)}>

@@ -14,6 +14,7 @@ import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
 import { gradeScalesRouter } from "@/modules/grade-scales";
 import { gradesRouter } from "@/modules/grades";
 import { guardiansRouter } from "@/modules/guardians";
+import { profilesRouter } from "@/modules/profiles";
 import { roomsRouter } from "@/modules/rooms";
 import { router as timetableRouter } from "@/modules/timetable";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
@@ -95,6 +96,7 @@ export const appRouter = router({
 	rooms: roomsRouter,
 	attendance: attendanceRouter,
 	admissions: admissionsRouter,
+	profiles: profilesRouter,
 });
 
 export type AppRouter = typeof appRouter;

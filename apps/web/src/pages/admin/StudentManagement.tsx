@@ -12,6 +12,7 @@ import Papa from "papaparse";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { ExportStudentListButton } from "@/components/admin/document-templates/ExportStudentListButton";
@@ -398,6 +399,7 @@ const toISODateFromSheet = (value?: string | number) => {
 export default function StudentManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 
 	const [academicYearFilter, setAcademicYearFilter] = useState<string | null>(
 		null,
@@ -981,6 +983,10 @@ export default function StudentManagement() {
 									filteredStudentItems.map((student) => (
 										<TableRow
 											key={student.id}
+											onClick={() =>
+												navigate(`/admin/profiles/${student.domainUserId}`)
+											}
+											className="cursor-pointer"
 											actions={
 												<>
 													<ContextMenuItem

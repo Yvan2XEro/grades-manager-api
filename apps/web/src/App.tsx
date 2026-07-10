@@ -28,7 +28,11 @@ import ConfigurationHub from "./pages/admin/ConfigurationHub";
 import CourseManagement from "./pages/admin/CourseManagement";
 import AdminDashboard from "./pages/admin/Dashboard";
 import {
+	DeliberationActivityTab,
 	DeliberationDetail,
+	DeliberationJuryTab,
+	DeliberationLegacyRedirect,
+	DeliberationResultsTab,
 	DeliberationRules,
 	DeliberationsList,
 } from "./pages/admin/deliberations";
@@ -52,7 +56,6 @@ import StudentFinancialHistory from "./pages/admin/fee-clearance/StudentFinancia
 import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
 import GradeExport from "./pages/admin/GradeExport";
 import GradeScaleSettings from "./pages/admin/GradeScaleSettings";
-import GradesHub from "./pages/admin/GradesHub";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
 import GuardiansManagement from "./pages/admin/GuardiansManagement";
 import InstitutionHub from "./pages/admin/InstitutionHub";
@@ -61,6 +64,14 @@ import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import ProgramsHub from "./pages/admin/ProgramsHub";
 import PromotionHub from "./pages/admin/PromotionHub";
+import {
+	ProfileEnrollmentsTab,
+	ProfileFinancesTab,
+	ProfileGuardiansTab,
+	ProfileHub,
+	ProfileIdentityTab,
+	ProfileResultsTab,
+} from "./pages/admin/profiles";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
 import RetakeEligibility from "./pages/admin/RetakeEligibility";
@@ -235,8 +246,15 @@ function App() {
 						<Route index element={<AdminDashboard />} />
 						<Route path="academic-years" element={<AcademicYearManagement />} />
 						<Route path="admissions" element={<AdmissionsManagement />} />
-						<Route path="guardians" element={<GuardiansManagement />} />
-						<Route path="students" element={<StudentManagement />} />
+						{/* Legacy redirects: standalone → UsersHub tabs */}
+						<Route
+							path="guardians"
+							element={<Navigate to="/admin/users/guardians" replace />}
+						/>
+						<Route
+							path="students"
+							element={<Navigate to="/admin/users/students" replace />}
+						/>
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="graduation" element={<GraduatedStudents />} />
 						<Route path="monitoring" element={<MonitoringDashboard />} />
@@ -256,18 +274,33 @@ function App() {
 						</Route>
 						<Route path="notifications" element={<NotificationsCenter />} />
 
-						{/* Deliberation detail routes (outside hub) */}
+						{/* Legacy redirect: /admin/deliberations/:id → /admin/academic-results/deliberations/:id */}
 						<Route
 							path="deliberations/:deliberationId"
-							element={<DeliberationDetail />}
+							element={<DeliberationLegacyRedirect />}
 						/>
 						<Route path="deliberations/rules" element={<DeliberationRules />} />
 
 						{/* Academic Results hub */}
-						<Route path="academic-results" element={<AcademicResultsHub />}>
-							<Route index element={<Navigate to="deliberations" replace />} />
-							<Route path="deliberations" element={<DeliberationsList />} />
-							<Route path="promotion" element={<AcademicYearTransitions />} />
+						<Route path="academic-results">
+							<Route element={<AcademicResultsHub />}>
+								<Route
+									index
+									element={<Navigate to="deliberations" replace />}
+								/>
+								<Route path="deliberations" element={<DeliberationsList />} />
+								<Route path="promotion" element={<AcademicYearTransitions />} />
+							</Route>
+							{/* Deliberation detail with contextual tabs */}
+							<Route
+								path="deliberations/:deliberationId"
+								element={<DeliberationDetail />}
+							>
+								<Route index element={<Navigate to="results" replace />} />
+								<Route path="results" element={<DeliberationResultsTab />} />
+								<Route path="jury" element={<DeliberationJuryTab />} />
+								<Route path="activity" element={<DeliberationActivityTab />} />
+							</Route>
 						</Route>
 
 						{/* Transition detail (outside hub) */}
@@ -302,12 +335,29 @@ function App() {
 
 						{/* Users hub */}
 						<Route path="users" element={<UsersHub />}>
-							<Route index element={<Navigate to="users" replace />} />
-							<Route path="users" element={<UserManagement />} />
+							<Route index element={<Navigate to="accounts" replace />} />
+							<Route path="accounts" element={<UserManagement />} />
+							<Route path="students" element={<StudentManagement />} />
+							<Route path="guardians" element={<GuardiansManagement />} />
 							<Route path="api-keys" element={<ApiKeysManagement />} />
+							{/* Legacy: /admin/users/users → /admin/users/accounts */}
+							<Route
+								path="users"
+								element={<Navigate to="/admin/users/accounts" replace />}
+							/>
 						</Route>
 
-						{/* Exams hub */}
+						{/* Profile detail hub */}
+						<Route path="profiles/:profileId" element={<ProfileHub />}>
+							<Route index element={<Navigate to="identity" replace />} />
+							<Route path="identity" element={<ProfileIdentityTab />} />
+							<Route path="enrollments" element={<ProfileEnrollmentsTab />} />
+							<Route path="results" element={<ProfileResultsTab />} />
+							<Route path="finances" element={<ProfileFinancesTab />} />
+							<Route path="guardians" element={<ProfileGuardiansTab />} />
+						</Route>
+
+						{/* Exams hub (includes grade management) */}
 						<Route path="exams" element={<ExamsHub />}>
 							<Route index element={<Navigate to="list" replace />} />
 							<Route path="list" element={<ExamManagement />} />
@@ -317,18 +367,41 @@ function App() {
 								path="participation"
 								element={<ExamParticipationRoster />}
 							/>
-						</Route>
-
-						{/* Grades hub */}
-						<Route path="grades" element={<GradesHub />}>
-							<Route index element={<Navigate to="export" replace />} />
 							<Route path="export" element={<GradeExport />} />
 							<Route path="access" element={<GradeAccessGrants />} />
-							<Route path="retake" element={<RetakeEligibility />} />
+							<Route path="retakes" element={<RetakeEligibility />} />
 							<Route path="templates" element={<ExportTemplatesManagement />} />
 							<Route
 								path="class-documents"
 								element={<ClassDocumentTemplates />}
+							/>
+						</Route>
+
+						{/* Legacy: /admin/grades/* → /admin/exams/* */}
+						<Route path="grades">
+							<Route
+								index
+								element={<Navigate to="/admin/exams/export" replace />}
+							/>
+							<Route
+								path="export"
+								element={<Navigate to="/admin/exams/export" replace />}
+							/>
+							<Route
+								path="access"
+								element={<Navigate to="/admin/exams/access" replace />}
+							/>
+							<Route
+								path="retake"
+								element={<Navigate to="/admin/exams/retakes" replace />}
+							/>
+							<Route
+								path="templates"
+								element={<Navigate to="/admin/exams/templates" replace />}
+							/>
+							<Route
+								path="class-documents"
+								element={<Navigate to="/admin/exams/class-documents" replace />}
 							/>
 						</Route>
 

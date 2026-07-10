@@ -115,7 +115,37 @@
       "admin": "Administration",
       "teacher": "Enseignant",
       "dean": "Doyen",
-      "student": "Étudiant"
+      "student": "Étudiant",
+      "configuration": "Configuration",
+      "examList": "Épreuves",
+      "examTypes": "Types d'épreuves",
+      "participation": "Participation",
+      "gradeExport": "Export des notes",
+      "gradeAccess": "Accès aux notes",
+      "retakes": "Reprises",
+      "templates": "Modèles",
+      "classDocuments": "Documents de classe",
+      "accounts": "Comptes",
+      "apiKeys": "Clés API",
+      "deliberations": "Délibérations",
+      "promotion": "Transition d'année",
+      "results": "Résultats",
+      "jury": "Jury",
+      "activity": "Activité",
+      "overview": "Vue d'ensemble",
+      "faculties": "Facultés",
+      "cycles": "Cycles",
+      "assignments": "Affectations",
+      "regNumbers": "Numéros matricule",
+      "gradeScale": "Barème de notes",
+      "schedule": "Planning",
+      "rooms": "Salles",
+      "attendanceRates": "Taux de présence",
+      "feeStructures": "Barèmes de frais",
+      "feeGating": "Restriction d'accès",
+      "profiles": "Profils",
+      "identity": "Identité",
+      "finances": "Finances"
     },
     "command": {
       "placeholder": "Rechercher une page…",
@@ -2748,6 +2778,11 @@
         "batchSubmit": "batchSubmit"
       },
       "detail": {
+        "tabs": {
+          "results": "Résultats",
+          "jury": "Jury & Cycle de vie",
+          "activity": "Activité"
+        },
         "back": "Retour aux délibérations",
         "students": "Résultats des étudiants",
         "noResults": "Aucun résultat calculé. Ouvrez la délibération et lancez le calcul.",
@@ -5029,13 +5064,18 @@
     }
   },
   "examsHub": {
-    "title": "Examens",
-    "description": "Gérez les examens, types d'examen, la programmation et les listes de participation",
+    "title": "Épreuves & Notes",
+    "description": "Gérez les épreuves, la programmation, les exports de notes, les délégations d'accès et les modèles de documents",
     "tabs": {
-      "exams": "Examens",
-      "types": "Types d'examen",
+      "exams": "Épreuves",
+      "types": "Types d'épreuve",
       "scheduler": "Programmation",
-      "participation": "Participation"
+      "participation": "Participation",
+      "gradeExport": "Export des notes",
+      "gradeAccess": "Accès aux notes",
+      "retakes": "Reprises",
+      "gradeTemplates": "Modèles d'export",
+      "classDocuments": "Documents de classe"
     }
   },
   "guardians": {
@@ -5210,11 +5250,70 @@
     }
   },
   "usersHub": {
-    "title": "Utilisateurs & Accès",
-    "description": "Gérez les utilisateurs, les rôles et les clés d'API",
+    "title": "Utilisateurs & Étudiants",
+    "description": "Gérez les comptes, les étudiants, les parents et les clés d'API",
     "tabs": {
-      "users": "Utilisateurs",
+      "accounts": "Comptes",
+      "students": "Étudiants",
+      "guardians": "Parents",
       "apiKeys": "Clés API"
+    }
+  },
+  "profileHub": {
+    "studentBadge": "Étudiant",
+    "tabs": {
+      "identity": "Identité",
+      "enrollments": "Inscriptions",
+      "results": "Résultats",
+      "finances": "Finances",
+      "guardians": "Parents / Tuteurs"
+    },
+    "identity": {
+      "personalInfo": "Informations personnelles",
+      "birthInfo": "Informations de naissance",
+      "studentInfo": "Informations étudiant",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "gender": "Genre",
+      "dateOfBirth": "Date de naissance",
+      "placeOfBirth": "Lieu de naissance",
+      "nationality": "Nationalité",
+      "registrationNumber": "Numéro d'immatriculation"
+    },
+    "enrollments": {
+      "academicYear": "Année académique",
+      "class": "Classe",
+      "enrolledAt": "Inscrit le",
+      "status": "Statut",
+      "empty": "Aucune inscription trouvée."
+    },
+    "results": {
+      "course": "Cours",
+      "teachingUnit": "Unité d'enseignement",
+      "academicYear": "Année",
+      "credits": "Crédits",
+      "status": "Statut",
+      "empty": "Aucun résultat de cours trouvé."
+    },
+    "finances": {
+      "academicYear": "Année académique",
+      "amount": "Montant",
+      "discount": "Remise",
+      "status": "Statut",
+      "clearedAt": "Soldé le",
+      "empty": "Aucun enregistrement financier trouvé."
+    },
+    "guardians": {
+      "name": "Nom",
+      "relationship": "Lien de parenté",
+      "email": "Email",
+      "phone": "Téléphone",
+      "flags": "Indicateurs",
+      "primary": "Principal",
+      "emergency": "Urgence",
+      "empty": "Aucun tuteur lié."
     }
   },
   "gradesHub": {
