@@ -597,12 +597,18 @@
         "sessionCreated": "Session created",
         "sessionDeleted": "Session deleted",
         "marked": "Marked",
-        "excused": "Absence excused"
+        "excused": "Absence excused",
+        "documentUploaded": "Justification document uploaded"
       },
       "course": "Course",
       "student": "Student",
       "presentCount": "{{present}}/{{total}} present",
+      "excuseCategory": "Category",
+      "excuseCategoryPlaceholder": "Select a category",
       "excusePlaceholder": "Illness, family event…",
+      "justificationDocument": "Justification document",
+      "justificationDocumentPlaceholder": "Paste a document URL or upload a file",
+      "uploadingDocument": "Uploading document…",
       "submitExcuse": "Submit excuse",
       "marked": "Mark all",
       "absentOrLate": "Absent / Late"
@@ -1941,6 +1947,17 @@
       },
       "toast": {
         "saved": "Institution saved successfully"
+      },
+      "attendanceExcusePolicy": {
+        "title": "Attendance excuse policy",
+        "description": "Define which absence excuses are accepted and whether a supporting document is required.",
+        "categories": "Accepted categories",
+        "categoriesPlaceholder": "Medical, Family emergency, Administrative",
+        "categoriesHint": "Comma-separated list. Leave empty to allow free categories.",
+        "requiresDocument": "Require supporting document",
+        "requiresDocumentHint": "When enabled, absence excuses cannot be approved without a document URL.",
+        "deadline": "Approval deadline (days)",
+        "deadlineHint": "Leave empty for no deadline."
       },
       "form": {
         "identity": "Identity & branding",

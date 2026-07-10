@@ -40,6 +40,8 @@ export const updateRecordSchema = z.object({
 export const excuseAbsenceSchema = z.object({
 	attendanceRecordId: z.string(),
 	excuseReason: z.string().min(1),
+	excuseCategory: z.string().trim().min(1).optional(),
+	justificationDocumentUrl: z.string().trim().url().optional(),
 	approve: z.boolean().default(true),
 });
 

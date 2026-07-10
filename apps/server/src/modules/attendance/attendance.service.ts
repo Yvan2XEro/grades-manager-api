@@ -4,9 +4,62 @@ import * as rosterRepo from "./exam-roster.repo";
 
 const DAY_NAMES = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
+type AttendanceExcusePolicy = {
+	acceptedCategories: string[];
+	requiresDocument: boolean;
+	approvalDeadlineDays: number | null;
+};
+
+const DEFAULT_EXCUSE_POLICY: AttendanceExcusePolicy = {
+	acceptedCategories: [],
+	requiresDocument: false,
+	approvalDeadlineDays: null,
+};
+
 function dateToDayOfWeek(dateStr: string): string {
 	const [y, m, d] = dateStr.split("-").map(Number);
 	return DAY_NAMES[new Date(y, m - 1, d).getDay()];
+}
+
+function daysSince(dateStr: string) {
+	const [y, m, d] = dateStr.split("-").map(Number);
+	const sessionTime = Date.UTC(y, m - 1, d);
+	const now = new Date();
+	const todayTime = Date.UTC(
+		now.getUTCFullYear(),
+		now.getUTCMonth(),
+		now.getUTCDate(),
+	);
+	return Math.floor((todayTime - sessionTime) / 86_400_000);
+}
+
+async function getExcusePolicy(
+	institutionId: string,
+): Promise<AttendanceExcusePolicy> {
+	const { db } = await import("@/db");
+	const { eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+	const institution = await db.query.institutions.findFirst({
+		where: eq(schema.institutions.id, institutionId),
+		columns: { metadata: true },
+	});
+	const raw = institution?.metadata?.attendance_excuse_policy;
+	return {
+		acceptedCategories: Array.isArray(raw?.acceptedCategories)
+			? raw.acceptedCategories.filter(
+					(item): item is string =>
+						typeof item === "string" && item.trim() !== "",
+				)
+			: DEFAULT_EXCUSE_POLICY.acceptedCategories,
+		requiresDocument:
+			typeof raw?.requiresDocument === "boolean"
+				? raw.requiresDocument
+				: DEFAULT_EXCUSE_POLICY.requiresDocument,
+		approvalDeadlineDays:
+			typeof raw?.approvalDeadlineDays === "number"
+				? raw.approvalDeadlineDays
+				: DEFAULT_EXCUSE_POLICY.approvalDeadlineDays,
+	};
 }
 
 export async function createOrGetSession(
@@ -233,6 +286,8 @@ export async function excuseAbsence(
 	approve: boolean,
 	institutionId: string,
 	approvedBy: string,
+	excuseCategory?: string,
+	justificationDocumentUrl?: string,
 ) {
 	const record = await repo.findRecordById(attendanceRecordId, institutionId);
 	if (!record)
@@ -248,12 +303,55 @@ export async function excuseAbsence(
 		});
 	}
 
+	const policy = await getExcusePolicy(institutionId);
+	const normalizedCategory = excuseCategory?.trim() || undefined;
+	const normalizedDocumentUrl = justificationDocumentUrl?.trim() || undefined;
+	if (approve) {
+		if (policy.acceptedCategories.length > 0) {
+			if (!normalizedCategory) {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: "Excuse category is required by the institution policy.",
+				});
+			}
+			if (!policy.acceptedCategories.includes(normalizedCategory)) {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: `Excuse category "${normalizedCategory}" is not accepted by the institution policy.`,
+				});
+			}
+		}
+		if (policy.requiresDocument && !normalizedDocumentUrl) {
+			throw new TRPCError({
+				code: "PRECONDITION_FAILED",
+				message: "A supporting document is required by the institution policy.",
+			});
+		}
+		if (policy.approvalDeadlineDays != null) {
+			const session = await repo.findSessionById(
+				record.attendanceSessionId,
+				institutionId,
+			);
+			if (
+				session &&
+				daysSince(session.sessionDate) > policy.approvalDeadlineDays
+			) {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: "The approval deadline for this excuse has passed.",
+				});
+			}
+		}
+	}
+
 	return repo.excuseAndAudit({
 		attendanceSessionId: record.attendanceSessionId,
 		studentId: record.studentId,
 		institutionId,
 		attendanceRecordId: record.id,
 		excuseReason,
+		excuseCategory: normalizedCategory ?? null,
+		justificationDocumentUrl: normalizedDocumentUrl ?? null,
 		newStatus: approve ? "excused" : record.status,
 		excuseApprovedBy: approve ? approvedBy : null,
 		excuseApprovedAt: approve ? new Date() : null,

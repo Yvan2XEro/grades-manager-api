@@ -906,6 +906,17 @@
       "toast": {
         "saved": "Établissement enregistré"
       },
+      "attendanceExcusePolicy": {
+        "title": "Politique des absences excusées",
+        "description": "Définissez les motifs acceptés et l’obligation éventuelle de justificatif.",
+        "categories": "Catégories acceptées",
+        "categoriesPlaceholder": "Médical, Urgence familiale, Administratif",
+        "categoriesHint": "Liste séparée par des virgules. Laissez vide pour accepter des catégories libres.",
+        "requiresDocument": "Exiger un justificatif",
+        "requiresDocumentHint": "Quand activé, une absence ne peut pas être excusée sans URL de document.",
+        "deadline": "Délai d’approbation (jours)",
+        "deadlineHint": "Laissez vide pour ne pas appliquer de délai."
+      },
       "form": {
         "identity": "Identité & branding",
         "identityHint": "Les champs français et anglais alimentent les en-têtes bilingues (relevés, diplômes, etc.).",
@@ -4053,12 +4064,18 @@
         "sessionCreated": "Séance créée",
         "sessionDeleted": "Séance supprimée",
         "marked": "Marqué",
-        "excused": "Absence excusée"
+        "excused": "Absence excusée",
+        "documentUploaded": "Justificatif téléversé"
       },
       "course": "Cours",
       "student": "Étudiant",
       "presentCount": "{{present}}/{{total}} présents",
+      "excuseCategory": "Catégorie",
+      "excuseCategoryPlaceholder": "Sélectionner une catégorie",
       "excusePlaceholder": "Maladie, événement familial…",
+      "justificationDocument": "Justificatif",
+      "justificationDocumentPlaceholder": "Coller une URL ou téléverser un fichier",
+      "uploadingDocument": "Téléversement du justificatif…",
       "submitExcuse": "Valider l'excuse",
       "marked": "Tout marquer",
       "absentOrLate": "Absents / En retard"

@@ -112,6 +112,8 @@ export async function excuseAndAudit(data: {
 	institutionId: string;
 	attendanceRecordId: string;
 	excuseReason: string;
+	excuseCategory?: string | null;
+	justificationDocumentUrl?: string | null;
 	newStatus: "excused" | "absent" | "late";
 	excuseApprovedBy: string | null;
 	excuseApprovedAt: Date | null;
@@ -122,7 +124,9 @@ export async function excuseAndAudit(data: {
 		const [updated] = await tx
 			.update(schema.attendanceRecords)
 			.set({
+				excuseCategory: data.excuseCategory ?? null,
 				excuseReason: data.excuseReason,
+				justificationDocumentUrl: data.justificationDocumentUrl ?? null,
 				status: data.newStatus,
 				excuseApprovedBy: data.excuseApprovedBy,
 				excuseApprovedAt: data.excuseApprovedAt,
@@ -141,7 +145,9 @@ export async function excuseAndAudit(data: {
 			attendanceSessionId: data.attendanceSessionId,
 			studentId: data.studentId,
 			action: data.action,
+			category: data.excuseCategory ?? null,
 			reason: data.excuseReason,
+			justificationDocumentUrl: data.justificationDocumentUrl ?? null,
 			actorId: data.actorId,
 		});
 		return updated;
@@ -279,7 +285,12 @@ export async function updateRecord(
 	data: Partial<
 		Pick<
 			NewAttendanceRecord,
-			"status" | "excuseReason" | "excuseApprovedBy" | "excuseApprovedAt"
+			| "status"
+			| "excuseCategory"
+			| "excuseReason"
+			| "justificationDocumentUrl"
+			| "excuseApprovedBy"
+			| "excuseApprovedAt"
 		>
 	>,
 	institutionId: string,
@@ -421,6 +432,8 @@ export async function upsertSingleRecord(
 				...(clearExcuse
 					? {
 							excuseReason: null,
+							excuseCategory: null,
+							justificationDocumentUrl: null,
 							excuseApprovedBy: null,
 							excuseApprovedAt: null,
 						}

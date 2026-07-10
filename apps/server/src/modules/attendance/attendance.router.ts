@@ -176,6 +176,8 @@ export const router = createRouter({
 				input.approve,
 				ctx.institution.id,
 				ctx.profile.id,
+				input.excuseCategory,
+				input.justificationDocumentUrl,
 			);
 		}),
 

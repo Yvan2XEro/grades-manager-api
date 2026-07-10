@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileSignature, Landmark } from "lucide-react";
+import { ClipboardCheck, FileSignature, Landmark } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -32,6 +32,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -902,8 +903,19 @@ export default function InstitutionSettings() {
 			{!institutionQuery.isLoading && institutionQuery.data && (
 				<DocumentParamsCard
 					institutionId={institutionQuery.data.id}
+					currentMetadata={institutionQuery.data.metadata ?? {}}
 					initialParams={
 						(institutionQuery.data.metadata as any)?.document_params ?? {}
+					}
+				/>
+			)}
+			{!institutionQuery.isLoading && institutionQuery.data && (
+				<AttendanceExcusePolicyCard
+					institutionId={institutionQuery.data.id}
+					currentMetadata={institutionQuery.data.metadata ?? {}}
+					initialPolicy={
+						(institutionQuery.data.metadata as any)?.attendance_excuse_policy ??
+						{}
 					}
 				/>
 			)}
@@ -919,9 +931,11 @@ type DocParams = {
 
 function DocumentParamsCard({
 	institutionId,
+	currentMetadata,
 	initialParams,
 }: {
 	institutionId: string;
+	currentMetadata: Record<string, unknown>;
 	initialParams: DocParams;
 }) {
 	const { t } = useTranslation();
@@ -937,6 +951,7 @@ function DocumentParamsCard({
 				id: institutionId,
 				data: {
 					metadata: {
+						...currentMetadata,
 						document_params: {
 							signatoryName: params.signatoryName || undefined,
 							signatoryTitle: params.signatoryTitle || undefined,
@@ -1013,6 +1028,142 @@ function DocumentParamsCard({
 						onChange={(e) => update("city", e.target.value)}
 						placeholder="Yaoundé"
 					/>
+				</div>
+				<div className="flex justify-end">
+					<Button
+						type="button"
+						disabled={saveMutation.isPending}
+						onClick={() => saveMutation.mutate()}
+					>
+						{saveMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}
+						{t("common.actions.save")}
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
+	);
+}
+
+type AttendanceExcusePolicy = {
+	acceptedCategories?: string[];
+	requiresDocument?: boolean;
+	approvalDeadlineDays?: number | null;
+};
+
+function AttendanceExcusePolicyCard({
+	institutionId,
+	currentMetadata,
+	initialPolicy,
+}: {
+	institutionId: string;
+	currentMetadata: Record<string, unknown>;
+	initialPolicy: AttendanceExcusePolicy;
+}) {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [acceptedCategories, setAcceptedCategories] = useState(
+		(initialPolicy.acceptedCategories ?? []).join(", "),
+	);
+	const [requiresDocument, setRequiresDocument] = useState(
+		initialPolicy.requiresDocument ?? false,
+	);
+	const [approvalDeadlineDays, setApprovalDeadlineDays] = useState(
+		initialPolicy.approvalDeadlineDays?.toString() ?? "",
+	);
+
+	const saveMutation = useMutation({
+		mutationFn: async () => {
+			const categories = acceptedCategories
+				.split(",")
+				.map((item) => item.trim())
+				.filter(Boolean);
+			await trpcClient.institutions.update.mutate({
+				id: institutionId,
+				data: {
+					metadata: {
+						...currentMetadata,
+						attendance_excuse_policy: {
+							acceptedCategories: categories,
+							requiresDocument,
+							approvalDeadlineDays:
+								approvalDeadlineDays.trim() === ""
+									? null
+									: Number(approvalDeadlineDays),
+						},
+					},
+				},
+			});
+		},
+		onSuccess: () => {
+			toast.success(
+				t("admin.institution.toast.saved", {
+					defaultValue: "Institution saved",
+				}),
+			);
+			queryClient.invalidateQueries({
+				queryKey: trpc.institutions.get.queryKey(),
+			});
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					<ClipboardCheck className="h-5 w-5" />
+					{t("admin.institution.attendanceExcusePolicy.title")}
+				</CardTitle>
+				<CardDescription>
+					{t("admin.institution.attendanceExcusePolicy.description")}
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<div className="space-y-1.5">
+					<label className="font-medium text-sm">
+						{t("admin.institution.attendanceExcusePolicy.categories")}
+					</label>
+					<Input
+						value={acceptedCategories}
+						onChange={(event) => setAcceptedCategories(event.target.value)}
+						placeholder={t(
+							"admin.institution.attendanceExcusePolicy.categoriesPlaceholder",
+						)}
+					/>
+					<p className="text-muted-foreground text-xs">
+						{t("admin.institution.attendanceExcusePolicy.categoriesHint")}
+					</p>
+				</div>
+				<div className="flex items-center justify-between rounded-md border p-3">
+					<div>
+						<p className="font-medium text-sm">
+							{t("admin.institution.attendanceExcusePolicy.requiresDocument")}
+						</p>
+						<p className="text-muted-foreground text-xs">
+							{t(
+								"admin.institution.attendanceExcusePolicy.requiresDocumentHint",
+							)}
+						</p>
+					</div>
+					<Switch
+						checked={requiresDocument}
+						onCheckedChange={setRequiresDocument}
+					/>
+				</div>
+				<div className="max-w-xs space-y-1.5">
+					<label className="font-medium text-sm">
+						{t("admin.institution.attendanceExcusePolicy.deadline")}
+					</label>
+					<Input
+						type="number"
+						min={0}
+						value={approvalDeadlineDays}
+						onChange={(event) => setApprovalDeadlineDays(event.target.value)}
+						placeholder="7"
+					/>
+					<p className="text-muted-foreground text-xs">
+						{t("admin.institution.attendanceExcusePolicy.deadlineHint")}
+					</p>
 				</div>
 				<div className="flex justify-end">
 					<Button

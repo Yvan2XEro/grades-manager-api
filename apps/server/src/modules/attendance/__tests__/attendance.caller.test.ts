@@ -1072,6 +1072,123 @@ describe("attendance excuse audit cascade regression", () => {
 	});
 });
 
+// ── JVL-78 — institutional excuse policy and document reference ──────────────
+
+describe("attendance excuse institutional policy", () => {
+	async function setupAbsentRecord() {
+		const profile = await createDomainUser();
+		const adminCtx = makeTestContext({
+			role: "administrator",
+			profileOverrides: { id: profile.id },
+		});
+		const admin = createCaller(adminCtx);
+		const cc = await createClassCourse({ teacher: profile.id });
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+		const session = await admin.attendance.createSession({
+			classCourseId: cc.id,
+			sessionDate: TODAY,
+			isExceptional: true,
+		});
+		await admin.attendance.bulkMark({
+			attendanceSessionId: session.id,
+			records: [{ studentId: student.id, status: "absent" }],
+		});
+		const record = await db.query.attendanceRecords.findFirst({
+			where: eq(schema.attendanceRecords.attendanceSessionId, session.id),
+		});
+		if (!record) throw new Error("attendance record not found");
+		return { admin, cc, record };
+	}
+
+	it("rejects approval without document when the institution policy requires one", async () => {
+		const { admin, cc, record } = await setupAbsentRecord();
+		await db
+			.update(schema.institutions)
+			.set({
+				metadata: {
+					attendance_excuse_policy: {
+						acceptedCategories: ["Medical"],
+						requiresDocument: true,
+						approvalDeadlineDays: null,
+					},
+				},
+			})
+			.where(eq(schema.institutions.id, cc.institutionId));
+
+		await expect(
+			admin.attendance.excuseAbsence({
+				attendanceRecordId: record.id,
+				excuseReason: "Medical appointment",
+				excuseCategory: "Medical",
+				approve: true,
+			}),
+		).rejects.toHaveProperty("code", "PRECONDITION_FAILED");
+	});
+
+	it("rejects categories outside the institution policy", async () => {
+		const { admin, cc, record } = await setupAbsentRecord();
+		await db
+			.update(schema.institutions)
+			.set({
+				metadata: {
+					attendance_excuse_policy: {
+						acceptedCategories: ["Medical"],
+						requiresDocument: false,
+						approvalDeadlineDays: null,
+					},
+				},
+			})
+			.where(eq(schema.institutions.id, cc.institutionId));
+
+		await expect(
+			admin.attendance.excuseAbsence({
+				attendanceRecordId: record.id,
+				excuseReason: "Travel",
+				excuseCategory: "Travel",
+				approve: true,
+			}),
+		).rejects.toHaveProperty("code", "PRECONDITION_FAILED");
+	});
+
+	it("stores document reference and category on the record and immutable audit log", async () => {
+		const { admin, cc, record } = await setupAbsentRecord();
+		await db
+			.update(schema.institutions)
+			.set({
+				metadata: {
+					attendance_excuse_policy: {
+						acceptedCategories: ["Medical"],
+						requiresDocument: true,
+						approvalDeadlineDays: null,
+					},
+				},
+			})
+			.where(eq(schema.institutions.id, cc.institutionId));
+
+		const updated = await admin.attendance.excuseAbsence({
+			attendanceRecordId: record.id,
+			excuseReason: "Medical appointment",
+			excuseCategory: "Medical",
+			justificationDocumentUrl: "https://example.com/medical.pdf",
+			approve: true,
+		});
+
+		expect(updated?.status).toBe("excused");
+		expect(updated?.excuseCategory).toBe("Medical");
+		expect(updated?.justificationDocumentUrl).toBe(
+			"https://example.com/medical.pdf",
+		);
+		const audit = await db.query.attendanceExcuseAuditLogs.findFirst({
+			where: eq(schema.attendanceExcuseAuditLogs.attendanceRecordId, record.id),
+		});
+		expect(audit?.category).toBe("Medical");
+		expect(audit?.justificationDocumentUrl).toBe(
+			"https://example.com/medical.pdf",
+		);
+	});
+});
+
 // ── Regression: JVL-54 — revokeExemption non-existent → no audit entry ───────
 
 describe("attendance exemption revoke guard", () => {

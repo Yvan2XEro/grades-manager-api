@@ -1167,6 +1167,11 @@ export interface InstitutionMetadata {
 		signatoryTitle?: string;
 		city?: string;
 	};
+	attendance_excuse_policy?: {
+		acceptedCategories?: string[];
+		requiresDocument?: boolean;
+		approvalDeadlineDays?: number | null;
+	};
 	[key: string]: unknown;
 }
 
@@ -4107,7 +4112,9 @@ export const attendanceRecords = pgTable(
 			.notNull()
 			.$type<AttendanceStatus>()
 			.default("present"),
+		excuseCategory: text("excuse_category"),
 		excuseReason: text("excuse_reason"),
+		justificationDocumentUrl: text("justification_document_url"),
 		excuseApprovedBy: text("excuse_approved_by").references(
 			() => domainUsers.id,
 			{ onDelete: "set null" },
@@ -4163,7 +4170,9 @@ export const attendanceExcuseAuditLogs = pgTable(
 			onDelete: "set null",
 		}),
 		action: text("action", { enum: ["approved", "rejected"] }).notNull(),
+		category: text("category"),
 		reason: text("reason").notNull(),
+		justificationDocumentUrl: text("justification_document_url"),
 		actorId: text("actor_id").references(() => domainUsers.id, {
 			onDelete: "set null",
 		}),

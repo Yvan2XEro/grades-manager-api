@@ -95,6 +95,24 @@ export default function AttendanceManagement() {
 		studentName: string;
 	} | null>(null);
 	const [excuseReason, setExcuseReason] = useState("");
+	const [excuseCategory, setExcuseCategory] = useState("");
+	const [justificationDocumentUrl, setJustificationDocumentUrl] = useState("");
+
+	const institutionQuery = useQuery(trpc.institutions.get.queryOptions());
+	const excusePolicy =
+		(
+			institutionQuery.data?.metadata as {
+				attendance_excuse_policy?: {
+					acceptedCategories?: string[];
+					requiresDocument?: boolean;
+					approvalDeadlineDays?: number | null;
+				};
+			}
+		)?.attendance_excuse_policy ?? {};
+	const acceptedCategories = Array.isArray(excusePolicy.acceptedCategories)
+		? excusePolicy.acceptedCategories.filter(Boolean)
+		: [];
+	const requiresDocument = excusePolicy.requiresDocument === true;
 
 	// Fetch class courses for selection
 	const { data: classCoursesData } = useQuery({
@@ -212,14 +230,42 @@ export default function AttendanceManagement() {
 			trpcClient.attendance.excuseAbsence.mutate({
 				attendanceRecordId: excuseTarget!.recordId,
 				excuseReason,
+				excuseCategory: excuseCategory || undefined,
+				justificationDocumentUrl: justificationDocumentUrl || undefined,
 				approve: true,
 			}),
 		onSuccess: () => {
 			toast.success(t("teacher.attendanceManagement.toast.excused"));
 			setExcuseDialogOpen(false);
 			setExcuseReason("");
+			setExcuseCategory("");
+			setJustificationDocumentUrl("");
 			invalidateDetail();
 			invalidateSessions();
+		},
+		onError: (err) => toast.error(err.message),
+	});
+
+	const uploadJustificationMutation = useMutation({
+		mutationFn: async (file: File) => {
+			const base64 = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => {
+					const result = String(reader.result ?? "");
+					resolve(result.includes(",") ? result.split(",")[1] : result);
+				};
+				reader.onerror = () => reject(reader.error);
+				reader.readAsDataURL(file);
+			});
+			return trpcClient.files.uploadAttendanceJustification.mutate({
+				filename: file.name,
+				mimeType: file.type || "application/octet-stream",
+				base64,
+			});
+		},
+		onSuccess: (stored) => {
+			setJustificationDocumentUrl(stored.url);
+			toast.success(t("teacher.attendanceManagement.toast.documentUploaded"));
 		},
 		onError: (err) => toast.error(err.message),
 	});
@@ -243,6 +289,8 @@ export default function AttendanceManagement() {
 	function handleOpenExcuse(recordId: string, studentName: string) {
 		setExcuseTarget({ recordId, studentName });
 		setExcuseReason("");
+		setExcuseCategory("");
+		setJustificationDocumentUrl("");
 		setExcuseDialogOpen(true);
 	}
 
@@ -665,6 +713,32 @@ export default function AttendanceManagement() {
 								</span>
 							</p>
 						)}
+						{acceptedCategories.length > 0 && (
+							<div>
+								<Label>
+									{t("teacher.attendanceManagement.excuseCategory")}
+								</Label>
+								<Select
+									value={excuseCategory}
+									onValueChange={setExcuseCategory}
+								>
+									<SelectTrigger className="mt-1">
+										<SelectValue
+											placeholder={t(
+												"teacher.attendanceManagement.excuseCategoryPlaceholder",
+											)}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{acceptedCategories.map((category) => (
+											<SelectItem key={category} value={category}>
+												{category}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						)}
 						<div>
 							<Label>{t("teacher.attendanceManagement.excuseReason")}</Label>
 							<Textarea
@@ -677,6 +751,33 @@ export default function AttendanceManagement() {
 								rows={3}
 							/>
 						</div>
+						<div className="space-y-2">
+							<Label>
+								{t("teacher.attendanceManagement.justificationDocument")}
+								{requiresDocument ? " *" : ""}
+							</Label>
+							<Input
+								type="file"
+								onChange={(event) => {
+									const file = event.target.files?.[0];
+									if (file) uploadJustificationMutation.mutate(file);
+								}}
+							/>
+							<Input
+								value={justificationDocumentUrl}
+								onChange={(event) =>
+									setJustificationDocumentUrl(event.target.value)
+								}
+								placeholder={t(
+									"teacher.attendanceManagement.justificationDocumentPlaceholder",
+								)}
+							/>
+							{uploadJustificationMutation.isPending && (
+								<p className="text-muted-foreground text-xs">
+									{t("teacher.attendanceManagement.uploadingDocument")}
+								</p>
+							)}
+						</div>
 					</DialogBody>
 					<DialogFooter>
 						<Button
@@ -687,7 +788,13 @@ export default function AttendanceManagement() {
 						</Button>
 						<Button
 							onClick={() => excuseMutation.mutate()}
-							disabled={!excuseReason.trim() || excuseMutation.isPending}
+							disabled={
+								!excuseReason.trim() ||
+								(acceptedCategories.length > 0 && !excuseCategory) ||
+								(requiresDocument && !justificationDocumentUrl.trim()) ||
+								excuseMutation.isPending ||
+								uploadJustificationMutation.isPending
+							}
 						>
 							{t("teacher.attendanceManagement.submitExcuse")}
 						</Button>

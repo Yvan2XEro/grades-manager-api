@@ -3,7 +3,12 @@ import { z } from "zod";
 import { db } from "@/db";
 import * as authSchema from "@/db/schema/auth";
 import { getStorageAdapter } from "@/lib/storage";
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	adminProcedure,
+	gradingProcedure,
+	protectedProcedure,
+	router,
+} from "@/lib/trpc";
 
 const uploadSchema = z.object({
 	filename: z.string().min(1),
@@ -27,6 +32,17 @@ export const filesRouter = router({
 			mimeType: input.mimeType,
 		});
 	}),
+	uploadAttendanceJustification: gradingProcedure
+		.input(uploadSchema)
+		.mutation(async ({ input }) => {
+			const buffer = Buffer.from(input.base64, "base64");
+			const adapter = getStorageAdapter();
+			return adapter.save({
+				buffer,
+				filename: input.filename,
+				mimeType: input.mimeType,
+			});
+		}),
 	uploadAvatar: protectedProcedure
 		.input(avatarUploadSchema)
 		.mutation(async ({ input, ctx }) => {

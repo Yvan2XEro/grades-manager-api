@@ -37,6 +37,7 @@ interface Resources {
 				rename: "Rename";
 				deselectAll: "Tout désélectionner";
 				selectAll: "Tout sélectionner";
+				clear: "Clear";
 			};
 			fields: {
 				email: "Email";
@@ -64,6 +65,7 @@ interface Resources {
 			pagination: {
 				next: "Next";
 				previous: "Previous";
+				page: "Page";
 			};
 			errors: {
 				unknown: "Unknown error";
@@ -104,6 +106,10 @@ interface Resources {
 			create: "Create";
 			yes: "Yes";
 			no: "No";
+			add: "Add";
+			error: "Error";
+			hide: "Hide";
+			total: "Total";
 		};
 		teacher: {
 			courses: {
@@ -113,11 +119,34 @@ interface Resources {
 				delegatedDashboardBadge: "Delegated";
 				actions: {
 					viewGrades: "View Grades";
+					fastEntry: "Fast Entry";
 				};
 				empty: {
 					title: "No courses assigned";
 					description: "You don't have any courses assigned for the active academic year.";
 				};
+				filters: {
+					allClasses: "All Classes";
+					allDelegations: "All Delegations";
+					allExamTypes: "All Exam Types";
+					allPrograms: "All Programs";
+					allSemesters: "All Semesters";
+					allStatuses: "All Statuses";
+					allTeachers: "All Teachers";
+					class: "Class";
+					delegated: "Delegated";
+					delegation: "Delegation";
+					examType: "Exam Type";
+					mine: "Mine";
+					program: "Program";
+					semester: "Semester";
+					status: "Status";
+					teacher: "Teacher";
+				};
+				noMatch: "No Match";
+				noMatchHint: "No Match Hint";
+				searchPlaceholder: "Search Placeholder";
+				summary: "Summary";
 			};
 			"courses.manage": {
 				title: "Course Management";
@@ -241,6 +270,8 @@ interface Resources {
 					deleteError: "Could not delete the exam";
 					retakeSuccess: "Retake exam created successfully";
 					retakeError: "Could not create retake exam";
+					resubmitError: "Resubmit Error";
+					resubmitSuccess: "Resubmit Success";
 				};
 				delete: {
 					title: "Delete Exam";
@@ -256,6 +287,11 @@ interface Resources {
 				scoringPolicy: {
 					replace: "Replace original";
 					best_of: "Keep best grade";
+				};
+				rejection: {
+					fixGrades: "Fix Grades";
+					label: "Label";
+					resubmit: "Resubmit";
 				};
 			};
 			dashboard: {
@@ -315,6 +351,7 @@ interface Resources {
 					saving: "Saving...";
 					exportTemplate: "Export Template";
 					importGrades: "Import Grades";
+					lockRequiresApproval: "Lock Requires Approval";
 				};
 				info: {
 					title: "Grading information";
@@ -480,6 +517,17 @@ interface Resources {
 				errors: {
 					endBeforeStart: "End time must be after start time.";
 				};
+				importDialog: {
+					description: "Description";
+					errorRows: "Error Rows";
+					execute: "Execute";
+					noErrors: "No Errors";
+					preview: "Preview";
+					skipDuplicates: "Skip Duplicates";
+					success: "Success";
+					title: "Title";
+					validRows: "Valid Rows";
+				};
 			};
 			rooms: {
 				title: "Rooms";
@@ -551,11 +599,17 @@ interface Resources {
 					sessionDeleted: "Session deleted";
 					marked: "Marked";
 					excused: "Absence excused";
+					documentUploaded: "Justification document uploaded";
 				};
 				course: "Course";
 				student: "Student";
 				presentCount: "{{present}}/{{total}} present";
+				excuseCategory: "Category";
+				excuseCategoryPlaceholder: "Select a category";
 				excusePlaceholder: "Illness, family event…";
+				justificationDocument: "Justification document";
+				justificationDocumentPlaceholder: "Paste a document URL or upload a file";
+				uploadingDocument: "Uploading document…";
 				submitExcuse: "Submit excuse";
 				marked: "Mark all";
 				absentOrLate: "Absent / Late";
@@ -1038,6 +1092,23 @@ interface Resources {
 				};
 				rejectionReason: "Rejection reason";
 			};
+			spreadsheet: {
+				errors: "Errors";
+				filled: "Filled";
+				invalidScore: "Invalid Score";
+				legend: {
+					hint: "Hint";
+					title: "Title";
+				};
+				matricule: "Matricule";
+				noCourse: "No Course";
+				noExams: "No Exams";
+				noStudents: "No Students";
+				pending: "Pending";
+				perExamMode: "Per Exam Mode";
+				searchStudent: "Search Student";
+				studentCol: "Student Col";
+			};
 		};
 		navigation: {
 			breadcrumbs: {
@@ -1189,6 +1260,8 @@ interface Resources {
 				noAccount: "Don't have an account?";
 				registerLink: "Create one";
 				notMember: "You are not a member of this organization. Contact your administrator.";
+				rememberMe: "Remember Me";
+				subtitle: "Subtitle";
 			};
 			register: {
 				title: "Create your account";
@@ -1227,6 +1300,9 @@ interface Resources {
 				error: "Unable to update the password";
 				backToLogin: "Return to sign in";
 				subtitle: "Choose a strong new password for your account.";
+				signInNow: "Sign In Now";
+				successMessage: "Success Message";
+				successTitle: "Success Title";
 			};
 			logout: {
 				success: "Signed out successfully";
@@ -1240,6 +1316,12 @@ interface Resources {
 				passwordMin: "Password must be at least {{count}} characters";
 				confirmPassword: "Confirm password is required";
 				passwordsMismatch: "Passwords do not match";
+			};
+			orgPicker: {
+				back: "Back";
+				noOrgs: "No Orgs";
+				subtitle: "Subtitle";
+				title: "Title";
 			};
 		};
 		admin: {
@@ -1431,9 +1513,11 @@ interface Resources {
 				actions: {
 					flush: "Flush pending";
 					ack: "Acknowledge";
+					retry: "Retry";
 				};
 				toast: {
 					flushed: "Pending notifications flushed";
+					retried: "Retried";
 				};
 			};
 			apiKeys: {
@@ -1562,6 +1646,16 @@ interface Resources {
 						error: "Error";
 					};
 					logStep: "Step";
+					failed: "Failed";
+					failureSummary: "Failure Summary";
+					items: "Items";
+					notFound: "Not Found";
+					originalJob: "Original Job";
+					processed: "Processed";
+					rollbackJob: "Rollback Job";
+					skipped: "Skipped";
+					step: "Step";
+					unknownError: "Unknown Error";
 				};
 				toast: {
 					previewSuccess: "Preview generated successfully";
@@ -1575,6 +1669,12 @@ interface Resources {
 					completed: "Completed";
 					failed: "Failed";
 					skipped: "Skipped";
+				};
+				confirm: {
+					cancelMessage: "Cancel Message";
+					cancelTitle: "Cancel Title";
+					rollbackMessage: "Rollback Message";
+					rollbackTitle: "Rollback Title";
 				};
 			};
 			academicYears: {
@@ -1849,6 +1949,17 @@ interface Resources {
 				toast: {
 					saved: "Institution saved successfully";
 				};
+				attendanceExcusePolicy: {
+					title: "Attendance excuse policy";
+					description: "Define which absence excuses are accepted and whether a supporting document is required.";
+					categories: "Accepted categories";
+					categoriesPlaceholder: "Medical, Family emergency, Administrative";
+					categoriesHint: "Comma-separated list. Leave empty to allow free categories.";
+					requiresDocument: "Require supporting document";
+					requiresDocumentHint: "When enabled, absence excuses cannot be approved without a document URL.";
+					deadline: "Approval deadline (days)";
+					deadlineHint: "Leave empty for no deadline.";
+				};
 				form: {
 					identity: "Identity & branding";
 					identityHint: "French and English fields are required to feed bilingual headers.";
@@ -1909,6 +2020,8 @@ interface Resources {
 					signatoryName: "Signatory name";
 					signatoryTitle: "Signatory title";
 					city: "City (for document date line)";
+					logoSvg: "Logo Svg";
+					logoSvgHint: "Logo Svg Hint";
 				};
 				sections: {
 					contact: "Contact";
@@ -2135,6 +2248,19 @@ interface Resources {
 						deleteError: "Could not delete option";
 						update: "Option updated";
 						updateError: "Could not update option";
+					};
+				};
+				duplicate: {
+					button: "Button";
+					cloneCurriculum: "Clone Curriculum";
+					description: "Description";
+					noCycles: "No Cycles";
+					submit: "Submit";
+					targetCycles: "Target Cycles";
+					title: "Title";
+					toast: {
+						error: "Error";
+						success: "Success";
 					};
 				};
 			};
@@ -2620,6 +2746,8 @@ interface Resources {
 					title: "Select exams to include";
 					emptyTitle: "No exams found";
 					emptyDescription: "There are no exams created for this class yet.";
+					loadingDescription: "Loading Description";
+					loadingTitle: "Loading Title";
 				};
 				columns: {
 					lastName: "Last name";
@@ -2671,6 +2799,8 @@ interface Resources {
 					ueGenerateError: "UE generation failed";
 					bulkEvaluationsError: "Bulk evaluations generation failed";
 					bulkUesError: "Bulk UE generation failed";
+					ecGenerateError: "Ec Generate Error";
+					ecPreviewError: "Ec Preview Error";
 				};
 			};
 			students: {
@@ -3060,6 +3190,18 @@ interface Resources {
 					pending: "Pending";
 					completed: "Completed";
 					withdrawn: "Withdrawn";
+				};
+				bulkEnroll: {
+					classesLabel: "Classes Label";
+					description: "Description";
+					noClasses: "No Classes";
+					noSelection: "No Selection";
+					openButton: "Open Button";
+					partial: "Partial";
+					requireYear: "Require Year";
+					run: "Run";
+					success: "Success";
+					title: "Title";
 				};
 			};
 			teachingUnits: {
@@ -3607,6 +3749,8 @@ interface Resources {
 						goToClasses: "goToClasses";
 					};
 					targetClassHint: "targetClassHint";
+					ctaDesc: "Cta Desc";
+					ctaTitle: "Cta Title";
 				};
 				ueDecision: {
 					ADM: "Acquired";
@@ -3796,6 +3940,9 @@ interface Resources {
 					country: "Pays";
 					addressFr: "Adresse (FR)";
 					addressEn: "Adresse (EN)";
+					adminInstanceLogoSvg: "Admin Instance Logo Svg";
+					logoSvg: "Logo Svg";
+					watermarkLogoSvg: "Watermark Logo Svg";
 				};
 				actions: {
 					addInstance: "Ajouter une instance";
@@ -4130,10 +4277,12 @@ interface Resources {
 				actions: {
 					validate: "Approve & lock";
 					bulkValidate: "Bulk validate";
+					reject: "Reject";
 				};
 				toast: {
 					validated: "Exam approved";
 					bulkValidated: "Exams validated successfully";
+					rejected: "Rejected";
 				};
 				notificationsEmpty: "No notifications";
 				windows: "Enrollment windows";
@@ -4141,6 +4290,11 @@ interface Resources {
 					title: "Approve and lock?";
 					bulkMessage: "bulkMessage";
 					singleMessage: "singleMessage";
+				};
+				dateFrom: "Date From";
+				rejectDialog: {
+					subtitle: "Subtitle";
+					title: "Title";
 				};
 			};
 			cohort: {
@@ -4198,6 +4352,17 @@ interface Resources {
 				searchPlaceholder: "Search exams...";
 				allClasses: "All classes";
 				allYears: "All years";
+				allTeachers: "All Teachers";
+				dateFrom: "Date From";
+				dateTo: "Date To";
+				teacherFilter: "Teacher Filter";
+			};
+			auditHistory: {
+				by: "By";
+				empty: "Empty";
+				system: "System";
+				title: "Title";
+				toggle: "Toggle";
 			};
 		};
 		student: {
@@ -4355,6 +4520,7 @@ interface Resources {
 					excluded: "Excluded";
 					pending: "Pending";
 				};
+				eventCount: "Event Count";
 			};
 			enrollment: {
 				title: "Enrollment";
@@ -4653,6 +4819,9 @@ interface Resources {
 					student: "Student";
 					status: "Status";
 				};
+				forceMatch: "Force Match";
+				forced: "Forced";
+				xlsxLoaded: "Xlsx Loaded";
 			};
 			assignments: {
 				title: "Student Payments";
@@ -4778,6 +4947,14 @@ interface Resources {
 				viewDetail: "Detail";
 				viewHistory: "Financial history";
 			};
+			payment: {
+				methods: {
+					bank_transfer: "Bank transfer";
+					cash: "Cash";
+					check: "Check";
+					mobile_money: "Mobile money";
+				};
+			};
 		};
 		notifications: {
 			title: "Notifications";
@@ -4828,6 +5005,10 @@ interface Resources {
 			noData: "No attendance sessions recorded for this course.";
 			title: "Attendance rates";
 			exportFilename: "attendance-rates.xlsx";
+			export: "Export";
+			rate: "Rate";
+			student: "Student";
+			subtitle: "Subtitle";
 		};
 		timetableHub: {
 			title: "Timetable & Attendance";
