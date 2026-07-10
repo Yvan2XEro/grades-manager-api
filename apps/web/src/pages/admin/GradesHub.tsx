@@ -1,35 +1,24 @@
-import { useQueryState } from "nuqs";
+import { useTranslation } from "react-i18next";
+import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import GradeAccessGrants from "./GradeAccessGrants";
-import GradeExport from "./GradeExport";
-import RetakeEligibility from "./RetakeEligibility";
+
+const tabs = [
+	{ path: "export", labelKey: "gradesHub.tabs.export" },
+	{ path: "access", labelKey: "gradesHub.tabs.access" },
+	{ path: "retake", labelKey: "gradesHub.tabs.retake" },
+	{ path: "templates", labelKey: "gradesHub.tabs.templates" },
+	{ path: "class-documents", labelKey: "gradesHub.tabs.classDocuments" },
+] as const;
 
 export default function GradesHub() {
-	const [tab, setTab] = useQueryState("tab", { defaultValue: "export" });
-
+	const { t } = useTranslation();
 	return (
 		<div className="space-y-6">
 			<PageHeader
-				title="Gestion des notes"
-				description="Exportez les notes, déléguez l'accès et gérez l'éligibilité aux rattrapages"
+				title={t("gradesHub.title")}
+				description={t("gradesHub.description")}
 			/>
-			<Tabs value={tab ?? "export"} onValueChange={setTab}>
-				<TabsList>
-					<TabsTrigger value="export">Export</TabsTrigger>
-					<TabsTrigger value="access">Délégation d'accès</TabsTrigger>
-					<TabsTrigger value="retake">Éligibilité rattrapage</TabsTrigger>
-				</TabsList>
-				<TabsContent value="export" className="mt-4">
-					<GradeExport />
-				</TabsContent>
-				<TabsContent value="access" className="mt-4">
-					<GradeAccessGrants />
-				</TabsContent>
-				<TabsContent value="retake" className="mt-4">
-					<RetakeEligibility />
-				</TabsContent>
-			</Tabs>
+			<HubNav tabs={tabs} basePath="/admin/grades" />
 		</div>
 	);
 }

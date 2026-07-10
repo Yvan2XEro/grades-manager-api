@@ -1,57 +1,24 @@
-import { useQueryState } from "nuqs";
 import { useTranslation } from "react-i18next";
+import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AttendanceManagement from "./attendance/AttendanceManagement";
-import AttendanceRates from "./attendance/AttendanceRates";
-import ClassAttendanceOverview from "./attendance/ClassAttendanceOverview";
-import RoomsManagement from "./RoomsManagement";
-import TimetableManagement from "./TimetableManagement";
+
+const tabs = [
+	{ path: "schedule", labelKey: "timetableHub.tabs.timetable" },
+	{ path: "rooms", labelKey: "timetableHub.tabs.rooms" },
+	{ path: "attendance", labelKey: "timetableHub.tabs.attendance" },
+	{ path: "rates", labelKey: "timetableHub.tabs.rates" },
+	{ path: "overview", labelKey: "timetableHub.tabs.overview" },
+] as const;
 
 export default function TimetableHub() {
 	const { t } = useTranslation();
-	const [tab, setTab] = useQueryState("tab", { defaultValue: "timetable" });
-
 	return (
 		<div className="space-y-6">
 			<PageHeader
 				title={t("timetableHub.title")}
 				description={t("timetableHub.description")}
 			/>
-			<Tabs value={tab ?? "timetable"} onValueChange={setTab}>
-				<TabsList>
-					<TabsTrigger value="timetable">
-						{t("timetableHub.tabs.timetable")}
-					</TabsTrigger>
-					<TabsTrigger value="rooms">
-						{t("timetableHub.tabs.rooms")}
-					</TabsTrigger>
-					<TabsTrigger value="attendance">
-						{t("timetableHub.tabs.attendance")}
-					</TabsTrigger>
-					<TabsTrigger value="rates">
-						{t("timetableHub.tabs.rates")}
-					</TabsTrigger>
-					<TabsTrigger value="overview">
-						{t("timetableHub.tabs.overview")}
-					</TabsTrigger>
-				</TabsList>
-				<TabsContent value="timetable" className="mt-4">
-					<TimetableManagement />
-				</TabsContent>
-				<TabsContent value="rooms" className="mt-4">
-					<RoomsManagement />
-				</TabsContent>
-				<TabsContent value="attendance" className="mt-4">
-					<AttendanceManagement />
-				</TabsContent>
-				<TabsContent value="rates" className="mt-4">
-					<AttendanceRates />
-				</TabsContent>
-				<TabsContent value="overview" className="mt-4">
-					<ClassAttendanceOverview />
-				</TabsContent>
-			</Tabs>
+			<HubNav tabs={tabs} basePath="/admin/timetable" />
 		</div>
 	);
 }

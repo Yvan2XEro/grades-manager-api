@@ -190,7 +190,8 @@
         "configuration": "Configuration",
         "timetable": "Emploi du temps",
         "admissions": "Admissions",
-        "guardians": "Parents"
+        "guardians": "Parents",
+        "academicResults": "Résultats & Promotion"
       },
       "groups": {
         "overview": "Vue d'ensemble",
@@ -201,7 +202,9 @@
         "promotion": "Règles & Promotion",
         "system": "Système",
         "assessment": "Évaluations",
-        "people": "Personnes"
+        "people": "Personnes",
+        "inscriptions": "Inscriptions & Admissions",
+        "results": "Résultats & Promotion"
       },
       "teacher": {
         "dashboard": "Tableau de bord",
@@ -5177,6 +5180,70 @@
         "documentReviewed": "Document revu",
         "converted": "Candidature convertie"
       }
+    }
+  },
+  "institutionHub": {
+    "title": "Institution & Structure",
+    "description": "Gérez le profil de votre institution, les facultés et les cycles académiques",
+    "tabs": {
+      "overview": "Institution",
+      "faculties": "Facultés",
+      "cycles": "Cycles d'étude"
+    }
+  },
+  "programsHub": {
+    "title": "Programmes & Curriculum",
+    "description": "Gérez les programmes, les unités d'enseignement et les cours",
+    "tabs": {
+      "programs": "Programmes",
+      "teachingUnits": "Unités d'enseignement",
+      "courses": "Cours"
+    }
+  },
+  "classesHub": {
+    "title": "Classes & Inscriptions",
+    "description": "Gérez les classes, les affectations de cours et les inscriptions étudiantes",
+    "tabs": {
+      "classes": "Classes",
+      "assignments": "Affectations de cours",
+      "enrollments": "Inscriptions"
+    }
+  },
+  "usersHub": {
+    "title": "Utilisateurs & Accès",
+    "description": "Gérez les utilisateurs, les rôles et les clés d'API",
+    "tabs": {
+      "users": "Utilisateurs",
+      "apiKeys": "Clés API"
+    }
+  },
+  "gradesHub": {
+    "title": "Notes & Documents",
+    "description": "Exportez les notes, déléguez l'accès, gérez les rattrapages et les modèles de documents",
+    "tabs": {
+      "export": "Export",
+      "access": "Délégation d'accès",
+      "retake": "Éligibilité rattrapage",
+      "templates": "Modèles d'export",
+      "classDocuments": "Documents de classe"
+    }
+  },
+  "configurationHub": {
+    "title": "Configuration",
+    "description": "Formats de matricules, barème de notes, modèles d'exportation et moteur de règles",
+    "tabs": {
+      "regNumbers": "Formats de matricule",
+      "gradeScale": "Barème de notes",
+      "templates": "Modèles d'export",
+      "rules": "Moteur de règles"
+    }
+  },
+  "academicResultsHub": {
+    "title": "Résultats & Promotion",
+    "description": "Gérez les délibérations et les passages d'année",
+    "tabs": {
+      "deliberations": "Délibérations",
+      "promotion": "Passage d'année"
     }
   }
 }

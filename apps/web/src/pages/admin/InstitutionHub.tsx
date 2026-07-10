@@ -1,35 +1,22 @@
-import { useQueryState } from "nuqs";
+import { useTranslation } from "react-i18next";
+import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FacultyManagement from "./FacultyManagement";
-import InstitutionSettings from "./InstitutionSettings";
-import StudyCycleManagement from "./StudyCycleManagement";
+
+const tabs = [
+	{ path: "overview", labelKey: "institutionHub.tabs.overview" },
+	{ path: "faculties", labelKey: "institutionHub.tabs.faculties" },
+	{ path: "cycles", labelKey: "institutionHub.tabs.cycles" },
+] as const;
 
 export default function InstitutionHub() {
-	const [tab, setTab] = useQueryState("tab", { defaultValue: "institution" });
-
+	const { t } = useTranslation();
 	return (
 		<div className="space-y-6">
 			<PageHeader
-				title="Institution & Structure"
-				description="Gérez le profil de votre institution, les facultés et les cycles académiques"
+				title={t("institutionHub.title")}
+				description={t("institutionHub.description")}
 			/>
-			<Tabs value={tab ?? "institution"} onValueChange={setTab}>
-				<TabsList>
-					<TabsTrigger value="institution">Institution</TabsTrigger>
-					<TabsTrigger value="faculties">Facultés</TabsTrigger>
-					<TabsTrigger value="cycles">Cycles d'étude</TabsTrigger>
-				</TabsList>
-				<TabsContent value="institution" className="mt-4">
-					<InstitutionSettings />
-				</TabsContent>
-				<TabsContent value="faculties" className="mt-4">
-					<FacultyManagement />
-				</TabsContent>
-				<TabsContent value="cycles" className="mt-4">
-					<StudyCycleManagement />
-				</TabsContent>
-			</Tabs>
+			<HubNav tabs={tabs} basePath="/admin/institution" />
 		</div>
 	);
 }

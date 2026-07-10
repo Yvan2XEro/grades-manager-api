@@ -119,8 +119,8 @@ const Sidebar: React.FC = () => {
 				],
 			},
 			{
-				key: "people",
-				titleKey: "navigation.sidebar.groups.people",
+				key: "inscriptions",
+				titleKey: "navigation.sidebar.groups.inscriptions",
 				items: [
 					{
 						to: "/admin/students",
@@ -139,11 +139,6 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.guardians",
 						badge: "new" as NavBadgeType,
 					},
-					{
-						to: "/admin/users",
-						icon: <UserCog className={IC} />,
-						labelKey: "navigation.sidebar.admin.users",
-					},
 				],
 			},
 			{
@@ -161,30 +156,31 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.gradeManagement",
 					},
 					{
-						to: "/admin/export-templates",
-						icon: <FileText className={IC} />,
-						labelKey: "navigation.sidebar.admin.exportTemplates",
-					},
-					{
-						to: "/admin/class-document-templates",
-						icon: <FileText className={IC} />,
-						labelKey: "navigation.sidebar.admin.classDocumentTemplates",
-					},
-					{
 						to: "/admin/document-batch",
 						icon: <FileText className={IC} />,
 						labelKey: "navigation.sidebar.admin.documentBatch",
 					},
+				],
+			},
+			{
+				key: "results",
+				titleKey: "navigation.sidebar.groups.results",
+				items: [
 					{
-						to: "/admin/deliberations",
+						to: "/admin/academic-results",
 						icon: <Gavel className={IC} />,
-						labelKey: "navigation.sidebar.admin.deliberations",
-						excludePrefix: "/admin/deliberations/rules",
+						labelKey: "navigation.sidebar.admin.academicResults",
 					},
+				],
+			},
+			{
+				key: "people",
+				titleKey: "navigation.sidebar.groups.people",
+				items: [
 					{
-						to: "/admin/promotion",
-						icon: <TrendingUp className={IC} />,
-						labelKey: "navigation.sidebar.admin.promotion",
+						to: "/admin/users",
+						icon: <UserCog className={IC} />,
+						labelKey: "navigation.sidebar.admin.users",
 					},
 				],
 			},

@@ -1191,6 +1191,7 @@ interface Resources {
 					timetable: "Timetable";
 					admissions: "Admissions";
 					guardians: "Guardians";
+					academicResults: "Results & Promotion";
 				};
 				groups: {
 					overview: "Overview";
@@ -1202,6 +1203,8 @@ interface Resources {
 					system: "System";
 					assessment: "Assessment";
 					people: "People";
+					inscriptions: "Enrollments & Admissions";
+					results: "Results & Promotion";
 				};
 				teacher: {
 					dashboard: "Overview";
@@ -5173,6 +5176,70 @@ interface Resources {
 					documentReviewed: "Document reviewed";
 					converted: "Application converted";
 				};
+			};
+		};
+		institutionHub: {
+			title: "Institution & Structure";
+			description: "Manage your institution profile, faculties and academic cycles";
+			tabs: {
+				overview: "Institution";
+				faculties: "Faculties";
+				cycles: "Study Cycles";
+			};
+		};
+		programsHub: {
+			title: "Programs & Curriculum";
+			description: "Manage programs, teaching units and courses";
+			tabs: {
+				programs: "Programs";
+				teachingUnits: "Teaching Units";
+				courses: "Courses";
+			};
+		};
+		classesHub: {
+			title: "Classes & Enrollments";
+			description: "Manage classes, course assignments and student enrollments";
+			tabs: {
+				classes: "Classes";
+				assignments: "Course Assignments";
+				enrollments: "Enrollments";
+			};
+		};
+		usersHub: {
+			title: "Users & Access";
+			description: "Manage users, roles and API keys";
+			tabs: {
+				users: "Users";
+				apiKeys: "API Keys";
+			};
+		};
+		gradesHub: {
+			title: "Grades & Documents";
+			description: "Export grades, delegate access, manage retake eligibility and document templates";
+			tabs: {
+				export: "Export";
+				access: "Access Delegation";
+				retake: "Retake Eligibility";
+				templates: "Export Templates";
+				classDocuments: "Class Documents";
+			};
+		};
+		configurationHub: {
+			title: "Configuration";
+			description: "Registration number formats, grade scale, export templates and rules engine";
+			tabs: {
+				regNumbers: "Registration Numbers";
+				gradeScale: "Grade Scale";
+				templates: "Export Templates";
+				rules: "Rules Engine";
+			};
+		};
+		academicResultsHub: {
+			title: "Results & Promotion";
+			description: "Manage deliberations and year-end promotions";
+			tabs: {
+				deliberations: "Deliberations";
+				promotion: "Year Promotion";
 			};
 		};
 	};

@@ -171,7 +171,7 @@ export default function GradeScaleSettings() {
 						<SelectItem value={INSTITUTION_SCOPE}>
 							{t("admin.gradeScale.institutionDefault")}
 						</SelectItem>
-						{(programs ?? []).map((p) => (
+						{(programs?.items ?? []).map((p) => (
 							<SelectItem key={p.id} value={p.id}>
 								{p.name}
 							</SelectItem>

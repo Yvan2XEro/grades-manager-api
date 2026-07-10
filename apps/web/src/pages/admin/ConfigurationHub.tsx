@@ -1,42 +1,23 @@
-import { useQueryState } from "nuqs";
+import { useTranslation } from "react-i18next";
+import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ExportTemplatesManagement from "./ExportTemplatesManagement";
-import GradeScaleSettings from "./GradeScaleSettings";
-import RegistrationNumberFormats from "./RegistrationNumberFormats";
-import RuleManagement from "./RuleManagement";
+
+const tabs = [
+	{ path: "reg-numbers", labelKey: "configurationHub.tabs.regNumbers" },
+	{ path: "grade-scale", labelKey: "configurationHub.tabs.gradeScale" },
+	{ path: "templates", labelKey: "configurationHub.tabs.templates" },
+	{ path: "rules", labelKey: "configurationHub.tabs.rules" },
+] as const;
 
 export default function ConfigurationHub() {
-	const [tab, setTab] = useQueryState("tab", {
-		defaultValue: "reg-numbers",
-	});
-
+	const { t } = useTranslation();
 	return (
 		<div className="space-y-6">
 			<PageHeader
-				title="Configuration"
-				description="Formats de matricules, barème de notes, modèles d'exportation et moteur de règles"
+				title={t("configurationHub.title")}
+				description={t("configurationHub.description")}
 			/>
-			<Tabs value={tab ?? "reg-numbers"} onValueChange={setTab}>
-				<TabsList>
-					<TabsTrigger value="reg-numbers">Formats de matricule</TabsTrigger>
-					<TabsTrigger value="grade-scale">Barème de notes</TabsTrigger>
-					<TabsTrigger value="templates">Modèles d'export</TabsTrigger>
-					<TabsTrigger value="rules">Moteur de règles</TabsTrigger>
-				</TabsList>
-				<TabsContent value="reg-numbers" className="mt-4">
-					<RegistrationNumberFormats />
-				</TabsContent>
-				<TabsContent value="grade-scale" className="mt-4">
-					<GradeScaleSettings />
-				</TabsContent>
-				<TabsContent value="templates" className="mt-4">
-					<ExportTemplatesManagement />
-				</TabsContent>
-				<TabsContent value="rules" className="mt-4">
-					<RuleManagement />
-				</TabsContent>
-			</Tabs>
+			<HubNav tabs={tabs} basePath="/admin/configuration" />
 		</div>
 	);
 }

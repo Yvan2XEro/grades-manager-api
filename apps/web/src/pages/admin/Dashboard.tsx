@@ -177,7 +177,7 @@ const QUICK_ACTIONS = [
 	{
 		label: "Gérer les inscriptions",
 		icon: <ClipboardList className="h-4 w-4" />,
-		href: "/admin/enrollments",
+		href: "/admin/classes/enrollments",
 		color:
 			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
@@ -191,7 +191,7 @@ const QUICK_ACTIONS = [
 	{
 		label: "Résultats & exports",
 		icon: <TrendingUp className="h-4 w-4" />,
-		href: "/admin/grade-export",
+		href: "/admin/grades/export",
 		color:
 			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
@@ -323,7 +323,7 @@ const AdminDashboard: React.FC = () => {
 					icon: <Building2 className="h-5 w-5" />,
 					gradient: "bg-primary/10",
 					iconColor: "text-primary",
-					href: "/admin/faculties",
+					href: "/admin/institution/faculties",
 				},
 				{
 					key: "programs",
@@ -339,7 +339,7 @@ const AdminDashboard: React.FC = () => {
 					icon: <BookOpen className="h-5 w-5" />,
 					gradient: "bg-primary/10",
 					iconColor: "text-primary",
-					href: "/admin/courses",
+					href: "/admin/programs/courses",
 				},
 				{
 					key: "exams",
@@ -363,7 +363,7 @@ const AdminDashboard: React.FC = () => {
 					icon: <GraduationCap className="h-5 w-5" />,
 					gradient: "bg-primary/10",
 					iconColor: "text-primary",
-					href: "/admin/enrollments",
+					href: "/admin/classes/enrollments",
 				},
 			];
 
@@ -441,7 +441,7 @@ const AdminDashboard: React.FC = () => {
 					className="grid gap-3 sm:grid-cols-2"
 				>
 					{pendingApprovalCount > 0 && (
-						<Link to="/admin/exams?tab=exams&status=submitted">
+						<Link to="/admin/exams/list?status=submitted">
 							<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:hover:bg-amber-900/30">
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40">
 									<CheckCircle2 className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -460,7 +460,7 @@ const AdminDashboard: React.FC = () => {
 						</Link>
 					)}
 					{openDeliberationsCount > 0 && (
-						<Link to="/admin/deliberations">
+						<Link to="/admin/academic-results/deliberations">
 							<div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 transition-colors hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:hover:bg-blue-900/30">
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
 									<ClipboardList className="h-5 w-5 text-blue-600 dark:text-blue-400" />

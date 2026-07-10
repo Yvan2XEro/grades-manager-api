@@ -36,6 +36,25 @@ vi.mock("../../../store", () => {
 	};
 });
 
+// framer-motion bundles its own React copy, causing duplicate-React hook errors.
+vi.mock("framer-motion", () => ({
+	motion: new Proxy(
+		{},
+		{
+			get:
+				() =>
+				({ children }: { children?: unknown }) =>
+					children,
+		},
+	),
+	AnimatePresence: ({ children }: { children?: unknown }) => children,
+}));
+
+// next-themes needs a ThemeProvider in the tree; avoid it entirely in tests.
+vi.mock("next-themes", () => ({
+	useTheme: () => ({ resolvedTheme: "light" }),
+}));
+
 import Sidebar from "../Sidebar";
 
 const makeAdmin = () => ({
@@ -80,7 +99,7 @@ describe("Sidebar navigation", () => {
 			</MemoryRouter>,
 		);
 
-		// Overview group is open by default — these links are always visible
+		// Overview group is always rendered for admin
 		expect(screen.getByTestId("nav-/admin")).toBeInTheDocument();
 		expect(screen.getByTestId("nav-/admin/institution")).toBeInTheDocument();
 		expect(screen.getByTestId("nav-/admin/academic-years")).toBeInTheDocument();
@@ -101,9 +120,46 @@ describe("Sidebar navigation", () => {
 		// Flat mode — all links always rendered
 		expect(screen.getByTestId("nav-/teacher")).toBeInTheDocument();
 		expect(screen.getByTestId("nav-/teacher/attendance")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/teacher/workflows")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/teacher/exports")).toBeInTheDocument();
 
 		// Admin-specific links must not be present
 		expect(screen.queryByTestId("nav-/admin")).not.toBeInTheDocument();
+	});
+
+	it("shows new sidebar groups for admin role (JVL-99)", () => {
+		mockState.user = makeAdmin();
+
+		render(
+			<MemoryRouter>
+				<Sidebar />
+			</MemoryRouter>,
+		);
+
+		// Inscriptions & Admissions group
+		expect(screen.getByTestId("nav-/admin/students")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/admin/admissions")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/admin/guardians")).toBeInTheDocument();
+
+		// Academic results hub replaces separate deliberations/promotion entries
+		expect(
+			screen.getByTestId("nav-/admin/academic-results"),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByTestId("nav-/admin/deliberations"),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByTestId("nav-/admin/promotion"),
+		).not.toBeInTheDocument();
+
+		// Users reduced to its own group
+		expect(screen.getByTestId("nav-/admin/users")).toBeInTheDocument();
+
+		// Export templates and class doc templates removed from sidebar (now in grades hub)
+		expect(
+			screen.queryByTestId("nav-/admin/export-templates"),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByTestId("nav-/admin/class-document-templates"),
+		).not.toBeInTheDocument();
 	});
 });

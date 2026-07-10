@@ -1,35 +1,22 @@
-import { useQueryState } from "nuqs";
+import { useTranslation } from "react-i18next";
+import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ClassCourseManagement from "./ClassCourseManagement";
-import ClassManagement from "./ClassManagement";
-import EnrollmentManagement from "./EnrollmentManagement";
+
+const tabs = [
+	{ path: "classes", labelKey: "classesHub.tabs.classes" },
+	{ path: "assignments", labelKey: "classesHub.tabs.assignments" },
+	{ path: "enrollments", labelKey: "classesHub.tabs.enrollments" },
+] as const;
 
 export default function ClassesHub() {
-	const [tab, setTab] = useQueryState("tab", { defaultValue: "classes" });
-
+	const { t } = useTranslation();
 	return (
 		<div className="space-y-6">
 			<PageHeader
-				title="Classes & Inscriptions"
-				description="Gérez les classes, les affectations de cours et les inscriptions étudiantes"
+				title={t("classesHub.title")}
+				description={t("classesHub.description")}
 			/>
-			<Tabs value={tab ?? "classes"} onValueChange={setTab}>
-				<TabsList>
-					<TabsTrigger value="classes">Classes</TabsTrigger>
-					<TabsTrigger value="assignments">Affectations de cours</TabsTrigger>
-					<TabsTrigger value="enrollments">Inscriptions</TabsTrigger>
-				</TabsList>
-				<TabsContent value="classes" className="mt-4">
-					<ClassManagement />
-				</TabsContent>
-				<TabsContent value="assignments" className="mt-4">
-					<ClassCourseManagement />
-				</TabsContent>
-				<TabsContent value="enrollments" className="mt-4">
-					<EnrollmentManagement />
-				</TabsContent>
-			</Tabs>
+			<HubNav tabs={tabs} basePath="/admin/classes" />
 		</div>
 	);
 }

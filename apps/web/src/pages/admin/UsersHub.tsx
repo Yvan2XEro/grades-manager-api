@@ -1,30 +1,21 @@
-import { useQueryState } from "nuqs";
+import { useTranslation } from "react-i18next";
+import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ApiKeysManagement from "./ApiKeysManagement";
-import UserManagement from "./UserManagement";
+
+const tabs = [
+	{ path: "users", labelKey: "usersHub.tabs.users" },
+	{ path: "api-keys", labelKey: "usersHub.tabs.apiKeys" },
+] as const;
 
 export default function UsersHub() {
-	const [tab, setTab] = useQueryState("tab", { defaultValue: "users" });
-
+	const { t } = useTranslation();
 	return (
 		<div className="space-y-6">
 			<PageHeader
-				title="Utilisateurs & Accès"
-				description="Gérez les utilisateurs, les rôles et les clés d'API"
+				title={t("usersHub.title")}
+				description={t("usersHub.description")}
 			/>
-			<Tabs value={tab ?? "users"} onValueChange={setTab}>
-				<TabsList>
-					<TabsTrigger value="users">Utilisateurs</TabsTrigger>
-					<TabsTrigger value="api-keys">Clés API</TabsTrigger>
-				</TabsList>
-				<TabsContent value="users" className="mt-4">
-					<UserManagement />
-				</TabsContent>
-				<TabsContent value="api-keys" className="mt-4">
-					<ApiKeysManagement />
-				</TabsContent>
-			</Tabs>
+			<HubNav tabs={tabs} basePath="/admin/users" />
 		</div>
 	);
 }

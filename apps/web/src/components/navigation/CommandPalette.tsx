@@ -75,7 +75,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 				{
 					labelKey: "navigation.sidebar.admin.enrollments",
 					icon: <ClipboardList className={IC} />,
-					href: "/admin/enrollments",
+					href: "/admin/classes/enrollments",
 					keywords: "enrollments inscriptions",
 				},
 				{
@@ -98,7 +98,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 				{
 					labelKey: "navigation.sidebar.admin.courses",
 					icon: <BookOpen className={IC} />,
-					href: "/admin/courses",
+					href: "/admin/programs/courses",
 					keywords: "courses matières",
 				},
 				{
@@ -110,7 +110,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 				{
 					labelKey: "navigation.sidebar.admin.faculties",
 					icon: <Building2 className={IC} />,
-					href: "/admin/faculties",
+					href: "/admin/institution/faculties",
 					keywords: "facultés institutions",
 				},
 				{
@@ -122,13 +122,13 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 				{
 					labelKey: "navigation.sidebar.admin.studyCycles",
 					icon: <GitBranch className={IC} />,
-					href: "/admin/study-cycles",
+					href: "/admin/institution/cycles",
 					keywords: "cycles licence master",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.teachingUnits",
 					icon: <Layers className={IC} />,
-					href: "/admin/teaching-units",
+					href: "/admin/programs/teaching-units",
 					keywords: "UE teaching units unités",
 				},
 			],
@@ -139,19 +139,19 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 				{
 					labelKey: "navigation.sidebar.admin.examScheduler",
 					icon: <CheckSquare className={IC} />,
-					href: "/admin/exam-scheduler",
+					href: "/admin/exams/scheduler",
 					keywords: "scheduler planificateur",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.gradeExport",
 					icon: <FileText className={IC} />,
-					href: "/admin/grade-export",
+					href: "/admin/grades/export",
 					keywords: "export grades notes résultats",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.deliberations",
 					icon: <ClipboardList className={IC} />,
-					href: "/admin/deliberations",
+					href: "/admin/academic-results/deliberations",
 					keywords: "délibérations jury",
 				},
 				{
