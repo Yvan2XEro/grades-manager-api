@@ -41,6 +41,13 @@ describe("classes router", () => {
 });
 
 describe("classes.listPaged", () => {
+	it("requires authentication", async () => {
+		const caller = createCaller(makeTestContext());
+		await expect(
+			caller.classes.listPaged({ page: 1, pageSize: 25 }),
+		).rejects.toHaveProperty("code", "UNAUTHORIZED");
+	});
+
 	test("returns { items, total, pageCount }", async () => {
 		const caller = createCaller(asAdmin());
 		const result = await caller.classes.listPaged({ page: 1, pageSize: 25 });

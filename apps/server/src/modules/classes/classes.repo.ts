@@ -366,7 +366,33 @@ export async function listPaged(
 			.orderBy(schema.classes.code)
 			.limit(size)
 			.offset(offset),
-		db.select({ total: count() }).from(schema.classes).where(where),
+		// Count query mirrors the data query joins so that any future filter on a
+		// joined column (e.g. cycleId via cycleLevels) does not cause a runtime error.
+		db
+			.select({ total: count() })
+			.from(schema.classes)
+			.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+			.leftJoin(
+				schema.academicYears,
+				eq(schema.academicYears.id, schema.classes.academicYear),
+			)
+			.leftJoin(
+				schema.cycleLevels,
+				eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+			)
+			.leftJoin(
+				schema.studyCycles,
+				eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+			)
+			.leftJoin(
+				schema.programOptions,
+				eq(schema.programOptions.id, schema.classes.programOptionId),
+			)
+			.leftJoin(
+				schema.semesters,
+				eq(schema.semesters.id, schema.classes.semesterId),
+			)
+			.where(where),
 	]);
 	const totalCount = Number(total ?? 0);
 	return {

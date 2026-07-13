@@ -571,7 +571,16 @@ export async function listClassesPaged(
 	},
 	institutionId: string,
 ) {
-	return repo.listPaged(institutionId, input);
+	const result = await repo.listPaged(institutionId, input);
+	const classIds = result.items.map((c) => c.id);
+	const assignedCreditsMap = await repo.getAssignedCredits(classIds);
+	return {
+		...result,
+		items: result.items.map((c) => ({
+			...c,
+			assignedCredits: assignedCreditsMap[c.id] ?? 0,
+		})),
+	};
 }
 
 export async function searchClasses(
