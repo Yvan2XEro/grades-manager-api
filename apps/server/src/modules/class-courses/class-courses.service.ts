@@ -285,6 +285,8 @@ export async function listClassCoursesPaged(
 		classId?: string;
 		academicYearId?: string;
 		semesterId?: string;
+		teacherId?: string;
+		classCourseIds?: string[];
 	},
 	institutionId: string,
 ) {

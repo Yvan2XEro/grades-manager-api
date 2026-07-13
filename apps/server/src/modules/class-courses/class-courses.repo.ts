@@ -268,13 +268,16 @@ export async function listPaged(opts: {
 	classId?: string;
 	academicYearId?: string;
 	semesterId?: string;
+	teacherId?: string;
+	classCourseIds?: string[];
 }) {
 	const size = Math.min(Math.max(opts.pageSize, 1), 100);
 	const offset = (Math.max(opts.page, 1) - 1) * size;
 
-	// If filtering by academicYearId, resolve matching class IDs first
+	// If filtering by academicYearId, resolve matching class IDs first.
+	// Skip when classId is already provided — classId filter is sufficient.
 	let classIdsFromYear: string[] | undefined;
-	if (opts.academicYearId) {
+	if (opts.academicYearId && !opts.classId) {
 		const matchingClasses = await db
 			.select({ id: schema.classes.id })
 			.from(schema.classes)
@@ -298,6 +301,12 @@ export async function listPaged(opts: {
 			: undefined,
 		opts.semesterId
 			? eq(schema.classCourses.semesterId, opts.semesterId)
+			: undefined,
+		opts.teacherId
+			? eq(schema.classCourses.teacher, opts.teacherId)
+			: undefined,
+		opts.classCourseIds && opts.classCourseIds.length > 0
+			? inArray(schema.classCourses.id, opts.classCourseIds)
 			: undefined,
 	);
 
@@ -327,7 +336,7 @@ export async function listPaged(opts: {
 				eq(schema.domainUsers.id, schema.classCourses.teacher),
 			)
 			.where(where)
-			.orderBy(schema.classCourses.code)
+			.orderBy(schema.classCourses.code, schema.classCourses.id)
 			.limit(size)
 			.offset(offset),
 		db.select({ total: count() }).from(schema.classCourses).where(where),

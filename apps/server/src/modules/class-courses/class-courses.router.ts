@@ -197,9 +197,105 @@ export const router = createRouter({
 		}),
 	listPaged: tenantProtectedProcedure
 		.input(listPagedSchema)
-		.query(({ ctx, input }) =>
-			service.listClassCoursesPaged(input, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			const isAdmin = roleSatisfies(ctx.memberRole, ADMIN_ROLES);
+			const isGradeEditor = ctx.memberRole === "grade_editor";
+			const profileId = ctx.profile?.id ?? null;
+
+			const hasInstitutionGrant =
+				!isAdmin && !isGradeEditor && profileId
+					? !!(await gradeAccessRepo.findByProfileAndInstitution(
+							profileId,
+							ctx.institution.id,
+						))
+					: false;
+
+			const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
+
+			// Admins / grade_editors / institution-grant holders: see everything
+			if (hasFullAccess || !profileId) {
+				const result = await service.listClassCoursesPaged(
+					input,
+					ctx.institution.id,
+				);
+				return {
+					...result,
+					items: result.items.map((item) => ({ ...item, isDelegated: false })),
+				};
+			}
+
+			// Check delegate courses first — required to decide whether to merge
+			const delegateCourseIds = await classCourseIdsForEditor(
+				profileId,
+				ctx.institution.id,
+			);
+
+			if (!delegateCourseIds.length) {
+				// No delegate — teacher sees only their own courses, paginated normally
+				const result =
+					ctx.memberRole === "teacher"
+						? await service.listClassCoursesPaged(
+								{ ...input, teacherId: profileId },
+								ctx.institution.id,
+							)
+						: { items: [], total: 0, pageCount: 0 };
+				return {
+					...result,
+					items: result.items.map((item) => ({ ...item, isDelegated: false })),
+				};
+			}
+
+			// Has delegate courses: fetch both sets without pagination, merge, then
+			// paginate in memory — same dedup strategy as `list`.
+			const [baseItems, delegateAllItems] = await Promise.all([
+				ctx.memberRole === "teacher"
+					? service
+							.listClassCoursesPaged(
+								{ ...input, teacherId: profileId, page: 1, pageSize: 1000 },
+								ctx.institution.id,
+							)
+							.then((r) => r.items)
+					: Promise.resolve(
+							[] as Awaited<
+								ReturnType<typeof service.listClassCoursesPaged>
+							>["items"],
+						),
+				service
+					.listClassCoursesPaged(
+						{
+							...input,
+							classCourseIds: delegateCourseIds,
+							page: 1,
+							pageSize: 1000,
+						},
+						ctx.institution.id,
+					)
+					.then((r) => r.items),
+			]);
+
+			if (delegateAllItems.length > 0) {
+				await logDelegateCourseAccess({
+					classCourseIds: delegateAllItems.map((item) => item.id),
+					profileId,
+					institutionId: ctx.institution.id,
+					source: "list",
+				});
+			}
+
+			const merged = mergeById(
+				markItems(baseItems, false),
+				markItems(delegateAllItems, true),
+			);
+
+			// In-memory pagination over merged set
+			const size = Math.min(Math.max(input.pageSize, 1), 100);
+			const offset = (Math.max(input.page, 1) - 1) * size;
+			return {
+				items: merged.slice(offset, offset + size),
+				total: merged.length,
+				pageCount: Math.ceil(merged.length / size),
+			};
+		}),
 	teacherOverview: tenantProtectedProcedure.query(async ({ ctx }) => {
 		const activeYear = await db.query.academicYears.findFirst({
 			where: and(
