@@ -2,9 +2,12 @@ import { router, tenantAdminProcedure, tenantProcedure } from "@/lib/trpc";
 import * as service from "./guardians.service";
 import {
 	createGuardianSchema,
+	deleteGuardianSchema,
 	linkStudentSchema,
+	listAllSchema,
 	portalSchema,
 	recordCommunicationEventSchema,
+	removeLinkSchema,
 	studentIdSchema,
 	updatePreferencesSchema,
 } from "./guardians.zod";
@@ -43,4 +46,20 @@ export const guardiansRouter = router({
 	portal: tenantProcedure
 		.input(portalSchema)
 		.query(({ input }) => service.portal(input.accessToken)),
+
+	listAll: tenantAdminProcedure
+		.input(listAllSchema)
+		.query(({ input, ctx }) => service.listAll(ctx.institution.id, input)),
+
+	removeLink: tenantAdminProcedure
+		.input(removeLinkSchema)
+		.mutation(({ input, ctx }) =>
+			service.removeLink(ctx.institution.id, input),
+		),
+
+	delete: tenantAdminProcedure
+		.input(deleteGuardianSchema)
+		.mutation(({ input, ctx }) =>
+			service.deleteGuardian(ctx.institution.id, input.id),
+		),
 });

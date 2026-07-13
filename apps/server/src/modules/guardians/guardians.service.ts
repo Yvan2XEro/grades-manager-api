@@ -7,7 +7,9 @@ import * as repo from "./guardians.repo";
 import type {
 	createGuardianSchema,
 	linkStudentSchema,
+	listAllSchema,
 	recordCommunicationEventSchema,
+	removeLinkSchema,
 	updatePreferencesSchema,
 } from "./guardians.zod";
 
@@ -126,6 +128,29 @@ export async function updatePreferences(
 	);
 	if (!updated) throw notFound("Guardian not found");
 	return updated;
+}
+
+export async function listAll(
+	institutionId: string,
+	input: z.infer<typeof listAllSchema>,
+) {
+	return repo.listAll(institutionId, input);
+}
+
+export async function removeLink(
+	institutionId: string,
+	input: z.infer<typeof removeLinkSchema>,
+) {
+	await repo.removeStudentLink(
+		institutionId,
+		input.studentId,
+		input.guardianId,
+	);
+}
+
+export async function deleteGuardian(institutionId: string, id: string) {
+	const deleted = await repo.deleteGuardian(institutionId, id);
+	if (!deleted) throw notFound("Guardian not found");
 }
 
 export async function recordCommunicationEvent(

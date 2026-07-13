@@ -51,3 +51,18 @@ export const recordCommunicationEventSchema = z.object({
 	channel: z.string().min(1).max(80),
 	payload: z.record(z.string(), z.unknown()).default({}),
 });
+
+export const listAllSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	search: z.string().optional(),
+});
+
+export const removeLinkSchema = z.object({
+	studentId: z.string(),
+	guardianId: z.string(),
+});
+
+export const deleteGuardianSchema = z.object({
+	id: z.string(),
+});
