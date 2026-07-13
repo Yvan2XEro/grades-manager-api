@@ -84,6 +84,7 @@ import {
 } from "./pages/admin/profiles";
 import ProgramDetail from "./pages/admin/programs/ProgramDetail";
 import ProgramDetailsTab from "./pages/admin/programs/ProgramDetailsTab";
+import ProgramExportTemplatesTab from "./pages/admin/programs/ProgramExportTemplatesTab";
 import ProgramOptionsTab from "./pages/admin/programs/ProgramOptionsTab";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
@@ -372,7 +373,10 @@ function App() {
 								<Route index element={<Navigate to="details" replace />} />
 								<Route path="details" element={<ProgramDetailsTab />} />
 								<Route path="options" element={<ProgramOptionsTab />} />
-								<Route path="templates" element={null} />
+								<Route
+									path="templates"
+									element={<ProgramExportTemplatesTab />}
+								/>
 							</Route>
 						</Route>
 
