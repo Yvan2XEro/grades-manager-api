@@ -213,7 +213,7 @@ export const router = createRouter({
 			const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
 
 			// Admins / grade_editors / institution-grant holders: see everything
-			if (hasFullAccess || !profileId) {
+			if (hasFullAccess) {
 				const result = await service.listClassCoursesPaged(
 					input,
 					ctx.institution.id,
@@ -222,6 +222,11 @@ export const router = createRouter({
 					...result,
 					items: result.items.map((item) => ({ ...item, isDelegated: false })),
 				};
+			}
+
+			// No profile: return empty result (mirrors `list` behavior)
+			if (!profileId) {
+				return { items: [], total: 0, pageCount: 0 };
 			}
 
 			// Check delegate courses first — required to decide whether to merge
@@ -247,26 +252,27 @@ export const router = createRouter({
 
 			// Has delegate courses: fetch both sets without pagination, merge, then
 			// paginate in memory — same dedup strategy as `list`.
+			// Use listClassCourses (no 100-item cap) to bypass the repo pageSize clamp.
+			const { page: _page, pageSize: _pageSize, ...listInput } = input;
 			const [baseItems, delegateAllItems] = await Promise.all([
 				ctx.memberRole === "teacher"
 					? service
-							.listClassCoursesPaged(
-								{ ...input, teacherId: profileId, page: 1, pageSize: 1000 },
+							.listClassCourses(
+								{ ...listInput, teacherId: profileId, limit: 1000 },
 								ctx.institution.id,
 							)
 							.then((r) => r.items)
 					: Promise.resolve(
 							[] as Awaited<
-								ReturnType<typeof service.listClassCoursesPaged>
+								ReturnType<typeof service.listClassCourses>
 							>["items"],
 						),
 				service
-					.listClassCoursesPaged(
+					.listClassCourses(
 						{
-							...input,
+							...listInput,
 							classCourseIds: delegateCourseIds,
-							page: 1,
-							pageSize: 1000,
+							limit: 1000,
 						},
 						ctx.institution.id,
 					)
