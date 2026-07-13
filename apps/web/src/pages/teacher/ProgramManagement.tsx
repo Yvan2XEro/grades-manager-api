@@ -5,6 +5,7 @@ import { Copy, Pencil, Plus, School, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { z } from "zod";
 import FormModal from "@/components/modals/FormModal";
 import {
@@ -67,7 +68,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -76,95 +76,24 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
-import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
 const buildProgramSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("admin.programs.validation.name")),
-		nameEn: z.string().optional().nullable(),
 		code: z.string().min(
 			2,
 			t("admin.programs.validation.code", {
 				defaultValue: "Code is required",
 			}),
 		),
-		abbreviation: z.string().optional().nullable(),
-		description: z.string().optional(),
-		domainFr: z.string().optional().nullable(),
-		domainEn: z.string().optional().nullable(),
-		specialiteFr: z.string().optional().nullable(),
-		specialiteEn: z.string().optional().nullable(),
-		diplomaTitleFr: z.string().optional().nullable(),
-		diplomaTitleEn: z.string().optional().nullable(),
-		attestationValidityFr: z.string().optional().nullable(),
-		attestationValidityEn: z.string().optional().nullable(),
 		cycleId: z.string().nullable().optional(),
-		centerId: z.string().nullable().optional(),
-		isCenterProgram: z.boolean().optional(),
-		exportTemplates: z
-			.array(
-				z.object({
-					templateType: z.enum([
-						"pv",
-						"evaluation",
-						"ec",
-						"ue",
-						"deliberation",
-						"diploma",
-						"transcript",
-						"attestation",
-						"student_list",
-					]),
-					templateId: z.string().min(1),
-				}),
-			)
-			.optional(),
 	});
 
 type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
-type ExportTemplateType =
-	| "pv"
-	| "evaluation"
-	| "ec"
-	| "ue"
-	| "deliberation"
-	| "diploma"
-	| "transcript"
-	| "attestation"
-	| "student_list";
-const EXPORT_TEMPLATE_TYPES: ExportTemplateType[] = [
-	"diploma",
-	"transcript",
-	"attestation",
-	"student_list",
-	"pv",
-	"evaluation",
-	"ec",
-	"ue",
-	"deliberation",
-];
-const EXPORT_TEMPLATE_TYPE_LABELS: Record<ExportTemplateType, string> = {
-	diploma: "Diplôme",
-	transcript: "Relevé de notes",
-	attestation: "Attestation",
-	student_list: "Liste d'étudiants",
-	pv: "Procès-verbal",
-	evaluation: "Publication d'évaluation",
-	ec: "Publication d'EC",
-	ue: "Publication d'UE",
-	deliberation: "Délibération",
-};
-const programOptionSchema = z.object({
-	name: z.string().min(1, "Name is required"),
-	code: z.string().min(1, "Code is required"),
-	description: z.string().optional(),
-});
-type ProgramOptionFormData = z.infer<typeof programOptionSchema>;
 
 type Program = {
 	id: string;
@@ -187,19 +116,10 @@ type Program = {
 	optionsCount: number;
 };
 
-type ProgramOption = RouterOutputs["programOptions"]["list"]["items"][number];
-
 export default function ProgramManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [cloneFromProgramId, setCloneFromProgramId] = useState<string>("");
-	const [optionProgram, setOptionProgram] = useState<Program | null>(null);
-	const [editingOption, setEditingOption] = useState<ProgramOption | null>(
-		null,
-	);
-	const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
 	const [isDuplicateOpen, setIsDuplicateOpen] = useState(false);
 	const [duplicateTargetCycleIds, setDuplicateTargetCycleIds] = useState<
 		string[]
@@ -207,6 +127,7 @@ export default function ProgramManagement() {
 	const [duplicateCloneCurriculum, setDuplicateCloneCurriculum] =
 		useState(true);
 
+	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
@@ -254,195 +175,13 @@ export default function ProgramManagement() {
 		},
 	});
 
-	const { data: centersData } = useQuery({
-		queryKey: ["centers", "select"],
-		queryFn: async () => {
-			const res = await trpcClient.centers.list.query({ limit: 200 });
-			return res.items as Array<{ id: string; name: string; code: string }>;
-		},
-	});
-	const centers = centersData ?? [];
-
-	const {
-		data: exportTemplatesData,
-		isLoading: exportTemplatesLoading,
-		error: exportTemplatesError,
-	} = useQuery({
-		queryKey: ["exportTemplates", "select"],
-		queryFn: async () => {
-			const res = await trpcClient.exportTemplates.list.query({ limit: 100 });
-			return res.items as Array<{
-				id: string;
-				name: string;
-				type: ExportTemplateType;
-				variant?: "standard" | "center";
-			}>;
-		},
-	});
-	const exportTemplates = exportTemplatesData ?? [];
-
 	const form = useForm<ProgramFormData>({
 		resolver: zodResolver(programSchema),
 		defaultValues: {
 			name: "",
-			nameEn: "",
 			code: "",
-			abbreviation: "",
-			description: "",
 			cycleId: null,
-			centerId: null,
-			isCenterProgram: false,
-			exportTemplates: [],
-			domainFr: "",
-			domainEn: "",
-			specialiteFr: "",
-			specialiteEn: "",
-			diplomaTitleFr: "",
-			diplomaTitleEn: "",
-			attestationValidityFr: "",
-			attestationValidityEn: "",
 		},
-	});
-
-	const optionForm = useForm<ProgramOptionFormData>({
-		resolver: zodResolver(programOptionSchema),
-		defaultValues: {
-			name: "",
-			code: "",
-			description: "",
-		},
-	});
-
-	const resetOptionEditing = () => {
-		setEditingOption(null);
-		optionForm.reset({
-			name: "",
-			code: "",
-			description: "",
-		});
-	};
-
-	const {
-		data: optionList = [],
-		isLoading: optionsLoading,
-		refetch: refetchOptions,
-	} = useQuery({
-		queryKey: ["programOptions", optionProgram?.id],
-		queryFn: async () => {
-			if (!optionProgram) return [];
-			const { items } = await trpcClient.programOptions.list.query({
-				programId: optionProgram.id,
-				limit: 100,
-			});
-			return items;
-		},
-		enabled: isOptionModalOpen && Boolean(optionProgram),
-	});
-
-	const createOptionMutation = useMutation({
-		mutationFn: async (data: ProgramOptionFormData) => {
-			if (!optionProgram) throw new Error("No program selected");
-			await trpcClient.programOptions.create.mutate({
-				...data,
-				programId: optionProgram.id,
-			});
-		},
-		onSuccess: () => {
-			refetchOptions();
-			resetOptionEditing();
-			toast.success(
-				t("admin.programs.options.toast.create", {
-					defaultValue: "Option added",
-				}),
-			);
-		},
-		onError: (error: unknown) => {
-			toast.error(
-				(error as Error).message ||
-					t("admin.programs.options.toast.createError", {
-						defaultValue: "Could not add option",
-					}),
-			);
-		},
-	});
-
-	const deleteOptionMutation = useMutation({
-		mutationFn: async (id: string) => {
-			await trpcClient.programOptions.delete.mutate({ id });
-		},
-		onSuccess: () => {
-			refetchOptions();
-			resetOptionEditing();
-			toast.success(
-				t("admin.programs.options.toast.delete", {
-					defaultValue: "Option deleted",
-				}),
-			);
-		},
-		onError: (error: unknown) => {
-			toast.error(
-				(error as Error).message ||
-					t("admin.programs.options.toast.deleteError", {
-						defaultValue: "Could not delete option",
-					}),
-			);
-		},
-	});
-
-	const updateOptionMutation = useMutation({
-		mutationFn: async (
-			input: ProgramOptionFormData & { id: string; programId: string },
-		) => {
-			await trpcClient.programOptions.update.mutate(input);
-		},
-		onSuccess: () => {
-			refetchOptions();
-			resetOptionEditing();
-			toast.success(
-				t("admin.programs.options.toast.update", {
-					defaultValue: "Option updated",
-				}),
-			);
-		},
-		onError: (error: unknown) => {
-			toast.error(
-				error instanceof Error
-					? error.message
-					: t("admin.programs.options.toast.updateError", {
-							defaultValue: "Could not update option",
-						}),
-			);
-		},
-	});
-
-	const cloneCurriculumMutation = useMutation({
-		mutationFn: ({
-			targetProgramId,
-			sourceProgramId,
-		}: {
-			targetProgramId: string;
-			sourceProgramId: string;
-		}) =>
-			trpcClient.programs.cloneCurriculum.mutate({
-				targetProgramId,
-				sourceProgramId,
-			}),
-		onSuccess: (result) => {
-			toast.success(
-				t("admin.programs.toast.cloneSuccess", {
-					defaultValue: "Curriculum cloné : {{units}} UE, {{courses}} EC",
-					units: result.unitsCreated,
-					courses: result.coursesCreated,
-				}),
-			);
-		},
-		onError: (err: unknown) =>
-			toast.error(
-				(err as Error).message ||
-					t("admin.programs.toast.cloneError", {
-						defaultValue: "Erreur lors du clonage",
-					}),
-			),
 	});
 
 	const createMutation = useMutation({
@@ -452,33 +191,14 @@ export default function ProgramManagement() {
 		onSuccess: (newProgram) => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
 			toast.success(t("admin.programs.toast.createSuccess"));
-			if (cloneFromProgramId && newProgram?.id) {
-				cloneCurriculumMutation.mutate({
-					targetProgramId: newProgram.id,
-					sourceProgramId: cloneFromProgramId,
-				});
-			}
 			handleCloseForm();
+			if (newProgram?.id) {
+				navigate(`/admin/programs/${newProgram.id}/details`);
+			}
 		},
 		onError: (error: unknown) => {
 			toast.error(
 				(error as Error).message || t("admin.programs.toast.createError"),
-			);
-		},
-	});
-
-	const updateMutation = useMutation({
-		mutationFn: async (data: ProgramFormData & { id: string }) => {
-			await trpcClient.programs.update.mutate(data);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success(t("admin.programs.toast.updateSuccess"));
-			handleCloseForm();
-		},
-		onError: (error: unknown) => {
-			toast.error(
-				(error as Error).message || t("admin.programs.toast.updateError"),
 			);
 		},
 	});
@@ -557,99 +277,21 @@ export default function ProgramManagement() {
 	});
 
 	const onSubmit = (data: ProgramFormData) => {
-		if (editingProgram) {
-			updateMutation.mutate({ ...data, id: editingProgram.id });
-		} else {
-			createMutation.mutate(data);
-		}
-	};
-
-	const onSubmitOption = (data: ProgramOptionFormData) => {
-		if (!optionProgram) return;
-		if (editingOption) {
-			updateOptionMutation.mutate({
-				id: editingOption.id,
-				programId: optionProgram.id,
-				...data,
-			});
-		} else {
-			createOptionMutation.mutate(data);
-		}
-	};
-
-	const emptyProgramForm = {
-		name: "",
-		nameEn: "",
-		code: "",
-		abbreviation: "",
-		description: "",
-		cycleId: null as string | null,
-		centerId: null as string | null,
-		isCenterProgram: false,
-		exportTemplates: [] as Array<{
-			templateType: ExportTemplateType;
-			templateId: string;
-		}>,
-		domainFr: "",
-		domainEn: "",
-		specialiteFr: "",
-		specialiteEn: "",
-		diplomaTitleFr: "",
-		diplomaTitleEn: "",
-		attestationValidityFr: "",
-		attestationValidityEn: "",
+		createMutation.mutate(data);
 	};
 
 	const startCreate = () => {
-		setEditingProgram(null);
-		setCloneFromProgramId("");
-		form.reset(emptyProgramForm);
+		form.reset({ name: "", code: "", cycleId: null });
 		setIsFormOpen(true);
 	};
 
-	const startEdit = async (program: Program) => {
-		setEditingProgram(program);
-		form.reset({
-			name: program.name,
-			nameEn: program.nameEn ?? "",
-			code: program.code,
-			abbreviation: program.abbreviation ?? "",
-			description: program.description ?? "",
-			cycleId: program.cycleId ?? null,
-			centerId: program.centerId ?? null,
-			isCenterProgram: program.isCenterProgram ?? false,
-			exportTemplates: [],
-			domainFr: program.domainFr ?? "",
-			domainEn: program.domainEn ?? "",
-			specialiteFr: program.specialiteFr ?? "",
-			specialiteEn: program.specialiteEn ?? "",
-			diplomaTitleFr: program.diplomaTitleFr ?? "",
-			diplomaTitleEn: program.diplomaTitleEn ?? "",
-			attestationValidityFr: program.attestationValidityFr ?? "",
-			attestationValidityEn: program.attestationValidityEn ?? "",
-		});
-		setIsFormOpen(true);
-		try {
-			const assignments = await trpcClient.programs.listExportTemplates.query({
-				programId: program.id,
-			});
-			form.setValue(
-				"exportTemplates",
-				assignments.map((a) => ({
-					templateType: a.templateType as ExportTemplateType,
-					templateId: a.templateId,
-				})),
-			);
-		} catch {
-			// non-blocking
-		}
+	const openDetail = (program: Program) => {
+		navigate(`/admin/programs/${program.id}/details`);
 	};
 
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
-		setEditingProgram(null);
-		setCloneFromProgramId("");
-		form.reset(emptyProgramForm);
+		form.reset({ name: "", code: "", cycleId: null });
 	};
 
 	const confirmDelete = (id: string) => {
@@ -661,31 +303,6 @@ export default function ProgramManagement() {
 		if (deleteId) {
 			deleteMutation.mutate(deleteId);
 		}
-	};
-
-	const openOptionsModal = (program: Program) => {
-		setOptionProgram(program);
-		resetOptionEditing();
-		setIsOptionModalOpen(true);
-	};
-
-	const closeOptionsModal = () => {
-		setIsOptionModalOpen(false);
-		setOptionProgram(null);
-		resetOptionEditing();
-	};
-
-	const handleDeleteOption = (optionId: string) => {
-		deleteOptionMutation.mutate(optionId);
-	};
-
-	const handleEditOption = (option: ProgramOption) => {
-		setEditingOption(option);
-		optionForm.reset({
-			name: option.name,
-			code: option.code,
-			description: option.description ?? "",
-		});
 	};
 
 	return (
@@ -806,9 +423,11 @@ export default function ProgramManagement() {
 								{programs.map((program) => (
 									<TableRow
 										key={program.id}
+										className="cursor-pointer"
+										onClick={() => openDetail(program)}
 										actions={
 											<>
-												<ContextMenuItem onSelect={() => startEdit(program)}>
+												<ContextMenuItem onSelect={() => openDetail(program)}>
 													{t("common.actions.edit")}
 												</ContextMenuItem>
 												<ContextMenuSeparator />
@@ -821,7 +440,10 @@ export default function ProgramManagement() {
 											</>
 										}
 									>
-										<TableCell className="w-10">
+										<TableCell
+											className="w-10"
+											onClick={(e) => e.stopPropagation()}
+										>
 											<Checkbox
 												checked={selection.isSelected(program.id)}
 												onCheckedChange={() => selection.toggle(program.id)}
@@ -851,24 +473,15 @@ export default function ProgramManagement() {
 										<TableCell className="text-center">
 											{program.optionsCount}
 										</TableCell>
-										<TableCell>
+										<TableCell onClick={(e) => e.stopPropagation()}>
 											<div className="flex justify-end gap-2">
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() => startEdit(program)}
+													onClick={() => openDetail(program)}
 													aria-label={t("admin.programs.form.editTitle")}
 												>
 													<Pencil className="h-4 w-4" />
-												</Button>
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => openOptionsModal(program)}
-												>
-													{t("admin.programs.options.manage", {
-														defaultValue: "Manage options",
-													})}
 												</Button>
 												<Button
 													variant="ghost"
@@ -910,11 +523,7 @@ export default function ProgramManagement() {
 			<FormModal
 				isOpen={isFormOpen}
 				onClose={handleCloseForm}
-				title={
-					editingProgram
-						? t("admin.programs.form.editTitle")
-						: t("admin.programs.form.createTitle")
-				}
+				title={t("admin.programs.form.createTitle")}
 			>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -940,27 +549,6 @@ export default function ProgramManagement() {
 							/>
 							<FormField
 								control={form.control}
-								name="nameEn"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.nameEnLabel", {
-												defaultValue: "Name (English)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Computer Science"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
 								name="code"
 								render={({ field }) => (
 									<FormItem>
@@ -972,197 +560,6 @@ export default function ProgramManagement() {
 										<FormControl>
 											<Input
 												placeholder="INF-LIC"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="abbreviation"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.abbreviationLabel", {
-												defaultValue: "Abréviation",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="INFO"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="domainFr"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.domainFrLabel", {
-												defaultValue: "Domaine (FR)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Sciences et Technologies"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="domainEn"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.domainEnLabel", {
-												defaultValue: "Domain (EN)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Science and Technology"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="specialiteFr"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.specialiteFrLabel", {
-												defaultValue: "Spécialité (FR)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Génie Logiciel"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="specialiteEn"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.specialiteEnLabel", {
-												defaultValue: "Specialization (EN)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Software Engineering"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="diplomaTitleFr"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.diplomaTitleFrLabel", {
-												defaultValue: "Titre diplôme (FR)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Licence en Informatique"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="diplomaTitleEn"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.diplomaTitleEnLabel", {
-												defaultValue: "Diploma title (EN)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Bachelor of Computer Science"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="attestationValidityFr"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.attestationValidityFrLabel", {
-												defaultValue: "Validité attestation (FR)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Six (06) mois"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="attestationValidityEn"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.attestationValidityEnLabel", {
-												defaultValue: "Attestation validity (EN)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Six (06) months"
 												{...field}
 												value={field.value ?? ""}
 											/>
@@ -1215,331 +612,6 @@ export default function ProgramManagement() {
 								</FormItem>
 							)}
 						/>
-						<div className="space-y-4">
-							<FormField
-								control={form.control}
-								name="centerId"
-								render={({ field }) => (
-									<FormItem className="min-w-0">
-										<FormLabel>
-											{t("admin.programs.form.centerLabel", {
-												defaultValue: "Centre",
-											})}
-										</FormLabel>
-										<Select
-											value={field.value ?? "__NONE__"}
-											onValueChange={(v) => {
-												const next = v === "__NONE__" ? null : v;
-												field.onChange(next);
-												form.setValue("isCenterProgram", Boolean(next));
-											}}
-										>
-											<FormControl>
-												<SelectTrigger className="w-full min-w-0">
-													<SelectValue
-														placeholder={t(
-															"admin.programs.form.centerPlaceholder",
-															{ defaultValue: "Aucun centre" },
-														)}
-														className="block truncate"
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent
-												align="start"
-												position="popper"
-												className="w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)]"
-											>
-												<SelectItem value="__NONE__">
-													{t("admin.programs.form.centerNone", {
-														defaultValue: "Aucun (programme général)",
-													})}
-												</SelectItem>
-												{centers.map((c) => (
-													<SelectItem
-														key={c.id}
-														value={c.id}
-														className="[&>span:last-child]:truncate"
-													>
-														{c.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="isCenterProgram"
-								render={({ field }) => (
-									<FormItem className="flex items-center justify-between rounded-md border p-3">
-										<div className="space-y-0.5">
-											<FormLabel className="text-sm">
-												{t("admin.programs.form.isCenterProgramLabel", {
-													defaultValue: "Programme de centre",
-												})}
-											</FormLabel>
-											<p className="text-muted-foreground text-xs">
-												{t("admin.programs.form.isCenterProgramHint", {
-													defaultValue:
-														"Marquez ce programme comme rattaché à un centre.",
-												})}
-											</p>
-										</div>
-										<FormControl>
-											<Switch
-												checked={Boolean(field.value)}
-												onCheckedChange={field.onChange}
-											/>
-										</FormControl>
-									</FormItem>
-								)}
-							/>
-						</div>
-						<FormField
-							control={form.control}
-							name="exportTemplates"
-							render={({ field }) => {
-								const currentByType = new Map(
-									(field.value ?? []).map((a) => [
-										a.templateType,
-										a.templateId,
-									]),
-								);
-								const updateAssignment = (
-									type: ExportTemplateType,
-									templateId: string | null,
-								) => {
-									const next = (field.value ?? []).filter(
-										(a) => a.templateType !== type,
-									);
-									if (templateId) {
-										next.push({ templateType: type, templateId });
-									}
-									field.onChange(next);
-								};
-								// Centre vs standard filtering: when the program is attached
-								// to a center, prefer the "center" variants of system
-								// templates. The 4 non-document types (pv/eval/ue/delib) only
-								// have a "standard" variant — show it unconditionally.
-								const isCenterProgram = Boolean(form.watch("centerId"));
-								const variantNeeded: "standard" | "center" = isCenterProgram
-									? "center"
-									: "standard";
-								return (
-									<FormItem className="space-y-3 rounded-md border p-3">
-										<div>
-											<FormLabel className="text-sm">
-												{t("admin.programs.form.exportTemplatesLabel", {
-													defaultValue: "Modèles d'exportation",
-												})}
-											</FormLabel>
-											<p className="text-muted-foreground text-xs">
-												{isCenterProgram
-													? `Programme rattaché à un centre — les modèles "Centre" sont prioritaires (en-tête institut + données du centre).`
-													: t("admin.programs.form.exportTemplatesHint", {
-															defaultValue:
-																"Choisissez le modèle par défaut par type de document.",
-														})}
-											</p>
-											{exportTemplatesError && (
-												<p className="rounded bg-red-50 px-2 py-1 text-red-700 text-xs">
-													Erreur lors du chargement des modèles :{" "}
-													{exportTemplatesError instanceof Error
-														? exportTemplatesError.message
-														: String(exportTemplatesError)}
-												</p>
-											)}
-											{!exportTemplatesLoading &&
-												!exportTemplatesError &&
-												exportTemplates.length === 0 && (
-													<p className="rounded bg-amber-50 px-2 py-1 text-amber-800 text-xs">
-														Aucun modèle disponible pour cette institution.{" "}
-														Allez dans <strong>Modèles d'exportation</strong> et
-														cliquez{" "}
-														<strong>"Initialiser modèles officiels"</strong>{" "}
-														pour seeder les modèles par défaut.
-													</p>
-												)}
-											{!exportTemplatesLoading &&
-												!exportTemplatesError &&
-												exportTemplates.length > 0 && (
-													<p className="text-muted-foreground text-xs">
-														{exportTemplates.length} modèle(s) chargé(s) ·{" "}
-														{
-															exportTemplates.filter(
-																(t) => (t.variant ?? "standard") === "center",
-															).length
-														}{" "}
-														variante(s) Centre
-													</p>
-												)}
-										</div>
-										<div className="grid gap-3 md:grid-cols-2">
-											{EXPORT_TEMPLATE_TYPES.map((type) => {
-												const allOfType = exportTemplates.filter(
-													(tpl) => tpl.type === type,
-												);
-												// Templates created before the variant column was
-												// added have variant=null/undefined — treat them
-												// as "standard" for back-compat.
-												const variantOf = (tpl: {
-													variant?: "standard" | "center";
-												}): "standard" | "center" => tpl.variant ?? "standard";
-												// Try the preferred variant first; if there's nothing
-												// (e.g. pv/eval/ue/delib never have a center variant,
-												// or the admin hasn't re-seeded after the 0005
-												// migration yet), fall back to ALL templates of this
-												// type so the dropdown is never empty when content
-												// exists.
-												const preferred = allOfType.filter(
-													(tpl) => variantOf(tpl) === variantNeeded,
-												);
-												const options =
-													preferred.length > 0 ? preferred : allOfType;
-												const usedFallback =
-													isCenterProgram &&
-													preferred.length === 0 &&
-													allOfType.length > 0;
-												const value = currentByType.get(type) ?? "__NONE__";
-												return (
-													<div key={type} className="space-y-1.5">
-														<Label className="text-xs">
-															{EXPORT_TEMPLATE_TYPE_LABELS[type]}
-															{isCenterProgram && preferred.length > 0 && (
-																<span className="ml-1 text-muted-foreground">
-																	(centre)
-																</span>
-															)}
-															{usedFallback && (
-																<span
-																	className="ml-1 text-amber-600"
-																	title="Aucun modèle Centre disponible — modèles standard listés"
-																>
-																	(standard)
-																</span>
-															)}
-														</Label>
-														<Select
-															value={value}
-															onValueChange={(v) =>
-																updateAssignment(
-																	type,
-																	v === "__NONE__" ? null : v,
-																)
-															}
-														>
-															<SelectTrigger>
-																<SelectValue
-																	placeholder={t(
-																		"admin.programs.form.exportTemplatePlaceholder",
-																		{ defaultValue: "Aucun modèle" },
-																	)}
-																/>
-															</SelectTrigger>
-															<SelectContent>
-																<SelectItem value="__NONE__">
-																	{t("admin.programs.form.exportTemplateNone", {
-																		defaultValue: "Aucun",
-																	})}
-																</SelectItem>
-																{options.map((tpl) => {
-																	const v = variantOf(tpl);
-																	return (
-																		<SelectItem key={tpl.id} value={tpl.id}>
-																			<span className="flex items-center gap-2">
-																				<span>{tpl.name}</span>
-																				{v === "center" && (
-																					<span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800">
-																						centre
-																					</span>
-																				)}
-																			</span>
-																		</SelectItem>
-																	);
-																})}
-															</SelectContent>
-														</Select>
-														<ConfirmDialog />
-													</div>
-												);
-											})}
-										</div>
-										<FormMessage />
-									</FormItem>
-								);
-							}}
-						/>
-						<FormField
-							control={form.control}
-							name="description"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.programs.form.descriptionLabel")}
-									</FormLabel>
-									<FormControl>
-										<Textarea
-											rows={4}
-											placeholder={t(
-												"admin.programs.form.descriptionPlaceholder",
-											)}
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						{!editingProgram && (
-							<div className="space-y-2 rounded-lg border border-dashed p-3">
-								<div className="flex items-center gap-2">
-									<Copy className="h-4 w-4 text-muted-foreground" />
-									<span className="font-medium text-sm">
-										{t("admin.programs.form.cloneFrom", {
-											defaultValue: "Cloner le curriculum depuis (optionnel)",
-										})}
-									</span>
-								</div>
-								<Select
-									value={cloneFromProgramId || "__NONE__"}
-									onValueChange={(v) =>
-										setCloneFromProgramId(v === "__NONE__" ? "" : v)
-									}
-								>
-									<SelectTrigger>
-										<SelectValue
-											placeholder={t(
-												"admin.programs.form.cloneFromPlaceholder",
-												{ defaultValue: "Aucun - laisser vide" },
-											)}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="__NONE__">
-											{t("admin.programs.form.cloneFromPlaceholder", {
-												defaultValue: "Aucun - laisser vide",
-											})}
-										</SelectItem>
-										{programs?.map((p) => (
-											<SelectItem key={p.id} value={p.id}>
-												{p.code} — {p.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-								{cloneFromProgramId && (
-									<p className="text-muted-foreground text-xs">
-										{t("admin.programs.form.cloneFromHint", {
-											defaultValue:
-												"Les UE et EC du programme source seront copies apres la creation.",
-										})}
-									</p>
-								)}
-							</div>
-						)}
 
 						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 							<Button
@@ -1553,12 +625,6 @@ export default function ProgramManagement() {
 							<Button type="submit" disabled={form.formState.isSubmitting}>
 								{form.formState.isSubmitting ? (
 									<Spinner className="mr-2 h-4 w-4" />
-								) : editingProgram ? (
-									t("common.actions.saveChanges")
-								) : cloneFromProgramId ? (
-									t("admin.programs.form.submitWithClone", {
-										defaultValue: "Creer et cloner",
-									})
 								) : (
 									t("admin.programs.form.submit")
 								)}
@@ -1566,181 +632,6 @@ export default function ProgramManagement() {
 						</div>
 					</form>
 				</Form>
-			</FormModal>
-
-			<FormModal
-				isOpen={isOptionModalOpen}
-				onClose={closeOptionsModal}
-				title={t("admin.programs.options.title", {
-					defaultValue: "Manage options for {{value}}",
-					value: optionProgram?.name ?? "",
-				})}
-				maxWidth="sm:max-w-xl"
-			>
-				<div className="space-y-4">
-					<div className="space-y-2">
-						{optionsLoading ? (
-							<div className="flex justify-center py-6">
-								<Spinner className="h-6 w-6 text-primary" />
-							</div>
-						) : optionList.length ? (
-							<div className="max-h-64 space-y-2 overflow-y-auto pr-2">
-								{optionList.map((option) => (
-									<div
-										key={option.id}
-										className="flex items-start justify-between rounded-lg border border-border p-3"
-									>
-										<div>
-											<p className="font-medium text-sm">{option.name}</p>
-											<p className="text-muted-foreground text-xs">
-												{option.code}
-											</p>
-											{option.description && (
-												<p className="text-muted-foreground text-xs">
-													{option.description}
-												</p>
-											)}
-										</div>
-										<div className="flex gap-2">
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												onClick={() => handleEditOption(option)}
-												aria-label={t("admin.programs.options.edit", {
-													defaultValue: "Edit option",
-												})}
-											>
-												<Pencil className="h-4 w-4" />
-											</Button>
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												disabled={
-													optionList.length <= 1 ||
-													deleteOptionMutation.isPending
-												}
-												onClick={() => handleDeleteOption(option.id)}
-												aria-label={t("admin.programs.options.delete", {
-													defaultValue: "Delete option",
-												})}
-											>
-												<Trash2 className="h-4 w-4 text-destructive" />
-											</Button>
-										</div>
-									</div>
-								))}
-							</div>
-						) : (
-							<p className="text-muted-foreground text-xs">
-								{t("admin.programs.options.empty", {
-									defaultValue: "No options yet. Add one below.",
-								})}
-							</p>
-						)}
-					</div>
-					<Form {...optionForm}>
-						<form
-							onSubmit={optionForm.handleSubmit(onSubmitOption)}
-							className="space-y-3 rounded-lg border border-border p-3"
-						>
-							{editingOption ? (
-								<div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
-									<span>
-										{t("admin.programs.options.editing", {
-											defaultValue: "Editing option {{name}}",
-											name: editingOption.name,
-										})}
-									</span>
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onClick={resetOptionEditing}
-									>
-										{t("admin.programs.options.cancelEdit", {
-											defaultValue: "Cancel",
-										})}
-									</Button>
-								</div>
-							) : null}
-							<div className="grid gap-3 sm:grid-cols-2">
-								<FormField
-									control={optionForm.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.programs.options.form.name", {
-													defaultValue: "Option name",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={optionForm.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.programs.options.form.code", {
-													defaultValue: "Code",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<FormField
-								control={optionForm.control}
-								name="description"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.options.form.description", {
-												defaultValue: "Description",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Textarea rows={2} {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<div className="flex justify-end">
-								<Button
-									type="submit"
-									disabled={
-										!optionProgram ||
-										createOptionMutation.isPending ||
-										updateOptionMutation.isPending
-									}
-								>
-									{(createOptionMutation.isPending ||
-										updateOptionMutation.isPending) && (
-										<Spinner className="mr-2 h-4 w-4" />
-									)}
-									{editingOption
-										? t("admin.programs.options.form.updateSubmit", {
-												defaultValue: "Save changes",
-											})
-										: t("admin.programs.options.form.submit", {
-												defaultValue: "Add option",
-											})}
-								</Button>
-							</div>
-						</form>
-					</Form>
-				</div>
 			</FormModal>
 
 			<AlertDialog
@@ -1893,6 +784,8 @@ export default function ProgramManagement() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<ConfirmDialog />
 		</div>
 	);
 }
