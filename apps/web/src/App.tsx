@@ -33,6 +33,7 @@ import {
 	CenterInstancesTab,
 	CenterLogosTab,
 } from "./pages/admin/centers";
+import ClassCoursesTab from "./pages/admin/classes/ClassCoursesTab";
 import ClassDetail from "./pages/admin/classes/ClassDetail";
 import ClassDetailsTab from "./pages/admin/classes/ClassDetailsTab";
 import ClassStudentsTab from "./pages/admin/classes/ClassStudentsTab";
@@ -395,7 +396,7 @@ function App() {
 								<Route index element={<Navigate to="details" replace />} />
 								<Route path="details" element={<ClassDetailsTab />} />
 								<Route path="students" element={<ClassStudentsTab />} />
-								<Route path="courses" element={null} />
+								<Route path="courses" element={<ClassCoursesTab />} />
 							</Route>
 						</Route>
 
