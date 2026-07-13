@@ -141,11 +141,12 @@ export async function removeLink(
 	institutionId: string,
 	input: z.infer<typeof removeLinkSchema>,
 ) {
-	await repo.removeStudentLink(
+	const deleted = await repo.removeStudentLink(
 		institutionId,
 		input.studentId,
 		input.guardianId,
 	);
+	if (!deleted) throw notFound("Guardian-student link not found");
 }
 
 export async function deleteGuardian(institutionId: string, id: string) {

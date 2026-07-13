@@ -22,6 +22,7 @@ import { member } from "@/db/schema/auth";
 export type ListPagedOpts = {
 	page: number;
 	pageSize: number;
+	organizationId: string;
 	role?: BusinessRole;
 	status?: DomainUserStatus;
 	search?: string;
@@ -34,7 +35,7 @@ export async function listPaged(opts: ListPagedOpts) {
 	const offset = (Math.max(opts.page ?? 1, 1) - 1) * size;
 	const isStudent = opts.role === "student";
 
-	const conditions: SQL[] = [];
+	const conditions: SQL[] = [eq(member.organizationId, opts.organizationId)];
 	if (opts.role) conditions.push(eq(member.role, opts.role));
 	if (opts.status) conditions.push(eq(domainUsers.status, opts.status));
 	if (opts.search) {

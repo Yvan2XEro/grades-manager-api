@@ -1,7 +1,12 @@
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { businessRoles, domainStatuses } from "@/db/schema/app-schema";
-import { adminProcedure, protectedProcedure, router } from "../../lib/trpc";
+import {
+	adminProcedure,
+	protectedProcedure,
+	router,
+	tenantAdminProcedure,
+} from "../../lib/trpc";
 import * as service from "./users.service";
 import {
 	createUserProfileSchema,
@@ -23,7 +28,7 @@ export const usersRouter = router({
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input }) => service.listUsers(input)),
-	listPaged: protectedProcedure
+	listPaged: tenantAdminProcedure
 		.input(
 			z.object({
 				page: z.number().int().min(1).default(1),
@@ -35,7 +40,14 @@ export const usersRouter = router({
 				academicYearId: z.string().optional(),
 			}),
 		)
-		.query(({ input }) => service.listUsersPaged(input)),
+		.query(({ input, ctx }) =>
+			service.listUsersPaged({
+				...input,
+				// tenantAdminProcedure guarantees institution is resolved from organizationId,
+				// so institution.organizationId is always set (non-null).
+				organizationId: ctx.institution.organizationId!,
+			}),
+		),
 	createProfile: adminProcedure
 		.input(createUserProfileSchema)
 		.mutation(({ input }) => service.createUserProfile(input)),

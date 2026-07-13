@@ -18,6 +18,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -25,6 +32,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -90,6 +98,7 @@ export default function PeopleManagement() {
 	const [classId, setClassId] = useState<string | null>(null);
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+	const [showCreate, setShowCreate] = useState(false);
 
 	const debouncedSearch = useDebounce(search, 300);
 	const isStudent = role === "student";
@@ -143,7 +152,7 @@ export default function PeopleManagement() {
 						})}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/users/people/new")}>
+				<Button onClick={() => setShowCreate(true)}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("usersHub.people.add", { defaultValue: "Add person" })}
 				</Button>
@@ -434,6 +443,124 @@ export default function PeopleManagement() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<CreatePersonDialog
+				open={showCreate}
+				onOpenChange={setShowCreate}
+				onCreated={() => {
+					queryClient.invalidateQueries(trpc.users.listPaged.queryKey());
+				}}
+			/>
 		</div>
+	);
+}
+
+// ── Create Person Dialog ─────────────────────────────────────────────────────
+
+function CreatePersonDialog({
+	open,
+	onOpenChange,
+	onCreated,
+}: {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	onCreated: () => void;
+}) {
+	const { t } = useTranslation();
+	const [form, setForm] = useState({
+		firstName: "",
+		lastName: "",
+		email: "",
+	});
+	const [submitting, setSubmitting] = useState(false);
+
+	const handleClose = () => {
+		onOpenChange(false);
+		setForm({ firstName: "", lastName: "", email: "" });
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setSubmitting(true);
+		try {
+			await trpcClient.users.createProfile.mutate({
+				firstName: form.firstName.trim(),
+				lastName: form.lastName.trim(),
+				email: form.email.trim(),
+			});
+			toast.success(
+				t("usersHub.people.created", { defaultValue: "Person created." }),
+			);
+			onCreated();
+			handleClose();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : String(err));
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>
+						{t("usersHub.people.add", { defaultValue: "Add person" })}
+					</DialogTitle>
+				</DialogHeader>
+				<form onSubmit={handleSubmit} className="space-y-4">
+					<div className="space-y-1">
+						<Label htmlFor="cp-first">
+							{t("common.fields.firstName", { defaultValue: "First name" })}
+						</Label>
+						<Input
+							id="cp-first"
+							required
+							value={form.firstName}
+							onChange={(e) =>
+								setForm((f) => ({ ...f, firstName: e.target.value }))
+							}
+						/>
+					</div>
+					<div className="space-y-1">
+						<Label htmlFor="cp-last">
+							{t("common.fields.lastName", { defaultValue: "Last name" })}
+						</Label>
+						<Input
+							id="cp-last"
+							required
+							value={form.lastName}
+							onChange={(e) =>
+								setForm((f) => ({ ...f, lastName: e.target.value }))
+							}
+						/>
+					</div>
+					<div className="space-y-1">
+						<Label htmlFor="cp-email">
+							{t("common.fields.email", { defaultValue: "Email" })}
+						</Label>
+						<Input
+							id="cp-email"
+							type="email"
+							required
+							value={form.email}
+							onChange={(e) =>
+								setForm((f) => ({ ...f, email: e.target.value }))
+							}
+						/>
+					</div>
+					<DialogFooter>
+						<Button type="button" variant="outline" onClick={handleClose}>
+							{t("common.cancel", { defaultValue: "Cancel" })}
+						</Button>
+						<Button type="submit" disabled={submitting}>
+							{submitting
+								? t("common.saving", { defaultValue: "Saving…" })
+								: t("common.create", { defaultValue: "Create" })}
+						</Button>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
 	);
 }

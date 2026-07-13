@@ -273,7 +273,7 @@ export async function removeStudentLink(
 	studentId: string,
 	guardianId: string,
 ) {
-	await db
+	const [deleted] = await db
 		.delete(schema.studentGuardians)
 		.where(
 			and(
@@ -281,7 +281,9 @@ export async function removeStudentLink(
 				eq(schema.studentGuardians.studentId, studentId),
 				eq(schema.studentGuardians.guardianId, guardianId),
 			),
-		);
+		)
+		.returning({ id: schema.studentGuardians.id });
+	return deleted ?? null;
 }
 
 export async function deleteGuardian(
