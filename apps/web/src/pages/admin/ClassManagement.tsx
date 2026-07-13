@@ -1230,7 +1230,7 @@ export default function ClassManagement() {
 											<span>{cls.students?.length || 0}</span>
 										</div>
 									</TableCell>
-									<TableCell>
+									<TableCell onClick={(e) => e.stopPropagation()}>
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button variant="ghost" size="icon" className="h-8 w-8">

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -78,9 +78,11 @@ export default function ProgramExportTemplatesTab() {
 	);
 
 	const [selections, setSelections] = useState<Record<string, string>>({});
+	const initialized = useRef(false);
 
 	useEffect(() => {
-		if (existingAssignments) {
+		if (existingAssignments && !initialized.current) {
+			initialized.current = true;
 			const map: Record<string, string> = {};
 			for (const et of existingAssignments) {
 				map[et.templateType] = et.templateId;

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, Outlet, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,6 @@ export default function ClassDetail() {
 					</div>
 				</div>
 				<HubNav tabs={TABS} basePath={`/admin/classes/${classId}`} />
-				<Outlet />
 			</div>
 		</ClassContext.Provider>
 	);
