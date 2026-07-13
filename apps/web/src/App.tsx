@@ -84,6 +84,7 @@ import {
 } from "./pages/admin/profiles";
 import ProgramDetail from "./pages/admin/programs/ProgramDetail";
 import ProgramDetailsTab from "./pages/admin/programs/ProgramDetailsTab";
+import ProgramOptionsTab from "./pages/admin/programs/ProgramOptionsTab";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
 import RetakeEligibility from "./pages/admin/RetakeEligibility";
@@ -370,7 +371,7 @@ function App() {
 							<Route path=":programId" element={<ProgramDetail />}>
 								<Route index element={<Navigate to="details" replace />} />
 								<Route path="details" element={<ProgramDetailsTab />} />
-								<Route path="options" element={null} />
+								<Route path="options" element={<ProgramOptionsTab />} />
 								<Route path="templates" element={null} />
 							</Route>
 						</Route>
