@@ -1103,6 +1103,8 @@ export default function ClassManagement() {
 							{classes?.map((cls) => (
 								<TableRow
 									key={cls.id}
+									onClick={() => navigate(`/admin/classes/${cls.id}/details`)}
+									className="cursor-pointer"
 									actions={
 										<>
 											<ContextMenuItem
@@ -1145,7 +1147,7 @@ export default function ClassManagement() {
 										</>
 									}
 								>
-									<TableCell>
+									<TableCell onClick={(e) => e.stopPropagation()}>
 										<Checkbox
 											checked={selection.isSelected(cls.id)}
 											onCheckedChange={() => selection.toggle(cls.id)}
