@@ -90,6 +90,13 @@ export async function createNextYear(
 	});
 }
 
+export async function listAcademicYearsPaged(
+	input: { page: number; pageSize: number },
+	institutionId: string,
+) {
+	return repo.listPaged(institutionId, input);
+}
+
 export async function setActive(
 	id: string,
 	isActive: boolean,

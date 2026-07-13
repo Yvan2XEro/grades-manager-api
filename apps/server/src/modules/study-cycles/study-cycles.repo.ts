@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, count, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -115,6 +115,42 @@ export async function listCycles(
 		nextCursor = items[items.length - 1]?.id;
 	}
 	return { items, nextCursor };
+}
+
+export async function listCyclesPaged(
+	institutionId: string,
+	opts: { page: number; pageSize: number },
+) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const where = eq(schema.studyCycles.institutionId, institutionId);
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select({
+				id: schema.studyCycles.id,
+				institutionId: schema.studyCycles.institutionId,
+				code: schema.studyCycles.code,
+				name: schema.studyCycles.name,
+				nameEn: schema.studyCycles.nameEn,
+				description: schema.studyCycles.description,
+				totalCreditsRequired: schema.studyCycles.totalCreditsRequired,
+				durationYears: schema.studyCycles.durationYears,
+				createdAt: schema.studyCycles.createdAt,
+			})
+			.from(schema.studyCycles)
+			.where(where)
+			.orderBy(schema.studyCycles.name)
+			.limit(size)
+			.offset(offset),
+		db.select({ total: count() }).from(schema.studyCycles).where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }
 
 export async function createLevel(data: schema.NewCycleLevel) {

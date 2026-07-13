@@ -3,6 +3,7 @@ import * as service from "./teaching-units.service";
 import {
 	baseSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	updateSchema,
 } from "./teaching-units.zod";
@@ -31,4 +32,9 @@ export const teachingUnitsRouter = router({
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input, ctx }) => service.listUnits(input, ctx.institution.id)),
+	listPaged: protectedProcedure
+		.input(listPagedSchema)
+		.query(({ input, ctx }) =>
+			service.listUnitsPaged(input, ctx.institution.id),
+		),
 });

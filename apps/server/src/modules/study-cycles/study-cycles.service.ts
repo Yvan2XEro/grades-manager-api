@@ -122,3 +122,10 @@ export async function getLevelById(id: string, institutionId: string) {
 	if (!level) throw new TRPCError({ code: "NOT_FOUND" });
 	return level;
 }
+
+export async function listCyclesPaged(
+	input: { page: number; pageSize: number },
+	institutionId: string,
+) {
+	return repo.listCyclesPaged(institutionId, input);
+}

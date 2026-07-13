@@ -36,4 +36,9 @@ export const levelListSchema = z.object({
 	cycleId: z.string(),
 });
 
+export const listCyclesPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+});
+
 export const idSchema = z.object({ id: z.string() });

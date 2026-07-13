@@ -6,6 +6,7 @@ import {
 	idSchema,
 	levelBaseSchema,
 	levelListSchema,
+	listCyclesPagedSchema,
 	updateCycleSchema,
 	updateLevelSchema,
 } from "./study-cycles.zod";
@@ -29,6 +30,11 @@ export const studyCyclesRouter = router({
 	listCycles: protectedProcedure
 		.input(cycleListSchema)
 		.query(({ ctx, input }) => service.listCycles(input, ctx.institution.id)),
+	listPaged: protectedProcedure
+		.input(listCyclesPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listCyclesPaged(input, ctx.institution.id),
+		),
 	getCycle: protectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>

@@ -3,6 +3,7 @@ import * as service from "./exam-types.service";
 import {
 	baseSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	updateSchema,
 } from "./exam-types.zod";
@@ -32,5 +33,10 @@ export const examTypesRouter = router({
 		.input(listSchema)
 		.query(({ ctx, input }) =>
 			service.listExamTypes(input, ctx.institution.id),
+		),
+	listPaged: protectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listExamTypesPaged(input, ctx.institution.id),
 		),
 });

@@ -59,3 +59,10 @@ export async function listUnits(
 ) {
 	return repo.list(institutionId, opts);
 }
+
+export async function listUnitsPaged(
+	input: { page: number; pageSize: number; programId?: string },
+	institutionId: string,
+) {
+	return repo.listPaged(institutionId, input);
+}
