@@ -165,7 +165,18 @@
       "mcp__linear__list_issues",
       "mcp__linear__list_issue_statuses",
       "mcp__linear__save_issue",
-      "mcp__linear__list_comments"
+      "mcp__linear__list_comments",
+      "mcp__linear__get_issue",
+      "mcp__linear__get_project",
+      "Bash(awk '/^export const students = pgTable/,/^\\\\}\\\\\\);/' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/db/schema/app-schema.ts)",
+      "mcp__linear__get_issue_status",
+      "Bash(git *)",
+      "mcp__linear__save_comment",
+      "mcp__linear__get_document",
+      "mcp__linear__list_teams",
+      "mcp__linear__list_projects",
+      "Bash(npx vitest *)",
+      "Bash(/home/yvan/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief $PLAN *)"
     ]
   },
   "enabledMcpjsonServers": [

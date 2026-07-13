@@ -5131,12 +5131,19 @@
       "linkedTitle": "Guardians linked to {{name}}",
       "copyPortalLink": "Copy portal link",
       "empty": "No guardian linked to this student yet.",
-      "selectStudent": "Select a student to manage guardian access.",
+      "selectStudent": "Select student…",
       "toasts": {
         "saved": "Guardian saved",
         "preferencesSaved": "Preferences updated",
         "linkCopied": "Portal link copied"
-      }
+      },
+      "addGuardian": "Add guardian",
+      "searchPlaceholder": "Search by name or email…",
+      "linkedStudents": "Linked to",
+      "student": "student",
+      "editPreferences": "Edit preferences",
+      "removeFromStudent": "Remove from student",
+      "deleteConfirm": "This will permanently delete the guardian and all student links."
     },
     "portal": {
       "badge": "Guardian portal",
@@ -5272,10 +5279,20 @@
     "title": "Users & Students",
     "description": "Manage accounts, students, guardians and API keys",
     "tabs": {
-      "accounts": "Accounts",
-      "students": "Students",
+      "people": "People",
       "guardians": "Guardians",
       "apiKeys": "API Keys"
+    },
+    "people": {
+      "title": "People",
+      "subtitle": "All profiles in this institution.",
+      "add": "Add person",
+      "searchPlaceholder": "Search by name or email…",
+      "class": "Class",
+      "regNumber": "Reg. number",
+      "enrollmentStatus": "Enrollment",
+      "empty": "No people found.",
+      "deleteConfirm": "This will permanently delete the profile and cannot be undone."
     }
   },
   "profileHub": {

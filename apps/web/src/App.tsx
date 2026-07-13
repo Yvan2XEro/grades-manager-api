@@ -68,7 +68,6 @@ import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
 import GradeExport from "./pages/admin/GradeExport";
 import GradeScaleSettings from "./pages/admin/GradeScaleSettings";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
-import GuardiansManagement from "./pages/admin/GuardiansManagement";
 import InstitutionHub from "./pages/admin/InstitutionHub";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
@@ -88,7 +87,6 @@ import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
 import RetakeEligibility from "./pages/admin/RetakeEligibility";
 import RoomsManagement from "./pages/admin/RoomsManagement";
 import RuleManagement from "./pages/admin/RuleManagement";
-import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
 import TeachingUnitCoursesTab from "./pages/admin/TeachingUnitCoursesTab";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
@@ -96,8 +94,9 @@ import TeachingUnitDetailsTab from "./pages/admin/TeachingUnitDetailsTab";
 import TeachingUnitManagement from "./pages/admin/TeachingUnitManagement";
 import TimetableHub from "./pages/admin/TimetableHub";
 import TimetableManagement from "./pages/admin/TimetableManagement";
-import UserManagement from "./pages/admin/UserManagement";
 import UsersHub from "./pages/admin/UsersHub";
+import GuardianDirectory from "./pages/admin/users/GuardianDirectory";
+import PeopleManagement from "./pages/admin/users/PeopleManagement";
 import ApplicationForm from "./pages/admissions/ApplicationForm";
 import ApplicationStatus from "./pages/admissions/ApplicationStatus";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -266,9 +265,12 @@ function App() {
 						/>
 						<Route
 							path="students"
-							element={<Navigate to="/admin/users/students" replace />}
+							element={<Navigate to="/admin/users/people" replace />}
 						/>
-						<Route path="student-promotion" element={<StudentManagement />} />
+						<Route
+							path="student-promotion"
+							element={<Navigate to="/admin/users/people" replace />}
+						/>
 						<Route path="graduation" element={<GraduatedStudents />} />
 						<Route path="monitoring" element={<MonitoringDashboard />} />
 						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
@@ -375,15 +377,18 @@ function App() {
 
 						{/* Users hub */}
 						<Route path="users" element={<UsersHub />}>
-							<Route index element={<Navigate to="accounts" replace />} />
-							<Route path="accounts" element={<UserManagement />} />
-							<Route path="students" element={<StudentManagement />} />
-							<Route path="guardians" element={<GuardiansManagement />} />
+							<Route index element={<Navigate to="people" replace />} />
+							<Route path="people" element={<PeopleManagement />} />
+							<Route path="guardians" element={<GuardianDirectory />} />
 							<Route path="api-keys" element={<ApiKeysManagement />} />
-							{/* Legacy: /admin/users/users → /admin/users/accounts */}
+							{/* Legacy redirects */}
 							<Route
-								path="users"
-								element={<Navigate to="/admin/users/accounts" replace />}
+								path="accounts"
+								element={<Navigate to="/admin/users/people" replace />}
+							/>
+							<Route
+								path="students"
+								element={<Navigate to="/admin/users/people" replace />}
 							/>
 						</Route>
 

@@ -5136,12 +5136,19 @@
       "linkedTitle": "Parents liés à {{name}}",
       "copyPortalLink": "Copier le lien portail",
       "empty": "Aucun parent n’est encore lié à cet étudiant.",
-      "selectStudent": "Sélectionnez un étudiant pour gérer l’accès parent.",
+      "selectStudent": "Sélectionner un étudiant…",
       "toasts": {
         "saved": "Parent enregistré",
         "preferencesSaved": "Préférences mises à jour",
         "linkCopied": "Lien portail copié"
-      }
+      },
+      "addGuardian": "Ajouter un tuteur",
+      "searchPlaceholder": "Rechercher par nom ou email…",
+      "linkedStudents": "Lié à",
+      "student": "étudiant",
+      "editPreferences": "Modifier les préférences",
+      "removeFromStudent": "Retirer d’un étudiant",
+      "deleteConfirm": "Cette action supprimera définitivement le tuteur et tous ses liens avec les étudiants."
     },
     "portal": {
       "badge": "Portail parent",
@@ -5277,10 +5284,20 @@
     "title": "Utilisateurs & Étudiants",
     "description": "Gérez les comptes, les étudiants, les parents et les clés d'API",
     "tabs": {
-      "accounts": "Comptes",
-      "students": "Étudiants",
-      "guardians": "Parents",
+      "people": "Personnes",
+      "guardians": "Tuteurs",
       "apiKeys": "Clés API"
+    },
+    "people": {
+      "title": "Personnes",
+      "subtitle": "Tous les profils de cette institution.",
+      "add": "Ajouter une personne",
+      "searchPlaceholder": "Rechercher par nom ou email…",
+      "class": "Classe",
+      "regNumber": "Matricule",
+      "enrollmentStatus": "Inscription",
+      "empty": "Aucune personne trouvée.",
+      "deleteConfirm": "Cette action supprimera définitivement le profil et ne peut pas être annulée."
     }
   },
   "profileHub": {

@@ -124,7 +124,7 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.inscriptions",
 				items: [
 					{
-						to: "/admin/users/students",
+						to: "/admin/users/people",
 						icon: <GraduationCap className={IC} />,
 						labelKey: "navigation.sidebar.admin.students",
 					},
