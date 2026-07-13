@@ -5,6 +5,7 @@ import type { DomainUserStatus, Gender } from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
 import { domainUsersRepo } from "@/modules/domain-users";
+import * as pagedRepo from "./users.listpaged.repo";
 import * as repo from "./users.repo";
 import type { CreateUserWithAuthInput } from "./users.zod";
 
@@ -165,6 +166,10 @@ export async function createUserWithAuth(
 		await db.delete(authSchema.user).where(eq(authSchema.user.id, authUserId));
 		throw err;
 	}
+}
+
+export async function listUsersPaged(opts: pagedRepo.ListPagedOpts) {
+	return pagedRepo.listPaged(opts);
 }
 
 export async function getMyProfile(profileId: string) {

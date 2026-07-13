@@ -23,6 +23,19 @@ export const usersRouter = router({
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input }) => service.listUsers(input)),
+	listPaged: protectedProcedure
+		.input(
+			z.object({
+				page: z.number().int().min(1).default(1),
+				pageSize: z.number().int().min(1).max(100).default(25),
+				role: z.enum(businessRoles).optional(),
+				status: z.enum(domainStatuses).optional(),
+				search: z.string().optional(),
+				classId: z.string().optional(),
+				academicYearId: z.string().optional(),
+			}),
+		)
+		.query(({ input }) => service.listUsersPaged(input)),
 	createProfile: adminProcedure
 		.input(createUserProfileSchema)
 		.mutation(({ input }) => service.createUserProfile(input)),

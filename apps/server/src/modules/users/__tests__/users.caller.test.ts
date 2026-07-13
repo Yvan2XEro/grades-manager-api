@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
+import { describe, expect, it, mock, test } from "bun:test";
 import { randomUUID } from "node:crypto";
 import type { Context } from "@/lib/context";
 import { auth as testAuth } from "@/lib/test-db";
@@ -176,5 +176,53 @@ describe("users router", () => {
 				}),
 			).rejects.toHaveProperty("code", "CONFLICT");
 		});
+	});
+});
+
+describe("users.listPaged", () => {
+	test("requires auth", async () => {
+		const caller = appRouter.createCaller(makeTestContext());
+		await expect(
+			caller.users.listPaged({ page: 1, pageSize: 25 }),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
+
+	test("returns page with total and pageCount", async () => {
+		const caller = appRouter.createCaller(await asAdmin());
+		const result = await caller.users.listPaged({ page: 1, pageSize: 25 });
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+
+	test("filters by role", async () => {
+		const caller = appRouter.createCaller(await asAdmin());
+		const result = await caller.users.listPaged({
+			page: 1,
+			pageSize: 25,
+			role: "student",
+		});
+		for (const item of result.items) {
+			expect(item.role).toBe("student");
+		}
+	});
+
+	test("search filters by name", async () => {
+		const caller = appRouter.createCaller(await asAdmin());
+		const result = await caller.users.listPaged({
+			page: 1,
+			pageSize: 25,
+			search: "zzz_no_match_xyz",
+		});
+		expect(result.items).toHaveLength(0);
+		expect(result.total).toBe(0);
+	});
+
+	test("pageCount is ceil(total / pageSize)", async () => {
+		const caller = appRouter.createCaller(await asAdmin());
+		const result = await caller.users.listPaged({ page: 1, pageSize: 1 });
+		expect(result.pageCount).toBe(Math.ceil(result.total / 1));
 	});
 });
