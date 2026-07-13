@@ -117,6 +117,21 @@ describe("class courses router", () => {
 		).rejects.toHaveProperty("code", "NOT_FOUND");
 	});
 
+	describe("classCourses.listPaged", () => {
+		it("returns { items, total, pageCount }", async () => {
+			const caller = appRouter.createCaller(asAdmin());
+			const result = await caller.classCourses.listPaged({
+				page: 1,
+				pageSize: 25,
+			});
+			expect(result).toMatchObject({
+				items: expect.any(Array),
+				total: expect.any(Number),
+				pageCount: expect.any(Number),
+			});
+		});
+	});
+
 	it("logs delegated course access events", async () => {
 		await db.delete(schema.classCourseAccessLogs);
 		const { classCourse, exam } = await createRecapFixture();

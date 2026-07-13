@@ -15,6 +15,7 @@ import {
 	baseSchema,
 	codeSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	searchSchema,
 	updateSchema,
@@ -194,6 +195,11 @@ export const router = createRouter({
 			}
 			return mergeById(markItems(baseRaw, false), delegatedItems);
 		}),
+	listPaged: tenantProtectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listClassCoursesPaged(input, ctx.institution.id),
+		),
 	teacherOverview: tenantProtectedProcedure.query(async ({ ctx }) => {
 		const activeYear = await db.query.academicYears.findFirst({
 			where: and(

@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, count, eq, gt, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -259,6 +259,86 @@ export async function list(opts: {
 	}));
 
 	return { items, nextCursor };
+}
+
+export async function listPaged(opts: {
+	institutionId: string;
+	page: number;
+	pageSize: number;
+	classId?: string;
+	academicYearId?: string;
+	semesterId?: string;
+}) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+
+	// If filtering by academicYearId, resolve matching class IDs first
+	let classIdsFromYear: string[] | undefined;
+	if (opts.academicYearId) {
+		const matchingClasses = await db
+			.select({ id: schema.classes.id })
+			.from(schema.classes)
+			.where(
+				and(
+					eq(schema.classes.academicYear, opts.academicYearId),
+					eq(schema.classes.institutionId, opts.institutionId),
+				),
+			);
+		classIdsFromYear = matchingClasses.map((c) => c.id);
+		if (classIdsFromYear.length === 0) {
+			return { items: [], total: 0, pageCount: 0 };
+		}
+	}
+
+	const where = and(
+		eq(schema.classCourses.institutionId, opts.institutionId),
+		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
+		classIdsFromYear
+			? inArray(schema.classCourses.class, classIdsFromYear)
+			: undefined,
+		opts.semesterId
+			? eq(schema.classCourses.semesterId, opts.semesterId)
+			: undefined,
+	);
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select({
+				id: schema.classCourses.id,
+				class: schema.classCourses.class,
+				course: schema.classCourses.course,
+				code: schema.classCourses.code,
+				semesterId: schema.classCourses.semesterId,
+				coefficient: schema.classCourses.coefficient,
+				teacher: schema.classCourses.teacher,
+				courseName: schema.courses.name,
+				courseCode: schema.courses.code,
+				teacherFirstName: schema.domainUsers.firstName,
+				teacherLastName: schema.domainUsers.lastName,
+				createdAt: schema.classCourses.createdAt,
+			})
+			.from(schema.classCourses)
+			.leftJoin(
+				schema.courses,
+				eq(schema.courses.id, schema.classCourses.course),
+			)
+			.leftJoin(
+				schema.domainUsers,
+				eq(schema.domainUsers.id, schema.classCourses.teacher),
+			)
+			.where(where)
+			.orderBy(schema.classCourses.code)
+			.limit(size)
+			.offset(offset),
+		db.select({ total: count() }).from(schema.classCourses).where(where),
+	]);
+
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }
 
 export async function findByCode(

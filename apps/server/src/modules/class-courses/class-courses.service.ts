@@ -278,6 +278,19 @@ export async function getClassCourseRoster(
 	};
 }
 
+export async function listClassCoursesPaged(
+	input: {
+		page: number;
+		pageSize: number;
+		classId?: string;
+		academicYearId?: string;
+		semesterId?: string;
+	},
+	institutionId: string,
+) {
+	return repo.listPaged({ institutionId, ...input });
+}
+
 export async function searchClassCourses(
 	opts: Omit<Parameters<typeof repo.search>[0], "institutionId">,
 	institutionId: string,
