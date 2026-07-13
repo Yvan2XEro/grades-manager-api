@@ -108,12 +108,6 @@ export default function GuardianDirectory() {
 	} | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-	const queryKeyBase = trpc.guardians.listAll.queryKey({
-		page,
-		pageSize,
-		search: debouncedSearch || undefined,
-	});
-
 	const { data, isLoading } = useQuery(
 		trpc.guardians.listAll.queryOptions({
 			page,
@@ -123,7 +117,9 @@ export default function GuardianDirectory() {
 	);
 
 	const invalidate = () =>
-		queryClient.invalidateQueries({ queryKey: queryKeyBase });
+		queryClient.invalidateQueries({
+			queryKey: trpc.guardians.listAll.queryKey(),
+		});
 
 	const removeLinkMutation = useMutation({
 		mutationFn: (input: { studentId: string; guardianId: string }) =>
@@ -171,7 +167,7 @@ export default function GuardianDirectory() {
 				</div>
 				<Button onClick={() => setShowAdd(true)}>
 					<Plus className="mr-2 h-4 w-4" />
-					{t("guardians.admin.save")}
+					{t("guardians.admin.addGuardian", { defaultValue: "Add guardian" })}
 				</Button>
 			</div>
 
@@ -191,7 +187,7 @@ export default function GuardianDirectory() {
 			</div>
 
 			{isLoading ? (
-				<TableSkeleton columns={5} rows={6} />
+				<TableSkeleton columns={6} rows={6} />
 			) : (
 				<Table>
 					<TableHeader>
