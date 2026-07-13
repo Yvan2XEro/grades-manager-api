@@ -20,6 +20,16 @@ export const listSchema = z.object({
 	limit: z.number().int().optional(),
 });
 
+export const listPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	classId: z.string().optional(),
+	academicYearId: z.string().optional(),
+	status: z
+		.enum(["pending", "active", "completed", "graduated", "withdrawn"])
+		.optional(),
+});
+
 export const idSchema = z.object({ id: z.string() });
 
 export const statusSchema = z.object({

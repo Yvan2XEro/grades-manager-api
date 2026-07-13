@@ -9,6 +9,7 @@ import * as service from "./enrollments.service";
 import {
 	baseSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	statusSchema,
 	updateSchema,
@@ -54,5 +55,10 @@ export const enrollmentsRouter = router({
 		.input(listSchema)
 		.query(({ ctx, input }) =>
 			service.listEnrollments(input, ctx.institution.id),
+		),
+	listPaged: tenantProtectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listEnrollmentsPaged(input, ctx.institution.id),
 		),
 });

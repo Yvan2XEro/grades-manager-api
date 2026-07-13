@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, count, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -91,6 +91,44 @@ export async function list(opts: {
 		nextCursor = next?.id;
 	}
 	return { items, nextCursor };
+}
+
+export async function listPaged(opts: {
+	institutionId: string;
+	page: number;
+	pageSize: number;
+	classId?: string;
+	academicYearId?: string;
+	status?: schema.EnrollmentStatus;
+}) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [
+		eq(schema.enrollments.institutionId, opts.institutionId),
+		opts.classId ? eq(schema.enrollments.classId, opts.classId) : undefined,
+		opts.academicYearId
+			? eq(schema.enrollments.academicYearId, opts.academicYearId)
+			: undefined,
+		opts.status ? eq(schema.enrollments.status, opts.status) : undefined,
+	].filter(Boolean) as ReturnType<typeof eq>[];
+	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select()
+			.from(schema.enrollments)
+			.where(where)
+			.orderBy(schema.enrollments.enrolledAt, schema.enrollments.id)
+			.limit(size)
+			.offset(offset),
+		db.select({ total: count() }).from(schema.enrollments).where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }
 
 export async function deleteById(id: string, institutionId: string) {
