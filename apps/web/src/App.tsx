@@ -34,6 +34,7 @@ import {
 	CenterLogosTab,
 } from "./pages/admin/centers";
 import ClassDetail from "./pages/admin/classes/ClassDetail";
+import ClassDetailsTab from "./pages/admin/classes/ClassDetailsTab";
 import AdminDashboard from "./pages/admin/Dashboard";
 import {
 	DeliberationActivityTab,
@@ -391,7 +392,7 @@ function App() {
 							</Route>
 							<Route path=":classId" element={<ClassDetail />}>
 								<Route index element={<Navigate to="details" replace />} />
-								<Route path="details" element={null} />
+								<Route path="details" element={<ClassDetailsTab />} />
 								<Route path="students" element={null} />
 								<Route path="courses" element={null} />
 							</Route>
