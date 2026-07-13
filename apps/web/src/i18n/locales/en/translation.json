@@ -5390,5 +5390,14 @@
         "templates": "Export Templates"
       }
     }
+  },
+  "classes": {
+    "hub": {
+      "tabs": {
+        "details": "Details",
+        "students": "Students",
+        "courses": "Courses"
+      }
+    }
   }
 }

@@ -33,6 +33,7 @@ import {
 	CenterInstancesTab,
 	CenterLogosTab,
 } from "./pages/admin/centers";
+import ClassDetail from "./pages/admin/classes/ClassDetail";
 import AdminDashboard from "./pages/admin/Dashboard";
 import {
 	DeliberationActivityTab,
@@ -381,11 +382,19 @@ function App() {
 						</Route>
 
 						{/* Classes hub */}
-						<Route path="classes" element={<ClassesHub />}>
-							<Route index element={<Navigate to="classes" replace />} />
-							<Route path="classes" element={<ClassManagement />} />
-							<Route path="assignments" element={<ClassCourseManagement />} />
-							<Route path="enrollments" element={<EnrollmentManagement />} />
+						<Route path="classes">
+							<Route element={<ClassesHub />}>
+								<Route index element={<Navigate to="classes" replace />} />
+								<Route path="classes" element={<ClassManagement />} />
+								<Route path="assignments" element={<ClassCourseManagement />} />
+								<Route path="enrollments" element={<EnrollmentManagement />} />
+							</Route>
+							<Route path=":classId" element={<ClassDetail />}>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={null} />
+								<Route path="students" element={null} />
+								<Route path="courses" element={null} />
+							</Route>
 						</Route>
 
 						{/* Users hub */}
