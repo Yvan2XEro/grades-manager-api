@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, test } from "bun:test";
 import type { Context } from "@/lib/context";
 import { appRouter } from "@/routers";
 import {
@@ -37,5 +37,17 @@ describe("classes router", () => {
 		await admin.classes.delete({ id: newCls.id });
 		const list = await admin.classes.list({ programId: cls.program });
 		expect(list.items.length).toBeGreaterThanOrEqual(1);
+	});
+});
+
+describe("classes.listPaged", () => {
+	test("returns { items, total, pageCount }", async () => {
+		const caller = createCaller(asAdmin());
+		const result = await caller.classes.listPaged({ page: 1, pageSize: 25 });
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
 	});
 });

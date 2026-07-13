@@ -1,4 +1,14 @@
-import { and, eq, gt, ilike, inArray, or, type SQL, sql } from "drizzle-orm";
+import {
+	and,
+	count,
+	eq,
+	gt,
+	ilike,
+	inArray,
+	or,
+	type SQL,
+	sql,
+} from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -301,6 +311,69 @@ export async function getAssignedCredits(
 		map[row.classId] = Number(row.credits);
 	}
 	return map;
+}
+
+export async function listPaged(
+	institutionId: string,
+	opts: {
+		page: number;
+		pageSize: number;
+		academicYearId?: string;
+		semesterId?: string;
+		programId?: string;
+	},
+) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [
+		eq(schema.classes.institutionId, institutionId),
+		opts.academicYearId
+			? eq(schema.classes.academicYear, opts.academicYearId)
+			: undefined,
+		opts.semesterId
+			? eq(schema.classes.semesterId, opts.semesterId)
+			: undefined,
+		opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
+	].filter(Boolean) as ReturnType<typeof eq>[];
+	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select(classSelection)
+			.from(schema.classes)
+			.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+			.leftJoin(
+				schema.academicYears,
+				eq(schema.academicYears.id, schema.classes.academicYear),
+			)
+			.leftJoin(
+				schema.cycleLevels,
+				eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+			)
+			.leftJoin(
+				schema.studyCycles,
+				eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+			)
+			.leftJoin(
+				schema.programOptions,
+				eq(schema.programOptions.id, schema.classes.programOptionId),
+			)
+			.leftJoin(
+				schema.semesters,
+				eq(schema.semesters.id, schema.classes.semesterId),
+			)
+			.where(where)
+			.orderBy(schema.classes.code)
+			.limit(size)
+			.offset(offset),
+		db.select({ total: count() }).from(schema.classes).where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }
 
 export type KlassRecord = NonNullable<Awaited<ReturnType<typeof findById>>>;

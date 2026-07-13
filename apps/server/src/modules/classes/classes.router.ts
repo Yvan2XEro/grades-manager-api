@@ -11,6 +11,7 @@ import {
 	codeSchema,
 	graduatedStudentsSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	promoTargetsSchema,
 	promotionPreviewSchema,
@@ -38,6 +39,11 @@ export const router = createRouter({
 	list: tenantProtectedProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) => service.listClasses(input, ctx.institution.id)),
+	listPaged: tenantProtectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listClassesPaged(input, ctx.institution.id),
+		),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>

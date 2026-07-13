@@ -561,6 +561,19 @@ export async function listGraduatedStudents(
 	return { items: filtered, nextCursor };
 }
 
+export async function listClassesPaged(
+	input: {
+		page: number;
+		pageSize: number;
+		academicYearId?: string;
+		semesterId?: string;
+		programId?: string;
+	},
+	institutionId: string,
+) {
+	return repo.listPaged(institutionId, input);
+}
+
 export async function searchClasses(
 	opts: Parameters<typeof repo.search>[0],
 	institutionId: string,
