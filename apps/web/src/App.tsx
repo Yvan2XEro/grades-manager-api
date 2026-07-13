@@ -82,6 +82,7 @@ import {
 	ProfileIdentityTab,
 	ProfileResultsTab,
 } from "./pages/admin/profiles";
+import ProgramDetail from "./pages/admin/programs/ProgramDetail";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
 import RetakeEligibility from "./pages/admin/RetakeEligibility";
@@ -364,6 +365,12 @@ function App() {
 								<Route index element={<Navigate to="details" replace />} />
 								<Route path="details" element={<TeachingUnitDetailsTab />} />
 								<Route path="courses" element={<TeachingUnitCoursesTab />} />
+							</Route>
+							<Route path=":programId" element={<ProgramDetail />}>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={null} />
+								<Route path="options" element={null} />
+								<Route path="templates" element={null} />
 							</Route>
 						</Route>
 

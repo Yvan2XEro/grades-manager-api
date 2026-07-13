@@ -1378,7 +1378,8 @@
         "exams": "Exams",
         "students": "Students",
         "teachers": "Teachers",
-        "institutions": "Institutions"
+        "institutions": "Institutions",
+        "activeEnrollments": "Active Enrollments"
       },
       "subtitle": "Overview of your academic institution."
     },
@@ -5130,7 +5131,7 @@
       "save": "Save guardian",
       "linkedTitle": "Guardians linked to {{name}}",
       "copyPortalLink": "Copy portal link",
-      "empty": "No guardian linked to this student yet.",
+      "empty": "No guardians in this institution yet.",
       "selectStudent": "Select student…",
       "toasts": {
         "saved": "Guardian saved",
@@ -5379,6 +5380,15 @@
     "tabs": {
       "deliberations": "Deliberations",
       "promotion": "Year Promotion"
+    }
+  },
+  "programs": {
+    "hub": {
+      "tabs": {
+        "details": "Details",
+        "options": "Options",
+        "templates": "Export Templates"
+      }
     }
   }
 }

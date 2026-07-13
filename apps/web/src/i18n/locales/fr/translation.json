@@ -511,7 +511,8 @@
         "exams": "Évaluations",
         "students": "Étudiants",
         "teachers": "Enseignants",
-        "institutions": "Institutions"
+        "institutions": "Institutions",
+        "activeEnrollments": "Inscriptions actives"
       },
       "subtitle": "Vue d'ensemble de votre établissement académique."
     },
@@ -5135,7 +5136,7 @@
       "save": "Enregistrer le parent",
       "linkedTitle": "Parents liés à {{name}}",
       "copyPortalLink": "Copier le lien portail",
-      "empty": "Aucun parent n’est encore lié à cet étudiant.",
+      "empty": "Aucun parent ou tuteur dans cet établissement.",
       "selectStudent": "Sélectionner un étudiant…",
       "toasts": {
         "saved": "Parent enregistré",
@@ -5384,6 +5385,15 @@
     "tabs": {
       "deliberations": "Délibérations",
       "promotion": "Passage d'année"
+    }
+  },
+  "programs": {
+    "hub": {
+      "tabs": {
+        "details": "Détails",
+        "options": "Options",
+        "templates": "Modèles d'export"
+      }
     }
   }
 }
