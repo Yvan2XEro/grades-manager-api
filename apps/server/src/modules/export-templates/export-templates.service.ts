@@ -17,6 +17,7 @@ import type {
 	DeleteExportTemplateInput,
 	GetExportTemplateInput,
 	ListExportTemplatesInput,
+	ListExportTemplatesPagedInput,
 	RemoveClassTemplateAssignmentInput,
 	RemoveProgramTemplateAssignmentInput,
 	SetDefaultTemplateInput,
@@ -35,6 +36,13 @@ export async function listTemplates(
 		input.cursor,
 		input.limit,
 	);
+}
+
+export async function listTemplatesPaged(
+	institutionId: string,
+	input: ListExportTemplatesPagedInput,
+) {
+	return repo.findTemplatesByInstitutionPaged(institutionId, input);
 }
 
 export async function getTemplate(

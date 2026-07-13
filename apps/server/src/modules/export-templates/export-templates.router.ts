@@ -48,6 +48,16 @@ export const exportTemplatesRouter = router({
 			return await service.listTemplates(ctx.institution.id, input);
 		}),
 
+	listPaged: protectedProcedure
+		.input(zod.listExportTemplatesPagedSchema)
+		.query(async ({ ctx, input }) => {
+			requireManageCatalog({
+				permissions: ctx.permissions,
+				action: "list export templates",
+			});
+			return service.listTemplatesPaged(ctx.institution.id, input);
+		}),
+
 	getById: protectedProcedure
 		.input(zod.getExportTemplateSchema)
 		.query(async ({ ctx, input }) => {

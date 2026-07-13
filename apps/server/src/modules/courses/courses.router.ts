@@ -9,6 +9,7 @@ import {
 	baseSchema,
 	codeSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	searchSchema,
 	updateSchema,
@@ -42,6 +43,11 @@ export const router = createRouter({
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input, ctx }) => service.listCourses(input, ctx.institution.id)),
+	listPaged: protectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listCoursesPaged(input, ctx.institution.id),
+		),
 	search: protectedProcedure
 		.input(searchSchema)
 		.query(({ input, ctx }) =>

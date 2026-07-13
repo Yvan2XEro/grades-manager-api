@@ -42,6 +42,15 @@ export const listExportTemplatesSchema = z.object({
 	limit: z.number().min(1).max(500).optional(),
 });
 
+export const listExportTemplatesPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	type: templateTypeEnum.optional(),
+});
+export type ListExportTemplatesPagedInput = z.infer<
+	typeof listExportTemplatesPagedSchema
+>;
+
 // Get template schema
 export const getExportTemplateSchema = z.object({
 	id: z.string(),

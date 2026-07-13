@@ -1,4 +1,4 @@
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, count, desc, eq, lt } from "drizzle-orm";
 import { db } from "../../db";
 import type {
 	ClassExportTemplate,
@@ -145,6 +145,29 @@ export async function setDefaultTemplate(
 			.set({ isDefault: true, updatedAt: new Date() })
 			.where(eq(schema.exportTemplates.id, templateId));
 	}
+}
+
+export async function findTemplatesByInstitutionPaged(
+	institutionId: string,
+	opts: { page: number; pageSize: number; type?: ExportTemplateType },
+): Promise<{ items: ExportTemplate[]; total: number; pageCount: number }> {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [eq(schema.exportTemplates.institutionId, institutionId)];
+	if (opts.type) conditions.push(eq(schema.exportTemplates.type, opts.type));
+	const where = and(...conditions);
+
+	const [items, [{ total }]] = await Promise.all([
+		db.query.exportTemplates.findMany({
+			where,
+			orderBy: [desc(schema.exportTemplates.createdAt)],
+			limit: size,
+			offset,
+		}),
+		db.select({ total: count() }).from(schema.exportTemplates).where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return { items, total: totalCount, pageCount: Math.ceil(totalCount / size) };
 }
 
 // ---------- class_export_templates ----------

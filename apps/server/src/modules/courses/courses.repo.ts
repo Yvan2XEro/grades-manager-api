@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or } from "drizzle-orm";
+import { and, count, eq, gt, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -121,6 +121,65 @@ export async function list(
 		nextCursor = items[items.length - 1]?.id;
 	}
 	return { items, nextCursor };
+}
+
+export async function listPaged(
+	institutionId: string,
+	opts: {
+		page: number;
+		pageSize: number;
+		programId?: string;
+		teachingUnitId?: string;
+	},
+) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [
+		eq(schema.programs.institutionId, institutionId),
+		opts.programId ? eq(schema.courses.program, opts.programId) : undefined,
+		opts.teachingUnitId
+			? eq(schema.courses.teachingUnitId, opts.teachingUnitId)
+			: undefined,
+	].filter(Boolean) as ReturnType<typeof eq>[];
+	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select({
+				id: schema.courses.id,
+				code: schema.courses.code,
+				name: schema.courses.name,
+				hours: schema.courses.hours,
+				program: schema.courses.program,
+				teachingUnitId: schema.courses.teachingUnitId,
+				defaultTeacher: schema.courses.defaultTeacher,
+				defaultCoefficient: schema.courses.defaultCoefficient,
+				createdAt: schema.courses.createdAt,
+			})
+			.from(schema.courses)
+			.innerJoin(
+				schema.programs,
+				eq(schema.courses.program, schema.programs.id),
+			)
+			.where(where)
+			.orderBy(schema.courses.name)
+			.limit(size)
+			.offset(offset),
+		db
+			.select({ total: count() })
+			.from(schema.courses)
+			.innerJoin(
+				schema.programs,
+				eq(schema.courses.program, schema.programs.id),
+			)
+			.where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }
 
 export async function assignDefaultTeacher(

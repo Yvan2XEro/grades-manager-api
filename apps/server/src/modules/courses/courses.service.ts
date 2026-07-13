@@ -127,6 +127,18 @@ export async function listCourses(
 	return repo.list(institutionId, opts);
 }
 
+export async function listCoursesPaged(
+	input: {
+		page: number;
+		pageSize: number;
+		programId?: string;
+		teachingUnitId?: string;
+	},
+	institutionId: string,
+) {
+	return repo.listPaged(institutionId, input);
+}
+
 export async function getCourseById(id: string, institutionId: string) {
 	const item = await repo.findById(id, institutionId);
 	if (!item) throw notFound();
