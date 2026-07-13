@@ -1,4 +1,13 @@
-import { and, count, eq, ilike, or, type SQL } from "drizzle-orm";
+import {
+	and,
+	count,
+	countDistinct,
+	eq,
+	ilike,
+	or,
+	type SQL,
+	sql,
+} from "drizzle-orm";
 import { db } from "@/db";
 import {
 	type BusinessRole,
@@ -56,7 +65,6 @@ export async function listPaged(opts: ListPagedOpts) {
 		phone: domainUsers.phone,
 		status: domainUsers.status,
 		role: member.role,
-		memberId: domainUsers.memberId,
 	} as const;
 
 	if (isStudent) {
@@ -65,8 +73,10 @@ export async function listPaged(opts: ListPagedOpts) {
 				.select({
 					...baseSelect,
 					registrationNumber: students.registrationNumber,
-					currentClassName: classes.name,
-					currentEnrollmentStatus: enrollments.status,
+					currentClassName: sql<string | null>`MAX(${classes.name})`,
+					currentEnrollmentStatus: sql<
+						string | null
+					>`MAX(${enrollments.status})`,
 				})
 				.from(domainUsers)
 				.leftJoin(member, eq(member.id, domainUsers.memberId))
@@ -74,11 +84,21 @@ export async function listPaged(opts: ListPagedOpts) {
 				.leftJoin(enrollments, eq(enrollments.studentId, students.id))
 				.leftJoin(classes, eq(classes.id, enrollments.classId))
 				.where(where)
+				.groupBy(
+					domainUsers.id,
+					domainUsers.firstName,
+					domainUsers.lastName,
+					domainUsers.primaryEmail,
+					domainUsers.phone,
+					domainUsers.status,
+					member.role,
+					students.registrationNumber,
+				)
 				.orderBy(domainUsers.lastName, domainUsers.firstName)
 				.limit(size)
 				.offset(offset),
 			db
-				.select({ total: count() })
+				.select({ total: countDistinct(domainUsers.id) })
 				.from(domainUsers)
 				.leftJoin(member, eq(member.id, domainUsers.memberId))
 				.leftJoin(students, eq(students.domainUserId, domainUsers.id))
