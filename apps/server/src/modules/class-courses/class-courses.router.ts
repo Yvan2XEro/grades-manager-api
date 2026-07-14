@@ -296,6 +296,11 @@ export const router = createRouter({
 			// In-memory pagination over merged set
 			const size = Math.min(Math.max(input.pageSize, 1), 100);
 			const offset = (Math.max(input.page, 1) - 1) * size;
+			merged.sort(
+				(a, b) =>
+					(a.code ?? "").localeCompare(b.code ?? "") ||
+					a.id.localeCompare(b.id),
+			);
 			return {
 				items: merged.slice(offset, offset + size),
 				total: merged.length,
