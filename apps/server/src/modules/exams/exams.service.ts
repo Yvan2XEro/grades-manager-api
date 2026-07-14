@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
+import type { z } from "zod";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -14,6 +15,7 @@ import * as notificationsService from "../notifications/notifications.service";
 import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./exams.repo";
+import type { listPagedSchema } from "./exams.zod";
 import * as retakeOverridesRepo from "./retake-overrides.repo";
 
 type CreateExamInput = {
@@ -388,6 +390,13 @@ export async function listExams(
 		...result,
 		items: hasFullAccess ? enriched : enriched.filter((exam) => exam.canEdit),
 	};
+}
+
+export async function listExamsPaged(
+	input: z.infer<typeof listPagedSchema>,
+	institutionId: string,
+) {
+	return repo.listPaged({ institutionId, ...input });
 }
 
 export async function getExamById(id: string, institutionId: string) {

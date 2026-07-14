@@ -293,6 +293,18 @@ describe("exams router", () => {
 		).toBe(true);
 	}, 30000);
 
+	describe("exams.listPaged", () => {
+		it("returns { items, total, pageCount }", async () => {
+			const caller = appRouter.createCaller(asAdmin());
+			const result = await caller.exams.listPaged({ page: 1, pageSize: 25 });
+			expect(result).toMatchObject({
+				items: expect.any(Array),
+				total: expect.any(Number),
+				pageCount: expect.any(Number),
+			});
+		});
+	});
+
 	describe("retake eligibility endpoints", () => {
 		const originalFlag = process.env.RETAKES_FEATURE_FLAG;
 		beforeAll(() => {

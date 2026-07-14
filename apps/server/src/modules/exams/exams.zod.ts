@@ -77,3 +77,16 @@ export const createRetakeSchema = z.object({
 	date: z.coerce.date(),
 	scoringPolicy: z.enum(retakeScoringPolicies).optional().default("replace"),
 });
+
+export const listPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	query: z.string().trim().min(1).optional(),
+	classId: z.string().optional(),
+	academicYearId: z.string().optional(),
+	status: z.enum(examStatuses).optional(),
+	statuses: z.array(z.enum(examStatuses)).optional(),
+	teacherId: z.string().optional(),
+	dateFrom: z.coerce.date().optional(),
+	dateTo: z.coerce.date().optional(),
+});

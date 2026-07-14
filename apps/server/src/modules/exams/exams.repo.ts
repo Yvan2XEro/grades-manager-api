@@ -192,6 +192,127 @@ export async function list(opts: {
 	return { items, nextCursor, total: Number(total) };
 }
 
+export async function listPaged(opts: {
+	institutionId: string;
+	page: number;
+	pageSize: number;
+	query?: string;
+	classId?: string;
+	academicYearId?: string;
+	status?: string;
+	statuses?: string[];
+	teacherId?: string;
+	dateFrom?: Date;
+	dateTo?: Date;
+}) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+
+	const baseConditions = [
+		eq(schema.exams.institutionId, opts.institutionId),
+		opts.classId ? eq(schema.classes.id, opts.classId) : undefined,
+		opts.academicYearId
+			? eq(schema.classes.academicYear, opts.academicYearId)
+			: undefined,
+		opts.status ? eq(schema.exams.status, opts.status) : undefined,
+		opts.statuses?.length
+			? inArray(schema.exams.status, opts.statuses)
+			: undefined,
+		opts.teacherId
+			? eq(schema.classCourses.teacher, opts.teacherId)
+			: undefined,
+		opts.dateFrom ? gte(schema.exams.date, opts.dateFrom) : undefined,
+		opts.dateTo
+			? lt(schema.exams.date, new Date(opts.dateTo.getTime() + 86_400_000))
+			: undefined,
+		opts.query
+			? or(
+					ilike(schema.exams.name, `%${opts.query}%`),
+					ilike(schema.classCourses.code, `%${opts.query}%`),
+					ilike(schema.classes.name, `%${opts.query}%`),
+					ilike(schema.courses.name, `%${opts.query}%`),
+				)
+			: undefined,
+	].filter(Boolean) as Array<ReturnType<typeof and> | ReturnType<typeof or>>;
+
+	const where =
+		baseConditions.length === 0
+			? undefined
+			: baseConditions.length === 1
+				? baseConditions[0]
+				: and(...baseConditions);
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select({
+				exam: schema.exams,
+				classCourseId: schema.classCourses.id,
+				classCourseCode: schema.classCourses.code,
+				classId: schema.classes.id,
+				className: schema.classes.name,
+				courseId: schema.courses.id,
+				courseName: schema.courses.name,
+				courseCode: schema.courses.code,
+			})
+			.from(schema.exams)
+			.innerJoin(
+				schema.classCourses,
+				eq(schema.classCourses.id, schema.exams.classCourse),
+			)
+			.innerJoin(
+				schema.classes,
+				eq(schema.classes.id, schema.classCourses.class),
+			)
+			.innerJoin(
+				schema.courses,
+				eq(schema.courses.id, schema.classCourses.course),
+			)
+			.innerJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+			)
+			.where(where)
+			.orderBy(desc(schema.exams.date), asc(schema.exams.id))
+			.limit(size)
+			.offset(offset),
+		db
+			.select({ total: count() })
+			.from(schema.exams)
+			.innerJoin(
+				schema.classCourses,
+				eq(schema.classCourses.id, schema.exams.classCourse),
+			)
+			.innerJoin(
+				schema.classes,
+				eq(schema.classes.id, schema.classCourses.class),
+			)
+			.innerJoin(
+				schema.courses,
+				eq(schema.courses.id, schema.classCourses.course),
+			)
+			.innerJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+			)
+			.where(where),
+	]);
+
+	const items = rows.map((row) => ({
+		...row.exam,
+		classCourse: row.exam.classCourse,
+		classCourseId: row.classCourseId,
+		classCourseCode: row.classCourseCode,
+		classId: row.classId,
+		className: row.className,
+		courseId: row.courseId,
+		courseName: row.courseName,
+		courseCode: row.courseCode,
+	}));
+
+	const totalCount = Number(total ?? 0);
+	return { items, total: totalCount, pageCount: Math.ceil(totalCount / size) };
+}
+
 export async function setLock(
 	examId: string,
 	lock: boolean,

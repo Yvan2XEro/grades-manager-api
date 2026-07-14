@@ -12,6 +12,7 @@ import {
 	createRetakeSchema,
 	deleteRetakeOverrideSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	lockSchema,
 	retakeEligibilitySchema,
@@ -110,6 +111,11 @@ export const router = createRouter({
 			memberRole: ctx.memberRole ?? null,
 		}),
 	),
+	listPaged: tenantProtectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listExamsPaged(input, ctx.institution.id),
+		),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
