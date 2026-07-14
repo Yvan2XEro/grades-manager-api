@@ -483,14 +483,18 @@ export async function listExamsPaged(
 			: [],
 	);
 
-	return {
-		...result,
-		items: result.items.map((item) => ({
+	const pageItems = result.items
+		.map((item) => ({
 			...item,
 			canEdit:
 				teacherClassCourseSet.has(item.classCourse) ||
 				delegateExamIds.has(item.id),
-		})),
+		}))
+		.filter((item) => item.canEdit);
+
+	return {
+		...result,
+		items: pageItems,
 	};
 }
 
