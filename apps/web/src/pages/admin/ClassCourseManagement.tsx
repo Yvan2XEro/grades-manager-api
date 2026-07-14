@@ -325,7 +325,7 @@ export default function ClassCourseManagement() {
 			semesterId: cc.semesterId ?? null,
 			courseName: cc.courseName,
 			courseCode: cc.courseCode,
-			ueSemester: null,
+			ueSemester: cc.ueSemester ?? null,
 			coefficient: Number(cc.coefficient) ?? 1,
 		}),
 	);
