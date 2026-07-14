@@ -1,4 +1,4 @@
-import { and, count, eq, gt, inArray } from "drizzle-orm";
+import { and, count, eq, gt, ilike, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -102,7 +102,7 @@ export async function listPaged(opts: {
 	status?: schema.EnrollmentStatus;
 	programId?: string;
 	cycleId?: string;
-	studentIds?: string[];
+	query?: string;
 }) {
 	const size = Math.min(Math.max(opts.pageSize, 1), 100);
 	const offset = (Math.max(opts.page, 1) - 1) * size;
@@ -145,6 +145,28 @@ export async function listPaged(opts: {
 		}
 	}
 
+	// When a text query is provided, filter enrollments by matching student
+	// records via a SQL subquery — avoids the N-at-a-time pre-fetch cap.
+	const studentSubquery = opts.query
+		? db
+				.select({ id: schema.students.id })
+				.from(schema.students)
+				.innerJoin(
+					schema.domainUsers,
+					eq(schema.domainUsers.id, schema.students.domainUserId),
+				)
+				.where(
+					and(
+						eq(schema.students.institutionId, opts.institutionId),
+						or(
+							ilike(schema.domainUsers.firstName, `%${opts.query}%`),
+							ilike(schema.domainUsers.lastName, `%${opts.query}%`),
+							ilike(schema.students.registrationNumber, `%${opts.query}%`),
+						),
+					),
+				)
+		: undefined;
+
 	const conditions = [
 		eq(schema.enrollments.institutionId, opts.institutionId),
 		opts.classId ? eq(schema.enrollments.classId, opts.classId) : undefined,
@@ -155,8 +177,8 @@ export async function listPaged(opts: {
 		filteredClassIds
 			? inArray(schema.enrollments.classId, filteredClassIds)
 			: undefined,
-		opts.studentIds
-			? inArray(schema.enrollments.studentId, opts.studentIds)
+		studentSubquery
+			? inArray(schema.enrollments.studentId, studentSubquery)
 			: undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof inArray>)[];
 	const where = conditions.length > 1 ? and(...conditions) : conditions[0];

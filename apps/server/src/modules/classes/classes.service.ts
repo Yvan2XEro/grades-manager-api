@@ -571,21 +571,6 @@ export async function listGraduatedStudentsPaged(
 		query?: string;
 	},
 ) {
-	// If a text query is provided, resolve it to a set of matching student IDs
-	// so the count query is accurate (not a post-page filter).
-	let studentIds: string[] | undefined;
-	if (opts.query) {
-		const { items: matchingStudents } = await studentsRepo.list({
-			institutionId,
-			q: opts.query,
-			limit: 500,
-		});
-		if (matchingStudents.length === 0) {
-			return { items: [], total: 0, pageCount: 0 };
-		}
-		studentIds = matchingStudents.map((s) => s.id);
-	}
-
 	const {
 		items: enrollments,
 		total,
@@ -597,7 +582,7 @@ export async function listGraduatedStudentsPaged(
 		pageSize: opts.pageSize,
 		programId: opts.programId,
 		cycleId: opts.cycleId,
-		studentIds,
+		query: opts.query,
 	});
 
 	if (enrollments.length === 0) {
