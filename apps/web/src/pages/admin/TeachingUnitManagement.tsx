@@ -1,9 +1,4 @@
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,9 +10,9 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -63,6 +58,16 @@ const TeachingUnitManagement = () => {
 	const [selectedProgramId, setSelectedProgramId] = useState<string>("");
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 	const programList = programs?.items ?? [];
 	const _selectedProgram = useMemo(
@@ -70,29 +75,15 @@ const TeachingUnitManagement = () => {
 		[programList, selectedProgramId],
 	);
 
-	const {
-		data: unitsData,
-		isLoading,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		queryKey: ["teachingUnits", selectedProgramId || undefined],
-		queryFn: async ({ pageParam }) => {
-			return trpcClient.teachingUnits.list.query({
-				programId: selectedProgramId || undefined,
-				cursor: pageParam,
-				limit: 20,
-			});
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-	});
+	const { data, isLoading } = useQuery(
+		trpc.teachingUnits.listPaged.queryOptions({
+			page,
+			pageSize,
+			programId: selectedProgramId || undefined,
+		}),
+	);
 
-	const unitItems = unitsData?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+	const unitItems = data?.items ?? [];
 	const selection = useRowSelection(unitItems);
 
 	const { confirm, ConfirmDialog } = useConfirm();
@@ -110,11 +101,7 @@ const TeachingUnitManagement = () => {
 					defaultValue: "Teaching unit deleted",
 				}),
 			);
-			queryClient.invalidateQueries(
-				trpc.teachingUnits.list.queryKey({
-					programId: selectedProgramId || undefined,
-				}),
-			);
+			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryKey());
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
@@ -128,11 +115,7 @@ const TeachingUnitManagement = () => {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries(
-				trpc.teachingUnits.list.queryKey({
-					programId: selectedProgramId || undefined,
-				}),
-			);
+			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -207,9 +190,9 @@ const TeachingUnitManagement = () => {
 					<div className="flex flex-wrap items-center gap-2">
 						<Select
 							value={selectedProgramId || undefined}
-							onValueChange={(value) => {
-								setSelectedProgramId(value);
-							}}
+							onValueChange={(v) =>
+								handleFilter(setSelectedProgramId)(v === "all" ? "" : v)
+							}
 						>
 							<SelectTrigger className="min-w-48">
 								<SelectValue
@@ -230,6 +213,7 @@ const TeachingUnitManagement = () => {
 							variant="outline"
 							onClick={() => {
 								setSelectedProgramId("");
+								setPage(1);
 							}}
 							disabled={!selectedProgramId}
 						>
@@ -403,7 +387,17 @@ const TeachingUnitManagement = () => {
 									</Table>
 								)}
 							</div>
-							<div ref={sentinelRef} className="h-1" />
+							<TablePagination
+								page={page}
+								pageCount={data?.pageCount ?? 1}
+								total={data?.total ?? 0}
+								pageSize={pageSize}
+								onPageChange={setPage}
+								onPageSizeChange={(s) => {
+									setPageSize(s);
+									setPage(1);
+								}}
+							/>
 						</>
 					) : (
 						<Empty>
