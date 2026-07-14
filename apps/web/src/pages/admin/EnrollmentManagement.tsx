@@ -1,9 +1,4 @@
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -37,8 +32,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
@@ -202,6 +197,15 @@ const EnrollmentManagement = () => {
 	const [statusFilter, setStatusFilter] = useState<
 		"all" | "pending" | "active" | "completed" | "withdrawn"
 	>("all");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
 
 	const { data: semesters } = useQuery(
 		trpc.semesters.list.queryOptions({ limit: 100 }),
@@ -214,30 +218,15 @@ const EnrollmentManagement = () => {
 		}),
 	);
 
-	const enrollmentsQuery = useInfiniteQuery({
-		queryKey: [
-			"enrollments",
-			selectedClass,
-			selectedAcademicYear,
-			statusFilter,
-		],
-		queryFn: async ({ pageParam }) =>
-			trpcClient.enrollments.list.query({
-				classId: selectedClass || undefined,
-				academicYearId: selectedAcademicYear || undefined,
-				status: statusFilter === "all" ? undefined : statusFilter,
-				cursor: pageParam as string | undefined,
-				limit: 20,
-			}),
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-		enabled: Boolean(selectedAcademicYear && selectedClass),
-	});
-
-	const sentinelRef = useInfiniteScroll(enrollmentsQuery.fetchNextPage, {
-		enabled:
-			enrollmentsQuery.hasNextPage && !enrollmentsQuery.isFetchingNextPage,
-	});
+	const { data, isLoading } = useQuery(
+		trpc.enrollments.listPaged.queryOptions({
+			page,
+			pageSize,
+			classId: selectedClass || undefined,
+			academicYearId: selectedAcademicYear || undefined,
+			status: statusFilter === "all" ? undefined : statusFilter,
+		}),
+	);
 
 	const studentsQuery = useQuery({
 		...trpc.students.list.queryOptions({
@@ -485,9 +474,8 @@ const EnrollmentManagement = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const enrollments =
-		enrollmentsQuery.data?.pages.flatMap((p) => p.items) ?? [];
-	const selection = useRowSelection(enrollments);
+	const enrollmentItems = data?.items ?? [];
+	const selection = useRowSelection(enrollmentItems);
 
 	const { confirm, ConfirmDialog } = useConfirm();
 
@@ -498,7 +486,7 @@ const EnrollmentManagement = () => {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.enrollments.list.queryKey());
+			queryClient.invalidateQueries(trpc.enrollments.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -604,6 +592,7 @@ const EnrollmentManagement = () => {
 								setSelectedAcademicYear(value);
 								setSelectedClass("");
 								setSelectedSemester("");
+								setPage(1);
 							}}
 							placeholder={t("admin.enrollments.selectYear", {
 								defaultValue: "Sélectionner une année",
@@ -616,7 +605,7 @@ const EnrollmentManagement = () => {
 						</p>
 						<Select
 							value={selectedClass}
-							onValueChange={(value) => setSelectedClass(value)}
+							onValueChange={handleFilter(setSelectedClass)}
 							disabled={!selectedAcademicYear}
 						>
 							<SelectTrigger data-testid="class-select" className="w-full">
@@ -659,7 +648,9 @@ const EnrollmentManagement = () => {
 						</p>
 						<Select
 							value={statusFilter}
-							onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+							onValueChange={handleFilter((v: string) =>
+								setStatusFilter(v as typeof statusFilter),
+							)}
 							disabled={!selectedClass}
 						>
 							<SelectTrigger>
@@ -1056,11 +1047,11 @@ const EnrollmentManagement = () => {
 							</Button>
 						</BulkActionBar>
 
-						{enrollmentsQuery.isLoading ? (
+						{isLoading ? (
 							<p className="text-muted-foreground text-xs">
 								{t("common.loading", { defaultValue: "Loading..." })}
 							</p>
-						) : enrollments.length ? (
+						) : enrollmentItems.length ? (
 							<div className="overflow-x-auto">
 								<table className="min-w-full divide-y divide-border">
 									<thead className="bg-muted">
@@ -1097,7 +1088,7 @@ const EnrollmentManagement = () => {
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-border">
-										{enrollments.map((enrollment) => {
+										{enrollmentItems.map((enrollment) => {
 											const student = studentsQuery.data?.items?.find(
 												(s) => s.id === enrollment.studentId,
 											);
@@ -1198,7 +1189,17 @@ const EnrollmentManagement = () => {
 							</p>
 						)}
 
-						<div ref={sentinelRef} className="h-1" />
+						<TablePagination
+							page={page}
+							pageCount={data?.pageCount ?? 1}
+							total={data?.total ?? 0}
+							pageSize={pageSize}
+							onPageChange={setPage}
+							onPageSizeChange={(s) => {
+								setPageSize(s);
+								setPage(1);
+							}}
+						/>
 					</CardContent>
 				</Card>
 
