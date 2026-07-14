@@ -139,7 +139,7 @@ interface Class {
 	cycleLevel?: { id: string; name: string; code: string };
 	programOption?: { id: string; name: string; code: string };
 	semester?: { id: string; code: string; name: string };
-	students: { id: string }[];
+	studentCount: number;
 }
 
 type CycleLevelOption = RouterOutputs["studyCycles"]["listLevels"][number] & {
@@ -233,7 +233,7 @@ export default function ClassManagement() {
 					name: c.semester.name ?? "",
 				}
 			: undefined,
-		students: [],
+		studentCount: c.studentCount ?? 0,
 	}));
 	const selection = useRowSelection(classes ?? []);
 
@@ -1225,7 +1225,7 @@ export default function ClassManagement() {
 									<TableCell>
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4" />
-											<span>{cls.students?.length || 0}</span>
+											<span>{cls.studentCount ?? 0}</span>
 										</div>
 									</TableCell>
 									<TableCell onClick={(e) => e.stopPropagation()}>
@@ -1549,7 +1549,7 @@ export default function ClassManagement() {
 				title={t("admin.classes.delete.title")}
 				message={(() => {
 					const studentCount =
-						classes.find((c) => c.id === deleteId)?.students.length ?? 0;
+						classes.find((c) => c.id === deleteId)?.studentCount ?? 0;
 					return studentCount > 0
 						? t("admin.classes.delete.messageWithStudents", {
 								count: studentCount,

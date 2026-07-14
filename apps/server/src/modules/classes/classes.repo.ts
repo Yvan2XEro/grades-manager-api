@@ -339,7 +339,10 @@ export async function listPaged(
 
 	const [rows, [{ total }]] = await Promise.all([
 		db
-			.select(classSelection)
+			.select({
+				...classSelection,
+				studentCount: sql<number>`(select count(*) from ${schema.enrollments} where ${schema.enrollments.classId} = ${schema.classes.id})`,
+			})
 			.from(schema.classes)
 			.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
 			.leftJoin(

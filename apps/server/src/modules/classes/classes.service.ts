@@ -708,6 +708,7 @@ export async function listClassesPaged(
 		items: result.items.map((c) => ({
 			...c,
 			assignedCredits: assignedCreditsMap[c.id] ?? 0,
+			studentCount: Number(c.studentCount ?? 0),
 		})),
 	};
 }
