@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, Outlet, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -70,7 +70,6 @@ export default function TeachingUnitDetail() {
 					basePath={`/admin/programs/teaching-units/${teachingUnitId}`}
 				/>
 			)}
-			<Outlet />
 		</div>
 	);
 }

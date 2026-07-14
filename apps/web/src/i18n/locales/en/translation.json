@@ -2077,11 +2077,16 @@
     "studyCycles": {
       "title": "Study cycles",
       "subtitle": "Group programs by cycle and tune credit thresholds per level.",
+      "tabs": {
+        "details": "Details",
+        "levels": "Levels"
+      },
       "actions": {
         "add": "Add cycle",
         "addLevel": "Add level",
         "update": "Update cycle",
-        "updateLevel": "Update level"
+        "updateLevel": "Update level",
+        "manageLevels": "Manage levels"
       },
       "listTitle": "Cycles",
       "empty": "No study cycles yet.",

@@ -162,11 +162,6 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.exams",
 					},
 					{
-						to: "/admin/exams/export",
-						icon: <FileSpreadsheet className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeExport",
-					},
-					{
 						to: "/admin/document-batch",
 						icon: <FileText className={IC} />,
 						labelKey: "navigation.sidebar.admin.documentBatch",

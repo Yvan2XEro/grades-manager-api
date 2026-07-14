@@ -1035,11 +1035,16 @@
     "studyCycles": {
       "title": "Cycles d'étude",
       "subtitle": "Regroupez les programmes et configurez les seuils de crédits par niveau.",
+      "tabs": {
+        "details": "Détails",
+        "levels": "Niveaux"
+      },
       "actions": {
         "add": "Ajouter un cycle",
         "addLevel": "Ajouter un niveau",
         "update": "Modifier le cycle",
-        "updateLevel": "Modifier le niveau"
+        "updateLevel": "Modifier le niveau",
+        "manageLevels": "Gérer les niveaux"
       },
       "listTitle": "Cycles",
       "empty": "Aucun cycle pour le moment.",
@@ -1327,7 +1332,7 @@
         },
         "manage": "Gérer les options",
         "subtitle": "Les options représentent les parcours ou spécialisations disponibles pour ce programme.",
-        "title": "Gérer les options for {{value}}",
+        "title": "Options du programme",
         "toast": {
           "create": "Option ajoutée",
           "createError": "Impossible d'ajouter l'option",
@@ -3748,7 +3753,7 @@
       },
       "options": {
         "manage": "Gérer les options",
-        "title": "Options pour {{value}}",
+        "title": "Options du programme",
         "subtitle": "Les options représentent les parcours ou spécialisations disponibles pour ce programme.",
         "empty": "Aucune option pour le moment. Ajoutez-en une ci-dessous.",
         "delete": "Supprimer l'option",

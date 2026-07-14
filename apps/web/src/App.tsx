@@ -96,6 +96,9 @@ import RetakeEligibility from "./pages/admin/RetakeEligibility";
 import RoomsManagement from "./pages/admin/RoomsManagement";
 import RuleManagement from "./pages/admin/RuleManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
+import StudyCycleDetail from "./pages/admin/study-cycles/StudyCycleDetail";
+import StudyCycleDetailsTab from "./pages/admin/study-cycles/StudyCycleDetailsTab";
+import StudyCycleLevelsTab from "./pages/admin/study-cycles/StudyCycleLevelsTab";
 import TeachingUnitCoursesTab from "./pages/admin/TeachingUnitCoursesTab";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
 import TeachingUnitDetailsTab from "./pages/admin/TeachingUnitDetailsTab";
@@ -347,11 +350,18 @@ function App() {
 						<Route path="promotion/:id" element={<TransitionDetail />} />
 
 						{/* Institution hub */}
-						<Route path="institution" element={<InstitutionHub />}>
-							<Route index element={<Navigate to="overview" replace />} />
-							<Route path="overview" element={<InstitutionSettings />} />
-							<Route path="faculties" element={<FacultyManagement />} />
-							<Route path="cycles" element={<StudyCycleManagement />} />
+						<Route path="institution">
+							<Route element={<InstitutionHub />}>
+								<Route index element={<Navigate to="overview" replace />} />
+								<Route path="overview" element={<InstitutionSettings />} />
+								<Route path="faculties" element={<FacultyManagement />} />
+								<Route path="cycles" element={<StudyCycleManagement />} />
+							</Route>
+							<Route path="cycles/:cycleId" element={<StudyCycleDetail />}>
+								<Route index element={<Navigate to="levels" replace />} />
+								<Route path="details" element={<StudyCycleDetailsTab />} />
+								<Route path="levels" element={<StudyCycleLevelsTab />} />
+							</Route>
 						</Route>
 
 						{/* Programs hub */}
