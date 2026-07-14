@@ -394,9 +394,70 @@ export async function listExams(
 
 export async function listExamsPaged(
 	input: z.infer<typeof listPagedSchema>,
-	institutionId: string,
+	params: {
+		institutionId: string;
+		profileId: string | null;
+		memberRole: MemberRole | null;
+	},
 ) {
-	return repo.listPaged({ institutionId, ...input });
+	const result = await repo.listPaged({
+		institutionId: params.institutionId,
+		...input,
+	});
+	const items = result.items;
+
+	const classCourseIds = Array.from(
+		new Set(items.map((item) => item.classCourse)),
+	);
+	const teacherMap = await getTeacherMap(classCourseIds);
+	const examIds = items.map((item) => item.id);
+
+	const isAdmin = roleSatisfies(params.memberRole, ADMIN_ROLES);
+	const isGradeEditor = params.memberRole === "grade_editor";
+
+	const hasInstitutionGrant =
+		!isAdmin && !isGradeEditor && params.profileId && params.institutionId
+			? !!(await gradeAccessRepo.findByProfileAndInstitution(
+					params.profileId,
+					params.institutionId,
+				))
+			: false;
+
+	const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
+
+	const delegateSet =
+		!hasFullAccess && params.profileId && examIds.length > 0
+			? new Set(
+					await examGradeEditorsRepo.examIdsForEditor(
+						params.profileId,
+						examIds,
+					),
+				)
+			: new Set<string>();
+
+	const enriched = items.map((item) => {
+		const isTeacher =
+			params.profileId !== null &&
+			teacherMap.get(item.classCourse) === params.profileId;
+		const canEdit =
+			hasFullAccess ||
+			isTeacher ||
+			(params.profileId ? delegateSet.has(item.id) : false);
+		return { ...item, canEdit };
+	});
+
+	if (hasFullAccess) {
+		return { ...result, items: enriched };
+	}
+
+	const visibleItems = enriched.filter((item) => item.canEdit);
+	const total = visibleItems.length;
+	const pageSize = Math.min(Math.max(input.pageSize, 1), 100);
+	return {
+		items: visibleItems,
+		total,
+		pageCount: Math.ceil(total / pageSize),
+	};
 }
 
 export async function getExamById(id: string, institutionId: string) {

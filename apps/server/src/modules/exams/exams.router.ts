@@ -114,7 +114,11 @@ export const router = createRouter({
 	listPaged: tenantProtectedProcedure
 		.input(listPagedSchema)
 		.query(({ ctx, input }) =>
-			service.listExamsPaged(input, ctx.institution.id),
+			service.listExamsPaged(input, {
+				institutionId: ctx.institution.id,
+				profileId: ctx.profile?.id ?? null,
+				memberRole: ctx.memberRole ?? null,
+			}),
 		),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
