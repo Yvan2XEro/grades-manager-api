@@ -202,6 +202,7 @@ export async function listPaged(opts: {
 	status?: string;
 	statuses?: string[];
 	teacherId?: string;
+	classCourseIds?: string[];
 	dateFrom?: Date;
 	dateTo?: Date;
 }) {
@@ -220,6 +221,9 @@ export async function listPaged(opts: {
 			: undefined,
 		opts.teacherId
 			? eq(schema.classCourses.teacher, opts.teacherId)
+			: undefined,
+		opts.classCourseIds?.length
+			? inArray(schema.exams.classCourse, opts.classCourseIds)
 			: undefined,
 		opts.dateFrom ? gte(schema.exams.date, opts.dateFrom) : undefined,
 		opts.dateTo

@@ -400,63 +400,97 @@ export async function listExamsPaged(
 		memberRole: MemberRole | null;
 	},
 ) {
-	const result = await repo.listPaged({
-		institutionId: params.institutionId,
-		...input,
-	});
-	const items = result.items;
+	const { institutionId, profileId, memberRole } = params;
 
-	const classCourseIds = Array.from(
-		new Set(items.map((item) => item.classCourse)),
-	);
-	const teacherMap = await getTeacherMap(classCourseIds);
-	const examIds = items.map((item) => item.id);
-
-	const isAdmin = roleSatisfies(params.memberRole, ADMIN_ROLES);
-	const isGradeEditor = params.memberRole === "grade_editor";
+	const isAdmin = roleSatisfies(memberRole, ADMIN_ROLES);
+	const isGradeEditor = memberRole === "grade_editor";
 
 	const hasInstitutionGrant =
-		!isAdmin && !isGradeEditor && params.profileId && params.institutionId
+		!isAdmin && !isGradeEditor && profileId && institutionId
 			? !!(await gradeAccessRepo.findByProfileAndInstitution(
-					params.profileId,
-					params.institutionId,
+					profileId,
+					institutionId,
 				))
 			: false;
 
 	const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
 
-	const delegateSet =
-		!hasFullAccess && params.profileId && examIds.length > 0
-			? new Set(
-					await examGradeEditorsRepo.examIdsForEditor(
-						params.profileId,
-						examIds,
-					),
-				)
-			: new Set<string>();
-
-	const enriched = items.map((item) => {
-		const isTeacher =
-			params.profileId !== null &&
-			teacherMap.get(item.classCourse) === params.profileId;
-		const canEdit =
-			hasFullAccess ||
-			isTeacher ||
-			(params.profileId ? delegateSet.has(item.id) : false);
-		return { ...item, canEdit };
-	});
-
+	// Full-access users see everything — no SQL scoping needed
 	if (hasFullAccess) {
-		return { ...result, items: enriched };
+		const result = await repo.listPaged({ institutionId, ...input });
+		return {
+			...result,
+			items: result.items.map((item) => ({ ...item, canEdit: true })),
+		};
 	}
 
-	const visibleItems = enriched.filter((item) => item.canEdit);
-	const total = visibleItems.length;
-	const pageSize = Math.min(Math.max(input.pageSize, 1), 100);
+	// Unauthenticated / no profile — nothing to show
+	if (!profileId) {
+		return { items: [], total: 0, pageCount: 0 };
+	}
+
+	// Determine delegate-accessible classCourses (per-exam grants → their classCourses)
+	const delegateClassCourseIds =
+		await examGradeEditorsRepo.classCourseIdsForEditor(
+			profileId,
+			institutionId,
+		);
+
+	if (delegateClassCourseIds.length === 0) {
+		// Teacher with no delegates — scope SQL by teacherId directly
+		const result = await repo.listPaged({
+			institutionId,
+			...input,
+			teacherId: profileId,
+		});
+		return {
+			...result,
+			items: result.items.map((item) => ({ ...item, canEdit: true })),
+		};
+	}
+
+	// Teacher who is also a delegate for some exams — union both classCourse sets
+	const teacherClassCourseRows = await db
+		.select({ id: schema.classCourses.id })
+		.from(schema.classCourses)
+		.where(
+			and(
+				eq(schema.classCourses.teacher, profileId),
+				eq(schema.classCourses.institutionId, institutionId),
+			),
+		);
+	const teacherClassCourseSet = new Set(
+		teacherClassCourseRows.map((r) => r.id),
+	);
+	const unionIds = [
+		...new Set([...teacherClassCourseSet, ...delegateClassCourseIds]),
+	];
+
+	if (unionIds.length === 0) {
+		return { items: [], total: 0, pageCount: 0 };
+	}
+
+	const result = await repo.listPaged({
+		institutionId,
+		...input,
+		classCourseIds: unionIds,
+	});
+
+	const examIds = result.items.map((item) => item.id);
+	const delegateExamIds = new Set(
+		examIds.length > 0
+			? await examGradeEditorsRepo.examIdsForEditor(profileId, examIds)
+			: [],
+	);
+
 	return {
-		items: visibleItems,
-		total,
-		pageCount: Math.ceil(total / pageSize),
+		...result,
+		items: result.items.map((item) => ({
+			...item,
+			canEdit:
+				teacherClassCourseSet.has(item.classCourse) ||
+				delegateExamIds.has(item.id),
+		})),
 	};
 }
 
