@@ -3,12 +3,15 @@ import {
 	forgotPasswordEmailHTML,
 	verificationEmailHTML,
 } from "@/lib/email-templates";
-import { authenticated } from "../../access/authenticated";
+import {
+	authenticated,
+	authenticatedAndIsAdmin,
+} from "../../access/authenticated";
 
 export const Users: CollectionConfig = {
 	slug: "users",
 	access: {
-		admin: authenticated,
+		admin: authenticatedAndIsAdmin,
 		create: () => true,
 		delete: authenticated,
 		read: authenticated,
