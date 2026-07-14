@@ -1,10 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -52,9 +47,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCode } from "@/lib/code-generator";
 import { toast } from "@/lib/toast";
@@ -89,7 +84,7 @@ import {
 } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
 import type { RouterOutputs } from "../../utils/trpc";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 const buildClassSchema = (t: TFunction) =>
 	z.object({
@@ -167,6 +162,8 @@ export default function ClassManagement() {
 	const [cycleLevelSearch, setCycleLevelSearch] = useState("");
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 	const [isBulkGenOpen, setIsBulkGenOpen] = useState(false);
 	const [isBulkExportOpen, setIsBulkExportOpen] = useState(false);
 	const [bulkGenYearId, setBulkGenYearId] = useState<string | null>(null);
@@ -174,69 +171,70 @@ export default function ClassManagement() {
 		null,
 	);
 
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
-	const {
-		data: classesData,
-		isLoading,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		queryKey: ["classes", filterYear, filterSemester],
-		queryFn: async ({ pageParam }) => {
-			const { items, nextCursor } = await trpcClient.classes.list.query({
-				cursor: pageParam,
-				limit: 20,
-				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
-			});
-			// TODO: N+1 Query Problem - This fetches students for each class separately
-			// Better solution: Modify backend classes.list to include studentCount
-			// or create a batch endpoint that returns classes with student counts
-			const enriched = await Promise.all(
-				items.map(async (cls) => {
-					const students = await trpcClient.students.list.query({
-						classId: cls.id,
-					});
-					return {
-						id: cls.id,
-						code: cls.code,
-						name: cls.name,
-						programId: cls.program,
-						academicYearId: cls.academicYear,
-						cycleLevelId: cls.cycleLevelId,
-						programOptionId: cls.programOptionId,
-						semesterId: cls.semester?.id ?? null,
-						totalCredits: (cls as any).totalCredits ?? 0,
-						assignedCredits: (cls as any).assignedCredits ?? 0,
-						program: {
-							name: cls.programInfo?.name ?? "",
-							code: cls.programInfo?.code ?? "",
-							cycleName: cls.cycle?.name,
-							cycleCode: cls.cycle?.code,
-						},
-						academicYear: { name: cls.academicYearInfo?.name ?? "" },
-						cycle: cls.cycle ?? undefined,
-						cycleLevel: cls.cycleLevel ?? undefined,
-						programOption: cls.programOption ?? undefined,
-						semester: cls.semester ?? undefined,
-						students: students.items.map((s) => ({ id: s.id })),
-					} as Class;
-				}),
-			);
-			return { items: enriched, nextCursor };
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
-	});
+	const { data, isLoading } = useQuery(
+		trpc.classes.listPaged.queryOptions({
+			page,
+			pageSize,
+			academicYearId: filterYear || undefined,
+			semesterId: filterSemester || undefined,
+		}),
+	);
 
-	const classes = classesData?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+	const classes: Class[] = (data?.items ?? []).map((c) => ({
+		id: c.id,
+		code: c.code,
+		name: c.name,
+		programId: c.program ?? "",
+		academicYearId: c.academicYear ?? "",
+		cycleLevelId: c.cycleLevelId ?? "",
+		programOptionId: c.programOptionId ?? "",
+		semesterId: c.semesterId ?? null,
+		totalCredits: c.totalCredits ?? 0,
+		assignedCredits: c.assignedCredits ?? 0,
+		program: {
+			name: c.programInfo?.name ?? "",
+			code: c.programInfo?.code ?? "",
+			cycleName: c.cycle?.name,
+			cycleCode: c.cycle?.code,
+		},
+		academicYear: { name: c.academicYearInfo?.name ?? "" },
+		cycle: c.cycle?.id
+			? { id: c.cycle.id, name: c.cycle.name ?? "", code: c.cycle.code ?? "" }
+			: undefined,
+		cycleLevel: c.cycleLevel?.id
+			? {
+					id: c.cycleLevel.id,
+					name: c.cycleLevel.name ?? "",
+					code: c.cycleLevel.code ?? "",
+				}
+			: undefined,
+		programOption: c.programOption?.id
+			? {
+					id: c.programOption.id,
+					name: c.programOption.name ?? "",
+					code: c.programOption.code ?? "",
+				}
+			: undefined,
+		semester: c.semester?.id
+			? {
+					id: c.semester.id,
+					code: c.semester.code ?? "",
+					name: c.semester.name ?? "",
+				}
+			: undefined,
+		students: [],
+	}));
 	const selection = useRowSelection(classes ?? []);
 
 	const { confirm, ConfirmDialog } = useConfirm();
@@ -826,7 +824,7 @@ export default function ClassManagement() {
 			});
 		},
 		onSuccess: (newClass) => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(t("admin.classes.toast.createSuccess"));
 			setIsFormOpen(false);
 			form.reset();
@@ -848,7 +846,7 @@ export default function ClassManagement() {
 			await trpcClient.classes.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(t("admin.classes.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
@@ -869,7 +867,7 @@ export default function ClassManagement() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -892,7 +890,7 @@ export default function ClassManagement() {
 				sourceAcademicYearId: bulkGenSourceYearId ?? undefined,
 			}),
 		onSuccess: (result) => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(
 				t("admin.classes.toast.bulkGenerateSuccess", {
 					created: result.created,
@@ -987,7 +985,7 @@ export default function ClassManagement() {
 							</Label>
 							<AcademicYearSelect
 								value={filterYear}
-								onChange={(v) => setFilterYear(v)}
+								onChange={handleFilter(setFilterYear)}
 							/>
 						</div>
 						<div className="w-56">
@@ -998,7 +996,7 @@ export default function ClassManagement() {
 							</Label>
 							<SemesterSelect
 								value={filterSemester}
-								onChange={(v) => setFilterSemester(v)}
+								onChange={handleFilter(setFilterSemester)}
 							/>
 						</div>
 					</div>
@@ -1283,7 +1281,17 @@ export default function ClassManagement() {
 				)}
 			</Card>
 
-			<div ref={sentinelRef} className="h-1" />
+			<TablePagination
+				page={page}
+				pageCount={data?.pageCount ?? 1}
+				total={data?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(s) => {
+					setPageSize(s);
+					setPage(1);
+				}}
+			/>
 
 			<FormModal
 				isOpen={isFormOpen}
