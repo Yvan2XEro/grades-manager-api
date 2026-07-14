@@ -218,15 +218,16 @@ const EnrollmentManagement = () => {
 		}),
 	);
 
-	const { data, isLoading } = useQuery(
-		trpc.enrollments.listPaged.queryOptions({
+	const { data, isLoading } = useQuery({
+		...trpc.enrollments.listPaged.queryOptions({
 			page,
 			pageSize,
 			classId: selectedClass || undefined,
 			academicYearId: selectedAcademicYear || undefined,
 			status: statusFilter === "all" ? undefined : statusFilter,
 		}),
-	);
+		enabled: Boolean(selectedAcademicYear && selectedClass),
+	});
 
 	const studentsQuery = useQuery({
 		...trpc.students.list.queryOptions({
