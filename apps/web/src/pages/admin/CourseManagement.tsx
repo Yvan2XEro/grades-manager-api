@@ -1,10 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { Pencil, PlusIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -65,13 +60,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
@@ -115,29 +110,22 @@ export default function CourseManagement() {
 	const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [programSearch, setProgramSearch] = useState("");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-		useInfiniteQuery({
-			queryKey: ["courses", "infinite"],
-			queryFn: async ({ pageParam }) => {
-				const result = await trpcClient.courses.list.query({
-					cursor: pageParam,
-					limit: 20,
-				});
-				return result as { items: Course[]; nextCursor?: string };
-			},
-			initialPageParam: undefined as string | undefined,
-			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-		});
 
-	const courses = data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
-	const selection = useRowSelection(courses);
+	const { data, isLoading } = useQuery(
+		trpc.courses.listPaged.queryOptions({
+			page,
+			pageSize,
+		}),
+	);
+
+	const courseItems = data?.items ?? [];
+	const selection = useRowSelection(courseItems);
 
 	const { confirm, ConfirmDialog } = useConfirm();
 
@@ -208,7 +196,7 @@ export default function CourseManagement() {
 			await trpcClient.courses.create.mutate(data);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
+			queryClient.invalidateQueries(trpc.courses.listPaged.queryKey());
 			toast.success(t("admin.courses.toast.createSuccess"));
 			handleCloseForm();
 		},
@@ -223,7 +211,7 @@ export default function CourseManagement() {
 			await trpcClient.courses.update.mutate({ id, ...updateData });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
+			queryClient.invalidateQueries(trpc.courses.listPaged.queryKey());
 			toast.success(t("admin.courses.toast.updateSuccess"));
 			handleCloseForm();
 		},
@@ -237,7 +225,7 @@ export default function CourseManagement() {
 			await trpcClient.courses.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
+			queryClient.invalidateQueries(trpc.courses.listPaged.queryKey());
 			toast.success(t("admin.courses.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
@@ -254,7 +242,7 @@ export default function CourseManagement() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
+			queryClient.invalidateQueries(trpc.courses.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -355,7 +343,7 @@ export default function CourseManagement() {
 
 			<Card>
 				<CardContent>
-					{courses.length > 0 ? (
+					{courseItems.length > 0 ? (
 						<>
 							<BulkActionBar
 								selectedCount={selection.selectedCount}
@@ -418,7 +406,7 @@ export default function CourseManagement() {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{courses.map((course) => (
+										{courseItems.map((course) => (
 											<TableRow
 												key={course.id}
 												actions={
@@ -502,7 +490,6 @@ export default function CourseManagement() {
 									</TableBody>
 								</Table>
 							)}
-							<div ref={sentinelRef} className="h-1" />
 						</>
 					) : (
 						<Empty className="border border-dashed">
@@ -528,6 +515,18 @@ export default function CourseManagement() {
 					)}
 				</CardContent>
 			</Card>
+
+			<TablePagination
+				page={page}
+				pageCount={data?.pageCount ?? 1}
+				total={data?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(s) => {
+					setPageSize(s);
+					setPage(1);
+				}}
+			/>
 
 			<FormModal
 				isOpen={isFormOpen}
