@@ -2,7 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
 import * as service from "./notifications.service";
-import { idSchema, listSchema, queueSchema } from "./notifications.zod";
+import {
+	idSchema,
+	listNotificationsPagedSchema,
+	listSchema,
+	queueSchema,
+} from "./notifications.zod";
 
 export const notificationsRouter = router({
 	// ── Admin ──────────────────────────────────────────────────────────────────
@@ -19,6 +24,9 @@ export const notificationsRouter = router({
 		.query(({ input }) =>
 			service.list(input.status, input.limit, input.cursor, input.channel),
 		),
+	listPaged: adminProcedure
+		.input(listNotificationsPagedSchema)
+		.query(({ input }) => service.listPaged(input)),
 	flush: adminProcedure.mutation(() => service.sendPending()),
 	acknowledge: adminProcedure
 		.input(idSchema)

@@ -60,6 +60,22 @@ export const overrideDecisionSchema = z.object({
 		.optional(),
 });
 
+// Paged list of deliberations
+export const listDeliberationsPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	classId: z.string().optional(),
+	academicYearId: z.string().optional(),
+	type: z
+		.enum(deliberationTypes as unknown as [string, ...string[]])
+		.optional(),
+	status: z.string().optional(),
+});
+
+export type ListDeliberationsPagedInput = z.infer<
+	typeof listDeliberationsPagedSchema
+>;
+
 // List deliberations
 export const listDeliberationsSchema = z.object({
 	classId: z.string().optional(),

@@ -13,6 +13,7 @@ import {
 	idSchema,
 	initAndComputeSchema,
 	listDeliberationRulesSchema,
+	listDeliberationsPagedSchema,
 	listDeliberationsSchema,
 	overrideDecisionSchema,
 	promoteAdmittedSchema,
@@ -76,6 +77,10 @@ export const deliberationsRouter = router({
 	list: tenantProtectedProcedure
 		.input(listDeliberationsSchema)
 		.query(({ input, ctx }) => service.list(input, ctx.institution.id)),
+
+	listPaged: tenantProtectedProcedure
+		.input(listDeliberationsPagedSchema)
+		.query(({ input, ctx }) => service.listPaged(input, ctx.institution.id)),
 
 	transition: tenantAdminProcedure
 		.input(transitionDeliberationSchema)

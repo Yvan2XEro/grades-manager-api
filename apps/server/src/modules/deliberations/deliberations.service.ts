@@ -35,6 +35,7 @@ import type {
 	GetLogsInput,
 	ListDeliberationRulesInput,
 	ListDeliberationsInput,
+	ListDeliberationsPagedInput,
 	OverrideDecisionInput,
 	PromoteAdmittedInput,
 	TransitionDeliberationInput,
@@ -209,6 +210,13 @@ export async function list(
 	institutionId: string,
 ) {
 	return repo.listDeliberations({ ...input, institutionId });
+}
+
+export async function listPaged(
+	input: ListDeliberationsPagedInput,
+	institutionId: string,
+) {
+	return repo.listDeliberationsPaged({ ...input, institutionId });
 }
 
 // ---------------------------------------------------------------------------

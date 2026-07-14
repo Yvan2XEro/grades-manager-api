@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -63,6 +63,55 @@ export async function deleteDeliberation(id: string, institutionId: string) {
 				eq(schema.deliberations.institutionId, institutionId),
 			),
 		);
+}
+
+export async function listDeliberationsPaged(opts: {
+	institutionId: string;
+	page: number;
+	pageSize: number;
+	classId?: string;
+	academicYearId?: string;
+	type?: string;
+	status?: string;
+}) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [
+		eq(schema.deliberations.institutionId, opts.institutionId),
+		opts.classId ? eq(schema.deliberations.classId, opts.classId) : undefined,
+		opts.academicYearId
+			? eq(schema.deliberations.academicYearId, opts.academicYearId)
+			: undefined,
+		opts.type
+			? eq(schema.deliberations.type, opts.type as schema.DeliberationType)
+			: undefined,
+		opts.status
+			? eq(
+					schema.deliberations.status,
+					opts.status as schema.DeliberationStatus,
+				)
+			: undefined,
+	].filter(Boolean);
+	const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+	const [items, [{ total }]] = await Promise.all([
+		db.query.deliberations.findMany({
+			where,
+			orderBy: [desc(schema.deliberations.createdAt)],
+			limit: size,
+			offset,
+			with: {
+				classRef: {
+					with: { program: true, academicYear: true },
+				},
+				semester: true,
+				academicYear: true,
+			},
+		}),
+		db.select({ total: count() }).from(schema.deliberations).where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return { items, total: totalCount, pageCount: Math.ceil(totalCount / size) };
 }
 
 export async function listDeliberations(opts: {

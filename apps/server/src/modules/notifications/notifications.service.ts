@@ -98,6 +98,15 @@ export async function list(
 	return repo.listNotifications(status, limit ?? 50, cursor, channel);
 }
 
+export async function listPaged(opts: {
+	page: number;
+	pageSize: number;
+	status?: schema.NotificationStatus;
+	channel?: schema.NotificationChannel;
+}) {
+	return repo.listNotificationsPaged(opts);
+}
+
 export async function acknowledge(id: string) {
 	const updated = await repo.updateStatus(id, "sent");
 	if (!updated) {

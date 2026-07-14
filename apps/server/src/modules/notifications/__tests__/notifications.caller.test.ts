@@ -465,3 +465,65 @@ describe("notifications — retry and failure handling", () => {
 		expect(result.items.some((n) => n.type === "list_filter_test")).toBe(true);
 	});
 });
+
+describe("notifications.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const caller = appRouter.createCaller(asAdmin());
+		const result = await caller.notifications.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+
+	it("filters by status", async () => {
+		const profile = await createDomainUser({
+			primaryEmail: "paged-status@example.com",
+		});
+		const admin = appRouter.createCaller(asAdmin());
+		await admin.notifications.queue({
+			channel: "email",
+			type: "paged_status_test",
+			payload: {},
+			recipientId: profile.id,
+		});
+
+		const result = await admin.notifications.listPaged({
+			page: 1,
+			pageSize: 100,
+			status: "pending",
+		});
+		expect(result.items.every((n) => n.status === "pending")).toBe(true);
+		expect(result.total).toBeGreaterThanOrEqual(1);
+	});
+
+	it("respects page/pageSize and returns correct pageCount", async () => {
+		const admin = appRouter.createCaller(asAdmin());
+		// Queue 3 notifications
+		for (let i = 0; i < 3; i++) {
+			await admin.notifications.queue({
+				channel: "email",
+				type: `paged_count_test_${i}`,
+				payload: {},
+			});
+		}
+
+		const result = await admin.notifications.listPaged({
+			page: 1,
+			pageSize: 1,
+		});
+		expect(result.items).toHaveLength(1);
+		expect(result.pageCount).toBeGreaterThanOrEqual(3);
+	});
+
+	it("rejects unauthenticated access", async () => {
+		const caller = appRouter.createCaller(makeTestContext({ role: "student" }));
+		await expect(
+			caller.notifications.listPaged({ page: 1, pageSize: 25 }),
+		).rejects.toMatchObject({ code: "FORBIDDEN" });
+	});
+});

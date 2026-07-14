@@ -65,6 +65,36 @@ function cursorCondition(cursor: string) {
 	);
 }
 
+export async function listNotificationsPaged(opts: {
+	page: number;
+	pageSize: number;
+	status?: schema.NotificationStatus;
+	channel?: schema.NotificationChannel;
+}) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [
+		opts.status ? eq(schema.notifications.status, opts.status) : undefined,
+		opts.channel ? eq(schema.notifications.channel, opts.channel) : undefined,
+	].filter(Boolean) as ReturnType<typeof eq>[];
+	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+
+	const [items, [{ total }]] = await Promise.all([
+		db.query.notifications.findMany({
+			where,
+			orderBy: [
+				desc(schema.notifications.createdAt),
+				desc(schema.notifications.id),
+			],
+			limit: size,
+			offset,
+		}),
+		db.select({ total: count() }).from(schema.notifications).where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return { items, total: totalCount, pageCount: Math.ceil(totalCount / size) };
+}
+
 export async function listNotifications(
 	status?: schema.NotificationStatus,
 	limit = 50,

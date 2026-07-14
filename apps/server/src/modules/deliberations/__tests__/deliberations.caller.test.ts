@@ -1054,3 +1054,69 @@ describe("deliberations router", () => {
 		});
 	});
 });
+
+describe("deliberations.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const ctx = await adminWithRealProfile();
+		const caller = createCaller(ctx);
+		const result = await caller.deliberations.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+
+	it("filters by classId and academicYearId", async () => {
+		const { klass, academicYear } = await setupDeliberationFixture();
+		const ctx = await adminWithRealProfile();
+		const admin = createCaller(ctx);
+
+		await admin.deliberations.create({
+			classId: klass.id,
+			academicYearId: academicYear.id,
+			type: "annual",
+		});
+
+		const result = await admin.deliberations.listPaged({
+			page: 1,
+			pageSize: 25,
+			classId: klass.id,
+			academicYearId: academicYear.id,
+		});
+		expect(result.items.length).toBeGreaterThanOrEqual(1);
+		expect(result.total).toBeGreaterThanOrEqual(1);
+		expect(result.items.every((d) => d.classId === klass.id)).toBe(true);
+	});
+
+	it("respects pageSize — returns at most pageSize items", async () => {
+		const ctx = await adminWithRealProfile();
+		const admin = createCaller(ctx);
+		const result = await admin.deliberations.listPaged({
+			page: 1,
+			pageSize: 1,
+		});
+		expect(result.items.length).toBeLessThanOrEqual(1);
+	});
+
+	it("is accessible to any authenticated member (tenantProtectedProcedure)", async () => {
+		const profile = await createDomainUser();
+		const ctx = makeTestContext({
+			role: "student",
+			profileOverrides: { id: profile.id },
+		});
+		const caller = createCaller(ctx);
+		const result = await caller.deliberations.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+});
