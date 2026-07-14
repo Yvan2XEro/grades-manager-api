@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { GraduationCap, Search, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
@@ -14,9 +13,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { toast } from "@/lib/toast";
-import { trpcClient } from "../../utils/trpc";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { trpc } from "../../utils/trpc";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -59,22 +57,12 @@ function RowSkeleton() {
 export default function GraduatedStudents() {
 	const { t } = useTranslation();
 	const [search, setSearch] = useState("");
-	const pagination = useCursorPagination({ pageSize: 50 });
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 
-	const { data, isLoading, isError, error } = useQuery({
-		queryKey: ["graduated-students", pagination.cursor],
-		queryFn: () =>
-			trpcClient.classes.graduatedStudents.query({
-				cursor: pagination.cursor,
-				limit: 50,
-			}),
-	});
-
-	useEffect(() => {
-		if (isError && error instanceof Error) {
-			toast.error(error.message);
-		}
-	}, [isError, error]);
+	const { data, isLoading } = useQuery(
+		trpc.classes.graduatedStudentsPaged.queryOptions({ page, pageSize }),
+	);
 
 	const items = data?.items ?? [];
 
@@ -104,7 +92,7 @@ export default function GraduatedStudents() {
 				{!isLoading && (
 					<Badge variant="secondary" className="px-3 py-1 text-sm">
 						<Trophy className="mr-1.5 h-4 w-4" />
-						{items.length} {t("admin.graduation.totalGraduates")}
+						{data?.total ?? 0} {t("admin.graduation.totalGraduates")}
 					</Badge>
 				)}
 			</div>
@@ -228,16 +216,17 @@ export default function GraduatedStudents() {
 			)}
 
 			{/* Pagination */}
-			{filtered.length > 0 && (
-				<PaginationBar
-					hasPrev={pagination.hasPrev}
-					hasNext={!!data?.nextCursor}
-					onPrev={pagination.handlePrev}
-					onNext={() => pagination.handleNext(data?.nextCursor)}
-					isLoading={isLoading}
-					page={pagination.page}
-				/>
-			)}
+			<TablePagination
+				page={page}
+				pageCount={data?.pageCount ?? 1}
+				total={data?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(s) => {
+					setPageSize(s);
+					setPage(1);
+				}}
+			/>
 		</div>
 	);
 }
