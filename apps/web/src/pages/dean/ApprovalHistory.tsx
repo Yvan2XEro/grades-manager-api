@@ -21,7 +21,6 @@ import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -30,10 +29,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { type RouterOutputs, trpc } from "../../utils/trpc";
 
-type ExamHistoryItem = RouterOutputs["exams"]["list"]["items"][number];
+type ExamHistoryItem = RouterOutputs["exams"]["listPaged"]["items"][number];
 type AuditEvent = RouterOutputs["exams"]["getAuditHistory"][number];
 
 const AUDIT_ACTION_CONFIG: Record<
@@ -155,8 +154,6 @@ const STATUS_CONFIG = {
 	},
 };
 
-const PAGE_SIZE = 25;
-
 export default function ApprovalHistory() {
 	const { t } = useTranslation();
 
@@ -169,12 +166,17 @@ export default function ApprovalHistory() {
 	const [dateFrom, setDateFrom] = useState<string>("");
 	const [dateTo, setDateTo] = useState<string>("");
 	const [expandedExamId, setExpandedExamId] = useState<string | null>(null);
-	const pagination = useCursorPagination({ pageSize: PAGE_SIZE });
 
-	const resetAndApply = (setter: (v: string) => void) => (v: string) => {
-		setter(v);
-		pagination.reset();
-	};
+	// ── Pagination ────────────────────────────────────────────────────────────
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
 
 	// Status filter is passed to server: "approved", "rejected", or both
 	const serverStatuses =
@@ -186,10 +188,10 @@ export default function ApprovalHistory() {
 		trpc.users.list.queryOptions({ roles: ["teacher"] }),
 	);
 
-	const examsQuery = useQuery(
-		trpc.exams.list.queryOptions({
-			limit: PAGE_SIZE,
-			cursor: pagination.cursor,
+	const { data: historyData, isLoading } = useQuery(
+		trpc.exams.listPaged.queryOptions({
+			page,
+			pageSize,
 			statuses: [...serverStatuses],
 			query: search.trim() || undefined,
 			classId: classFilter !== "all" ? classFilter : undefined,
@@ -200,9 +202,9 @@ export default function ApprovalHistory() {
 		}),
 	);
 
-	const historyExams = examsQuery.data?.items ?? [];
+	const historyExams = historyData?.items ?? [];
 
-	// KPI counts from current page (stable across status filter changes via server)
+	// KPI counts from current page
 	const approvedCount = historyExams.filter(
 		(e) => e.status === "approved",
 	).length;
@@ -251,7 +253,7 @@ export default function ApprovalHistory() {
 					<input
 						type="text"
 						value={search}
-						onChange={(e) => resetAndApply(setSearch)(e.target.value)}
+						onChange={(e) => handleFilter(setSearch)(e.target.value)}
 						placeholder={t("dean.history.searchPlaceholder")}
 						className="w-full rounded-md border bg-background py-2 pr-3 pl-8 text-sm outline-none focus:ring-2 focus:ring-ring"
 					/>
@@ -260,7 +262,7 @@ export default function ApprovalHistory() {
 				{/* Year filter */}
 				<AcademicYearSelect
 					value={yearFilter === "all" ? null : yearFilter}
-					onChange={(v) => resetAndApply(setYearFilter)(v ?? "all")}
+					onChange={(v) => handleFilter(setYearFilter)(v ?? "all")}
 					autoSelectActive
 					className="w-[170px]"
 				/>
@@ -269,13 +271,13 @@ export default function ApprovalHistory() {
 				<ClassSelect
 					academicYearId={yearFilter !== "all" ? yearFilter : null}
 					value={classFilter === "all" ? null : classFilter}
-					onChange={(v) => resetAndApply(setClassFilter)(v ?? "all")}
+					onChange={(v) => handleFilter(setClassFilter)(v ?? "all")}
 				/>
 
 				{/* Status filter */}
 				<Select
 					value={statusFilter}
-					onValueChange={resetAndApply((v) =>
+					onValueChange={handleFilter((v: string) =>
 						setStatusFilter(v as HistoryStatus),
 					)}
 				>
@@ -296,7 +298,7 @@ export default function ApprovalHistory() {
 				{/* Teacher filter */}
 				<Select
 					value={teacherFilter}
-					onValueChange={resetAndApply(setTeacherFilter)}
+					onValueChange={handleFilter(setTeacherFilter)}
 				>
 					<SelectTrigger className="w-[170px]">
 						<SelectValue
@@ -323,10 +325,7 @@ export default function ApprovalHistory() {
 					<input
 						type="date"
 						value={dateFrom}
-						onChange={(e) => {
-							setDateFrom(e.target.value);
-							pagination.reset();
-						}}
+						onChange={(e) => handleFilter(setDateFrom)(e.target.value)}
 						className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
 						title={t("dean.history.dateFrom", { defaultValue: "From" })}
 					/>
@@ -334,10 +333,7 @@ export default function ApprovalHistory() {
 					<input
 						type="date"
 						value={dateTo}
-						onChange={(e) => {
-							setDateTo(e.target.value);
-							pagination.reset();
-						}}
+						onChange={(e) => handleFilter(setDateTo)(e.target.value)}
 						className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
 						title={t("dean.history.dateTo", { defaultValue: "To" })}
 					/>
@@ -345,7 +341,7 @@ export default function ApprovalHistory() {
 			</div>
 
 			{/* ── List ──────────────────────────────────────────────────────────── */}
-			{examsQuery.isLoading ? (
+			{isLoading ? (
 				<div className="flex h-48 items-center justify-center">
 					<Spinner className="h-8 w-8 text-primary" />
 				</div>
@@ -490,18 +486,16 @@ export default function ApprovalHistory() {
 						})}
 					</div>
 
-					<PaginationBar
-						hasPrev={pagination.hasPrev}
-						hasNext={!!examsQuery.data?.nextCursor}
-						onPrev={pagination.handlePrev}
-						onNext={() => pagination.handleNext(examsQuery.data?.nextCursor)}
-						isLoading={examsQuery.isLoading}
-						page={pagination.page}
-						totalPages={
-							examsQuery.data?.total !== undefined
-								? Math.ceil(examsQuery.data.total / PAGE_SIZE)
-								: undefined
-						}
+					<TablePagination
+						page={page}
+						pageCount={historyData?.pageCount ?? 1}
+						total={historyData?.total ?? 0}
+						pageSize={pageSize}
+						onPageChange={setPage}
+						onPageSizeChange={(s) => {
+							setPageSize(s);
+							setPage(1);
+						}}
 					/>
 				</>
 			)}
