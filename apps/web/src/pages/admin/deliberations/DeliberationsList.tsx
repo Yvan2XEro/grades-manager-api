@@ -1,10 +1,6 @@
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Gavel, Loader2, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { Gavel, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -47,8 +43,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import { TablePagination } from "../../../components/ui/table-pagination";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
-import { trpcClient } from "../../../utils/trpc";
+import { trpc, trpcClient } from "../../../utils/trpc";
 import CreateDeliberationDialog from "./CreateDeliberationDialog";
 
 const statusVariants: Record<
@@ -72,38 +69,42 @@ export default function DeliberationsList() {
 	const [statusFilter, setStatusFilter] = useState<string>("open");
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 	const { confirm, ConfirmDialog } = useConfirm();
 
-	const deliberationsQuery = useInfiniteQuery({
-		queryKey: ["deliberations", statusFilter, typeFilter, academicYearId],
-		queryFn: ({ pageParam }) =>
-			trpcClient.deliberations.list.query({
-				status:
-					statusFilter !== "all"
-						? (statusFilter as (typeof STATUSES)[number])
-						: undefined,
-				type:
-					typeFilter !== "all"
-						? (typeFilter as (typeof TYPES)[number])
-						: undefined,
-				academicYearId: academicYearId || undefined,
-				limit: 50,
-				cursor: pageParam as string | undefined,
-			}),
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor,
-	});
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
+	const { data, isLoading } = useQuery(
+		trpc.deliberations.listPaged.queryOptions({
+			page,
+			pageSize,
+			academicYearId: academicYearId || undefined,
+			status: statusFilter !== "all" ? statusFilter : undefined,
+			type:
+				typeFilter !== "all"
+					? (typeFilter as (typeof TYPES)[number])
+					: undefined,
+		}),
+	);
 
 	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.deliberations.delete.mutate({ id }),
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.deleteSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
+			queryClient.invalidateQueries({
+				queryKey: trpc.deliberations.listPaged.queryKey(),
+			});
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
 
-	const items = deliberationsQuery.data?.pages.flatMap((p) => p.items) ?? [];
+	const items = data?.items ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -132,12 +133,15 @@ export default function DeliberationsList() {
 			<div className="flex flex-wrap items-center gap-3">
 				<AcademicYearSelect
 					value={academicYearId}
-					onChange={setAcademicYearId}
+					onChange={handleFilter(setAcademicYearId)}
 					placeholder={t("admin.deliberations.filters.allYears")}
 					autoSelectActive
 					className="w-[200px]"
 				/>
-				<Select value={statusFilter} onValueChange={setStatusFilter}>
+				<Select
+					value={statusFilter}
+					onValueChange={handleFilter(setStatusFilter)}
+				>
 					<SelectTrigger className="w-[160px]">
 						<SelectValue />
 					</SelectTrigger>
@@ -152,7 +156,7 @@ export default function DeliberationsList() {
 						))}
 					</SelectContent>
 				</Select>
-				<Select value={typeFilter} onValueChange={setTypeFilter}>
+				<Select value={typeFilter} onValueChange={handleFilter(setTypeFilter)}>
 					<SelectTrigger className="w-[160px]">
 						<SelectValue />
 					</SelectTrigger>
@@ -171,8 +175,7 @@ export default function DeliberationsList() {
 
 			{/* Table */}
 			<div className="rounded-xl border bg-card shadow-sm">
-				{deliberationsQuery.isLoading &&
-				!deliberationsQuery.isFetchingNextPage ? (
+				{isLoading ? (
 					<TableSkeleton columns={7} rows={8} />
 				) : items.length === 0 ? (
 					<Empty className="border border-dashed">
@@ -315,20 +318,17 @@ export default function DeliberationsList() {
 				)}
 			</div>
 
-			{deliberationsQuery.hasNextPage && (
-				<div className="flex justify-center">
-					<Button
-						variant="outline"
-						onClick={() => deliberationsQuery.fetchNextPage()}
-						disabled={deliberationsQuery.isFetchingNextPage}
-					>
-						{deliberationsQuery.isFetchingNextPage && (
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-						)}
-						{t("common.loadMore", { defaultValue: "Charger plus" })}
-					</Button>
-				</div>
-			)}
+			<TablePagination
+				page={page}
+				pageCount={data?.pageCount ?? 1}
+				total={data?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(size) => {
+					setPageSize(size);
+					setPage(1);
+				}}
+			/>
 
 			<CreateDeliberationDialog
 				open={isCreateOpen}
