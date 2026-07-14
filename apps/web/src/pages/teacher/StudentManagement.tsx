@@ -7,13 +7,12 @@ import {
 	Trophy,
 	Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ConfirmModal from "@/components/modals/ConfirmModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -30,9 +29,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { toast } from "@/lib/toast";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -171,8 +170,13 @@ export default function StudentManagement() {
 	const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
 		new Set(),
 	);
-	const pagination = useCursorPagination({ pageSize: 30 });
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(30);
 	const { t } = useTranslation();
+
+	useEffect(() => {
+		setPage(1);
+	}, [sourceClassId]);
 
 	// Get previous academic year classes (source)
 	const { data: sourceClasses, isLoading: sourceLoading } = useQuery({
@@ -205,13 +209,11 @@ export default function StudentManagement() {
 
 	// Students with deliberation results
 	const { data: preview, isLoading: studentsLoading } = useQuery({
-		queryKey: ["promotion-preview", sourceClassId, pagination.cursor],
-		queryFn: () =>
-			trpcClient.classes.promotionPreview.query({
-				sourceClassId,
-				cursor: pagination.cursor,
-				limit: 30,
-			}),
+		...trpc.classes.promotionPreviewPaged.queryOptions({
+			sourceClassId: sourceClassId!,
+			page,
+			pageSize,
+		}),
 		enabled: !!sourceClassId,
 	});
 
@@ -226,7 +228,7 @@ export default function StudentManagement() {
 				t("teacher.promotion.toast.success", { count: data.transferred }),
 			);
 			setSelectedStudentIds(new Set());
-			pagination.reset();
+			setPage(1);
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
@@ -277,7 +279,7 @@ export default function StudentManagement() {
 		setSourceClassId(value);
 		setTargetClassId("");
 		setSelectedStudentIds(new Set());
-		pagination.reset();
+		setPage(1);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -595,16 +597,17 @@ export default function StudentManagement() {
 					)}
 
 					{/* Pagination */}
-					{students.length > 0 && (
-						<PaginationBar
-							hasPrev={pagination.hasPrev}
-							hasNext={!!preview?.nextCursor}
-							onPrev={pagination.handlePrev}
-							onNext={() => pagination.handleNext(preview?.nextCursor)}
-							isLoading={studentsLoading}
-							page={pagination.page}
-						/>
-					)}
+					<TablePagination
+						page={page}
+						pageCount={preview?.pageCount ?? 1}
+						total={preview?.total ?? 0}
+						pageSize={pageSize}
+						onPageChange={setPage}
+						onPageSizeChange={(s) => {
+							setPageSize(s);
+							setPage(1);
+						}}
+					/>
 				</div>
 			)}
 
