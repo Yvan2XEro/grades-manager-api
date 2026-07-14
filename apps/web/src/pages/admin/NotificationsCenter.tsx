@@ -1,9 +1,4 @@
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	AlertTriangle,
 	Bell,
@@ -19,7 +14,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -106,28 +101,25 @@ const NotificationsCenter = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 
-	const notificationsQuery = useInfiniteQuery({
-		queryKey: trpc.notifications.list.queryKey({
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
+	const { data, isLoading } = useQuery(
+		trpc.notifications.listPaged.queryOptions({
+			page,
+			pageSize,
 			status: statusFilter === "all" ? undefined : statusFilter,
+			channel: "email",
 		}),
-		queryFn: async ({ pageParam }) => {
-			return trpcClient.notifications.list.query({
-				status: statusFilter === "all" ? undefined : statusFilter,
-				cursor: pageParam,
-				limit: 20,
-			});
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-	});
-
-	const notifications =
-		notificationsQuery.data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(notificationsQuery.fetchNextPage, {
-		enabled:
-			notificationsQuery.hasNextPage && !notificationsQuery.isFetchingNextPage,
-	});
+	);
+	const notifications = data?.items ?? [];
 	const selection = useRowSelection(notifications);
 
 	const statsQuery = useQuery(trpc.notifications.stats.queryOptions());
@@ -137,7 +129,9 @@ const NotificationsCenter = () => {
 		mutationFn: (id: string) =>
 			trpcClient.notifications.acknowledge.mutate({ id }),
 		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.notifications.list.queryKey());
+			queryClient.invalidateQueries({
+				queryKey: trpc.notifications.listPaged.queryKey(),
+			});
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -150,7 +144,9 @@ const NotificationsCenter = () => {
 					defaultValue: "Notification requeued",
 				}),
 			);
-			queryClient.invalidateQueries(trpc.notifications.list.queryKey());
+			queryClient.invalidateQueries({
+				queryKey: trpc.notifications.listPaged.queryKey(),
+			});
 			queryClient.invalidateQueries(trpc.notifications.stats.queryKey());
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -164,7 +160,9 @@ const NotificationsCenter = () => {
 					defaultValue: "Pending notifications flushed",
 				}),
 			);
-			queryClient.invalidateQueries(trpc.notifications.list.queryKey());
+			queryClient.invalidateQueries({
+				queryKey: trpc.notifications.listPaged.queryKey(),
+			});
 			selection.clear();
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -242,7 +240,7 @@ const NotificationsCenter = () => {
 						<button
 							key={key}
 							type="button"
-							onClick={() => setStatusFilter(key)}
+							onClick={() => handleFilter(setStatusFilter)(key)}
 							className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-muted/40"
 						>
 							<span className={color}>{icon}</span>
@@ -263,9 +261,7 @@ const NotificationsCenter = () => {
 					<button
 						key={tab.key}
 						type="button"
-						onClick={() => {
-							setStatusFilter(tab.key);
-						}}
+						onClick={() => handleFilter(setStatusFilter)(tab.key)}
 						className={cn(
 							"relative px-4 py-2.5 font-medium text-sm transition-colors",
 							statusFilter === tab.key
@@ -280,7 +276,7 @@ const NotificationsCenter = () => {
 				<div className="ml-auto flex items-center gap-2 pb-1">
 					<span className="flex items-center gap-1.5 text-muted-foreground text-xs">
 						<Filter className="h-3.5 w-3.5" />
-						{t("admin.notifications.results", { count: notifications.length })}
+						{t("admin.notifications.results", { count: data?.total ?? 0 })}
 					</span>
 				</div>
 			</div>
@@ -317,7 +313,7 @@ const NotificationsCenter = () => {
 			)}
 
 			{/* Notification cards */}
-			{notificationsQuery.isLoading ? (
+			{isLoading ? (
 				<div className="flex flex-col gap-3">
 					{[1, 2, 3].map((i) => (
 						<div
@@ -454,7 +450,17 @@ const NotificationsCenter = () => {
 				</>
 			)}
 
-			<div ref={sentinelRef} className="h-1" />
+			<TablePagination
+				page={page}
+				pageCount={data?.pageCount ?? 1}
+				total={data?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(size) => {
+					setPageSize(size);
+					setPage(1);
+				}}
+			/>
 		</div>
 	);
 };
