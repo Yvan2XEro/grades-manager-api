@@ -368,7 +368,12 @@ function Step4({
 	);
 }
 
-type ProvisionStatus = "pending" | "provisioning" | "ready" | "failed";
+type ProvisionStatus =
+	| "pending_approval"
+	| "pending"
+	| "provisioning"
+	| "ready"
+	| "failed";
 
 function Step5({
 	dict: d,
@@ -407,13 +412,11 @@ function Step5({
 								() => router.push(`/dashboard/instances/${requestId}`),
 								1500,
 							);
-						} else if (
-							data.status === "provisioning" ||
-							data.status === "pending"
-						) {
+						} else if (data.status === "provisioning") {
 							delay = Math.min(delay * 1.35, 8000);
 							setTimeout(poll, delay);
 						}
+						// pending_approval: stop polling, redirect to instances list
 					}
 				}
 			} catch {
@@ -426,6 +429,50 @@ function Step5({
 			cancelled = true;
 		};
 	}, [requestId, router]);
+
+	useEffect(() => {
+		if (status !== "pending_approval") return;
+		const t = setTimeout(() => router.push("/dashboard/instances"), 4000);
+		return () => clearTimeout(t);
+	}, [status, router]);
+
+	if (status === "pending_approval") {
+		return (
+			<div className="flex flex-col items-center gap-5 py-6 text-center">
+				<div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-tk-primary/40 bg-tk-primary/6">
+					<svg
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						className="text-tk-primary"
+					>
+						<circle cx="12" cy="12" r="10" />
+						<polyline points="12 6 12 12 16 14" />
+					</svg>
+				</div>
+				<div>
+					<p className="mb-1 font-bold font-display text-[1.0625rem] text-tk-ink tracking-[-0.02em]">
+						{pg.pending_approval_title}
+					</p>
+					<p className="mx-auto max-w-xs font-body text-sm text-tk-muted leading-relaxed">
+						{pg.pending_approval_sub}
+					</p>
+				</div>
+				<button
+					type="button"
+					onClick={() => router.push("/dashboard/instances")}
+					className="tk-btn-outline text-sm"
+				>
+					{d.dashboard.instances.title} →
+				</button>
+			</div>
+		);
+	}
 
 	if (status === "ready") {
 		return (
