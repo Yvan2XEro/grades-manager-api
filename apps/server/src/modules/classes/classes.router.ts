@@ -9,11 +9,13 @@ import {
 	baseSchema,
 	bulkTransferSchema,
 	codeSchema,
+	graduatedStudentsPagedSchema,
 	graduatedStudentsSchema,
 	idSchema,
 	listPagedSchema,
 	listSchema,
 	promoTargetsSchema,
+	promotionPreviewPagedSchema,
 	promotionPreviewSchema,
 	searchSchema,
 	transferSchema,
@@ -102,6 +104,20 @@ export const router = createRouter({
 		.input(graduatedStudentsSchema)
 		.query(({ ctx, input }) =>
 			service.listGraduatedStudents(ctx.institution.id, input),
+		),
+	graduatedStudentsPaged: tenantAdminProcedure
+		.input(graduatedStudentsPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listGraduatedStudentsPaged(ctx.institution.id, input),
+		),
+	promotionPreviewPaged: tenantProtectedProcedure
+		.input(promotionPreviewPagedSchema)
+		.query(({ ctx, input }) =>
+			service.promotionPreviewPaged(
+				input.sourceClassId,
+				ctx.institution.id,
+				input,
+			),
 		),
 	bulkGenerate: tenantAdminProcedure
 		.input(

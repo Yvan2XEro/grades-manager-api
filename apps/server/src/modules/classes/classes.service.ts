@@ -561,6 +561,139 @@ export async function listGraduatedStudents(
 	return { items: filtered, nextCursor };
 }
 
+export async function listGraduatedStudentsPaged(
+	institutionId: string,
+	opts: {
+		page: number;
+		pageSize: number;
+		programId?: string;
+		cycleId?: string;
+	},
+) {
+	const {
+		items: enrollments,
+		total,
+		pageCount,
+	} = await enrollmentsRepo.listPaged({
+		institutionId,
+		status: "graduated",
+		page: opts.page,
+		pageSize: opts.pageSize,
+	});
+
+	if (enrollments.length === 0) {
+		return { items: [], total, pageCount };
+	}
+
+	// Enrich with student + class + credit info (same shape as listGraduatedStudents)
+	const enriched = await Promise.all(
+		enrollments.map(async (enrollment) => {
+			const student = await studentsRepo.findById(
+				enrollment.studentId,
+				institutionId,
+			);
+			const klass = await repo.findById(enrollment.classId, institutionId);
+			const creditLedger = await db.query.studentCreditLedgers.findFirst({
+				where: and(
+					eq(schema.studentCreditLedgers.studentId, enrollment.studentId),
+					eq(
+						schema.studentCreditLedgers.academicYearId,
+						enrollment.academicYearId,
+					),
+				),
+			});
+			return { enrollment, student, klass, creditLedger: creditLedger ?? null };
+		}),
+	);
+
+	// Filter by programId / cycleId if requested
+	const filtered = enriched.filter(({ klass }) => {
+		if (opts.programId && klass?.program !== opts.programId) return false;
+		if (opts.cycleId && klass?.cycle?.id !== opts.cycleId) return false;
+		return true;
+	});
+
+	return { items: filtered, total, pageCount };
+}
+
+export async function promotionPreviewPaged(
+	sourceClassId: string,
+	institutionId: string,
+	opts: { page: number; pageSize: number },
+) {
+	const source = await repo.findById(sourceClassId, institutionId);
+	if (!source) throw notFound("Source class not found");
+
+	// Page through enrollments in the source class
+	const {
+		items: enrollments,
+		total,
+		pageCount,
+	} = await enrollmentsRepo.listPaged({
+		institutionId,
+		classId: sourceClassId,
+		page: opts.page,
+		pageSize: opts.pageSize,
+	});
+
+	if (enrollments.length === 0) {
+		return { items: [], total, pageCount, deliberationId: null };
+	}
+
+	// Find the latest signed annual deliberation for this class
+	const deliberation = await db.query.deliberations.findFirst({
+		where: and(
+			eq(schema.deliberations.classId, sourceClassId),
+			eq(schema.deliberations.institutionId, institutionId),
+			eq(schema.deliberations.type, "annual"),
+			eq(schema.deliberations.status, "signed"),
+		),
+		orderBy: (d, { desc }) => desc(d.createdAt),
+	});
+
+	// Fetch deliberation results for all students in one query
+	const studentIds = enrollments.map((e) => e.studentId);
+	const deliberationResults = deliberation
+		? await db.query.deliberationStudentResults.findMany({
+				where: and(
+					eq(schema.deliberationStudentResults.deliberationId, deliberation.id),
+					inArray(schema.deliberationStudentResults.studentId, studentIds),
+				),
+				orderBy: asc(schema.deliberationStudentResults.rank),
+			})
+		: [];
+
+	const resultByStudentId = new Map(
+		deliberationResults.map((r) => [r.studentId, r]),
+	);
+
+	const items = await Promise.all(
+		enrollments.map(async (enrollment) => {
+			const student = await studentsRepo.findById(
+				enrollment.studentId,
+				institutionId,
+			);
+			const result = resultByStudentId.get(enrollment.studentId);
+			return {
+				student: student!,
+				deliberationResult: result
+					? {
+							id: result.id,
+							generalAverage: result.generalAverage,
+							totalCreditsEarned: result.totalCreditsEarned,
+							totalCreditsPossible: result.totalCreditsPossible,
+							finalDecision: result.finalDecision,
+							mention: result.mention,
+							rank: result.rank,
+						}
+					: null,
+			};
+		}),
+	);
+
+	return { items, total, pageCount, deliberationId: deliberation?.id ?? null };
+}
+
 export async function listClassesPaged(
 	input: {
 		page: number;
