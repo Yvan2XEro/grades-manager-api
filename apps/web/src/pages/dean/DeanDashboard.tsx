@@ -28,7 +28,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/ui/page-header";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -38,7 +37,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -356,8 +355,6 @@ function ExamApprovalCard({
 
 // ─── DeanDashboard ────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 20;
-
 export default function DeanDashboard() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
@@ -367,18 +364,19 @@ export default function DeanDashboard() {
 	const [search, setSearch] = useState("");
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [yearFilter, setYearFilter] = useState<string>("all");
-	const pagination = useCursorPagination({ pageSize: PAGE_SIZE });
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 
 	const resetAndApply = (setter: (v: string) => void) => (v: string) => {
 		setter(v);
-		pagination.reset();
+		setPage(1);
 	};
 
 	const examsQuery = useQuery(
-		trpc.exams.list.queryOptions({
-			limit: PAGE_SIZE,
-			cursor: pagination.cursor,
-			status: "submitted",
+		trpc.exams.listPaged.queryOptions({
+			page,
+			pageSize,
+			statuses: ["submitted"],
 			query: search.trim() || undefined,
 			classId: classFilter !== "all" ? classFilter : undefined,
 			academicYearId: yearFilter !== "all" ? yearFilter : undefined,
@@ -398,7 +396,7 @@ export default function DeanDashboard() {
 		},
 		onSuccess: () => {
 			toast.success(t("dean.approvals.bulkApproved"));
-			queryClient.invalidateQueries(trpc.exams.list.queryKey());
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			setSelectedIds(new Set());
 		},
 		onError: (e: Error) => toast.error(e.message),
@@ -418,7 +416,7 @@ export default function DeanDashboard() {
 		submittedExams.length > 0 && selectedIds.size === submittedExams.length;
 
 	const invalidateAndReset = () => {
-		queryClient.invalidateQueries(trpc.exams.list.queryKey());
+		queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 		setSelectedIds(new Set());
 	};
 
@@ -442,7 +440,10 @@ export default function DeanDashboard() {
 					<input
 						type="text"
 						value={search}
-						onChange={(e) => resetAndApply(setSearch)(e.target.value)}
+						onChange={(e) => {
+							setSearch(e.target.value);
+							setPage(1);
+						}}
 						placeholder={t("dean.approvals.searchPlaceholder")}
 						className="w-full rounded-md border bg-background py-2 pr-3 pl-8 text-sm outline-none focus:ring-2 focus:ring-ring"
 					/>
@@ -525,18 +526,16 @@ export default function DeanDashboard() {
 						))}
 					</div>
 
-					<PaginationBar
-						hasPrev={pagination.hasPrev}
-						hasNext={!!examsQuery.data?.nextCursor}
-						onPrev={pagination.handlePrev}
-						onNext={() => pagination.handleNext(examsQuery.data?.nextCursor)}
-						isLoading={examsQuery.isLoading}
-						page={pagination.page}
-						totalPages={
-							examsQuery.data?.total !== undefined
-								? Math.ceil(examsQuery.data.total / PAGE_SIZE)
-								: undefined
-						}
+					<TablePagination
+						page={page}
+						pageCount={examsQuery.data?.pageCount ?? 1}
+						total={examsQuery.data?.total ?? 0}
+						pageSize={pageSize}
+						onPageChange={setPage}
+						onPageSizeChange={(s) => {
+							setPageSize(s);
+							setPage(1);
+						}}
 					/>
 				</>
 			)}
