@@ -1,10 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import {
 	AlertTriangle,
@@ -77,14 +72,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 
 const buildClassCourseSchema = (t: TFunction) =>
 	z
@@ -159,6 +154,8 @@ export default function ClassCourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
@@ -180,6 +177,13 @@ export default function ClassCourseManagement() {
 	const [ueAssignUeId, setUeAssignUeId] = useState<string>("");
 	const [ueAssignClassSearch, setUeAssignClassSearch] = useState("");
 	const [skippedCourses, setSkippedCourses] = useState<string[]>([]);
+
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
@@ -303,56 +307,28 @@ export default function ClassCourseManagement() {
 	});
 	const semesters = semestersData?.items;
 
-	// Map catalog semester code (S1/S2) → UE semester value (fall/spring/annual)
-	const filterUeSemester = useMemo(() => {
-		if (!filterSemester || !semesters) return undefined;
-		const code = semesters.find((s) => s.id === filterSemester)?.code ?? "";
-		if (code === "S1") return "fall" as const;
-		if (code === "S2") return "spring" as const;
-		return "annual" as const;
-	}, [filterSemester, semesters]);
-
-	const {
-		data: classCoursesData,
-		isLoading,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		queryKey: ["classCourses", filterYear, filterSemester],
-		queryFn: async ({ pageParam }) => {
-			const { items, nextCursor } = await trpcClient.classCourses.list.query({
-				cursor: pageParam,
-				limit: 20,
-				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
-			});
-			return {
-				items: items.map(
-					(cc) =>
-						({
-							id: cc.id,
-							code: cc.code,
-							class: cc.class,
-							course: cc.course,
-							teacher: cc.teacher,
-							semesterId: cc.semesterId ?? null,
-							courseName: cc.courseName,
-							courseCode: cc.courseCode,
-							ueSemester: (cc as any).ueSemester ?? null,
-							coefficient: cc.coefficient ?? 1,
-						}) as ClassCourse,
-				),
-				nextCursor,
-			};
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-	});
-	const classCourses = classCoursesData?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+	const { data: classCoursesData, isLoading } = useQuery(
+		trpc.classCourses.listPaged.queryOptions({
+			page,
+			pageSize,
+			academicYearId: filterYear || undefined,
+			semesterId: filterSemester || undefined,
+		}),
+	);
+	const classCourses: ClassCourse[] = (classCoursesData?.items ?? []).map(
+		(cc) => ({
+			id: cc.id,
+			code: cc.code,
+			class: cc.class,
+			course: cc.course,
+			teacher: cc.teacher,
+			semesterId: cc.semesterId ?? null,
+			courseName: cc.courseName,
+			courseCode: cc.courseCode,
+			ueSemester: null,
+			coefficient: Number(cc.coefficient) ?? 1,
+		}),
+	);
 
 	// Query for UE assignment: search classes
 	const { data: ueAssignSearchClasses = [] } = useQuery({
@@ -517,12 +493,7 @@ export default function ClassCourseManagement() {
 			});
 	}, [editingClassCourse, form, selectedCourseId, teacherDirty]);
 
-	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
-	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
-		activeClassIds.has(cc.class),
-	);
-
-	const selection = useRowSelection(displayedClassCourses);
+	const selection = useRowSelection(classCourses);
 	const { confirm, ConfirmDialog } = useConfirm();
 
 	const exportCatalogMutation = useMutation({
@@ -567,7 +538,7 @@ export default function ClassCourseManagement() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			queryClient.invalidateQueries(trpc.classCourses.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -589,7 +560,7 @@ export default function ClassCourseManagement() {
 			return data;
 		},
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			queryClient.invalidateQueries(trpc.classCourses.listPaged.queryKey());
 			toast.success(t("admin.classCourses.toast.createSuccess"));
 			if (autoEnrollOnCreate && data.class) {
 				// Find the academicYear for this class
@@ -619,7 +590,7 @@ export default function ClassCourseManagement() {
 			await trpcClient.classCourses.update.mutate({ id, ...updateData });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			queryClient.invalidateQueries(trpc.classCourses.listPaged.queryKey());
 			toast.success(t("admin.classCourses.toast.updateSuccess"));
 			handleCloseForm();
 		},
@@ -637,7 +608,7 @@ export default function ClassCourseManagement() {
 			await trpcClient.classCourses.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			queryClient.invalidateQueries(trpc.classCourses.listPaged.queryKey());
 			toast.success(t("admin.classCourses.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
@@ -717,7 +688,7 @@ export default function ClassCourseManagement() {
 			return { created: toCreate.length, skipped };
 		},
 		onSuccess: ({ created, skipped }) => {
-			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			queryClient.invalidateQueries(trpc.classCourses.listPaged.queryKey());
 			if (created > 0) {
 				toast.success(
 					t("admin.classCourses.toast.bulkAssignSuccess", {
@@ -954,7 +925,7 @@ export default function ClassCourseManagement() {
 							</Label>
 							<AcademicYearSelect
 								value={filterYear}
-								onChange={(v) => setFilterYear(v)}
+								onChange={handleFilter(setFilterYear)}
 							/>
 						</div>
 						<div className="w-56">
@@ -965,7 +936,7 @@ export default function ClassCourseManagement() {
 							</Label>
 							<SemesterSelect
 								value={filterSemester}
-								onChange={(v) => setFilterSemester(v)}
+								onChange={handleFilter(setFilterSemester)}
 							/>
 						</div>
 					</div>
@@ -1004,7 +975,7 @@ export default function ClassCourseManagement() {
 				<CardContent>
 					{isLoading ? (
 						<TableSkeleton columns={8} rows={8} />
-					) : displayedClassCourses.length > 0 ? (
+					) : classCourses.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -1037,7 +1008,7 @@ export default function ClassCourseManagement() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{displayedClassCourses.map((classCourse) => (
+								{classCourses.map((classCourse) => (
 									<TableRow
 										key={classCourse.id}
 										actions={
@@ -1157,7 +1128,17 @@ export default function ClassCourseManagement() {
 				</CardContent>
 			</Card>
 
-			<div ref={sentinelRef} className="h-1" />
+			<TablePagination
+				page={page}
+				pageCount={classCoursesData?.pageCount ?? 1}
+				total={classCoursesData?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(s) => {
+					setPageSize(s);
+					setPage(1);
+				}}
+			/>
 
 			<FormModal
 				isOpen={isFormOpen}
