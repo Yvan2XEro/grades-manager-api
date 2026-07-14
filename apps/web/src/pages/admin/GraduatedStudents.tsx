@@ -61,20 +61,14 @@ export default function GraduatedStudents() {
 	const [pageSize, setPageSize] = useState(25);
 
 	const { data, isLoading } = useQuery(
-		trpc.classes.graduatedStudentsPaged.queryOptions({ page, pageSize }),
+		trpc.classes.graduatedStudentsPaged.queryOptions({
+			page,
+			pageSize,
+			query: search.trim() || undefined,
+		}),
 	);
 
-	const items = data?.items ?? [];
-
-	const filtered = search.trim()
-		? items.filter(({ student }) => {
-				const q = search.toLowerCase();
-				const name =
-					`${student?.profile?.firstName} ${student?.profile?.lastName}`.toLowerCase();
-				const reg = student?.registrationNumber?.toLowerCase() ?? "";
-				return name.includes(q) || reg.includes(q);
-			})
-		: items;
+	const filtered = data?.items ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -103,7 +97,10 @@ export default function GraduatedStudents() {
 				<Input
 					placeholder={t("admin.graduation.searchPlaceholder")}
 					value={search}
-					onChange={(e) => setSearch(e.target.value)}
+					onChange={(e) => {
+						setSearch(e.target.value);
+						setPage(1);
+					}}
 					className="pl-9"
 				/>
 			</div>

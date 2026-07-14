@@ -79,6 +79,7 @@ export const graduatedStudentsPagedSchema = z.object({
 	pageSize: z.number().int().min(1).max(100).default(25),
 	programId: z.string().optional(),
 	cycleId: z.string().optional(),
+	query: z.string().optional(),
 });
 
 export const promotionPreviewPagedSchema = z.object({

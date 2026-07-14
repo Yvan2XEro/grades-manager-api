@@ -102,6 +102,7 @@ export async function listPaged(opts: {
 	status?: schema.EnrollmentStatus;
 	programId?: string;
 	cycleId?: string;
+	studentIds?: string[];
 }) {
 	const size = Math.min(Math.max(opts.pageSize, 1), 100);
 	const offset = (Math.max(opts.page, 1) - 1) * size;
@@ -153,6 +154,9 @@ export async function listPaged(opts: {
 		opts.status ? eq(schema.enrollments.status, opts.status) : undefined,
 		filteredClassIds
 			? inArray(schema.enrollments.classId, filteredClassIds)
+			: undefined,
+		opts.studentIds
+			? inArray(schema.enrollments.studentId, opts.studentIds)
 			: undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof inArray>)[];
 	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
