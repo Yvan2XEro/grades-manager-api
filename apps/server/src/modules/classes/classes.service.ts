@@ -579,6 +579,8 @@ export async function listGraduatedStudentsPaged(
 		status: "graduated",
 		page: opts.page,
 		pageSize: opts.pageSize,
+		programId: opts.programId,
+		cycleId: opts.cycleId,
 	});
 
 	if (enrollments.length === 0) {
@@ -606,14 +608,7 @@ export async function listGraduatedStudentsPaged(
 		}),
 	);
 
-	// Filter by programId / cycleId if requested
-	const filtered = enriched.filter(({ klass }) => {
-		if (opts.programId && klass?.program !== opts.programId) return false;
-		if (opts.cycleId && klass?.cycle?.id !== opts.cycleId) return false;
-		return true;
-	});
-
-	return { items: filtered, total, pageCount };
+	return { items: enriched, total, pageCount };
 }
 
 export async function promotionPreviewPaged(
@@ -624,7 +619,7 @@ export async function promotionPreviewPaged(
 	const source = await repo.findById(sourceClassId, institutionId);
 	if (!source) throw notFound("Source class not found");
 
-	// Page through enrollments in the source class
+	// Page through active enrollments in the source class only
 	const {
 		items: enrollments,
 		total,
@@ -632,6 +627,7 @@ export async function promotionPreviewPaged(
 	} = await enrollmentsRepo.listPaged({
 		institutionId,
 		classId: sourceClassId,
+		status: "active",
 		page: opts.page,
 		pageSize: opts.pageSize,
 	});
