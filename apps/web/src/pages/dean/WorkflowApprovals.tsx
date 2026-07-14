@@ -26,13 +26,12 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { PaginationBar } from "@/components/ui/pagination-bar";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { Textarea } from "@/components/ui/textarea";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
-type ExamItem = RouterOutputs["exams"]["list"]["items"][number];
+type ExamItem = RouterOutputs["exams"]["listPaged"]["items"][number];
 
 type PendingConfirm =
 	| { kind: "single"; examId: string; examName: string }
@@ -41,8 +40,10 @@ type PendingConfirm =
 const WorkflowApprovals = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const examPagination = useCursorPagination({ pageSize: 20 });
-	const notifPagination = useCursorPagination({ pageSize: 20 });
+	const [examPage, setExamPage] = useState(1);
+	const [examPageSize, setExamPageSize] = useState(25);
+	const [notifPage, setNotifPage] = useState(1);
+	const [notifPageSize, setNotifPageSize] = useState(25);
 
 	const [selectedExamIds, setSelectedExamIds] = useState<Set<string>>(
 		new Set(),
@@ -59,25 +60,25 @@ const WorkflowApprovals = () => {
 	const [dateFrom, setDateFrom] = useState<string>("");
 
 	const resetFilters = () => {
-		examPagination.reset();
+		setExamPage(1);
 		setSelectedExamIds(new Set());
 	};
 
 	const examsQuery = useQuery(
-		trpc.exams.list.queryOptions({
+		trpc.exams.listPaged.queryOptions({
+			page: examPage,
+			pageSize: examPageSize,
 			statuses: ["submitted"],
-			cursor: examPagination.cursor,
-			limit: examPagination.pageSize,
 			academicYearId: yearFilter ?? undefined,
 			classId: classFilter ?? undefined,
 			dateFrom: dateFrom ? new Date(dateFrom) : undefined,
 		}),
 	);
 	const notificationsQuery = useQuery(
-		trpc.notifications.list.queryOptions({
+		trpc.notifications.listPaged.queryOptions({
+			page: notifPage,
+			pageSize: notifPageSize,
 			status: "pending",
-			cursor: notifPagination.cursor,
-			limit: notifPagination.pageSize,
 		}),
 	);
 	const windowsQuery = useQuery(
@@ -85,7 +86,7 @@ const WorkflowApprovals = () => {
 	);
 
 	const invalidateExams = () =>
-		queryClient.invalidateQueries(trpc.exams.list.queryKey());
+		queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 
 	const validateExam = useMutation({
 		mutationFn: (examId: string) =>
@@ -330,15 +331,16 @@ const WorkflowApprovals = () => {
 							</p>
 						)}
 					</div>
-					<PaginationBar
-						hasPrev={examPagination.hasPrev}
-						hasNext={!!examsQuery.data?.nextCursor}
-						onPrev={examPagination.handlePrev}
-						onNext={() =>
-							examPagination.handleNext(examsQuery.data?.nextCursor)
-						}
-						isLoading={examsQuery.isLoading}
-						page={examPagination.page}
+					<TablePagination
+						page={examPage}
+						pageCount={examsQuery.data?.pageCount ?? 1}
+						total={examsQuery.data?.total ?? 0}
+						pageSize={examPageSize}
+						onPageChange={setExamPage}
+						onPageSizeChange={(s) => {
+							setExamPageSize(s);
+							setExamPage(1);
+						}}
 					/>
 				</div>
 
@@ -384,15 +386,16 @@ const WorkflowApprovals = () => {
 							</li>
 						)}
 					</ul>
-					<PaginationBar
-						hasPrev={notifPagination.hasPrev}
-						hasNext={!!notificationsQuery.data?.nextCursor}
-						onPrev={notifPagination.handlePrev}
-						onNext={() =>
-							notifPagination.handleNext(notificationsQuery.data?.nextCursor)
-						}
-						isLoading={notificationsQuery.isLoading}
-						page={notifPagination.page}
+					<TablePagination
+						page={notifPage}
+						pageCount={notificationsQuery.data?.pageCount ?? 1}
+						total={notificationsQuery.data?.total ?? 0}
+						pageSize={notifPageSize}
+						onPageChange={setNotifPage}
+						onPageSizeChange={(s) => {
+							setNotifPageSize(s);
+							setNotifPage(1);
+						}}
 					/>
 				</div>
 			</div>
