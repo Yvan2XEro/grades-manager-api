@@ -1,10 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Layers3, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -45,14 +40,15 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import FormModal from "../../components/modals/FormModal";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 const cycleSchema = z.object({
 	code: z.string().min(1),
@@ -81,21 +77,14 @@ export default function StudyCycleManagement() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
 	const [editingLevelId, setEditingLevelId] = useState<string | null>(null);
-	const cyclesQuery = useInfiniteQuery({
-		queryKey: ["studyCycles"],
-		queryFn: ({ pageParam }) =>
-			trpcClient.studyCycles.listCycles.query({
-				cursor: pageParam,
-				limit: 20,
-			}),
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-	});
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 
-	const cycles = cyclesQuery.data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(cyclesQuery.fetchNextPage, {
-		enabled: cyclesQuery.hasNextPage && !cyclesQuery.isFetchingNextPage,
-	});
+	const { data: cyclesData, isLoading: cyclesLoading } = useQuery(
+		trpc.studyCycles.listPaged.queryOptions({ page, pageSize }),
+	);
+
+	const cycles = cyclesData?.items ?? [];
 	const selection = useRowSelection(cycles);
 
 	const { confirm, ConfirmDialog } = useConfirm();
@@ -168,7 +157,7 @@ export default function StudyCycleManagement() {
 							defaultValue: "Study cycle created",
 						}),
 			);
-			queryClient.invalidateQueries({ queryKey: ["studyCycles"] });
+			queryClient.invalidateQueries(trpc.studyCycles.listPaged.queryKey());
 			setIsFormOpen(false);
 			setEditingId(null);
 		},
@@ -184,7 +173,7 @@ export default function StudyCycleManagement() {
 					defaultValue: "Study cycle deleted",
 				}),
 			);
-			queryClient.invalidateQueries({ queryKey: ["studyCycles"] });
+			queryClient.invalidateQueries(trpc.studyCycles.listPaged.queryKey());
 			setDeleteId(null);
 			if (activeCycleId === deleteId) setActiveCycleId(null);
 		},
@@ -198,7 +187,7 @@ export default function StudyCycleManagement() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["studyCycles"] });
+			queryClient.invalidateQueries(trpc.studyCycles.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -309,7 +298,7 @@ export default function StudyCycleManagement() {
 
 			<Card>
 				<CardContent>
-					{cyclesQuery.isLoading ? (
+					{cyclesLoading ? (
 						<TableSkeleton columns={5} rows={8} />
 					) : (
 						<>
@@ -476,7 +465,17 @@ export default function StudyCycleManagement() {
 									)}
 								</TableBody>
 							</Table>
-							<div ref={sentinelRef} className="h-1" />
+							<TablePagination
+								page={page}
+								pageCount={cyclesData?.pageCount ?? 1}
+								total={cyclesData?.total ?? 0}
+								pageSize={pageSize}
+								onPageChange={setPage}
+								onPageSizeChange={(s) => {
+									setPageSize(s);
+									setPage(1);
+								}}
+							/>
 						</>
 					)}
 				</CardContent>
