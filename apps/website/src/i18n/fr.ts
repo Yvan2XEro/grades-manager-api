@@ -496,26 +496,26 @@ export const fr = {
 	produit: {
 		label: "Le produit",
 		title: "Voyez TKAMS en action",
-		sub: "Trois démonstrations interactives — saisie des notes, moteur de règles, délibération. Tout fonctionne en direct, sans inscription.",
+		sub: "Saisie des notes, moteur de règles, délibération, suivi des présences et validations — démonstrations interactives de bout en bout. Tout fonctionne en direct, sans inscription.",
 		demos: {
 			grade: {
 				title: "Saisie des notes",
-				desc: "CC et examens pondérés, moyennes et décisions calculées en temps réel. Verrouillage après validation.",
+				desc: "CC et examens pondérés, moyennes LMD et décisions calculées en temps réel. Verrouillage après validation, export PV Excel en un clic.",
 			},
 			rules: {
 				title: "Moteur de règles",
-				desc: "Seuils, note éliminatoire, compensation — chaque institution paramètre ses propres règles, sans toucher au code.",
+				desc: "Seuils, note éliminatoire, compensation — chaque institution paramètre ses propres règles de délibération, sans toucher au code. Résultats immédiats.",
 			},
 			delib: {
 				title: "Délibération & PV",
-				desc: "Un flux guidé du brouillon à la signature, avec statistiques et exports officiels en un clic.",
+				desc: "Un flux guidé du brouillon à la signature, avec statistiques par cohorte et exports officiels (PV Excel, relevés) en un clic.",
 			},
 		},
 	},
 	solutions: {
 		label: "Solutions",
 		title: "Une réponse pour chaque acteur de l'établissement",
-		sub: "Du corps enseignant à l'administration, TKAMS s'adapte à chaque rôle.",
+		sub: "Du corps enseignant à la direction informatique, TKAMS s'adapte à chaque rôle.",
 		roles: [
 			{
 				role: "Enseignants",
@@ -562,6 +562,22 @@ export const fr = {
 				outcome: "Une scolarité connectée, de l'admission à la diplomation.",
 				wins: ["Admissions & Finances", "Hubs centralisés", "DIPLOMATION"],
 			},
+			{
+				role: "DSI & Responsables informatiques",
+				pain: "Des accès gérés manuellement, éparpillés sur des outils déconnectés.",
+				title: "Créez et contrôlez les accès depuis la fiche profil.",
+				desc: "L'onglet Accès & Sécurité permet de provisionner, lier, réinitialiser ou suspendre un compte de connexion sans sortir de la plateforme.",
+				points: [
+					"Créer un compte email + mot de passe + rôle en une opération",
+					"Lier un compte de connexion existant à un profil institutionnel",
+					"Réinitialiser le mot de passe sans accès aux données sensibles",
+					"Suspendre un accès sans effacer le dossier académique",
+					"Panneau d'administration filtré automatiquement par rôle RBAC",
+					"Piste d'audit complète sur toutes les actions sensibles",
+				],
+				outcome: "Des accès maîtrisés, traçables, sans outil externe.",
+				wins: ["Provisionnement intégré", "RBAC granulaire", "Audit complet"],
+			},
 		],
 	},
 	tarifs: {
@@ -587,23 +603,23 @@ export const fr = {
 			before: {
 				title: "Aujourd'hui, sans TKAMS",
 				items: [
+					"Candidatures traitées par email ou sur papier, sans traçabilité",
+					"Finances gérées sur Excel, déconnectées du dossier académique",
 					"Notes éparpillées sur papier, Excel et WhatsApp",
-					"Moyennes recalculées à la main, erreurs en cascade",
 					"Délibérations qui s'étirent sur des semaines",
-					"Documents officiels tapés un par un",
-					"Aucune trace de qui a saisi quoi",
-					"Outils déconnectés, ressaisies permanentes",
+					"Accès gérés manuellement, sans lien avec les profils",
+					"Aucune trace de qui a saisi quoi, ni pourquoi",
 				],
 			},
 			after: {
 				title: "Demain, avec TKAMS",
 				items: [
-					"Une seule plateforme, du paramétrage à la diplomation",
-					"Moyennes et décisions calculées automatiquement",
-					"Délibérations bouclées en quelques heures",
-					"PV, relevés et attestations en un clic",
-					"Piste d'audit complète sur chaque action",
-					"Tout est connecté, plus aucune ressaisie",
+					"De l'admission à la diplomation dans un seul système",
+					"Admissions, quitus, emplois du temps et présence intégrés",
+					"Moyennes et décisions LMD calculées automatiquement",
+					"Délibérations bouclées en quelques heures, PV signé",
+					"Accès provisionnés et contrôlés depuis la fiche profil",
+					"Piste d'audit complète sur chaque décision sensible",
 				],
 			},
 		},

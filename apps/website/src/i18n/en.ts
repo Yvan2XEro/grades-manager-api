@@ -496,26 +496,26 @@ export const en = {
 	produit: {
 		label: "The product",
 		title: "See TKAMS in action",
-		sub: "Three interactive demos — grade entry, rules engine, deliberation. Everything runs live, no sign-up needed.",
+		sub: "Grade entry, rules engine, deliberation, attendance tracking and validations — interactive end-to-end demos. Everything runs live, no sign-up needed.",
 		demos: {
 			grade: {
 				title: "Grade entry",
-				desc: "Weighted coursework and exams, averages and decisions computed in real time. Locked after approval.",
+				desc: "Weighted coursework and exams, LMD averages and decisions computed in real time. Locked after approval, minutes Excel export in one click.",
 			},
 			rules: {
 				title: "Rules engine",
-				desc: "Thresholds, eliminatory marks, compensation — each institution sets its own rules, without touching code.",
+				desc: "Thresholds, eliminatory marks, compensation — each institution sets its own deliberation rules, without touching code. Instant results.",
 			},
 			delib: {
 				title: "Deliberation & minutes",
-				desc: "A guided flow from draft to signature, with statistics and official exports in one click.",
+				desc: "A guided flow from draft to signature, with per-cohort statistics and official exports (Excel minutes, transcripts) in one click.",
 			},
 		},
 	},
 	solutions: {
 		label: "Solutions",
 		title: "An answer for every role in the institution",
-		sub: "From teaching staff to administration, TKAMS adapts to each role.",
+		sub: "From teaching staff to IT management, TKAMS adapts to each role.",
 		roles: [
 			{
 				role: "Teachers",
@@ -561,6 +561,23 @@ export const en = {
 				outcome: "A connected registrar, from admission to graduation.",
 				wins: ["Admissions & Finance", "Centralized hubs", "DIPLOMATION"],
 			},
+			{
+				role: "IT Admin & Security",
+				pain: "Access managed manually, scattered across disconnected tools.",
+				title: "Provision and control access from the profile page.",
+				desc: "The Access & Security tab lets you create, link, reset or suspend a login account without leaving the platform.",
+				points: [
+					"Create an account with email, password and role in one operation",
+					"Link an existing login account to an institutional profile",
+					"Reset a password without touching sensitive data",
+					"Suspend access without deleting the academic record",
+					"Admin panel automatically filtered by RBAC role",
+					"Full audit trail on all sensitive actions",
+				],
+				outcome:
+					"Controlled, traceable access management — no external tool needed.",
+				wins: ["Integrated provisioning", "Granular RBAC", "Full audit trail"],
+			},
 		],
 	},
 	tarifs: {
@@ -586,23 +603,23 @@ export const en = {
 			before: {
 				title: "Today, without TKAMS",
 				items: [
+					"Applications handled by email or paper, no traceability",
+					"Finance managed in Excel, disconnected from academic records",
 					"Grades scattered across paper, Excel and WhatsApp",
-					"Averages recomputed by hand, cascading errors",
 					"Deliberations dragging on for weeks",
-					"Official documents typed one by one",
-					"No record of who entered what",
-					"Disconnected tools, endless re-entry",
+					"Access managed manually, unlinked from profiles",
+					"No record of who entered what, or why",
 				],
 			},
 			after: {
 				title: "Tomorrow, with TKAMS",
 				items: [
-					"One platform, from setup to graduation",
-					"Averages and decisions computed automatically",
-					"Deliberations wrapped up in hours",
-					"Minutes, transcripts and certificates in one click",
-					"Full audit trail on every action",
-					"Everything connected, zero re-entry",
+					"From admission to graduation in a single system",
+					"Admissions, clearance, timetables and attendance all integrated",
+					"LMD averages and decisions computed automatically",
+					"Deliberations wrapped up in hours, signed minutes ready",
+					"Access provisioned and controlled from the profile page",
+					"Full audit trail on every sensitive decision",
 				],
 			},
 		},
