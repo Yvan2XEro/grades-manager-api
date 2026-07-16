@@ -7,10 +7,10 @@ interface StatsProps {
 }
 
 const stats = (d: Dict) => [
-	{ value: "35+", label: d.stats.modules, sub: d.stats.modules_sub },
-	{ value: "24", label: d.stats.exports, sub: d.stats.exports_sub },
+	{ value: "45+", label: d.stats.modules, sub: d.stats.modules_sub },
+	{ value: "30+", label: d.stats.exports, sub: d.stats.exports_sub },
 	{ value: "7", label: d.stats.roles, sub: d.stats.roles_sub },
-	{ value: "2", label: d.stats.languages, sub: d.stats.languages_sub },
+	{ value: "5", label: d.stats.languages, sub: d.stats.languages_sub },
 ];
 
 export function Stats({ dict: d }: StatsProps) {
