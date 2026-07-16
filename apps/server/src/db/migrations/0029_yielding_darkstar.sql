@@ -1,0 +1,2 @@
+ALTER TABLE "domain_users" ADD COLUMN "institution_id" text;--> statement-breakpoint
+ALTER TABLE "domain_users" ADD CONSTRAINT "domain_users_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE set null ON UPDATE no action;

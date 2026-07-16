@@ -4,6 +4,7 @@ import {
 	countDistinct,
 	eq,
 	ilike,
+	isNull,
 	or,
 	type SQL,
 	sql,
@@ -22,7 +23,8 @@ import { member } from "@/db/schema/auth";
 export type ListPagedOpts = {
 	page: number;
 	pageSize: number;
-	organizationId: string;
+	institutionId: string;
+	organizationId: string; // kept for legacy records without institutionId
 	role?: BusinessRole;
 	status?: DomainUserStatus;
 	search?: string;
@@ -35,7 +37,18 @@ export async function listPaged(opts: ListPagedOpts) {
 	const offset = (Math.max(opts.page ?? 1, 1) - 1) * size;
 	const isStudent = opts.role === "student";
 
-	const conditions: SQL[] = [eq(member.organizationId, opts.organizationId)];
+	// Primary scope: profiles explicitly bound to this institution (new records).
+	// Fallback: legacy profiles linked via member.organizationId but lacking institutionId.
+	// This dual condition ensures no data loss during the migration period.
+	const conditions: SQL[] = [
+		or(
+			eq(domainUsers.institutionId, opts.institutionId),
+			and(
+				isNull(domainUsers.institutionId),
+				eq(member.organizationId, opts.organizationId),
+			),
+		) as SQL,
+	];
 	if (opts.role) conditions.push(eq(member.role, opts.role));
 	if (opts.status) conditions.push(eq(domainUsers.status, opts.status));
 	if (opts.search) {
@@ -66,6 +79,7 @@ export async function listPaged(opts: ListPagedOpts) {
 		phone: domainUsers.phone,
 		status: domainUsers.status,
 		role: member.role,
+		memberId: domainUsers.memberId,
 	} as const;
 
 	if (isStudent) {
@@ -92,6 +106,7 @@ export async function listPaged(opts: ListPagedOpts) {
 					domainUsers.primaryEmail,
 					domainUsers.phone,
 					domainUsers.status,
+					domainUsers.memberId,
 					member.role,
 					students.registrationNumber,
 				)

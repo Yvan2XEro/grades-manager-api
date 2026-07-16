@@ -198,6 +198,12 @@ export const domainUsers = pgTable(
 		memberId: text("member_id").references(() => member.id, {
 			onDelete: "set null",
 		}),
+		// Explicit institution scope — required for multi-tenant isolation.
+		// Profiles created without an auth account (memberId=null) must still be
+		// bound to an institution so the admin listing is properly scoped.
+		institutionId: text("institution_id").references(() => institutions.id, {
+			onDelete: "set null",
+		}),
 		firstName: text("first_name").notNull(),
 		lastName: text("last_name").notNull(),
 		primaryEmail: text("primary_email").notNull(),

@@ -43,14 +43,18 @@ export const usersRouter = router({
 		.query(({ input, ctx }) =>
 			service.listUsersPaged({
 				...input,
-				// tenantAdminProcedure guarantees institution is resolved from organizationId,
-				// so institution.organizationId is always set (non-null).
+				institutionId: ctx.institution.id,
 				organizationId: ctx.institution.organizationId!,
 			}),
 		),
 	createProfile: adminProcedure
 		.input(createUserProfileSchema)
-		.mutation(({ input }) => service.createUserProfile(input)),
+		.mutation(({ input, ctx }) =>
+			service.createUserProfile({
+				...input,
+				institutionId: ctx.institution?.id,
+			}),
+		),
 	updateProfile: adminProcedure
 		.input(updateUserProfileSchema)
 		.mutation(({ input }) => {
@@ -72,6 +76,7 @@ export const usersRouter = router({
 			try {
 				return await service.createUserWithAuth(input, {
 					organizationId: ctx.organizationId,
+					institutionId: ctx.institution?.id,
 				});
 			} catch (err) {
 				if (err instanceof service.UserAlreadyExistsError) {

@@ -109,6 +109,7 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		gender: opts.profileOverrides?.gender ?? "other",
 		nationality: opts.profileOverrides?.nationality ?? null,
 		status: opts.profileOverrides?.status ?? "active",
+		institutionId: opts.profileOverrides?.institutionId ?? null,
 		createdAt: opts.profileOverrides?.createdAt ?? new Date(),
 		updatedAt: opts.profileOverrides?.updatedAt ?? new Date(),
 	} satisfies DomainUser;

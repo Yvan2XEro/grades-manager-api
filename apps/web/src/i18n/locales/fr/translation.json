@@ -5313,7 +5313,8 @@
       "enrollments": "Inscriptions",
       "results": "Résultats",
       "finances": "Finances",
-      "guardians": "Parents / Tuteurs"
+      "guardians": "Parents / Tuteurs",
+      "access": "Accès & Sécurité"
     },
     "identity": {
       "personalInfo": "Informations personnelles",

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontal, Plus, Search } from "lucide-react";
+import { MoreHorizontal, Plus, Search, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -247,7 +247,7 @@ export default function PeopleManagement() {
 
 			{/* Table */}
 			{isLoading ? (
-				<TableSkeleton columns={isStudent ? 5 : 4} rows={8} />
+				<TableSkeleton columns={isStudent ? 6 : 5} rows={8} />
 			) : (
 				<Table>
 					<TableHeader>
@@ -282,6 +282,9 @@ export default function PeopleManagement() {
 							<TableHead>
 								{t("common.fields.status", { defaultValue: "Status" })}
 							</TableHead>
+							<TableHead className="w-24">
+								{t("usersHub.people.account", { defaultValue: "Compte" })}
+							</TableHead>
 							<TableHead className="w-10" />
 						</TableRow>
 					</TableHeader>
@@ -289,7 +292,7 @@ export default function PeopleManagement() {
 						{items.length === 0 ? (
 							<TableRow>
 								<TableCell
-									colSpan={isStudent ? 7 : 5}
+									colSpan={isStudent ? 8 : 6}
 									className="py-12 text-center text-muted-foreground"
 								>
 									{t("usersHub.people.empty", {
@@ -366,6 +369,23 @@ export default function PeopleManagement() {
 											})}
 										</Badge>
 									</TableCell>
+									<TableCell>
+										{person.memberId ? (
+											<span className="inline-flex items-center gap-1 text-emerald-600 text-xs dark:text-emerald-400">
+												<UserCheck className="h-3.5 w-3.5" />
+												{t("usersHub.people.hasAccount", {
+													defaultValue: "Actif",
+												})}
+											</span>
+										) : (
+											<span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
+												<UserX className="h-3.5 w-3.5" />
+												{t("usersHub.people.noAccount", {
+													defaultValue: "Aucun",
+												})}
+											</span>
+										)}
+									</TableCell>
 									<TableCell onClick={(e) => e.stopPropagation()}>
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
@@ -380,6 +400,15 @@ export default function PeopleManagement() {
 													}
 												>
 													{t("common.actions.open", { defaultValue: "Open" })}
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onClick={() =>
+														navigate(`/admin/profiles/${person.id}/access`)
+													}
+												>
+													{t("usersHub.people.manageAccess", {
+														defaultValue: "Gérer l'accès",
+													})}
 												</DropdownMenuItem>
 												<DropdownMenuSeparator />
 												<DropdownMenuItem

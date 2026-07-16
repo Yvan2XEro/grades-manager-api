@@ -14,6 +14,7 @@ const ALL_TABS = [
 	{ path: "results", labelKey: "profileHub.tabs.results" },
 	{ path: "finances", labelKey: "profileHub.tabs.finances" },
 	{ path: "guardians", labelKey: "profileHub.tabs.guardians" },
+	{ path: "access", labelKey: "profileHub.tabs.access" },
 ] as const;
 
 export default function ProfileHub() {

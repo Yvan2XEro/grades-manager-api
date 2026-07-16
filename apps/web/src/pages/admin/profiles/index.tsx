@@ -1,3 +1,4 @@
+export { default as ProfileAccessTab } from "./ProfileAccessTab";
 export { default as ProfileEnrollmentsTab } from "./ProfileEnrollmentsTab";
 export { default as ProfileFinancesTab } from "./ProfileFinancesTab";
 export { default as ProfileGuardiansTab } from "./ProfileGuardiansTab";

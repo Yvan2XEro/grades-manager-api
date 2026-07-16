@@ -5308,7 +5308,8 @@
       "enrollments": "Enrollments",
       "results": "Results",
       "finances": "Finances",
-      "guardians": "Guardians"
+      "guardians": "Guardians",
+      "access": "Access & Security"
     },
     "identity": {
       "personalInfo": "Personal Information",

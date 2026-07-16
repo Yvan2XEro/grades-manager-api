@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import type { DomainUserStatus, Gender } from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
+import { conflict, notFound } from "@/modules/_shared/errors";
 import { domainUsersRepo } from "@/modules/domain-users";
 import * as pagedRepo from "./users.listpaged.repo";
 import * as repo from "./users.repo";
@@ -20,6 +21,7 @@ type CreateProfileInput = {
 	nationality?: string;
 	status?: DomainUserStatus;
 	memberId?: string;
+	institutionId?: string;
 };
 
 type UpdateProfileInput = {
@@ -63,6 +65,7 @@ export async function createUserProfile(data: CreateProfileInput) {
 		nationality: data.nationality ?? null,
 		status: data.status ?? "active",
 		memberId: data.memberId ?? null,
+		institutionId: data.institutionId ?? null,
 	});
 }
 
@@ -108,10 +111,13 @@ export class UserAlreadyExistsError extends Error {
  */
 export async function createUserWithAuth(
 	data: CreateUserWithAuthInput,
-	{ organizationId }: { organizationId: string },
+	{
+		organizationId,
+		institutionId,
+	}: { organizationId: string; institutionId?: string },
 ) {
 	if (!data.canConnect) {
-		return createUserProfile(data);
+		return createUserProfile({ ...data, institutionId });
 	}
 
 	// password and memberRole are guaranteed by schema superRefine when canConnect=true
@@ -158,7 +164,7 @@ export async function createUserWithAuth(
 	}
 
 	try {
-		return await createUserProfile({ ...data, memberId });
+		return await createUserProfile({ ...data, memberId, institutionId });
 	} catch (err) {
 		await db
 			.delete(authSchema.member)
@@ -170,6 +176,117 @@ export async function createUserWithAuth(
 
 export async function listUsersPaged(opts: pagedRepo.ListPagedOpts) {
 	return pagedRepo.listPaged(opts);
+}
+
+/**
+ * Links an existing auth account (identified by email) to a profile.
+ * The auth user must already be a member of the organization.
+ */
+export async function linkAuthAccount(
+	profileId: string,
+	authUserEmail: string,
+	organizationId: string,
+) {
+	const profile = await domainUsersRepo.findById(profileId);
+	if (!profile) throw notFound("Profile not found");
+	if (profile.memberId)
+		throw conflict("This profile is already linked to an auth account");
+
+	const [authUser] = await db
+		.select({ id: authSchema.user.id })
+		.from(authSchema.user)
+		.where(eq(authSchema.user.email, authUserEmail))
+		.limit(1);
+	if (!authUser)
+		throw notFound(`No account found with email "${authUserEmail}"`);
+
+	const [orgMember] = await db
+		.select({ id: authSchema.member.id })
+		.from(authSchema.member)
+		.where(
+			and(
+				eq(authSchema.member.userId, authUser.id),
+				eq(authSchema.member.organizationId, organizationId),
+			),
+		)
+		.limit(1);
+	if (!orgMember)
+		throw notFound("This user is not a member of this organization");
+
+	const alreadyLinked = await domainUsersRepo.findByMemberId(orgMember.id);
+	if (alreadyLinked && alreadyLinked.id !== profileId)
+		throw conflict("This account is already linked to another profile");
+
+	await domainUsersRepo.update(profileId, { memberId: orgMember.id });
+	return domainUsersRepo.findById(profileId);
+}
+
+/**
+ * Creates a Better-Auth account for an existing profile that has no account yet.
+ * Rolls back auth records on partial failure.
+ */
+export async function createAuthForProfile(
+	profileId: string,
+	data: { email: string; password: string; memberRole: string },
+	{
+		organizationId,
+		institutionId,
+	}: { organizationId: string; institutionId?: string },
+) {
+	const profile = await domainUsersRepo.findById(profileId);
+	if (!profile) throw notFound("Profile not found");
+	if (profile.memberId)
+		throw conflict("This profile is already linked to an auth account");
+
+	const [existing] = await db
+		.select({ id: authSchema.user.id })
+		.from(authSchema.user)
+		.where(eq(authSchema.user.email, data.email))
+		.limit(1);
+	if (existing) throw new UserAlreadyExistsError(data.email);
+
+	const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const authResult = await (auth.api as any).createUser({
+		body: {
+			name: fullName,
+			email: data.email,
+			password: data.password,
+			role: "user",
+		},
+	});
+	const authUserId = (authResult as { user: { id: string } }).user.id;
+
+	let memberId: string | null = null;
+	try {
+		const [newMember] = await db
+			.insert(authSchema.member)
+			.values({
+				id: randomUUID(),
+				organizationId,
+				userId: authUserId,
+				role: data.memberRole,
+				createdAt: new Date(),
+			})
+			.returning();
+		memberId = newMember.id;
+	} catch (err) {
+		await db.delete(authSchema.user).where(eq(authSchema.user.id, authUserId));
+		throw err;
+	}
+
+	try {
+		const updates: Record<string, unknown> = { memberId };
+		if (institutionId) updates.institutionId = institutionId;
+		await domainUsersRepo.update(profileId, updates);
+		return domainUsersRepo.findById(profileId);
+	} catch (err) {
+		await db
+			.delete(authSchema.member)
+			.where(eq(authSchema.member.id, memberId!));
+		await db.delete(authSchema.user).where(eq(authSchema.user.id, authUserId));
+		throw err;
+	}
 }
 
 export async function getMyProfile(profileId: string) {

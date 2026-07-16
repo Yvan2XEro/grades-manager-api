@@ -79,6 +79,7 @@ import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import ProgramsHub from "./pages/admin/ProgramsHub";
 import PromotionHub from "./pages/admin/PromotionHub";
 import {
+	ProfileAccessTab,
 	ProfileEnrollmentsTab,
 	ProfileFinancesTab,
 	ProfileGuardiansTab,
@@ -435,6 +436,7 @@ function App() {
 							<Route path="results" element={<ProfileResultsTab />} />
 							<Route path="finances" element={<ProfileFinancesTab />} />
 							<Route path="guardians" element={<ProfileGuardiansTab />} />
+							<Route path="access" element={<ProfileAccessTab />} />
 						</Route>
 
 						{/* Exams hub (includes grade management) */}
