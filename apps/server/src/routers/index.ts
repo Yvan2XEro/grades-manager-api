@@ -1,10 +1,22 @@
+import { academicDocumentsRouter } from "@/modules/academic-documents";
+import { academicYearTransitionsRouter } from "@/modules/academic-year-transitions";
+import { admissionsRouter } from "@/modules/admissions";
+import { attendanceRouter } from "@/modules/attendance";
 import { batchJobsRouter, registerAllJobTypes } from "@/modules/batch-jobs";
+import { centersRouter } from "@/modules/centers";
 import { deliberationsRouter } from "@/modules/deliberations";
 import { diplomationKeysRouter } from "@/modules/diplomation-keys";
 import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
 import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
+import { exportEligibilityRouter } from "@/modules/export-eligibility";
+import { feeClearanceRouter } from "@/modules/fee-clearance";
 import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
+import { gradeScalesRouter } from "@/modules/grade-scales";
 import { gradesRouter } from "@/modules/grades";
+import { guardiansRouter } from "@/modules/guardians";
+import { profilesRouter } from "@/modules/profiles";
+import { roomsRouter } from "@/modules/rooms";
+import { router as timetableRouter } from "@/modules/timetable";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
 import { classCoursesRouter } from "../modules/class-courses";
@@ -64,6 +76,7 @@ export const appRouter = router({
 	files: filesRouter,
 	institutions: institutionsRouter,
 	grades: gradesRouter,
+	guardians: guardiansRouter,
 	exports: exportsRouter,
 	exportTemplates: exportTemplatesRouter,
 	users: usersRouter,
@@ -72,7 +85,18 @@ export const appRouter = router({
 	batchJobs: batchJobsRouter,
 	deliberations: deliberationsRouter,
 	gradeAccessGrants: gradeAccessGrantsRouter,
+	gradeScales: gradeScalesRouter,
 	diplomationKeys: diplomationKeysRouter,
+	centers: centersRouter,
+	exportEligibility: exportEligibilityRouter,
+	academicDocuments: academicDocumentsRouter,
+	academicYearTransitions: academicYearTransitionsRouter,
+	feeClearance: feeClearanceRouter,
+	timetable: timetableRouter,
+	rooms: roomsRouter,
+	attendance: attendanceRouter,
+	admissions: admissionsRouter,
+	profiles: profilesRouter,
 });
 
 export type AppRouter = typeof appRouter;

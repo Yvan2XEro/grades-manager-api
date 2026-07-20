@@ -1,11 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
+	AlertCircle,
+	CheckCircle2,
 	Download,
 	Eye,
 	FileSpreadsheet,
+	Files,
 	FileText,
 	Loader2,
+	Package,
 	Search,
 } from "lucide-react";
 import { useCallback, useId, useMemo, useState } from "react";
@@ -45,6 +49,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
@@ -262,6 +267,11 @@ export default function GradeExport() {
 				return (result?.items || []) as { id: string; name: string }[];
 			} catch (error) {
 				console.error("Error fetching semesters:", error);
+				toast.error(
+					t("admin.gradeExport.toast.semestersFetchError", {
+						defaultValue: "Could not load semesters",
+					}),
+				);
 				return [];
 			}
 		},
@@ -298,53 +308,72 @@ export default function GradeExport() {
 		enabled: !!selectedClass && !!classes,
 	});
 
+	// EC list for the "Par EC" section — one entry per class_course attached
+	// to the selected class. Used to render preview + generate buttons per EC.
+	// Filtered by semester when one is selected so the user only sees the ECs
+	// taught during that period.
+	const { data: classCoursesList } = useQuery({
+		queryKey: ["classCourses-export", selectedClass, selectedSemester],
+		queryFn: async () => {
+			if (!selectedClass) return [];
+			const { items } = await trpcClient.classCourses.list.query({
+				classId: selectedClass,
+				...(selectedSemester ? { semesterId: selectedSemester } : {}),
+				limit: 500,
+			});
+			// Reshape to a UI-friendly tuple. The repo flattens its joins —
+			// the `list` output exposes `courseCode`/`courseName` (NOT a
+			// nested `courseRef`), so reading from `courseRef.code` was
+			// silently returning undefined and rendering "—" everywhere.
+			return (items as Array<unknown>).map((raw) => {
+				const cc = raw as {
+					id: string;
+					coefficient: string | number | null;
+					courseCode?: string;
+					courseName?: string;
+				};
+				return {
+					id: cc.id,
+					coefficient: Number(cc.coefficient ?? 1),
+					code: cc.courseCode ?? "—",
+					name: cc.courseName ?? "—",
+				};
+			});
+		},
+		enabled: !!selectedClass,
+	});
+
 	const { data: exportConfig } = useQuery({
 		queryKey: ["exportConfig"],
 		queryFn: () => trpcClient.exports.getConfig.query(),
 	});
 
-	const { data: exams } = useQuery({
+	const {
+		data: exams,
+		isLoading: examsLoading,
+		isFetching: examsFetching,
+	} = useQuery({
 		queryKey: ["exams", selectedClass],
-		queryFn: async () => {
+		queryFn: async (): Promise<ExamItem[]> => {
 			if (!selectedClass) return [];
-			const { items: classCourses } = await trpcClient.classCourses.list.query({
+			// Single batched call — exams.list returns courseName/courseCode joined.
+			const { items } = await trpcClient.exams.list.query({
 				classId: selectedClass,
+				limit: 500,
 			});
-			const result: ExamItem[] = [];
-			for (const cc of classCourses) {
-				const course = await trpcClient.courses.getById.query({
-					id: cc.course,
-				});
-				const { items: examItems } = await trpcClient.exams.list.query({
-					classCourseId: cc.id,
-				});
-				examItems.forEach(
-					(exam: {
-						id: string;
-						name: string;
-						type: string;
-						date: string;
-						percentage: string;
-						sessionType?: "normal" | "retake";
-						parentExamId?: string | null;
-						scoringPolicy?: "replace" | "best_of";
-					}) => {
-						result.push({
-							id: exam.id,
-							name: exam.name,
-							type: exam.type,
-							date: exam.date,
-							percentage: Number(exam.percentage),
-							courseName: course.name,
-							courseCode: course.code ?? null,
-							classCourseCode: cc.code ?? null,
-							sessionType: exam.sessionType || "normal",
-							parentExamId: exam.parentExamId || null,
-							scoringPolicy: exam.scoringPolicy || "replace",
-						});
-					},
-				);
-			}
+			const result: ExamItem[] = items.map((exam: any) => ({
+				id: exam.id,
+				name: exam.name,
+				type: exam.type,
+				date: exam.date,
+				percentage: Number(exam.percentage),
+				courseName: exam.courseName ?? "",
+				courseCode: exam.courseCode ?? null,
+				classCourseCode: exam.classCourseCode ?? null,
+				sessionType: exam.sessionType || "normal",
+				parentExamId: exam.parentExamId || null,
+				scoringPolicy: exam.scoringPolicy || "replace",
+			}));
 			return result.sort((a, b) => a.courseName.localeCompare(b.courseName));
 		},
 		enabled: !!selectedClass,
@@ -765,6 +794,13 @@ export default function GradeExport() {
 			XLSX.writeFile(wb, filename);
 		} catch (error) {
 			console.error("Export error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.exportError", {
+							defaultValue: "Export failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
@@ -902,7 +938,7 @@ export default function GradeExport() {
 			// Stats
 			const totalStudents = pvData.students.length;
 			const validated = pvData.students.filter(
-				(s: any) => s.overallDecision === "ACQUIS",
+				(s: any) => s.overallDecision === "VALIDÉ",
 			).length;
 			const nonValidated = totalStudents - validated;
 			const successRate = pvData.globalSuccessRate ?? 0;
@@ -1136,6 +1172,13 @@ export default function GradeExport() {
 			XLSX.writeFile(wb, filename);
 		} catch (error) {
 			console.error("Verbal report export error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.verbalReportError", {
+							defaultValue: "Verbal report export failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
@@ -1309,6 +1352,13 @@ export default function GradeExport() {
 				XLSX.writeFile(wb, filename);
 			} catch (error) {
 				console.error("Exam export error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.examExportError", {
+								defaultValue: "Exam export failed",
+							}),
+				);
 			} finally {
 				setExporting(null);
 			}
@@ -1346,10 +1396,17 @@ export default function GradeExport() {
 			setShowPreview(true);
 		} catch (error) {
 			console.error("PV preview error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.pvPreviewError", {
+							defaultValue: "Could not generate PV preview",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes, t]);
 
 	const handleGeneratePV = useCallback(async () => {
 		if (!selectedClass || !selectedSemester || !selectedYear) return;
@@ -1381,57 +1438,84 @@ export default function GradeExport() {
 			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error("PV generation error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.pvGenerateError", {
+							defaultValue: "PV generation failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes, t]);
 
-	const handlePreviewEvaluation = useCallback(async (examId: string) => {
-		setExporting(`preview-eval-${examId}`);
-		try {
-			const html = await trpcClient.exports.previewEvaluation.query({
-				examId,
-			});
-			setPreviewHtml(html);
-			setPreviewTitle("Prévisualisation - Publication Évaluation");
-			setShowPreview(true);
-		} catch (error) {
-			console.error("Evaluation preview error:", error);
-		} finally {
-			setExporting(null);
-		}
-	}, []);
-
-	const handleGenerateEvaluation = useCallback(async (examId: string) => {
-		setExporting(`generate-eval-${examId}`);
-		try {
-			const result = await trpcClient.exports.generateEvaluation.mutate({
-				examId,
-				format: "pdf",
-			});
-
-			// Convert base64 to blob and download
-			const byteCharacters = atob(result.data);
-			const byteNumbers = new Array(byteCharacters.length);
-			for (let i = 0; i < byteCharacters.length; i++) {
-				byteNumbers[i] = byteCharacters.charCodeAt(i);
+	const handlePreviewEvaluation = useCallback(
+		async (examId: string) => {
+			setExporting(`preview-eval-${examId}`);
+			try {
+				const html = await trpcClient.exports.previewEvaluation.query({
+					examId,
+				});
+				setPreviewHtml(html);
+				setPreviewTitle("Prévisualisation - Publication Évaluation");
+				setShowPreview(true);
+			} catch (error) {
+				console.error("Evaluation preview error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.evaluationPreviewError", {
+								defaultValue: "Could not generate evaluation preview",
+							}),
+				);
+			} finally {
+				setExporting(null);
 			}
-			const byteArray = new Uint8Array(byteNumbers);
-			const blob = new Blob([byteArray], { type: "application/pdf" });
-			const url = window.URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = result.filename;
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			window.URL.revokeObjectURL(url);
-		} catch (error) {
-			console.error("Evaluation generation error:", error);
-		} finally {
-			setExporting(null);
-		}
-	}, []);
+		},
+		[t],
+	);
+
+	const handleGenerateEvaluation = useCallback(
+		async (examId: string) => {
+			setExporting(`generate-eval-${examId}`);
+			try {
+				const result = await trpcClient.exports.generateEvaluation.mutate({
+					examId,
+					format: "pdf",
+				});
+
+				// Convert base64 to blob and download
+				const byteCharacters = atob(result.data);
+				const byteNumbers = new Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteNumbers[i] = byteCharacters.charCodeAt(i);
+				}
+				const byteArray = new Uint8Array(byteNumbers);
+				const blob = new Blob([byteArray], { type: "application/pdf" });
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = result.filename;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+			} catch (error) {
+				console.error("Evaluation generation error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.evaluationGenerateError", {
+								defaultValue: "Evaluation generation failed",
+							}),
+				);
+			} finally {
+				setExporting(null);
+			}
+		},
+		[t],
+	);
 
 	const handlePreviewUE = useCallback(
 		async (ueId: string) => {
@@ -1449,11 +1533,18 @@ export default function GradeExport() {
 				setShowPreview(true);
 			} catch (error) {
 				console.error("UE preview error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.uePreviewError", {
+								defaultValue: "Could not generate UE preview",
+							}),
+				);
 			} finally {
 				setExporting(null);
 			}
 		},
-		[selectedClass, selectedSemester, selectedYear],
+		[selectedClass, selectedSemester, selectedYear, t],
 	);
 
 	const handleGenerateUE = useCallback(
@@ -1487,11 +1578,98 @@ export default function GradeExport() {
 				window.URL.revokeObjectURL(url);
 			} catch (error) {
 				console.error("UE generation error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.ueGenerateError", {
+								defaultValue: "UE generation failed",
+							}),
+				);
 			} finally {
 				setExporting(null);
 			}
 		},
-		[selectedClass, selectedSemester, selectedYear],
+		[selectedClass, selectedSemester, selectedYear, t],
+	);
+
+	// EC preview — calls exports.previewEc with the class_course context.
+	// Eligibility (sum of percentages = 100%) is enforced server-side; if
+	// the EC isn't fully evaluated, the toast surfaces the precise message.
+	const handlePreviewEc = useCallback(
+		async (classCourseId: string) => {
+			if (!selectedClass) return;
+			setExporting(`preview-ec-${classCourseId}`);
+			try {
+				const html = await trpcClient.exports.previewEc.query({
+					classCourseId,
+					classId: selectedClass,
+					...(selectedSemester ? { semesterId: selectedSemester } : {}),
+					...(selectedYear ? { academicYearId: selectedYear } : {}),
+				});
+				setPreviewHtml(html);
+				setPreviewTitle("Prévisualisation - Publication EC");
+				setShowPreview(true);
+			} catch (error) {
+				console.error("EC preview error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.ecPreviewError", {
+								defaultValue: "Could not generate EC preview",
+							}),
+				);
+			} finally {
+				setExporting(null);
+			}
+		},
+		[selectedClass, selectedSemester, selectedYear, t],
+	);
+
+	// EC PDF generation — same eligibility rule as the preview. On success
+	// the PDF blob is materialized and downloaded with the server-suggested
+	// filename (EC_<date>.pdf).
+	const handleGenerateEc = useCallback(
+		async (classCourseId: string) => {
+			if (!selectedClass) return;
+			setExporting(`generate-ec-${classCourseId}`);
+			try {
+				const result = await trpcClient.exports.generateEc.mutate({
+					classCourseId,
+					classId: selectedClass,
+					...(selectedSemester ? { semesterId: selectedSemester } : {}),
+					...(selectedYear ? { academicYearId: selectedYear } : {}),
+					format: "pdf",
+				});
+
+				const byteCharacters = atob(result.data);
+				const byteNumbers = new Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteNumbers[i] = byteCharacters.charCodeAt(i);
+				}
+				const byteArray = new Uint8Array(byteNumbers);
+				const blob = new Blob([byteArray], { type: "application/pdf" });
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = result.filename;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+			} catch (error) {
+				console.error("EC generation error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.ecGenerateError", {
+								defaultValue: "EC generation failed",
+							}),
+				);
+			} finally {
+				setExporting(null);
+			}
+		},
+		[selectedClass, selectedSemester, selectedYear, t],
 	);
 
 	const handleBulkGenerateEvaluations = useCallback(async () => {
@@ -1525,10 +1703,17 @@ export default function GradeExport() {
 			}
 		} catch (error) {
 			console.error("Bulk evaluations generation error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.bulkEvaluationsError", {
+							defaultValue: "Bulk evaluations generation failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedExamDetails]);
+	}, [selectedExamDetails, t]);
 
 	const handleBulkGenerateUEs = useCallback(async () => {
 		if (
@@ -1571,10 +1756,162 @@ export default function GradeExport() {
 			}
 		} catch (error) {
 			console.error("Bulk UEs generation error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.bulkUesError", {
+							defaultValue: "Bulk UE generation failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [teachingUnits, selectedClass, selectedSemester, selectedYear]);
+	}, [teachingUnits, selectedClass, selectedSemester, selectedYear, t]);
+
+	// ─── Bulk / massive exports ─────────────────────────────────────────
+	// Generate ZIPs server-side via the dedicated bulk endpoints. The scope
+	// of "all classes" is implicit when no classId is set in the filters.
+	// We pass the currently selected academic year / semester / class so the
+	// user can scope the bulk to "this year only" or "this class only" by
+	// selecting them, or leave them empty for institution-wide exports.
+	const [bulkElapsed, setBulkElapsed] = useState<number>(0); // seconds
+	const [bulkReport, setBulkReport] = useState<{
+		kind: "Évaluations" | "EC" | "UE";
+		total: number;
+		succeeded: number;
+		skipped: Array<{ id: string; reason: string }>;
+		filename: string;
+	} | null>(null);
+
+	const buildBulkFilters = useCallback(
+		(scope: "all" | "selected") => ({
+			...(selectedYear ? { academicYearId: selectedYear } : {}),
+			...(selectedSemester ? { semesterId: selectedSemester } : {}),
+			...(scope === "selected" && selectedClass
+				? { classId: selectedClass }
+				: {}),
+			skipIneligible: true,
+		}),
+		[selectedYear, selectedSemester, selectedClass],
+	);
+
+	const downloadBlob = useCallback(
+		(data: string, filename: string, mime: string) => {
+			const byteCharacters = atob(data);
+			const byteNumbers = new Array(byteCharacters.length);
+			for (let i = 0; i < byteCharacters.length; i++) {
+				byteNumbers[i] = byteCharacters.charCodeAt(i);
+			}
+			const byteArray = new Uint8Array(byteNumbers);
+			const blob = new Blob([byteArray], { type: mime });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+		},
+		[],
+	);
+
+	// Start an elapsed-time counter while the bulk export is running. Returns
+	// the cleanup function to stop the interval. tRPC mutations don't expose
+	// progress, so the elapsed-time counter is the user-facing signal that
+	// "things are happening" during long exports.
+	const startBulkTimer = useCallback(() => {
+		setBulkElapsed(0);
+		const start = Date.now();
+		const id = setInterval(() => {
+			setBulkElapsed(Math.floor((Date.now() - start) / 1000));
+		}, 1000);
+		return () => clearInterval(id);
+	}, []);
+
+	const handleBulkExportEvaluations = useCallback(
+		async (scope: "all" | "selected") => {
+			setExporting(`bulk-eval-${scope}`);
+			const stopTimer = startBulkTimer();
+			try {
+				const result = await trpcClient.exports.bulkExportEvaluations.mutate(
+					buildBulkFilters(scope),
+				);
+				downloadBlob(result.data, result.filename, result.mimeType);
+				setBulkReport({
+					kind: "Évaluations",
+					total: result.total,
+					succeeded: result.succeeded,
+					skipped: result.skipped,
+					filename: result.filename,
+				});
+			} catch (error) {
+				toast.error(
+					error instanceof Error ? error.message : "Bulk export failed",
+				);
+			} finally {
+				stopTimer();
+				setExporting(null);
+			}
+		},
+		[buildBulkFilters, downloadBlob, startBulkTimer],
+	);
+
+	const handleBulkExportEcs = useCallback(
+		async (scope: "all" | "selected") => {
+			setExporting(`bulk-ec-${scope}`);
+			const stopTimer = startBulkTimer();
+			try {
+				const result = await trpcClient.exports.bulkExportEcs.mutate(
+					buildBulkFilters(scope),
+				);
+				downloadBlob(result.data, result.filename, result.mimeType);
+				setBulkReport({
+					kind: "EC",
+					total: result.total,
+					succeeded: result.succeeded,
+					skipped: result.skipped,
+					filename: result.filename,
+				});
+			} catch (error) {
+				toast.error(
+					error instanceof Error ? error.message : "Bulk export failed",
+				);
+			} finally {
+				stopTimer();
+				setExporting(null);
+			}
+		},
+		[buildBulkFilters, downloadBlob, startBulkTimer],
+	);
+
+	const handleBulkExportUes = useCallback(
+		async (scope: "all" | "selected") => {
+			setExporting(`bulk-ue-${scope}`);
+			const stopTimer = startBulkTimer();
+			try {
+				const result = await trpcClient.exports.bulkExportUes.mutate(
+					buildBulkFilters(scope),
+				);
+				downloadBlob(result.data, result.filename, result.mimeType);
+				setBulkReport({
+					kind: "UE",
+					total: result.total,
+					succeeded: result.succeeded,
+					skipped: result.skipped,
+					filename: result.filename,
+				});
+			} catch (error) {
+				toast.error(
+					error instanceof Error ? error.message : "Bulk export failed",
+				);
+			} finally {
+				stopTimer();
+				setExporting(null);
+			}
+		},
+		[buildBulkFilters, downloadBlob, startBulkTimer],
+	);
 
 	const pvReady = !!selectedClass && !!selectedSemester && !!selectedYear;
 
@@ -1647,7 +1984,24 @@ export default function GradeExport() {
 
 			{/* ─── Étape 2 — Sélection des évaluations ─────────────────────── */}
 			{selectedClass &&
-				(exams && exams.length > 0 ? (
+				(examsLoading || examsFetching ? (
+					<Card>
+						<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+							<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+							<p className="font-medium text-sm">
+								{t("admin.gradeExport.exams.loadingTitle", {
+									defaultValue: "Chargement des évaluations…",
+								})}
+							</p>
+							<p className="text-muted-foreground text-xs">
+								{t("admin.gradeExport.exams.loadingDescription", {
+									defaultValue:
+										"On récupère tous les examens et leurs cours pour cette classe.",
+								})}
+							</p>
+						</CardContent>
+					</Card>
+				) : exams && exams.length > 0 ? (
 					<Card>
 						<CardHeader className="pb-3">
 							<div className="flex items-center justify-between">
@@ -2087,6 +2441,99 @@ export default function GradeExport() {
 						</Card>
 					)}
 
+					{/* Par EC — one row per class_course of the selected class.
+					    Eligibility (sum of percentages = 100%) is enforced server-side.
+					    If you see "EC weights total X%, expected 100%", finish wiring
+					    the EC's exams in /admin/exam-scheduler. */}
+					{classCoursesList && classCoursesList.length > 0 && (
+						<Card>
+							<CardHeader className="pb-3">
+								<div className="flex items-center justify-between">
+									<div>
+										<CardTitle className="text-base">
+											Par EC{" "}
+											<Badge variant="secondary" className="ml-1">
+												{classCoursesList.length}
+											</Badge>
+										</CardTitle>
+										<CardDescription className="mt-1">
+											Publication PDF par Élément Constitutif — agrège toutes
+											les évaluations (CC + TP + Examen) avec moyenne EC.
+											Nécessite que la somme des pondérations des examens de
+											l&apos;EC soit à 100%.
+										</CardDescription>
+									</div>
+								</div>
+							</CardHeader>
+							<CardContent>
+								<div className="overflow-x-auto">
+									<table className="w-full text-sm">
+										<thead className="bg-muted/40">
+											<tr>
+												<th className="px-4 py-2 text-left font-medium">
+													Code
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Intitulé
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													Coef.
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													Actions
+												</th>
+											</tr>
+										</thead>
+										<tbody className="divide-y">
+											{classCoursesList.map((cc) => (
+												<tr key={cc.id} className="hover:bg-muted/30">
+													<td className="px-4 py-2 font-mono text-muted-foreground text-xs">
+														{cc.code}
+													</td>
+													<td className="px-4 py-2">
+														<span className="font-medium">{cc.name}</span>
+													</td>
+													<td className="px-4 py-2 text-right text-muted-foreground">
+														{cc.coefficient}
+													</td>
+													<td className="px-4 py-2 text-right">
+														<div className="flex justify-end gap-1">
+															<Button
+																type="button"
+																variant="outline"
+																size="sm"
+																disabled={!selectedClass || isBusy}
+																onClick={() => handlePreviewEc(cc.id)}
+															>
+																{exporting === `preview-ec-${cc.id}` ? (
+																	<Loader2 className="h-3 w-3 animate-spin" />
+																) : (
+																	<Eye className="h-3 w-3" />
+																)}
+															</Button>
+															<Button
+																type="button"
+																size="sm"
+																disabled={!selectedClass || isBusy}
+																onClick={() => handleGenerateEc(cc.id)}
+															>
+																{exporting === `generate-ec-${cc.id}` ? (
+																	<Loader2 className="h-3 w-3 animate-spin" />
+																) : (
+																	<Download className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							</CardContent>
+						</Card>
+					)}
+
 					{/* Par UE */}
 					{teachingUnits && teachingUnits.length > 0 && (
 						<Card>
@@ -2187,6 +2634,158 @@ export default function GradeExport() {
 				</div>
 			)}
 
+			{/* ─── Export massif ──────────────────────────────────────────────
+			    Génère un ZIP côté serveur contenant tous les PDFs (Évaluations,
+			    EC ou UE) classés par programme/classe. La portée est :
+			      • « Toutes classes » → l'institution entière, filtrée par les
+			        sélecteurs académie/semestre du haut de la page si renseignés.
+			      • « Classe sélectionnée » → uniquement la classe choisie.
+			    Les ECs/UEs non éligibles (pondérations ≠ 100%) sont skippés
+			    avec un compte-rendu en toast. */}
+			<Card>
+				<CardHeader className="pb-3">
+					<div className="flex items-center justify-between gap-3">
+						<div>
+							<CardTitle className="flex items-center gap-2 text-base">
+								<Package className="h-4 w-4" />
+								Export massif (ZIP)
+							</CardTitle>
+							<CardDescription className="mt-1">
+								Génère un fichier ZIP contenant tous les PDFs classés par
+								programme et classe. Filtré par l&apos;année et le semestre
+								sélectionnés en haut de page si renseignés.
+							</CardDescription>
+						</div>
+						{exporting?.startsWith("bulk-") && (
+							<div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-amber-900 text-xs dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+								<Loader2 className="h-3.5 w-3.5 animate-spin" />
+								<span className="font-medium">
+									Génération en cours · {bulkElapsed}s
+								</span>
+							</div>
+						)}
+					</div>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="grid gap-3 sm:grid-cols-3">
+						<div className="rounded-md border p-3">
+							<div className="font-medium text-sm">Évaluations</div>
+							<p className="mt-1 text-muted-foreground text-xs">
+								Une PDF par examen. Aucun check d&apos;éligibilité.
+							</p>
+							<div className="mt-3 flex flex-col gap-2">
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									disabled={isBusy}
+									onClick={() => handleBulkExportEvaluations("all")}
+								>
+									{exporting === "bulk-eval-all" ? (
+										<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+									) : (
+										<Download className="mr-1 h-3 w-3" />
+									)}
+									Toutes classes
+								</Button>
+								<Button
+									type="button"
+									size="sm"
+									disabled={!selectedClass || isBusy}
+									onClick={() => handleBulkExportEvaluations("selected")}
+								>
+									{exporting === "bulk-eval-selected" ? (
+										<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+									) : (
+										<Download className="mr-1 h-3 w-3" />
+									)}
+									Classe sélectionnée
+								</Button>
+							</div>
+						</div>
+						<div className="rounded-md border p-3">
+							<div className="font-medium text-sm">
+								EC (Éléments Constitutifs)
+							</div>
+							<p className="mt-1 text-muted-foreground text-xs">
+								Une PDF par EC. Skip auto si pondérations ≠ 100%.
+							</p>
+							<div className="mt-3 flex flex-col gap-2">
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									disabled={isBusy}
+									onClick={() => handleBulkExportEcs("all")}
+								>
+									{exporting === "bulk-ec-all" ? (
+										<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+									) : (
+										<Download className="mr-1 h-3 w-3" />
+									)}
+									Toutes classes
+								</Button>
+								<Button
+									type="button"
+									size="sm"
+									disabled={!selectedClass || isBusy}
+									onClick={() => handleBulkExportEcs("selected")}
+								>
+									{exporting === "bulk-ec-selected" ? (
+										<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+									) : (
+										<Download className="mr-1 h-3 w-3" />
+									)}
+									Classe sélectionnée
+								</Button>
+							</div>
+						</div>
+						<div className="rounded-md border p-3">
+							<div className="font-medium text-sm">
+								UE (Unités d&apos;Enseignement)
+							</div>
+							<p className="mt-1 text-muted-foreground text-xs">
+								Une PDF par UE × classe × semestre. Skip auto si UE incomplète.
+							</p>
+							<div className="mt-3 flex flex-col gap-2">
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									disabled={isBusy}
+									onClick={() => handleBulkExportUes("all")}
+								>
+									{exporting === "bulk-ue-all" ? (
+										<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+									) : (
+										<Download className="mr-1 h-3 w-3" />
+									)}
+									Toutes classes
+								</Button>
+								<Button
+									type="button"
+									size="sm"
+									disabled={!selectedClass || isBusy}
+									onClick={() => handleBulkExportUes("selected")}
+								>
+									{exporting === "bulk-ue-selected" ? (
+										<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+									) : (
+										<Download className="mr-1 h-3 w-3" />
+									)}
+									Classe sélectionnée
+								</Button>
+							</div>
+						</div>
+					</div>
+					<p className="text-muted-foreground text-xs">
+						⚠️ La génération massive peut prendre plusieurs minutes selon le
+						volume (1 PDF ≈ 1-2s). Le serveur réutilise un seul navigateur
+						Chromium pour accélérer le batch.
+					</p>
+				</CardContent>
+			</Card>
+
 			<Dialog open={showPreview} onOpenChange={setShowPreview}>
 				<DialogContent className="max-h-[90vh] min-w-[80vw] overflow-auto">
 					<DialogHeader>
@@ -2203,6 +2802,94 @@ export default function GradeExport() {
 							srcDoc={previewHtml}
 						/>
 					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Bulk export results modal — shown after each ZIP completes.
+			    Lists succeeded count + every skipped item with its reason so
+			    the user can see exactly what didn't make it into the archive
+			    (typically ECs/UEs whose pondérations don't sum to 100%). */}
+			<Dialog
+				open={bulkReport !== null}
+				onOpenChange={(open) => !open && setBulkReport(null)}
+			>
+				<DialogContent className="max-h-[85vh] min-w-[60vw] gap-4 overflow-auto p-6">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<Files className="h-5 w-5" />
+							Rapport d&apos;export — {bulkReport?.kind}
+						</DialogTitle>
+						<DialogDescription>
+							ZIP téléchargé :{" "}
+							<span className="font-mono text-xs">{bulkReport?.filename}</span>
+						</DialogDescription>
+					</DialogHeader>
+					{bulkReport && (
+						<div className="space-y-4">
+							<div className="grid grid-cols-3 gap-3">
+								<div className="rounded-md border p-3">
+									<div className="text-muted-foreground text-xs">
+										Total candidats
+									</div>
+									<div className="font-semibold text-2xl">
+										{bulkReport.total}
+									</div>
+								</div>
+								<div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-900/20">
+									<div className="flex items-center gap-1 text-emerald-800 text-xs dark:text-emerald-300">
+										<CheckCircle2 className="h-3.5 w-3.5" /> Générés
+									</div>
+									<div className="font-semibold text-2xl text-emerald-900 dark:text-emerald-200">
+										{bulkReport.succeeded}
+									</div>
+								</div>
+								<div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-900/20">
+									<div className="flex items-center gap-1 text-amber-800 text-xs dark:text-amber-300">
+										<AlertCircle className="h-3.5 w-3.5" /> Ignorés
+									</div>
+									<div className="font-semibold text-2xl text-amber-900 dark:text-amber-200">
+										{bulkReport.skipped.length}
+									</div>
+								</div>
+							</div>
+							{bulkReport.skipped.length > 0 && (
+								<div className="rounded-md border">
+									<div className="border-b bg-muted/40 px-4 py-2 font-medium text-sm">
+										Détail des éléments ignorés
+									</div>
+									<div className="max-h-[40vh] overflow-auto">
+										<table className="w-full text-sm">
+											<thead className="sticky top-0 bg-muted/40 text-xs">
+												<tr>
+													<th className="px-4 py-2 text-left font-medium">
+														ID
+													</th>
+													<th className="px-4 py-2 text-left font-medium">
+														Raison
+													</th>
+												</tr>
+											</thead>
+											<tbody className="divide-y">
+												{bulkReport.skipped.map((s, i) => (
+													<tr
+														key={`${s.id}-${i}`}
+														className="hover:bg-muted/30"
+													>
+														<td className="px-4 py-2 font-mono text-xs">
+															{s.id}
+														</td>
+														<td className="px-4 py-2 text-amber-800 dark:text-amber-300">
+															{s.reason}
+														</td>
+													</tr>
+												))}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							)}
+						</div>
+					)}
 				</DialogContent>
 			</Dialog>
 		</div>

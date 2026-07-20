@@ -10,11 +10,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import ConfirmModal from "@/components/modals/ConfirmModal";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -103,6 +105,10 @@ export default function DeliberationRules() {
 	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [form, setForm] = useState<RuleFormState>(emptyForm);
+	const [deleteTarget, setDeleteTarget] = useState<{
+		id: string;
+		name: string;
+	} | null>(null);
 
 	const rulesQuery = useQuery({
 		queryKey: ["deliberation-rules"],
@@ -323,7 +329,12 @@ export default function DeliberationRules() {
 													</DropdownMenuItem>
 													<DropdownMenuItem
 														className="text-destructive"
-														onClick={() => deleteMutation.mutate(rule.id)}
+														onClick={() =>
+															setDeleteTarget({
+																id: rule.id,
+																name: rule.name,
+															})
+														}
 													>
 														<Trash2 className="mr-2 h-4 w-4" />
 														{t("common.actions.delete")}
@@ -372,7 +383,7 @@ export default function DeliberationRules() {
 						</DialogTitle>
 					</DialogHeader>
 
-					<div className="space-y-4 px-6 pb-4">
+					<DialogBody className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label>{t("admin.deliberations.rules.name")}</Label>
 							<Input
@@ -490,7 +501,7 @@ export default function DeliberationRules() {
 								{t("admin.deliberations.rules.rulesetHelp")}
 							</p>
 						</div>
-					</div>
+					</DialogBody>
 
 					<DialogFooter>
 						<Button variant="outline" onClick={closeDialog}>
@@ -508,6 +519,25 @@ export default function DeliberationRules() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<ConfirmModal
+				isOpen={deleteTarget !== null}
+				onClose={() => setDeleteTarget(null)}
+				onConfirm={() => {
+					if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
+					setDeleteTarget(null);
+				}}
+				title={t("admin.deliberations.rules.confirmDelete.title", {
+					defaultValue: "Delete this rule?",
+				})}
+				message={t("admin.deliberations.rules.confirmDelete.message", {
+					name: deleteTarget?.name ?? "",
+					defaultValue:
+						'You are about to delete the rule "{{name}}". This cannot be undone.',
+				})}
+				confirmText={t("common.actions.delete")}
+				isLoading={deleteMutation.isPending}
+			/>
 		</div>
 	);
 }

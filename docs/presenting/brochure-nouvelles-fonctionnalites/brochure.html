@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TKAMS — Nouvelles fonctionnalités 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+.page { padding: 0; }
+.page-inner { min-height: 1123px; height: 100%; padding: 58px 66px 70px; display: flex; flex-direction: column; }
+.head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; margin-bottom: 32px; border-bottom: 1px solid var(--tk-border); }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--tk-font-display); font-weight: 700; letter-spacing: -0.01em; color: var(--tk-ink); }
+.brand img { height: 28px; width: auto; }
+.meta { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.foot { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--tk-border); display: flex; justify-content: space-between; color: var(--tk-muted); font-family: var(--tk-font-mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.num { color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 13px; font-weight: 600; letter-spacing: 0; }
+.eyebrow { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+.eyebrow .n { font-family: var(--tk-font-display); font-size: 13px; color: var(--tk-primary); font-weight: 700; }
+.eyebrow .l { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.18em; font-weight: 600; }
+h1, h2, h3, h4 { font-family: var(--tk-font-display); color: var(--tk-ink); margin: 0; }
+h1.title { font-size: 46px; line-height: 1.03; letter-spacing: -0.035em; font-weight: 650; max-width: 650px; margin-bottom: 18px; }
+h1.title em, h2 em { font-style: normal; color: var(--tk-primary); }
+h2 { font-size: 24px; line-height: 1.16; letter-spacing: -0.02em; font-weight: 600; margin-bottom: 12px; }
+h3 { font-size: 14px; line-height: 1.25; font-weight: 700; margin-bottom: 7px; }
+p { font-size: 11.6px; line-height: 1.6; color: var(--tk-ink-soft); margin: 0 0 10px; }
+.lede { font-size: 15px; line-height: 1.58; color: var(--tk-ink-soft); max-width: 660px; }
+.small { font-size: 10.4px; line-height: 1.52; color: var(--tk-muted); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.band { border-top: 1px solid var(--tk-border); border-bottom: 1px solid var(--tk-border); padding: 20px 0; margin: 24px 0; }
+.claim { font-family: var(--tk-font-display); font-size: 26px; line-height: 1.2; color: var(--tk-ink); letter-spacing: -0.02em; max-width: 650px; }
+.card { border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 15px 16px; min-height: 132px; }
+.card .tag { display: inline-flex; width: fit-content; font-family: var(--tk-font-mono); font-size: 8.8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tk-primary); background: var(--tk-primary-soft); padding: 3px 7px; border-radius: 999px; margin-bottom: 10px; }
+.card p { font-size: 10.7px; line-height: 1.5; margin: 0; }
+.text-block { max-width: 650px; margin: 18px 0 10px; }
+.text-block p { font-size: 11.8px; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--tk-border); border-bottom: 1px solid var(--tk-border); margin: auto 0 22px; }
+.kpi { padding: 17px 12px; border-right: 1px solid var(--tk-border); }
+.kpi:last-child { border-right: 0; }
+.kpi .v { font-family: var(--tk-font-display); font-size: 27px; line-height: 1; color: var(--tk-ink); font-weight: 650; letter-spacing: -0.03em; }
+.kpi .l { margin-top: 6px; font-family: var(--tk-font-mono); color: var(--tk-muted); font-size: 8.8px; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.1em; }
+.flow { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 22px 0; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 10px; border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 12px 13px; min-height: 86px; }
+.step .s { font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-primary); margin-bottom: 8px; letter-spacing: 0.08em; }
+.step h3 { font-size: 12px; margin-bottom: 5px; }
+.step p { font-size: 9.7px; line-height: 1.42; margin: 0; }
+.quote { border-left: 2px solid var(--tk-primary); padding-left: 18px; margin: 22px 0; }
+.quote p { font-family: var(--tk-font-display); font-size: 21px; line-height: 1.28; letter-spacing: -0.015em; color: var(--tk-ink); margin: 0; }
+.list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 18px; margin-top: 16px; }
+.line { display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding-bottom: 9px; border-bottom: 1px solid var(--tk-border); }
+.line:last-child { border-bottom: 0; }
+.line .k { font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-primary); letter-spacing: 0.08em; text-transform: uppercase; }
+.line .v { font-size: 11px; color: var(--tk-ink-soft); line-height: 1.48; }
+.matrix { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+.module { border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 13px 14px; }
+.module h3 { display: flex; justify-content: space-between; gap: 12px; font-size: 12.4px; margin-bottom: 6px; }
+.module h3 span { color: var(--tk-primary); font-family: var(--tk-font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.module p { font-size: 10.3px; line-height: 1.48; margin: 0; }
+.note { background: var(--tk-primary-soft); border-left: 2px solid var(--tk-primary); padding: 12px 15px; margin-top: 18px; color: var(--tk-ink); font-size: 10.8px; line-height: 1.52; }
+.cover { position: relative; overflow: hidden; background: var(--tk-bg); }
+.cover::before { content: ""; position: absolute; inset: 0; z-index: 0; background-image: radial-gradient(oklch(0.35 0.04 260 / 13%) 1px, transparent 1px); background-size: 22px 22px; opacity: 0.48; }
+.cover .topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 3; height: 4px; background: linear-gradient(90deg, var(--tk-primary), var(--tk-accent), oklch(0.63 0.18 149)); }
+.cover .glow { position: absolute; z-index: 0; border-radius: 999px; pointer-events: none; }
+.cover .cover-inner { position: relative; z-index: 1; min-height: 1123px; height: 100%; padding: 46px 52px 40px; display: flex; flex-direction: column; color: var(--tk-ink); overflow: hidden; }
+.cover .top { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--tk-border); }
+.cover img { height: 28px; width: auto; }
+.cover .corner { font-family: var(--tk-font-mono); font-size: 10px; line-height: 1.5; color: var(--tk-muted); text-align: right; letter-spacing: 0.1em; text-transform: uppercase; }
+.cover .center { position: relative; z-index: 2; margin-top: 38px; max-width: 690px; }
+.cover .kicker { display: inline-flex; align-items: center; gap: 9px; width: fit-content; font-family: var(--tk-font-mono); color: var(--tk-primary); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 18px; padding: 7px 10px; border: 1px solid var(--tk-border); border-radius: 999px; background: oklch(1 0 0 / 58%); }
+.cover .kicker::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tk-primary); box-shadow: 0 0 0 5px oklch(0.48 0.2 277 / 9%); }
+.cover h1 { color: var(--tk-ink); font-size: 58px; line-height: 1.02; letter-spacing: -0.045em; font-weight: 800; max-width: 760px; margin-bottom: 18px; }
+.cover h1 em { position: relative; display: inline-block; font-style: normal; color: var(--tk-primary); }
+.cover h1 em::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.05em; z-index: -1; height: 0.26em; border-radius: 999px; background: oklch(0.58 0.17 149 / 18%); }
+.cover .deck { font-size: 16px; line-height: 1.55; color: var(--tk-ink-soft); max-width: 620px; }
+.cover .print-contact { display: grid; grid-template-columns: repeat(3, max-content); gap: 10px 18px; align-items: center; width: fit-content; margin-top: 22px; padding: 12px 14px; border: 1px solid var(--tk-border); border-radius: 14px; background: oklch(1 0 0 / 68%); }
+.cover .print-contact span { display: grid; gap: 3px; font-family: var(--tk-font-display); font-size: 12px; font-weight: 700; color: var(--tk-ink); }
+.cover .print-contact small { font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+.cover .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.cover .tag { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--tk-border); border-radius: 999px; background: oklch(1 0 0 / 62%); font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.cover .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--tk-accent); }
+.cover .product-shot { position: relative; z-index: 2; margin-top: 30px; border: 1px solid var(--tk-border); border-radius: 18px; background: oklch(1 0 0 / 82%); box-shadow: 0 30px 90px -55px oklch(0 0 0 / 42%); overflow: hidden; }
+.cover .shot-bar { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-bottom: 1px solid var(--tk-border); background: linear-gradient(180deg, oklch(0.98 0.01 260), oklch(0.95 0.012 260)); }
+.cover .shot-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--tk-muted); opacity: 0.55; }
+.cover .shot-url { margin-left: 5px; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); letter-spacing: 0.04em; }
+.cover .shot-body { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 14px; padding: 15px; }
+.cover .shot-main { border: 1px solid var(--tk-border); border-radius: 14px; background: var(--tk-bg); padding: 15px; }
+.cover .shot-title { font-family: var(--tk-font-display); font-size: 16px; line-height: 1.15; font-weight: 750; color: var(--tk-ink); margin-bottom: 12px; }
+.cover .shot-line { display: grid; grid-template-columns: 92px 1fr 58px; gap: 8px; padding: 8px 0; border-top: 1px solid var(--tk-border); font-size: 10px; color: var(--tk-ink-soft); align-items: center; }
+.cover .shot-line strong { color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 10.5px; }
+.cover .pill { width: fit-content; justify-self: end; padding: 4px 7px; border-radius: 999px; background: var(--tk-primary-soft); color: var(--tk-primary); font-family: var(--tk-font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.07em; }
+.cover .shot-side { display: grid; gap: 10px; }
+.cover .mini { border: 1px solid var(--tk-border); border-radius: 14px; background: var(--tk-surface); padding: 12px; }
+.cover .mini strong { display: block; color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 12px; margin-bottom: 4px; }
+.cover .mini span { color: var(--tk-muted); font-size: 9.8px; line-height: 1.42; }
+.cover .bottom { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--tk-border); }
+.cover .bottom strong { display: block; color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 22px; line-height: 1; letter-spacing: -0.03em; margin-bottom: 6px; }
+.cover .bottom div { color: var(--tk-muted); font-family: var(--tk-font-mono); font-size: 8.8px; line-height: 1.45; letter-spacing: 0.08em; text-transform: uppercase; }
+.cta { margin-top: 28px; border-top: 1px solid var(--tk-border); border-bottom: 1px solid var(--tk-border); padding: 24px 0; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; }
+.cta h2 { font-size: 34px; line-height: 1.06; }
+.contact { display: grid; gap: 10px; align-content: center; }
+.contact div { font-family: var(--tk-font-display); font-size: 14px; color: var(--tk-ink); }
+.contact span { display: block; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+.screen-toolbar { position: fixed; right: 18px; bottom: 18px; z-index: 10; display: flex; gap: 8px; }
+.screen-toolbar a, .screen-toolbar button { border: 1px solid var(--tk-border); background: white; color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 12px; padding: 9px 13px; text-decoration: none; cursor: pointer; box-shadow: 0 12px 28px -18px oklch(0 0 0 / 35%); }
+@media print { .screen-toolbar { display: none; } }
+</style>
+<script>
+if (new URLSearchParams(window.location.search).get("print") === "1") {
+  window.addEventListener("load", () => {
+    setTimeout(() => window.print(), 250);
+  });
+}
+</script>
+</head>
+<body>
+<div class="screen-toolbar no-print">
+  <a href="../index.html">Index</a>
+  <button type="button" onclick="window.print()">Exporter PDF</button>
+</div>
+
+<section class="page cover" data-screen-label="01 Couverture">
+  <div class="topbar"></div>
+  <div class="glow" style="width: 560px; height: 560px; top: -180px; right: -180px; background: radial-gradient(circle, oklch(0.48 0.2 277 / 14%), transparent 70%);"></div>
+  <div class="glow" style="width: 380px; height: 380px; bottom: 72px; left: -155px; background: radial-gradient(circle, oklch(0.58 0.17 149 / 10%), transparent 70%);"></div>
+  <div class="cover-inner">
+    <div class="top">
+      <img src="../assets/logo-tkams.png" alt="TKAMS" />
+      <div class="corner">Brochure nouveautés · Édition 2026<br>Directions · Scolarité · DSI</div>
+    </div>
+    <div class="center">
+      <div class="kicker">TKAMS · nouvelles capacités produit</div>
+      <h1>Le cockpit complet de la <em>scolarité supérieure</em>.</h1>
+      <p class="deck">Admissions, quitus, emplois du temps, assiduité, portails, documents, examens et promotions : la plateforme couvre désormais les décisions qui rythment réellement une année académique.</p>
+      <div class="print-contact">
+        <span><small>Site web</small>https://tkams.com/</span>
+        <span><small>Email</small>contact@tkams.com</span>
+        <span><small>Téléphone</small>+237 652 761 931</span>
+      </div>
+      <div class="tags">
+        <span class="tag">Admissions</span>
+        <span class="tag">Quitus et paiements</span>
+        <span class="tag">Emploi du temps</span>
+        <span class="tag">Assiduité</span>
+        <span class="tag">Portail étudiant</span>
+      </div>
+    </div>
+    <div class="product-shot">
+      <div class="shot-bar">
+        <span class="shot-dot" style="background: oklch(0.7 0.18 25);"></span>
+        <span class="shot-dot" style="background: oklch(0.75 0.16 86);"></span>
+        <span class="shot-dot" style="background: oklch(0.6 0.17 149);"></span>
+        <span class="shot-url">tkams.com/scolarite</span>
+      </div>
+      <div class="shot-body">
+        <div class="shot-main">
+          <div class="shot-title">Une seule plateforme pour piloter l'année académique.</div>
+          <div class="shot-line"><strong>Admissions</strong><span>Dossier candidat, statut, conversion en étudiant</span><span class="pill">Nouveau</span></div>
+          <div class="shot-line"><strong>Finances</strong><span>Ordres de paiement, reçus, quitus, gates</span><span class="pill">Nouveau</span></div>
+          <div class="shot-line"><strong>Présence</strong><span>Séances, retards, excuses, seuils d'éligibilité</span><span class="pill">Nouveau</span></div>
+          <div class="shot-line"><strong>Jury</strong><span>Promotions, redoublements et décisions publiées</span><span class="pill">Amélioré</span></div>
+        </div>
+        <div class="shot-side">
+          <div class="mini"><strong>Moins de guichet</strong><span>Les étudiants consultent leur statut, leurs documents et leurs actions attendues.</span></div>
+          <div class="mini"><strong>Moins d'Excel isolé</strong><span>Les imports restent possibles, mais les décisions reviennent dans un système central.</span></div>
+          <div class="mini"><strong>Plus de preuves</strong><span>Chaque décision sensible devient traçable, auditable et explicable.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div><strong>8</strong>Pages orientées valeur métier</div>
+      <div><strong>3</strong>Modules historiques consolidés</div>
+      <div><strong>7+</strong>Nouvelles briques vendables</div>
+      <div><strong>2026</strong>Cap sur le pilotage académique complet</div>
+    </div>
+  </div>
+</section>
+
+<section class="page" data-screen-label="02 Promesse">
+  <div class="page-inner">
+    <div class="head"><div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS</div><div class="meta">Nouveautés · Vue exécutive</div></div>
+    <div class="eyebrow"><span class="n">01</span><span class="l">Ce qui change</span></div>
+    <h1 class="title">Une plateforme qui parle enfin le langage quotidien d'un établissement.</h1>
+    <p class="lede">Les nouvelles fonctionnalités renforcent TKAMS autour d'un principe simple : chaque service doit pouvoir répondre rapidement à une question concrète. Qui est admis ? Qui doit payer ? Qui peut composer ? Qui est promu ? Quel document officiel peut être délivré ?</p>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Nouveau</span><h3>Admissions numériques</h3><p>Les candidats peuvent entrer dans un processus structuré, suivi par l'administration jusqu'à la création du dossier étudiant.</p></div>
+      <div class="card"><span class="tag">Nouveau</span><h3>Quittance et quitus</h3><p>Les frais, ordres de paiement, reçus et statuts financiers deviennent lisibles pour l'étudiant et exploitables par l'administration.</p></div>
+      <div class="card"><span class="tag">Nouveau</span><h3>Emploi du temps et présence</h3><p>Les cours, salles, enseignants, séances et présences sont suivis dans le même environnement que les notes et examens.</p></div>
+    </div>
+    <div class="band">
+      <div class="claim">Les modules historiques ne sont pas remplacés : examens, délibérations et documents académiques sont consolidés pour devenir plus contrôlables, plus lisibles et plus exploitables.</div>
+    </div>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Amélioré</span><h3>Examens et notes</h3><p>Validation, rejet motivé, audit, verrouillage et retour enseignant renforcent le circuit de décision.</p></div>
+      <div class="card"><span class="tag">Amélioré</span><h3>Délibérations</h3><p>Les décisions, redoublements, promotions et transitions d'année sont mieux guidés et plus explicables.</p></div>
+      <div class="card"><span class="tag">Amélioré</span><h3>Documents académiques</h3><p>Les modèles personnalisables s'étendent aux certificats, historiques de téléchargement et contrôles avant émission.</p></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">1</div><div class="l">Parcours étudiant complet</div></div>
+      <div class="kpi"><div class="v">5</div><div class="l">Portails opérationnels</div></div>
+      <div class="kpi"><div class="v">24+</div><div class="l">Documents et modèles</div></div>
+      <div class="kpi"><div class="v">0</div><div class="l">Décision sensible sans trace</div></div>
+    </div>
+    <div class="foot"><span>TKAMS · Nouvelles fonctionnalités</span><span class="num">02</span></div>
+  </div>
+</section>
+
+<section class="page" data-screen-label="03 Parcours étudiant">
+  <div class="page-inner">
+    <div class="head"><div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS</div><div class="meta">Parcours étudiant</div></div>
+    <div class="eyebrow"><span class="n">02</span><span class="l">De la candidature au diplôme</span></div>
+    <h1 class="title">Le dossier étudiant ne commence plus au guichet, et ne finit plus dans un classeur.</h1>
+    <p class="lede">TKAMS structure désormais la progression complète d'un étudiant : candidature, inscription, scolarité, paiement, assiduité, examens, délibération, documents et suivi après publication des résultats.</p>
+    <div class="flow">
+      <div class="step"><div class="s">01</div><div><h3>Candidature</h3><p>Dépôt de dossier, pièces attendues, statut de traitement et décision d'admission.</p></div></div>
+      <div class="step"><div class="s">02</div><div><h3>Inscription</h3><p>Conversion en étudiant, affectation académique, numéro matricule et classe.</p></div></div>
+      <div class="step"><div class="s">03</div><div><h3>Quittance</h3><p>Ordre de paiement, règlement progressif, reçu et quitus par période.</p></div></div>
+      <div class="step"><div class="s">04</div><div><h3>Scolarité</h3><p>Emploi du temps, assiduité, cours, examens, notes et décisions de jury.</p></div></div>
+      <div class="step"><div class="s">05</div><div><h3>Documents</h3><p>Certificats, attestations, relevés, diplômes et historique de délivrance.</p></div></div>
+    </div>
+    <div class="text-block">
+      <h2>Un portail étudiant qui réduit la pression sur la scolarité.</h2>
+      <p>L'étudiant consulte son statut académique, ses paiements, ses documents disponibles, ses résultats publiés, ses échéances et les actions attendues sans multiplier les passages au bureau.</p>
+      <p>Le portail devient un tableau de bord de situation : il indique ce qui est validé, ce qui manque, ce qui bloque et ce que l'étudiant peut faire immédiatement.</p>
+    </div>
+    <div class="list">
+      <div class="line"><div class="k">Admissions</div><div class="v">Suivi du passage candidat vers étudiant, avec conservation de la trace administrative.</div></div>
+      <div class="line"><div class="k">Finances</div><div class="v">Paiements par tranche, ordres séparés ou groupés, reçus et statut de quitus.</div></div>
+      <div class="line"><div class="k">Scolarité</div><div class="v">Cours, examens, assiduité, documents et décisions dans le même espace.</div></div>
+      <div class="line"><div class="k">Publication</div><div class="v">Les résultats et décisions deviennent visibles au bon moment, après validation institutionnelle.</div></div>
+    </div>
+    <div class="foot"><span>TKAMS · Parcours étudiant</span><span class="num">03</span></div>
+  </div>
+</section>
+
+<section class="page" data-screen-label="04 Finances et quitus">
+  <div class="page-inner">
+    <div class="head"><div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS</div><div class="meta">Scolarité financière</div></div>
+    <div class="eyebrow"><span class="n">03</span><span class="l">Quittance · Quitus · Reçus</span></div>
+    <h1 class="title">Le paiement devient une condition académique lisible, pas un fichier parallèle.</h1>
+    <p class="lede">Le module quitus apporte aux institutions un pilotage ciblé de la scolarité financière : configuration des frais, échéanciers, ordres de paiement, confirmations bancaires, reçus et contrôles avant certaines actions académiques.</p>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Nouveau</span><h3>Structures de frais</h3><p>Les montants peuvent être organisés par année, classe, programme, semestre ou catégorie d'étudiant.</p></div>
+      <div class="card"><span class="tag">Nouveau</span><h3>Ordres de paiement</h3><p>L'étudiant peut générer un ordre pour une tranche, plusieurs tranches ou plusieurs semestres selon sa situation.</p></div>
+      <div class="card"><span class="tag">Nouveau</span><h3>Reçus et historique</h3><p>Chaque confirmation laisse une trace exploitable par l'étudiant, la scolarité et les services financiers.</p></div>
+    </div>
+    <div class="quote"><p>Le quitus n'est pas seulement un document. C'est une règle de passage entre le statut financier et les droits académiques de l'étudiant.</p></div>
+    <div class="matrix">
+      <div class="module"><h3>Avant d'assigner les frais <span>Prévisualiser</span></h3><p>L'administration voit les classes et étudiants affectés avant de lancer une opération massive.</p></div>
+      <div class="module"><h3>Avant de délivrer un document <span>Contrôler</span></h3><p>Les documents sensibles peuvent être conditionnés au statut de quitus.</p></div>
+      <div class="module"><h3>Avant l'inscription ou l'examen <span>Sécuriser</span></h3><p>Les règles de clearance évitent les validations manuelles incohérentes.</p></div>
+      <div class="module"><h3>Après paiement <span>Prouver</span></h3><p>Reçu, référence bancaire, montant confirmé et historique restent consultables.</p></div>
+    </div>
+    <div class="note">La promesse n'est pas de remplacer la banque ni la comptabilité générale. TKAMS relie la preuve de paiement aux droits académiques : composer, se réinscrire, recevoir un relevé, obtenir une attestation.</div>
+    <div class="foot"><span>TKAMS · Module quitus</span><span class="num">04</span></div>
+  </div>
+</section>
+
+<section class="page" data-screen-label="05 Vie académique">
+  <div class="page-inner">
+    <div class="head"><div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS</div><div class="meta">Cours · Présence · Examens</div></div>
+    <div class="eyebrow"><span class="n">04</span><span class="l">Vie académique opérationnelle</span></div>
+    <h1 class="title">Les cours, les salles, les présences et les examens se répondent.</h1>
+    <p class="lede">Les nouvelles briques de vie académique rapprochent l'organisation des cours du suivi réel des étudiants. Les enseignants disposent de vues utiles, les étudiants voient leur planning, l'administration identifie les conflits et les absences à risque.</p>
+    <div class="grid-2">
+      <div>
+        <h2>Emplois du temps hebdomadaires.</h2>
+        <p>Les séances de cours sont planifiées par classe, matière, enseignant, salle et semestre. Les conflits de salle ou d'enseignant sont détectés avant de devenir des problèmes terrain.</p>
+        <p>Les imports et exports permettent de conserver les habitudes de travail Excel tout en ramenant les données dans un système central.</p>
+      </div>
+      <div>
+        <h2>Assiduité exploitable.</h2>
+        <p>Le pointage par séance remplace les alertes informelles. Présences, retards, absences excusées, justificatifs, taux et seuils deviennent disponibles pour les enseignants et la scolarité.</p>
+        <p>Les établissements qui le souhaitent peuvent conditionner la participation à certains examens à un taux minimal d'assiduité.</p>
+      </div>
+    </div>
+    <div class="band">
+      <div class="claim">Les examens et notes existaient déjà dans TKAMS. La nouveauté commerciale est leur consolidation : circuit de validation, retour enseignant, audit, verrouillage et listes d'éligibilité plus solides.</div>
+    </div>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Nouveau</span><h3>Salles et ressources</h3><p>Gestion des salles, capacités, bâtiments et alertes lorsque la planification devient incohérente.</p></div>
+      <div class="card"><span class="tag">Nouveau</span><h3>Rapports de présence</h3><p>Taux par étudiant, résumé par séance, export et lecture rapide des situations critiques.</p></div>
+      <div class="card"><span class="tag">Amélioré</span><h3>Examens et notes</h3><p>Les soumissions, validations, rejets, corrections et verrouillages sont plus lisibles et traçables.</p></div>
+    </div>
+    <div class="foot"><span>TKAMS · Vie académique</span><span class="num">05</span></div>
+  </div>
+</section>
+
+<section class="page" data-screen-label="06 Gouvernance">
+  <div class="page-inner">
+    <div class="head"><div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS</div><div class="meta">Décisions académiques</div></div>
+    <div class="eyebrow"><span class="n">05</span><span class="l">Délibérations et transitions</span></div>
+    <h1 class="title">Les décisions de jury deviennent compréhensibles, vérifiables et exécutables.</h1>
+    <p class="lede">TKAMS disposait déjà d'un socle de délibération et de promotion. Les améliorations transforment ce socle en expérience guidée : diagnostics avant action, publication contrôlée, décisions visibles au bon moment, transitions d'année et journal d'audit.</p>
+    <div class="text-block">
+      <h2>Des promotions qui ne se résument pas à un bouton.</h2>
+      <p>Avant d'exécuter une transition d'année, TKAMS indique les classes prêtes, les étudiants bloqués, les cas à corriger et les décisions manuelles nécessaires.</p>
+      <p>Les étudiants admis, ajournés, redoublants ou soumis à reprise peuvent être traités avec une trace claire du choix effectué.</p>
+    </div>
+    <div class="list">
+      <div class="line"><div class="k">Préparer</div><div class="v">Contrôler les délibérations signées, les classes cibles et les données manquantes.</div></div>
+      <div class="line"><div class="k">Décider</div><div class="v">Gérer les cas particuliers sans perdre le lien avec la décision académique.</div></div>
+      <div class="line"><div class="k">Publier</div><div class="v">Rendre les décisions visibles aux étudiants uniquement après clôture officielle.</div></div>
+      <div class="line"><div class="k">Auditer</div><div class="v">Savoir qui a créé, validé, exécuté, annulé ou modifié un plan.</div></div>
+    </div>
+    <div class="matrix">
+      <div class="module"><h3>Délibérations <span>Amélioré</span></h3><p>Publication, réouverture, visibilité étudiant et décisions individuelles sont mieux encadrées.</p></div>
+      <div class="module"><h3>Transitions d'année <span>Amélioré</span></h3><p>Les plans dédiés évitent les pages surchargées et les doublons de traitement.</p></div>
+      <div class="module"><h3>Diagnostics <span>Nouveau</span></h3><p>Les blocages sont expliqués avant exécution, avec un chemin clair pour les corriger.</p></div>
+      <div class="module"><h3>Barèmes <span>Nouveau</span></h3><p>Mentions, seuils de réussite et règles de lecture des notes s'adaptent à l'institution.</p></div>
+    </div>
+    <div class="note">Pour un établissement, la valeur n'est pas seulement de calculer une décision. La valeur est de pouvoir expliquer cette décision à un étudiant, à un jury, à une tutelle ou à un auditeur interne.</div>
+    <div class="foot"><span>TKAMS · Gouvernance académique</span><span class="num">06</span></div>
+  </div>
+</section>
+
+<section class="page" data-screen-label="07 Documents et portails">
+  <div class="page-inner">
+    <div class="head"><div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS</div><div class="meta">Documents · Portails</div></div>
+    <div class="eyebrow"><span class="n">06</span><span class="l">Services numériques</span></div>
+    <h1 class="title">Moins de demandes manuelles. Plus de documents maîtrisés.</h1>
+    <p class="lede">Les documents académiques existaient déjà. Ils gagnent désormais en autonomie, en personnalisation et en contrôle : modèles éditables par institution, nouveaux types, téléchargement étudiant, historique et règles de délivrance.</p>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Amélioré</span><h3>Documents académiques</h3><p>Attestations, certificats, relevés, diplômes et listes peuvent suivre les modèles officiels de l'établissement.</p></div>
+      <div class="card"><span class="tag">Nouveau</span><h3>Libre-service étudiant</h3><p>L'étudiant accède aux documents disponibles et consulte son historique de téléchargement.</p></div>
+      <div class="card"><span class="tag">À venir</span><h3>Portail parents</h3><p>Les tuteurs pourront accéder, selon la politique de l'institution, aux informations autorisées.</p></div>
+    </div>
+    <div class="band">
+      <div class="claim">Les portails ne sont pas des vitrines. Ce sont des guichets numériques : étudiant, enseignant, administration et demain parents/tuteurs y trouvent chacun les informations qui réduisent les allers-retours.</div>
+    </div>
+    <div class="matrix">
+      <div class="module"><h3>Portail étudiant <span>Renforcé</span></h3><p>Statut d'inscription, décisions, documents, paiements, actions attendues et informations utiles.</p></div>
+      <div class="module"><h3>Portail enseignant <span>Renforcé</span></h3><p>Cours assignés, planning, notes, assiduité et retours sur validation des évaluations.</p></div>
+      <div class="module"><h3>Portail scolarité <span>Renforcé</span></h3><p>Contrôle des inscriptions, documents, paiements, promotions et états de classe.</p></div>
+      <div class="module"><h3>Portail parents <span>Roadmap</span></h3><p>Accès contrôlé aux informations autorisées : résultats publiés, présence, communications et documents.</p></div>
+    </div>
+    <div class="foot"><span>TKAMS · Documents et portails</span><span class="num">07</span></div>
+  </div>
+</section>
+
+<section class="page" data-screen-label="08 Conclusion">
+  <div class="page-inner">
+    <div class="head"><div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS</div><div class="meta">Synthèse commerciale</div></div>
+    <div class="eyebrow"><span class="n">07</span><span class="l">Pourquoi maintenant</span></div>
+    <h1 class="title">TKAMS n'est plus seulement un outil de notes. C'est une colonne vertébrale académique.</h1>
+    <p class="lede">La nouvelle génération de TKAMS donne aux établissements un système qui suit les actes réels de la scolarité : recevoir un candidat, inscrire un étudiant, organiser les cours, suivre la présence, encaisser la scolarité, contrôler les droits, valider les notes, délibérer, promouvoir et délivrer des documents officiels.</p>
+    <div class="cta">
+      <div>
+        <h2>Déployer par module, ou comme système intégré.</h2>
+        <p>TKAMS peut accompagner une modernisation progressive : commencer par les documents et résultats, ajouter le quitus, intégrer l'assiduité, ouvrir le portail étudiant, puis étendre aux admissions et au portail parents.</p>
+      </div>
+      <div class="contact">
+        <div><span>Contact commercial</span>contact@tkams.com</div>
+        <div><span>Téléphone &amp; WhatsApp</span>+237 652 761 931</div>
+        <div><span>Site web</span>https://tkams.com/</div>
+        <div><span>Déploiement</span>Universités · IPES · Facultés · Centres de formation</div>
+        <div><span>Édition</span>Nouvelles fonctionnalités 2026</div>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-top: 24px;">
+      <div class="card"><span class="tag">Pour la direction</span><h3>Pilotage et conformité</h3><p>Décisions traçables, documents maîtrisés, statistiques exploitables et réduction des zones grises.</p></div>
+      <div class="card"><span class="tag">Pour la scolarité</span><h3>Moins de traitement manuel</h3><p>Moins de ressaisie, moins de demandes répétitives, plus de statuts visibles et fiables.</p></div>
+      <div class="card"><span class="tag">Pour les étudiants</span><h3>Plus d'autonomie</h3><p>Un espace clair pour suivre paiements, résultats, documents, inscriptions et échéances.</p></div>
+    </div>
+    <div class="foot"><span>TKAMS · Fin</span><span class="num">08</span></div>
+  </div>
+</section>
+
+</body>
+</html>

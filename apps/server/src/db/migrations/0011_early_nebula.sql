@@ -1,0 +1,2 @@
+ALTER TABLE "attendance_records" ADD CONSTRAINT "chk_attendance_record_status" CHECK ("attendance_records"."status" IN ('present', 'absent', 'late', 'excused'));--> statement-breakpoint
+ALTER TABLE "class_courses" ADD CONSTRAINT "chk_class_course_attendance_threshold" CHECK ("class_courses"."attendance_threshold" IS NULL OR ("class_courses"."attendance_threshold" >= 0 AND "class_courses"."attendance_threshold" <= 100));

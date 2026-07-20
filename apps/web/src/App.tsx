@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes, useParams } from "react-router";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import { Redirector } from "./components/navigation/Redirector";
@@ -7,59 +7,138 @@ import LoadingScreen from "./components/ui/LoadingScreen";
 import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
+import AcademicResultsHub from "./pages/admin/AcademicResultsHub";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
+import AcademicYearTransitions from "./pages/admin/AcademicYearTransitions";
+import AdmissionsManagement from "./pages/admin/AdmissionsManagement";
 import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
+import AttendanceManagement from "./pages/admin/attendance/AttendanceManagement";
+import AttendanceRates from "./pages/admin/attendance/AttendanceRates";
+import ClassAttendanceOverview from "./pages/admin/attendance/ClassAttendanceOverview";
+import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
+import CenterManagement from "./pages/admin/CenterManagement";
 import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
+import ClassDocumentTemplates from "./pages/admin/ClassDocumentTemplates";
+import ClassesHub from "./pages/admin/ClassesHub";
 import ClassManagement from "./pages/admin/ClassManagement";
+import ConfigurationHub from "./pages/admin/ConfigurationHub";
 import CourseManagement from "./pages/admin/CourseManagement";
+import {
+	CenterAuthorizationTab,
+	CenterContactTab,
+	CenterDetail,
+	CenterIdentityTab,
+	CenterInstancesTab,
+	CenterLogosTab,
+} from "./pages/admin/centers";
+import ClassCoursesTab from "./pages/admin/classes/ClassCoursesTab";
+import ClassDetail from "./pages/admin/classes/ClassDetail";
+import ClassDetailsTab from "./pages/admin/classes/ClassDetailsTab";
+import ClassStudentsTab from "./pages/admin/classes/ClassStudentsTab";
 import AdminDashboard from "./pages/admin/Dashboard";
 import {
+	DeliberationActivityTab,
 	DeliberationDetail,
+	DeliberationJuryTab,
+	DeliberationLegacyRedirect,
+	DeliberationResultsTab,
 	DeliberationRules,
 	DeliberationsList,
 } from "./pages/admin/deliberations";
+import TransitionDetail from "./pages/admin/deliberations/TransitionDetail";
 import EnrollmentManagement from "./pages/admin/EnrollmentManagement";
 import ExamManagement from "./pages/admin/ExamManagement";
+import ExamParticipationRoster from "./pages/admin/ExamParticipationRoster";
 import ExamScheduler from "./pages/admin/ExamScheduler";
+import ExamsHub from "./pages/admin/ExamsHub";
 import ExamTypes from "./pages/admin/ExamTypes";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import FacultyManagement from "./pages/admin/FacultyManagement";
+import FeeAssignmentDetail from "./pages/admin/fee-clearance/FeeAssignmentDetail";
+import FeeAssignmentsList from "./pages/admin/fee-clearance/FeeAssignmentsList";
+import FeeClearanceHub from "./pages/admin/fee-clearance/FeeClearanceHub";
+import FeeGatingSettings from "./pages/admin/fee-clearance/FeeGatingSettings";
+import FeeStructureAssignmentsTab from "./pages/admin/fee-clearance/FeeStructureAssignmentsTab";
+import FeeStructureDetail from "./pages/admin/fee-clearance/FeeStructureDetail";
+import FeeStructureDetailsTab from "./pages/admin/fee-clearance/FeeStructureDetailsTab";
+import FeeStructureImpactTab from "./pages/admin/fee-clearance/FeeStructureImpactTab";
+import FeeStructureInstallmentsTab from "./pages/admin/fee-clearance/FeeStructureInstallmentsTab";
+import FeeStructuresList from "./pages/admin/fee-clearance/FeeStructuresList";
+import StudentFinancialHistory from "./pages/admin/fee-clearance/StudentFinancialHistory";
 import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
 import GradeExport from "./pages/admin/GradeExport";
+import GradeScaleSettings from "./pages/admin/GradeScaleSettings";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
+import InstitutionHub from "./pages/admin/InstitutionHub";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
+import ProgramsHub from "./pages/admin/ProgramsHub";
+import PromotionHub from "./pages/admin/PromotionHub";
 import {
-	EvaluatePromotionPage,
-	ExecutePromotionPage,
-	ExecutionHistoryPage,
-	PromotionRulesDashboard,
-	RulesListPage,
-} from "./pages/admin/promotion-rules";
+	ProfileAccessTab,
+	ProfileEnrollmentsTab,
+	ProfileFinancesTab,
+	ProfileGuardiansTab,
+	ProfileHub,
+	ProfileIdentityTab,
+	ProfileResultsTab,
+} from "./pages/admin/profiles";
+import ProgramDetail from "./pages/admin/programs/ProgramDetail";
+import ProgramDetailsTab from "./pages/admin/programs/ProgramDetailsTab";
+import ProgramExportTemplatesTab from "./pages/admin/programs/ProgramExportTemplatesTab";
+import ProgramOptionsTab from "./pages/admin/programs/ProgramOptionsTab";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
 import RetakeEligibility from "./pages/admin/RetakeEligibility";
+import RoomsManagement from "./pages/admin/RoomsManagement";
 import RuleManagement from "./pages/admin/RuleManagement";
-import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
+import StudyCycleDetail from "./pages/admin/study-cycles/StudyCycleDetail";
+import StudyCycleDetailsTab from "./pages/admin/study-cycles/StudyCycleDetailsTab";
+import StudyCycleLevelsTab from "./pages/admin/study-cycles/StudyCycleLevelsTab";
+import TeachingUnitCoursesTab from "./pages/admin/TeachingUnitCoursesTab";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
+import TeachingUnitDetailsTab from "./pages/admin/TeachingUnitDetailsTab";
 import TeachingUnitManagement from "./pages/admin/TeachingUnitManagement";
-import UserManagement from "./pages/admin/UserManagement";
+import TimetableHub from "./pages/admin/TimetableHub";
+import TimetableManagement from "./pages/admin/TimetableManagement";
+import UsersHub from "./pages/admin/UsersHub";
+import GuardianDirectory from "./pages/admin/users/GuardianDirectory";
+import PeopleManagement from "./pages/admin/users/PeopleManagement";
+import ApplicationForm from "./pages/admissions/ApplicationForm";
+import ApplicationStatus from "./pages/admissions/ApplicationStatus";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ResetPassword from "./pages/auth/ResetPassword";
+import ApprovalHistory from "./pages/dean/ApprovalHistory";
+import CohortDashboard from "./pages/dean/CohortDashboard";
+import DeanDashboard from "./pages/dean/DeanDashboard";
 import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
+import GuardianPortal from "./pages/guardian/GuardianPortal";
+import NotificationsPage from "./pages/NotificationsPage";
+import AccountTab from "./pages/settings/AccountTab";
+import PreferencesTab from "./pages/settings/PreferencesTab";
+import ProfileTab from "./pages/settings/ProfileTab";
+import AcademicTimeline from "./pages/student/AcademicTimeline";
+import CourseEnrollment from "./pages/student/CourseEnrollment";
+import DocumentsPage from "./pages/student/DocumentsPage";
+import ExamCalendar from "./pages/student/ExamCalendar";
 import PerformanceDashboard from "./pages/student/PerformanceDashboard";
+import StudentFeeStatus from "./pages/student/StudentFeeStatus";
+import StudentTimetable from "./pages/student/Timetable";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
-import CourseList from "./pages/teacher/CourseList";
-import TeacherDashboard from "./pages/teacher/Dashboard";
+import TeacherAttendanceRates from "./pages/teacher/AttendanceRates";
 import GradeEntry from "./pages/teacher/GradeEntry";
+import TeacherGradeExport from "./pages/teacher/GradeExport";
+import GradeSpreadsheet from "./pages/teacher/GradeSpreadsheet";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
+import TeacherHub from "./pages/teacher/TeacherHub";
+import TeacherTimetable from "./pages/teacher/Timetable";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
 import type { BusinessRole } from "./store";
 import { roleGuards, useStore } from "./store";
@@ -85,7 +164,6 @@ function App() {
 		const role = normalizeRole(membershipRole);
 		return {
 			profileId: session.user.id,
-			authUserId: session.user.id,
 			email: session.user.email,
 			image: session.user.image ?? null,
 			role,
@@ -181,120 +259,477 @@ function App() {
 				<Route path="/auth/forgot" element={<ForgotPassword />} />
 				<Route path="/auth/reset" element={<ResetPassword />} />
 			</Route>
+			<Route path="/admissions/apply" element={<ApplicationForm />} />
+			<Route path="/admissions/status" element={<ApplicationStatus />} />
+			<Route path="/guardian/portal" element={<GuardianPortal />} />
 
 			{!!memoUser && (
 				<>
 					{/* Admin Routes */}
 					<Route path="/admin" element={<DashboardLayout />}>
 						<Route index element={<AdminDashboard />} />
-						<Route path="courses" element={<CourseManagement />} />
 						<Route path="academic-years" element={<AcademicYearManagement />} />
-						<Route path="classes" element={<ClassManagement />} />
-						<Route path="class-courses" element={<ClassCourseManagement />} />
-						<Route path="students" element={<StudentManagement />} />
-						<Route path="users" element={<UserManagement />} />
-						<Route path="exams" element={<ExamManagement />} />
-						<Route path="retake-eligibility" element={<RetakeEligibility />} />
-						<Route path="exam-types" element={<ExamTypes />} />
-						<Route path="exam-scheduler" element={<ExamScheduler />} />
+						<Route path="admissions" element={<AdmissionsManagement />} />
+						{/* Legacy redirects: standalone → UsersHub tabs */}
 						<Route
-							path="export-templates"
-							element={<ExportTemplatesManagement />}
+							path="guardians"
+							element={<Navigate to="/admin/users/guardians" replace />}
 						/>
+						<Route
+							path="students"
+							element={<Navigate to="/admin/users/people" replace />}
+						/>
+						<Route
+							path="student-promotion"
+							element={<Navigate to="/admin/users/people" replace />}
+						/>
+						<Route path="graduation" element={<GraduatedStudents />} />
+						<Route path="monitoring" element={<MonitoringDashboard />} />
+						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
+						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
+						<Route path="fee-clearance">
+							<Route element={<FeeClearanceHub />}>
+								<Route index element={<Navigate to="structures" replace />} />
+								<Route path="structures" element={<FeeStructuresList />} />
+								<Route path="assignments" element={<FeeAssignmentsList />} />
+								<Route
+									path="assignments/:id"
+									element={<FeeAssignmentDetail />}
+								/>
+								<Route
+									path="students/:studentId/history"
+									element={<StudentFinancialHistory />}
+								/>
+								<Route path="gating" element={<FeeGatingSettings />} />
+							</Route>
+							<Route path="structures/:id" element={<FeeStructureDetail />}>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={<FeeStructureDetailsTab />} />
+								<Route
+									path="installments"
+									element={<FeeStructureInstallmentsTab />}
+								/>
+								<Route path="impact" element={<FeeStructureImpactTab />} />
+								<Route
+									path="assignments"
+									element={<FeeStructureAssignmentsTab />}
+								/>
+							</Route>
+						</Route>
+						<Route path="notifications" element={<NotificationsCenter />} />
+
+						{/* Legacy redirect: /admin/deliberations/:id → /admin/academic-results/deliberations/:id */}
+						<Route
+							path="deliberations/:deliberationId"
+							element={<DeliberationLegacyRedirect />}
+						/>
+						<Route path="deliberations/rules" element={<DeliberationRules />} />
+
+						{/* Academic Results hub */}
+						<Route path="academic-results">
+							<Route element={<AcademicResultsHub />}>
+								<Route
+									index
+									element={<Navigate to="deliberations" replace />}
+								/>
+								<Route path="deliberations" element={<DeliberationsList />} />
+								<Route path="promotion" element={<AcademicYearTransitions />} />
+							</Route>
+							{/* Deliberation detail with contextual tabs */}
+							<Route
+								path="deliberations/:deliberationId"
+								element={<DeliberationDetail />}
+							>
+								<Route index element={<Navigate to="results" replace />} />
+								<Route path="results" element={<DeliberationResultsTab />} />
+								<Route path="jury" element={<DeliberationJuryTab />} />
+								<Route path="activity" element={<DeliberationActivityTab />} />
+							</Route>
+						</Route>
+
+						{/* Transition detail (outside hub) */}
+						<Route path="promotion/:id" element={<TransitionDetail />} />
+
+						{/* Institution hub */}
+						<Route path="institution">
+							<Route element={<InstitutionHub />}>
+								<Route index element={<Navigate to="overview" replace />} />
+								<Route path="overview" element={<InstitutionSettings />} />
+								<Route path="faculties" element={<FacultyManagement />} />
+								<Route path="cycles" element={<StudyCycleManagement />} />
+							</Route>
+							<Route path="cycles/:cycleId" element={<StudyCycleDetail />}>
+								<Route index element={<Navigate to="levels" replace />} />
+								<Route path="details" element={<StudyCycleDetailsTab />} />
+								<Route path="levels" element={<StudyCycleLevelsTab />} />
+							</Route>
+						</Route>
+
+						{/* Programs hub */}
+						<Route path="programs">
+							<Route element={<ProgramsHub />}>
+								<Route index element={<Navigate to="programs" replace />} />
+								<Route path="programs" element={<ProgramManagement />} />
+								<Route
+									path="teaching-units"
+									element={<TeachingUnitManagement />}
+								/>
+								<Route path="courses" element={<CourseManagement />} />
+							</Route>
+							<Route
+								path="teaching-units/:teachingUnitId"
+								element={<TeachingUnitDetail />}
+							>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={<TeachingUnitDetailsTab />} />
+								<Route path="courses" element={<TeachingUnitCoursesTab />} />
+							</Route>
+							<Route path=":programId" element={<ProgramDetail />}>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={<ProgramDetailsTab />} />
+								<Route path="options" element={<ProgramOptionsTab />} />
+								<Route
+									path="templates"
+									element={<ProgramExportTemplatesTab />}
+								/>
+							</Route>
+						</Route>
+
+						{/* Classes hub */}
+						<Route path="classes">
+							<Route element={<ClassesHub />}>
+								<Route index element={<Navigate to="classes" replace />} />
+								<Route path="classes" element={<ClassManagement />} />
+								<Route path="assignments" element={<ClassCourseManagement />} />
+								<Route path="enrollments" element={<EnrollmentManagement />} />
+							</Route>
+							<Route path=":classId" element={<ClassDetail />}>
+								<Route index element={<Navigate to="details" replace />} />
+								<Route path="details" element={<ClassDetailsTab />} />
+								<Route path="students" element={<ClassStudentsTab />} />
+								<Route path="courses" element={<ClassCoursesTab />} />
+							</Route>
+						</Route>
+
+						{/* Users hub */}
+						<Route path="users" element={<UsersHub />}>
+							<Route index element={<Navigate to="people" replace />} />
+							<Route path="people" element={<PeopleManagement />} />
+							<Route path="guardians" element={<GuardianDirectory />} />
+							<Route path="api-keys" element={<ApiKeysManagement />} />
+							{/* Legacy redirects */}
+							<Route
+								path="accounts"
+								element={<Navigate to="/admin/users/people" replace />}
+							/>
+							<Route
+								path="students"
+								element={<Navigate to="/admin/users/people" replace />}
+							/>
+						</Route>
+
+						{/* Profile detail hub */}
+						<Route path="profiles/:profileId" element={<ProfileHub />}>
+							<Route index element={<Navigate to="identity" replace />} />
+							<Route path="identity" element={<ProfileIdentityTab />} />
+							<Route path="enrollments" element={<ProfileEnrollmentsTab />} />
+							<Route path="results" element={<ProfileResultsTab />} />
+							<Route path="finances" element={<ProfileFinancesTab />} />
+							<Route path="guardians" element={<ProfileGuardiansTab />} />
+							<Route path="access" element={<ProfileAccessTab />} />
+						</Route>
+
+						{/* Exams hub (includes grade management) */}
+						<Route path="exams" element={<ExamsHub />}>
+							<Route index element={<Navigate to="list" replace />} />
+							<Route path="list" element={<ExamManagement />} />
+							<Route path="types" element={<ExamTypes />} />
+							<Route path="scheduler" element={<ExamScheduler />} />
+							<Route
+								path="participation"
+								element={<ExamParticipationRoster />}
+							/>
+							<Route path="export" element={<GradeExport />} />
+							<Route path="access" element={<GradeAccessGrants />} />
+							<Route path="retakes" element={<RetakeEligibility />} />
+							<Route path="templates" element={<ExportTemplatesManagement />} />
+							<Route
+								path="class-documents"
+								element={<ClassDocumentTemplates />}
+							/>
+						</Route>
+
+						{/* Legacy: /admin/grades/* → /admin/exams/* */}
+						<Route path="grades">
+							<Route
+								index
+								element={<Navigate to="/admin/exams/export" replace />}
+							/>
+							<Route
+								path="export"
+								element={<Navigate to="/admin/exams/export" replace />}
+							/>
+							<Route
+								path="access"
+								element={<Navigate to="/admin/exams/access" replace />}
+							/>
+							<Route
+								path="retake"
+								element={<Navigate to="/admin/exams/retakes" replace />}
+							/>
+							<Route
+								path="templates"
+								element={<Navigate to="/admin/exams/templates" replace />}
+							/>
+							<Route
+								path="class-documents"
+								element={<Navigate to="/admin/exams/class-documents" replace />}
+							/>
+						</Route>
+
+						{/* Timetable hub */}
+						<Route path="timetable" element={<TimetableHub />}>
+							<Route index element={<Navigate to="schedule" replace />} />
+							<Route path="schedule" element={<TimetableManagement />} />
+							<Route path="rooms" element={<RoomsManagement />} />
+							<Route path="attendance" element={<AttendanceManagement />} />
+							<Route path="rates" element={<AttendanceRates />} />
+							<Route path="overview" element={<ClassAttendanceOverview />} />
+						</Route>
+
+						{/* Configuration hub */}
+						<Route path="configuration" element={<ConfigurationHub />}>
+							<Route index element={<Navigate to="reg-numbers" replace />} />
+							<Route
+								path="reg-numbers"
+								element={<RegistrationNumberFormats />}
+							/>
+							<Route path="grade-scale" element={<GradeScaleSettings />} />
+							<Route path="templates" element={<ExportTemplatesManagement />} />
+							<Route path="rules" element={<RuleManagement />} />
+						</Route>
+
+						{/* Standalone pages still needed outside hubs */}
+						<Route path="centers" element={<CenterManagement />} />
+						<Route path="centers/new" element={<CenterDetail />} />
+						<Route path="centers/:centerId" element={<CenterDetail />}>
+							<Route index element={<Navigate to="identity" replace />} />
+							<Route path="identity" element={<CenterIdentityTab />} />
+							<Route path="logos" element={<CenterLogosTab />} />
+							<Route path="instances" element={<CenterInstancesTab />} />
+							<Route
+								path="authorization"
+								element={<CenterAuthorizationTab />}
+							/>
+							<Route path="contact" element={<CenterContactTab />} />
+						</Route>
+						<Route path="document-batch" element={<BulkDocumentGeneration />} />
 						<Route
 							path="export-templates/:templateId"
 							element={<ExportTemplateEditor />}
 						/>
-						<Route path="student-promotion" element={<StudentManagement />} />
-						<Route path="graduation" element={<GraduatedStudents />} />
-						<Route path="rules" element={<RuleManagement />} />
+						<Route path="promotion-legacy" element={<PromotionHub />} />
 						<Route
-							path="registration-numbers"
-							element={<RegistrationNumberFormats />}
+							path="teaching-units/:teachingUnitId"
+							element={<TeachingUnitLegacyRedirect />}
 						/>
 						<Route
 							path="registration-numbers/:formatId"
 							element={<RegistrationNumberFormatDetail />}
 						/>
-						<Route path="institution" element={<InstitutionSettings />} />
-						<Route path="faculties" element={<FacultyManagement />} />
-						<Route path="programs" element={<ProgramManagement />} />
-						<Route path="study-cycles" element={<StudyCycleManagement />} />
-						<Route path="grade-export" element={<GradeExport />} />
-						<Route path="grade-access" element={<GradeAccessGrants />} />
-						<Route path="monitoring" element={<MonitoringDashboard />} />
-						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
-						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
-						<Route path="enrollments" element={<EnrollmentManagement />} />
-						<Route path="teaching-units" element={<TeachingUnitManagement />} />
+
+						{/* ── Legacy redirects: path-based targets ── */}
 						<Route
-							path="teaching-units/:teachingUnitId"
-							element={<TeachingUnitDetail />}
+							path="faculties"
+							element={<Navigate to="/admin/institution/faculties" replace />}
 						/>
-						<Route path="notifications" element={<NotificationsCenter />} />
-						<Route path="api-keys" element={<ApiKeysManagement />} />
-						{/* Deliberations */}
-						<Route path="deliberations" element={<DeliberationsList />} />
 						<Route
-							path="deliberations/:deliberationId"
-							element={<DeliberationDetail />}
+							path="study-cycles"
+							element={<Navigate to="/admin/institution/cycles" replace />}
 						/>
-						<Route path="deliberations/rules" element={<DeliberationRules />} />
-						{/* Promotion Rules */}
+						<Route
+							path="teaching-units"
+							element={<Navigate to="/admin/programs/teaching-units" replace />}
+						/>
+						<Route
+							path="courses"
+							element={<Navigate to="/admin/programs/courses" replace />}
+						/>
+						<Route
+							path="class-courses"
+							element={<Navigate to="/admin/classes/assignments" replace />}
+						/>
+						<Route
+							path="enrollments"
+							element={<Navigate to="/admin/classes/enrollments" replace />}
+						/>
+						<Route
+							path="api-keys"
+							element={<Navigate to="/admin/users/api-keys" replace />}
+						/>
+						<Route
+							path="exam-types"
+							element={<Navigate to="/admin/exams/types" replace />}
+						/>
+						<Route
+							path="exam-scheduler"
+							element={<Navigate to="/admin/exams/scheduler" replace />}
+						/>
+						<Route
+							path="retake-eligibility"
+							element={<Navigate to="/admin/grades/retake" replace />}
+						/>
+						<Route
+							path="grade-export"
+							element={<Navigate to="/admin/grades/export" replace />}
+						/>
+						<Route
+							path="grade-access"
+							element={<Navigate to="/admin/grades/access" replace />}
+						/>
+						<Route
+							path="export-templates"
+							element={<Navigate to="/admin/grades/templates" replace />}
+						/>
+						<Route
+							path="class-document-templates"
+							element={<Navigate to="/admin/grades/class-documents" replace />}
+						/>
+						<Route
+							path="rules"
+							element={<Navigate to="/admin/configuration/rules" replace />}
+						/>
+						<Route
+							path="registration-numbers"
+							element={
+								<Navigate to="/admin/configuration/reg-numbers" replace />
+							}
+						/>
+						<Route
+							path="deliberations"
+							element={
+								<Navigate to="/admin/academic-results/deliberations" replace />
+							}
+						/>
+						<Route
+							path="promotion"
+							element={
+								<Navigate to="/admin/academic-results/promotion" replace />
+							}
+						/>
 						<Route
 							path="promotion-rules"
-							element={<PromotionRulesDashboard />}
+							element={<Navigate to="/admin/promotion-legacy" replace />}
 						/>
-						<Route path="promotion-rules/rules" element={<RulesListPage />} />
+						<Route
+							path="promotion-rules/rules"
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=rules" replace />
+							}
+						/>
 						<Route
 							path="promotion-rules/evaluate"
-							element={<EvaluatePromotionPage />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=evaluate" replace />
+							}
 						/>
 						<Route
 							path="promotion-rules/execute"
-							element={<ExecutePromotionPage />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=execute" replace />
+							}
 						/>
 						<Route
 							path="promotion-rules/history"
-							element={<ExecutionHistoryPage />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=history" replace />
+							}
 						/>
 					</Route>
 
 					{/* Dean Routes */}
 					<Route path="/dean" element={<DashboardLayout />}>
-						<Route index element={<MonitoringDashboard />} />
+						<Route index element={<CohortDashboard />} />
+						<Route path="approvals" element={<DeanDashboard />} />
 						<Route path="workflows" element={<WorkflowApprovals />} />
+						<Route path="history" element={<ApprovalHistory />} />
+						<Route path="monitoring" element={<MonitoringDashboard />} />
 					</Route>
 
 					{/* Teacher Routes */}
 					<Route path="/teacher" element={<DashboardLayout />}>
-						<Route index element={<TeacherDashboard />} />
-						<Route path="courses" element={<CourseList />} />
-						<Route path="grades" element={<GradeEntry />} />
-						<Route path="grades/:courseId" element={<GradeEntry />} />
-						<Route path="attendance" element={<AttendanceAlerts />} />
+						<Route index element={<TeacherHub />} />
+						{/* Legacy routes kept for backward compatibility */}
+						<Route
+							path="courses"
+							element={<Navigate to="/teacher" replace />}
+						/>
+						<Route path="grades" element={<Navigate to="/teacher" replace />} />
+						<Route
+							path="grades/:courseId"
+							element={<GradeEntry basePath="/teacher" />}
+						/>
+						<Route
+							path="grades/:courseId/fast"
+							element={<GradeSpreadsheet basePath="/teacher" />}
+						/>
+						<Route path="attendance" element={<AttendanceManagement />} />
+						<Route path="attendance/alerts" element={<AttendanceAlerts />} />
+						<Route
+							path="attendance/rates"
+							element={<TeacherAttendanceRates />}
+						/>
+						<Route path="timetable" element={<TeacherTimetable />} />
 						<Route path="workflows" element={<WorkflowManager />} />
+						<Route path="exports" element={<TeacherGradeExport />} />
 					</Route>
 
 					{/* Grade Editor Routes */}
 					<Route path="/grade-editor" element={<DashboardLayout />}>
-						<Route index element={<TeacherDashboard />} />
+						<Route index element={<TeacherHub basePath="/grade-editor" />} />
 						<Route
 							path="courses"
-							element={<CourseList basePath="/grade-editor" />}
+							element={<Navigate to="/grade-editor" replace />}
 						/>
-						<Route path="grades" element={<GradeEntry />} />
-						<Route path="grades/:courseId" element={<GradeEntry />} />
+						<Route
+							path="grades"
+							element={<Navigate to="/grade-editor" replace />}
+						/>
+						<Route
+							path="grades/:courseId"
+							element={<GradeEntry basePath="/grade-editor" />}
+						/>
+						<Route
+							path="grades/:courseId/fast"
+							element={<GradeSpreadsheet basePath="/grade-editor" />}
+						/>
+						<Route path="exports" element={<TeacherGradeExport />} />
 					</Route>
 
 					{/* Student Routes */}
 					<Route path="/student" element={<DashboardLayout />}>
 						<Route index element={<PerformanceDashboard />} />
+						<Route path="exams" element={<ExamCalendar />} />
+						<Route path="timetable" element={<StudentTimetable />} />
+						<Route path="enrollments" element={<CourseEnrollment />} />
+						<Route path="fees" element={<StudentFeeStatus />} />
+						<Route path="documents" element={<DocumentsPage />} />
+						<Route path="timeline" element={<AcademicTimeline />} />
+					</Route>
+
+					{/* Shared Notifications */}
+					<Route path="/notifications" element={<DashboardLayout />}>
+						<Route index element={<NotificationsPage />} />
 					</Route>
 
 					{/* Shared Settings */}
 					<Route path="/settings" element={<DashboardLayout />}>
-						<Route index element={<AccountSettings />} />
+						<Route element={<AccountSettings />}>
+							<Route index element={<Navigate to="account" replace />} />
+							<Route path="account" element={<AccountTab />} />
+							<Route path="profile" element={<ProfileTab />} />
+							<Route path="preferences" element={<PreferencesTab />} />
+						</Route>
 					</Route>
 				</>
 			)}
@@ -304,6 +739,16 @@ function App() {
 				element={<Redirector isPending={isPending} user={memoUser} />}
 			/>
 		</Routes>
+	);
+}
+
+function TeachingUnitLegacyRedirect() {
+	const { teachingUnitId } = useParams<{ teachingUnitId: string }>();
+	return (
+		<Navigate
+			to={`/admin/programs/teaching-units/${teachingUnitId}/details`}
+			replace
+		/>
 	);
 }
 

@@ -1,0 +1,829 @@
+meta:
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante-opt
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: BTS Santé - Spécialité Opticien-Lunetier (OPT)
+  ecStats:
+    totalCount: 49
+    totalCredits: 166
+    totalHours: 2475
+program:
+  code: OPT
+  nameFr: Opticien-Lunetier
+  nameEn: Optician
+  abbreviation: BTS-OPT
+  slug: opticien-lunetier
+  description: Former des professionnels appelés à lutter contre la malvoyance et la cécité évitable. Ces professionnels corrigent
+    les défauts visuels avec des lunettes et administrent les soins oculaires d'urgence.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Opticien-Lunetier
+  specialiteEn: Optician
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Opticien-Lunetier
+  diplomaTitleEn: Higher Technician Diploma — Optician
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Opticien-Lunetier
+  objective: Former des professionnels appelés à lutter contre la malvoyance et la cécité évitable. Ces professionnels corrigent
+    les défauts visuels avec des lunettes et administrent les soins oculaires d'urgence.
+  careerOpportunities:
+  - Cabinets et magasins d'optique
+  - Hôpitaux et cliniques ophtalmologiques
+  - ONG de lutte contre la cécité
+  - Auto-emploi
+  - Industrie optique
+  note: Le programme officiel laisse certaines UE avec un volume horaire en semaines (stages, recherches) sans crédits explicites,
+    ce qui explique les semestres à 23 ou 27 crédits déclarés.
+teachingUnits:
+- code: OPT111
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie oculaire I
+  hoursCM: 54
+  hoursTD: 18
+  hoursTP: 13
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+  ecCount: 1
+- code: OPT112
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Mathématiques-physiques-chimie
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: OPT113
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Connaissances générales sur la profession, Soins oculaires primaires
+  hoursCM: 48
+  hoursTD: 15
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: OPT114
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Optique géométrique et Physique I
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: OPT115
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Optométrie théorique et pratique
+  hoursCM: 30
+  hoursTD: 13
+  hoursTP: 13
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: OPT116
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage d’imprégnation dans un cabinet d’optique
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: OPT117
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Formation bilingue
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: OPT121
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Physique II et Chimie II
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 6
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: OPT122
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie oculaire II
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: OPT123
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Optique générale et Géométrique II
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: OPT124
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Etude des systèmes optiques
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 6
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: OPT125
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Connaissances des matériels didactiques
+  hoursCM: 48
+  hoursTD: 15
+  hoursTP: 7
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: OPT126
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage académique avancé
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: OPT127
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Secourisme et soins oculaires d’urgence
+  hoursCM: 30
+  hoursTD: 9
+  hoursTP: 3
+  hoursTPE: 35
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: OPT231
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Soins oculaires primaires
+  hoursCM: 36
+  hoursTD: 12
+  hoursTP: 8
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: OPT232
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Consultation et examen de vue objectif
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: OPT233
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Examen de vue subjectif  I
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: OPT234
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Hygiène et santé publique
+  hoursCM: 18
+  hoursTD: 6
+  hoursTP: 4
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: OPT235
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Examen de vue subjectif II
+  hoursCM: 35
+  hoursTD: 20
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: OPT237
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Enseignement sur l’éthique, civisme, et TIC
+  hoursCM: 30
+  hoursTD: 9
+  hoursTP: 3
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: OPT237
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Enseignement des Langues et acquisition de compétence en TIC
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+- code: OPT241
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Soins oculaires avancés, Examen de vue subjectif III
+  hoursCM: 50
+  hoursTD: 19
+  hoursTP: 12
+  hoursTPE: 9
+  hoursTotal: 90
+  credits: 6
+  ecCount: 2
+- code: OPT242
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Mathématiques-physiques-chimie
+  hoursCM: 0
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+  ecCount: 4
+- code: OPT243
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: -Optique de contact,  Réfraction objective
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+- code: OPT244
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Initiation à la recherche
+  hoursCM: 0
+  hoursTD: 4
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: OPT245
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Examen subjectif avancé
+  hoursCM: 27
+  hoursTD: 15
+  hoursTP: 30
+  hoursTPE: 3
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: OPT246
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pratique professionnelle
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  ecCount: 1
+- code: OPT247
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Législation, déontologie professionnelle et éthique
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: OPT351
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie et gestion d’entreprise I
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 10
+  hoursTPE: 3
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: OPT352
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie et gestion d’entreprise II
+  hoursCM: 0
+  hoursTD: 4
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: OPT353
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Recherche et présentation du protocole
+  hoursCM: 0
+  hoursTD: 28
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: OPT354
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Suivi de la recherche et travail de terrain I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+  ecCount: 1
+- code: OPT355
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Suivi de la recherche et travail de terrain II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+  ecCount: 1
+- code: OPT356
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage académique
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: OPT361
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Recherche et présentation du protocole
+  hoursCM: 0
+  hoursTD: 28
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: OPT362
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Recherches
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 105
+  credits: 0
+  ecCount: 1
+- code: OPT363
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage professionnel I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+  ecCount: 1
+- code: OPT364
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage professionnel II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+  ecCount: 1
+- code: OPT365
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage professionnel III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+  ecCount: 1
+- code: OPT366
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Soutenance
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: OPT367
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Civisme et éthique
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+courses:
+- code: OPT111-EC1
+  teachingUnitCode: OPT111
+  title: Anatomie et physiologie oculaire
+  credits: 6
+  hours: 90
+- code: OPT112-EC1
+  teachingUnitCode: OPT112
+  title: Mathématiques
+  credits: 1
+  hours: 15
+- code: OPT112-EC2
+  teachingUnitCode: OPT112
+  title: Physique I
+  credits: 1
+  hours: 15
+- code: OPT112-EC3
+  teachingUnitCode: OPT112
+  title: Chimie
+  credits: 1
+  hours: 15
+- code: OPT113-EC1
+  teachingUnitCode: OPT113
+  title: Connaissances générales sur la profession
+  credits: 2
+  hours: 30
+- code: OPT113-EC2
+  teachingUnitCode: OPT113
+  title: Soins oculaires primaires
+  credits: 3
+  hours: 45
+- code: OPT114-EC1
+  teachingUnitCode: OPT114
+  title: Optique Géométrique
+  credits: 2
+  hours: 30
+- code: OPT114-EC2
+  teachingUnitCode: OPT114
+  title: Physique II
+  credits: 1
+  hours: 15
+- code: OPT115-EC1
+  teachingUnitCode: OPT115
+  title: Optométrie théorique et pratique
+  credits: 4
+  hours: 60
+- code: OPT116-EC1
+  teachingUnitCode: OPT116
+  title: Stage d’imprégnation dans un cabinet d’optique
+  credits: 6
+  hours: 90
+- code: OPT117-EC1
+  teachingUnitCode: OPT117
+  title: Expression française
+  credits: 2
+  hours: 30
+- code: OPT117-EC2
+  teachingUnitCode: OPT117
+  title: Techniques de l’information et de la communication 1
+  credits: 1
+  hours: 15
+- code: OPT121-EC1
+  teachingUnitCode: OPT121
+  title: Physique III
+  credits: 2
+  hours: 30
+- code: OPT121-EC2
+  teachingUnitCode: OPT121
+  title: Chimie II
+  credits: 2
+  hours: 30
+- code: OPT122-EC1
+  teachingUnitCode: OPT122
+  title: Anatomie et physiologie oculaire II
+  credits: 5
+  hours: 75
+- code: OPT123-EC1
+  teachingUnitCode: OPT123
+  title: Optique générale et géométrique
+  credits: 3
+  hours: 45
+- code: OPT124-EC1
+  teachingUnitCode: OPT124
+  title: Etude des systèmes optiques
+  credits: 4
+  hours: 60
+- code: OPT125-EC1
+  teachingUnitCode: OPT125
+  title: Connaissances des matériels didactiques
+  credits: 5
+  hours: 75
+- code: OPT126-EC1
+  teachingUnitCode: OPT126
+  title: Stage académique avancé
+  credits: 6
+  hours: 90
+- code: OPT127-EC1
+  teachingUnitCode: OPT127
+  title: Secourisme et soins oculaires d’urgence
+  credits: 3
+  hours: 45
+- code: OPT231-EC1
+  teachingUnitCode: OPT231
+  title: Soins oculaires primaires
+  credits: 4
+  hours: 60
+- code: OPT232-EC1
+  teachingUnitCode: OPT232
+  title: Consultation et examen de vue objectif
+  credits: 3
+  hours: 45
+- code: OPT233-EC1
+  teachingUnitCode: OPT233
+  title: Examen de vue subjectif I
+  credits: 5
+  hours: 75
+- code: OPT234-EC1
+  teachingUnitCode: OPT234
+  title: Hygiène et santé publique
+  credits: 2
+  hours: 30
+- code: OPT235-EC1
+  teachingUnitCode: OPT235
+  title: Examen de vue subjectif II
+  credits: 5
+  hours: 75
+- code: OPT241-EC1
+  teachingUnitCode: OPT241
+  title: Soins oculaires avancés
+  credits: 4
+  hours: 60
+- code: OPT241-EC2
+  teachingUnitCode: OPT241
+  title: Examen de vue subjectif III
+  credits: 2
+  hours: 30
+- code: OPT242-EC1
+  teachingUnitCode: OPT242
+  title: Mathématiques II
+  credits: 1
+  hours: 15
+- code: OPT242-EC2
+  teachingUnitCode: OPT242
+  title: Physiques IV
+  credits: 1
+  hours: 15
+- code: OPT242-EC3
+  teachingUnitCode: OPT242
+  title: Chimie II
+  credits: 1
+  hours: 15
+- code: OPT242-EC4
+  teachingUnitCode: OPT242
+  title: Optique de contact, réfraction objective
+  credits: 5
+  hours: 75
+- code: OPT244-EC1
+  teachingUnitCode: OPT244
+  title: Initiation à la recherche
+  credits: 2
+  hours: 30
+- code: OPT245-EC1
+  teachingUnitCode: OPT245
+  title: Examen subjectif avancé
+  credits: 5
+  hours: 75
+- code: OPT246-EC1
+  teachingUnitCode: OPT246
+  title: Pratique professionnelle
+  credits: 6
+  hours: 90
+- code: OPT247-EC1
+  teachingUnitCode: OPT247
+  title: Législation, déontologie professionnelle et éthique
+  credits: 3
+  hours: 45
+- code: OPT351-EC1
+  teachingUnitCode: OPT351
+  title: Economie et gestion d’entreprise I
+  credits: 5
+  hours: 75
+- code: OPT352-EC1
+  teachingUnitCode: OPT352
+  title: Economie et gestion d’entreprise II
+  credits: 4
+  hours: 60
+- code: OPT352-EC2
+  teachingUnitCode: OPT352
+  title: Recherche et présentation du protocole
+  credits: 2
+  hours: 30
+- code: OPT354-EC1
+  teachingUnitCode: OPT354
+  title: Suivi de la recherche et travail de terrain I
+  credits: 5
+  hours: 75
+- code: OPT355-EC1
+  teachingUnitCode: OPT355
+  title: Suivi de la recherche et travail de terrain II
+  credits: 5
+  hours: 75
+- code: OPT356-EC1
+  teachingUnitCode: OPT356
+  title: Stage académique
+  credits: 6
+  hours: 90
+- code: OPT361-EC1
+  teachingUnitCode: OPT361
+  title: Recherche et présentation du protocole II
+  credits: 2
+  hours: 30
+- code: OPT362-EC1
+  teachingUnitCode: OPT362
+  title: Recherches
+  credits: 7
+  hours: 105
+- code: OPT363-EC1
+  teachingUnitCode: OPT363
+  title: Stage professionnel I
+  credits: 5
+  hours: 75
+- code: OPT364-EC1
+  teachingUnitCode: OPT364
+  title: Stage professionnel II
+  credits: 5
+  hours: 75
+- code: OPT365-EC1
+  teachingUnitCode: OPT365
+  title: Stage professionnel III
+  credits: 5
+  hours: 75
+- code: OPT366-EC1
+  teachingUnitCode: OPT366
+  title: Soutenance
+  credits: 3
+  hours: 45
+- code: OPT367-EC1
+  teachingUnitCode: OPT367
+  title: Expression anglaise
+  credits: 2
+  hours: 15
+- code: OPT367-EC2
+  teachingUnitCode: OPT367
+  title: Education civique et éthique
+  credits: 1
+  hours: 15

@@ -532,7 +532,6 @@ async function main() {
 			const [domainUser] = await db
 				.insert(schema.domainUsers)
 				.values({
-					authUserId,
 					memberId,
 					firstName,
 					lastName,

@@ -10,7 +10,7 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 import type { DbInstance } from "@/db/type-fix-db";
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
-import { adminRoles } from "./auth";
+import { adminRoles } from "./auth-roles";
 import {
 	organizationAccessControl,
 	organizationRoles,
@@ -103,7 +103,6 @@ export async function seed() {
 
 	// Create domain user profile linked to member
 	await db.insert(schema.domainUsers).values({
-		authUserId: teacher.user.id,
 		memberId: member.id,
 		firstName,
 		lastName,
@@ -198,6 +197,7 @@ export async function seed() {
 }
 
 const RESET_TABLES = [
+	"fee_assignment_batches",
 	"deliberation_logs",
 	"deliberation_student_results",
 	"deliberation_rules",

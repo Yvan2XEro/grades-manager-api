@@ -1,21 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
-	Eye,
+	Download,
 	FileSpreadsheet,
 	FileText,
 	MoreHorizontal,
 	Pencil,
 	Plus,
-	Search,
 	Trash2,
 	Users,
 	Wand2,
@@ -23,8 +17,10 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
 import { z } from "zod";
+import { BulkClassExportDialog } from "@/components/admin/document-templates/BulkClassExportDialog";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
@@ -51,8 +47,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCode } from "@/lib/code-generator";
 import { toast } from "@/lib/toast";
@@ -61,6 +58,7 @@ import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -77,7 +75,6 @@ import {
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import { ScrollArea } from "../../components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -87,7 +84,7 @@ import {
 } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
 import type { RouterOutputs } from "../../utils/trpc";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 const buildClassSchema = (t: TFunction) =>
 	z.object({
@@ -142,7 +139,7 @@ interface Class {
 	cycleLevel?: { id: string; name: string; code: string };
 	programOption?: { id: string; name: string; code: string };
 	semester?: { id: string; code: string; name: string };
-	students: { id: string }[];
+	studentCount: number;
 }
 
 type CycleLevelOption = RouterOutputs["studyCycles"]["listLevels"][number] & {
@@ -156,89 +153,91 @@ type CycleLevelOption = RouterOutputs["studyCycles"]["listLevels"][number] & {
 type SemesterOption = RouterOutputs["semesters"]["list"][number];
 
 export default function ClassManagement() {
+	const navigate = useNavigate();
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const [editingClass, setEditingClass] = useState<Class | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [programSearch, setProgramSearch] = useState("");
 	const [programOptionSearch, setProgramOptionSearch] = useState("");
 	const [cycleLevelSearch, setCycleLevelSearch] = useState("");
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
-	const [previewClass, setPreviewClass] = useState<Class | null>(null);
-	const [previewStudents, setPreviewStudents] = useState<any[]>([]);
-	const [previewLoading, setPreviewLoading] = useState(false);
-	const [studentSearch, setStudentSearch] = useState("");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 	const [isBulkGenOpen, setIsBulkGenOpen] = useState(false);
+	const [isBulkExportOpen, setIsBulkExportOpen] = useState(false);
 	const [bulkGenYearId, setBulkGenYearId] = useState<string | null>(null);
 	const [bulkGenSourceYearId, setBulkGenSourceYearId] = useState<string | null>(
 		null,
 	);
 
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
-	const {
-		data: classesData,
-		isLoading,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		queryKey: ["classes", filterYear, filterSemester],
-		queryFn: async ({ pageParam }) => {
-			const { items, nextCursor } = await trpcClient.classes.list.query({
-				cursor: pageParam,
-				limit: 20,
-				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
-			});
-			// TODO: N+1 Query Problem - This fetches students for each class separately
-			// Better solution: Modify backend classes.list to include studentCount
-			// or create a batch endpoint that returns classes with student counts
-			const enriched = await Promise.all(
-				items.map(async (cls) => {
-					const students = await trpcClient.students.list.query({
-						classId: cls.id,
-					});
-					return {
-						id: cls.id,
-						code: cls.code,
-						name: cls.name,
-						programId: cls.program,
-						academicYearId: cls.academicYear,
-						cycleLevelId: cls.cycleLevelId,
-						programOptionId: cls.programOptionId,
-						semesterId: cls.semester?.id ?? null,
-						totalCredits: (cls as any).totalCredits ?? 0,
-						assignedCredits: (cls as any).assignedCredits ?? 0,
-						program: {
-							name: cls.programInfo?.name ?? "",
-							code: cls.programInfo?.code ?? "",
-							cycleName: cls.cycle?.name,
-							cycleCode: cls.cycle?.code,
-						},
-						academicYear: { name: cls.academicYearInfo?.name ?? "" },
-						cycle: cls.cycle ?? undefined,
-						cycleLevel: cls.cycleLevel ?? undefined,
-						programOption: cls.programOption ?? undefined,
-						semester: cls.semester ?? undefined,
-						students: students.items.map((s) => ({ id: s.id })),
-					} as Class;
-				}),
-			);
-			return { items: enriched, nextCursor };
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
-	});
+	const { data, isLoading } = useQuery(
+		trpc.classes.listPaged.queryOptions({
+			page,
+			pageSize,
+			academicYearId: filterYear || undefined,
+			semesterId: filterSemester || undefined,
+		}),
+	);
 
-	const classes = classesData?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+	const classes: Class[] = (data?.items ?? []).map((c) => ({
+		id: c.id,
+		code: c.code,
+		name: c.name,
+		programId: c.program ?? "",
+		academicYearId: c.academicYear ?? "",
+		cycleLevelId: c.cycleLevelId ?? "",
+		programOptionId: c.programOptionId ?? "",
+		semesterId: c.semesterId ?? null,
+		totalCredits: c.totalCredits ?? 0,
+		assignedCredits: c.assignedCredits ?? 0,
+		program: {
+			name: c.programInfo?.name ?? "",
+			code: c.programInfo?.code ?? "",
+			cycleName: c.cycle?.name,
+			cycleCode: c.cycle?.code,
+		},
+		academicYear: { name: c.academicYearInfo?.name ?? "" },
+		cycle: c.cycle?.id
+			? { id: c.cycle.id, name: c.cycle.name ?? "", code: c.cycle.code ?? "" }
+			: undefined,
+		cycleLevel: c.cycleLevel?.id
+			? {
+					id: c.cycleLevel.id,
+					name: c.cycleLevel.name ?? "",
+					code: c.cycleLevel.code ?? "",
+				}
+			: undefined,
+		programOption: c.programOption?.id
+			? {
+					id: c.programOption.id,
+					name: c.programOption.name ?? "",
+					code: c.programOption.code ?? "",
+				}
+			: undefined,
+		semester: c.semester?.id
+			? {
+					id: c.semester.id,
+					code: c.semester.code ?? "",
+					name: c.semester.name ?? "",
+				}
+			: undefined,
+		studentCount: c.studentCount ?? 0,
+	}));
 	const selection = useRowSelection(classes ?? []);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
@@ -462,31 +461,62 @@ export default function ClassManagement() {
 		}
 	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
 
-	const handlePreviewStudents = async (classData: Class) => {
-		setPreviewClass(classData);
-		setPreviewLoading(true);
-		setStudentSearch("");
-		try {
-			const studentsData = await trpcClient.students.list.query({
-				classId: classData.id,
-				limit: 1000,
-			});
-			const sorted = [...studentsData.items].sort(
-				(a, b) =>
-					(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-					(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
-			);
-			setPreviewStudents(sorted);
-		} catch (error) {
-			console.error("Error fetching students:", error);
-			setPreviewStudents([]);
-		} finally {
-			setPreviewLoading(false);
-		}
-	};
-
 	const handleExportStudentListPDF = async (classData: Class) => {
+		// New pipeline: render via the institution's `student_list` template
+		// (resolves class → program → institution default, picks the centre
+		// variant when the program is attached to a center). Falls back to
+		// the legacy jsPDF generator when the new pipeline fails (e.g. no
+		// template seeded, server unreachable).
 		try {
+			const result =
+				await trpcClient.academicDocuments.generateStudentList.mutate({
+					classId: classData.id,
+					format: "pdf",
+					demoMode: false,
+				});
+			const r = result as {
+				data: string;
+				filename: string;
+				mimeType: string;
+				usedTemplate?: { name: string; variant: "standard" | "center" };
+			};
+			const byteChars = atob(r.data);
+			const byteNumbers = new Array(byteChars.length);
+			for (let i = 0; i < byteChars.length; i++) {
+				byteNumbers[i] = byteChars.charCodeAt(i);
+			}
+			const blob = new Blob([new Uint8Array(byteNumbers)], {
+				type: r.mimeType,
+			});
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = r.filename;
+			a.click();
+			URL.revokeObjectURL(url);
+			if (r.usedTemplate) {
+				toast.success(
+					`Modèle utilisé : ${r.usedTemplate.name}${r.usedTemplate.variant === "center" ? " (centre)" : ""}`,
+				);
+			} else {
+				toast.success(
+					t("admin.classes.export.success", {
+						defaultValue: "Student list exported successfully",
+					}),
+				);
+			}
+			return;
+		} catch (err) {
+			console.warn(
+				"[handleExportStudentListPDF] template pipeline failed, falling back to jsPDF",
+				err,
+			);
+			toast.warning(
+				`Le modèle officiel n'a pas pu être rendu (${err instanceof Error ? err.message : "erreur inconnue"}). Génération basique via jsPDF.`,
+			);
+		}
+		try {
+			// Legacy fallback (basic jsPDF, no template).
 			// Fetch institution info
 			const institution = await trpcClient.institutions.get.query();
 
@@ -758,7 +788,6 @@ export default function ClassManagement() {
 	const codeValue = watch("code");
 	const codeDirty = Boolean(form.formState.dirtyFields.code);
 	useEffect(() => {
-		if (editingClass) return;
 		if (codeDirty) return;
 		if (!selectedProgram?.code) return;
 		if (!selectedSemester?.code) return;
@@ -775,7 +804,6 @@ export default function ClassManagement() {
 		classCodes,
 		codeDirty,
 		codeValue,
-		editingClass,
 		selectedProgram?.code,
 		selectedCycleLevel?.code,
 		selectedSemester?.code,
@@ -784,7 +812,7 @@ export default function ClassManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: ClassFormData) => {
-			await trpcClient.classes.create.mutate({
+			return await trpcClient.classes.create.mutate({
 				name: data.name,
 				program: data.programId,
 				academicYear: data.academicYearId,
@@ -795,11 +823,14 @@ export default function ClassManagement() {
 				totalCredits: data.totalCredits,
 			});
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+		onSuccess: (newClass) => {
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(t("admin.classes.toast.createSuccess"));
 			setIsFormOpen(false);
 			form.reset();
+			if (newClass?.id) {
+				navigate(`/admin/classes/${newClass.id}/details`);
+			}
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -810,42 +841,12 @@ export default function ClassManagement() {
 		},
 	});
 
-	const updateMutation = useMutation({
-		mutationFn: async (data: ClassFormData & { id: string }) => {
-			await trpcClient.classes.update.mutate({
-				id: data.id,
-				name: data.name,
-				program: data.programId,
-				academicYear: data.academicYearId,
-				cycleLevelId: data.cycleLevelId,
-				programOptionId: data.programOptionId,
-				semesterId: data.semesterId || undefined,
-				code: data.code,
-				totalCredits: data.totalCredits,
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
-			toast.success(t("admin.classes.toast.updateSuccess"));
-			setIsFormOpen(false);
-			setEditingClass(null);
-			form.reset();
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: t("admin.classes.toast.updateError");
-			toast.error(message);
-		},
-	});
-
 	const deleteMutation = useMutation({
 		mutationFn: async (id: string) => {
 			await trpcClient.classes.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(t("admin.classes.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
@@ -866,7 +867,7 @@ export default function ClassManagement() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -889,7 +890,7 @@ export default function ClassManagement() {
 				sourceAcademicYearId: bulkGenSourceYearId ?? undefined,
 			}),
 		onSuccess: (result) => {
-			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(
 				t("admin.classes.toast.bulkGenerateSuccess", {
 					created: result.created,
@@ -904,11 +905,7 @@ export default function ClassManagement() {
 	});
 
 	const onSubmit = async (data: ClassFormData) => {
-		if (editingClass) {
-			updateMutation.mutate({ ...data, id: editingClass.id });
-		} else {
-			createMutation.mutate(data);
-		}
+		createMutation.mutate(data);
 	};
 
 	const openDeleteModal = (id: string) => {
@@ -926,6 +923,7 @@ export default function ClassManagement() {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<span className="loading loading-spinner loading-lg" />
+				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -950,8 +948,16 @@ export default function ClassManagement() {
 					</Button>
 					<Button
 						type="button"
+						variant="outline"
+						onClick={() => setIsBulkExportOpen(true)}
+						disabled={classes.length === 0}
+					>
+						<Download className="mr-2 h-4 w-4" />
+						Exporter en lot
+					</Button>
+					<Button
+						type="button"
 						onClick={() => {
-							setEditingClass(null);
 							form.reset();
 							setIsFormOpen(true);
 						}}
@@ -979,7 +985,7 @@ export default function ClassManagement() {
 							</Label>
 							<AcademicYearSelect
 								value={filterYear}
-								onChange={(v) => setFilterYear(v)}
+								onChange={handleFilter(setFilterYear)}
 							/>
 						</div>
 						<div className="w-56">
@@ -990,7 +996,7 @@ export default function ClassManagement() {
 							</Label>
 							<SemesterSelect
 								value={filterSemester}
-								onChange={(v) => setFilterSemester(v)}
+								onChange={handleFilter(setFilterSemester)}
 							/>
 						</div>
 					</div>
@@ -1004,18 +1010,20 @@ export default function ClassManagement() {
 				<Button
 					variant="destructive"
 					size="sm"
-					onClick={() => {
-						if (
-							window.confirm(
-								t("common.bulkActions.confirmDelete", {
-									defaultValue:
-										"Are you sure you want to delete the selected items?",
-								}),
-							)
-						) {
-							bulkDeleteMutation.mutate([...selection.selectedIds]);
-						}
-					}}
+					onClick={() =>
+						confirm({
+							title: t("common.bulkActions.confirmDeleteTitle", {
+								defaultValue: "Delete selected items?",
+							}),
+							message: t("common.bulkActions.confirmDelete", {
+								defaultValue:
+									"Are you sure you want to delete the selected items?",
+							}),
+							confirmText: t("common.actions.delete"),
+							onConfirm: () =>
+								bulkDeleteMutation.mutate([...selection.selectedIds]),
+						})
+					}
 					disabled={bulkDeleteMutation.isPending}
 				>
 					<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -1036,7 +1044,6 @@ export default function ClassManagement() {
 						<Button
 							type="button"
 							onClick={() => {
-								setEditingClass(null);
 								form.reset();
 								setIsFormOpen(true);
 							}}
@@ -1094,30 +1101,20 @@ export default function ClassManagement() {
 							{classes?.map((cls) => (
 								<TableRow
 									key={cls.id}
+									onClick={() => navigate(`/admin/classes/${cls.id}/details`)}
+									className="cursor-pointer"
 									actions={
 										<>
 											<ContextMenuItem
-												onSelect={() => {
-													setEditingClass(cls);
-													form.reset({ name: cls.name });
-													setIsFormOpen(true);
-												}}
+												onSelect={() =>
+													navigate(`/admin/classes/${cls.id}/details`)
+												}
 											>
 												<span>
 													{t("common.actions.edit", { defaultValue: "Edit" })}
 												</span>
 											</ContextMenuItem>
 											<ContextMenuSeparator />
-											<ContextMenuItem
-												onSelect={() => handlePreviewStudents(cls)}
-											>
-												<Eye className="h-4 w-4" />
-												<span>
-													{t("admin.classes.preview.button", {
-														defaultValue: "View student list",
-													})}
-												</span>
-											</ContextMenuItem>
 											<ContextMenuItem
 												onSelect={() => handleExportStudentListPDF(cls)}
 											>
@@ -1148,7 +1145,7 @@ export default function ClassManagement() {
 										</>
 									}
 								>
-									<TableCell>
+									<TableCell onClick={(e) => e.stopPropagation()}>
 										<Checkbox
 											checked={selection.isSelected(cls.id)}
 											onCheckedChange={() => selection.toggle(cls.id)}
@@ -1228,10 +1225,10 @@ export default function ClassManagement() {
 									<TableCell>
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4" />
-											<span>{cls.students?.length || 0}</span>
+											<span>{cls.studentCount ?? 0}</span>
 										</div>
 									</TableCell>
-									<TableCell>
+									<TableCell onClick={(e) => e.stopPropagation()}>
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button variant="ghost" size="icon" className="h-8 w-8">
@@ -1240,32 +1237,13 @@ export default function ClassManagement() {
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end">
 												<DropdownMenuItem
-													onClick={() => {
-														setEditingClass(cls);
-														form.reset({
-															name: cls.name,
-															programId: cls.programId,
-															academicYearId: cls.academicYearId,
-															cycleLevelId: cls.cycleLevelId,
-															programOptionId: cls.programOptionId,
-															semesterId: cls.semesterId ?? "",
-															code: cls.code,
-															totalCredits: cls.totalCredits,
-														});
-														setIsFormOpen(true);
-													}}
+													onClick={() =>
+														navigate(`/admin/classes/${cls.id}/details`)
+													}
 												>
 													<Pencil className="mr-2 h-4 w-4" />
 													{t("common.actions.edit", {
 														defaultValue: "Edit",
-													})}
-												</DropdownMenuItem>
-												<DropdownMenuItem
-													onClick={() => handlePreviewStudents(cls)}
-												>
-													<Eye className="mr-2 h-4 w-4" />
-													{t("admin.classes.preview.button", {
-														defaultValue: "View student list",
 													})}
 												</DropdownMenuItem>
 												<DropdownMenuItem
@@ -1303,20 +1281,25 @@ export default function ClassManagement() {
 				)}
 			</Card>
 
-			<div ref={sentinelRef} className="h-1" />
+			<TablePagination
+				page={page}
+				pageCount={data?.pageCount ?? 1}
+				total={data?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(s) => {
+					setPageSize(s);
+					setPage(1);
+				}}
+			/>
 
 			<FormModal
 				isOpen={isFormOpen}
 				onClose={() => {
 					setIsFormOpen(false);
-					setEditingClass(null);
 					form.reset();
 				}}
-				title={
-					editingClass
-						? t("admin.classes.form.editTitle")
-						: t("admin.classes.form.createTitle")
-				}
+				title={t("admin.classes.form.createTitle")}
 			>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -1539,7 +1522,6 @@ export default function ClassManagement() {
 								variant="outline"
 								onClick={() => {
 									setIsFormOpen(false);
-									setEditingClass(null);
 									form.reset();
 								}}
 							>
@@ -1548,8 +1530,6 @@ export default function ClassManagement() {
 							<Button type="submit" disabled={form.formState.isSubmitting}>
 								{form.formState.isSubmitting ? (
 									<Spinner className="mr-2 h-4 w-4" />
-								) : editingClass ? (
-									t("common.actions.saveChanges")
 								) : (
 									t("admin.classes.form.createSubmit")
 								)}
@@ -1569,7 +1549,7 @@ export default function ClassManagement() {
 				title={t("admin.classes.delete.title")}
 				message={(() => {
 					const studentCount =
-						classes.find((c) => c.id === deleteId)?.students.length ?? 0;
+						classes.find((c) => c.id === deleteId)?.studentCount ?? 0;
 					return studentCount > 0
 						? t("admin.classes.delete.messageWithStudents", {
 								count: studentCount,
@@ -1579,146 +1559,6 @@ export default function ClassManagement() {
 				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
-			<Dialog
-				open={!!previewClass}
-				onOpenChange={(open) => {
-					if (!open) {
-						setPreviewClass(null);
-						setPreviewStudents([]);
-						setStudentSearch("");
-					}
-				}}
-			>
-				<DialogContent className="flex h-[80vh] w-full flex-col sm:max-w-4xl">
-					<DialogHeader>
-						<DialogTitle>
-							{previewClass?.name ?? ""}{" "}
-							{!previewLoading && (
-								<Badge variant="secondary" className="ml-2">
-									{previewStudents.length}{" "}
-									{t("admin.classes.students", {
-										defaultValue: "students",
-									})}
-								</Badge>
-							)}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.classes.previewDescription", {
-								defaultValue: "List of students enrolled in this class",
-							})}
-						</DialogDescription>
-					</DialogHeader>
-
-					<div className="shrink-0 px-6 pb-4">
-						<div className="relative">
-							<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-							<Input
-								placeholder={t("admin.classes.searchStudents", {
-									defaultValue: "Search students...",
-								})}
-								value={studentSearch}
-								onChange={(e) => setStudentSearch(e.target.value)}
-								className="pl-9"
-							/>
-						</div>
-					</div>
-
-					{previewLoading ? (
-						<div className="flex items-center justify-center py-12">
-							<Spinner />
-						</div>
-					) : previewStudents.length === 0 ? (
-						<div className="py-12 text-center text-muted-foreground">
-							<Users className="mx-auto mb-2 h-10 w-10" />
-							<p>
-								{t("admin.classes.noStudents", {
-									defaultValue: "No students enrolled in this class",
-								})}
-							</p>
-						</div>
-					) : (
-						<ScrollArea className="min-h-0 flex-1">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead className="w-12">#</TableHead>
-										<TableHead>
-											{t("admin.classes.columns.registration", {
-												defaultValue: "Reg. Number",
-											})}
-										</TableHead>
-										<TableHead>
-											{t("admin.classes.columns.lastName", {
-												defaultValue: "Last Name",
-											})}
-										</TableHead>
-										<TableHead>
-											{t("admin.classes.columns.firstName", {
-												defaultValue: "First Name",
-											})}
-										</TableHead>
-										<TableHead>
-											{t("admin.classes.columns.birthDate", {
-												defaultValue: "Birth Date",
-											})}
-										</TableHead>
-										<TableHead>
-											{t("admin.classes.columns.gender", {
-												defaultValue: "Gender",
-											})}
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{previewStudents
-										.filter((s) => {
-											if (!studentSearch) return true;
-											const q = studentSearch.toLowerCase();
-											return (
-												(s.profile?.lastName ?? "").toLowerCase().includes(q) ||
-												(s.profile?.firstName ?? "")
-													.toLowerCase()
-													.includes(q) ||
-												(s.registrationNumber ?? "").toLowerCase().includes(q)
-											);
-										})
-										.map((student, idx) => (
-											<TableRow key={student.id}>
-												<TableCell className="text-muted-foreground">
-													{idx + 1}
-												</TableCell>
-												<TableCell className="font-mono text-sm">
-													{student.registrationNumber ?? "—"}
-												</TableCell>
-												<TableCell className="font-medium">
-													{student.profile?.lastName ?? "—"}
-												</TableCell>
-												<TableCell>
-													{student.profile?.firstName ?? "—"}
-												</TableCell>
-												<TableCell>
-													{student.profile?.dateOfBirth
-														? new Date(
-																student.profile.dateOfBirth,
-															).toLocaleDateString()
-														: "—"}
-												</TableCell>
-												<TableCell>
-													{student.profile?.gender === "male"
-														? "M"
-														: student.profile?.gender === "female"
-															? "F"
-															: (student.profile?.gender ?? "—")}
-												</TableCell>
-											</TableRow>
-										))}
-								</TableBody>
-							</Table>
-						</ScrollArea>
-					)}
-				</DialogContent>
-			</Dialog>
-
 			{/* Bulk Generate Dialog */}
 			<Dialog
 				open={isBulkGenOpen}
@@ -1744,7 +1584,7 @@ export default function ClassManagement() {
 							})}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 px-6 py-2">
+					<DialogBody className="space-y-4">
 						<div className="space-y-2">
 							<Label>
 								{t("admin.classes.bulkGenerate.yearLabel", {
@@ -1776,7 +1616,7 @@ export default function ClassManagement() {
 								})}
 							</p>
 						</div>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button
 							variant="outline"
@@ -1802,6 +1642,12 @@ export default function ClassManagement() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<BulkClassExportDialog
+				open={isBulkExportOpen}
+				onOpenChange={setIsBulkExportOpen}
+				classes={classes}
+			/>
 		</div>
 	);
 }

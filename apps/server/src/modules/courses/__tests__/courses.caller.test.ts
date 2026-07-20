@@ -46,3 +46,15 @@ describe("courses router", () => {
 		expect(list.items.length).toBe(0);
 	});
 });
+
+describe("courses.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const caller = createCaller(asAdmin());
+		const result = await caller.courses.listPaged({ page: 1, pageSize: 25 });
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+});

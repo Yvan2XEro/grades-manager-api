@@ -8,6 +8,27 @@ import {
 } from "@/db/schema/app-schema";
 import { member, user } from "@/db/schema/auth";
 
+export async function findByMemberId(memberId: string) {
+	return db.query.domainUsers.findFirst({
+		where: eq(domainUsers.memberId, memberId),
+	});
+}
+
+/** Returns all domain profiles linked to a Better Auth user via their memberships. */
+export async function getDomainsByMemberships(userId: string) {
+	const memberships = await db.query.member.findMany({
+		where: eq(member.userId, userId),
+		columns: { id: true },
+	});
+	if (memberships.length === 0) return [];
+	return db.query.domainUsers.findMany({
+		where: inArray(
+			domainUsers.memberId,
+			memberships.map((m) => m.id),
+		),
+	});
+}
+
 export async function create(data: NewDomainUser) {
 	const [profile] = await db.insert(domainUsers).values(data).returning();
 	return profile;
@@ -29,25 +50,6 @@ export async function update(id: string, data: Partial<NewDomainUser>) {
 export async function findById(id: string) {
 	return db.query.domainUsers.findFirst({
 		where: eq(domainUsers.id, id),
-	});
-}
-
-export async function getDomainsByAuthUserId(
-	id: string,
-	domainUserPayload?: NewDomainUser,
-) {
-	const data = await db.query.domainUsers.findMany({
-		where: eq(domainUsers.authUserId, id),
-	});
-	if (data.length > 0) return data;
-	if (!domainUserPayload) return [];
-	const domainUser = await create(domainUserPayload);
-	return [domainUser];
-}
-
-export async function findByAuthUserId(authUserId: string) {
-	return db.query.domainUsers.findFirst({
-		where: eq(domainUsers.authUserId, authUserId),
 	});
 }
 
@@ -101,7 +103,6 @@ export async function list(opts: ListOpts) {
 			gender: domainUsers.gender,
 			nationality: domainUsers.nationality,
 			status: domainUsers.status,
-			authUserId: domainUsers.authUserId,
 			memberId: domainUsers.memberId,
 			authUser: {
 				id: user.id,
@@ -114,7 +115,7 @@ export async function list(opts: ListOpts) {
 		})
 		.from(domainUsers)
 		.leftJoin(member, eq(member.id, domainUsers.memberId))
-		.leftJoin(user, eq(user.id, domainUsers.authUserId))
+		.leftJoin(user, eq(user.id, member.userId))
 		.where(condition)
 		.orderBy(domainUsers.id)
 		.limit(limit + 1);

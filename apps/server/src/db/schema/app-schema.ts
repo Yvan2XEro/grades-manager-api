@@ -17,6 +17,7 @@ import {
 	text,
 	timestamp,
 	unique,
+	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import type {
 	DeliberationStats,
@@ -24,7 +25,7 @@ import type {
 	JuryMember,
 	RuleEvaluationTrace,
 } from "../../modules/deliberations/deliberations.types";
-import { member, organization, user } from "./auth";
+import { member, organization } from "./auth";
 import type { RegistrationNumberFormatDefinition } from "./registration-number-types";
 
 /** Business roles available for domain-level RBAC. */
@@ -75,10 +76,15 @@ export const studentCourseEnrollmentStatuses = [
 export type StudentCourseEnrollmentStatus =
 	(typeof studentCourseEnrollmentStatuses)[number];
 
-export const notificationChannels = ["email", "webhook"] as const;
+export const notificationChannels = ["email", "webhook", "in-app"] as const;
 export type NotificationChannel = (typeof notificationChannels)[number];
 
-export const notificationStatuses = ["pending", "sent", "failed"] as const;
+export const notificationStatuses = [
+	"pending",
+	"sent",
+	"failed",
+	"retrying",
+] as const;
 export type NotificationStatus = (typeof notificationStatuses)[number];
 
 export const retakeOverrideDecisions = [
@@ -147,15 +153,55 @@ export const deliberationRuleCategories = [
 export type DeliberationRuleCategory =
 	(typeof deliberationRuleCategories)[number];
 
+export const academicYearTransitionStatuses = [
+	"draft",
+	"ready",
+	"pending_approval",
+	"approved",
+	"running",
+	"completed",
+	"completed_with_errors",
+	"stale",
+	"cancelled",
+] as const;
+export type AcademicYearTransitionStatus =
+	(typeof academicYearTransitionStatuses)[number];
+
+export const academicYearTransitionOutcomes = [
+	"promote",
+	"repeat",
+	"graduate",
+	"exclude",
+	"transfer",
+	"suspend",
+	"review",
+] as const;
+export type AcademicYearTransitionOutcome =
+	(typeof academicYearTransitionOutcomes)[number];
+
+export const academicYearTransitionItemStatuses = [
+	"ready",
+	"blocked",
+	"processing",
+	"succeeded",
+	"failed",
+	"excluded",
+] as const;
+export type AcademicYearTransitionItemStatus =
+	(typeof academicYearTransitionItemStatuses)[number];
+
 /** Business profiles decoupled from Better Auth accounts. */
 export const domainUsers = pgTable(
 	"domain_users",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		authUserId: text("auth_user_id").references(() => user.id, {
-			onDelete: "cascade",
-		}),
 		memberId: text("member_id").references(() => member.id, {
+			onDelete: "set null",
+		}),
+		// Explicit institution scope — required for multi-tenant isolation.
+		// Profiles created without an auth account (memberId=null) must still be
+		// bound to an institution so the admin listing is properly scoped.
+		institutionId: text("institution_id").references(() => institutions.id, {
 			onDelete: "set null",
 		}),
 		firstName: text("first_name").notNull(),
@@ -177,10 +223,7 @@ export const domainUsers = pgTable(
 			.notNull()
 			.defaultNow(),
 	},
-	(t) => [
-		unique("uq_domain_users_auth").on(t.authUserId),
-		unique("uq_domain_users_member").on(t.memberId),
-	],
+	(t) => [unique("uq_domain_users_member").on(t.memberId)],
 );
 
 /** Root institution profile storing bilingual metadata and branding. */
@@ -218,6 +261,7 @@ export const studyCycles = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
+		nameEn: text("name_en"),
 		description: text("description"),
 		totalCreditsRequired: integer("total_credits_required")
 			.notNull()
@@ -291,6 +335,119 @@ export const academicYears = pgTable(
 	],
 );
 
+/** Centers (campuses, vocational training centers) under an institution. */
+export const centers = pgTable(
+	"centers",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		/** Unique short code for the center (e.g. CEPRES). */
+		code: text("code").notNull(),
+		/** Short display name (often the same as code). */
+		shortName: text("short_name"),
+		/** Full French name (e.g. "CENTRE DE FORMATION PROFESSIONNELLE DE L'ESPOIR"). */
+		name: text("name").notNull(),
+		/** Full English name. */
+		nameEn: text("name_en"),
+		description: text("description"),
+		addressFr: text("address_fr"),
+		addressEn: text("address_en"),
+		city: text("city"),
+		country: text("country"),
+		postalBox: text("postal_box"),
+		contactEmail: text("contact_email"),
+		contactPhone: text("contact_phone"),
+		/** Logo of the center itself (used in PDF headers). */
+		logoUrl: text("logo_url"),
+		/** Inline SVG markup for the center logo (preferred over `logoUrl` in templates when set). */
+		logoSvg: text("logo_svg"),
+		/** Logo of the principal administrative authority (e.g. ministry). */
+		adminInstanceLogoUrl: text("admin_instance_logo_url"),
+		/** Inline SVG markup for the admin instance logo (preferred over `adminInstanceLogoUrl`). */
+		adminInstanceLogoSvg: text("admin_instance_logo_svg"),
+		/** Background watermark logo for documents. */
+		watermarkLogoUrl: text("watermark_logo_url"),
+		/** Inline SVG markup for the watermark (preferred over `watermarkLogoUrl`). */
+		watermarkLogoSvg: text("watermark_logo_svg"),
+		/** French legal authorization order text (e.g. "Arrêté N° 160 ..."). */
+		authorizationOrderFr: text("authorization_order_fr"),
+		/** English authorization order text. */
+		authorizationOrderEn: text("authorization_order_en"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_centers_code_institution").on(t.code, t.institutionId),
+		index("idx_centers_institution_id").on(t.institutionId),
+	],
+);
+export type Center = InferSelectModel<typeof centers>;
+export type NewCenter = InferInsertModel<typeof centers>;
+
+/** Administrative instances tied to a center (ministries, regional delegations, etc.). */
+export const centerAdministrativeInstances = pgTable(
+	"center_administrative_instances",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		centerId: text("center_id")
+			.notNull()
+			.references(() => centers.id, { onDelete: "cascade" }),
+		orderIndex: integer("order_index").notNull().default(0),
+		nameFr: text("name_fr").notNull(),
+		nameEn: text("name_en").notNull(),
+		acronymFr: text("acronym_fr"),
+		acronymEn: text("acronym_en"),
+		logoUrl: text("logo_url"),
+		/** Inline SVG markup for this admin instance's logo (preferred over `logoUrl`). */
+		logoSvg: text("logo_svg"),
+		showOnTranscripts: boolean("show_on_transcripts").notNull().default(true),
+		showOnCertificates: boolean("show_on_certificates").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_center_admin_instances_center").on(t.centerId),
+		index("idx_center_admin_instances_order").on(t.centerId, t.orderIndex),
+	],
+);
+export type CenterAdministrativeInstance = InferSelectModel<
+	typeof centerAdministrativeInstances
+>;
+export type NewCenterAdministrativeInstance = InferInsertModel<
+	typeof centerAdministrativeInstances
+>;
+
+/** Bilingual legal text references for a center (laws, decrees the authorization is based on). */
+export const centerLegalTexts = pgTable(
+	"center_legal_texts",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		centerId: text("center_id")
+			.notNull()
+			.references(() => centers.id, { onDelete: "cascade" }),
+		orderIndex: integer("order_index").notNull().default(0),
+		textFr: text("text_fr").notNull(),
+		textEn: text("text_en").notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_center_legal_texts_center").on(t.centerId),
+		index("idx_center_legal_texts_order").on(t.centerId, t.orderIndex),
+	],
+);
+export type CenterLegalText = InferSelectModel<typeof centerLegalTexts>;
+export type NewCenterLegalText = InferInsertModel<typeof centerLegalTexts>;
+
 /** Programs offered under an institution. */
 export const programs = pgTable(
 	"programs",
@@ -301,8 +458,14 @@ export const programs = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
+		nameEn: text("name_en"),
+		abbreviation: text("abbreviation"),
 		slug: text("slug").notNull(),
 		description: text("description"),
+		domainFr: text("domain_fr"),
+		domainEn: text("domain_en"),
+		specialiteFr: text("specialite_fr"),
+		specialiteEn: text("specialite_en"),
 		diplomaTitleFr: text("diploma_title_fr"),
 		diplomaTitleEn: text("diploma_title_en"),
 		attestationValidityFr: text("attestation_validity_fr"),
@@ -310,6 +473,12 @@ export const programs = pgTable(
 		cycleId: text("cycle_id").references(() => studyCycles.id, {
 			onDelete: "set null",
 		}),
+		/** Optional center this program belongs to (campus / branch). */
+		centerId: text("center_id").references(() => centers.id, {
+			onDelete: "set null",
+		}),
+		/** Marks the program as a center-affiliated program. Mirrors centerId for filtering. */
+		isCenterProgram: boolean("is_center_program").notNull().default(false),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -319,6 +488,7 @@ export const programs = pgTable(
 		unique("uq_programs_code_institution").on(t.code, t.institutionId),
 		unique("uq_programs_slug_institution").on(t.slug, t.institutionId),
 		index("idx_programs_institution_id").on(t.institutionId),
+		index("idx_programs_center_id").on(t.centerId),
 	],
 );
 
@@ -371,6 +541,34 @@ export const diplomationApiKeys = pgTable(
 );
 export type DiplomationApiKey = InferSelectModel<typeof diplomationApiKeys>;
 export type NewDiplomationApiKey = InferInsertModel<typeof diplomationApiKeys>;
+
+/** Per-request call log for diplomation API keys. */
+export const diplomationApiCallLogs = pgTable(
+	"diplomation_api_call_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		apiKeyId: text("api_key_id").references(() => diplomationApiKeys.id, {
+			onDelete: "cascade",
+		}),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		endpoint: text("endpoint").notNull(),
+		method: text("method").notNull(),
+		statusCode: integer("status_code"),
+		calledAt: timestamp("called_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_diplomation_call_logs_key").on(t.apiKeyId),
+		index("idx_diplomation_call_logs_institution").on(t.institutionId),
+		index("idx_diplomation_call_logs_called_at").on(t.calledAt),
+	],
+);
+export type DiplomationApiCallLog = InferSelectModel<
+	typeof diplomationApiCallLogs
+>;
 
 /** UE/Module layer grouping courses inside a program. */
 export const teachingUnits = pgTable(
@@ -479,7 +677,6 @@ export const courses = pgTable(
 	},
 	(t) => [
 		check("chk_courses_hours", sql`${t.hours} > 0`),
-		unique("uq_courses_name_program").on(t.name, t.program),
 		unique("uq_courses_code_program").on(t.code, t.program),
 		index("idx_courses_program_id").on(t.program),
 		index("idx_courses_teaching_unit_id").on(t.teachingUnitId),
@@ -515,6 +712,15 @@ export const classCourses = pgTable(
 		coefficient: numeric("coefficient", { precision: 5, scale: 2 })
 			.notNull()
 			.default("1.00"),
+		/** Minimum attendance rate (0–100) required for exam eligibility. Null = no gate. */
+		attendanceThreshold: integer("attendance_threshold"),
+		/** When true, excused absences count as absent in the attendance rate calculation.
+		 *  Default false = excused absences are excluded from the denominator (neutral). */
+		attendanceExcusedCountsAsAbsent: boolean(
+			"attendance_excused_counts_as_absent",
+		)
+			.notNull()
+			.default(false),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -527,6 +733,10 @@ export const classCourses = pgTable(
 		index("idx_class_courses_course_id").on(t.course),
 		index("idx_class_courses_teacher_id").on(t.teacher),
 		index("idx_class_courses_semester_id").on(t.semesterId),
+		check(
+			"chk_class_course_attendance_threshold",
+			sql`${t.attendanceThreshold} IS NULL OR (${t.attendanceThreshold} >= 0 AND ${t.attendanceThreshold} <= 100)`,
+		),
 	],
 );
 
@@ -606,6 +816,7 @@ export const exams = pgTable(
 		),
 		scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
 		validatedAt: timestamp("validated_at", { withTimezone: true }),
+		rejectionReason: text("rejection_reason"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -623,6 +834,42 @@ export const exams = pgTable(
 	],
 );
 
+export const examAuditEventActions = [
+	"submit",
+	"resubmit",
+	"approve",
+	"reject",
+	"lock",
+] as const;
+export type ExamAuditEventAction = (typeof examAuditEventActions)[number];
+
+export const examAuditEvents = pgTable(
+	"exam_audit_events",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		examId: text("exam_id")
+			.notNull()
+			.references(() => exams.id, { onDelete: "cascade" }),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		actorId: text("actor_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		action: text("action").$type<ExamAuditEventAction>().notNull(),
+		fromStatus: text("from_status").notNull(),
+		toStatus: text("to_status").notNull(),
+		reason: text("reason"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_exam_audit_events_exam").on(t.examId),
+		index("idx_exam_audit_events_institution").on(t.institutionId),
+	],
+);
+
 /** Admission types for students. */
 export const admissionTypes = [
 	"normal",
@@ -631,6 +878,42 @@ export const admissionTypes = [
 	"equivalence",
 ] as const;
 export type AdmissionType = (typeof admissionTypes)[number];
+
+export const guardianRelationshipTypes = [
+	"mother",
+	"father",
+	"guardian",
+	"uncle",
+	"aunt",
+	"other",
+] as const;
+export type GuardianRelationshipType =
+	(typeof guardianRelationshipTypes)[number];
+
+export type GuardianCommunicationPreferences = {
+	resultsPublished?: boolean;
+	attendanceThreshold?: boolean;
+	feeClearance?: boolean;
+	documentsAvailable?: boolean;
+};
+
+export const guardianCommunicationTypes = [
+	"results_published",
+	"attendance_threshold",
+	"fee_clearance",
+	"document_available",
+] as const;
+export type GuardianCommunicationType =
+	(typeof guardianCommunicationTypes)[number];
+
+export const guardianCommunicationStatuses = [
+	"queued",
+	"sent",
+	"skipped",
+	"failed",
+] as const;
+export type GuardianCommunicationStatus =
+	(typeof guardianCommunicationStatuses)[number];
 
 /** Student records referencing domain profiles. */
 export const students = pgTable(
@@ -659,6 +942,114 @@ export const students = pgTable(
 		index("idx_students_domain_user_id").on(t.domainUserId),
 	],
 );
+
+/** Guardian/parent profiles with controlled portal access. */
+export const guardians = pgTable(
+	"guardians",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		firstName: text("first_name").notNull(),
+		lastName: text("last_name").notNull(),
+		email: text("email").notNull(),
+		phone: text("phone"),
+		accessToken: text("access_token").notNull(),
+		preferences: jsonb("preferences")
+			.$type<GuardianCommunicationPreferences>()
+			.notNull()
+			.default({}),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_guardians_institution_email").on(t.institutionId, t.email),
+		unique("uq_guardians_access_token").on(t.accessToken),
+		index("idx_guardians_institution").on(t.institutionId),
+	],
+);
+export type Guardian = InferSelectModel<typeof guardians>;
+export type NewGuardian = InferInsertModel<typeof guardians>;
+
+/** Many-to-many guardian ↔ student relationship. */
+export const studentGuardians = pgTable(
+	"student_guardians",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		guardianId: text("guardian_id")
+			.notNull()
+			.references(() => guardians.id, { onDelete: "cascade" }),
+		relationshipType: text("relationship_type")
+			.$type<GuardianRelationshipType>()
+			.notNull(),
+		isPrimary: boolean("is_primary").notNull().default(false),
+		isEmergencyContact: boolean("is_emergency_contact")
+			.notNull()
+			.default(false),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_student_guardians_pair").on(t.studentId, t.guardianId),
+		index("idx_student_guardians_institution").on(t.institutionId),
+		index("idx_student_guardians_student").on(t.studentId),
+		index("idx_student_guardians_guardian").on(t.guardianId),
+	],
+);
+export type StudentGuardian = InferSelectModel<typeof studentGuardians>;
+export type NewStudentGuardian = InferInsertModel<typeof studentGuardians>;
+
+/** Audit trail for guardian communications and skipped notifications. */
+export const guardianCommunicationEvents = pgTable(
+	"guardian_communication_events",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		guardianId: text("guardian_id")
+			.notNull()
+			.references(() => guardians.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		type: text("type").$type<GuardianCommunicationType>().notNull(),
+		channel: text("channel").notNull(),
+		status: text("status").$type<GuardianCommunicationStatus>().notNull(),
+		reason: text("reason"),
+		payload: jsonb("payload").$type<Record<string, unknown>>().default({}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_guardian_comm_events_guardian").on(t.guardianId),
+		index("idx_guardian_comm_events_student").on(t.studentId),
+		index("idx_guardian_comm_events_institution").on(t.institutionId),
+	],
+);
+export type GuardianCommunicationEvent = InferSelectModel<
+	typeof guardianCommunicationEvents
+>;
+export type NewGuardianCommunicationEvent = InferInsertModel<
+	typeof guardianCommunicationEvents
+>;
 
 /** Documents generated via DIPLOMATION integration. */
 export const diplomationDocuments = pgTable(
@@ -782,6 +1173,11 @@ export interface InstitutionMetadata {
 		signatoryTitle?: string;
 		city?: string;
 	};
+	attendance_excuse_policy?: {
+		acceptedCategories?: string[];
+		requiresDocument?: boolean;
+		approvalDeadlineDays?: number | null;
+	};
 	[key: string]: unknown;
 }
 
@@ -819,6 +1215,8 @@ export const institutions = pgTable(
 		postalBox: text("postal_box"),
 		website: text("website"),
 		logoUrl: text("logo_url"),
+		/** Inline SVG markup for the institution logo (preferred over `logoUrl` when set). */
+		logoSvg: text("logo_svg"),
 		coverImageUrl: text("cover_image_url"),
 		parentInstitutionId: text("parent_institution_id").references(
 			(): any => institutions.id,
@@ -829,6 +1227,19 @@ export const institutions = pgTable(
 		organizationId: text("organization_id").references(() => organization.id, {
 			onDelete: "set null",
 		}),
+		defaultAcademicYearId: text("default_academic_year_id").references(
+			(): any => academicYears.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		registrationFormatId: text("registration_format_id").references(
+			(): any => registrationNumberFormats.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		abbreviation: text("abbreviation"),
 		isMain: boolean("is_main").notNull().default(false),
 		timezone: text("timezone").default("UTC"),
 		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
@@ -1095,6 +1506,10 @@ export const notifications = pgTable(
 			.notNull()
 			.default("pending"),
 		sentAt: timestamp("sent_at", { withTimezone: true }),
+		readAt: timestamp("read_at", { withTimezone: true }),
+		attemptCount: integer("attempt_count").notNull().default(0),
+		lastError: text("last_error"),
+		nextRetryAt: timestamp("next_retry_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -1458,6 +1873,7 @@ export const deliberations = pgTable(
 		stats: jsonb("stats").$type<DeliberationStats>(),
 		openedAt: timestamp("opened_at", { withTimezone: true }),
 		closedAt: timestamp("closed_at", { withTimezone: true }),
+		juryNumber: text("jury_number"),
 		signedAt: timestamp("signed_at", { withTimezone: true }),
 		signedBy: text("signed_by").references(() => domainUsers.id, {
 			onDelete: "set null",
@@ -1473,13 +1889,15 @@ export const deliberations = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_deliberation_class_semester_year_type").on(
-			t.institutionId,
-			t.classId,
-			t.semesterId,
-			t.academicYearId,
-			t.type,
-		),
+		// Two partial indexes replace the old single unique constraint.
+		// A UNIQUE on a nullable column (semesterId) treats each NULL as distinct,
+		// so annual deliberations (semesterId IS NULL) were never protected.
+		uniqueIndex("uq_delib_no_semester")
+			.on(t.institutionId, t.classId, t.academicYearId, t.type)
+			.where(sql`${t.semesterId} IS NULL`),
+		uniqueIndex("uq_delib_with_semester")
+			.on(t.institutionId, t.classId, t.semesterId, t.academicYearId, t.type)
+			.where(sql`${t.semesterId} IS NOT NULL`),
 		index("idx_deliberations_institution").on(t.institutionId),
 		index("idx_deliberations_class").on(t.classId),
 		index("idx_deliberations_year").on(t.academicYearId),
@@ -1529,6 +1947,154 @@ export const deliberationStudentResults = pgTable(
 		unique("uq_deliberation_student_result").on(t.deliberationId, t.studentId),
 		index("idx_deliberation_results_deliberation").on(t.deliberationId),
 		index("idx_deliberation_results_student").on(t.studentId),
+	],
+);
+/** Persistent, reviewable plan for moving a cohort into a target academic year. */
+export const academicYearTransitions = pgTable(
+	"academic_year_transitions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		sourceAcademicYearId: text("source_academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		targetAcademicYearId: text("target_academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		scopeClassIds: jsonb("scope_class_ids").$type<string[]>().default([]),
+		status: text("status")
+			.$type<AcademicYearTransitionStatus>()
+			.notNull()
+			.default("draft"),
+		revision: integer("revision").notNull().default(1),
+		deferredOutcome: text("deferred_outcome")
+			.$type<"repeat" | "review">()
+			.notNull()
+			.default("review"),
+		summary: jsonb("summary").$type<Record<string, number>>().default({}),
+		generatedBy: text("generated_by")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "restrict" }),
+		submittedBy: text("submitted_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		approvedBy: text("approved_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		executedBy: text("executed_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		generatedAt: timestamp("generated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }),
+		approvedAt: timestamp("approved_at", { withTimezone: true }),
+		startedAt: timestamp("started_at", { withTimezone: true }),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		check(
+			"chk_academic_year_transition_years",
+			sql`${t.sourceAcademicYearId} <> ${t.targetAcademicYearId}`,
+		),
+		index("idx_academic_year_transitions_institution").on(t.institutionId),
+		index("idx_academic_year_transitions_source_year").on(
+			t.sourceAcademicYearId,
+		),
+		index("idx_academic_year_transitions_target_year").on(
+			t.targetAcademicYearId,
+		),
+		index("idx_academic_year_transitions_status").on(t.status),
+		uniqueIndex("uq_active_academic_year_transition")
+			.on(t.institutionId, t.sourceAcademicYearId, t.targetAcademicYearId)
+			.where(
+				sql`${t.status} IN ('draft', 'ready', 'pending_approval', 'approved', 'running')`,
+			),
+	],
+);
+
+/** Per-student action proposed and executed by an academic-year transition. */
+export const academicYearTransitionItems = pgTable(
+	"academic_year_transition_items",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		transitionId: text("transition_id")
+			.notNull()
+			.references(() => academicYearTransitions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "restrict" }),
+		sourceEnrollmentId: text("source_enrollment_id")
+			.notNull()
+			.references(() => enrollments.id, { onDelete: "restrict" }),
+		deliberationId: text("deliberation_id").references(() => deliberations.id, {
+			onDelete: "set null",
+		}),
+		deliberationStudentResultId: text(
+			"deliberation_student_result_id",
+		).references(() => deliberationStudentResults.id, {
+			onDelete: "set null",
+		}),
+		decision: text("decision").$type<DeliberationDecision>(),
+		proposedOutcome: text("proposed_outcome")
+			.$type<AcademicYearTransitionOutcome>()
+			.notNull(),
+		finalOutcome: text("final_outcome")
+			.$type<AcademicYearTransitionOutcome>()
+			.notNull(),
+		proposedTargetClassId: text("proposed_target_class_id").references(
+			() => classes.id,
+			{ onDelete: "set null" },
+		),
+		finalTargetClassId: text("final_target_class_id").references(
+			() => classes.id,
+			{ onDelete: "set null" },
+		),
+		status: text("status").$type<AcademicYearTransitionItemStatus>().notNull(),
+		blockerCode: text("blocker_code"),
+		blockerDetails: jsonb("blocker_details")
+			.$type<Record<string, unknown>>()
+			.default({}),
+		isOverridden: boolean("is_overridden").notNull().default(false),
+		overrideReason: text("override_reason"),
+		overriddenBy: text("overridden_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		overriddenAt: timestamp("overridden_at", { withTimezone: true }),
+		targetEnrollmentId: text("target_enrollment_id").references(
+			() => enrollments.id,
+			{ onDelete: "set null" },
+		),
+		processedAt: timestamp("processed_at", { withTimezone: true }),
+		errorMessage: text("error_message"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_academic_year_transition_source_enrollment").on(
+			t.transitionId,
+			t.sourceEnrollmentId,
+		),
+		index("idx_academic_year_transition_items_transition").on(t.transitionId),
+		index("idx_academic_year_transition_items_student").on(t.studentId),
+		index("idx_academic_year_transition_items_status").on(t.status),
+		index("idx_academic_year_transition_items_outcome").on(t.finalOutcome),
+		index("idx_academic_year_transition_items_source").on(t.sourceEnrollmentId),
 	],
 );
 
@@ -1611,7 +2177,41 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 		fields: [programs.cycleId],
 		references: [studyCycles.id],
 	}),
+	center: one(centers, {
+		fields: [programs.centerId],
+		references: [centers.id],
+	}),
 }));
+
+export const centersRelations = relations(centers, ({ one, many }) => ({
+	institution: one(institutions, {
+		fields: [centers.institutionId],
+		references: [institutions.id],
+	}),
+	programs: many(programs),
+	administrativeInstances: many(centerAdministrativeInstances),
+	legalTexts: many(centerLegalTexts),
+}));
+
+export const centerAdministrativeInstancesRelations = relations(
+	centerAdministrativeInstances,
+	({ one }) => ({
+		center: one(centers, {
+			fields: [centerAdministrativeInstances.centerId],
+			references: [centers.id],
+		}),
+	}),
+);
+
+export const centerLegalTextsRelations = relations(
+	centerLegalTexts,
+	({ one }) => ({
+		center: one(centers, {
+			fields: [centerLegalTexts.centerId],
+			references: [centers.id],
+		}),
+	}),
+);
 
 export const programOptionsRelations = relations(
 	programOptions,
@@ -1732,6 +2332,7 @@ export const classCoursesRelations = relations(
 		}),
 		exams: many(exams),
 		studentCourseEnrollments: many(studentCourseEnrollments),
+		attendanceSessions: many(attendanceSessions),
 	}),
 );
 
@@ -1752,7 +2353,23 @@ export const examsRelations = relations(exams, ({ one, many }) => ({
 	}),
 	retakeExams: many(exams, { relationName: "retakeToParent" }),
 	grades: many(grades),
+	auditEvents: many(examAuditEvents),
+	participationRosters: many(examParticipationRosters),
 }));
+
+export const examAuditEventsRelations = relations(
+	examAuditEvents,
+	({ one }) => ({
+		exam: one(exams, {
+			fields: [examAuditEvents.examId],
+			references: [exams.id],
+		}),
+		actor: one(domainUsers, {
+			fields: [examAuditEvents.actorId],
+			references: [domainUsers.id],
+		}),
+	}),
+);
 
 export const studentsRelations = relations(students, ({ one, many }) => ({
 	classRef: one(classes, {
@@ -1770,10 +2387,6 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
 }));
 
 export const domainUsersRelations = relations(domainUsers, ({ one }) => ({
-	authUser: one(user, {
-		fields: [domainUsers.authUserId],
-		references: [user.id],
-	}),
 	member: one(member, {
 		fields: [domainUsers.memberId],
 		references: [member.id],
@@ -1993,6 +2606,8 @@ export type ClassCourse = InferSelectModel<typeof classCourses>;
 export type NewClassCourse = InferInsertModel<typeof classCourses>;
 
 export type Exam = InferSelectModel<typeof exams>;
+export type ExamAuditEvent = InferSelectModel<typeof examAuditEvents>;
+export type NewExamAuditEvent = InferInsertModel<typeof examAuditEvents>;
 export type NewExam = InferInsertModel<typeof exams>;
 
 export type ExamScheduleRun = InferSelectModel<typeof examScheduleRuns>;
@@ -2080,8 +2695,17 @@ export type NewStudentPromotionSummary = InferInsertModel<
 export const exportTemplateTypes = [
 	"pv",
 	"evaluation",
+	"ec",
 	"ue",
 	"deliberation",
+	"diploma",
+	"transcript",
+	"attestation",
+	"enrollment_certificate",
+	"student_list",
+	"payment_order",
+	"payment_receipt",
+	"financial_clearance",
 ] as const;
 export type ExportTemplateType = (typeof exportTemplateTypes)[number];
 
@@ -2096,9 +2720,38 @@ export const exportTemplates = pgTable(
 		name: text("name").notNull(),
 		type: text("type").$type<ExportTemplateType>().notNull(),
 		isDefault: boolean("is_default").notNull().default(false),
+		/**
+		 * System default templates seeded from DIPLOMATION. These cannot be
+		 * deleted and are the fallback when no institution template exists.
+		 */
+		isSystemDefault: boolean("is_system_default").notNull().default(false),
+		description: text("description"),
+		/**
+		 * Distinguishes seeded variants:
+		 *   - `"standard"` — header with institution + tutelle (faculty/university).
+		 *   - `"center"`   — header with institution + center data (no tutelle).
+		 *
+		 * Used by the program form to filter the right options based on the
+		 * program's `centerId`. Custom user-created templates default to
+		 * "standard"; admins can change it via the editor.
+		 */
+		variant: text("variant")
+			.$type<"standard" | "center">()
+			.notNull()
+			.default("standard"),
 
 		// Raw Handlebars template source
 		templateBody: text("template_body").notNull(),
+
+		/**
+		 * Default theme values for this template (typed by ExportTemplateType).
+		 * Stored as JSONB so we can evolve the theme schema without migrations.
+		 * For diploma/transcript/attestation kinds these match the Zod schemas in
+		 * `apps/server/src/modules/exports/themes/`.
+		 */
+		themeDefaults: jsonb("theme_defaults")
+			.$type<Record<string, unknown>>()
+			.default({}),
 
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
@@ -2117,6 +2770,115 @@ export const exportTemplates = pgTable(
 );
 export type ExportTemplate = InferSelectModel<typeof exportTemplates>;
 export type NewExportTemplate = InferInsertModel<typeof exportTemplates>;
+
+/** Default export template per program, one per template type. */
+export const programExportTemplates = pgTable(
+	"program_export_templates",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "cascade" }),
+		templateType: text("template_type").$type<ExportTemplateType>().notNull(),
+		templateId: text("template_id")
+			.notNull()
+			.references(() => exportTemplates.id, { onDelete: "cascade" }),
+		/** Partial theme overrides stacked on top of template.themeDefaults. */
+		themeOverrides: jsonb("theme_overrides").$type<Record<string, unknown>>(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_program_export_templates_program_type").on(
+			t.programId,
+			t.templateType,
+		),
+		index("idx_program_export_templates_program").on(t.programId),
+		index("idx_program_export_templates_template").on(t.templateId),
+	],
+);
+export type ProgramExportTemplate = InferSelectModel<
+	typeof programExportTemplates
+>;
+export type NewProgramExportTemplate = InferInsertModel<
+	typeof programExportTemplates
+>;
+
+export const programExportTemplatesRelations = relations(
+	programExportTemplates,
+	({ one }) => ({
+		program: one(programs, {
+			fields: [programExportTemplates.programId],
+			references: [programs.id],
+		}),
+		template: one(exportTemplates, {
+			fields: [programExportTemplates.templateId],
+			references: [exportTemplates.id],
+		}),
+	}),
+);
+
+/**
+ * Per-class assignment of an export template, with optional per-class theme
+ * overrides. Resolution order is:
+ *   class_export_templates → program_export_templates → institution default.
+ * Theme is merged: template.themeDefaults ⊕ program.themeOverrides ⊕ class.themeOverrides.
+ */
+export const classExportTemplates = pgTable(
+	"class_export_templates",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classId: text("class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "cascade" }),
+		templateType: text("template_type").$type<ExportTemplateType>().notNull(),
+		templateId: text("template_id")
+			.notNull()
+			.references(() => exportTemplates.id, { onDelete: "cascade" }),
+		themeOverrides: jsonb("theme_overrides").$type<Record<string, unknown>>(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		updatedBy: text("updated_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		unique("uq_class_export_templates_class_type").on(
+			t.classId,
+			t.templateType,
+		),
+		index("idx_class_export_templates_class").on(t.classId),
+		index("idx_class_export_templates_template").on(t.templateId),
+	],
+);
+export type ClassExportTemplate = InferSelectModel<typeof classExportTemplates>;
+export type NewClassExportTemplate = InferInsertModel<
+	typeof classExportTemplates
+>;
+
+export const classExportTemplatesRelations = relations(
+	classExportTemplates,
+	({ one }) => ({
+		class: one(classes, {
+			fields: [classExportTemplates.classId],
+			references: [classes.id],
+		}),
+		template: one(exportTemplates, {
+			fields: [classExportTemplates.templateId],
+			references: [exportTemplates.id],
+		}),
+	}),
+);
 
 // ---------------------------------------------------------------------------
 // Batch Jobs Framework
@@ -2406,6 +3168,18 @@ export type DeliberationStudentResult = InferSelectModel<
 export type NewDeliberationStudentResult = InferInsertModel<
 	typeof deliberationStudentResults
 >;
+export type AcademicYearTransition = InferSelectModel<
+	typeof academicYearTransitions
+>;
+export type NewAcademicYearTransition = InferInsertModel<
+	typeof academicYearTransitions
+>;
+export type AcademicYearTransitionItem = InferSelectModel<
+	typeof academicYearTransitionItems
+>;
+export type NewAcademicYearTransitionItem = InferInsertModel<
+	typeof academicYearTransitionItems
+>;
 export type DeliberationRule = InferSelectModel<typeof deliberationRules>;
 export type NewDeliberationRule = InferInsertModel<typeof deliberationRules>;
 export type DeliberationLog = InferSelectModel<typeof deliberationLogs>;
@@ -2458,6 +3232,1369 @@ export const diplomationDocumentsRelations = relations(
 		generatedByApiKey: one(diplomationApiKeys, {
 			fields: [diplomationDocuments.generatedByApiKeyId],
 			references: [diplomationApiKeys.id],
+		}),
+	}),
+);
+
+// ---------------------------------------------------------------------------
+// Fee Clearance / Quitus — JVL-5
+// ---------------------------------------------------------------------------
+
+export const feeAssignmentStatuses = [
+	"unpaid",
+	"partial",
+	"paid",
+	"exempt",
+] as const;
+export type FeeAssignmentStatus = (typeof feeAssignmentStatuses)[number];
+
+export const feePaymentMethods = [
+	"cash",
+	"bank_transfer",
+	"mobile_money",
+	"check",
+	"other",
+] as const;
+export type FeePaymentMethod = (typeof feePaymentMethods)[number];
+
+export const feeGates = [
+	"exam_registration",
+	"transcript",
+	"diploma",
+	"reenrollment",
+	"document_generation",
+] as const;
+export type FeeGate = (typeof feeGates)[number];
+
+/** Fee template: total fees due for a given institution / year / optional program. */
+export const feeStructures = pgTable(
+	"fee_structures",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		/** Null = applies to all programs in the institution for this year. */
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "set null",
+		}),
+		/** Null = applies to all levels. */
+		cycleLevelId: text("cycle_level_id").references(() => cycleLevels.id, {
+			onDelete: "set null",
+		}),
+		name: text("name").notNull(),
+		description: text("description"),
+		totalAmount: numeric("total_amount", { precision: 12, scale: 2 })
+			.notNull()
+			.default("0"),
+		currency: text("currency").notNull().default("XAF"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		index("idx_fee_structures_institution_year").on(
+			t.institutionId,
+			t.academicYearId,
+		),
+		index("idx_fee_structures_program").on(t.programId),
+		check("chk_fee_structures_amount", sql`${t.totalAmount} >= 0`),
+	],
+);
+
+/** Installment schedule within a fee structure (1st tranche, 2nd tranche, …). */
+export const feeStructureInstallments = pgTable(
+	"fee_structure_installments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		feeStructureId: text("fee_structure_id")
+			.notNull()
+			.references(() => feeStructures.id, { onDelete: "cascade" }),
+		label: text("label").notNull(),
+		amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+		dueDate: date("due_date"),
+		orderIndex: integer("order_index").notNull().default(0),
+	},
+	(t) => [
+		index("idx_fee_installments_structure").on(t.feeStructureId),
+		unique("uq_fee_installments_order").on(t.feeStructureId, t.orderIndex),
+		check("chk_fee_installments_amount", sql`${t.amount} > 0`),
+	],
+);
+
+/** Assigns a fee structure to a student for an academic year.
+ *  One row per student per year. Tracks clearance status and quitus date. */
+export const studentFeeAssignments = pgTable(
+	"student_fee_assignments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		feeStructureId: text("fee_structure_id")
+			.notNull()
+			.references(() => feeStructures.id),
+		/** Amount after discount. Set from feeStructure.totalAmount at assignment time. */
+		effectiveAmount: numeric("effective_amount", {
+			precision: 12,
+			scale: 2,
+		}).notNull(),
+		currency: text("currency").notNull().default("XAF"),
+		discountAmount: numeric("discount_amount", { precision: 12, scale: 2 })
+			.notNull()
+			.default("0"),
+		discountReason: text("discount_reason"),
+		status: text("status")
+			.$type<FeeAssignmentStatus>()
+			.notNull()
+			.default("unpaid"),
+		/** Set when status transitions to 'paid'. Printed as the quitus date. */
+		clearedAt: timestamp("cleared_at", { withTimezone: true }),
+		notes: text("notes"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		unique("uq_student_fee_assignments_student_year").on(
+			t.institutionId,
+			t.studentId,
+			t.academicYearId,
+		),
+		index("idx_student_fee_assignments_institution_year").on(
+			t.institutionId,
+			t.academicYearId,
+		),
+		index("idx_student_fee_assignments_student").on(t.studentId),
+		index("idx_student_fee_assignments_status").on(t.institutionId, t.status),
+		check(
+			"chk_student_fee_assignments_discount",
+			sql`${t.discountAmount} >= 0 AND ${t.discountAmount} <= ${t.effectiveAmount}`,
+		),
+	],
+);
+
+export const feePaymentOrderStatuses = [
+	"pending",
+	"confirmed",
+	"cancelled",
+] as const;
+export type FeePaymentOrderStatus = (typeof feePaymentOrderStatuses)[number];
+
+/**
+ * A payment order (bon de caisse / quitus) generated before payment is
+ * made. The student takes this document to the cashier or bank.
+ * One order may cover one or several installments.
+ * Status transitions: pending → confirmed | cancelled.
+ */
+export const feePaymentOrders = pgTable(
+	"fee_payment_orders",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		feeAssignmentId: text("fee_assignment_id")
+			.notNull()
+			.references(() => studentFeeAssignments.id, { onDelete: "cascade" }),
+		status: text("status")
+			.$type<FeePaymentOrderStatus>()
+			.notNull()
+			.default("pending"),
+		/** Amount the student intends to pay with this order. */
+		amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+		currency: text("currency").notNull().default("XAF"),
+		/** Installment IDs covered by this order (empty array = full balance). */
+		installmentIds: jsonb("installment_ids")
+			.$type<string[]>()
+			.notNull()
+			.default(sql`'[]'::jsonb`),
+		/** Human-readable reference printed on the order document. */
+		reference: text("reference"),
+		notes: text("notes"),
+		/** Timestamp when admin/cashier confirmed the payment was received. */
+		confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+		confirmedBy: text("confirmed_by").references(() => domainUsers.id),
+		expiresAt: timestamp("expires_at", { withTimezone: true }),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_fee_payment_orders_assignment").on(t.feeAssignmentId),
+		index("idx_fee_payment_orders_institution_status").on(
+			t.institutionId,
+			t.status,
+		),
+		check("chk_fee_payment_orders_amount", sql`${t.amount} > 0`),
+	],
+);
+
+/** A single payment confirmation recorded by admin against a student fee assignment. */
+export const feePayments = pgTable(
+	"fee_payments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		feeAssignmentId: text("fee_assignment_id")
+			.notNull()
+			.references(() => studentFeeAssignments.id, { onDelete: "cascade" }),
+		/** Optional: links this confirmation to a prior payment order. */
+		paymentOrderId: text("payment_order_id").references(
+			() => feePaymentOrders.id,
+			{ onDelete: "set null" },
+		),
+		/** Optional: which installment this payment satisfies. */
+		installmentId: text("installment_id").references(
+			() => feeStructureInstallments.id,
+			{ onDelete: "set null" },
+		),
+		amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+		currency: text("currency").notNull().default("XAF"),
+		paymentDate: date("payment_date").notNull(),
+		paymentMethod: text("payment_method")
+			.$type<FeePaymentMethod>()
+			.notNull()
+			.default("cash"),
+		/** Bank slip, mobile money transaction ID, check number, etc. */
+		reference: text("reference"),
+		notes: text("notes"),
+		recordedBy: text("recorded_by")
+			.notNull()
+			.references(() => domainUsers.id),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_fee_payments_assignment").on(t.feeAssignmentId),
+		index("idx_fee_payments_institution_date").on(
+			t.institutionId,
+			t.paymentDate,
+		),
+		index("idx_fee_payments_order").on(t.paymentOrderId),
+		check("chk_fee_payments_amount", sql`${t.amount} > 0`),
+	],
+);
+
+/** Per-institution toggle for which academic actions require fee clearance. */
+export const feeGatingRules = pgTable(
+	"fee_gating_rules",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		gate: text("gate").$type<FeeGate>().notNull(),
+		isEnabled: boolean("is_enabled").notNull().default(false),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedBy: text("updated_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		unique("uq_fee_gating_rules_institution_gate").on(t.institutionId, t.gate),
+		index("idx_fee_gating_rules_institution").on(t.institutionId),
+	],
+);
+
+export type FeeStructure = InferSelectModel<typeof feeStructures>;
+export type NewFeeStructure = InferInsertModel<typeof feeStructures>;
+export type FeeStructureInstallment = InferSelectModel<
+	typeof feeStructureInstallments
+>;
+export type NewFeeStructureInstallment = InferInsertModel<
+	typeof feeStructureInstallments
+>;
+export type StudentFeeAssignment = InferSelectModel<
+	typeof studentFeeAssignments
+>;
+export type NewStudentFeeAssignment = InferInsertModel<
+	typeof studentFeeAssignments
+>;
+export type FeePayment = InferSelectModel<typeof feePayments>;
+export type NewFeePayment = InferInsertModel<typeof feePayments>;
+export type FeePaymentOrder = InferSelectModel<typeof feePaymentOrders>;
+export type NewFeePaymentOrder = InferInsertModel<typeof feePaymentOrders>;
+export type FeeGatingRule = InferSelectModel<typeof feeGatingRules>;
+export type NewFeeGatingRule = InferInsertModel<typeof feeGatingRules>;
+
+export const feeAssignmentBatchModes = [
+	"class",
+	"program",
+	"year",
+	"students",
+] as const;
+export type FeeAssignmentBatchMode = (typeof feeAssignmentBatchModes)[number];
+
+/** Immutable audit record created whenever a bulk fee assignment run completes. */
+export const feeAssignmentBatches = pgTable(
+	"fee_assignment_batches",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		mode: text("mode").$type<FeeAssignmentBatchMode>().notNull(),
+		/** Class/program/year ID depending on mode. Null for student-list mode. */
+		scopeId: text("scope_id"),
+		feeStructureId: text("fee_structure_id").references(
+			() => feeStructures.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		feeStructureName: text("fee_structure_name").notNull(),
+		assignedCount: integer("assigned_count").notNull().default(0),
+		skippedCount: integer("skipped_count").notNull().default(0),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_fee_assignment_batches_institution").on(t.institutionId),
+		index("idx_fee_assignment_batches_created_at").on(
+			t.institutionId,
+			t.createdAt,
+		),
+	],
+);
+
+export type FeeAssignmentBatch = InferSelectModel<typeof feeAssignmentBatches>;
+export type NewFeeAssignmentBatch = InferInsertModel<
+	typeof feeAssignmentBatches
+>;
+
+export const feeStructuresRelations = relations(
+	feeStructures,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [feeStructures.institutionId],
+			references: [institutions.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [feeStructures.academicYearId],
+			references: [academicYears.id],
+		}),
+		program: one(programs, {
+			fields: [feeStructures.programId],
+			references: [programs.id],
+		}),
+		cycleLevel: one(cycleLevels, {
+			fields: [feeStructures.cycleLevelId],
+			references: [cycleLevels.id],
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [feeStructures.createdBy],
+			references: [domainUsers.id],
+		}),
+		installments: many(feeStructureInstallments),
+		assignments: many(studentFeeAssignments),
+	}),
+);
+
+export const feeStructureInstallmentsRelations = relations(
+	feeStructureInstallments,
+	({ one, many }) => ({
+		feeStructure: one(feeStructures, {
+			fields: [feeStructureInstallments.feeStructureId],
+			references: [feeStructures.id],
+		}),
+		payments: many(feePayments),
+	}),
+);
+
+export const studentFeeAssignmentsRelations = relations(
+	studentFeeAssignments,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [studentFeeAssignments.institutionId],
+			references: [institutions.id],
+		}),
+		student: one(students, {
+			fields: [studentFeeAssignments.studentId],
+			references: [students.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [studentFeeAssignments.academicYearId],
+			references: [academicYears.id],
+		}),
+		feeStructure: one(feeStructures, {
+			fields: [studentFeeAssignments.feeStructureId],
+			references: [feeStructures.id],
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [studentFeeAssignments.createdBy],
+			references: [domainUsers.id],
+		}),
+		payments: many(feePayments),
+		orders: many(feePaymentOrders),
+	}),
+);
+
+export const feePaymentOrdersRelations = relations(
+	feePaymentOrders,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [feePaymentOrders.institutionId],
+			references: [institutions.id],
+		}),
+		feeAssignment: one(studentFeeAssignments, {
+			fields: [feePaymentOrders.feeAssignmentId],
+			references: [studentFeeAssignments.id],
+		}),
+		confirmedByRef: one(domainUsers, {
+			fields: [feePaymentOrders.confirmedBy],
+			references: [domainUsers.id],
+			relationName: "orderConfirmedBy",
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [feePaymentOrders.createdBy],
+			references: [domainUsers.id],
+			relationName: "orderCreatedBy",
+		}),
+		payments: many(feePayments),
+	}),
+);
+
+export const feePaymentsRelations = relations(feePayments, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [feePayments.institutionId],
+		references: [institutions.id],
+	}),
+	feeAssignment: one(studentFeeAssignments, {
+		fields: [feePayments.feeAssignmentId],
+		references: [studentFeeAssignments.id],
+	}),
+	order: one(feePaymentOrders, {
+		fields: [feePayments.paymentOrderId],
+		references: [feePaymentOrders.id],
+	}),
+	installment: one(feeStructureInstallments, {
+		fields: [feePayments.installmentId],
+		references: [feeStructureInstallments.id],
+	}),
+	recordedByRef: one(domainUsers, {
+		fields: [feePayments.recordedBy],
+		references: [domainUsers.id],
+	}),
+}));
+
+export const feeGatingRulesRelations = relations(feeGatingRules, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [feeGatingRules.institutionId],
+		references: [institutions.id],
+	}),
+	updatedByRef: one(domainUsers, {
+		fields: [feeGatingRules.updatedBy],
+		references: [domainUsers.id],
+	}),
+}));
+
+export const feeAssignmentBatchesRelations = relations(
+	feeAssignmentBatches,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [feeAssignmentBatches.institutionId],
+			references: [institutions.id],
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [feeAssignmentBatches.createdBy],
+			references: [domainUsers.id],
+		}),
+		feeStructure: one(feeStructures, {
+			fields: [feeAssignmentBatches.feeStructureId],
+			references: [feeStructures.id],
+		}),
+	}),
+);
+
+// ── Course Timetable ────────────────────────────────────────────────────────
+
+export const daysOfWeek = [
+	"mon",
+	"tue",
+	"wed",
+	"thu",
+	"fri",
+	"sat",
+	"sun",
+] as const;
+export type DayOfWeek = (typeof daysOfWeek)[number];
+
+// ── Rooms ─────────────────────────────────────────────────────────────────────
+
+export const rooms = pgTable(
+	"rooms",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		code: text("code").notNull(),
+		name: text("name").notNull(),
+		capacity: integer("capacity"),
+		building: text("building"),
+		campus: text("campus"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("rooms_institution_code").on(t.institutionId, t.code),
+		index("idx_rooms_institution").on(t.institutionId),
+	],
+);
+
+export type Room = typeof rooms.$inferSelect;
+export type NewRoom = typeof rooms.$inferInsert;
+
+export const roomsRelations = relations(rooms, ({ one, many }) => ({
+	institution: one(institutions, {
+		fields: [rooms.institutionId],
+		references: [institutions.id],
+	}),
+	sessions: many(courseSessions),
+}));
+
+// ── Course Sessions ───────────────────────────────────────────────────────────
+
+export const courseSessions = pgTable(
+	"course_sessions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		dayOfWeek: text("day_of_week").notNull().$type<DayOfWeek>(),
+		startTime: text("start_time").notNull(),
+		endTime: text("end_time").notNull(),
+		room: text("room"),
+		roomId: text("room_id").references(() => rooms.id, {
+			onDelete: "set null",
+		}),
+		semesterId: text("semester_id").references(() => semesters.id, {
+			onDelete: "set null",
+		}),
+		validFrom: date("valid_from"),
+		validUntil: date("valid_until"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_course_sessions_institution").on(t.institutionId),
+		index("idx_course_sessions_class_course").on(t.classCourseId),
+		index("idx_course_sessions_academic_year").on(t.academicYearId),
+		index("idx_course_sessions_day").on(t.institutionId, t.dayOfWeek),
+	],
+);
+
+export type CourseSession = typeof courseSessions.$inferSelect;
+export type NewCourseSession = typeof courseSessions.$inferInsert;
+
+export const courseSessionsRelations = relations(courseSessions, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [courseSessions.institutionId],
+		references: [institutions.id],
+	}),
+	classCourse: one(classCourses, {
+		fields: [courseSessions.classCourseId],
+		references: [classCourses.id],
+	}),
+	academicYear: one(academicYears, {
+		fields: [courseSessions.academicYearId],
+		references: [academicYears.id],
+	}),
+	roomRef: one(rooms, {
+		fields: [courseSessions.roomId],
+		references: [rooms.id],
+	}),
+	semester: one(semesters, {
+		fields: [courseSessions.semesterId],
+		references: [semesters.id],
+	}),
+}));
+
+// ── Grade Scales ──────────────────────────────────────────────────────────────
+
+export type MentionRange = {
+	key: string;
+	label: string;
+	labelEn: string;
+	gradeLetter: string;
+	min: number;
+};
+
+export const DEFAULT_MENTION_RANGES: MentionRange[] = [
+	{
+		key: "excellent",
+		label: "Excellent",
+		labelEn: "Excellent",
+		gradeLetter: "A",
+		min: 18,
+	},
+	{
+		key: "tres_bien",
+		label: "Très Bien",
+		labelEn: "Very Good",
+		gradeLetter: "B",
+		min: 16,
+	},
+	{ key: "bien", label: "Bien", labelEn: "Good", gradeLetter: "C", min: 14 },
+	{
+		key: "assez_bien",
+		label: "Assez Bien",
+		labelEn: "Fair",
+		gradeLetter: "D",
+		min: 12,
+	},
+	{
+		key: "passable",
+		label: "Passable",
+		labelEn: "Satisfactory",
+		gradeLetter: "E",
+		min: 10,
+	},
+];
+
+export const gradeScales = pgTable(
+	"grade_scales",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "cascade",
+		}),
+		passThreshold: numeric("pass_threshold", { precision: 5, scale: 2 })
+			.notNull()
+			.default("10"),
+		compensationThreshold: numeric("compensation_threshold", {
+			precision: 5,
+			scale: 2,
+		})
+			.notNull()
+			.default("8"),
+		mentionRanges: jsonb("mention_ranges")
+			.$type<MentionRange[]>()
+			.notNull()
+			.default(sql`'[]'::jsonb`),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		// One institution-level scale per institution (no program override)
+		uniqueIndex("grade_scales_institution_only_unique")
+			.on(t.institutionId)
+			.where(sql`${t.programId} IS NULL`),
+		// One program-level scale per program within an institution
+		uniqueIndex("grade_scales_program_unique")
+			.on(t.institutionId, t.programId)
+			.where(sql`${t.programId} IS NOT NULL`),
+	],
+);
+
+export type GradeScale = InferSelectModel<typeof gradeScales>;
+export type NewGradeScale = InferInsertModel<typeof gradeScales>;
+
+export const gradeScalesRelations = relations(gradeScales, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [gradeScales.institutionId],
+		references: [institutions.id],
+	}),
+	program: one(programs, {
+		fields: [gradeScales.programId],
+		references: [programs.id],
+	}),
+}));
+
+// ── Attendance ────────────────────────────────────────────────────────────────
+
+export const attendanceStatuses = [
+	"present",
+	"absent",
+	"late",
+	"excused",
+] as const;
+export type AttendanceStatus = (typeof attendanceStatuses)[number];
+
+/** One occurrence of a class course on a calendar date (regular or ad-hoc). */
+export const attendanceSessions = pgTable(
+	"attendance_sessions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		courseSessionId: text("course_session_id").references(
+			() => courseSessions.id,
+			{ onDelete: "set null" },
+		),
+		sessionDate: date("session_date").notNull(),
+		notes: text("notes"),
+		isExceptional: boolean("is_exceptional").notNull().default(false),
+		createdBy: text("created_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_attendance_sessions_institution").on(t.institutionId),
+		index("idx_attendance_sessions_class_course").on(t.classCourseId),
+		index("idx_attendance_sessions_academic_year").on(t.academicYearId),
+		index("idx_attendance_sessions_date").on(t.sessionDate),
+		// Partial unique indexes guarantee idempotency and eliminate TOCTOU race conditions.
+		uniqueIndex("uq_atten_session_exceptional")
+			.on(t.classCourseId, t.sessionDate)
+			.where(sql`${t.courseSessionId} IS NULL`),
+		uniqueIndex("uq_atten_session_scheduled")
+			.on(t.classCourseId, t.courseSessionId, t.sessionDate)
+			.where(sql`${t.courseSessionId} IS NOT NULL`),
+	],
+);
+
+export type AttendanceSession = InferSelectModel<typeof attendanceSessions>;
+export type NewAttendanceSession = InferInsertModel<typeof attendanceSessions>;
+
+/** Admin-granted override allowing a below-threshold student to sit exams for a course. */
+export const attendanceExemptions = pgTable(
+	"attendance_exemptions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		reason: text("reason").notNull(),
+		grantedBy: text("granted_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		grantedAt: timestamp("granted_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_attendance_exemption").on(t.classCourseId, t.studentId),
+		index("idx_attendance_exemption_institution").on(t.institutionId),
+	],
+);
+
+export type AttendanceExemption = InferSelectModel<typeof attendanceExemptions>;
+
+/** Append-only audit trail for every grant/revoke action on attendance exemptions. */
+export const attendanceExemptionLogs = pgTable(
+	"attendance_exemption_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		action: text("action", { enum: ["granted", "revoked"] }).notNull(),
+		reason: text("reason"),
+		actorId: text("actor_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_exemption_log_cc_student").on(t.classCourseId, t.studentId),
+		index("idx_exemption_log_institution").on(t.institutionId),
+	],
+);
+export type AttendanceExemptionLog = InferSelectModel<
+	typeof attendanceExemptionLogs
+>;
+
+export const attendanceSessionsRelations = relations(
+	attendanceSessions,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [attendanceSessions.institutionId],
+			references: [institutions.id],
+		}),
+		classCourse: one(classCourses, {
+			fields: [attendanceSessions.classCourseId],
+			references: [classCourses.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [attendanceSessions.academicYearId],
+			references: [academicYears.id],
+		}),
+		courseSession: one(courseSessions, {
+			fields: [attendanceSessions.courseSessionId],
+			references: [courseSessions.id],
+		}),
+		creator: one(domainUsers, {
+			fields: [attendanceSessions.createdBy],
+			references: [domainUsers.id],
+		}),
+		records: many(attendanceRecords),
+	}),
+);
+
+/** Per-student attendance record for one session. */
+export const attendanceRecords = pgTable(
+	"attendance_records",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		attendanceSessionId: text("attendance_session_id")
+			.notNull()
+			.references(() => attendanceSessions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		status: text("status")
+			.notNull()
+			.$type<AttendanceStatus>()
+			.default("present"),
+		excuseCategory: text("excuse_category"),
+		excuseReason: text("excuse_reason"),
+		justificationDocumentUrl: text("justification_document_url"),
+		excuseApprovedBy: text("excuse_approved_by").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		excuseApprovedAt: timestamp("excuse_approved_at", { withTimezone: true }),
+		markedBy: text("marked_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_attendance_record_session_student").on(
+			t.attendanceSessionId,
+			t.studentId,
+		),
+		index("idx_attendance_records_institution").on(t.institutionId),
+		index("idx_attendance_records_session").on(t.attendanceSessionId),
+		index("idx_attendance_records_student").on(t.studentId),
+		check(
+			"chk_attendance_record_status",
+			sql`${t.status} IN ('present', 'absent', 'late', 'excused')`,
+		),
+	],
+);
+
+export type AttendanceRecord = InferSelectModel<typeof attendanceRecords>;
+export type NewAttendanceRecord = InferInsertModel<typeof attendanceRecords>;
+
+/** Append-only audit trail for every excuse approval/rejection action. */
+export const attendanceExcuseAuditLogs = pgTable(
+	"attendance_excuse_audit_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		// Nullable so bulkMark's DELETE+INSERT cycle does not cascade-delete excuse history.
+		// attendanceSessionId + studentId are stable snapshot fields preserved if the record is replaced.
+		attendanceRecordId: text("attendance_record_id").references(
+			() => attendanceRecords.id,
+			{ onDelete: "set null" },
+		),
+		attendanceSessionId: text("attendance_session_id").references(
+			() => attendanceSessions.id,
+			{ onDelete: "set null" },
+		),
+		studentId: text("student_id").references(() => students.id, {
+			onDelete: "set null",
+		}),
+		action: text("action", { enum: ["approved", "rejected"] }).notNull(),
+		category: text("category"),
+		reason: text("reason").notNull(),
+		justificationDocumentUrl: text("justification_document_url"),
+		actorId: text("actor_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_excuse_audit_record").on(t.attendanceRecordId),
+		index("idx_excuse_audit_institution").on(t.institutionId),
+	],
+);
+export type AttendanceExcuseAuditLog = InferSelectModel<
+	typeof attendanceExcuseAuditLogs
+>;
+
+export const attendanceRecordsRelations = relations(
+	attendanceRecords,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [attendanceRecords.institutionId],
+			references: [institutions.id],
+		}),
+		attendanceSession: one(attendanceSessions, {
+			fields: [attendanceRecords.attendanceSessionId],
+			references: [attendanceSessions.id],
+		}),
+		student: one(students, {
+			fields: [attendanceRecords.studentId],
+			references: [students.id],
+		}),
+		approvedBy: one(domainUsers, {
+			fields: [attendanceRecords.excuseApprovedBy],
+			references: [domainUsers.id],
+		}),
+		marker: one(domainUsers, {
+			fields: [attendanceRecords.markedBy],
+			references: [domainUsers.id],
+		}),
+	}),
+);
+
+/** Per-exam participation roster: tracks which students are eligible to sit an exam.
+ *  Generated from attendance data; can be overridden by an admin before locking. */
+export const examParticipationRosters = pgTable(
+	"exam_participation_rosters",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		examId: text("exam_id")
+			.notNull()
+			.references(() => exams.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		eligible: boolean("eligible").notNull().default(true),
+		/** Human-readable reason for ineligibility or override explanation. */
+		reason: text("reason"),
+		/** True if an attendance exemption was applied when computing eligibility. */
+		exempted: boolean("exempted").notNull().default(false),
+		/** Set when lockExamRoster is called — prevents further overrides. */
+		lockedAt: timestamp("locked_at", { withTimezone: true }),
+		lockedBy: text("locked_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		uniqueIndex("uq_exam_participation_roster").on(t.examId, t.studentId),
+		index("idx_exam_roster_institution").on(t.institutionId),
+		index("idx_exam_roster_exam").on(t.examId),
+	],
+);
+
+export type ExamParticipationRoster = InferSelectModel<
+	typeof examParticipationRosters
+>;
+
+export const examParticipationRostersRelations = relations(
+	examParticipationRosters,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [examParticipationRosters.institutionId],
+			references: [institutions.id],
+		}),
+		exam: one(exams, {
+			fields: [examParticipationRosters.examId],
+			references: [exams.id],
+		}),
+		student: one(students, {
+			fields: [examParticipationRosters.studentId],
+			references: [students.id],
+		}),
+		lockedByUser: one(domainUsers, {
+			fields: [examParticipationRosters.lockedBy],
+			references: [domainUsers.id],
+		}),
+	}),
+);
+
+// ─── Document Downloads ───────────────────────────────────────────────────────
+
+export const documentDownloads = pgTable("document_downloads", {
+	id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+	institutionId: text("institution_id")
+		.notNull()
+		.references(() => institutions.id, { onDelete: "cascade" }),
+	studentId: text("student_id")
+		.notNull()
+		.references(() => students.id, { onDelete: "cascade" }),
+	kind: text("kind").notNull(),
+	downloadedAt: timestamp("downloaded_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+});
+
+export const documentDownloadsRelations = relations(
+	documentDownloads,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [documentDownloads.institutionId],
+			references: [institutions.id],
+		}),
+		student: one(students, {
+			fields: [documentDownloads.studentId],
+			references: [students.id],
+		}),
+	}),
+);
+
+// ─── Admissions ───────────────────────────────────────────────────────────────
+
+export const admissionApplicationStatuses = [
+	"draft",
+	"submitted",
+	"under_review",
+	"accepted",
+	"rejected",
+	"waitlisted",
+] as const;
+export type AdmissionApplicationStatus =
+	(typeof admissionApplicationStatuses)[number];
+
+export const admissionDocumentStatuses = [
+	"pending",
+	"valid",
+	"invalid",
+] as const;
+export type AdmissionDocumentStatus =
+	(typeof admissionDocumentStatuses)[number];
+
+/** A person who has applied for admission — separate from a student profile. */
+export const applicants = pgTable(
+	"applicants",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		firstName: text("first_name").notNull(),
+		lastName: text("last_name").notNull(),
+		email: text("email").notNull(),
+		phone: text("phone"),
+		dateOfBirth: text("date_of_birth"),
+		nationality: text("nationality"),
+		previousDiploma: text("previous_diploma"),
+		previousInstitution: text("previous_institution"),
+		/** Short code (e.g. APP-2026-XXXX) for status lookup without a login. */
+		referenceCode: text("reference_code").notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_applicants_reference_code").on(t.referenceCode),
+		unique("uq_applicants_institution_email").on(t.institutionId, t.email),
+		index("idx_applicants_institution").on(t.institutionId),
+	],
+);
+export type Applicant = InferSelectModel<typeof applicants>;
+export type NewApplicant = InferInsertModel<typeof applicants>;
+
+/** A single admission dossier linking an applicant to a target program/year. */
+export const admissionApplications = pgTable(
+	"admission_applications",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		applicantId: text("applicant_id")
+			.notNull()
+			.references(() => applicants.id, { onDelete: "cascade" }),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "restrict" }),
+		classId: text("class_id").references(() => classes.id, {
+			onDelete: "set null",
+		}),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		status: text("status")
+			.$type<AdmissionApplicationStatus>()
+			.notNull()
+			.default("draft"),
+		personalStatement: text("personal_statement"),
+		reviewNotes: text("review_notes"),
+		reviewedById: text("reviewed_by_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }),
+		convertedStudentId: text("converted_student_id").references(
+			() => students.id,
+			{ onDelete: "set null" },
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_admission_applications_institution").on(t.institutionId),
+		index("idx_admission_applications_applicant").on(t.applicantId),
+		index("idx_admission_applications_program").on(t.programId),
+		index("idx_admission_applications_year").on(t.academicYearId),
+		index("idx_admission_applications_status").on(t.status),
+	],
+);
+export type AdmissionApplication = InferSelectModel<
+	typeof admissionApplications
+>;
+export type NewAdmissionApplication = InferInsertModel<
+	typeof admissionApplications
+>;
+
+/** Configurable supporting document required during admission review. */
+export const admissionDocumentRequirements = pgTable(
+	"admission_document_requirements",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "cascade",
+		}),
+		code: text("code").notNull(),
+		label: text("label").notNull(),
+		description: text("description"),
+		isRequired: boolean("is_required").notNull().default(true),
+		allowedMimeTypes: jsonb("allowed_mime_types").$type<string[]>().default([]),
+		maxSizeBytes: integer("max_size_bytes"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_admission_doc_req_scope_code").on(
+			t.institutionId,
+			t.programId,
+			t.code,
+		),
+		index("idx_admission_doc_req_institution").on(t.institutionId),
+		index("idx_admission_doc_req_program").on(t.programId),
+	],
+);
+export type AdmissionDocumentRequirement = InferSelectModel<
+	typeof admissionDocumentRequirements
+>;
+export type NewAdmissionDocumentRequirement = InferInsertModel<
+	typeof admissionDocumentRequirements
+>;
+
+/** A supporting document reference submitted by an applicant. */
+export const admissionApplicationDocuments = pgTable(
+	"admission_application_documents",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		applicationId: text("application_id")
+			.notNull()
+			.references(() => admissionApplications.id, { onDelete: "cascade" }),
+		requirementId: text("requirement_id").references(
+			() => admissionDocumentRequirements.id,
+			{ onDelete: "set null" },
+		),
+		code: text("code").notNull(),
+		label: text("label").notNull(),
+		fileName: text("file_name").notNull(),
+		fileUrl: text("file_url").notNull(),
+		mimeType: text("mime_type"),
+		sizeBytes: integer("size_bytes"),
+		status: text("status")
+			.$type<AdmissionDocumentStatus>()
+			.notNull()
+			.default("pending"),
+		reviewNotes: text("review_notes"),
+		reviewedById: text("reviewed_by_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_admission_app_doc_code").on(t.applicationId, t.code),
+		index("idx_admission_app_docs_application").on(t.applicationId),
+		index("idx_admission_app_docs_institution").on(t.institutionId),
+	],
+);
+export type AdmissionApplicationDocument = InferSelectModel<
+	typeof admissionApplicationDocuments
+>;
+export type NewAdmissionApplicationDocument = InferInsertModel<
+	typeof admissionApplicationDocuments
+>;
+
+export const applicantsRelations = relations(applicants, ({ one, many }) => ({
+	institution: one(institutions, {
+		fields: [applicants.institutionId],
+		references: [institutions.id],
+	}),
+	applications: many(admissionApplications),
+}));
+
+export const admissionApplicationsRelations = relations(
+	admissionApplications,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [admissionApplications.institutionId],
+			references: [institutions.id],
+		}),
+		applicant: one(applicants, {
+			fields: [admissionApplications.applicantId],
+			references: [applicants.id],
+		}),
+		program: one(programs, {
+			fields: [admissionApplications.programId],
+			references: [programs.id],
+		}),
+		class: one(classes, {
+			fields: [admissionApplications.classId],
+			references: [classes.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [admissionApplications.academicYearId],
+			references: [academicYears.id],
+		}),
+		reviewedBy: one(domainUsers, {
+			fields: [admissionApplications.reviewedById],
+			references: [domainUsers.id],
+		}),
+		convertedStudent: one(students, {
+			fields: [admissionApplications.convertedStudentId],
+			references: [students.id],
+		}),
+		documents: many(admissionApplicationDocuments),
+	}),
+);
+
+export const admissionDocumentRequirementsRelations = relations(
+	admissionDocumentRequirements,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [admissionDocumentRequirements.institutionId],
+			references: [institutions.id],
+		}),
+		program: one(programs, {
+			fields: [admissionDocumentRequirements.programId],
+			references: [programs.id],
+		}),
+	}),
+);
+
+export const admissionApplicationDocumentsRelations = relations(
+	admissionApplicationDocuments,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [admissionApplicationDocuments.institutionId],
+			references: [institutions.id],
+		}),
+		application: one(admissionApplications, {
+			fields: [admissionApplicationDocuments.applicationId],
+			references: [admissionApplications.id],
+		}),
+		requirement: one(admissionDocumentRequirements, {
+			fields: [admissionApplicationDocuments.requirementId],
+			references: [admissionDocumentRequirements.id],
+		}),
+		reviewedBy: one(domainUsers, {
+			fields: [admissionApplicationDocuments.reviewedById],
+			references: [domainUsers.id],
 		}),
 	}),
 );

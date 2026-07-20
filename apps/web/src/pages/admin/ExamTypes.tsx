@@ -1,9 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -45,10 +41,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { TablePagination } from "../../components/ui/table-pagination";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
-import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
+import { useConfirm } from "../../hooks/useConfirm";
 import { useRowSelection } from "../../hooks/useRowSelection";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 import type { ExamType } from "../../utils/type";
 
 const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
@@ -67,6 +64,8 @@ export default function ExamTypes() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingType, setEditingType] = useState<ExamType | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 	const form = useForm<FormValues>({
 		resolver: zodResolver(schema),
 		defaultValues: { name: "", description: "", defaultPercentage: 40 },
@@ -75,25 +74,14 @@ export default function ExamTypes() {
 	const resetForm = () =>
 		form.reset({ name: "", description: "", defaultPercentage: 40 });
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-		useInfiniteQuery({
-			queryKey: ["examTypes"],
-			queryFn: async ({ pageParam }) => {
-				const result = await trpcClient.examTypes.list.query({
-					cursor: pageParam,
-					limit: 20,
-				});
-				return result as { items: ExamType[]; nextCursor?: string };
-			},
-			initialPageParam: undefined as string | undefined,
-			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-		});
+	const { data, isLoading } = useQuery(
+		trpc.examTypes.listPaged.queryOptions({ page, pageSize }),
+	);
 
-	const examTypes = data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+	const examTypes = data?.items ?? [];
 	const selection = useRowSelection(examTypes);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const handleOpenCreate = () => {
 		setEditingType(null);
@@ -127,7 +115,7 @@ export default function ExamTypes() {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.examTypes.toast.createSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["examTypes"] });
+			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
 			handleCloseModal();
 		},
 		onError: (error: unknown) => {
@@ -150,7 +138,7 @@ export default function ExamTypes() {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.examTypes.toast.updateSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["examTypes"] });
+			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
 			handleCloseModal();
 		},
 		onError: (error: unknown) => {
@@ -168,7 +156,7 @@ export default function ExamTypes() {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.examTypes.toast.deleteSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["examTypes"] });
+			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
 			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
@@ -187,7 +175,7 @@ export default function ExamTypes() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["examTypes"] });
+			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -244,18 +232,20 @@ export default function ExamTypes() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -345,7 +335,17 @@ export default function ExamTypes() {
 									))}
 								</TableBody>
 							</Table>
-							<div ref={sentinelRef} className="h-1" />
+							<TablePagination
+								page={page}
+								pageCount={data?.pageCount ?? 1}
+								total={data?.total ?? 0}
+								pageSize={pageSize}
+								onPageChange={setPage}
+								onPageSizeChange={(s) => {
+									setPageSize(s);
+									setPage(1);
+								}}
+							/>
 						</>
 					) : (
 						<Empty>
@@ -437,6 +437,7 @@ export default function ExamTypes() {
 				message={t("admin.examTypes.delete.message")}
 				isLoading={deleteMutation.isPending}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

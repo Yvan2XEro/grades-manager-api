@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y \
     libappindicator3-1 \
     libasound2 \
     postgresql-client \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
@@ -35,13 +36,13 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 COPY package.json bun.lock bunfig.toml ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json apps/web/package.json
-RUN PUPPETEER_SKIP_DOWNLOAD=true bun install --ci --production --filter server --backend=hardlink --verbose
+RUN PUPPETEER_SKIP_DOWNLOAD=true bun install --filter server --backend=hardlink --verbose
 
 # Copy built application
 COPY --from=build /usr/src/app/apps/server/dist ./apps/server/dist
 COPY --from=build /usr/src/app/apps/server/storage ./apps/server/storage
 COPY --from=build /usr/src/app/apps/server/src/db/migrations ./apps/server/dist/db/migrations
-COPY --from=build /usr/src/app/apps/server/src/modules/exports/templates ./apps/server/dist/src/modules/exports/templates
+COPY --from=build /usr/src/app/apps/server/src/modules/exports/templates ./apps/server/dist/templates
 
 # Copy database schema and config for migrations/push
 COPY --from=build /usr/src/app/apps/server/src/db ./apps/server/src/db

@@ -22,6 +22,8 @@ export const listSchema = z.object({
 	teacherId: z.string().optional(),
 	academicYearId: z.string().optional(),
 	semesterId: z.string().optional(),
+	/** Filter by teaching-unit semester ("fall" | "spring" | "annual"). */
+	ueSemester: z.enum(["fall", "spring", "annual"]).optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });
@@ -37,4 +39,12 @@ export const searchSchema = z.object({
 	query: z.string().trim(),
 	classId: z.string().optional(),
 	limit: z.number().optional(),
+});
+
+export const listPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	classId: z.string().optional(),
+	academicYearId: z.string().optional(),
+	semesterId: z.string().optional(),
 });

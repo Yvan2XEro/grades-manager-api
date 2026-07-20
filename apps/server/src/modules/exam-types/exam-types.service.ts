@@ -32,3 +32,10 @@ export function getExamTypeById(id: string, institutionId: string) {
 export function listExamTypes(opts: ListInput, institutionId: string) {
 	return repo.list(institutionId, opts);
 }
+
+export async function listExamTypesPaged(
+	input: { page: number; pageSize: number },
+	institutionId: string,
+) {
+	return repo.listPaged(institutionId, input);
+}

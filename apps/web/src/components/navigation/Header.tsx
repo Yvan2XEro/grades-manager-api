@@ -139,6 +139,7 @@ const Header: React.FC = () => {
 
 	const userInitials =
 		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
+	const canAccessNotifications = Boolean(user);
 
 	// ⌘K / Ctrl+K global shortcut
 	useEffect(() => {
@@ -317,7 +318,7 @@ const Header: React.FC = () => {
 							</PopoverContent>
 						</Popover>
 
-						<NotificationBell />
+						{canAccessNotifications ? <NotificationBell /> : null}
 
 						{/* Avatar / profile dropdown */}
 						<DropdownMenu>

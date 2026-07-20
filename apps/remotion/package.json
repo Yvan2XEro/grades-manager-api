@@ -1,0 +1,32 @@
+{
+	"name": "remotion-presentation",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "remotion studio",
+		"render": "remotion render",
+		"build": "remotion render --output out/presentation.mp4"
+	},
+	"dependencies": {
+		"@remotion/bundler": "^4.0.446",
+		"@remotion/cli": "^4.0.446",
+		"@remotion/google-fonts": "^4.0.446",
+		"@remotion/layout-utils": "^4.0.446",
+		"@remotion/media-utils": "^4.0.446",
+		"@remotion/motion-blur": "^4.0.446",
+		"@remotion/preload": "^4.0.446",
+		"@remotion/renderer": "^4.0.446",
+		"@remotion/shapes": "^4.0.446",
+		"@remotion/transitions": "^4.0.446",
+		"lucide-react": "^1.7.0",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"remotion": "^4.0.446",
+		"zod": "4.3.6"
+	},
+	"devDependencies": {
+		"@types/react": "^18.3.1",
+		"@types/react-dom": "^18.3.1",
+		"typescript": "^5.6.3"
+	}
+}

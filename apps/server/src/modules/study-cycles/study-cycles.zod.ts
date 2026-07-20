@@ -4,6 +4,7 @@ export const cycleBaseSchema = z.object({
 	institutionId: z.string().optional(), // Auto-filled from context
 	code: z.string().min(1),
 	name: z.string().min(1),
+	nameEn: z.string().optional().nullable(),
 	description: z.string().optional(),
 	totalCreditsRequired: z.number().int().positive().optional(),
 	durationYears: z.number().int().positive().optional(),
@@ -33,6 +34,11 @@ export const updateLevelSchema = levelBaseSchema.partial().extend({
 
 export const levelListSchema = z.object({
 	cycleId: z.string(),
+});
+
+export const listCyclesPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
 });
 
 export const idSchema = z.object({ id: z.string() });

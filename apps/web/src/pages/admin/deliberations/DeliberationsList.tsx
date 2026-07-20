@@ -4,6 +4,9 @@ import { Gavel, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatusStepper } from "@/components/ui/status-stepper";
+import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Badge } from "../../../components/ui/badge";
@@ -40,18 +43,19 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import { TablePagination } from "../../../components/ui/table-pagination";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
-import { trpcClient } from "../../../utils/trpc";
+import { trpc, trpcClient } from "../../../utils/trpc";
 import CreateDeliberationDialog from "./CreateDeliberationDialog";
 
 const statusVariants: Record<
 	string,
-	"default" | "secondary" | "destructive" | "outline"
+	"default" | "secondary" | "destructive" | "outline" | "success" | "warning"
 > = {
-	draft: "outline",
+	draft: "secondary",
 	open: "default",
-	closed: "secondary",
-	signed: "default",
+	closed: "outline",
+	signed: "success",
 };
 
 const STATUSES = ["draft", "open", "closed", "signed"] as const;
@@ -62,70 +66,82 @@ export default function DeliberationsList() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
-	const [statusFilter, setStatusFilter] = useState<string>("all");
+	const [statusFilter, setStatusFilter] = useState<string>("open");
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+	const { confirm, ConfirmDialog } = useConfirm();
 
-	const deliberationsQuery = useQuery({
-		queryKey: ["deliberations", statusFilter, typeFilter, academicYearId],
-		queryFn: () =>
-			trpcClient.deliberations.list.query({
-				status:
-					statusFilter !== "all"
-						? (statusFilter as (typeof STATUSES)[number])
-						: undefined,
-				type:
-					typeFilter !== "all"
-						? (typeFilter as (typeof TYPES)[number])
-						: undefined,
-				academicYearId: academicYearId || undefined,
-				limit: 100,
-				offset: 0,
-			}),
-	});
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
+	const { data, isLoading } = useQuery(
+		trpc.deliberations.listPaged.queryOptions({
+			page,
+			pageSize,
+			academicYearId: academicYearId || undefined,
+			status: statusFilter !== "all" ? statusFilter : undefined,
+			type:
+				typeFilter !== "all"
+					? (typeFilter as (typeof TYPES)[number])
+					: undefined,
+		}),
+	);
 
 	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.deliberations.delete.mutate({ id }),
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.deleteSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
+			queryClient.invalidateQueries({
+				queryKey: trpc.deliberations.listPaged.queryKey(),
+			});
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
 
-	const items = deliberationsQuery.data?.items ?? [];
+	const items = data?.items ?? [];
 
 	return (
 		<div className="space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center space-x-3">
-					<Gavel className="h-6 w-6 text-primary" />
-					<div>
-						<h1 className="text-foreground">
-							{t("admin.deliberations.title")}
-						</h1>
-						<p className="text-muted-foreground text-xs">
-							{t("admin.deliberations.subtitle")}
-						</p>
-					</div>
-				</div>
-				<Button onClick={() => setIsCreateOpen(true)}>
-					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.deliberations.actions.create")}
-				</Button>
-			</div>
+			<PageHeader
+				title={t("admin.deliberations.title")}
+				description={t("admin.deliberations.subtitle")}
+				actions={
+					<Button onClick={() => setIsCreateOpen(true)}>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("admin.deliberations.actions.create")}
+					</Button>
+				}
+			/>
+
+			<StatusStepper
+				steps={[
+					{ key: "draft", label: t("admin.deliberations.status.draft") },
+					{ key: "open", label: t("admin.deliberations.status.open") },
+					{ key: "closed", label: t("admin.deliberations.status.closed") },
+					{ key: "signed", label: t("admin.deliberations.status.signed") },
+				]}
+				currentStatus={statusFilter !== "all" ? statusFilter : "draft"}
+			/>
 
 			{/* Filters */}
 			<div className="flex flex-wrap items-center gap-3">
 				<AcademicYearSelect
 					value={academicYearId}
-					onChange={setAcademicYearId}
+					onChange={handleFilter(setAcademicYearId)}
 					placeholder={t("admin.deliberations.filters.allYears")}
 					autoSelectActive
 					className="w-[200px]"
 				/>
-				<Select value={statusFilter} onValueChange={setStatusFilter}>
+				<Select
+					value={statusFilter}
+					onValueChange={handleFilter(setStatusFilter)}
+				>
 					<SelectTrigger className="w-[160px]">
 						<SelectValue />
 					</SelectTrigger>
@@ -140,7 +156,7 @@ export default function DeliberationsList() {
 						))}
 					</SelectContent>
 				</Select>
-				<Select value={typeFilter} onValueChange={setTypeFilter}>
+				<Select value={typeFilter} onValueChange={handleFilter(setTypeFilter)}>
 					<SelectTrigger className="w-[160px]">
 						<SelectValue />
 					</SelectTrigger>
@@ -159,7 +175,7 @@ export default function DeliberationsList() {
 
 			{/* Table */}
 			<div className="rounded-xl border bg-card shadow-sm">
-				{deliberationsQuery.isLoading ? (
+				{isLoading ? (
 					<TableSkeleton columns={7} rows={8} />
 				) : items.length === 0 ? (
 					<Empty className="border border-dashed">
@@ -210,14 +226,19 @@ export default function DeliberationsList() {
 													<ContextMenuSeparator />
 													<ContextMenuItem
 														className="text-destructive"
-														onSelect={() => {
-															if (
-																window.confirm(
-																	t("admin.deliberations.confirm.delete"),
-																)
-															) {
-															}
-														}}
+														onSelect={() =>
+															confirm({
+																title: t(
+																	"admin.deliberations.confirm.deleteTitle",
+																	{ defaultValue: "Delete deliberation?" },
+																),
+																message: t(
+																	"admin.deliberations.confirm.delete",
+																),
+																confirmText: t("common.actions.delete"),
+																onConfirm: () => deleteMutation.mutate(d.id),
+															})
+														}
 													>
 														{t("common.actions.delete")}
 													</ContextMenuItem>
@@ -266,15 +287,21 @@ export default function DeliberationsList() {
 													<DropdownMenuContent align="end">
 														<DropdownMenuItem
 															className="text-destructive"
-															onClick={() => {
-																if (
-																	window.confirm(
-																		t("admin.deliberations.confirm.delete"),
-																	)
-																) {
-																	deleteMutation.mutate(d.id);
-																}
-															}}
+															onClick={() =>
+																confirm({
+																	title: t(
+																		"admin.deliberations.confirm.deleteTitle",
+																		{ defaultValue: "Delete deliberation?" },
+																	),
+																	message: t(
+																		"admin.deliberations.confirm.delete",
+																	),
+																	confirmText: t(
+																		"admin.deliberations.actions.delete",
+																	),
+																	onConfirm: () => deleteMutation.mutate(d.id),
+																})
+															}
 														>
 															<Trash2 className="mr-2 h-4 w-4" />
 															{t("admin.deliberations.actions.delete")}
@@ -291,10 +318,23 @@ export default function DeliberationsList() {
 				)}
 			</div>
 
+			<TablePagination
+				page={page}
+				pageCount={data?.pageCount ?? 1}
+				total={data?.total ?? 0}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={(size) => {
+					setPageSize(size);
+					setPage(1);
+				}}
+			/>
+
 			<CreateDeliberationDialog
 				open={isCreateOpen}
 				onOpenChange={setIsCreateOpen}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

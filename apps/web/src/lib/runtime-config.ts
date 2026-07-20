@@ -24,16 +24,9 @@ export function getServerUrl(): string {
 	return value.replace(/\/$/, "");
 }
 
-export function getDefaultOrganizationSlug(): string {
-	const value =
+export function getDefaultOrganizationSlug(): string | undefined {
+	return (
 		readConfigValue(getWindowConfig().defaultOrganizationSlug) ??
-		readConfigValue(import.meta.env.VITE_DEFAULT_ORGANIZATION_SLUG);
-
-	if (!value) {
-		throw new Error(
-			"Default organization slug is required. Set DEFAULT_ORGANIZATION_SLUG at container runtime or VITE_DEFAULT_ORGANIZATION_SLUG for Vite-based development.",
-		);
-	}
-
-	return value;
+		readConfigValue(import.meta.env.VITE_DEFAULT_ORGANIZATION_SLUG)
+	);
 }

@@ -1,0 +1,2233 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TKAMS — Brochure (Direction B · Moderne)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+/* ========== DIRECTION B — MODERNE, CONFIANTE, MODULAIRE ========== */
+
+.page { padding: 0; background: white; }
+.page-inner { padding: 56px 60px 68px; height: 100%; min-height: 1123px; display: flex; flex-direction: column; }
+
+/* Header bar */
+.head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 30px;
+}
+.head-l { display: flex; align-items: center; gap: 12px; }
+.head-l .pill { background: var(--tk-ink); color: white; font-family: var(--tk-font-display); font-weight: 700; font-size: 11px; padding: 4px 10px 4px 4px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; letter-spacing: 0.02em; }
+.head-l .pill::before { content: ""; width: 16px; height: 16px; background: var(--tk-primary); border-radius: 50%; }
+.head-l .crumb { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.head-r .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--tk-bg); border: 1px solid var(--tk-border); padding: 4px 10px; border-radius: 999px; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.06em; }
+.head-r .chip .dot { width: 6px; height: 6px; background: var(--tk-accent-emerald); border-radius: 50%; }
+
+/* Footer */
+.foot {
+  margin-top: auto; padding-top: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--tk-font-mono);
+  font-size: 10px; color: var(--tk-muted); letter-spacing: 0.08em;
+}
+.foot .pageno { font-family: var(--tk-font-display); font-weight: 600; font-size: 24px; color: var(--tk-ink); letter-spacing: -0.02em; }
+.foot .pageno span { color: var(--tk-muted-2); }
+
+/* Hero / titles */
+.kicker { font-family: var(--tk-font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tk-primary); font-weight: 600; }
+.section-num { font-family: var(--tk-font-display); font-weight: 700; font-size: 64px; line-height: 1; letter-spacing: -0.04em; color: var(--tk-primary); margin-bottom: 4px; opacity: 0.9; }
+
+h1.bighed {
+  font-family: var(--tk-font-display); font-weight: 600;
+  font-size: 48px; line-height: 1.0; letter-spacing: -0.028em;
+  margin: 12px 0 18px;
+  color: var(--tk-ink);
+  max-width: 620px;
+}
+h1.bighed em { font-style: normal; color: var(--tk-primary); }
+h1.bighed .accent { background: linear-gradient(180deg, transparent 62%, oklch(0.95 0.06 277) 62%); padding: 0 6px; margin: 0 -2px; }
+
+h2 { font-family: var(--tk-font-display); font-weight: 600; font-size: 22px; line-height: 1.2; margin: 0 0 8px; color: var(--tk-ink); letter-spacing: -0.012em; }
+h3 { font-family: var(--tk-font-display); font-weight: 600; font-size: 14px; margin: 0 0 6px; color: var(--tk-ink); letter-spacing: -0.005em; }
+h4 { font-family: var(--tk-font-display); font-weight: 600; font-size: 12px; margin: 0 0 4px; color: var(--tk-ink); }
+.lede { font-size: 14.5px; line-height: 1.55; color: var(--tk-ink-soft); max-width: 600px; font-family: var(--tk-font-sans); }
+p { font-size: 11.5px; line-height: 1.6; color: var(--tk-ink-soft); margin: 0 0 8px; }
+ul, ol { padding-left: 16px; margin: 6px 0; }
+li { font-size: 11.5px; line-height: 1.55; color: var(--tk-ink-soft); margin-bottom: 4px; }
+li::marker { color: var(--tk-primary); }
+
+/* Card system */
+.card {
+  background: var(--tk-bg);
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid var(--tk-border);
+}
+.card.solid {
+  background: var(--tk-ink);
+  color: white;
+  border: none;
+}
+.card.solid h2, .card.solid h3, .card.solid h4 { color: white; }
+.card.solid p, .card.solid li { color: oklch(0.85 0.01 264); }
+.card.brand {
+  background: var(--tk-primary);
+  color: white;
+  border: none;
+}
+.card.brand h2, .card.brand h3, .card.brand h4 { color: white; }
+.card.brand p, .card.brand li { color: oklch(0.95 0.04 277); }
+.card.brand li::marker { color: oklch(0.85 0.06 277); }
+.card.softbrand {
+  background: var(--tk-primary-soft);
+  border-color: oklch(0.48 0.2 277 / 18%);
+}
+.card.softbrand h2, .card.softbrand h3, .card.softbrand h4 { color: var(--tk-primary-deep); }
+.card.softbrand p, .card.softbrand li { color: var(--tk-primary-deep); }
+.card.white { background: white; }
+
+.grid { display: grid; gap: 12px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g23 { grid-template-columns: 2fr 1fr; }
+.g32 { grid-template-columns: 1fr 2fr; }
+.g15 { grid-template-columns: 1.5fr 1fr 1fr; }
+
+/* Big stat */
+.bigstat .v { font-family: var(--tk-font-display); font-weight: 600; font-size: 56px; line-height: 0.95; letter-spacing: -0.04em; color: var(--tk-ink); }
+.bigstat .v sup { font-size: 22px; vertical-align: super; color: var(--tk-primary); margin-left: 4px; font-weight: 500; }
+.bigstat .l { font-size: 11px; color: var(--tk-muted); margin-top: 8px; line-height: 1.45; }
+.bigstat.brand .v { color: white; }
+.bigstat.brand .l { color: oklch(0.85 0.05 277); }
+
+/* Chip */
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--tk-primary-soft); color: var(--tk-primary); border-radius: 999px; font-family: var(--tk-font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.04em; }
+.chip.dark { background: oklch(0.18 0.04 264); color: oklch(0.85 0.06 277); }
+.chip.ghost { background: transparent; border: 1px solid var(--tk-border); color: var(--tk-muted); }
+
+/* Number badge */
+.num-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  background: var(--tk-primary); color: white;
+  font-family: var(--tk-font-display); font-weight: 700; font-size: 12px;
+  border-radius: 8px;
+}
+
+/* Table modern */
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; }
+.tbl th { text-align: left; padding: 11px 14px; background: var(--tk-bg-deep); font-family: var(--tk-font-display); font-weight: 600; font-size: 10.5px; color: var(--tk-ink); border-bottom: 1px solid var(--tk-border-strong); letter-spacing: 0.01em; }
+.tbl th:first-child { border-top-left-radius: 10px; }
+.tbl th:last-child { border-top-right-radius: 10px; }
+.tbl td { padding: 11px 14px; border-bottom: 1px solid var(--tk-border); color: var(--tk-ink-soft); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:last-child td:first-child { border-bottom-left-radius: 10px; }
+.tbl tr:last-child td:last-child { border-bottom-right-radius: 10px; }
+
+/* Tick/cross */
+.tick { color: var(--tk-accent-emerald); font-weight: 700; font-size: 13px; }
+.cross { color: var(--tk-muted-2); font-size: 13px; }
+.part { color: var(--tk-accent-gold); font-weight: 700; font-size: 13px; }
+
+/* Mock placeholders */
+.mock {
+  background: linear-gradient(135deg, oklch(0.95 0.005 80) 0%, oklch(0.92 0.008 80) 100%);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--tk-border);
+}
+.mock::after {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(oklch(0 0 0 / 4%) 1px, transparent 1px),
+    radial-gradient(oklch(0 0 0 / 4%) 1px, transparent 1px);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px;
+  opacity: 0.5;
+}
+.mock-label { position: absolute; top: 14px; left: 16px; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.08em; z-index: 1; }
+.mock-tag { position: absolute; bottom: 14px; left: 16px; font-family: var(--tk-font-mono); font-size: 10px; color: white; background: var(--tk-primary); padding: 4px 10px; border-radius: 999px; z-index: 1; letter-spacing: 0.06em; font-weight: 500; }
+
+/* ===== Cover ===== */
+.cover {
+  background: var(--tk-ink);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.cover .cover-inner { padding: 60px 60px 56px; height: 100%; min-height: 1123px; display: flex; flex-direction: column; position: relative; z-index: 2; }
+.cover .top { display: flex; justify-content: space-between; align-items: flex-start; }
+.cover .logo-wrap { background: white; padding: 12px 16px; border-radius: 12px; display: inline-block; }
+.cover .logo-wrap img { height: 28px; display: block; }
+.cover .corner { font-family: var(--tk-font-mono); font-size: 10px; color: oklch(0.75 0.02 264); letter-spacing: 0.1em; text-align: right; line-height: 1.7; }
+.cover .corner strong { color: white; font-weight: 600; }
+.cover .center { margin-top: auto; margin-bottom: 24px; max-width: 600px; }
+.cover .center .kicker { color: oklch(0.85 0.07 277); }
+.cover h1 {
+  font-family: var(--tk-font-display); font-weight: 600;
+  font-size: 80px; line-height: 0.96; letter-spacing: -0.04em;
+  margin: 20px 0 24px; color: white;
+}
+.cover h1 em { font-style: normal; color: oklch(0.75 0.16 277); }
+.cover .deck { font-size: 17px; line-height: 1.45; color: oklch(0.85 0.015 264); max-width: 520px; font-family: var(--tk-font-sans); }
+.cover .bottom { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding-top: 26px; border-top: 1px solid oklch(0.3 0.04 264); }
+.cover .bottom .col h5 { font-family: var(--tk-font-mono); font-size: 10px; color: oklch(0.7 0.02 264); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 6px; font-weight: 500; }
+.cover .bottom .col p { color: white; font-family: var(--tk-font-display); font-weight: 500; font-size: 13px; margin: 0; line-height: 1.4; }
+
+/* Abstract orb on cover */
+.cover-orb { position: absolute; right: -180px; top: -120px; width: 680px; height: 680px; pointer-events: none; z-index: 1; opacity: 0.7; }
+.cover-grid { position: absolute; inset: 0; background-image: linear-gradient(oklch(0.3 0.04 264) 1px, transparent 1px), linear-gradient(90deg, oklch(0.3 0.04 264) 1px, transparent 1px); background-size: 32px 32px; opacity: 0.18; pointer-events: none; z-index: 0; }
+
+/* TOC */
+.toc-block { display: grid; grid-template-columns: 60px 1fr 56px; gap: 0; row-gap: 0; }
+.toc-block .tn { font-family: var(--tk-font-mono); font-size: 11px; color: var(--tk-muted); padding: 10px 0; border-bottom: 1px solid var(--tk-border); }
+.toc-block .tt { font-family: var(--tk-font-display); font-weight: 500; font-size: 13.5px; color: var(--tk-ink); padding: 10px 0; border-bottom: 1px solid var(--tk-border); }
+.toc-block .tt small { display: block; font-family: var(--tk-font-sans); font-weight: 400; font-size: 10.5px; color: var(--tk-muted); margin-top: 2px; letter-spacing: 0; }
+.toc-block .tp { font-family: var(--tk-font-display); font-weight: 500; font-size: 13px; color: var(--tk-primary); text-align: right; padding: 10px 0; border-bottom: 1px solid var(--tk-border); }
+.toc-block .toc-sep { grid-column: 1 / -1; padding: 16px 0 6px; }
+.toc-block .toc-sep .sl { display: inline-flex; align-items: center; gap: 8px; font-family: var(--tk-font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--tk-primary); font-weight: 600; }
+.toc-block .toc-sep .sl::before { content: ""; width: 14px; height: 2px; background: var(--tk-primary); }
+
+/* Cta page */
+.cta-mega {
+  background: var(--tk-primary);
+  color: white;
+  border-radius: 24px;
+  padding: 48px 44px;
+  position: relative;
+  overflow: hidden;
+}
+.cta-mega::before {
+  content: ""; position: absolute; right: -60px; bottom: -60px;
+  width: 240px; height: 240px; border-radius: 50%;
+  background: oklch(0.99 0 0 / 8%);
+}
+.cta-mega::after {
+  content: ""; position: absolute; right: 80px; top: -50px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: oklch(0.99 0 0 / 4%);
+}
+.cta-mega h1 { font-family: var(--tk-font-display); font-weight: 600; font-size: 56px; letter-spacing: -0.032em; line-height: 1.02; color: white; margin: 0 0 18px; max-width: 600px; position: relative; z-index: 1; }
+.cta-mega .deck { font-size: 15px; color: oklch(0.95 0.04 277); line-height: 1.5; max-width: 520px; position: relative; z-index: 1; }
+
+/* Pricing */
+.price-card {
+  background: white;
+  border-radius: 18px;
+  padding: 22px;
+  border: 1px solid var(--tk-border);
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.price-card.featured {
+  background: var(--tk-ink);
+  border-color: var(--tk-ink);
+  color: white;
+}
+.price-card.featured h3, .price-card.featured h4 { color: white; }
+.price-card.featured p, .price-card.featured li { color: oklch(0.85 0.01 264); }
+.price-card .seg { font-family: var(--tk-font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--tk-muted); margin-bottom: 12px; font-weight: 600; }
+.price-card.featured .seg { color: oklch(0.75 0.12 277); }
+.price-card h3 { font-size: 18px; margin: 0 0 4px; }
+.price-card .price { font-family: var(--tk-font-display); font-size: 36px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; margin: 14px 0 4px; }
+.price-card .price small { font-size: 12px; font-weight: 400; color: var(--tk-muted); margin-left: 6px; }
+.price-card.featured .price small { color: oklch(0.75 0.02 264); }
+.price-card .per { font-size: 11px; color: var(--tk-muted); margin-bottom: 14px; line-height: 1.5; }
+.price-card.featured .per { color: oklch(0.75 0.02 264); }
+.price-card ul { padding-left: 14px; margin-top: auto; }
+.price-card .badge-top { position: absolute; top: -10px; right: 20px; background: oklch(0.75 0.16 277); color: var(--tk-ink); font-family: var(--tk-font-mono); font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 999px; letter-spacing: 0.06em; }
+
+/* Step row */
+.step-row {
+  display: grid; grid-template-columns: 60px 1fr;
+  gap: 16px; padding: 14px 0;
+  border-bottom: 1px solid var(--tk-border);
+}
+.step-row:last-child { border-bottom: none; }
+.step-row .step-n { font-family: var(--tk-font-display); font-weight: 700; font-size: 28px; color: var(--tk-primary); line-height: 1; letter-spacing: -0.03em; }
+.step-row .step-d { font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+/* Decorative dot grid asset */
+.dots-bg {
+  background-image: radial-gradient(oklch(0.48 0.2 277 / 18%) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================================== -->
+<!-- 01 — COVER (Direction B) -->
+<!-- =========================================================== -->
+<section class="page cover" data-screen-label="01 Couverture">
+  <div class="cover-grid"></div>
+
+  <!-- Decorative orb -->
+  <svg class="cover-orb" viewBox="0 0 680 680" fill="none" aria-hidden="true">
+    <defs>
+      <radialGradient id="orb-g" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="oklch(0.48 0.2 277)" stop-opacity="0.85"/>
+        <stop offset="55%" stop-color="oklch(0.48 0.2 277)" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="oklch(0.48 0.2 277)" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="340" cy="340" r="340" fill="url(#orb-g)"/>
+    <circle cx="340" cy="340" r="220" fill="none" stroke="oklch(0.75 0.18 277 / 25%)" stroke-width="1"/>
+    <circle cx="340" cy="340" r="160" fill="none" stroke="oklch(0.75 0.18 277 / 35%)" stroke-width="1"/>
+    <circle cx="340" cy="340" r="80"  fill="none" stroke="oklch(0.85 0.16 277 / 50%)" stroke-width="1"/>
+  </svg>
+
+  <div class="cover-inner">
+    <div class="top">
+      <div class="logo-wrap"><img src="../assets/logo-tkams.png" alt="TKAMS" /></div>
+      <div class="corner">
+        <strong>Brochure commerciale</strong><br/>
+        Édition 2026 · Volume I<br/>
+        Réf. TKAMS / BR-01 / FR
+      </div>
+    </div>
+
+    <div class="center">
+      <div class="kicker">★ Système d'Information Étudiant · LMD · multi-tutelles</div>
+      <h1>Le SIS<br/>conçu pour vos<br/><em>tutelles</em>, vos partenariats,<br/>et vos étudiants.</h1>
+      <p class="deck">TKAMS digitalise l'intégralité du parcours étudiant — admissions, scolarité LMD, examens, finances, vie étudiante — dans une plateforme pensée pour les universités, IPES, facultés et centres de formation à gouvernance multiple.</p>
+    </div>
+
+    <div class="bottom">
+      <div class="col">
+        <h5>Pour</h5>
+        <p>Directions générales,<br/>secrétariats généraux, DSI</p>
+      </div>
+      <div class="col">
+        <h5>Contact</h5>
+        <p>contact@tkams.com<br/>+237 652 761 931<br/>https://tkams.com/</p>
+      </div>
+      <div class="col">
+        <h5>Bureaux</h5>
+        <p>Douala · Yaoundé<br/>Cameroun</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 02 — TOC -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="02 Sommaire">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l">
+        <span class="pill">TKAMS</span>
+        <span class="crumb">Brochure / Sommaire</span>
+      </div>
+      <div class="head-r"><span class="chip"><span class="dot"></span>ÉDITION 2026</span></div>
+    </div>
+
+    <div class="kicker">00 · Sommaire</div>
+    <h1 class="bighed">Comment lire<br/>ce <em>document</em>.</h1>
+    <p class="lede" style="margin-bottom: 24px;">Six parties, trente pages. La partie I cadre le contexte. La partie II expose la promesse. La partie III détaille les modules. La partie IV expose la technique. La partie V vous projette. La partie VI ouvre la conversation commerciale.</p>
+
+    <div class="toc-block">
+      <div class="toc-sep"><span class="sl">I · Le contexte</span></div>
+      <div class="tn">01</div><div class="tt">Le mot du fondateur <small>Pourquoi TKAMS existe</small></div><div class="tp">03</div>
+      <div class="tn">02</div><div class="tt">L'enseignement supérieur au Cameroun</div><div class="tp">04</div>
+      <div class="tn">03</div><div class="tt">Six frictions opérationnelles récurrentes</div><div class="tp">05</div>
+
+      <div class="toc-sep"><span class="sl">II · La promesse TKAMS</span></div>
+      <div class="tn">04</div><div class="tt">TKAMS en une page</div><div class="tp">06</div>
+      <div class="tn">05</div><div class="tt">Le différenciateur multi-tutelles</div><div class="tp">07</div>
+      <div class="tn">06</div><div class="tt">Multi-tutelles — trois scénarios réels</div><div class="tp">08</div>
+      <div class="tn">07</div><div class="tt">Architecture LMD native</div><div class="tp">09</div>
+
+      <div class="toc-sep"><span class="sl">III · Le produit</span></div>
+      <div class="tn">08</div><div class="tt">Cartographie des onze modules</div><div class="tp">10</div>
+      <div class="tn">09–16</div><div class="tt">Détail des modules <small>Admissions, scolarité, curriculum, planning, évaluations, finances, enseignants, communication, bibliothèque, vie étudiante</small></div><div class="tp">11–18</div>
+      <div class="tn">17</div><div class="tt">Portails dédiés <small>Étudiant, parent, enseignant, admin</small></div><div class="tp">19</div>
+      <div class="tn">18</div><div class="tt">Application mobile &amp; hors-ligne</div><div class="tp">20</div>
+      <div class="tn">19</div><div class="tt">Aperçus produit</div><div class="tp">21</div>
+
+      <div class="toc-sep"><span class="sl">IV · Technique</span></div>
+      <div class="tn">20</div><div class="tt">Architecture technique</div><div class="tp">22</div>
+      <div class="tn">21</div><div class="tt">Sécurité &amp; conformité</div><div class="tp">23</div>
+      <div class="tn">22</div><div class="tt">Hébergement &amp; souveraineté des données</div><div class="tp">24</div>
+
+      <div class="toc-sep"><span class="sl">V · Marché &amp; cas d'usage</span></div>
+      <div class="tn">23</div><div class="tt">Comparatif concurrence</div><div class="tp">25</div>
+      <div class="tn">24</div><div class="tt">Trois profils types</div><div class="tp">26</div>
+
+      <div class="toc-sep"><span class="sl">VI · Commercial</span></div>
+      <div class="tn">25</div><div class="tt">Licence &amp; grille tarifaire</div><div class="tp">27</div>
+      <div class="tn">26</div><div class="tt">Modalités contractuelles &amp; SLA</div><div class="tp">28</div>
+      <div class="tn">27</div><div class="tt">Déploiement &amp; accompagnement</div><div class="tp">29</div>
+      <div class="tn">28</div><div class="tt">Prendre contact</div><div class="tp">30</div>
+    </div>
+
+    <div class="foot">
+      <span>TKAMS · BR-01 / FR</span>
+      <span class="pageno">02<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 03 — MOT DU FONDATEUR -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="03 Mot du fondateur">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">I · Contexte / 01</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE I</span></div>
+    </div>
+
+    <div class="section-num">01</div>
+    <div class="kicker">Le mot du fondateur</div>
+    <h1 class="bighed">Un outil qui parle<br/><span class="accent">la langue</span> de nos établissements.</h1>
+
+    <div class="grid g23" style="margin-top: 22px; gap: 18px;">
+      <div class="card solid" style="padding: 24px;">
+        <div style="font-family: var(--tk-font-display); font-weight: 500; font-size: 26px; line-height: 1.28; letter-spacing: -0.015em; color: white;">
+          <span style="color: oklch(0.75 0.18 277); font-size: 36px; line-height: 0;">«</span>&nbsp;Une faculté de Yaoundé est rarement une faculté seule. Elle est rattachée à un ministère, partenaire d'une université étrangère, et cohabite parfois avec une fondation privée. Aucun outil disponible n'avait été pensé pour cette réalité — TKAMS l'a été dès la première ligne de code.&nbsp;<span style="color: oklch(0.75 0.18 277); font-size: 36px; line-height: 0;">»</span>
+        </div>
+        <div style="margin-top: 18px; font-family: var(--tk-font-mono); font-size: 10.5px; color: oklch(0.7 0.02 264); letter-spacing: 0.08em; text-transform: uppercase;">— L'équipe fondatrice TKAMS</div>
+      </div>
+      <div class="card softbrand">
+        <h3>Notre engagement</h3>
+        <p>Construire un SIS qui respecte la souveraineté des établissements, la confidentialité des étudiants, et l'autonomie pédagogique des équipes enseignantes.</p>
+        <h3 style="margin-top: 14px;">À retenir</h3>
+        <p>TKAMS est une infrastructure pédagogique africaine. Sa modularité n'est pas un argument marketing — c'est sa fondation.</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 14px; gap: 18px;">
+      <div class="card white">
+        <h3>Le constat de départ</h3>
+        <p>Pendant deux ans, nous avons accompagné une douzaine d'établissements supérieurs camerounais dans la digitalisation partielle de leur scolarité. Le même schéma se répétait : feuilles Excel, bases Access oubliées sur un poste, module ERP étranger trop rigide, développeur local trop occupé. Et au milieu, des secrétaires académiques qui ressaisissaient les mêmes données dix fois.</p>
+        <p>Le problème n'était pas l'absence d'outils — c'était l'absence d'un outil qui comprenne l'organisation réelle des établissements africains.</p>
+      </div>
+      <div class="card white">
+        <h3>Une équipe locale</h3>
+        <p>L'équipe TKAMS est basée à Douala et Yaoundé. Nos développeurs sont formés sur le terrain, dans les amphithéâtres et les secrétariats. Nos consultants pédagogiques sont d'anciens enseignants du supérieur.</p>
+        <h3 style="margin-top: 12px;">Un standard, pas un sur-mesure</h3>
+        <p>TKAMS est un produit standard paramétrable en profondeur — vendu sous licence annuelle. Chaque amélioration apportée à un client profite à tous les autres.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>I · LE CONTEXTE</span>
+      <span class="pageno">03<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 04 — CONTEXTE ESR -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="04 Contexte ESR">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">I · Contexte / 02</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE I</span></div>
+    </div>
+
+    <div class="section-num">02</div>
+    <div class="kicker">L'enseignement supérieur au Cameroun</div>
+    <h1 class="bighed">Un secteur en croissance,<br/>une digitalisation <em>fragmentée</em>.</h1>
+    <p class="lede">Plus de 500 000 étudiants. Huit universités d'État, plus de 250 IPES homologués, des centaines de centres de formation professionnelle. Un secteur qui double tous les dix ans — et reste majoritairement analogique.</p>
+
+    <div class="grid g4" style="margin-top: 26px;">
+      <div class="card bigstat"><div class="v">8</div><div class="l">Universités d'État</div></div>
+      <div class="card bigstat"><div class="v">250<sup>+</sup></div><div class="l">IPES homologués MINESUP</div></div>
+      <div class="card bigstat"><div class="v">500<sup>k</sup></div><div class="l">Étudiants inscrits (2024)</div></div>
+      <div class="card bigstat brand" style="background: var(--tk-primary); color: white;"><div class="v" style="color: white;">×2</div><div class="l">Croissance sur 10 ans</div></div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 16px; gap: 16px;">
+      <div class="card white">
+        <h2>Une organisation à plusieurs voix</h2>
+        <p>L'établissement supérieur camerounais n'est presque jamais autonome. Une université d'État dépend du MINESUP pour ses programmes, de la fonction publique pour ses enseignants, du Ministère des Finances pour ses budgets. Un IPES dépend de sa tutelle pédagogique, de ses fondateurs, et du MINESUP. Une école confessionnelle relève parfois d'une congrégation religieuse en plus de l'État.</p>
+        <p>Ces tutelles multiples ne sont pas une exception — elles sont la règle. Et elles imposent au système d'information d'être structurellement multi-niveau.</p>
+        <h3 style="margin-top: 12px;">Le LMD comme standard</h3>
+        <p>Depuis 2007, le Cameroun a adopté le système LMD aligné sur les standards CAMES et AUF. Granularité fine : UE, ECTS, semestres, sessions principale et de rattrapage, validation par compensation.</p>
+      </div>
+      <div>
+        <div class="card softbrand">
+          <h3>L'opportunité</h3>
+          <p>La fenêtre de bascule est ouverte : adoption rapide du Mobile Money, smartphones standards, attentes alignées sur les standards internationaux, pression du MINESUP pour la traçabilité.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h2>L'écart numérique se creuse</h2>
+          <div class="grid" style="gap: 8px; margin-top: 6px;">
+            <div style="display: grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: baseline;">
+              <div style="font-family: var(--tk-font-display); font-size: 22px; font-weight: 600; color: var(--tk-primary); letter-spacing: -0.02em;">15&thinsp;%</div>
+              <div><h4>Pionniers numériques</h4><p style="margin: 0;">SIS déployé, souvent maison, peu maintenu.</p></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: baseline;">
+              <div style="font-family: var(--tk-font-display); font-size: 22px; font-weight: 600; color: var(--tk-primary); letter-spacing: -0.02em;">60&thinsp;%</div>
+              <div><h4>Hybrides</h4><p style="margin: 0;">Combinaison Excel + Moodle + paiements manuels.</p></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: baseline;">
+              <div style="font-family: var(--tk-font-display); font-size: 22px; font-weight: 600; color: var(--tk-primary); letter-spacing: -0.02em;">25&thinsp;%</div>
+              <div><h4>Manuels</h4><p style="margin: 0;">Essentiellement sur papier et registres.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size: 9.5px; color: var(--tk-muted); margin-top: 14px;">Sources : MINESUP — Annuaire statistique 2023. Banque Mondiale — EdStats SSA 2024. CAMES — Rapport 2024. UIS UNESCO 2024.</p>
+
+    <div class="foot">
+      <span>I · LE CONTEXTE</span>
+      <span class="pageno">04<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 05 — DÉFIS -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="05 Défis">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">I · Contexte / 03</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE I</span></div>
+    </div>
+
+    <div class="section-num">03</div>
+    <div class="kicker">Les défis des établissements modernes</div>
+    <h1 class="bighed">Six frictions opérationnelles<br/><em>récurrentes</em>.</h1>
+    <p class="lede">Issues de nos entretiens avec une vingtaine de secrétaires généraux et chefs de scolarité. Indépendantes de la taille ou du statut de l'établissement.</p>
+
+    <div class="grid g3" style="margin-top: 26px; gap: 14px;">
+
+      <div class="card white">
+        <span class="num-badge">01</span>
+        <h3 style="margin-top: 10px;">Données dispersées</h3>
+        <p>Le même étudiant existe dans cinq systèmes. Chaque ressaisie est une opportunité d'erreur — 12 % du temps des secrétaires en moyenne.</p>
+      </div>
+
+      <div class="card white">
+        <span class="num-badge">02</span>
+        <h3 style="margin-top: 10px;">Calculs opaques</h3>
+        <p>Compensation, coefficients, rattrapages, sessions : la mécanique LMD est lourde. Une erreur Excel peut compromettre un diplôme.</p>
+      </div>
+
+      <div class="card white">
+        <span class="num-badge">03</span>
+        <h3 style="margin-top: 10px;">Paiements non maîtrisés</h3>
+        <p>Trois tranches MTN, une bourse MINFOPRA, un sponsor direct : reconstituer ces flux prend un temps considérable.</p>
+      </div>
+
+      <div class="card white">
+        <span class="num-badge">04</span>
+        <h3 style="margin-top: 10px;">Reporting tutelles</h3>
+        <p>MINESUP, rectorat, université de rattachement, conseil d'administration. Chacun veut son format. Les week-ends Excel sont un standard tacite.</p>
+      </div>
+
+      <div class="card white">
+        <span class="num-badge">05</span>
+        <h3 style="margin-top: 10px;">Communication éclatée</h3>
+        <p>WhatsApp, SMS personnels, panneau d'affichage, e-mails non lus. L'information circule mal et inéquitablement.</p>
+      </div>
+
+      <div class="card white">
+        <span class="num-badge">06</span>
+        <h3 style="margin-top: 10px;">Outils étrangers inadaptés</h3>
+        <p>Facturation en euros, hébergement européen, pas de Mobile Money. Coût d'entrée hors de portée pour 90 % des établissements.</p>
+      </div>
+
+    </div>
+
+    <div class="card brand" style="margin-top: 18px; padding: 24px;">
+      <div class="grid g32" style="gap: 18px; align-items: center;">
+        <div>
+          <div class="kicker" style="color: oklch(0.85 0.06 277);">La cause commune</div>
+          <h2 style="margin-top: 8px;">L'absence d'un SIS conçu <em style="font-style: normal; color: oklch(0.75 0.18 277);">pour</em> les établissements africains.</h2>
+        </div>
+        <p style="margin: 0;">Ces six frictions ont une racine partagée : l'absence d'un système d'information pensé pour les établissements à gouvernance multiple — plutôt que pour des universités-types occidentales mono-tutelle.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>I · LE CONTEXTE</span>
+      <span class="pageno">05<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 06 — TKAMS EN UNE PAGE -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="06 TKAMS en une page">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">II · Promesse / 04</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE II</span></div>
+    </div>
+
+    <div class="section-num">04</div>
+    <div class="kicker">TKAMS en une page</div>
+    <h1 class="bighed">Un SIS complet,<br/>fait pour les <em>établissements africains</em>.</h1>
+    <p class="lede">TKAMS digitalise l'intégralité du cycle de vie de l'étudiant — de l'admission à la délivrance du diplôme — au sein d'une plateforme unique, multi-tutelles par conception.</p>
+
+    <h2 style="margin-top: 26px;">Cinq promesses</h2>
+    <div class="grid g3" style="gap: 12px; margin-top: 10px;">
+      <div class="card white"><div class="chip">01</div><h3 style="margin-top: 10px;">Multi-tutelles natif</h3><p>Plusieurs tutelles pédagogiques, administratives et financières. Modélisé nativement, sans contournement.</p></div>
+      <div class="card white"><div class="chip">02</div><h3 style="margin-top: 10px;">LMD sans compromis</h3><p>Maquettes, UE, ECTS, semestres, sessions, compensations, jurys. Tout est implémenté.</p></div>
+      <div class="card white"><div class="chip">03</div><h3 style="margin-top: 10px;">Mobile Money natif</h3><p>MTN, Orange, passerelles locales. Paiements en tranches, automatiquement réconciliés.</p></div>
+      <div class="card white"><div class="chip">04</div><h3 style="margin-top: 10px;">Souveraineté des données</h3><p>Hébergement local ou on-premise. L'établissement reste propriétaire et peut exporter.</p></div>
+      <div class="card white"><div class="chip">05</div><h3 style="margin-top: 10px;">Accompagnement humain</h3><p>Équipe à Douala et Yaoundé. Déploiement, formation, hotline en moins de 48 heures.</p></div>
+      <div class="card brand"><div class="chip dark" style="color: white; background: oklch(0.32 0.18 277);">06</div><h3 style="margin-top: 10px;">SaaS annuel</h3><p>Licence annuelle, prix par étudiant, sans frais cachés. Mises à jour incluses.</p></div>
+    </div>
+
+    <h2 style="margin-top: 22px;">Onze domaines fonctionnels, une plateforme</h2>
+    <div class="grid g4" style="gap: 8px; margin-top: 10px;">
+      <div class="card white" style="padding: 12px;"><h4>Admissions</h4><p style="margin: 0; font-size: 10.5px;">Candidatures, jurys, conversion</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Inscriptions</h4><p style="margin: 0; font-size: 10.5px;">Réinscriptions, pièces</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Scolarité</h4><p style="margin: 0; font-size: 10.5px;">Dossier étudiant unique</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Curriculum</h4><p style="margin: 0; font-size: 10.5px;">Maquettes LMD, ECTS</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Planning</h4><p style="margin: 0; font-size: 10.5px;">Salles, enseignants, anti-conflit</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Évaluations</h4><p style="margin: 0; font-size: 10.5px;">Notes, examens, jurys</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Finances</h4><p style="margin: 0; font-size: 10.5px;">Frais, Mobile Money, relances</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Enseignants</h4><p style="margin: 0; font-size: 10.5px;">Charges, vacations, paie</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Bibliothèque</h4><p style="margin: 0; font-size: 10.5px;">Catalogue, prêts, ressources</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Vie étudiante</h4><p style="margin: 0; font-size: 10.5px;">Résidences, bourses, clubs</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Communication</h4><p style="margin: 0; font-size: 10.5px;">SMS, e-mail, push, écran</p></div>
+      <div class="card softbrand" style="padding: 12px;"><h4 style="color: var(--tk-primary-deep);">+ Reporting</h4><p style="margin: 0; font-size: 10.5px;">États MINESUP, CAMES</p></div>
+    </div>
+
+    <div class="foot">
+      <span>II · LA PROMESSE TKAMS</span>
+      <span class="pageno">06<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 07 — DIFFÉRENCIATEUR MULTI-TUTELLES -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="07 Multi-tutelles">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">II · Promesse / 05</span></div>
+      <div class="head-r"><span class="chip" style="background: var(--tk-primary); color: white; border: none;">DIFFÉRENCIATEUR ★</span></div>
+    </div>
+
+    <div class="section-num">05</div>
+    <div class="kicker">Le différenciateur multi-tutelles</div>
+    <h1 class="bighed">Pour les établissements à<br/><span class="accent">gouvernance plurielle</span>.</h1>
+    <p class="lede">Multi-tutelles n'est pas un module optionnel de TKAMS — c'est sa fondation. Chaque entité, partenariat ou rattachement est modélisé comme un acteur à part entière, avec ses propres droits, son périmètre de visibilité, et ses workflows.</p>
+
+    <h2 style="margin-top: 26px;">Quatre axes de gouvernance, indépendants et croisables</h2>
+    <div class="grid g4" style="gap: 12px; margin-top: 10px;">
+      <div class="card white" style="border-top: 3px solid var(--tk-primary);">
+        <h3 style="color: var(--tk-primary);">Académique</h3>
+        <p style="margin: 0;">Qui valide la maquette pédagogique ? Qui co-signe le diplôme ?</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-emerald);">
+        <h3 style="color: var(--tk-accent-emerald);">Administrative</h3>
+        <p style="margin: 0;">Qui homologue ? Qui exige le reporting ? Qui inspecte ?</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-gold);">
+        <h3 style="color: var(--tk-accent-gold);">Financière</h3>
+        <p style="margin: 0;">Qui encaisse ? Qui ventile ? Qui finance les bourses ?</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-blue);">
+        <h3 style="color: var(--tk-accent-blue);">Patrimoniale</h3>
+        <p style="margin: 0;">À qui appartiennent les locaux ? Le matériel ?</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 16px; gap: 14px;">
+      <div class="card white">
+        <h2>Conséquences concrètes</h2>
+        <ul>
+          <li>Un étudiant peut être inscrit à un programme co-diplômant entre deux universités — chaque tutelle voit ses notes et matières.</li>
+          <li>Un paiement de scolarité peut être ventilé automatiquement entre trois comptes : fonctionnement, fonds de bourses, redevance à la tutelle.</li>
+          <li>Un rapport peut être généré en deux formats simultanés — l'un pour le rectorat, l'autre pour le partenaire international.</li>
+        </ul>
+
+        <h3 style="margin-top: 12px;">Permissions granulaires</h3>
+        <p>Un agent du rectorat de tutelle voit les statistiques agrégées mais pas les notes individuelles. Un partenaire étranger ne voit que les étudiants du programme commun. Un sponsor consulte uniquement les boursiers qu'il finance.</p>
+      </div>
+      <div>
+        <div class="card softbrand">
+          <h3>Pourquoi c'est rare</h3>
+          <p>Les SIS internationaux supposent une organisation arborescente unique. Pour eux, un étudiant n'a qu'une seule université. Adapter ces outils au contexte africain exige un développement spécifique coûteux — quand c'est techniquement possible.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Workflows configurables</h3>
+          <p>Chaque circuit décisionnel — validation d'inscription, attribution de bourse, jury d'examen — peut intégrer des étapes propres à chaque tutelle.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Évolution sans rupture</h3>
+          <p>Un partenariat se crée, une tutelle change : tous ces événements se paramètrent sans interruption de service et sans migration.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>II · LA PROMESSE TKAMS</span>
+      <span class="pageno">07<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 08 — SCÉNARIOS MULTI-TUTELLES -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="08 Scénarios multi-tutelles">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">II · Promesse / 06</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE II</span></div>
+    </div>
+
+    <div class="section-num">06</div>
+    <div class="kicker">Multi-tutelles — trois scénarios réels</div>
+    <h1 class="bighed">Trois géométries<br/>institutionnelles, <em>une plateforme</em>.</h1>
+
+    <div class="grid" style="margin-top: 22px; gap: 14px;">
+
+      <div class="card white" style="padding: 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+          <h2>Faculté d'une université d'État</h2>
+          <span class="chip">CAS N° 1</span>
+        </div>
+        <p>Une faculté de sciences économiques d'une université publique camerounaise relève de quatre autorités simultanées : rectorat, MINESUP, MINFI via le Contrôle Financier, et CAMES pour la reconnaissance régionale.</p>
+        <div class="grid g2" style="margin-top: 12px; gap: 14px;">
+          <div>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Configuration TKAMS</h4>
+            <ul>
+              <li>Tutelle académique principale : rectorat</li>
+              <li>Tutelle administrative : MINESUP, reporting trimestriel</li>
+              <li>Tutelle financière : Contrôleur Financier en lecture seule</li>
+              <li>Reconnaissance CAMES : attestations au format requis</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Bénéfice mesurable</h4>
+            <p>Les états réglementaires sont générés automatiquement aux formats attendus par chaque autorité. Production : <strong style="color: var(--tk-ink);">40 h → 2 h</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card white" style="padding: 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+          <h2>IPES sous tutelle pédagogique universitaire</h2>
+          <span class="chip">CAS N° 2</span>
+        </div>
+        <p>Institut privé fondé par une fondation, Licences professionnelles sous tutelle pédagogique d'une université d'État co-signant les diplômes. La fondation conserve l'autorité financière et patrimoniale.</p>
+        <div class="grid g2" style="margin-top: 12px; gap: 14px;">
+          <div>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Configuration TKAMS</h4>
+            <ul>
+              <li>Tutelle académique : université, accès délégué aux jurys</li>
+              <li>Tutelle administrative : MINESUP, dossier d'homologation</li>
+              <li>Tutelle financière et patrimoniale : fondation</li>
+              <li>Diplôme co-signé : deux blocs de signature</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Bénéfice mesurable</h4>
+            <p>Les jurys peuvent inclure des enseignants des deux institutions avec validation distincte. La fondation suit son chiffre d'affaires en temps réel tout en respectant le périmètre académique.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card brand" style="padding: 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+          <h2 style="color: white;">Partenariat international en double diplôme</h2>
+          <span class="chip" style="background: oklch(0.32 0.18 277); color: white;">CAS N° 3</span>
+        </div>
+        <p>Master en partenariat entre un établissement camerounais et une université européenne, double diplôme. Les étudiants alternent semestres locaux et semestres en mobilité.</p>
+        <div class="grid g2" style="margin-top: 12px; gap: 14px;">
+          <div>
+            <h4 style="color: oklch(0.85 0.06 277); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Configuration TKAMS</h4>
+            <ul>
+              <li>Deux maquettes pédagogiques co-existantes</li>
+              <li>Crédits ECTS reconnus mutuellement</li>
+              <li>Frais répartis 70 % local / 30 % partenaire</li>
+              <li>Deux relevés officiels, deux diplômes</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color: oklch(0.85 0.06 277); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Bénéfice mesurable</h4>
+            <p>Le partenariat n'est plus retenu par les difficultés administratives. L'établissement peut ouvrir d'autres conventions avec la confiance que le SIS suivra.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      <span>II · LA PROMESSE TKAMS</span>
+      <span class="pageno">08<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 09 — LMD NATIF -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="09 LMD natif">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">II · Promesse / 07</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE II</span></div>
+    </div>
+
+    <div class="section-num">07</div>
+    <div class="kicker">Architecture LMD native</div>
+    <h1 class="bighed">Le LMD tel qu'il<br/>doit être <em>implémenté</em>.</h1>
+    <p class="lede">TKAMS n'a pas été adapté au système Licence-Master-Doctorat — il a été conçu autour de lui. Chaque concept du cadre CAMES est modélisé dans le cœur du système.</p>
+
+    <h2 style="margin-top: 24px;">Onze concepts implémentés nativement</h2>
+    <div class="grid g2" style="margin-top: 10px; gap: 14px;">
+      <table class="tbl">
+        <thead><tr><th>Concept</th><th>Implémentation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Cycle</strong></td><td>Licence (L1–L3), Master (M1–M2), Doctorat</td></tr>
+          <tr><td><strong>Mention</strong></td><td>Discipline majeure (Économie, Droit…)</td></tr>
+          <tr><td><strong>Spécialité</strong></td><td>Sous-discipline en M2</td></tr>
+          <tr><td><strong>Parcours</strong></td><td>Combinaison spécifique d'UE optionnelles</td></tr>
+          <tr><td><strong>Semestre</strong></td><td>S1 à S6 (L), S7 à S10 (M)</td></tr>
+          <tr><td><strong>UE</strong></td><td>Unité d'enseignement, fondamentale / optionnelle</td></tr>
+        </tbody>
+      </table>
+      <table class="tbl">
+        <thead><tr><th>Concept</th><th>Implémentation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>EC</strong></td><td>Élément constitutif, matière individuelle</td></tr>
+          <tr><td><strong>ECTS</strong></td><td>30 par semestre, 180 par cycle Licence</td></tr>
+          <tr><td><strong>Coefficient</strong></td><td>Poids relatif dans la moyenne</td></tr>
+          <tr><td><strong>Session</strong></td><td>Principale et rattrapage, calculs distincts</td></tr>
+          <tr><td><strong>Compensation</strong></td><td>Au sein du semestre, de l'UE, du parcours</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top: 22px;">Exemple — semestre S3 Économie</h2>
+    <div class="card softbrand" style="margin-top: 10px;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <thead><tr style="border-bottom: 1.5px solid var(--tk-primary-deep);"><th style="text-align: left; padding: 8px 0; color: var(--tk-primary-deep); font-family: var(--tk-font-display); font-weight: 600;">UE</th><th style="text-align: right; padding: 8px 8px; color: var(--tk-primary-deep);">Coef</th><th style="text-align: right; padding: 8px 8px; color: var(--tk-primary-deep);">ECTS</th><th style="text-align: right; padding: 8px 0; color: var(--tk-primary-deep);">Moy.</th></tr></thead>
+        <tbody style="color: var(--tk-primary-deep);">
+          <tr style="border-bottom: 1px solid oklch(0.48 0.2 277 / 12%);"><td style="padding: 7px 0;">Macroéconomie</td><td style="text-align: right;">3</td><td style="text-align: right;">6</td><td style="text-align: right;">12,5</td></tr>
+          <tr style="border-bottom: 1px solid oklch(0.48 0.2 277 / 12%);"><td style="padding: 7px 0;">Statistiques inférentielles</td><td style="text-align: right;">3</td><td style="text-align: right;">6</td><td style="text-align: right;">9,5</td></tr>
+          <tr style="border-bottom: 1px solid oklch(0.48 0.2 277 / 12%);"><td style="padding: 7px 0;">Comptabilité analytique</td><td style="text-align: right;">2</td><td style="text-align: right;">4</td><td style="text-align: right;">14,0</td></tr>
+          <tr style="border-bottom: 1px solid oklch(0.48 0.2 277 / 12%);"><td style="padding: 7px 0;">Anglais des affaires</td><td style="text-align: right;">2</td><td style="text-align: right;">4</td><td style="text-align: right;">11,0</td></tr>
+          <tr style="border-top: 2px solid var(--tk-primary-deep);"><td style="padding: 10px 0; font-weight: 700; font-family: var(--tk-font-display);">Total semestre</td><td style="text-align: right; font-weight: 700;">10</td><td style="text-align: right; font-weight: 700;">20</td><td style="text-align: right; font-weight: 700; font-family: var(--tk-font-display); font-size: 16px;">11,75</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 10px; font-size: 10.5px; font-style: italic; color: var(--tk-primary-deep);">Semestre validé · compensation appliquée sur Statistiques (UE non validée individuellement, compensée par la moyenne générale du semestre).</p>
+    </div>
+
+    <div class="foot">
+      <span>II · LA PROMESSE TKAMS</span>
+      <span class="pageno">09<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 10 — CARTOGRAPHIE MODULES -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="10 Cartographie modules">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / 08</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE III</span></div>
+    </div>
+
+    <div class="section-num">08</div>
+    <div class="kicker">Cartographie des modules</div>
+    <h1 class="bighed">Onze domaines,<br/><em>une</em> plateforme.</h1>
+    <p class="lede">TKAMS s'articule autour de onze grands modules intégrés sur un socle de données unique. Aucun export-import entre systèmes, aucune ressaisie : un étudiant créé à l'admission est connu de tous les autres modules à la seconde.</p>
+
+    <div class="grid g4" style="gap: 10px; margin-top: 26px;">
+
+      <div class="card white" style="grid-column: span 2;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;"><h3>1 · Admissions &amp; inscriptions</h3><span class="chip ghost">→ p.11</span></div>
+        <p>Candidatures en ligne, jurys, conversion automatique en inscription. Réinscriptions facilitées avec pré-remplissage. Pièces téléversées et archivées.</p>
+      </div>
+      <div class="card white" style="grid-column: span 2;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;"><h3>2 · Scolarité &amp; dossier étudiant</h3><span class="chip ghost">→ p.12</span></div>
+        <p>Le dossier étudiant unique : identité, parcours, paiements, notes, présences, sanctions, attestations. Source de vérité unique et auditable.</p>
+      </div>
+
+      <div class="card white"><h4>3 · Curriculum</h4><p style="margin: 4px 0 0; font-size: 10.5px;">Maquettes LMD, parcours flexibles</p><span class="chip ghost" style="margin-top: 8px;">→ p.13</span></div>
+      <div class="card white"><h4>4 · Planning</h4><p style="margin: 4px 0 0; font-size: 10.5px;">Salles, enseignants, anti-conflit</p><span class="chip ghost" style="margin-top: 8px;">→ p.14</span></div>
+      <div class="card white"><h4>5 · Évaluations</h4><p style="margin: 4px 0 0; font-size: 10.5px;">Notes, jurys, relevés signés</p><span class="chip ghost" style="margin-top: 8px;">→ p.15</span></div>
+      <div class="card white"><h4>6 · Finances</h4><p style="margin: 4px 0 0; font-size: 10.5px;">Frais, Mobile Money, échéanciers</p><span class="chip ghost" style="margin-top: 8px;">→ p.16</span></div>
+
+      <div class="card white"><h4>7 · Enseignants</h4><p style="margin: 4px 0 0; font-size: 10.5px;">Charges, vacations, paie</p><span class="chip ghost" style="margin-top: 8px;">→ p.17</span></div>
+      <div class="card white"><h4>8 · Bibliothèque</h4><p style="margin: 4px 0 0; font-size: 10.5px;">Catalogue, prêts, numérique</p><span class="chip ghost" style="margin-top: 8px;">→ p.18</span></div>
+      <div class="card white"><h4>9 · Vie étudiante</h4><p style="margin: 4px 0 0; font-size: 10.5px;">Résidences, bourses, clubs</p><span class="chip ghost" style="margin-top: 8px;">→ p.18</span></div>
+      <div class="card white"><h4>10 · Communication</h4><p style="margin: 4px 0 0; font-size: 10.5px;">SMS, e-mail, push, affichage</p><span class="chip ghost" style="margin-top: 8px;">→ p.17</span></div>
+
+      <div class="card brand" style="grid-column: span 2;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;"><h3 style="color: white;">11 · Reporting tutelles &amp; pilotage</h3><span class="chip" style="background: oklch(0.32 0.18 277); color: white;">TRANSVERSE</span></div>
+        <p>États réglementaires multi-tutelles, tableaux de bord direction, indicateurs CAMES et MINESUP. La cohérence des données est garantie par construction : tous les états dérivent du même modèle.</p>
+      </div>
+      <div class="card solid" style="grid-column: span 2;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;"><h3 style="color: white;">Plateforme transverse</h3><span class="chip dark">SOCLE</span></div>
+        <p>Authentification, droits, audit, notifications, paramétrage des tutelles. Quatre portails dédiés : étudiant, parent, enseignant, administration. App mobile.</p>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">10<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 11 — ADMISSIONS -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="11 Admissions">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Module 01</span></div>
+      <div class="head-r"><span class="chip ghost">MODULE 1</span></div>
+    </div>
+
+    <div class="section-num">09</div>
+    <div class="kicker">Module · Admissions &amp; inscriptions</div>
+    <h1 class="bighed">De la candidature<br/>à la <em>carte d'étudiant</em>.</h1>
+
+    <div class="grid g2" style="margin-top: 24px; gap: 14px;">
+      <div class="card white">
+        <h2>Candidatures en ligne</h2>
+        <p>Portail public configurable par programme. Le candidat crée son compte, dépose ses pièces, paie ses frais d'inscription via Mobile Money, suit l'avancement de son dossier en temps réel.</p>
+        <ul>
+          <li>Formulaire dynamique par filière</li>
+          <li>Téléversement vérifié automatiquement</li>
+          <li>Notification à chaque étape</li>
+          <li>Paiement des frais sécurisé</li>
+        </ul>
+      </div>
+      <div class="card white">
+        <h2>Jurys d'admission</h2>
+        <p>Les commissions d'admission accèdent à un espace dédié : liste des dossiers, anonymisation optionnelle, grilles d'évaluation paramétrables, vote individuel et délibération collective.</p>
+        <ul>
+          <li>Affectation des dossiers aux membres</li>
+          <li>Grilles d'évaluation par programme</li>
+          <li>PV de jury généré automatiquement</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid g2" style="gap: 14px; margin-top: 12px;">
+      <div class="card white">
+        <h2>Conversion en inscription</h2>
+        <p>Un candidat admis devient étudiant en un clic — toutes ses données et pièces sont reprises sans ressaisie. Le numéro étudiant est attribué selon la nomenclature de l'établissement.</p>
+
+        <h3 style="margin-top: 10px;">Réinscriptions</h3>
+        <p>Chaque rentrée, l'étudiant met à jour son dossier en ligne. La réinscription se boucle en <strong style="color: var(--tk-primary);">moins de cinq minutes</strong> depuis le smartphone.</p>
+      </div>
+      <div class="card softbrand">
+        <h3>Cas multi-tutelles</h3>
+        <p>Pour un programme co-diplômant, la conversion en inscription déclenche automatiquement la création du dossier miroir chez la tutelle partenaire et la transmission des pièces nécessaires.</p>
+
+        <h3 style="margin-top: 10px;">Indicateurs disponibles</h3>
+        <ul>
+          <li>Taux de transformation candidature → inscription par filière</li>
+          <li>Délai moyen de traitement</li>
+          <li>Sources de recrutement géographiques</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">11<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 12 — SCOLARITÉ -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="12 Scolarité">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Module 02</span></div>
+      <div class="head-r"><span class="chip ghost">MODULE 2</span></div>
+    </div>
+
+    <div class="section-num">10</div>
+    <div class="kicker">Module · Scolarité &amp; dossier étudiant</div>
+    <h1 class="bighed">Une seule source<br/>de vérité, <em>par étudiant</em>.</h1>
+    <p class="lede">Le dossier étudiant est l'objet central de TKAMS. Il rassemble identité, parcours, paiements, présences, notes, sanctions, attestations délivrées, pièces officielles. Chaque modification est tracée, datée et attribuée à son auteur.</p>
+
+    <h2 style="margin-top: 24px;">Composition du dossier</h2>
+    <div class="grid g4" style="gap: 8px; margin-top: 10px;">
+      <div class="card white"><h4>État civil</h4><p style="margin: 0; font-size: 10.5px;">Identité, photo, contacts, parents/tuteurs</p></div>
+      <div class="card white"><h4>Parcours</h4><p style="margin: 0; font-size: 10.5px;">Inscriptions, redoublements, changements</p></div>
+      <div class="card white"><h4>Académique</h4><p style="margin: 0; font-size: 10.5px;">Notes, moyennes, validation UE</p></div>
+      <div class="card white"><h4>Financier</h4><p style="margin: 0; font-size: 10.5px;">Frais, paiements, échéanciers, bourses</p></div>
+      <div class="card white"><h4>Présence</h4><p style="margin: 0; font-size: 10.5px;">Émargements, justificatifs</p></div>
+      <div class="card white"><h4>Disciplinaire</h4><p style="margin: 0; font-size: 10.5px;">Sanctions, recours, décisions</p></div>
+      <div class="card white"><h4>Pièces</h4><p style="margin: 0; font-size: 10.5px;">Acte de naissance, diplômes</p></div>
+      <div class="card softbrand"><h4>Attestations</h4><p style="margin: 0; font-size: 10.5px;">Toutes les délivrances, QR de vérification</p></div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 16px; gap: 14px;">
+      <div class="card white">
+        <h2>Attestations en autonomie</h2>
+        <p>L'étudiant peut générer lui-même les attestations courantes depuis son espace : attestation d'inscription, de présence, de réussite, certificat de scolarité. Chaque document porte un QR code et un identifiant unique permettant à un tiers (employeur, banque, ambassade) d'en vérifier l'authenticité en ligne.</p>
+
+        <h3 style="margin-top: 12px;">Anti-fraude</h3>
+        <p>La vérification publique via QR code constitue un dispositif anti-fraude robuste. L'établissement reprend le contrôle sur la circulation de ses documents officiels.</p>
+      </div>
+      <div>
+        <div class="card brand">
+          <h3>Continuité du dossier</h3>
+          <p>Un étudiant qui interrompt et reprend ses études — phénomène fréquent — retrouve son dossier intact. Les UE validées sont capitalisées, le parcours reconstitué automatiquement.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Conformité RGPD</h3>
+          <p>Le dossier supporte les obligations de portabilité, d'effacement et de rectification. L'étudiant peut demander un export complet de ses données ; un délai légal de conservation est appliqué après diplomation.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">12<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 13 — CURRICULUM -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="13 Curriculum">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Module 03</span></div>
+      <div class="head-r"><span class="chip ghost">MODULE 3</span></div>
+    </div>
+
+    <div class="section-num">11</div>
+    <div class="kicker">Module · Curriculum &amp; maquettes LMD</div>
+    <h1 class="bighed">La maquette pédagogique,<br/>en <em>structure vivante</em>.</h1>
+    <p class="lede">Une maquette pédagogique évolue : une UE renommée, un coefficient ajusté, une équivalence ajoutée. TKAMS conserve l'historique complet — un étudiant est toujours évalué selon la maquette en vigueur à son année d'inscription.</p>
+
+    <div class="grid g2" style="margin-top: 24px; gap: 14px;">
+      <div>
+        <div class="card white">
+          <h2>Hiérarchie modélisée</h2>
+          <p style="font-family: var(--tk-font-mono); font-size: 11.5px; color: var(--tk-primary); background: var(--tk-primary-soft); padding: 10px 12px; border-radius: 8px; line-height: 1.7;">Filière → Cycle → Mention → Spécialité → Parcours → Semestre → UE → EC</p>
+          <p>Chaque niveau porte ses propres règles : coefficient, ECTS, fondamental/optionnel, validation.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h2>Versionnement</h2>
+          <p>Une maquette modifiée pour une nouvelle promotion n'a aucune rétroaction sur les promotions antérieures. Les étudiants de L2 2025–2026 sont évalués selon la maquette 2025 ; ceux de 2026 selon la nouvelle.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card white">
+          <h2>Parcours flexibles</h2>
+          <p>En Master, un étudiant compose un parcours individualisé. TKAMS valide la cohérence (prérequis, volume horaire minimum, ECTS) et alerte sur les configurations non valables.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h2>Co-diplomation</h2>
+          <p>Pour les programmes en partenariat, deux maquettes peuvent cohabiter avec une table de correspondance entre leurs UE. Un étudiant suit la maquette locale pour ses semestres au Cameroun et la partenaire pour ses semestres en mobilité.</p>
+        </div>
+        <div class="card softbrand" style="margin-top: 12px;">
+          <h3>Référentiel CAMES</h3>
+          <p>Le format d'export des maquettes est aligné sur les attendus CAMES — facilitant la procédure de reconnaissance des diplômes à l'échelle régionale.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card brand" style="margin-top: 14px;">
+      <h3 style="color: white;">Équivalences &amp; publication</h3>
+      <p>Pour les étudiants entrant en cours de cycle (mobilité, reprise, changement de filière), TKAMS gère un référentiel d'équivalences. Les maquettes validées peuvent être publiées sur le site institutionnel via une page automatiquement générée — toujours à jour, sans intervention de la communication.</p>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">13<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 14 — PLANNING -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="14 Planning">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Module 04</span></div>
+      <div class="head-r"><span class="chip ghost">MODULE 4</span></div>
+    </div>
+
+    <div class="section-num">12</div>
+    <div class="kicker">Module · Emplois du temps &amp; ressources</div>
+    <h1 class="bighed">L'emploi du temps,<br/>sans <em>conflits</em>.</h1>
+
+    <h2 style="margin-top: 24px;">Trois ressources, un planning</h2>
+    <div class="grid g3" style="margin-top: 10px; gap: 12px;">
+      <div class="card white" style="border-top: 3px solid var(--tk-primary);">
+        <h3>Enseignants</h3>
+        <p>Disponibilités déclarées, charges horaires plafonnées, contraintes individuelles.</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-emerald);">
+        <h3>Salles</h3>
+        <p>Capacité, équipement (vidéo, labo, amphi), localisation, disponibilité.</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-gold);">
+        <h3>Groupes étudiants</h3>
+        <p>Effectif, parcours suivi, groupes de TD/TP, contraintes inter-cours.</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 16px; gap: 14px;">
+      <div class="card white">
+        <h2>Création assistée</h2>
+        <p>Les responsables pédagogiques saisissent les besoins (UE × volume horaire × groupe) ; TKAMS propose un emploi du temps réalisable et soumet les ajustements éventuels.</p>
+
+        <h3 style="margin-top: 12px;">Vue personnalisée</h3>
+        <p>Chaque étudiant consulte son emploi du temps personnel — qui ne comprend que les cours de ses UE, y compris ses options. Sur mobile, le planning de la semaine est disponible en quelques secondes.</p>
+
+        <h3 style="margin-top: 12px;">Modifications en temps réel</h3>
+        <p>Un cours déplacé ou annulé déclenche une notification immédiate à tous les étudiants concernés (push mobile, SMS optionnel). L'enseignant remplaçant est invité à confirmer.</p>
+      </div>
+      <div>
+        <div class="card brand">
+          <h2 style="color: white;">Émargements numériques</h2>
+          <p>À chaque cours, l'émargement peut se faire par scan d'un QR code affiché par l'enseignant. Le taux de présence est calculé en temps réel ; les absences répétées déclenchent une alerte au responsable pédagogique.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Mode hors-ligne</h3>
+          <p>Les enseignants en zone à connectivité instable peuvent télécharger leur planning et listes d'émargement à l'avance, les remplir hors-ligne, synchroniser au retour.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Réservation de salles</h3>
+          <p>Les salles non affectées sont visibles dans un catalogue de réservation — soutenances, conférences, examens blancs, clubs étudiants. Workflow de validation paramétrable.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">14<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 15 — ÉVALUATIONS -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="15 Évaluations">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Module 05</span></div>
+      <div class="head-r"><span class="chip ghost">MODULE 5</span></div>
+    </div>
+
+    <div class="section-num">13</div>
+    <div class="kicker">Module · Examens, notes &amp; jurys</div>
+    <h1 class="bighed">De la note saisie<br/>au <em>relevé signé</em>.</h1>
+    <p class="lede">La chaîne d'évaluation est la plus sensible du SIS : une erreur ici affecte directement le destin d'un étudiant. TKAMS impose une double validation, trace chaque modification, et calcule les moyennes selon des règles publiées et auditables.</p>
+
+    <h2 style="margin-top: 24px;">Le cycle d'une note · cinq étapes</h2>
+    <div class="grid g15" style="grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px;">
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 14px;">
+        <div class="chip" style="margin-bottom: 6px;">01</div>
+        <h4>Saisie</h4><p style="margin: 4px 0 0; font-size: 10px;">Par l'enseignant titulaire, web ou import Excel</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 14px;">
+        <div class="chip" style="margin-bottom: 6px;">02</div>
+        <h4>Validation</h4><p style="margin: 4px 0 0; font-size: 10px;">Par le chef de département, contrôle de plausibilité</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 14px;">
+        <div class="chip" style="margin-bottom: 6px;">03</div>
+        <h4>Jury</h4><p style="margin: 4px 0 0; font-size: 10px;">Délibération collective, ajustements tracés</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 14px;">
+        <div class="chip" style="margin-bottom: 6px;">04</div>
+        <h4>Publication</h4><p style="margin: 4px 0 0; font-size: 10px;">Notification, accès au relevé personnel</p>
+      </div>
+      <div class="card brand" style="padding: 14px;">
+        <div class="chip dark">05</div>
+        <h4 style="color: white;">Relevé</h4><p style="margin: 4px 0 0; font-size: 10px;">Signature numérique, QR de vérification</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 16px; gap: 14px;">
+      <div class="card white">
+        <h2>Types d'évaluations</h2>
+        <ul>
+          <li>Contrôles continus (devoirs, TD, TP)</li>
+          <li>Examens partiels et finaux</li>
+          <li>Rapports de stage, soutenances</li>
+          <li>Travaux de mémoire et thèse</li>
+          <li>Validation d'acquis de l'expérience</li>
+        </ul>
+
+        <h3 style="margin-top: 10px;">Recours et corrections</h3>
+        <p>Un étudiant peut contester une note via un workflow formel. La copie est ré-examinée par un binôme indépendant ; la décision finale et son motif sont archivés.</p>
+      </div>
+      <div>
+        <div class="card white">
+          <h2>Jurys et délibérations</h2>
+          <p>Vue d'ensemble du semestre par étudiant : moyenne, UE validées, points faibles, situations particulières (boursier, redoublant, ayant droit). Le jury peut accorder des points jury tracés.</p>
+        </div>
+        <div class="card softbrand" style="margin-top: 12px;">
+          <h3>Cas multi-tutelles</h3>
+          <p>Pour un diplôme co-signé, le relevé est généré en deux versions selon les exigences de chaque tutelle, avec les deux blocs de signature numérique.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">15<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 16 — FINANCES -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="16 Finances">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Module 06</span></div>
+      <div class="head-r"><span class="chip ghost">MODULE 6</span></div>
+    </div>
+
+    <div class="section-num">14</div>
+    <div class="kicker">Module · Frais &amp; paiements Mobile Money</div>
+    <h1 class="bighed">Le recouvrement,<br/>tel qu'il <em>doit fonctionner</em>.</h1>
+    <p class="lede">Les frais de scolarité au Cameroun sont rarement payés en une fois. Une famille verse trois tranches, un sponsor règle directement, une bourse arrive plus tard. TKAMS automatise la réconciliation et la traçabilité de tous ces flux.</p>
+
+    <div class="grid g4" style="margin-top: 26px; gap: 10px;">
+      <div class="card white" style="text-align: center;">
+        <h4 style="font-family: var(--tk-font-display); font-size: 13px;">MTN MoMo</h4>
+        <p style="margin: 4px 0 0; font-size: 10px;">Paiement direct</p>
+      </div>
+      <div class="card white" style="text-align: center;">
+        <h4 style="font-family: var(--tk-font-display); font-size: 13px;">Orange Money</h4>
+        <p style="margin: 4px 0 0; font-size: 10px;">Paiement direct</p>
+      </div>
+      <div class="card white" style="text-align: center;">
+        <h4 style="font-family: var(--tk-font-display); font-size: 13px;">Virement</h4>
+        <p style="margin: 4px 0 0; font-size: 10px;">Réconciliation auto</p>
+      </div>
+      <div class="card white" style="text-align: center;">
+        <h4 style="font-family: var(--tk-font-display); font-size: 13px;">Espèces</h4>
+        <p style="margin: 4px 0 0; font-size: 10px;">Reçu numérique</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 14px; gap: 14px;">
+      <div class="card white">
+        <h2>Tarification paramétrable</h2>
+        <p>Grilles définies par programme, cycle et année. Modulations possibles : étudiants étrangers, redoublants, situation sociale, mérite.</p>
+
+        <h3 style="margin-top: 10px;">Échéanciers personnalisés</h3>
+        <p>Pour chaque étudiant : nombre de tranches, montants, dates limites. Un étudiant en difficulté peut bénéficier d'un aménagement validé par la direction.</p>
+
+        <h3 style="margin-top: 10px;">Paiements en quelques secondes</h3>
+        <p>L'étudiant ou son tuteur paie depuis son téléphone ; le compte étudiant est crédité automatiquement. Reçu numérique généré, SMS de confirmation.</p>
+      </div>
+      <div>
+        <div class="card brand">
+          <h2 style="color: white;">Traçabilité multi-tutelles</h2>
+          <p>Un paiement peut être ventilé automatiquement sur plusieurs lignes comptables : fonctionnement, fonds de bourses, redevance à la tutelle, frais de bibliothèque. La comptabilité analytique est tenue en temps réel.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Bourses et sponsors</h3>
+          <p>Une bourse peut couvrir tout ou partie des frais. Le sponsor (entreprise, fondation, ministère) verse directement et bénéficie d'un espace de suivi des étudiants qu'il finance.</p>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Relances graduées</h3>
+          <p>Rappel courtois, notification au tuteur, blocage de certaines fonctions (consultation des notes, inscription à l'examen) selon les règles de l'établissement.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">16<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 17 — ENSEIGNANTS & COMM -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="17 Enseignants et comm">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Modules 07 &amp; 10</span></div>
+      <div class="head-r"><span class="chip ghost">MODULES 7 + 10</span></div>
+    </div>
+
+    <div class="section-num">15</div>
+    <div class="kicker">Modules · Enseignants &amp; communication</div>
+    <h1 class="bighed">Les enseignants au centre,<br/>les messages à la <em>bonne adresse</em>.</h1>
+
+    <div class="grid g2" style="margin-top: 24px; gap: 14px;">
+
+      <div>
+        <div class="card white">
+          <div class="chip" style="margin-bottom: 10px;">MODULE 7 · ENSEIGNANTS</div>
+          <h2>Une population diverse</h2>
+          <p>Permanents, vacataires, intervenants externes, doctorants moniteurs. Chaque enseignant dispose d'un espace personnel.</p>
+          <h3 style="margin-top: 10px;">Charges pédagogiques</h3>
+          <p>La charge annuelle d'un enseignant — heures de cours, TD, TP, encadrements — est suivie en temps réel. Les heures effectivement assurées sont déduites du prévisionnel.</p>
+          <h3 style="margin-top: 10px;">Vacations et paiements</h3>
+          <p>Les heures de vacation sont calculées automatiquement à partir des émargements. États de paie générés en fin de semestre, signés numériquement.</p>
+          <h3 style="margin-top: 10px;">Évaluation enseignante</h3>
+          <p>Les étudiants peuvent évaluer leurs enseignants en fin de semestre via un questionnaire paramétrable.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="card brand">
+          <div class="chip dark" style="margin-bottom: 10px;">MODULE 10 · COMMUNICATION</div>
+          <h2 style="color: white;">Quatre canaux, une orchestration</h2>
+          <p>L'information critique doit atteindre les destinataires de façon fiable. TKAMS combine quatre canaux et choisit le plus pertinent selon le profil.</p>
+        </div>
+        <div class="grid g2" style="gap: 8px; margin-top: 10px;">
+          <div class="card white" style="padding: 12px;"><h4>📱 Push mobile</h4><p style="margin: 0; font-size: 10px;">Via app TKAMS</p></div>
+          <div class="card white" style="padding: 12px;"><h4>💬 SMS</h4><p style="margin: 0; font-size: 10px;">Profils sans smartphone</p></div>
+          <div class="card white" style="padding: 12px;"><h4>✉ E-mail</h4><p style="margin: 0; font-size: 10px;">Communications formelles</p></div>
+          <div class="card white" style="padding: 12px;"><h4>🖥 Affichage</h4><p style="margin: 0; font-size: 10px;">Écrans physiques</p></div>
+        </div>
+        <div class="card white" style="margin-top: 10px;">
+          <h3>Annuaires segmentés</h3>
+          <p>Général, par filière, par promotion, par UE, par groupe TD. Cible précise, statistiques d'ouverture.</p>
+          <h3 style="margin-top: 8px;">Conformité</h3>
+          <p>Envois tracés et archivés 5 ans. Historique consultable depuis le dossier étudiant.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">17<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 18 — BIBLIOTHÈQUE & VIE -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="18 Bibliothèque et vie étudiante">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / Modules 08 &amp; 09</span></div>
+      <div class="head-r"><span class="chip ghost">MODULES 8 + 9</span></div>
+    </div>
+
+    <div class="section-num">16</div>
+    <div class="kicker">Modules · Bibliothèque &amp; vie étudiante</div>
+    <h1 class="bighed">L'écosystème <em>autour</em><br/>du parcours académique.</h1>
+
+    <div class="grid g2" style="margin-top: 24px; gap: 14px;">
+
+      <div>
+        <div class="card white">
+          <div class="chip" style="margin-bottom: 10px;">MODULE 8 · BIBLIOTHÈQUE</div>
+          <h2>Catalogue numérique</h2>
+          <p>Ouvrages, périodiques et ressources électroniques. Consultation depuis l'espace personnel, réservation en ligne.</p>
+          <ul>
+            <li>Catalogage Dewey / ISBN</li>
+            <li>Gestion prêts, retours, prolongations</li>
+            <li>Alertes, calcul automatique des pénalités</li>
+            <li>Statistiques d'usage par filière</li>
+            <li>Abonnements numériques (Cairn, JSTOR)</li>
+          </ul>
+          <h3 style="margin-top: 8px;">Bornes en libre-service</h3>
+          <p>Pour les établissements équipés, emprunts et retours en autonomie.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="card white">
+          <div class="chip" style="margin-bottom: 10px;">MODULE 9 · VIE ÉTUDIANTE</div>
+          <h2>Quatre sous-modules</h2>
+          <div class="grid g2" style="gap: 8px; margin-top: 8px;">
+            <div style="border-left: 3px solid var(--tk-primary); padding-left: 10px;">
+              <h4>Résidences</h4>
+              <p style="margin: 0; font-size: 10.5px;">Affectations, loyer, états des lieux, incidents</p>
+            </div>
+            <div style="border-left: 3px solid var(--tk-accent-emerald); padding-left: 10px;">
+              <h4>Bourses</h4>
+              <p style="margin: 0; font-size: 10.5px;">Internes &amp; externes (MINESUP, MINFOPRA, fondations)</p>
+            </div>
+            <div style="border-left: 3px solid var(--tk-accent-gold); padding-left: 10px;">
+              <h4>Associations</h4>
+              <p style="margin: 0; font-size: 10.5px;">Annuaire clubs, calendrier, billetterie</p>
+            </div>
+            <div style="border-left: 3px solid var(--tk-accent-blue); padding-left: 10px;">
+              <h4>Stages &amp; insertion</h4>
+              <p style="margin: 0; font-size: 10.5px;">Conventions, rapports, suivi des diplômés</p>
+            </div>
+          </div>
+        </div>
+        <div class="card softbrand" style="margin-top: 12px;">
+          <h3>Tableau de bord direction</h3>
+          <p>Taux d'occupation des résidences, montants distribués en bourses, taux d'insertion à 6 et 12 mois : tous ces indicateurs remontent au pilotage.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">18<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 19 — PORTAILS -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="19 Portails">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / 17</span></div>
+      <div class="head-r"><span class="chip ghost">PORTAILS</span></div>
+    </div>
+
+    <div class="section-num">17</div>
+    <div class="kicker">Portails dédiés</div>
+    <h1 class="bighed">Quatre points d'entrée,<br/>une <em>seule</em> plateforme.</h1>
+    <p class="lede">À chaque profil, son interface. TKAMS expose quatre portails distincts qui partagent les mêmes données — mais offrent des parcours, des permissions et un design adaptés à chaque usage quotidien.</p>
+
+    <div class="grid g2" style="margin-top: 24px; gap: 14px;">
+
+      <div class="card white">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h2>Portail étudiant</h2>
+          <span class="chip mono">tkams.app/etudiant</span>
+        </div>
+        <p>Le centre de gravité du quotidien étudiant.</p>
+        <ul>
+          <li>Emploi du temps personnel, notifications de changements</li>
+          <li>Notes publiées en temps réel</li>
+          <li>Paiement direct des frais via Mobile Money</li>
+          <li>Téléchargement d'attestations en autonomie</li>
+        </ul>
+      </div>
+
+      <div class="card white">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h2>Portail parent / tuteur</h2>
+          <span class="chip mono">tkams.app/parent</span>
+        </div>
+        <p>Spécificité africaine : les parents et tuteurs suivent activement la scolarité — y compris d'enfants adultes.</p>
+        <ul>
+          <li>Suivi des notes et de l'assiduité</li>
+          <li>Alertes (absence, paiement, sanction)</li>
+          <li>Paiement depuis son propre téléphone</li>
+          <li>Accès configurable par l'étudiant majeur</li>
+        </ul>
+      </div>
+
+      <div class="card white">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h2>Portail enseignant</h2>
+          <span class="chip mono">tkams.app/enseignant</span>
+        </div>
+        <p>Conçu autour des deux usages dominants : faire le cours, et évaluer.</p>
+        <ul>
+          <li>Émargement par QR ou validation manuelle</li>
+          <li>Saisie des notes (web ou import Excel)</li>
+          <li>Suivi de la charge horaire et vacations dues</li>
+          <li>Mode hors-ligne pour zones à faible connectivité</li>
+        </ul>
+      </div>
+
+      <div class="card brand">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h2 style="color: white;">Portail administration</h2>
+          <span class="chip dark mono">tkams.app/admin</span>
+        </div>
+        <p>Le poste de pilotage. L'interface s'adapte au rôle.</p>
+        <ul>
+          <li>Tableau de bord direction : KPI temps réel</li>
+          <li>Validation inscriptions, jurys, paiements</li>
+          <li>Configuration des tutelles, droits, workflows</li>
+          <li>Exports MINESUP, CAMES, tutelles externes</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="card softbrand" style="margin-top: 14px;">
+      <h3>Authentification unique</h3>
+      <p>Un compte unique par individu, indépendamment du nombre de rôles qu'il occupe (un doctorant peut être à la fois étudiant et enseignant vacataire). Connexion par e-mail, téléphone (OTP SMS) ou compte Google.</p>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">19<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 20 — MOBILE -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="20 Mobile">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / 18</span></div>
+      <div class="head-r"><span class="chip ghost">APP MOBILE</span></div>
+    </div>
+
+    <div class="section-num">18</div>
+    <div class="kicker">Application mobile &amp; hors-ligne</div>
+    <h1 class="bighed">Le smartphone<br/>comme <em>écran principal</em>.</h1>
+    <p class="lede">Plus de 80 % des étudiants camerounais consultent leur scolarité depuis leur téléphone. TKAMS Mobile est une application native conçue pour fonctionner sur des appareils d'entrée de gamme, avec des connexions intermittentes.</p>
+
+    <div class="grid g4" style="margin-top: 26px; gap: 10px;">
+      <div class="card bigstat"><div class="v">&lt; 25<sup>Mo</sup></div><div class="l">Téléchargement</div></div>
+      <div class="card bigstat"><div class="v">Android 7<sup>+</sup></div><div class="l">Compatibilité large</div></div>
+      <div class="card bigstat"><div class="v">60<sup>fps</sup></div><div class="l">Animations fluides</div></div>
+      <div class="card bigstat brand" style="background: var(--tk-primary); color: white;"><div class="v" style="color: white;">&lt; 2<sup>s</sup></div><div class="l">Ouverture à froid</div></div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 14px; gap: 14px;">
+      <div class="card white">
+        <h2>Pour l'étudiant</h2>
+        <ul>
+          <li>Emploi du temps avec rappels avant chaque cours</li>
+          <li>Notes consultables en temps réel</li>
+          <li>Carte d'étudiant numérique avec QR code</li>
+          <li>Paiement de scolarité via Mobile Money intégré</li>
+          <li>Messagerie avec l'administration</li>
+          <li>Téléchargement des attestations</li>
+          <li>Ressources de cours hors-ligne</li>
+        </ul>
+      </div>
+      <div class="card white">
+        <h2>Pour l'enseignant</h2>
+        <ul>
+          <li>Émargement par scan QR code</li>
+          <li>Saisie de notes en cours même hors-ligne</li>
+          <li>Consultation des listes d'étudiants par cours</li>
+          <li>Notifications administratives</li>
+          <li>Synchronisation au retour du réseau</li>
+        </ul>
+
+        <h3 style="margin-top: 10px;">Mode hors-ligne</h3>
+        <p>Les fonctions critiques sont accessibles sans connexion : carte d'étudiant, emploi du temps, dernières notes consultées, attestations déjà téléchargées.</p>
+      </div>
+    </div>
+
+    <div class="card softbrand" style="margin-top: 12px;">
+      <h3>Sécurité mobile</h3>
+      <p>Les données sensibles sont chiffrées localement. Le verrouillage biométrique (empreinte, reconnaissance faciale) est obligatoire pour les paiements et la consultation des notes finales.</p>
+    </div>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">20<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 21 — APERÇUS PRODUIT -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="21 Aperçus produit">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">III · Produit / 19</span></div>
+      <div class="head-r"><span class="chip ghost">APERÇUS</span></div>
+    </div>
+
+    <div class="section-num">19</div>
+    <div class="kicker">Aperçus produit</div>
+    <h1 class="bighed">À quoi ressemble<br/>la <em>plateforme</em>.</h1>
+    <p class="lede">Une sélection d'écrans représentatifs des quatre portails. Le design TKAMS privilégie la lisibilité, la densité d'information utile, et la cohérence visuelle entre web et mobile.</p>
+
+    <div class="grid" style="grid-template-columns: 1.4fr 1fr; gap: 12px; margin-top: 24px;">
+      <div class="mock" style="height: 340px; grid-row: span 2; border-radius: 18px;">
+        <div class="mock-label">tableau-de-bord-admin.png</div>
+        <div class="mock-tag">PORTAIL ADMIN · DIRECTION</div>
+      </div>
+      <div class="mock" style="height: 164px;">
+        <div class="mock-label">jury-deliberation.png</div>
+        <div class="mock-tag">JURY</div>
+      </div>
+      <div class="mock" style="height: 164px;">
+        <div class="mock-label">paiement-mobile-money.png</div>
+        <div class="mock-tag">PAIEMENT</div>
+      </div>
+
+      <div class="mock" style="height: 280px;">
+        <div class="mock-label">portail-etudiant-accueil.png</div>
+        <div class="mock-tag">ÉTUDIANT</div>
+      </div>
+      <div class="mock" style="height: 280px;">
+        <div class="mock-label">portail-enseignant-emargement.png</div>
+        <div class="mock-tag">ENSEIGNANT</div>
+      </div>
+      <div class="mock" style="height: 280px;">
+        <div class="mock-label">app-mobile-emploi-du-temps.png</div>
+        <div class="mock-tag">MOBILE · ANDROID</div>
+      </div>
+    </div>
+
+    <p style="margin-top: 14px; font-size: 10.5px; color: var(--tk-muted); font-style: italic;">Captures du prototype en cours de stabilisation. Les écrans définitifs seront livrés à la signature de l'engagement, avec une démonstration personnalisée sur les données de votre établissement.</p>
+
+    <div class="foot">
+      <span>III · LE PRODUIT</span>
+      <span class="pageno">21<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 22 — ARCHITECTURE TECHNIQUE -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="22 Architecture">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">IV · Technique / 20</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE IV</span></div>
+    </div>
+
+    <div class="section-num">20</div>
+    <div class="kicker">Architecture technique</div>
+    <h1 class="bighed">Une plateforme moderne,<br/>sans <em>dette technique</em>.</h1>
+    <p class="lede">TKAMS repose sur une stack contemporaine, éprouvée et largement adoptée — facilitant la maintenance, le recrutement et la pérennité. Aucun composant exotique, aucune dépendance critique à une technologie propriétaire.</p>
+
+    <h2 style="margin-top: 24px;">Schéma fonctionnel</h2>
+    <div class="card white" style="margin-top: 10px; padding: 18px;">
+      <div class="grid g4" style="gap: 8px;">
+        <div class="card softbrand" style="padding: 10px; text-align: center;"><h4 style="margin: 0;">Web</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Next.js · React</p></div>
+        <div class="card softbrand" style="padding: 10px; text-align: center;"><h4 style="margin: 0;">Mobile</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Expo · RN</p></div>
+        <div class="card softbrand" style="padding: 10px; text-align: center;"><h4 style="margin: 0;">Bornes</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Self-service</p></div>
+        <div class="card softbrand" style="padding: 10px; text-align: center;"><h4 style="margin: 0;">Admin</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Console web</p></div>
+      </div>
+      <div style="height: 1px; background: var(--tk-border); margin: 12px 0;"></div>
+      <div class="card brand" style="padding: 10px; text-align: center;">
+        <h4 style="color: white; margin: 0;">API REST + WebSocket · JWT · permissions multi-tutelles</h4>
+        <p style="margin: 2px 0 0; font-size: 9.5px; color: oklch(0.9 0.04 277);">Django REST Framework · Channels · OpenAPI 3</p>
+      </div>
+      <div style="height: 1px; background: var(--tk-border); margin: 12px 0;"></div>
+      <div class="grid g4" style="gap: 8px;">
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">Domaines</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Apps modulaires</p></div>
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">Tâches</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Celery · scheduler</p></div>
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">Webhooks</h4><p style="margin: 2px 0 0; font-size: 9.5px;">MoMo · partenaires</p></div>
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">Audit</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Logs, exports</p></div>
+      </div>
+      <div style="height: 1px; background: var(--tk-border); margin: 12px 0;"></div>
+      <div class="grid g4" style="gap: 8px;">
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">PostgreSQL</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Données métier</p></div>
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">Redis</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Cache · queue</p></div>
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">Stockage objet</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Pièces, PDF</p></div>
+        <div class="card white" style="padding: 10px; text-align: center; background: var(--tk-bg);"><h4 style="margin: 0;">Sauvegardes</h4><p style="margin: 2px 0 0; font-size: 9.5px;">Quotidiennes</p></div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 14px; gap: 14px;">
+      <div class="card white">
+        <h3>Choix structurants</h3>
+        <ul>
+          <li><strong>Backend Python / Django</strong> — Recrutement local possible</li>
+          <li><strong>Frontend React</strong> — Standard de l'industrie</li>
+          <li><strong>API REST documentée</strong> — OpenAPI 3, intégrations possibles</li>
+          <li><strong>Conteneurisation Docker</strong> — Mises à jour sans surprise</li>
+        </ul>
+      </div>
+      <div class="card softbrand">
+        <h3>Intégrations possibles</h3>
+        <ul>
+          <li>LDAP / Active Directory existants</li>
+          <li>SAML / OIDC pour fédération d'identité</li>
+          <li>LMS Moodle / Chamilo pour l'apprentissage</li>
+          <li>Logiciels comptables OHADA</li>
+          <li>Bibliothèques numériques (Cairn, JSTOR)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>IV · TECHNIQUE</span>
+      <span class="pageno">22<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 23 — SÉCURITÉ -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="23 Sécurité">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">IV · Technique / 21</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE IV</span></div>
+    </div>
+
+    <div class="section-num">21</div>
+    <div class="kicker">Sécurité &amp; conformité</div>
+    <h1 class="bighed">Les données étudiantes,<br/>traitées comme <em>elles le méritent</em>.</h1>
+    <p class="lede">Un SIS manipule des données sensibles : identité, situation familiale, état de santé déclaré, situation financière, performances. TKAMS applique les standards de l'industrie et anticipe l'évolution du cadre réglementaire camerounais et CEMAC.</p>
+
+    <div class="grid g3" style="margin-top: 26px; gap: 12px;">
+      <div class="card white">
+        <span class="num-badge">🔒</span>
+        <h3 style="margin-top: 10px;">Chiffrement</h3>
+        <ul>
+          <li>TLS 1.3 sur toutes les communications</li>
+          <li>Chiffrement au repos AES-256</li>
+          <li>Sauvegardes chiffrées avec clé séparée</li>
+          <li>Mots de passe PBKDF2, 600k itérations</li>
+        </ul>
+      </div>
+      <div class="card white">
+        <span class="num-badge">👤</span>
+        <h3 style="margin-top: 10px;">Authentification</h3>
+        <ul>
+          <li>Mot de passe + OTP SMS pour profils sensibles</li>
+          <li>2FA TOTP optionnel pour tous</li>
+          <li>Sessions limitées à 8 h, renouvelables</li>
+          <li>Détection de connexions inhabituelles</li>
+        </ul>
+      </div>
+      <div class="card white">
+        <span class="num-badge">📜</span>
+        <h3 style="margin-top: 10px;">Audit complet</h3>
+        <p>Toute action sur une donnée sensible est tracée : qui, quand, depuis quelle adresse IP, sur quel terminal. Logs conservés 5 ans, exportables en cas d'enquête.</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 14px; gap: 14px;">
+      <div class="card white">
+        <h2>Permissions</h2>
+        <p>Chaque action est régie par un système de permissions granulaires. Un utilisateur ne voit que ce qu'il a besoin de voir. Les permissions sont auditables et révocables à tout moment.</p>
+
+        <h2 style="margin-top: 12px;">Continuité de service</h2>
+        <ul>
+          <li>Sauvegardes automatiques toutes les 6 h</li>
+          <li>Réplication sur un second site géographique</li>
+          <li>PRA documenté et testé</li>
+          <li>RTO 4 h, RPO 1 h (Enterprise)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card brand">
+          <h3 style="color: white;">Conformité réglementaire</h3>
+          <ul>
+            <li>Loi n° 2010/012 (cybersécurité Cameroun)</li>
+            <li>Loi n° 2010/021 (commerce électronique, signature numérique)</li>
+            <li>Référentiel ANTIC opérateurs numériques</li>
+            <li>Alignement RGPD pour partenariats européens</li>
+          </ul>
+        </div>
+        <div class="card softbrand" style="margin-top: 12px;">
+          <h3>Tests d'intrusion annuels</h3>
+          <p>TKAMS fait l'objet de tests d'intrusion externes annuels par un prestataire certifié. Le rapport synthétique est communicable sous NDA aux établissements clients.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>IV · TECHNIQUE</span>
+      <span class="pageno">23<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 24 — HÉBERGEMENT -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="24 Hébergement">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">IV · Technique / 22</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE IV</span></div>
+    </div>
+
+    <div class="section-num">22</div>
+    <div class="kicker">Hébergement &amp; souveraineté des données</div>
+    <h1 class="bighed">Vos données<br/>vous <em>appartiennent</em>.</h1>
+    <p class="lede">La question de l'hébergement est centrale pour un système d'information stratégique. TKAMS propose trois modes de déploiement adaptés aux contraintes et préférences de chaque établissement — du SaaS clé en main à l'installation sur les serveurs internes.</p>
+
+    <h2 style="margin-top: 24px;">Trois modes de déploiement</h2>
+    <div class="grid" style="grid-template-columns: 1fr; gap: 12px; margin-top: 10px;">
+
+      <div class="card white">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h3>SaaS · TKAMS hébergé</h3>
+          <span class="chip" style="background: var(--tk-primary); color: white;">RECOMMANDÉ · 80 %</span>
+        </div>
+        <p>Hébergement sur infrastructure TKAMS, en datacenter Tier III situé en Afrique. Aucune installation locale. Mises à jour, sauvegardes, monitoring, sécurité : tout est inclus. Démarrage en <strong>4 à 6 semaines</strong>.</p>
+      </div>
+
+      <div class="card white">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h3>SaaS souverain · datacenter camerounais</h3>
+          <span class="chip">SOUVERAINETÉ NATIONALE</span>
+        </div>
+        <p>Pour les établissements publics ou ceux ayant une exigence de souveraineté nationale, hébergement chez un opérateur agréé ANTIC au Cameroun. Mêmes services managés, contrat de localisation des données.</p>
+      </div>
+
+      <div class="card white">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h3>On-premise · serveurs de l'établissement</h3>
+          <span class="chip">CONTRÔLE MAXIMAL</span>
+        </div>
+        <p>Installation sur les serveurs propres de l'établissement. TKAMS fournit l'archive de déploiement et accompagne la mise en service. L'équipe DSI gère le quotidien ; TKAMS reste responsable des mises à jour applicatives.</p>
+      </div>
+
+    </div>
+
+    <div class="card brand" style="margin-top: 16px;">
+      <h2 style="color: white;">Réversibilité garantie · sans frais</h2>
+      <p>Dans tous les modes, l'établissement reste pleinement propriétaire de ses données. À la résiliation, TKAMS fournit un export SQL complet, l'archive des pièces, la documentation du modèle de données, et un accompagnement de 90 jours pour la migration. Sans frais.</p>
+      <p style="margin-top: 8px; font-style: italic; color: oklch(0.92 0.04 277);">Un fournisseur qui rend la sortie difficile prend ses clients en otage. Nous préférons les garder par la qualité du service que par le verrouillage technique.</p>
+    </div>
+
+    <div class="foot">
+      <span>IV · TECHNIQUE</span>
+      <span class="pageno">24<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 25 — COMPARATIF -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="25 Comparatif">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">V · Marché / 23</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE V</span></div>
+    </div>
+
+    <div class="section-num">23</div>
+    <div class="kicker">Comparatif concurrence</div>
+    <h1 class="bighed">Pourquoi TKAMS quand<br/>il <em>existe</em> des alternatives.</h1>
+    <p class="lede">L'écosystème des SIS comprend quelques familles d'outils. Voici, sans complaisance, ce que chacun apporte — et où TKAMS se distingue.</p>
+
+    <div class="card white" style="margin-top: 22px; padding: 0; overflow: hidden;">
+      <table class="tbl" style="font-size: 10.5px;">
+        <thead>
+          <tr>
+            <th style="width: 26%;">Critère</th>
+            <th style="text-align: center; background: var(--tk-primary); color: white;">TKAMS</th>
+            <th style="text-align: center;">SIS européen<br/><span style="font-weight: 400; color: var(--tk-muted); font-size: 9.5px;">Aurion, Cocktail</span></th>
+            <th style="text-align: center;">SIS open-source<br/><span style="font-weight: 400; color: var(--tk-muted); font-size: 9.5px;">ESUP, OpenSIS</span></th>
+            <th style="text-align: center;">Dév. local<br/><span style="font-weight: 400; color: var(--tk-muted); font-size: 9.5px;">PHP sur mesure</span></th>
+            <th style="text-align: center;">Excel +<br/><span style="font-weight: 400; color: var(--tk-muted); font-size: 9.5px;">outils dispersés</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>LMD / CAMES natif</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td></tr>
+          <tr><td>Multi-tutelles natif</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td></tr>
+          <tr><td>Mobile Money (MTN, Orange)</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td></tr>
+          <tr><td>Application mobile native</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td></tr>
+          <tr><td>Mode hors-ligne</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td></tr>
+          <tr><td>Hébergement local</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="tick">●</span></td><td style="text-align: center;"><span class="tick">●</span></td><td style="text-align: center;">—</td></tr>
+          <tr><td>Support francophone local</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="tick">●</span></td><td style="text-align: center;">—</td></tr>
+          <tr><td>Coût d'entrée raisonnable</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="tick">●</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="tick">●</span></td></tr>
+          <tr><td>Mises à jour incluses</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;">—</td></tr>
+          <tr><td>Maturité produit</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="part">◐</span></td><td style="text-align: center;"><span class="tick">●</span></td><td style="text-align: center;"><span class="tick">●</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;">—</td></tr>
+          <tr><td>Évolutivité, écosystème</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%);"><span class="tick">●</span></td><td style="text-align: center;"><span class="tick">●</span></td><td style="text-align: center;"><span class="part">◐</span></td><td style="text-align: center;"><span class="cross">○</span></td><td style="text-align: center;"><span class="cross">○</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top: 10px; font-size: 9.5px; color: var(--tk-muted);">Légende : <span class="tick">●</span> couvert nativement &middot; <span class="part">◐</span> partiel ou via personnalisation &middot; <span class="cross">○</span> non couvert</p>
+
+    <div class="grid g2" style="margin-top: 14px; gap: 14px;">
+      <div class="card white">
+        <h3>Notre lecture honnête</h3>
+        <p>Les SIS européens sont matures mais inadaptés sur quatre dimensions critiques pour l'Afrique : Mobile Money, multi-tutelles, coût d'entrée, support local. Les SIS open-source demandent une équipe technique conséquente.</p>
+      </div>
+      <div class="card softbrand">
+        <h3>L'angle TKAMS</h3>
+        <p>Les développements locaux PHP souffrent de la dépendance à un développeur unique. Le combo Excel + outils dispersés est une non-solution qui finit par coûter plus cher en temps de personnel.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>V · MARCHÉ &amp; CAS D'USAGE</span>
+      <span class="pageno">25<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 26 — CAS D'USAGE -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="26 Cas d'usage">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">V · Marché / 24</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE V</span></div>
+    </div>
+
+    <div class="section-num">24</div>
+    <div class="kicker">Trois cas d'usage représentatifs</div>
+    <h1 class="bighed">Trois profils types,<br/><em>trois</em> configurations.</h1>
+
+    <div class="grid" style="margin-top: 24px; gap: 14px;">
+
+      <div class="card white">
+        <div class="grid g32" style="gap: 18px; align-items: start;">
+          <div style="padding-right: 16px; border-right: 1px solid var(--tk-border);">
+            <span class="chip">PROFIL A</span>
+            <h2 style="margin-top: 8px;">IPES de taille moyenne</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 11px; color: var(--tk-muted); margin: 2px 0 0;">800 étudiants · Douala</p>
+            <p>IPES en croissance, deux filières (Gestion, Informatique), tutelle pédagogique d'une université d'État. Outils actuels : Excel, paiements en espèces au guichet.</p>
+          </div>
+          <div>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Configuration</h4>
+            <p>TKAMS Standard. SaaS hébergé. 8 utilisateurs administratifs. Modules Admissions, Scolarité, Évaluations, Finances, Communication.</p>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; margin-top: 10px;">Bénéfices</h4>
+            <p>Gain estimé : <strong style="color: var(--tk-ink);">60 %</strong> du temps de la scolarité · <strong style="color: var(--tk-ink);">+15 pts</strong> de recouvrement · suppression des files au guichet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card white">
+        <div class="grid g32" style="gap: 18px; align-items: start;">
+          <div style="padding-right: 16px; border-right: 1px solid var(--tk-border);">
+            <span class="chip">PROFIL B</span>
+            <h2 style="margin-top: 8px;">Faculté d'université d'État</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 11px; color: var(--tk-muted); margin: 2px 0 0;">4 500 étudiants · Yaoundé</p>
+            <p>Faculté de sciences économiques, six filières, trois cycles LMD complets. Outils actuels : développement PHP interne devenu instable, dépendant d'un développeur.</p>
+          </div>
+          <div>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Configuration</h4>
+            <p>TKAMS Pro. SaaS souverain camerounais. Migration de 3 ans d'historique. Reporting MINESUP automatisé.</p>
+            <h4 style="color: var(--tk-primary); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; margin-top: 10px;">Bénéfices</h4>
+            <p>Élimination du risque de dépendance · états réglementaires <strong style="color: var(--tk-ink);">2 h au lieu de 40 h</strong> · satisfaction étudiante <strong style="color: var(--tk-ink);">NPS +35 pts</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card brand">
+        <div class="grid g32" style="gap: 18px; align-items: start;">
+          <div style="padding-right: 16px; border-right: 1px solid oklch(0.99 0 0 / 18%);">
+            <span class="chip dark">PROFIL C · PHARE ★</span>
+            <h2 style="margin-top: 8px; color: white;">Réseau d'écoles multi-tutelles</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 11px; color: oklch(0.85 0.06 277); margin: 2px 0 0;">12 000 étudiants · multi-sites</p>
+            <p>Réseau de cinq écoles fédérées, deux sous tutelle d'universités d'État, deux sous partenariat européen, une indépendante. Reporting consolidé exigé par les fondateurs.</p>
+          </div>
+          <div>
+            <h4 style="color: oklch(0.85 0.06 277); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px;">Configuration</h4>
+            <p>TKAMS Enterprise multi-tutelles. SaaS souverain + réplique on-premise pour la consolidation. Workflows par site, reporting consolidé centralisé.</p>
+            <h4 style="color: oklch(0.85 0.06 277); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; margin-top: 10px;">Bénéfices</h4>
+            <p>Vision unifiée du réseau · autonomie préservée par site · suppression des doublons inter-sites · mobilité étudiante facilitée.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      <span>V · MARCHÉ &amp; CAS D'USAGE</span>
+      <span class="pageno">26<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 27 — TARIFS -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="27 Tarifs">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">VI · Commercial / 25</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE VI</span></div>
+    </div>
+
+    <div class="section-num">25</div>
+    <div class="kicker">Modèle de licence &amp; grille tarifaire</div>
+    <h1 class="bighed">Licence annuelle,<br/>prix par étudiant. <em>C'est tout.</em></h1>
+    <p class="lede">TKAMS adopte un modèle SaaS simple : licence annuelle incluant l'usage, les mises à jour, la sécurité et le support standard. Un coût marginal par étudiant inscrit, dégressif selon l'effectif. Aucun frais caché, aucune surprise au renouvellement.</p>
+
+    <div class="grid g3" style="margin-top: 26px; gap: 12px; align-items: stretch;">
+
+      <div class="price-card">
+        <div class="seg">Petits IPES · ≤ 500 étudiants</div>
+        <h3>TKAMS Essentiel</h3>
+        <p style="margin: 0; font-size: 11px;">Pour démarrer la digitalisation sans engagement lourd</p>
+        <div class="price">2,5<small>M FCFA / an</small></div>
+        <div class="per">+ <strong>2 500 FCFA</strong> / étudiant inscrit</div>
+        <ul>
+          <li>Modules Inscriptions, Scolarité, Évaluations, Finances</li>
+          <li>Une tutelle de rattachement</li>
+          <li>5 utilisateurs administratifs</li>
+          <li>App mobile incluse</li>
+          <li>Support e-mail · 5 j/7</li>
+          <li>Mises à jour incluses</li>
+          <li>SaaS hébergé TKAMS</li>
+        </ul>
+      </div>
+
+      <div class="price-card featured">
+        <div class="badge-top">Le plus courant</div>
+        <div class="seg">Établissements 500 à 3 000 étudiants</div>
+        <h3>TKAMS Pro</h3>
+        <p style="margin: 0; font-size: 11px;">La formule pensée pour la majorité des IPES et facultés</p>
+        <div class="price">5<small>M FCFA / an</small></div>
+        <div class="per">+ <strong>2 000 FCFA</strong> / étudiant inscrit</div>
+        <ul>
+          <li><strong>Tous les modules</strong> activables</li>
+          <li>Jusqu'à <strong>3 tutelles</strong> configurables</li>
+          <li>Utilisateurs administratifs illimités</li>
+          <li>Reporting MINESUP automatisé</li>
+          <li>Support téléphonique · 6 j/7</li>
+          <li>Formation initiale incluse (3 jours)</li>
+          <li>SaaS hébergé ou souverain Cameroun</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="seg">Multi-sites · partenariats complexes</div>
+        <h3>TKAMS Enterprise</h3>
+        <p style="margin: 0; font-size: 11px;">À partir de 12 000 étudiants ou configurations multi-tutelles</p>
+        <div class="price">Sur devis</div>
+        <div class="per">Tarif négocié selon le périmètre</div>
+        <ul>
+          <li><strong>Multi-tutelles illimité</strong></li>
+          <li>Multi-sites consolidé</li>
+          <li>On-premise possible</li>
+          <li>SLA renforcé · 99,9 %</li>
+          <li>Account manager dédié</li>
+          <li>API publique pour intégrations</li>
+          <li>Personnalisation des workflows</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="card softbrand" style="margin-top: 16px;">
+      <h3>La logique tarifaire</h3>
+      <p>Le prix par étudiant inscrit représente <strong>moins de 1 %</strong> des frais de scolarité moyens d'un IPES camerounais. Pour un établissement de 800 étudiants, TKAMS Pro revient à environ <strong>540 FCFA par étudiant et par mois</strong> — le coût d'un appel téléphonique.</p>
+    </div>
+
+    <p style="font-size: 10px; color: var(--tk-muted); margin-top: 12px;">Prix HT, hors taxes locales. Engagement initial 12 mois, reconductible. <strong>Remise de 10 %</strong> pour engagement triennal. Remise institutionnelle possible pour les universités d'État sous accord-cadre. Tarifs valables au 1<sup>er</sup> juin 2026.</p>
+
+    <div class="foot">
+      <span>VI · COMMERCIAL</span>
+      <span class="pageno">27<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 28 — MODALITÉS CONTRACTUELLES -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="28 Modalités contractuelles">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">VI · Commercial / 26</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE VI</span></div>
+    </div>
+
+    <div class="section-num">26</div>
+    <div class="kicker">Modalités contractuelles &amp; SLA</div>
+    <h1 class="bighed">Un contrat clair,<br/>des engagements <em>mesurables</em>.</h1>
+
+    <div class="grid g2" style="margin-top: 24px; gap: 14px;">
+      <div>
+        <div class="card white">
+          <h2>Engagement &amp; renouvellement</h2>
+          <ul>
+            <li>Engagement initial : <strong>12 mois</strong></li>
+            <li>Reconduction tacite par périodes de 12 mois</li>
+            <li>Préavis de résiliation : 90 jours</li>
+            <li><strong>Aucune pénalité de sortie</strong></li>
+            <li>Indexation tarifaire annuelle plafonnée à 3 %</li>
+          </ul>
+        </div>
+        <div class="card white" style="margin-top: 12px;">
+          <h2>Facturation</h2>
+          <ul>
+            <li>Annuelle en début de période</li>
+            <li>Mensualisation possible (Enterprise)</li>
+            <li>Virement, Mobile Money, ou prélèvement</li>
+            <li>Délai standard : 30 jours fin de mois</li>
+          </ul>
+        </div>
+        <div class="card softbrand" style="margin-top: 12px;">
+          <h3>Propriété intellectuelle</h3>
+          <ul>
+            <li>TKAMS reste propriétaire du logiciel</li>
+            <li>L'établissement reste propriétaire de ses données</li>
+            <li>Aucune cession de droits sur les données étudiantes</li>
+            <li>Aucune exploitation commerciale par TKAMS</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="card white" style="padding: 0; overflow: hidden;">
+          <table class="tbl">
+            <thead><tr><th>SLA — Engagements</th><th style="text-align: center;">Essentiel</th><th style="text-align: center;">Pro</th><th style="text-align: center; background: var(--tk-primary); color: white;">Enterprise</th></tr></thead>
+            <tbody>
+              <tr><td>Disponibilité mensuelle</td><td style="text-align: center;">99,0 %</td><td style="text-align: center;">99,5 %</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%); font-weight: 600; color: var(--tk-primary-deep);">99,9 %</td></tr>
+              <tr><td>Réponse support</td><td style="text-align: center;">1 j ouvré</td><td style="text-align: center;">4 h ouvrées</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%); font-weight: 600; color: var(--tk-primary-deep);">1 h</td></tr>
+              <tr><td>Sauvegarde</td><td style="text-align: center;">24 h</td><td style="text-align: center;">6 h</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%); font-weight: 600; color: var(--tk-primary-deep);">1 h</td></tr>
+              <tr><td>Reprise (RTO)</td><td style="text-align: center;">24 h</td><td style="text-align: center;">8 h</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%); font-weight: 600; color: var(--tk-primary-deep);">4 h</td></tr>
+              <tr><td>Dispo. fenêtre critique<br/><span style="color: var(--tk-muted); font-size: 9.5px;">Rentrée &amp; jurys</span></td><td style="text-align: center;">—</td><td style="text-align: center;">99,9 %</td><td style="text-align: center; background: oklch(0.48 0.2 277 / 6%); font-weight: 600; color: var(--tk-primary-deep);">99,99 %</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card brand" style="margin-top: 12px;">
+          <h3 style="color: white;">Pénalités contractuelles</h3>
+          <p>En cas de non-respect des SLA, des avoirs proportionnels sont automatiquement émis : 5 % du tarif mensuel par tranche de 0,1 point d'indisponibilité au-delà du seuil, plafonnés à 30 %.</p>
+        </div>
+
+        <div class="card white" style="margin-top: 12px;">
+          <h3>Réversibilité garantie</h3>
+          <p>À la résiliation : export complet sous 30 jours, accompagnement migration 90 jours, suppression définitive des données après 6 mois. <strong>Sans frais.</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>VI · COMMERCIAL</span>
+      <span class="pageno">28<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 29 — DÉPLOIEMENT -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="29 Déploiement">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">VI · Commercial / 27</span></div>
+      <div class="head-r"><span class="chip ghost">PARTIE VI</span></div>
+    </div>
+
+    <div class="section-num">27</div>
+    <div class="kicker">Déploiement &amp; accompagnement</div>
+    <h1 class="bighed">De la signature<br/>à la <em>rentrée</em>, en six étapes.</h1>
+    <p class="lede">Le déploiement d'un système d'information étudiant n'est pas qu'une installation logicielle — c'est un projet humain qui implique la scolarité, la direction, les enseignants et les étudiants. Six étapes maîtrisées sur 4 à 12 semaines.</p>
+
+    <div class="card white" style="margin-top: 24px; padding: 22px;">
+      <div class="step-row">
+        <div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 32px; color: var(--tk-primary); line-height: 1; letter-spacing: -0.03em;">01</div><div class="step-d">SEMAINE 1</div></div>
+        <div><h3>Cadrage</h3><p>Atelier avec direction, scolarité et DSI. Cartographie des tutelles, des filières, des spécificités. Validation du périmètre de déploiement.</p></div>
+      </div>
+      <div class="step-row">
+        <div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 32px; color: var(--tk-primary); line-height: 1; letter-spacing: -0.03em;">02</div><div class="step-d">SEMAINE 2–3</div></div>
+        <div><h3>Paramétrage</h3><p>Configuration de l'instance : tutelles, filières, maquettes pédagogiques, grilles tarifaires, droits utilisateurs. Comptes administrateurs activés.</p></div>
+      </div>
+      <div class="step-row">
+        <div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 32px; color: var(--tk-primary); line-height: 1; letter-spacing: -0.03em;">03</div><div class="step-d">SEMAINE 3–5</div></div>
+        <div><h3>Migration des données</h3><p>Import des dossiers étudiants existants, historique de notes, paiements en cours. Réconciliation et validation par échantillonnage.</p></div>
+      </div>
+      <div class="step-row">
+        <div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 32px; color: var(--tk-primary); line-height: 1; letter-spacing: -0.03em;">04</div><div class="step-d">SEMAINE 4–5</div></div>
+        <div><h3>Formation des équipes</h3><p>3 jours pour la scolarité, 1 jour pour les enseignants, demi-journée pour la direction. Présentiel ou hybride selon préférences.</p></div>
+      </div>
+      <div class="step-row">
+        <div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 32px; color: var(--tk-primary); line-height: 1; letter-spacing: -0.03em;">05</div><div class="step-d">SEMAINE 5–6</div></div>
+        <div><h3>Pilote</h3><p>Mise en production sur un périmètre restreint (une filière ou un cycle). Détection des derniers ajustements. Communication aux étudiants concernés.</p></div>
+      </div>
+      <div class="step-row">
+        <div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 32px; color: var(--tk-primary); line-height: 1; letter-spacing: -0.03em;">06</div><div class="step-d">SEMAINE 6+</div></div>
+        <div><h3>Mise en service générale</h3><p>Déploiement complet, accompagnement renforcé pendant 8 semaines (hotline dédiée, points hebdomadaires). Transition progressive vers le régime courant.</p></div>
+      </div>
+    </div>
+
+    <div class="card brand" style="margin-top: 14px;">
+      <h3 style="color: white;">Période de garantie d'apprentissage</h3>
+      <p>Les <strong>6 premiers mois</strong> suivant la mise en service générale incluent un accompagnement renforcé sans surcoût : ajustements de paramétrage, formations complémentaires, hotline prioritaire.</p>
+    </div>
+
+    <div class="foot">
+      <span>VI · COMMERCIAL</span>
+      <span class="pageno">29<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== -->
+<!-- 30 — CONTACT -->
+<!-- =========================================================== -->
+<section class="page" data-screen-label="30 Contact">
+  <div class="page-inner">
+    <div class="head">
+      <div class="head-l"><span class="pill">TKAMS</span><span class="crumb">VI · Commercial / 28</span></div>
+      <div class="head-r"><span class="chip"><span class="dot"></span>OPEN FOR BUSINESS</span></div>
+    </div>
+
+    <div class="cta-mega">
+      <div class="kicker" style="color: oklch(0.85 0.06 277);">★ Prendre contact</div>
+      <h1>Prêt à voir TKAMS<br/>sur les <em style="color: oklch(0.75 0.18 277);">données</em><br/>de votre établissement ?</h1>
+      <p class="deck">Nos consultants se déplacent à Yaoundé, Douala, Buéa, Bafoussam et Bamenda pour une démonstration personnalisée — sur vos données réelles, en moins de deux semaines. La présentation initiale est gratuite et sans engagement.</p>
+    </div>
+
+    <div class="grid g3" style="margin-top: 18px; gap: 12px;">
+      <div class="card white">
+        <h4 style="font-family: var(--tk-font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--tk-muted); text-transform: uppercase;">Direction commerciale</h4>
+        <p style="font-family: var(--tk-font-display); font-weight: 600; font-size: 16px; color: var(--tk-ink); margin: 6px 0;">contact@tkams.com</p>
+        <p style="margin: 0; font-size: 10.5px;">Réponse sous 24 heures ouvrées</p>
+      </div>
+      <div class="card white">
+        <h4 style="font-family: var(--tk-font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--tk-muted); text-transform: uppercase;">Téléphone &amp; WhatsApp</h4>
+        <p style="font-family: var(--tk-font-display); font-weight: 600; font-size: 16px; color: var(--tk-ink); margin: 6px 0;">+237 652 761 931</p>
+        <p style="margin: 0; font-size: 10.5px;">8h–18h · lundi au samedi</p>
+      </div>
+      <div class="card white">
+        <h4 style="font-family: var(--tk-font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--tk-muted); text-transform: uppercase;">Site web</h4>
+        <p style="font-family: var(--tk-font-display); font-weight: 600; font-size: 16px; color: var(--tk-ink); margin: 6px 0;">https://tkams.com/</p>
+        <p style="margin: 0; font-size: 10.5px;">Brochure, démo et contact</p>
+      </div>
+      <div class="card white">
+        <h4 style="font-family: var(--tk-font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--tk-muted); text-transform: uppercase;">Bureaux</h4>
+        <p style="font-family: var(--tk-font-display); font-weight: 600; font-size: 16px; color: var(--tk-ink); margin: 6px 0;">Douala &amp; Yaoundé</p>
+        <p style="margin: 0; font-size: 10.5px;">Sur rendez-vous</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 12px; gap: 12px;">
+      <div class="card white">
+        <h3>Pour aller plus loin</h3>
+        <ol style="padding-left: 16px;">
+          <li>Échange de cadrage (30 min en visio)</li>
+          <li>Démonstration personnalisée sur vos données (1 à 2 h)</li>
+          <li>Proposition commerciale chiffrée sous 7 jours</li>
+          <li>Décision et signature</li>
+        </ol>
+      </div>
+      <div class="card softbrand">
+        <h3>Documents complémentaires</h3>
+        <ul>
+          <li>Modèle de contrat de licence</li>
+          <li>Note d'architecture technique détaillée</li>
+          <li>Étude de cas anonymisée (déploiement IPES, 2025)</li>
+          <li>Rapport synthétique de test d'intrusion (NDA)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>TKAMS · FIN DU DOCUMENT</span>
+      <span class="pageno">30<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

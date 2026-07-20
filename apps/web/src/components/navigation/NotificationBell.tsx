@@ -1,16 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-	ArrowRight,
 	Bell,
 	CheckCircle2,
-	Clock,
+	CreditCard,
+	FileText,
+	GraduationCap,
 	Inbox,
-	RefreshCw,
+	ServerCog,
 	XCircle,
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,33 +19,108 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { trpc, trpcClient } from "@/utils/trpc";
 
-type NotifStatus = "pending" | "sent" | "failed";
+// ─── Type → display config ────────────────────────────────────────────────────
 
-const statusConfig: Record<
-	NotifStatus,
-	{ icon: React.ReactNode; className: string }
-> = {
-	pending: {
-		icon: <Clock className="h-3.5 w-3.5" />,
-		className: "bg-muted text-muted-foreground border-border",
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
+type NotifConfig = {
+	icon: React.ReactNode;
+	labelKey: string;
+	subtitleFn?: (payload: Record<string, unknown>, t: TFn) => string;
+	toFn?: (payload: Record<string, unknown>) => string | undefined;
+};
+
+const NOTIF_CONFIGS: Record<string, NotifConfig> = {
+	"fee.payment_confirmed": {
+		icon: <CreditCard className="h-3.5 w-3.5 text-emerald-600" />,
+		labelKey: "notifications.types.fee_payment_confirmed",
+		subtitleFn: (p) =>
+			p.amount && p.currency
+				? `${Number(p.amount).toLocaleString()} ${p.currency}`
+				: String(p.reference ?? ""),
 	},
-	sent: {
-		icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-		className: "bg-primary/10 text-primary border-primary/20",
+	"grade.approved": {
+		icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />,
+		labelKey: "notifications.types.grade_approved",
+		subtitleFn: (p) => String(p.examName ?? ""),
+		toFn: (p) =>
+			p.classCourseId ? `/teacher/grades/${p.classCourseId}` : undefined,
 	},
-	failed: {
-		icon: <XCircle className="h-3.5 w-3.5" />,
-		className: "bg-destructive/10 text-destructive border-destructive/20",
+	"grade.rejected": {
+		icon: <XCircle className="h-3.5 w-3.5 text-destructive" />,
+		labelKey: "notifications.types.grade_rejected",
+		subtitleFn: (p) => (p.reason ? String(p.reason) : String(p.examName ?? "")),
+		toFn: (p) =>
+			p.classCourseId ? `/teacher/grades/${p.classCourseId}` : undefined,
+	},
+	"deliberation.published": {
+		icon: <GraduationCap className="h-3.5 w-3.5 text-violet-600" />,
+		labelKey: "notifications.types.deliberation_published",
+		toFn: () => "/student/performance",
+	},
+	"payment.pending": {
+		icon: <CreditCard className="h-3.5 w-3.5 text-amber-500" />,
+		labelKey: "notifications.types.payment_pending",
+		toFn: () => "/student/fees",
+	},
+	"enrollment.window_open": {
+		icon: <GraduationCap className="h-3.5 w-3.5 text-emerald-600" />,
+		labelKey: "notifications.types.enrollment_window_open",
+		toFn: () => "/student",
+	},
+	"batch_job.completed": {
+		icon: <ServerCog className="h-3.5 w-3.5 text-emerald-600" />,
+		labelKey: "notifications.types.batch_job_completed",
+		subtitleFn: (p, t) => {
+			const jobType = p.jobType
+				? t(`admin.batchJobs.types.${p.jobType}`, {
+						defaultValue: String(p.jobType),
+					})
+				: "";
+			return t("notifications.batchJob.completedSubtitle", {
+				jobType,
+				itemsProcessed: p.itemsProcessed ?? 0,
+			});
+		},
+		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
+	},
+	"batch_job.failed": {
+		icon: <ServerCog className="h-3.5 w-3.5 text-destructive" />,
+		labelKey: "notifications.types.batch_job_failed",
+		subtitleFn: (p, t) => {
+			const jobType = p.jobType
+				? t(`admin.batchJobs.types.${p.jobType}`, {
+						defaultValue: String(p.jobType),
+					})
+				: "";
+			return t("notifications.batchJob.failedSubtitle", {
+				jobType,
+				error: p.error ? String(p.error) : "",
+			});
+		},
+		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
+	},
+	"document.available": {
+		icon: <FileText className="h-3.5 w-3.5 text-sky-600" />,
+		labelKey: "notifications.types.document_available",
+		subtitleFn: (p) => String(p.documentKind ?? ""),
+		toFn: () => "/student/documents",
 	},
 };
 
-function formatType(type: string) {
-	return type.replace(/[_.-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function getConfig(type: string): NotifConfig {
+	return (
+		NOTIF_CONFIGS[type] ?? {
+			icon: <Bell className="h-3.5 w-3.5 text-muted-foreground" />,
+			labelKey: "notifications.types.generic",
+		}
+	);
 }
+
+// ─── Time ago ─────────────────────────────────────────────────────────────────
 
 function timeAgo(
 	date: string | Date,
@@ -52,50 +128,47 @@ function timeAgo(
 ) {
 	const diff = Date.now() - new Date(date).getTime();
 	const mins = Math.floor(diff / 60000);
-	if (mins < 1) return t("admin.notifications.timeAgo.justNow");
-	if (mins < 60)
-		return t("admin.notifications.timeAgo.minutes", { count: mins });
+	if (mins < 1) return t("notifications.timeAgo.justNow");
+	if (mins < 60) return t("notifications.timeAgo.minutes", { count: mins });
 	const hours = Math.floor(mins / 60);
-	if (hours < 24)
-		return t("admin.notifications.timeAgo.hours", { count: hours });
-	return t("admin.notifications.timeAgo.days", {
-		count: Math.floor(hours / 24),
-	});
+	if (hours < 24) return t("notifications.timeAgo.hours", { count: hours });
+	return t("notifications.timeAgo.days", { count: Math.floor(hours / 24) });
 }
+
+// ─── NotificationBell ─────────────────────────────────────────────────────────
 
 export const NotificationBell: React.FC = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 
-	const pendingQuery = useQuery(
-		trpc.notifications.list.queryOptions({ status: "pending", limit: 5 }),
+	const countQuery = useQuery(trpc.notifications.unreadCount.queryOptions());
+	const listQuery = useQuery(
+		trpc.notifications.myNotifications.queryOptions({ limit: 20 }),
 	);
-	const recentQuery = useQuery(
-		trpc.notifications.list.queryOptions({ limit: 5 }),
-	);
 
-	const pendingCount = pendingQuery.data?.items.length ?? 0;
-	const notifications = recentQuery.data?.items ?? [];
+	const unread = countQuery.data ?? 0;
+	const items = listQuery.data?.items ?? [];
 
-	const flushMutation = useMutation({
-		mutationFn: () => trpcClient.notifications.flush.mutate(),
+	const markReadMut = useMutation({
+		mutationFn: (id: string) =>
+			trpcClient.notifications.markRead.mutate({ id }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.notifications.toast.flushed", {
-					defaultValue: "Notifications envoyées",
-				}),
+			queryClient.invalidateQueries(
+				trpc.notifications.myNotifications.queryKey(),
 			);
-			queryClient.invalidateQueries(trpc.notifications.list.queryKey());
+			queryClient.invalidateQueries(trpc.notifications.unreadCount.queryKey());
 		},
-		onError: (err: Error) => toast.error(err.message),
 	});
 
-	const ackMutation = useMutation({
-		mutationFn: (id: string) =>
-			trpcClient.notifications.acknowledge.mutate({ id }),
-		onSuccess: () =>
-			queryClient.invalidateQueries(trpc.notifications.list.queryKey()),
-		onError: (err: Error) => toast.error(err.message),
+	const markAllMut = useMutation({
+		mutationFn: () => trpcClient.notifications.markAllRead.mutate(),
+		onSuccess: () => {
+			queryClient.invalidateQueries(
+				trpc.notifications.myNotifications.queryKey(),
+			);
+			queryClient.invalidateQueries(trpc.notifications.unreadCount.queryKey());
+		},
 	});
 
 	return (
@@ -110,12 +183,12 @@ export const NotificationBell: React.FC = () => {
 					<Bell
 						className={cn(
 							"h-[18px] w-[18px] transition-transform",
-							pendingCount > 0 && "animate-bell-shake",
+							unread > 0 && "animate-bell-shake",
 						)}
 					/>
-					{pendingCount > 0 && (
+					{unread > 0 && (
 						<span className="absolute top-1 right-1 flex h-4 w-4 animate-badge-pop items-center justify-center rounded-full bg-primary font-semibold text-[10px] text-primary-foreground leading-none">
-							{pendingCount > 9 ? "9+" : pendingCount}
+							{unread > 9 ? "9+" : unread}
 						</span>
 					)}
 				</Button>
@@ -127,87 +200,110 @@ export const NotificationBell: React.FC = () => {
 					<div className="flex items-center gap-2">
 						<Inbox className="h-4 w-4 text-muted-foreground" />
 						<span className="font-semibold text-sm">
-							{t("admin.notifications.title", {
-								defaultValue: "Notifications",
-							})}
+							{t("notifications.title")}
 						</span>
-						{pendingCount > 0 && (
+						{unread > 0 && (
 							<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
-								{t("admin.notifications.pendingBadge", { count: pendingCount })}
+								{unread}
 							</Badge>
 						)}
 					</div>
-					{pendingCount > 0 && (
+					{unread > 0 && (
 						<Button
 							variant="ghost"
 							size="sm"
-							className="h-7 gap-1.5 px-2 text-xs"
-							onClick={() => flushMutation.mutate()}
-							disabled={flushMutation.isPending}
+							className="h-7 px-2 text-xs"
+							onClick={() => markAllMut.mutate()}
+							disabled={markAllMut.isPending}
 						>
-							<RefreshCw
-								className={cn(
-									"h-3 w-3",
-									flushMutation.isPending && "animate-spin",
-								)}
-							/>
-							Flush
+							{t("notifications.markAllRead")}
 						</Button>
 					)}
 				</div>
 
-				{/* Notification list */}
-				<div className="max-h-72 overflow-y-auto">
-					{recentQuery.isLoading ? (
+				{/* List */}
+				<div className="max-h-80 overflow-y-auto">
+					{listQuery.isLoading ? (
 						<div className="flex items-center justify-center py-8">
-							<RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+							<Bell className="h-4 w-4 animate-pulse text-muted-foreground" />
 						</div>
-					) : notifications.length === 0 ? (
+					) : items.length === 0 ? (
 						<div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
 							<Bell className="h-8 w-8 opacity-30" />
-							<p className="text-xs">
-								{t("admin.notifications.empty", {
-									defaultValue: "Aucune notification",
-								})}
-							</p>
+							<p className="text-xs">{t("notifications.empty")}</p>
 						</div>
 					) : (
 						<ul>
-							{notifications.map((item) => {
-								const s = statusConfig[item.status as NotifStatus];
+							{items.map((item) => {
+								const isUnread = !item.readAt;
+								const cfg = getConfig(item.type);
+								const payload = (item.payload as Record<string, unknown>) ?? {};
+								const subtitle = cfg.subtitleFn
+									? cfg.subtitleFn(payload, t)
+									: "";
+								const to = cfg.toFn ? cfg.toFn(payload) : undefined;
+
+								const innerContent = (
+									<>
+										<div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-background">
+											{cfg.icon}
+										</div>
+										<div className="min-w-0 flex-1">
+											<div className="flex items-center gap-1.5">
+												<p className="truncate font-medium text-foreground text-xs">
+													{t(cfg.labelKey, {
+														defaultValue: item.type
+															.replace(/[._-]/g, " ")
+															.replace(/\b\w/g, (c) => c.toUpperCase()),
+													})}
+												</p>
+												{isUnread && (
+													<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+												)}
+											</div>
+											{subtitle && (
+												<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+													{subtitle}
+												</p>
+											)}
+											<p className="mt-0.5 text-[10px] text-muted-foreground/70">
+												{timeAgo(item.createdAt, t)}
+											</p>
+										</div>
+									</>
+								);
+
 								return (
 									<li
 										key={item.id}
-										className="group flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-0 hover:bg-muted/40"
+										className={cn(
+											"group flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-0 hover:bg-muted/40",
+											isUnread && "bg-primary/3",
+										)}
 									>
-										<div
-											className={cn(
-												"mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border",
-												s?.className,
-											)}
-										>
-											{s?.icon}
-										</div>
-										<div className="min-w-0 flex-1">
-											<p className="truncate font-medium text-foreground text-xs">
-												{formatType(item.type)}
-											</p>
-											<p className="text-[11px] text-muted-foreground">
-												{timeAgo(item.createdAt, t)}
-												{item.channel && (
-													<span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-[10px] uppercase tracking-wide">
-														{item.channel}
-													</span>
-												)}
-											</p>
-										</div>
-										{item.status === "pending" && (
+										{to ? (
+											<Link
+												to={to}
+												className="flex min-w-0 flex-1 items-start gap-3"
+												onClick={() => {
+													if (isUnread) markReadMut.mutate(item.id);
+												}}
+											>
+												{innerContent}
+											</Link>
+										) : (
+											<div className="flex min-w-0 flex-1 items-start gap-3">
+												{innerContent}
+											</div>
+										)}
+										{isUnread && (
 											<button
 												type="button"
 												className="shrink-0 self-center rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
-												onClick={() => ackMutation.mutate(item.id)}
+												onClick={() => markReadMut.mutate(item.id)}
+												disabled={markReadMut.isPending}
 											>
-												{t("admin.notifications.actions.ack")}
+												{t("notifications.markRead")}
 											</button>
 										)}
 									</li>
@@ -217,15 +313,16 @@ export const NotificationBell: React.FC = () => {
 					)}
 				</div>
 
-				{/* Footer */}
-				<div className="border-t px-4 py-2.5">
-					<Link
-						to="/admin/notifications"
-						className="flex items-center justify-center gap-1.5 font-medium text-primary text-xs hover:underline"
+				{/* Footer — view all */}
+				<div className="border-t px-4 py-2">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 w-full text-xs"
+						onClick={() => navigate("/notifications")}
 					>
-						{t("admin.notifications.viewAll")}
-						<ArrowRight className="h-3.5 w-3.5" />
-					</Link>
+						{t("notifications.viewAll")}
+					</Button>
 				</div>
 			</PopoverContent>
 		</Popover>

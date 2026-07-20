@@ -380,7 +380,10 @@ export async function ensureStudentRegistered(
 	return enrollment;
 }
 
-export async function autoEnrollClass(input: AutoEnrollClassInput) {
+export async function autoEnrollClass(
+	input: AutoEnrollClassInput,
+	opts?: { institutionId?: string; checkFeeGate?: boolean },
+) {
 	const klass = await db.query.classes.findFirst({
 		where: eq(schema.classes.id, input.classId),
 		columns: {
@@ -430,8 +433,40 @@ export async function autoEnrollClass(input: AutoEnrollClassInput) {
 	const status = input.status ?? "active";
 	const conflicts: Array<{ studentId: string; classCourseId: string }> = [];
 	const warnings: PrerequisiteWarning[] = [];
+	const feeBlockedStudentIds = new Set<string>();
+
+	// If fee gate enabled, check clearance per student (skip non-cleared ones)
+	if (opts?.checkFeeGate && opts.institutionId) {
+		const { findAssignmentForStudent } = await import(
+			"../fee-clearance/fee-clearance.repo"
+		);
+		for (const student of students) {
+			const assignment = await findAssignmentForStudent(
+				student.id,
+				input.academicYearId,
+				opts.institutionId,
+			);
+			if (
+				assignment &&
+				assignment.status !== "paid" &&
+				assignment.status !== "exempt"
+			) {
+				feeBlockedStudentIds.add(student.id);
+			}
+		}
+	}
+
 	let createdCount = 0;
 	for (const student of students) {
+		if (feeBlockedStudentIds.has(student.id)) {
+			conflicts.push(
+				...classCourses.map((cc) => ({
+					studentId: student.id,
+					classCourseId: cc.id,
+				})),
+			);
+			continue;
+		}
 		for (const classCourse of classCourses) {
 			try {
 				const { warnings: localWarnings } = await createEnrollment({

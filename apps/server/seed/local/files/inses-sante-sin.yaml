@@ -1,0 +1,996 @@
+meta:
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante-sin
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: BTS Santé - Spécialité Sciences Infirmières (SIN)
+  ecStats:
+    totalCount: 78
+    totalCredits: 166
+    totalHours: 2490
+program:
+  code: SIN
+  nameFr: Sciences Infirmières
+  nameEn: Nursing Sciences
+  abbreviation: BTS-SIN
+  slug: sciences-infirmieres
+  description: Former des infirmiers et infirmières polyvalents capables d'assurer des soins de qualité aux patients dans
+    tous les contextes cliniques et communautaires.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Sciences Infirmières
+  specialiteEn: Nursing Sciences
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Sciences Infirmières
+  diplomaTitleEn: Higher Technician Diploma — Nursing Sciences
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Sciences Infirmières
+  objective: Former des infirmiers et infirmières polyvalents capables d'assurer des soins de qualité aux patients dans tous
+    les contextes cliniques et communautaires.
+  careerOpportunities:
+  - Hôpitaux publics et privés
+  - Cliniques
+  - Centres de santé
+  - ONG sanitaires
+  - Auto-emploi
+  - Santé scolaire
+  - Médecine du travail
+  - Recherche
+  note: Le document officiel attribue 32 crédits au semestre 5 (au lieu de 30) ; valeur conservée du programme MINESUP.
+teachingUnits:
+- code: SIN111
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie – Physiologie I – Biologie cellulaire – Histologie – Chimie générale
+  hoursCM: 60
+  hoursTD: 24
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: SIN112
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: 'Microbiologie I : Bactériologie – Parasitologie – Biochimie'
+  hoursCM: 30
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SIN113
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Sociologie – anthropologie et psychologie médicale
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: SIN114
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Fondement de la science infirmière I : concepts et théories en sciences infirmières'
+  hoursCM: 44
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: SIN115
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Histoire de la profession infirmière (cycle de vie)
+  hoursCM: 36
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: SIN116
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique I (médecine – pédiatrie)
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN117
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Français médical – Anglais médical - TIC
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SIN121
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie II
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 4
+- code: SIN122
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie II (Virologie – Mycologie – Immunologie)
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: SIN123
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Fondements de la science infirmière II – Démarche des soins infirmiers – Organisation des soins transmissions ciblées
+    – Premiers secours
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 3
+- code: SIN124
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins infirmiers en médecine 1 – Éthique et déontologie professionnelles
+  hoursCM: 40
+  hoursTD: 13
+  hoursTP: 0
+  hoursTPE: 7
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: SIN125
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Santé publique : Épidémiologie – Démographie – Santé environnementale et Promotion de la santé'
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: SIN126
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage de médecine et pédiatrique II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SIN127
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Français médical – Anglais médical – TIC II
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SIN231
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Mathématiques appliquées – Biostatistique – Biophysiques générale et technologie
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: SIN232
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Pharmacologie générale
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: SIN233
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Soins infirmiers en chirurgie et Transfusion sanguine – Soins infirmiers en pédiatrie et puériculture
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: SIN234
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Santé de reproduction : santé mère – enfant – soins Obstétricaux – soins aux femmes atteintes de pathologies obstétricales
+    et gynécologiques'
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: SIN235
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies médicales – Pathologies infectieuses zoonoses et pathologies pédiatriques et infantiles
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: SIN236
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SIN237
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Français médical – Anglais médical – TIC III
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SIN241
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Communication pour le changement de comportement (CCC) – Santé communautaire – Santé et développement
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 14
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: SIN242
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Techniques de laboratoire d’analyses médicales – Techniques d’imagerie médicale
+  hoursCM: 20
+  hoursTD: 8
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+  ecCount: 2
+- code: SIN243
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies obstétricales et gynécologiques
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: SIN244
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Urgences – Bloc opératoire – Anesthésiologie
+  hoursCM: 45
+  hoursTD: 0
+  hoursTP: 12
+  hoursTPE: 3
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: SIN245
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pharmacologie clinique – Nutrition et pathologies associées – Médecine alternative
+  hoursCM: 60
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 90
+  credits: 6
+  ecCount: 2
+- code: SIN246
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SIN247
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Initiation à la Recherche
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: SIN351
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Pathologies médicales - Programmes prioritaires de santé au Cameroun – CCC III
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: SIN352
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Économie de la santé – Gestion hospitalière – système d’informations sanitaires
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 3
+- code: SIN353
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Santé mentale  - Soins infirmiers en psychiatrie – Soins infirmiers en gériatrie – pharmacologie clinique 2 – surveillance
+    thérapeutique
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 4
+- code: SIN354
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Soins infirmiers en réanimation – Soins aux personnes atteintes de déficiences spéciales
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: SIN355
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage de santé communautaire II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SIN356
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique V
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SIN357
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Droit médical – Santé au travail – Médecine scolaire
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SIN361
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Techniques de soins spécifiques 1 (neurologie, ophtalmologie, stomatologie, dermatologie – ORL)
+  hoursCM: 30
+  hoursTD: 0
+  hoursTP: 40
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: SIN362
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Techniques de soins spécifiques 2 – (Urologie – Pneumologie - gastro entérologie- Cardiologie)
+  hoursCM: 20
+  hoursTD: 0
+  hoursTP: 35
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: SIN363
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle 1 (MSP 1)
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  isInternship: true
+  ecCount: 1
+- code: SIN364
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle 2 (MSP 2)
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  isInternship: true
+  ecCount: 1
+- code: SIN365
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle 3 (MSP 3)
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SIN366
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Rédaction du projet de recherche (travail de fin d’études)
+  hoursCM: 50
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: SIN367
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Éducation civique et éthique
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+courses:
+- code: SIN111-EC1
+  teachingUnitCode: SIN111
+  title: Biologie cellulaire - Histologie
+  credits: 1
+  hours: 15
+- code: SIN111-EC2
+  teachingUnitCode: SIN111
+  title: Anatomie - Physiologie I
+  credits: 4
+  hours: 60
+- code: SIN111-EC3
+  teachingUnitCode: SIN111
+  title: Chimie générale
+  credits: 1
+  hours: 15
+- code: SIN112-EC1
+  teachingUnitCode: SIN112
+  title: Microbiologie - Bactériologie
+  credits: 1
+  hours: 15
+- code: SIN112-EC2
+  teachingUnitCode: SIN112
+  title: Parasitologie
+  credits: 1
+  hours: 15
+- code: SIN112-EC3
+  teachingUnitCode: SIN112
+  title: Biochimie
+  credits: 1
+  hours: 15
+- code: SIN113-EC1
+  teachingUnitCode: SIN113
+  title: Sociologie - Anthropologie et Psychologie
+  credits: 6
+  hours: 90
+- code: SIN114-EC1
+  teachingUnitCode: SIN114
+  title: Concepts et théories en sciences infirmières
+  credits: 2
+  hours: 30
+- code: SIN115-EC1
+  teachingUnitCode: SIN115
+  title: Histoire de la profession infirmière
+  credits: 1
+  hours: 15
+- code: SIN115-EC2
+  teachingUnitCode: SIN115
+  title: Cycle de vie
+  credits: 2
+  hours: 30
+- code: SIN117-EC1
+  teachingUnitCode: SIN117
+  title: Anglais
+  credits: 1
+  hours: 15
+- code: SIN117-EC2
+  teachingUnitCode: SIN117
+  title: Technique de l’information et de la communication
+  credits: 1
+  hours: 15
+- code: SIN117-EC3
+  teachingUnitCode: SIN117
+  title: Français médical
+  credits: 1
+  hours: 15
+- code: SIN121-EC1
+  teachingUnitCode: SIN121
+  title: Système cardiovasculaire
+  credits: 1
+  hours: 15
+- code: SIN121-EC2
+  teachingUnitCode: SIN121
+  title: Système respiratoire
+  credits: 1
+  hours: 15
+- code: SIN121-EC3
+  teachingUnitCode: SIN121
+  title: Système digestif
+  credits: 1
+  hours: 15
+- code: SIN121-EC4
+  teachingUnitCode: SIN121
+  title: Système génito-urinaire (femme-homme)
+  credits: 2
+  hours: 30
+- code: SIN122-EC1
+  teachingUnitCode: SIN122
+  title: Microbiologie II (Virologie - Mycologie - Immunologie)
+  credits: 4
+  hours: 60
+- code: SIN123-EC1
+  teachingUnitCode: SIN123
+  title: Démarche des soins
+  credits: 1
+  hours: 15
+- code: SIN123-EC2
+  teachingUnitCode: SIN123
+  title: Planification des soins
+  credits: 2
+  hours: 30
+- code: SIN123-EC3
+  teachingUnitCode: SIN123
+  title: Premiers secours
+  credits: 2
+  hours: 30
+- code: SIN124-EC1
+  teachingUnitCode: SIN124
+  title: Soins en médecine
+  credits: 2
+  hours: 30
+- code: SIN124-EC2
+  teachingUnitCode: SIN124
+  title: Ethique et déontologie professionnelles
+  credits: 2
+  hours: 30
+- code: SIN125-EC1
+  teachingUnitCode: SIN125
+  title: Épidémiologie
+  credits: 1
+  hours: 15
+- code: SIN126-EC1
+  teachingUnitCode: SIN126
+  title: Stage de médecine et pédiatrique II
+  credits: 6
+  hours: 90
+- code: SIN127-EC1
+  teachingUnitCode: SIN127
+  title: Anglais
+  credits: 1
+  hours: 15
+- code: SIN127-EC2
+  teachingUnitCode: SIN127
+  title: Technique de l’Information et de la Communication
+  credits: 1
+  hours: 15
+- code: SIN127-EC3
+  teachingUnitCode: SIN127
+  title: Français
+  credits: 1
+  hours: 15
+- code: SIN231-EC1
+  teachingUnitCode: SIN231
+  title: Biostatistiques
+  credits: 2
+  hours: 30
+- code: SIN231-EC2
+  teachingUnitCode: SIN231
+  title: Biophysique et technologie
+  credits: 1
+  hours: 15
+- code: SIN232-EC1
+  teachingUnitCode: SIN232
+  title: Pharmacologie générale
+  credits: 4
+  hours: 60
+- code: SIN233-EC1
+  teachingUnitCode: SIN233
+  title: Soins en chirurgie
+  credits: 1
+  hours: 15
+- code: SIN233-EC2
+  teachingUnitCode: SIN233
+  title: Soins en pédiatrie
+  credits: 1
+  hours: 15
+- code: SIN233-EC3
+  teachingUnitCode: SIN233
+  title: Soins obstétricaux et gynécologique
+  credits: 1
+  hours: 15
+- code: SIN234-EC1
+  teachingUnitCode: SIN234
+  title: Soins gynécologiques
+  credits: 1
+  hours: 15
+- code: SIN235-EC1
+  teachingUnitCode: SIN235
+  title: Pathologies infectieuses et parasitaires
+  credits: 2
+  hours: 30
+- code: SIN235-EC2
+  teachingUnitCode: SIN235
+  title: Pathologies par système
+  credits: 1
+  hours: 15
+- code: SIN236-EC1
+  teachingUnitCode: SIN236
+  title: Stage clinique III
+  credits: 6
+  hours: 90
+- code: SIN237-EC1
+  teachingUnitCode: SIN237
+  title: Français
+  credits: 1
+  hours: 15
+- code: SIN237-EC2
+  teachingUnitCode: SIN237
+  title: Anglais
+  credits: 1
+  hours: 15
+- code: SIN237-EC3
+  teachingUnitCode: SIN237
+  title: Technologies de l’information et de la communication
+  credits: 1
+  hours: 15
+- code: SIN241-EC1
+  teachingUnitCode: SIN241
+  title: Communication  pour  le  changement  de  comportement  II
+  credits: 1
+  hours: 15
+- code: SIN241-EC2
+  teachingUnitCode: SIN241
+  title: Sante communautaire
+  credits: 2
+  hours: 30
+- code: SIN241-EC3
+  teachingUnitCode: SIN241
+  title: Sante et développement
+  credits: 1
+  hours: 15
+- code: SIN242-EC1
+  teachingUnitCode: SIN242
+  title: Techniques de laboratoire
+  credits: 1
+  hours: 15
+- code: SIN242-EC2
+  teachingUnitCode: SIN242
+  title: Imagerie médicale
+  credits: 1
+  hours: 15
+- code: SIN243-EC1
+  teachingUnitCode: SIN243
+  title: Pathologies obstétricales
+  credits: 3
+  hours: 45
+- code: SIN243-EC2
+  teachingUnitCode: SIN243
+  title: Pathologies gynécologiques
+  credits: 2
+  hours: 30
+- code: SIN244-EC1
+  teachingUnitCode: SIN244
+  title: Soins infirmiers aux urgences
+  credits: 1
+  hours: 15
+- code: SIN244-EC2
+  teachingUnitCode: SIN244
+  title: Soins infirmiers au bloc opérateur
+  credits: 2
+  hours: 30
+- code: SIN244-EC3
+  teachingUnitCode: SIN244
+  title: Soins infirmiers en anesthésie
+  credits: 1
+  hours: 15
+- code: SIN245-EC1
+  teachingUnitCode: SIN245
+  title: Pharmacologie clinique
+  credits: 4
+  hours: 60
+- code: SIN245-EC2
+  teachingUnitCode: SIN245
+  title: Nutrition humaine et pathologies associée
+  credits: 2
+  hours: 30
+- code: SIN246-EC1
+  teachingUnitCode: SIN246
+  title: Stage clinique IV
+  credits: 6
+  hours: 90
+- code: SIN247-EC1
+  teachingUnitCode: SIN247
+  title: Initiation à la Recherche
+  credits: 3
+  hours: 45
+- code: SIN351-EC1
+  teachingUnitCode: SIN351
+  title: Les programmes de santé au Cameroun
+  credits: 2
+  hours: 30
+- code: SIN351-EC2
+  teachingUnitCode: SIN351
+  title: "CCC III\t(Communication pour le changement de comportement III)"
+  credits: 2
+  hours: 30
+- code: SIN352-EC1
+  teachingUnitCode: SIN352
+  title: Économie de la santé
+  credits: 2
+  hours: 30
+- code: SIN352-EC2
+  teachingUnitCode: SIN352
+  title: Gestion hospitalière
+  credits: 2
+  hours: 30
+- code: SIN352-EC3
+  teachingUnitCode: SIN352
+  title: Système d’information sanitaire
+  credits: 1
+  hours: 15
+- code: SIN353-EC1
+  teachingUnitCode: SIN353
+  title: Santé mentale et soins infirmiers en psychiatrie
+  credits: 1
+  hours: 15
+- code: SIN353-EC2
+  teachingUnitCode: SIN353
+  title: Gériatrie et soins aux personnes âgées
+  credits: 1
+  hours: 15
+- code: SIN353-EC3
+  teachingUnitCode: SIN353
+  title: Pharmacologie clinique
+  credits: 1
+  hours: 15
+- code: SIN353-EC4
+  teachingUnitCode: SIN353
+  title: Surveillance thérapeutique
+  credits: 2
+  hours: 30
+- code: SIN354-EC1
+  teachingUnitCode: SIN354
+  title: Réanimation
+  credits: 1
+  hours: 15
+- code: SIN354-EC2
+  teachingUnitCode: SIN354
+  title: Soins  aux  personnes  atteintes  de  déficiences  spéciales
+  credits: 2
+  hours: 30
+- code: SIN355-EC1
+  teachingUnitCode: SIN355
+  title: Stage de santé communautaire II
+  credits: 6
+  hours: 90
+- code: SIN356-EC1
+  teachingUnitCode: SIN356
+  title: Stage de santé clinique V
+  credits: 6
+  hours: 90
+- code: SIN357-EC1
+  teachingUnitCode: SIN357
+  title: Éléments de droit du travail
+  credits: 1
+  hours: 15
+- code: SIN357-EC2
+  teachingUnitCode: SIN357
+  title: Éléments de santé au travail
+  credits: 1
+  hours: 15
+- code: SIN357-EC3
+  teachingUnitCode: SIN357
+  title: Éléments de médecine scolaire
+  credits: 1
+  hours: 15
+- code: SIN361-EC1
+  teachingUnitCode: SIN361
+  title: Techniques de soins spécifiques 1
+  credits: 5
+  hours: 75
+- code: SIN362-EC1
+  teachingUnitCode: SIN362
+  title: Techniques de soins spécifiques 2
+  credits: 4
+  hours: 60
+- code: SIN363-EC1
+  teachingUnitCode: SIN363
+  title: Mise en situation professionnelle 1
+  credits: 4
+  hours: 60
+- code: SIN364-EC1
+  teachingUnitCode: SIN364
+  title: Mise en situation professionnelle 2
+  credits: 3
+  hours: 45
+- code: SIN365-EC1
+  teachingUnitCode: SIN365
+  title: Mise en situation professionnelle 3
+  credits: 6
+  hours: 90
+- code: SIN366-EC1
+  teachingUnitCode: SIN366
+  title: Rédaction du projet de recherche
+  credits: 5
+  hours: 75
+- code: SIN367-EC1
+  teachingUnitCode: SIN367
+  title: Éducation civique et éthique
+  credits: 3
+  hours: 45

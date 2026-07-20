@@ -13,7 +13,6 @@ export const profileSchema = z.object({
 	gender: genderEnum.optional(),
 	phone: z.string().optional(),
 	nationality: z.string().optional(),
-	authUserId: z.string().optional(),
 });
 
 const baseFieldsSchema = z.object({

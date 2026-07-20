@@ -6,6 +6,7 @@ export const BATCH_JOB_TYPES = [
 	"studentFacts.refreshClass",
 	"promotion.applyBatch",
 	"academicYear.setup",
+	"documents.generateBulk",
 ] as const;
 
 export type BatchJobType = (typeof BATCH_JOB_TYPES)[number];
@@ -29,6 +30,8 @@ export interface JobContext {
 			itemsFailed?: number;
 		},
 	) => Promise<void>;
+	/** Pin or unpin the step ID that subsequent `log()` calls are attributed to. */
+	setCurrentStep: (stepId: string | null) => void;
 }
 
 // ── Step Definition ────────────────────────────────────────────────────

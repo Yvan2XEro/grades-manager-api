@@ -150,7 +150,7 @@ Le système calcule automatiquement :
 - **Décision** : "Ac" (Acquis) si moyenne ≥ 10, sinon "Nac"
 - **Crédits obtenus** : Crédits de l'UE si acquise, 0 sinon
 - **Moyenne générale** : Moyenne de toutes les UEs
-- **Décision finale** : "ACQUIS" ou "NON ACQUIS"
+- **Décision finale** : "VALIDÉ" (tous les crédits du semestre acquis) ou "NON VALIDÉ"
 
 ### Statistiques globales
 - **Taux de réussite** : Pourcentage d'étudiants ayant réussi

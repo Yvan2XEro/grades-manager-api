@@ -1,40 +1,92 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, ClipboardCheck, Clock3, ShieldCheck } from "lucide-react";
+import {
+	ArrowRight,
+	BookOpen,
+	CheckCircle2,
+	ClipboardCheck,
+	Clock3,
+	ShieldCheck,
+	Users,
+	XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { ClassSelect } from "@/components/inputs/ClassSelect";
+import ConfirmModal from "@/components/modals/ConfirmModal";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "../../utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
+
+type ExamItem = RouterOutputs["exams"]["listPaged"]["items"][number];
+
+type PendingConfirm =
+	| { kind: "single"; examId: string; examName: string }
+	| { kind: "bulk"; examIds: string[] };
 
 const WorkflowApprovals = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const examPagination = useCursorPagination({ pageSize: 20 });
-	const notifPagination = useCursorPagination({ pageSize: 20 });
+	const [examPage, setExamPage] = useState(1);
+	const [examPageSize, setExamPageSize] = useState(25);
+	const [notifPage, setNotifPage] = useState(1);
+	const [notifPageSize, setNotifPageSize] = useState(25);
+
 	const [selectedExamIds, setSelectedExamIds] = useState<Set<string>>(
 		new Set(),
 	);
+	const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(
+		null,
+	);
+	const [rejectTarget, setRejectTarget] = useState<ExamItem | null>(null);
+	const [rejectReason, setRejectReason] = useState("");
+
+	// Filters
+	const [yearFilter, setYearFilter] = useState<string | null>(null);
+	const [classFilter, setClassFilter] = useState<string | null>(null);
+	const [dateFrom, setDateFrom] = useState<string>("");
+
+	const resetFilters = () => {
+		setExamPage(1);
+		setSelectedExamIds(new Set());
+	};
 
 	const examsQuery = useQuery(
-		trpc.exams.list.queryOptions({
-			cursor: examPagination.cursor,
-			limit: examPagination.pageSize,
+		trpc.exams.listPaged.queryOptions({
+			page: examPage,
+			pageSize: examPageSize,
+			statuses: ["submitted"],
+			academicYearId: yearFilter ?? undefined,
+			classId: classFilter ?? undefined,
+			dateFrom: dateFrom ? new Date(dateFrom) : undefined,
 		}),
 	);
 	const notificationsQuery = useQuery(
-		trpc.notifications.list.queryOptions({
+		trpc.notifications.listPaged.queryOptions({
+			page: notifPage,
+			pageSize: notifPageSize,
 			status: "pending",
-			cursor: notifPagination.cursor,
-			limit: notifPagination.pageSize,
 		}),
 	);
 	const windowsQuery = useQuery(
 		trpc.workflows.enrollmentWindows.queryOptions(),
 	);
+
+	const invalidateExams = () =>
+		queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 
 	const validateExam = useMutation({
 		mutationFn: (examId: string) =>
@@ -46,7 +98,25 @@ const WorkflowApprovals = () => {
 			toast.success(
 				t("dean.workflows.toast.validated", { defaultValue: "Exam approved" }),
 			);
-			queryClient.invalidateQueries(trpc.exams.list.queryKey());
+			invalidateExams();
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const rejectExam = useMutation({
+		mutationFn: ({ examId, reason }: { examId: string; reason: string }) =>
+			trpcClient.exams.validate.mutate({
+				examId,
+				status: "rejected",
+				rejectionReason: reason,
+			}),
+		onSuccess: () => {
+			toast.success(
+				t("dean.workflows.toast.rejected", { defaultValue: "Exam rejected" }),
+			);
+			setRejectTarget(null);
+			setRejectReason("");
+			invalidateExams();
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -63,7 +133,7 @@ const WorkflowApprovals = () => {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.exams.list.queryKey());
+			invalidateExams();
 			setSelectedExamIds(new Set());
 			toast.success(
 				t("dean.workflows.toast.bulkValidated", {
@@ -83,8 +153,7 @@ const WorkflowApprovals = () => {
 		});
 	};
 
-	const pendingExams =
-		examsQuery.data?.items?.filter((exam) => exam.status === "submitted") ?? [];
+	const pendingExams = examsQuery.data?.items ?? [];
 	const pendingNotifications = notificationsQuery.data?.items ?? [];
 
 	const allExamsSelected =
@@ -102,18 +171,60 @@ const WorkflowApprovals = () => {
 			</div>
 
 			<div className="grid gap-4 lg:grid-cols-2">
+				{/* ── Pending queue ──────────────────────────────────────────────── */}
 				<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
 					<h2 className="font-heading font-semibold text-foreground text-lg">
 						{t("dean.workflows.queue", { defaultValue: "Submitted exams" })}
 					</h2>
+
+					{/* Filters */}
+					<div className="mt-3 flex flex-wrap items-center gap-2">
+						<AcademicYearSelect
+							value={yearFilter}
+							onChange={(v) => {
+								setYearFilter(v);
+								setClassFilter(null);
+								resetFilters();
+							}}
+							className="w-[160px]"
+						/>
+						<ClassSelect
+							academicYearId={yearFilter}
+							value={classFilter}
+							onChange={(v) => {
+								setClassFilter(v);
+								resetFilters();
+							}}
+						/>
+						<input
+							type="date"
+							value={dateFrom}
+							onChange={(e) => {
+								setDateFrom(e.target.value);
+								resetFilters();
+							}}
+							className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+							title={t("dean.workflows.dateFrom", {
+								defaultValue: "Submitted from",
+							})}
+						/>
+					</div>
+
 					<BulkActionBar
 						selectedCount={selectedExamIds.size}
 						onClear={() => setSelectedExamIds(new Set())}
 					>
 						<Button
 							size="sm"
-							onClick={() => bulkValidateMutation.mutate([...selectedExamIds])}
-							disabled={bulkValidateMutation.isPending}
+							onClick={() =>
+								setPendingConfirm({
+									kind: "bulk",
+									examIds: [...selectedExamIds],
+								})
+							}
+							disabled={
+								bulkValidateMutation.isPending || selectedExamIds.size === 0
+							}
 						>
 							<ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
 							{t("dean.workflows.actions.bulkValidate", {
@@ -121,6 +232,7 @@ const WorkflowApprovals = () => {
 							})}
 						</Button>
 					</BulkActionBar>
+
 					<div className="mt-4 space-y-3">
 						{pendingExams.length ? (
 							<>
@@ -145,34 +257,69 @@ const WorkflowApprovals = () => {
 									</span>
 								</div>
 								{pendingExams.map((exam) => (
-									<div
-										key={exam.id}
-										className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
-									>
-										<div className="flex items-center gap-3">
-											<Checkbox
-												checked={selectedExamIds.has(exam.id)}
-												onCheckedChange={() => toggleExam(exam.id)}
-												aria-label={`Select ${exam.name}`}
-											/>
-											<div>
-												<p className="font-medium text-foreground">
-													{exam.name}
-												</p>
-												<p className="text-muted-foreground text-xs">
-													{exam.classCourse} • {exam.percentage}%
-												</p>
+									<div key={exam.id} className="rounded-lg bg-muted/50 p-3">
+										<div className="flex items-center justify-between">
+											<div className="flex items-center gap-3">
+												<Checkbox
+													checked={selectedExamIds.has(exam.id)}
+													onCheckedChange={() => toggleExam(exam.id)}
+													aria-label={`Select ${exam.name}`}
+												/>
+												<div>
+													<p className="font-medium text-foreground text-sm">
+														{exam.name}
+													</p>
+													<div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-muted-foreground text-xs">
+														{exam.courseName && (
+															<span className="flex items-center gap-1">
+																<BookOpen className="h-3 w-3" />
+																{exam.courseName}
+															</span>
+														)}
+														{exam.className && (
+															<span className="flex items-center gap-1">
+																<Users className="h-3 w-3" />
+																{exam.className}
+															</span>
+														)}
+														<span>{exam.percentage}%</span>
+													</div>
+												</div>
+											</div>
+											<div className="flex shrink-0 gap-1.5">
+												<Button
+													size="sm"
+													variant="outline"
+													className="text-destructive hover:bg-destructive/10"
+													onClick={() => {
+														setRejectTarget(exam);
+														setRejectReason("");
+													}}
+													disabled={rejectExam.isPending}
+												>
+													<XCircle className="mr-1 h-3.5 w-3.5" />
+													{t("dean.workflows.actions.reject", {
+														defaultValue: "Reject",
+													})}
+												</Button>
+												<Button
+													size="sm"
+													onClick={() =>
+														setPendingConfirm({
+															kind: "single",
+															examId: exam.id,
+															examName: exam.name,
+														})
+													}
+													disabled={validateExam.isPending}
+												>
+													<CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+													{t("dean.workflows.actions.validate", {
+														defaultValue: "Approve",
+													})}
+												</Button>
 											</div>
 										</div>
-										<Button
-											size="sm"
-											onClick={() => validateExam.mutate(exam.id)}
-										>
-											<ShieldCheck className="mr-1 h-4 w-4" />
-											{t("dean.workflows.actions.validate", {
-												defaultValue: "Approve & lock",
-											})}
-										</Button>
 									</div>
 								))}
 							</>
@@ -184,16 +331,20 @@ const WorkflowApprovals = () => {
 							</p>
 						)}
 					</div>
-					<PaginationBar
-						hasPrev={examPagination.hasPrev}
-						hasNext={!!examsQuery.data?.nextCursor}
-						onPrev={examPagination.handlePrev}
-						onNext={() =>
-							examPagination.handleNext(examsQuery.data?.nextCursor)
-						}
-						isLoading={examsQuery.isLoading}
+					<TablePagination
+						page={examPage}
+						pageCount={examsQuery.data?.pageCount ?? 1}
+						total={examsQuery.data?.total ?? 0}
+						pageSize={examPageSize}
+						onPageChange={setExamPage}
+						onPageSizeChange={(s) => {
+							setExamPageSize(s);
+							setExamPage(1);
+						}}
 					/>
 				</div>
+
+				{/* ── Notifications panel ────────────────────────────────────────── */}
 				<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
 					<h2 className="font-heading font-semibold text-foreground text-lg">
 						{t("dean.workflows.notifications", {
@@ -235,18 +386,21 @@ const WorkflowApprovals = () => {
 							</li>
 						)}
 					</ul>
-					<PaginationBar
-						hasPrev={notifPagination.hasPrev}
-						hasNext={!!notificationsQuery.data?.nextCursor}
-						onPrev={notifPagination.handlePrev}
-						onNext={() =>
-							notifPagination.handleNext(notificationsQuery.data?.nextCursor)
-						}
-						isLoading={notificationsQuery.isLoading}
+					<TablePagination
+						page={notifPage}
+						pageCount={notificationsQuery.data?.pageCount ?? 1}
+						total={notificationsQuery.data?.total ?? 0}
+						pageSize={notifPageSize}
+						onPageChange={setNotifPage}
+						onPageSizeChange={(s) => {
+							setNotifPageSize(s);
+							setNotifPage(1);
+						}}
 					/>
 				</div>
 			</div>
 
+			{/* ── Enrollment windows ─────────────────────────────────────────────── */}
 			<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
 				<h2 className="mb-3 font-heading font-semibold text-foreground text-lg">
 					{t("dean.workflows.windows", { defaultValue: "Enrollment windows" })}
@@ -268,6 +422,110 @@ const WorkflowApprovals = () => {
 					))}
 				</div>
 			</div>
+
+			{/* ── Approve confirm modal ──────────────────────────────────────────── */}
+			<ConfirmModal
+				isOpen={pendingConfirm !== null}
+				onClose={() => setPendingConfirm(null)}
+				onConfirm={() => {
+					if (!pendingConfirm) return;
+					if (pendingConfirm.kind === "single") {
+						validateExam.mutate(pendingConfirm.examId);
+					} else {
+						bulkValidateMutation.mutate(pendingConfirm.examIds);
+					}
+					setPendingConfirm(null);
+				}}
+				title={t("dean.workflows.confirm.title", {
+					defaultValue: "Approve and lock?",
+				})}
+				message={
+					pendingConfirm?.kind === "bulk"
+						? t("dean.workflows.confirm.bulkMessage", {
+								count: pendingConfirm.examIds.length,
+								defaultValue:
+									"You are about to approve and lock {{count}} exam(s). This action is irreversible — grades will no longer be editable.",
+							})
+						: t("dean.workflows.confirm.singleMessage", {
+								name:
+									pendingConfirm?.kind === "single"
+										? pendingConfirm.examName
+										: "",
+								defaultValue:
+									'Approve and lock "{{name}}"? This action is irreversible — grades will no longer be editable.',
+							})
+				}
+				confirmText={t("dean.workflows.actions.validate", {
+					defaultValue: "Approve & lock",
+				})}
+				isLoading={validateExam.isPending || bulkValidateMutation.isPending}
+			/>
+
+			{/* ── Reject dialog ──────────────────────────────────────────────────── */}
+			<Dialog
+				open={rejectTarget !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setRejectTarget(null);
+						setRejectReason("");
+					}
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>
+							{t("dean.workflows.rejectDialog.title", {
+								defaultValue: "Reject grades",
+							})}
+						</DialogTitle>
+					</DialogHeader>
+					<DialogBody className="space-y-3">
+						<p className="text-muted-foreground text-sm">
+							{t("dean.workflows.rejectDialog.subtitle", {
+								name: rejectTarget?.name ?? "",
+								defaultValue:
+									'Provide a reason for rejecting "{{name}}". The teacher will see this.',
+							})}
+						</p>
+						<div>
+							<Label>{t("admin.exams.rejectReasonLabel")}</Label>
+							<Textarea
+								className="mt-1"
+								rows={3}
+								value={rejectReason}
+								onChange={(e) => setRejectReason(e.target.value)}
+								placeholder={t("admin.exams.rejectReasonPlaceholder")}
+							/>
+						</div>
+					</DialogBody>
+					<DialogFooter className="gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setRejectTarget(null);
+								setRejectReason("");
+							}}
+						>
+							{t("common.cancel")}
+						</Button>
+						<Button
+							variant="destructive"
+							disabled={!rejectReason.trim() || rejectExam.isPending}
+							onClick={() => {
+								if (rejectTarget && rejectReason.trim()) {
+									rejectExam.mutate({
+										examId: rejectTarget.id,
+										reason: rejectReason.trim(),
+									});
+								}
+							}}
+						>
+							<XCircle className="mr-1.5 h-4 w-4" />
+							{t("dean.workflows.actions.reject", { defaultValue: "Reject" })}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };

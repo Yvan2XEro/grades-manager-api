@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
+import type { z } from "zod";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -8,10 +9,13 @@ import type { MemberRole } from "../authz";
 import { ADMIN_ROLES, roleSatisfies } from "../authz";
 import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
 import * as gradeAccessRepo from "../grade-access-grants/grade-access-grants.repo";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import * as gradesRepo from "../grades/grades.repo";
+import * as notificationsService from "../notifications/notifications.service";
 import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./exams.repo";
+import type { listPagedSchema } from "./exams.zod";
 import * as retakeOverridesRepo from "./retake-overrides.repo";
 
 type CreateExamInput = {
@@ -201,21 +205,36 @@ export async function submitExam(
 		assertTeacherOwnership(classCourse, actor);
 	}
 	const resolved = await resolveDomainUserId(submitterId);
-	if (!["draft", "scheduled"].includes(existing.status)) {
+	if (!["draft", "scheduled", "rejected"].includes(existing.status)) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Exam cannot be submitted in its current status",
 		});
 	}
-	return repo.update(
-		examId,
-		{
-			status: "submitted",
-			scheduledBy: resolved ?? existing.scheduledBy,
-			scheduledAt: new Date(),
-		},
-		institutionId,
-	);
+	return transaction(async (tx) => {
+		const updated = await repo.update(
+			examId,
+			{
+				status: "submitted",
+				scheduledBy: resolved ?? existing.scheduledBy,
+				scheduledAt: new Date(),
+			},
+			institutionId,
+			tx,
+		);
+		await repo.insertAuditEvent(
+			{
+				examId,
+				institutionId,
+				actorId: resolved,
+				action: existing.status === "rejected" ? "resubmit" : "submit",
+				fromStatus: existing.status,
+				toStatus: "submitted",
+			},
+			tx,
+		);
+		return updated;
+	});
 }
 
 export async function validateExam(
@@ -223,6 +242,7 @@ export async function validateExam(
 	approverId: string | null,
 	status: "approved" | "rejected",
 	institutionId: string,
+	rejectionReason?: string,
 ) {
 	const existing = await requireExam(examId, institutionId);
 	const resolved = await resolveDomainUserId(approverId);
@@ -232,15 +252,60 @@ export async function validateExam(
 			message: "Exam must be submitted before approval",
 		});
 	}
-	return repo.update(
-		examId,
-		{
-			status,
-			validatedBy: resolved,
-			validatedAt: new Date(),
-		},
-		institutionId,
-	);
+	const updated = await transaction(async (tx) => {
+		const upd = await repo.update(
+			examId,
+			{
+				status,
+				validatedBy: resolved,
+				validatedAt: new Date(),
+				rejectionReason:
+					status === "rejected" ? (rejectionReason ?? null) : null,
+			},
+			institutionId,
+			tx,
+		);
+		await repo.insertAuditEvent(
+			{
+				examId,
+				institutionId,
+				actorId: resolved,
+				action: status === "approved" ? "approve" : "reject",
+				fromStatus: existing.status,
+				toStatus: status,
+				reason: status === "rejected" ? (rejectionReason ?? null) : null,
+			},
+			tx,
+		);
+		return upd;
+	});
+
+	// Notify the teacher — canonical type used by all paths; dedupeKey=examId prevents duplicates
+	void (async () => {
+		try {
+			if (existing.scheduledBy) {
+				const notifType =
+					status === "approved" ? "grade.approved" : "grade.rejected";
+				await notificationsService.queueInApp(
+					existing.scheduledBy,
+					notifType,
+					{
+						examId,
+						examName: existing.name,
+						classCourseId: existing.classCourse,
+						...(status === "rejected" && rejectionReason
+							? { reason: rejectionReason }
+							: {}),
+					},
+					{ dedupeKey: examId },
+				);
+			}
+		} catch {
+			// swallow — notification failure must not fail the approval
+		}
+	})();
+
+	return updated;
 }
 
 export async function deleteExam(
@@ -327,23 +392,235 @@ export async function listExams(
 	};
 }
 
+export async function listExamsPaged(
+	input: z.infer<typeof listPagedSchema>,
+	params: {
+		institutionId: string;
+		profileId: string | null;
+		memberRole: MemberRole | null;
+	},
+) {
+	const { institutionId, profileId, memberRole } = params;
+
+	const isAdmin = roleSatisfies(memberRole, ADMIN_ROLES);
+	const isGradeEditor = memberRole === "grade_editor";
+
+	const hasInstitutionGrant =
+		!isAdmin && !isGradeEditor && profileId && institutionId
+			? !!(await gradeAccessRepo.findByProfileAndInstitution(
+					profileId,
+					institutionId,
+				))
+			: false;
+
+	const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
+
+	// Full-access users see everything — no SQL scoping needed
+	if (hasFullAccess) {
+		const result = await repo.listPaged({ institutionId, ...input });
+		return {
+			...result,
+			items: result.items.map((item) => ({ ...item, canEdit: true })),
+		};
+	}
+
+	// Unauthenticated / no profile — nothing to show
+	if (!profileId) {
+		return { items: [], total: 0, pageCount: 0 };
+	}
+
+	// Determine delegate-accessible classCourses (per-exam grants → their classCourses)
+	const delegateClassCourseIds =
+		await examGradeEditorsRepo.classCourseIdsForEditor(
+			profileId,
+			institutionId,
+		);
+
+	if (delegateClassCourseIds.length === 0) {
+		// Teacher with no delegates — scope SQL by teacherId directly
+		const result = await repo.listPaged({
+			institutionId,
+			...input,
+			teacherId: profileId,
+		});
+		return {
+			...result,
+			items: result.items.map((item) => ({ ...item, canEdit: true })),
+		};
+	}
+
+	// Teacher who is also a delegate for some exams — union both classCourse sets
+	const teacherClassCourseRows = await db
+		.select({ id: schema.classCourses.id })
+		.from(schema.classCourses)
+		.where(
+			and(
+				eq(schema.classCourses.teacher, profileId),
+				eq(schema.classCourses.institutionId, institutionId),
+			),
+		);
+	const teacherClassCourseSet = new Set(
+		teacherClassCourseRows.map((r) => r.id),
+	);
+	const unionIds = [
+		...new Set([...teacherClassCourseSet, ...delegateClassCourseIds]),
+	];
+
+	if (unionIds.length === 0) {
+		return { items: [], total: 0, pageCount: 0 };
+	}
+
+	const result = await repo.listPaged({
+		institutionId,
+		...input,
+		classCourseIds: unionIds,
+	});
+
+	const examIds = result.items.map((item) => item.id);
+	const delegateExamIds = new Set(
+		examIds.length > 0
+			? await examGradeEditorsRepo.examIdsForEditor(profileId, examIds)
+			: [],
+	);
+
+	const pageItems = result.items
+		.map((item) => ({
+			...item,
+			canEdit:
+				teacherClassCourseSet.has(item.classCourse) ||
+				delegateExamIds.has(item.id),
+		}))
+		.filter((item) => item.canEdit);
+
+	return {
+		...result,
+		items: pageItems,
+	};
+}
+
 export async function getExamById(id: string, institutionId: string) {
 	return requireExam(id, institutionId);
+}
+
+export async function getAuditHistory(examId: string, institutionId: string) {
+	await requireExam(examId, institutionId);
+	return repo.getAuditEventsForExam(examId, institutionId);
+}
+
+export async function listUpcomingExamsForStudent(
+	profileId: string,
+	institutionId: string,
+) {
+	// Find the student profile linked to this domain user
+	const student = await db.query.students.findFirst({
+		where: and(
+			eq(schema.students.domainUserId, profileId),
+			eq(schema.students.institutionId, institutionId),
+		),
+	});
+	if (!student) return [];
+
+	// Get all active course enrollments for this student
+	const enrollments = await db.query.studentCourseEnrollments.findMany({
+		where: and(
+			eq(schema.studentCourseEnrollments.studentId, student.id),
+			inArray(schema.studentCourseEnrollments.status, ["active", "planned"]),
+		),
+		columns: { classCourseId: true },
+	});
+	if (!enrollments.length) return [];
+
+	const classCourseIds = enrollments.map((e) => e.classCourseId);
+
+	// Get upcoming exams for those courses
+	const exams = await db.query.exams.findMany({
+		where: and(
+			eq(schema.exams.institutionId, institutionId),
+			inArray(schema.exams.classCourse, classCourseIds),
+			gte(schema.exams.date, new Date()),
+		),
+		with: {
+			classCourseRef: {
+				with: {
+					courseRef: true,
+					classRef: { with: { academicYear: true } },
+				},
+			},
+		},
+		orderBy: [asc(schema.exams.date)],
+		limit: 50,
+	});
+
+	return exams.map((exam) => ({
+		id: exam.id,
+		name: exam.name,
+		date: exam.date,
+		percentage: exam.percentage,
+		status: exam.status,
+		type: exam.type,
+		courseName: exam.classCourseRef?.courseRef?.name ?? null,
+		courseCode: exam.classCourseRef?.code ?? null,
+		className: exam.classCourseRef?.classRef?.name ?? null,
+		academicYear: exam.classCourseRef?.classRef?.academicYear?.name ?? null,
+	}));
 }
 
 export async function setLock(
 	examId: string,
 	lock: boolean,
 	institutionId: string,
+	actor?: ActorContext,
 ) {
 	const existing = await requireExam(examId, institutionId);
-	if (lock && existing.status !== "approved") {
+	const isAdmin = roleSatisfies(actor?.memberRole ?? null, ADMIN_ROLES);
+	if (lock && existing.status !== "approved" && !isAdmin) {
 		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Only approved exams can be locked",
+			code: "PRECONDITION_FAILED",
+			message: `Cannot lock exam: status is "${existing.status}". Only approved exams can be locked (admin can force-lock).`,
 		});
 	}
-	return repo.setLock(examId, lock, institutionId);
+	// Admin can force-lock from any status — auto-promote to approved to keep
+	// downstream invariants (retake eligibility, grade editing) consistent.
+	const promoteToApproved = lock && existing.status !== "approved" && isAdmin;
+	const resolvedActor = await resolveDomainUserId(actor?.profileId ?? null);
+
+	// Warn (but do not block) if a participation roster exists but is not locked.
+	let rosterWarning: string | null = null;
+	if (lock) {
+		const { getExamRosterStatus } = await import(
+			"../attendance/attendance.service"
+		);
+		const rosterStatus = await getExamRosterStatus(examId, institutionId);
+		if (rosterStatus.exists && !rosterStatus.locked) {
+			rosterWarning =
+				"Participation roster exists but has not been locked. Students may sit the exam regardless.";
+		}
+	}
+
+	const result = await transaction(async (tx) => {
+		const r = await repo.setLock(
+			examId,
+			lock,
+			institutionId,
+			{ promoteToApproved },
+			tx,
+		);
+		if (lock) {
+			await repo.insertAuditEvent(
+				{
+					examId,
+					institutionId,
+					actorId: resolvedActor,
+					action: "lock",
+					fromStatus: existing.status,
+					toStatus: promoteToApproved ? "approved" : existing.status,
+				},
+				tx,
+			);
+		}
+		return r;
+	});
+	return { ...result, rosterWarning };
 }
 
 const DEFAULT_PASSING_GRADE = 10;
@@ -442,10 +719,10 @@ export async function listRetakeEligibility(
 	const institution = await db.query.institutions.findFirst({
 		where: eq(schema.institutions.id, klass.institutionId),
 	});
-	// TODO(INST-SETTINGS): centralize academic policy resolution (passing threshold, retake attempts, etc.)
-	const passingGrade =
-		institution?.metadata?.export_config?.grading?.passing_grade ??
-		DEFAULT_PASSING_GRADE;
+	const gradeScale = await gradeScalesService.getForInstitution(
+		klass.institutionId,
+	);
+	const passingGrade = gradeScale.passThreshold;
 	const roster =
 		await courseEnrollmentRepo.listForClassCourseWithStudentProfile(
 			classCourse.id,

@@ -7,6 +7,7 @@ import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelec
 import { Button } from "../../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -127,7 +128,7 @@ export function CreateBatchJobDialog({
 					</DialogTitle>
 				</DialogHeader>
 
-				<div className="px-6 pb-4">
+				<DialogBody className="px-6 pb-4">
 					{!previewData ? (
 						<div className="space-y-4">
 							{/* Job type selection */}
@@ -231,7 +232,7 @@ export function CreateBatchJobDialog({
 							</p>
 						</div>
 					)}
-				</div>
+				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>
 						{t("common.actions.cancel")}

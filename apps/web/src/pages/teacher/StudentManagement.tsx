@@ -7,13 +7,12 @@ import {
 	Trophy,
 	Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import ConfirmModal from "@/components/modals/ConfirmModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -30,8 +29,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { trpcClient } from "../../utils/trpc";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { toast } from "@/lib/toast";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -166,11 +166,17 @@ function EmptyStudents({
 export default function StudentManagement() {
 	const [sourceClassId, setSourceClassId] = useState<string>("");
 	const [targetClassId, setTargetClassId] = useState<string>("");
+	const [confirmTransferOpen, setConfirmTransferOpen] = useState(false);
 	const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
 		new Set(),
 	);
-	const pagination = useCursorPagination({ pageSize: 30 });
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(30);
 	const { t } = useTranslation();
+
+	useEffect(() => {
+		setPage(1);
+	}, [sourceClassId]);
 
 	// Get previous academic year classes (source)
 	const { data: sourceClasses, isLoading: sourceLoading } = useQuery({
@@ -203,13 +209,11 @@ export default function StudentManagement() {
 
 	// Students with deliberation results
 	const { data: preview, isLoading: studentsLoading } = useQuery({
-		queryKey: ["promotion-preview", sourceClassId, pagination.cursor],
-		queryFn: () =>
-			trpcClient.classes.promotionPreview.query({
-				sourceClassId,
-				cursor: pagination.cursor,
-				limit: 30,
-			}),
+		...trpc.classes.promotionPreviewPaged.queryOptions({
+			sourceClassId: sourceClassId!,
+			page,
+			pageSize,
+		}),
 		enabled: !!sourceClassId,
 	});
 
@@ -224,7 +228,7 @@ export default function StudentManagement() {
 				t("teacher.promotion.toast.success", { count: data.transferred }),
 			);
 			setSelectedStudentIds(new Set());
-			pagination.reset();
+			setPage(1);
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
@@ -275,7 +279,7 @@ export default function StudentManagement() {
 		setSourceClassId(value);
 		setTargetClassId("");
 		setSelectedStudentIds(new Set());
-		pagination.reset();
+		setPage(1);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -440,7 +444,7 @@ export default function StudentManagement() {
 							</Button>
 							<Button
 								size="sm"
-								onClick={() => bulkTransferMutation.mutate()}
+								onClick={() => setConfirmTransferOpen(true)}
 								disabled={!canPromote}
 							>
 								{bulkTransferMutation.isPending ? (
@@ -593,15 +597,17 @@ export default function StudentManagement() {
 					)}
 
 					{/* Pagination */}
-					{students.length > 0 && (
-						<PaginationBar
-							hasPrev={pagination.hasPrev}
-							hasNext={!!preview?.nextCursor}
-							onPrev={pagination.handlePrev}
-							onNext={() => pagination.handleNext(preview?.nextCursor)}
-							isLoading={studentsLoading}
-						/>
-					)}
+					<TablePagination
+						page={page}
+						pageCount={preview?.pageCount ?? 1}
+						total={preview?.total ?? 0}
+						pageSize={pageSize}
+						onPageChange={setPage}
+						onPageSizeChange={(s) => {
+							setPageSize(s);
+							setPage(1);
+						}}
+					/>
 				</div>
 			)}
 
@@ -621,6 +627,27 @@ export default function StudentManagement() {
 					</div>
 				</div>
 			)}
+
+			<ConfirmModal
+				isOpen={confirmTransferOpen}
+				onClose={() => setConfirmTransferOpen(false)}
+				onConfirm={() => {
+					bulkTransferMutation.mutate();
+					setConfirmTransferOpen(false);
+				}}
+				title={t("teacher.promotion.confirm.title", {
+					defaultValue: "Promote selected students?",
+				})}
+				message={t("teacher.promotion.confirm.message", {
+					count: selectedStudentIds.size,
+					defaultValue:
+						"You are about to transfer {{count}} student(s) to the target class. This action cannot be easily reversed.",
+				})}
+				confirmText={t("teacher.promotion.actions.promoteSelected", {
+					defaultValue: "Promote selected",
+				})}
+				isLoading={bulkTransferMutation.isPending}
+			/>
 		</div>
 	);
 }

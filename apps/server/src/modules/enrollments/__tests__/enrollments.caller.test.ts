@@ -48,6 +48,21 @@ describe("enrollments router", () => {
 		expect(list.items.length).toBeGreaterThan(0);
 	});
 
+	describe("enrollments.listPaged", () => {
+		it("returns { items, total, pageCount }", async () => {
+			const caller = appRouter.createCaller(asAdmin());
+			const result = await caller.enrollments.listPaged({
+				page: 1,
+				pageSize: 25,
+			});
+			expect(result).toMatchObject({
+				items: expect.any(Array),
+				total: expect.any(Number),
+				pageCount: expect.any(Number),
+			});
+		});
+	});
+
 	it("prevents accessing enrollments from another institution", async () => {
 		const admin = createCaller(asAdmin());
 		const [foreignInstitution] = await db

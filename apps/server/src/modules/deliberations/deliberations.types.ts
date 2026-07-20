@@ -109,9 +109,12 @@ export type DiplomationExportData = {
 		name: string;
 		nameEn: string;
 		code: string;
+		abbreviation: string | null;
 		logoUrl: string | null;
 		sloganFr: string | null;
 		address: string | null;
+		postalBox: string | null;
+		phone: string | null;
 		signatoryName: string | null;
 		signatoryTitle: string | null;
 		city: string | null;
@@ -120,6 +123,7 @@ export type DiplomationExportData = {
 		id: string;
 		type: string;
 		date: string | null;
+		juryNumber: string | null;
 		status: string;
 		className: string;
 		programName: string;
@@ -128,9 +132,16 @@ export type DiplomationExportData = {
 		admissionDate: string | null;
 	};
 	program: {
+		nameEn: string | null;
+		abbreviation: string | null;
+		domainFr: string | null;
+		domainEn: string | null;
+		specialiteFr: string | null;
+		specialiteEn: string | null;
+		cycleNameFr: string | null;
+		cycleNameEn: string | null;
 		diplomaTitleFr: string | null;
 		diplomaTitleEn: string | null;
-		specialite: string | null;
 		attestationValidityFr: string | null;
 		attestationValidityEn: string | null;
 	};
@@ -191,9 +202,12 @@ export type TranscriptExportData = {
 		name: string;
 		nameEn: string;
 		code: string;
+		abbreviation: string | null;
 		logoUrl: string | null;
 		sloganFr: string | null;
 		address: string | null;
+		postalBox: string | null;
+		phone: string | null;
 		signatoryName: string | null;
 		signatoryTitle: string | null;
 		city: string | null;
@@ -201,7 +215,14 @@ export type TranscriptExportData = {
 	academicYear: { name: string };
 	program: {
 		name: string;
+		nameEn: string | null;
+		abbreviation: string | null;
+		domainFr: string | null;
+		domainEn: string | null;
+		specialiteFr: string | null;
+		specialiteEn: string | null;
 		cycle: string;
+		cycleNameEn: string | null;
 		level: string;
 	};
 	semester: {

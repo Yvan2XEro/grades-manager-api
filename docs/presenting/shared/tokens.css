@@ -1,0 +1,77 @@
+/* TKAMS — design tokens v2 (renforcés) */
+:root {
+  /* Couleurs TKAMS — oklch */
+  --tk-bg: oklch(0.955 0.006 80);
+  --tk-bg-deep: oklch(0.93 0.008 80);
+  --tk-surface: oklch(0.978 0.008 80);
+  --tk-ink: oklch(0.13 0.03 264);
+  --tk-ink-soft: oklch(0.3 0.02 264);
+  --tk-ink-2: oklch(0.42 0.02 264);
+  --tk-muted: oklch(0.52 0.014 264);
+  --tk-muted-2: oklch(0.68 0.012 264);
+  --tk-border: oklch(0.88 0.006 80);
+  --tk-border-strong: oklch(0.78 0.008 80);
+
+  --tk-primary: oklch(0.48 0.2 277);
+  --tk-primary-soft: oklch(0.95 0.04 277);
+  --tk-primary-deep: oklch(0.32 0.18 277);
+  --tk-primary-bright: oklch(0.65 0.22 277);
+  --tk-on-primary: oklch(0.99 0 0);
+
+  /* Sombre — pour les pages "manifeste" */
+  --tk-dark: oklch(0.13 0.03 264);
+  --tk-dark-2: oklch(0.18 0.04 264);
+  --tk-dark-3: oklch(0.24 0.04 264);
+  --tk-on-dark: oklch(0.98 0.008 264);
+  --tk-on-dark-soft: oklch(0.78 0.015 264);
+  --tk-on-dark-muted: oklch(0.6 0.018 264);
+
+  --tk-accent-emerald: oklch(0.58 0.17 149);
+  --tk-accent-gold:    oklch(0.72 0.16 86);
+  --tk-accent-blue:    oklch(0.57 0.12 221);
+  --tk-accent-magenta: oklch(0.58 0.24 303);
+  --tk-danger:         oklch(0.55 0.22 27);
+
+  --tk-font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --tk-font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --tk-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { color: var(--tk-ink); background: var(--tk-bg); font-family: var(--tk-font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body { margin: 0; }
+
+/* A4 page model */
+.page {
+  width: 794px;
+  min-height: 1123px;
+  margin: 24px auto;
+  background: var(--tk-surface);
+  position: relative;
+  page-break-after: always;
+  break-after: page;
+  overflow: hidden;
+  box-shadow: 0 1px 0 oklch(0 0 0 / 4%), 0 14px 36px -16px oklch(0 0 0 / 14%);
+}
+.page:last-child { page-break-after: auto; break-after: auto; }
+.page.dark { background: var(--tk-dark); color: var(--tk-on-dark); }
+
+/* Print */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  html, body { background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .page {
+    margin: 0 !important;
+    box-shadow: none !important;
+    width: 210mm !important;
+    min-height: 297mm;
+    page-break-after: always;
+    break-after: page;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .no-print { display: none !important; }
+}
+
+p, li { text-wrap: pretty; }

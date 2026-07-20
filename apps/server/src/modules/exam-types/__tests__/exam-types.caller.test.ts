@@ -46,3 +46,15 @@ describe("exam types router", () => {
 		expect(after.items.some((item) => item.id === created.id)).toBe(false);
 	});
 });
+
+describe("examTypes.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const caller = createCaller(asAdmin());
+		const result = await caller.examTypes.listPaged({ page: 1, pageSize: 25 });
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+});

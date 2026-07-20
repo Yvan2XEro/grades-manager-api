@@ -61,3 +61,18 @@ describe("study cycles router", () => {
 		expect(refreshed.items.some(({ id }) => id === cycle.id)).toBe(false);
 	});
 });
+
+describe("studyCycles.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const caller = createCaller(asAdmin());
+		const result = await caller.studyCycles.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+});

@@ -1,4 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import { appRouter } from "@/routers";
 import {
@@ -330,6 +333,40 @@ describe("batchJobs router", () => {
 			).rejects.toHaveProperty("code", "BAD_REQUEST");
 		});
 
+		it("logs from consecutive steps carry the correct stepId and do not leak", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { academicYear, klass } = await createRecapFixture();
+
+			// creditLedger.recompute has 2 steps: "Recompute credit ledger" and "Refresh student facts"
+			const previewed = await admin.batchJobs.preview({
+				type: "creditLedger.recompute",
+				params: { academicYearId: academicYear.id, classId: klass.id },
+			});
+			expect(previewed.steps.length).toBe(2);
+
+			const completed = await admin.batchJobs.run({ jobId: previewed.id });
+			expect(completed?.status).toBe("completed");
+
+			const logs = completed?.logs ?? [];
+			const step1Id = previewed.steps[0].id;
+			const step2Id = previewed.steps[1].id;
+
+			const step1Logs = logs.filter((l) => l.stepId === step1Id);
+			const step2Logs = logs.filter((l) => l.stepId === step2Id);
+			const jobLevelLogs = logs.filter((l) => l.stepId === null);
+
+			// Each step must have at least its header log attributed to it
+			expect(step1Logs.length).toBeGreaterThan(0);
+			expect(step2Logs.length).toBeGreaterThan(0);
+			// No step-1 log appears in step-2 attribution and vice-versa
+			expect(step1Logs.every((l) => l.stepId === step1Id)).toBe(true);
+			expect(step2Logs.every((l) => l.stepId === step2Id)).toBe(true);
+			// Job-level completion log has no stepId
+			expect(jobLevelLogs.length).toBeGreaterThan(0);
+			expect(jobLevelLogs.every((l) => l.stepId === null)).toBe(true);
+		});
+
 		it("rejects rollback for non-completed jobs", async () => {
 			const ctx = await adminWithRealProfile();
 			const admin = createCaller(ctx);
@@ -347,6 +384,80 @@ describe("batchJobs router", () => {
 			await expect(
 				admin.batchJobs.rollback({ jobId: previewed.id }),
 			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		});
+	});
+
+	describe("completion/failure notifications", () => {
+		it("sends exactly one notification per job and deduplicates same job ID", async () => {
+			const profile = await createDomainUser();
+			const ctx = makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: profile.id },
+			});
+			const admin = createCaller(ctx);
+			const { academicYear, klass } = await createRecapFixture();
+
+			const previewed = await admin.batchJobs.preview({
+				type: "creditLedger.recompute",
+				params: { academicYearId: academicYear.id, classId: klass.id },
+			});
+			await admin.batchJobs.run({ jobId: previewed.id });
+
+			const notifs = await db.query.notifications.findMany({
+				where: eq(schema.notifications.recipientId, profile.id),
+				orderBy: schema.notifications.createdAt,
+			});
+
+			const completedNotifs = notifs.filter(
+				(n) => n.type === "batch_job.completed",
+			);
+			// Exactly one completion notification
+			expect(completedNotifs.length).toBe(1);
+
+			// Payload has required fields
+			const payload = completedNotifs[0].payload as Record<string, unknown>;
+			expect(payload.jobId).toBe(previewed.id);
+			expect(payload.jobType).toBe("creditLedger.recompute");
+			expect(typeof payload.itemsProcessed).toBe("number");
+
+			// Running the same job again would produce a different job ID → a second notification
+			// (tests dedup only within same job ID — via _dedupeKey)
+			expect(payload._dedupeKey).toBe(previewed.id);
+		});
+
+		it("two different jobs each produce their own notification", async () => {
+			const profile = await createDomainUser();
+			const ctx = makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: profile.id },
+			});
+			const admin = createCaller(ctx);
+			const { academicYear, klass } = await createRecapFixture();
+
+			const j1 = await admin.batchJobs.preview({
+				type: "creditLedger.recompute",
+				params: { academicYearId: academicYear.id, classId: klass.id },
+			});
+			await admin.batchJobs.run({ jobId: j1.id });
+
+			const { klass: klass2 } = await createRecapFixture();
+			const j2 = await admin.batchJobs.preview({
+				type: "creditLedger.recompute",
+				params: { academicYearId: academicYear.id, classId: klass2.id },
+			});
+			await admin.batchJobs.run({ jobId: j2.id });
+
+			const notifs = await db.query.notifications.findMany({
+				where: eq(schema.notifications.recipientId, profile.id),
+			});
+			const completedNotifs = notifs.filter(
+				(n) => n.type === "batch_job.completed",
+			);
+			expect(completedNotifs.length).toBe(2);
+			const jobIds = completedNotifs.map(
+				(n) => (n.payload as Record<string, unknown>).jobId,
+			);
+			expect(new Set(jobIds).size).toBe(2);
 		});
 	});
 });

@@ -36,3 +36,18 @@ describe("academic years router", () => {
 		expect(set?.isActive).toBe(true);
 	});
 });
+
+describe("academicYears.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const caller = createCaller(asAdmin());
+		const result = await caller.academicYears.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+});

@@ -12,6 +12,7 @@ import {
 	createRetakeSchema,
 	deleteRetakeOverrideSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	lockSchema,
 	retakeEligibilitySchema,
@@ -94,13 +95,15 @@ export const router = createRouter({
 				ctx.profile?.id ?? null,
 				input.status,
 				ctx.institution.id,
+				input.rejectionReason,
 			),
 		),
-	lock: tenantAdminProcedure
-		.input(lockSchema)
-		.mutation(({ ctx, input }) =>
-			service.setLock(input.examId, input.lock, ctx.institution.id),
-		),
+	lock: tenantAdminProcedure.input(lockSchema).mutation(({ ctx, input }) =>
+		service.setLock(input.examId, input.lock, ctx.institution.id, {
+			profileId: ctx.profile?.id ?? null,
+			memberRole: ctx.memberRole ?? null,
+		}),
+	),
 	list: tenantProtectedProcedure.input(listSchema).query(({ ctx, input }) =>
 		service.listExams(input, {
 			institutionId: ctx.institution.id,
@@ -108,6 +111,15 @@ export const router = createRouter({
 			memberRole: ctx.memberRole ?? null,
 		}),
 	),
+	listPaged: tenantProtectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listExamsPaged(input, {
+				institutionId: ctx.institution.id,
+				profileId: ctx.profile?.id ?? null,
+				memberRole: ctx.memberRole ?? null,
+			}),
+		),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
@@ -165,4 +177,25 @@ export const router = createRouter({
 				ctx.institution.id,
 			);
 		}),
+
+	// ── Audit history ──────────────────────────────────────────────────────────
+	getAuditHistory: tenantAdminProcedure
+		.input(idSchema)
+		.query(({ ctx, input }) =>
+			service.getAuditHistory(input.id, ctx.institution.id),
+		),
+
+	// ── Student calendar: upcoming exams for enrolled courses ─────────────────
+	upcomingForStudent: tenantProtectedProcedure.query(({ ctx }) => {
+		if (!ctx.profile) {
+			throw new TRPCError({
+				code: "UNAUTHORIZED",
+				message: "Profile required",
+			});
+		}
+		return service.listUpcomingExamsForStudent(
+			ctx.profile.id,
+			ctx.institution.id,
+		);
+	}),
 });

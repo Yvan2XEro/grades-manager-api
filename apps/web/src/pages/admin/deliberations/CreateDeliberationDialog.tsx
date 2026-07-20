@@ -10,6 +10,7 @@ import { Button } from "../../../components/ui/button";
 import { Checkbox } from "../../../components/ui/checkbox";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -43,6 +44,7 @@ interface SharedFields {
 	type: string;
 	semesterId: string | null;
 	deliberationDate: string;
+	juryNumber: string;
 	quickStart: boolean;
 }
 
@@ -59,6 +61,7 @@ export default function CreateDeliberationDialog({
 		type: "",
 		semesterId: null,
 		deliberationDate: "",
+		juryNumber: "",
 		quickStart: false,
 	});
 	const [singleClassId, setSingleClassId] = useState<string | null>(null);
@@ -79,6 +82,7 @@ export default function CreateDeliberationDialog({
 			type: "",
 			semesterId: null,
 			deliberationDate: "",
+			juryNumber: "",
 			quickStart: false,
 		});
 		setSingleClassId(null);
@@ -97,6 +101,7 @@ export default function CreateDeliberationDialog({
 			deliberationDate: fields.deliberationDate
 				? new Date(fields.deliberationDate).toISOString()
 				: undefined,
+			juryNumber: fields.juryNumber || undefined,
 		};
 	}
 
@@ -223,7 +228,7 @@ export default function CreateDeliberationDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4 px-6 pb-4">
+				<DialogBody className="space-y-4 px-6 pb-4">
 					{/* ── Tabs ── */}
 					<Tabs
 						value={tab}
@@ -280,7 +285,7 @@ export default function CreateDeliberationDialog({
 						</div>
 					</div>
 
-					{/* ── Shared: semestre + date ── */}
+					{/* ── Shared: semestre + date + jury number ── */}
 					<div className="grid grid-cols-2 gap-4">
 						{fields.type === "semester" && (
 							<div className="space-y-2">
@@ -300,6 +305,23 @@ export default function CreateDeliberationDialog({
 								type="date"
 								value={fields.deliberationDate}
 								onChange={(e) => patch({ deliberationDate: e.target.value })}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label>
+								{t("admin.deliberations.form.juryNumber", {
+									defaultValue: "Numéro de jury",
+								})}
+							</Label>
+							<Input
+								value={fields.juryNumber}
+								onChange={(e) => patch({ juryNumber: e.target.value })}
+								placeholder={t(
+									"admin.deliberations.form.juryNumberPlaceholder",
+									{
+										defaultValue: "ex: J2024-001",
+									},
+								)}
 							/>
 						</div>
 					</div>
@@ -454,7 +476,7 @@ export default function CreateDeliberationDialog({
 							</p>
 						</div>
 					</div>
-				</div>
+				</DialogBody>
 
 				<DialogFooter>
 					<Button

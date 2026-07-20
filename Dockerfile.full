@@ -1,0 +1,90 @@
+# Combined image: Hono API + Vite SPA served as static files by the backend.
+# Tag: ghcr.io/yvan2xero/tkams
+#
+# Build:
+#   docker build -f Dockerfile.full -t ghcr.io/yvan2xero/tkams .
+#
+# Optional build arg:
+#   --build-arg VITE_USE_HASH_ROUTER=true   (default: false — BrowserRouter)
+#
+# Runtime env vars injected by Dokploy/docker run:
+#   DATABASE_URL, DATABASE_HOST, POSTGRES_USER
+#   BETTER_AUTH_SECRET, BETTER_AUTH_URL
+#   SEED_ORG_SLUG, SEED_ORG_NAME, SEED_ORG_TYPE, SEED_ORG_COUNTRY
+#   SEED_ADMIN_NAME, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD
+#   SEED_FOUNDATION_URL, SEED_ACADEMICS_URL, SEED_USERS_URL  (optional)
+
+FROM oven/bun:1 AS base
+WORKDIR /usr/src/app
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# ── Shared deps ───────────────────────────────────────────────────────────────
+FROM base AS deps
+COPY bun.lock bunfig.toml package.json ./
+COPY apps/server/package.json apps/server/package.json
+COPY apps/web/package.json    apps/web/package.json
+RUN PUPPETEER_SKIP_DOWNLOAD=true CYPRESS_INSTALL_BINARY=0 \
+    bun install --backend=hardlink
+
+# ── Build frontend ────────────────────────────────────────────────────────────
+FROM deps AS web-builder
+COPY . .
+ARG VITE_USE_HASH_ROUTER=false
+ENV VITE_USE_HASH_ROUTER=$VITE_USE_HASH_ROUTER
+# Server URL and org slug are injected at runtime via runtime-config.js
+ENV VITE_SERVER_URL=""
+ENV VITE_DEFAULT_ORGANIZATION_SLUG=""
+RUN cd apps/web && bun run build
+
+# ── Build backend ─────────────────────────────────────────────────────────────
+FROM deps AS server-builder
+COPY . .
+RUN bun run --filter server build
+
+# ── Runtime ───────────────────────────────────────────────────────────────────
+FROM oven/bun:1 AS runtime
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV SERVE_FRONTEND=true
+
+RUN apt-get update && apt-get install -y \
+    chromium \
+    fonts-liberation \
+    libnss3 \
+    libxss1 \
+    libappindicator3-1 \
+    libasound2 \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+COPY package.json bun.lock bunfig.toml ./
+COPY apps/server/package.json apps/server/package.json
+COPY apps/web/package.json    apps/web/package.json
+RUN PUPPETEER_SKIP_DOWNLOAD=true \
+    bun install --filter server --backend=hardlink
+
+COPY --from=server-builder /usr/src/app/apps/server/dist                           ./apps/server/dist
+COPY --from=server-builder /usr/src/app/apps/server/storage                        ./apps/server/storage
+COPY --from=server-builder /usr/src/app/apps/server/src/db/migrations              ./apps/server/dist/db/migrations
+COPY --from=server-builder /usr/src/app/apps/server/src/modules/exports/templates  ./apps/server/dist/templates
+COPY --from=server-builder /usr/src/app/apps/server/src/db                         ./apps/server/src/db
+COPY --from=server-builder /usr/src/app/apps/server/drizzle.config.ts              ./apps/server/drizzle.config.ts
+
+# Frontend static files — served by Hono at runtime.
+# Placed under apps/server/ because bun runs the start script with CWD=/usr/src/app/apps/server,
+# so serveStatic({ root: "./public" }) resolves to apps/server/public/.
+COPY --from=web-builder /usr/src/app/apps/web/dist ./apps/server/public
+
+RUN mkdir -p /usr/src/app/apps/server/seed
+
+COPY apps/server/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENV PORT=3000
+EXPOSE 3000
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

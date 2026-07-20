@@ -99,6 +99,34 @@ export async function listByClassCourse(opts: {
 	return { items, nextCursor };
 }
 
+export async function listByClass(opts: {
+	classId: string;
+	cursor?: string;
+	limit?: number;
+}) {
+	const limit = opts.limit ?? 5000;
+	const rows = await db
+		.select({ grade: schema.grades })
+		.from(schema.grades)
+		.innerJoin(schema.exams, eq(schema.grades.exam, schema.exams.id))
+		.innerJoin(
+			schema.classCourses,
+			eq(schema.exams.classCourse, schema.classCourses.id),
+		)
+		.where(
+			and(
+				eq(schema.classCourses.class, opts.classId),
+				opts.cursor ? gt(schema.grades.id, opts.cursor) : undefined,
+			),
+		)
+		.orderBy(schema.grades.id)
+		.limit(limit);
+	const items = rows.map((row) => row.grade);
+	const nextCursor =
+		items.length === limit ? items[items.length - 1].id : undefined;
+	return { items, nextCursor };
+}
+
 export async function avgForExam(examId: string) {
 	const [row] = await db
 		.select({ avg: sql`avg(${schema.grades.score})` })

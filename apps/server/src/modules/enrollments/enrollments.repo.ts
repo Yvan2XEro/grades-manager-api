@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, count, eq, gt, ilike, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -91,6 +91,114 @@ export async function list(opts: {
 		nextCursor = next?.id;
 	}
 	return { items, nextCursor };
+}
+
+export async function listPaged(opts: {
+	institutionId: string;
+	page: number;
+	pageSize: number;
+	classId?: string;
+	academicYearId?: string;
+	status?: schema.EnrollmentStatus;
+	programId?: string;
+	cycleId?: string;
+	query?: string;
+}) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+
+	// Resolve programId / cycleId into a concrete set of class IDs so the
+	// count query reflects the filtered set (not a post-filter on results).
+	let filteredClassIds: string[] | undefined;
+	if (opts.programId || opts.cycleId) {
+		const classConditions = [
+			eq(schema.classes.institutionId, opts.institutionId),
+			opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
+		].filter(Boolean) as ReturnType<typeof eq>[];
+
+		let classRows: { id: string }[];
+		if (opts.cycleId) {
+			classRows = await db
+				.select({ id: schema.classes.id })
+				.from(schema.classes)
+				.innerJoin(
+					schema.programs,
+					eq(schema.programs.id, schema.classes.program),
+				)
+				.where(
+					and(...classConditions, eq(schema.programs.cycleId, opts.cycleId)),
+				);
+		} else {
+			classRows = await db
+				.select({ id: schema.classes.id })
+				.from(schema.classes)
+				.where(
+					classConditions.length === 1
+						? classConditions[0]
+						: and(...classConditions),
+				);
+		}
+		filteredClassIds = classRows.map((r) => r.id);
+
+		if (filteredClassIds.length === 0) {
+			return { items: [], total: 0, pageCount: 0 };
+		}
+	}
+
+	// When a text query is provided, filter enrollments by matching student
+	// records via a SQL subquery — avoids the N-at-a-time pre-fetch cap.
+	const studentSubquery = opts.query
+		? db
+				.select({ id: schema.students.id })
+				.from(schema.students)
+				.innerJoin(
+					schema.domainUsers,
+					eq(schema.domainUsers.id, schema.students.domainUserId),
+				)
+				.where(
+					and(
+						eq(schema.students.institutionId, opts.institutionId),
+						or(
+							ilike(schema.domainUsers.firstName, `%${opts.query}%`),
+							ilike(schema.domainUsers.lastName, `%${opts.query}%`),
+							ilike(schema.students.registrationNumber, `%${opts.query}%`),
+						),
+					),
+				)
+		: undefined;
+
+	const conditions = [
+		eq(schema.enrollments.institutionId, opts.institutionId),
+		opts.classId ? eq(schema.enrollments.classId, opts.classId) : undefined,
+		opts.academicYearId
+			? eq(schema.enrollments.academicYearId, opts.academicYearId)
+			: undefined,
+		opts.status ? eq(schema.enrollments.status, opts.status) : undefined,
+		filteredClassIds
+			? inArray(schema.enrollments.classId, filteredClassIds)
+			: undefined,
+		studentSubquery
+			? inArray(schema.enrollments.studentId, studentSubquery)
+			: undefined,
+	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof inArray>)[];
+	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select()
+			.from(schema.enrollments)
+			.where(where)
+			.orderBy(schema.enrollments.enrolledAt, schema.enrollments.id)
+			.limit(size)
+			.offset(offset),
+		db.select({ total: count() }).from(schema.enrollments).where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }
 
 export async function deleteById(id: string, institutionId: string) {

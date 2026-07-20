@@ -1,4 +1,5 @@
 import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import { findGatingRule } from "@/modules/fee-clearance/fee-clearance.repo";
 import * as service from "./student-course-enrollments.service";
 import {
 	autoEnrollClassSchema,
@@ -24,7 +25,15 @@ export const studentCourseEnrollmentsRouter = router({
 		),
 	autoEnrollClass: adminProcedure
 		.input(autoEnrollClassSchema)
-		.mutation(({ input }) => service.autoEnrollClass(input)),
+		.mutation(async ({ input, ctx }) => {
+			const gateEnabled =
+				(await findGatingRule(ctx.institution.id, "exam_registration"))
+					?.isEnabled ?? false;
+			return service.autoEnrollClass(input, {
+				institutionId: ctx.institution.id,
+				checkFeeGate: gateEnabled && !ctx.permissions.canOverrideFeeGates,
+			});
+		}),
 	closeForStudent: adminProcedure
 		.input(closeSchema)
 		.mutation(({ input, ctx }) =>

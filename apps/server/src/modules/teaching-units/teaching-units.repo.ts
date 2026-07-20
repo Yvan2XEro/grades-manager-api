@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, count, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -98,4 +98,56 @@ export async function list(
 		nextCursor = items[items.length - 1]?.id;
 	}
 	return { items, nextCursor };
+}
+
+export async function listPaged(
+	institutionId: string,
+	opts: { page: number; pageSize: number; programId?: string },
+) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [
+		eq(schema.programs.institutionId, institutionId),
+		opts.programId
+			? eq(schema.teachingUnits.programId, opts.programId)
+			: undefined,
+	].filter(Boolean) as ReturnType<typeof eq>[];
+	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select({
+				id: schema.teachingUnits.id,
+				programId: schema.teachingUnits.programId,
+				name: schema.teachingUnits.name,
+				code: schema.teachingUnits.code,
+				description: schema.teachingUnits.description,
+				credits: schema.teachingUnits.credits,
+				semester: schema.teachingUnits.semester,
+				createdAt: schema.teachingUnits.createdAt,
+			})
+			.from(schema.teachingUnits)
+			.innerJoin(
+				schema.programs,
+				eq(schema.teachingUnits.programId, schema.programs.id),
+			)
+			.where(where)
+			.orderBy(schema.teachingUnits.name)
+			.limit(size)
+			.offset(offset),
+		db
+			.select({ total: count() })
+			.from(schema.teachingUnits)
+			.innerJoin(
+				schema.programs,
+				eq(schema.teachingUnits.programId, schema.programs.id),
+			)
+			.where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }

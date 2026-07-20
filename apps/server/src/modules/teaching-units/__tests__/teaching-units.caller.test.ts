@@ -45,3 +45,18 @@ describe("teaching units router", () => {
 		expect(after.items.find((u) => u.id === unit.id)).toBeUndefined();
 	});
 });
+
+describe("teachingUnits.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const caller = createCaller(asAdmin());
+		const result = await caller.teachingUnits.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+});

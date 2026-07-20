@@ -1,0 +1,1 @@
+ALTER TABLE "class_courses" ADD COLUMN "attendance_threshold" integer;

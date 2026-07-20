@@ -9,6 +9,7 @@ import {
 	baseSchema,
 	createNextYearSchema,
 	idSchema,
+	listPagedSchema,
 	listSchema,
 	setActiveSchema,
 	updateSchema,
@@ -46,6 +47,11 @@ export const router = createRouter({
 		.input(listSchema)
 		.query(({ ctx, input }) =>
 			service.listAcademicYears(input, ctx.institution.id),
+		),
+	listPaged: protectedProcedure
+		.input(listPagedSchema)
+		.query(({ ctx, input }) =>
+			service.listAcademicYearsPaged(input, ctx.institution.id),
 		),
 	getById: protectedProcedure
 		.input(idSchema)

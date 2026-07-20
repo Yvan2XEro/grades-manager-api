@@ -561,6 +561,160 @@ export async function listGraduatedStudents(
 	return { items: filtered, nextCursor };
 }
 
+export async function listGraduatedStudentsPaged(
+	institutionId: string,
+	opts: {
+		page: number;
+		pageSize: number;
+		programId?: string;
+		cycleId?: string;
+		query?: string;
+	},
+) {
+	const {
+		items: enrollments,
+		total,
+		pageCount,
+	} = await enrollmentsRepo.listPaged({
+		institutionId,
+		status: "graduated",
+		page: opts.page,
+		pageSize: opts.pageSize,
+		programId: opts.programId,
+		cycleId: opts.cycleId,
+		query: opts.query,
+	});
+
+	if (enrollments.length === 0) {
+		return { items: [], total, pageCount };
+	}
+
+	// Enrich with student + class + credit info (same shape as listGraduatedStudents)
+	const enriched = await Promise.all(
+		enrollments.map(async (enrollment) => {
+			const student = await studentsRepo.findById(
+				enrollment.studentId,
+				institutionId,
+			);
+			const klass = await repo.findById(enrollment.classId, institutionId);
+			const creditLedger = await db.query.studentCreditLedgers.findFirst({
+				where: and(
+					eq(schema.studentCreditLedgers.studentId, enrollment.studentId),
+					eq(
+						schema.studentCreditLedgers.academicYearId,
+						enrollment.academicYearId,
+					),
+				),
+			});
+			return { enrollment, student, klass, creditLedger: creditLedger ?? null };
+		}),
+	);
+
+	return { items: enriched, total, pageCount };
+}
+
+export async function promotionPreviewPaged(
+	sourceClassId: string,
+	institutionId: string,
+	opts: { page: number; pageSize: number },
+) {
+	const source = await repo.findById(sourceClassId, institutionId);
+	if (!source) throw notFound("Source class not found");
+
+	// Page through active enrollments in the source class only
+	const {
+		items: enrollments,
+		total,
+		pageCount,
+	} = await enrollmentsRepo.listPaged({
+		institutionId,
+		classId: sourceClassId,
+		status: "active",
+		page: opts.page,
+		pageSize: opts.pageSize,
+	});
+
+	if (enrollments.length === 0) {
+		return { items: [], total, pageCount, deliberationId: null };
+	}
+
+	// Find the latest signed annual deliberation for this class
+	const deliberation = await db.query.deliberations.findFirst({
+		where: and(
+			eq(schema.deliberations.classId, sourceClassId),
+			eq(schema.deliberations.institutionId, institutionId),
+			eq(schema.deliberations.type, "annual"),
+			eq(schema.deliberations.status, "signed"),
+		),
+		orderBy: (d, { desc }) => desc(d.createdAt),
+	});
+
+	// Fetch deliberation results for all students in one query
+	const studentIds = enrollments.map((e) => e.studentId);
+	const deliberationResults = deliberation
+		? await db.query.deliberationStudentResults.findMany({
+				where: and(
+					eq(schema.deliberationStudentResults.deliberationId, deliberation.id),
+					inArray(schema.deliberationStudentResults.studentId, studentIds),
+				),
+				orderBy: asc(schema.deliberationStudentResults.rank),
+			})
+		: [];
+
+	const resultByStudentId = new Map(
+		deliberationResults.map((r) => [r.studentId, r]),
+	);
+
+	const items = await Promise.all(
+		enrollments.map(async (enrollment) => {
+			const student = await studentsRepo.findById(
+				enrollment.studentId,
+				institutionId,
+			);
+			const result = resultByStudentId.get(enrollment.studentId);
+			return {
+				student: student!,
+				deliberationResult: result
+					? {
+							id: result.id,
+							generalAverage: result.generalAverage,
+							totalCreditsEarned: result.totalCreditsEarned,
+							totalCreditsPossible: result.totalCreditsPossible,
+							finalDecision: result.finalDecision,
+							mention: result.mention,
+							rank: result.rank,
+						}
+					: null,
+			};
+		}),
+	);
+
+	return { items, total, pageCount, deliberationId: deliberation?.id ?? null };
+}
+
+export async function listClassesPaged(
+	input: {
+		page: number;
+		pageSize: number;
+		academicYearId?: string;
+		semesterId?: string;
+		programId?: string;
+	},
+	institutionId: string,
+) {
+	const result = await repo.listPaged(institutionId, input);
+	const classIds = result.items.map((c) => c.id);
+	const assignedCreditsMap = await repo.getAssignedCredits(classIds);
+	return {
+		...result,
+		items: result.items.map((c) => ({
+			...c,
+			assignedCredits: assignedCreditsMap[c.id] ?? 0,
+			studentCount: Number(c.studentCount ?? 0),
+		})),
+	};
+}
+
 export async function searchClasses(
 	opts: Parameters<typeof repo.search>[0],
 	institutionId: string,

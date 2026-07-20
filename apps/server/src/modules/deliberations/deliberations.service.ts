@@ -8,12 +8,14 @@ import type {
 } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
 import { dispatchWebhook } from "@/lib/webhook-dispatch";
+import { conflict } from "@/modules/_shared/errors";
 import * as enrollmentsService from "../enrollments/enrollments.service";
 import {
 	type ExamWithRetake,
 	normalizeExamType,
 	resolveStudentGradesWithRetakes,
 } from "../exports/template-helper";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.types";
 import { getStudentPromotionFacts } from "../promotion-rules/student-facts.service";
 import { evaluateStudent } from "./deliberation-rules-engine";
@@ -33,18 +35,13 @@ import type {
 	GetLogsInput,
 	ListDeliberationRulesInput,
 	ListDeliberationsInput,
+	ListDeliberationsPagedInput,
 	OverrideDecisionInput,
 	PromoteAdmittedInput,
 	TransitionDeliberationInput,
 	UpdateDeliberationInput,
 	UpdateDeliberationRuleInput,
 } from "./deliberations.zod";
-
-const PASSING_GRADE = 10;
-
-// LMD default thresholds
-const DEFAULT_VALIDATION_THRESHOLD = 10; // UE validated if average >= 10
-const DEFAULT_COMPENSATION_BAR = 8; // UE compensable if average >= 8
 
 const MENTION_TO_GRADE: Record<string, string> = {
 	passable: "E",
@@ -107,19 +104,38 @@ export async function create(
 		});
 	}
 
-	const delib = await repo.createDeliberation({
-		institutionId,
-		classId: input.classId,
-		semesterId: input.semesterId ?? null,
-		academicYearId: input.academicYearId,
-		type: input.type as schema.DeliberationType,
-		presidentId: input.presidentId ?? null,
-		juryMembers: input.juryMembers,
-		deliberationDate: input.deliberationDate
-			? new Date(input.deliberationDate)
-			: null,
-		createdBy,
-	});
+	let delib: schema.Deliberation;
+	try {
+		delib = await repo.createDeliberation({
+			institutionId,
+			classId: input.classId,
+			semesterId: input.semesterId ?? null,
+			academicYearId: input.academicYearId,
+			type: input.type as schema.DeliberationType,
+			presidentId: input.presidentId ?? null,
+			juryMembers: input.juryMembers,
+			juryNumber: input.juryNumber ?? null,
+			deliberationDate: input.deliberationDate
+				? new Date(input.deliberationDate)
+				: null,
+			createdBy,
+		});
+	} catch (err: unknown) {
+		// DrizzleQueryError wraps the PGlite error; the PG constraint name is in cause.constraint
+		const pgErr = (err as { cause?: unknown })?.cause ?? err;
+		const constraint = (pgErr as { constraint?: string })?.constraint;
+		if (
+			constraint === "uq_delib_no_semester" ||
+			constraint === "uq_delib_with_semester" ||
+			// fallback: old constraint name in case migration 0023 is not yet applied
+			constraint === "uq_deliberation_class_semester_year_type"
+		) {
+			throw conflict(
+				"A deliberation already exists for this class, academic year, and type",
+			);
+		}
+		throw err;
+	}
 
 	await repo.createLog({
 		deliberationId: delib.id,
@@ -151,6 +167,7 @@ export async function update(
 	return repo.updateDeliberation(input.id, institutionId, {
 		presidentId: input.presidentId,
 		juryMembers: input.juryMembers,
+		juryNumber: input.juryNumber,
 		deliberationDate: input.deliberationDate
 			? new Date(input.deliberationDate)
 			: undefined,
@@ -193,6 +210,13 @@ export async function list(
 	institutionId: string,
 ) {
 	return repo.listDeliberations({ ...input, institutionId });
+}
+
+export async function listPaged(
+	input: ListDeliberationsPagedInput,
+	institutionId: string,
+) {
+	return repo.listDeliberationsPaged({ ...input, institutionId });
 }
 
 // ---------------------------------------------------------------------------
@@ -267,6 +291,33 @@ export async function transition(
 			classId: delib.classId,
 			academicYearId: delib.academicYearId,
 		}).catch(() => {});
+
+		// Notify each student that their deliberation results are available
+		void (async () => {
+			try {
+				const { queueInApp } = await import(
+					"../notifications/notifications.service"
+				);
+				const results = await repo.findStudentResultsByDeliberationId(input.id);
+				for (const r of results) {
+					const recipientId = r.student?.domainUserId;
+					if (!recipientId) continue;
+					await queueInApp(
+						recipientId,
+						"deliberation.published",
+						{
+							deliberationId: input.id,
+							finalDecision: r.finalDecision,
+							classId: delib.classId,
+							academicYearId: delib.academicYearId,
+						},
+						{ dedupeKey: `${input.id}:${recipientId}` },
+					);
+				}
+			} catch {
+				// swallow — notification failure must not fail the transition
+			}
+		})();
 	}
 
 	return updated;
@@ -342,6 +393,8 @@ export async function compute(
 		klass.cycleLevelId,
 		delib.type,
 	);
+
+	const gradeScale = await gradeScalesService.getForInstitution(institutionId);
 
 	// Build UE map from class courses
 	const ueMap = new Map<
@@ -498,7 +551,7 @@ export async function compute(
 			const isValidated =
 				allCoursesHaveGrades &&
 				ueAverage !== null &&
-				ueAverage >= DEFAULT_VALIDATION_THRESHOLD;
+				ueAverage >= gradeScale.passThreshold;
 
 			let ueDecision: UeDecision;
 			if (!allCoursesHaveGrades) {
@@ -558,13 +611,13 @@ export async function compute(
 		if (
 			allComplete &&
 			generalAverage !== null &&
-			generalAverage >= DEFAULT_VALIDATION_THRESHOLD
+			generalAverage >= gradeScale.passThreshold
 		) {
 			for (const ue of ueResults) {
 				if (
 					ue.decision === "AJ" &&
 					ue.ueAverage !== null &&
-					ue.ueAverage >= DEFAULT_COMPENSATION_BAR
+					ue.ueAverage >= gradeScale.compensationThreshold
 				) {
 					ue.decision = "CMP";
 					ue.isValidated = true;
@@ -653,8 +706,8 @@ export async function compute(
 		const compensableUECount = ueResults.filter(
 			(ue) =>
 				ue.ueAverage !== null &&
-				ue.ueAverage >= 8 &&
-				ue.ueAverage < PASSING_GRADE,
+				ue.ueAverage >= gradeScale.compensationThreshold &&
+				ue.ueAverage < gradeScale.passThreshold,
 		).length;
 
 		const deliberationFacts: DeliberationFacts = {
@@ -687,9 +740,9 @@ export async function compute(
 				autoDecision = "admitted";
 			} else if (
 				generalAverage !== null &&
-				generalAverage >= DEFAULT_VALIDATION_THRESHOLD
+				generalAverage >= gradeScale.passThreshold
 			) {
-				// Average ≥ 10 but at least one UE below compensation bar
+				// Average ≥ passThreshold but at least one UE below compensation bar
 				autoDecision = "compensated";
 			} else {
 				autoDecision = "deferred";
@@ -743,7 +796,10 @@ export async function compute(
 		);
 		if (original) {
 			original.rank = currentRank;
-			original.mention = computeMention(original.generalAverage);
+			original.mention = gradeScalesService.computeMention(
+				original.generalAverage,
+				gradeScale.mentionRanges,
+			) as schema.DeliberationMention | null;
 		}
 	}
 
@@ -888,6 +944,9 @@ export async function exportDiplomation(
 		});
 	}
 
+	const exportGradeScale =
+		await gradeScalesService.getForInstitution(institutionId);
+
 	const results = await repo.findStudentResultsByDeliberationId(input.id);
 
 	// Sort by rank
@@ -910,14 +969,19 @@ export async function exportDiplomation(
 
 	const docParams = (institution.metadata as schema.InstitutionMetadata)
 		?.document_params;
+	const prog = (delib as any).classRef?.program;
+	const cycle = prog?.cycle;
 	return {
 		institution: {
 			name: institution.nameFr,
 			nameEn: institution.nameEn,
 			code: institution.code,
+			abbreviation: institution.abbreviation ?? null,
 			logoUrl: institution.logoUrl,
 			sloganFr: institution.sloganFr ?? null,
 			address: institution.addressFr ?? null,
+			postalBox: institution.postalBox ?? null,
+			phone: institution.contactPhone ?? null,
 			signatoryName: docParams?.signatoryName ?? null,
 			signatoryTitle: docParams?.signatoryTitle ?? null,
 			city: docParams?.city ?? null,
@@ -926,21 +990,30 @@ export async function exportDiplomation(
 			id: delib.id,
 			type: delib.type,
 			date: delib.deliberationDate?.toISOString() ?? null,
+			juryNumber: delib.juryNumber ?? null,
 			status: delib.status,
 			className: (delib as any).classRef?.name ?? "",
-			programName: (delib as any).classRef?.program?.name ?? "",
+			programName: prog?.name ?? "",
 			academicYearName: (delib as any).academicYear?.name ?? "",
 			semesterName: (delib as any).semester?.name ?? null,
 			admissionDate: (delib as any).signedAt?.toISOString() ?? null,
 		},
 		program: {
-			diplomaTitleFr: (delib as any).classRef?.program?.diplomaTitleFr ?? null,
-			diplomaTitleEn: (delib as any).classRef?.program?.diplomaTitleEn ?? null,
-			specialite: (delib as any).classRef?.programOption?.name ?? null,
-			attestationValidityFr:
-				(delib as any).classRef?.program?.attestationValidityFr ?? null,
-			attestationValidityEn:
-				(delib as any).classRef?.program?.attestationValidityEn ?? null,
+			nameEn: prog?.nameEn ?? null,
+			abbreviation: prog?.abbreviation ?? null,
+			domainFr: prog?.domainFr ?? null,
+			domainEn: prog?.domainEn ?? null,
+			specialiteFr:
+				prog?.specialiteFr ??
+				(delib as any).classRef?.programOption?.name ??
+				null,
+			specialiteEn: prog?.specialiteEn ?? null,
+			cycleNameFr: cycle?.name ?? null,
+			cycleNameEn: cycle?.nameEn ?? null,
+			diplomaTitleFr: prog?.diplomaTitleFr ?? null,
+			diplomaTitleEn: prog?.diplomaTitleEn ?? null,
+			attestationValidityFr: prog?.attestationValidityFr ?? null,
+			attestationValidityEn: prog?.attestationValidityEn ?? null,
 		},
 		jury: {
 			president: delib.presidentId
@@ -965,8 +1038,14 @@ export async function exportDiplomation(
 			totalCreditsPossible: r.totalCreditsPossible,
 			finalDecision: r.finalDecision,
 			mention: r.mention,
-			gradeLetter: r.mention ? (MENTION_TO_GRADE[r.mention] ?? null) : null,
-			mentionEn: r.mention ? (MENTION_TO_EN[r.mention] ?? null) : null,
+			gradeLetter: r.mention
+				? (exportGradeScale.mentionRanges.find((mr) => mr.key === r.mention)
+						?.gradeLetter ?? null)
+				: null,
+			mentionEn: r.mention
+				? (exportGradeScale.mentionRanges.find((mr) => mr.key === r.mention)
+						?.labelEn ?? null)
+				: null,
 			ueResults: (r.ueResults as DeliberationUeResult[]) ?? [],
 		})),
 		stats: delib.stats as DeliberationStats | null,
@@ -1185,16 +1264,6 @@ export async function promoteAdmitted(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function computeMention(average: number | null): DeliberationMention | null {
-	if (average === null) return null;
-	if (average >= 18) return "excellent";
-	if (average >= 16) return "tres_bien";
-	if (average >= 14) return "bien";
-	if (average >= 12) return "assez_bien";
-	if (average >= 10) return "passable";
-	return null;
-}
 
 function computeStats(
 	results: Array<{

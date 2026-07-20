@@ -1,9 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isValid, parseISO } from "date-fns";
 import type { TFunction } from "i18next";
 import {
@@ -36,9 +32,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { UndrawCalendar } from "@/components/ui/undraw";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useConfirm } from "@/hooks/useConfirm";
+
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import FormModal from "../../components/modals/FormModal";
@@ -60,7 +58,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "../../components/ui/tooltip";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 import type { AcademicYear } from "../../utils/type";
 import AcademicYearSetupDialog from "./AcademicYearSetupDialog";
 
@@ -92,6 +90,8 @@ const AcademicYearManagement: React.FC = () => {
 	const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 	const [setupYear, setSetupYear] = useState<AcademicYear | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
@@ -128,25 +128,13 @@ const AcademicYearManagement: React.FC = () => {
 		}
 	}, [startDate, endDate, setValue]);
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-		useInfiniteQuery({
-			queryKey: ["academicYears", "infinite"],
-			queryFn: async ({ pageParam }) => {
-				const result = await trpcClient.academicYears.list.query({
-					cursor: pageParam,
-					limit: 20,
-				});
-				return result;
-			},
-			initialPageParam: undefined as string | undefined,
-			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-		});
+	const { data, isLoading } = useQuery(
+		trpc.academicYears.listPaged.queryOptions({ page, pageSize }),
+	);
 
-	const academicYears = data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+	const academicYears = data?.items ?? [];
 	const selection = useRowSelection(academicYears);
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -155,9 +143,7 @@ const AcademicYearManagement: React.FC = () => {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["academicYears", "infinite"],
-			});
+			queryClient.invalidateQueries(trpc.academicYears.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -182,9 +168,7 @@ const AcademicYearManagement: React.FC = () => {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["academicYears", "infinite"],
-			});
+			queryClient.invalidateQueries(trpc.academicYears.listPaged.queryKey());
 			toast.success(t("admin.academicYears.toast.createSuccess"));
 			setIsModalOpen(false);
 			form.reset();
@@ -208,9 +192,7 @@ const AcademicYearManagement: React.FC = () => {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["academicYears", "infinite"],
-			});
+			queryClient.invalidateQueries(trpc.academicYears.listPaged.queryKey());
 			toast.success(t("admin.academicYears.toast.updateSuccess"));
 			setIsModalOpen(false);
 			setEditingYear(null);
@@ -230,9 +212,7 @@ const AcademicYearManagement: React.FC = () => {
 			await trpcClient.academicYears.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["academicYears", "infinite"],
-			});
+			queryClient.invalidateQueries(trpc.academicYears.listPaged.queryKey());
 			toast.success(t("admin.academicYears.toast.deleteSuccess"));
 			setDeleteConfirmId(null);
 		},
@@ -250,9 +230,7 @@ const AcademicYearManagement: React.FC = () => {
 			await trpcClient.academicYears.setActive.mutate({ id, isActive });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["academicYears", "infinite"],
-			});
+			queryClient.invalidateQueries(trpc.academicYears.listPaged.queryKey());
 			toast.success(t("admin.academicYears.toast.statusSuccess"));
 		},
 		onError: (error: unknown) => {
@@ -269,9 +247,7 @@ const AcademicYearManagement: React.FC = () => {
 			return trpcClient.academicYears.createNextYear.mutate({ sourceYearId });
 		},
 		onSuccess: (newYear) => {
-			queryClient.invalidateQueries({
-				queryKey: ["academicYears", "infinite"],
-			});
+			queryClient.invalidateQueries(trpc.academicYears.listPaged.queryKey());
 			toast.success(
 				t("admin.academicYears.toast.createNextYearSuccess", {
 					defaultValue: "Année suivante créée : {{name}}",
@@ -390,18 +366,20 @@ const AcademicYearManagement: React.FC = () => {
 							<Button
 								variant="destructive"
 								size="sm"
-								onClick={() => {
-									if (
-										window.confirm(
-											t("common.bulkActions.confirmDelete", {
-												defaultValue:
-													"Are you sure you want to delete the selected items?",
-											}),
-										)
-									) {
-										bulkDeleteMutation.mutate([...selection.selectedIds]);
-									}
-								}}
+								onClick={() =>
+									confirm({
+										title: t("common.bulkActions.confirmDeleteTitle", {
+											defaultValue: "Delete selected items?",
+										}),
+										message: t("common.bulkActions.confirmDelete", {
+											defaultValue:
+												"Are you sure you want to delete the selected items?",
+										}),
+										confirmText: t("common.actions.delete"),
+										onConfirm: () =>
+											bulkDeleteMutation.mutate([...selection.selectedIds]),
+									})
+								}
 								disabled={bulkDeleteMutation.isPending}
 							>
 								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -608,7 +586,17 @@ const AcademicYearManagement: React.FC = () => {
 								</TableBody>
 							</Table>
 						)}
-						<div ref={sentinelRef} className="h-1" />
+						<TablePagination
+							page={page}
+							pageCount={data?.pageCount ?? 1}
+							total={data?.total ?? 0}
+							pageSize={pageSize}
+							onPageChange={setPage}
+							onPageSizeChange={(s) => {
+								setPageSize(s);
+								setPage(1);
+							}}
+						/>
 					</CardContent>
 				)}
 			</Card>
@@ -711,6 +699,7 @@ const AcademicYearManagement: React.FC = () => {
 					targetYear={{ id: setupYear.id, name: setupYear.name }}
 				/>
 			)}
+			<ConfirmDialog />
 		</div>
 	);
 };

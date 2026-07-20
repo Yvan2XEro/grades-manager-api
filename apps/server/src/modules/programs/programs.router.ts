@@ -8,9 +8,12 @@ import {
 	baseSchema,
 	cloneCurriculumSchema,
 	codeSchema,
+	duplicateForCyclesSchema,
 	idSchema,
 	listSchema,
+	programIdSchema,
 	searchSchema,
+	setExportTemplatesSchema,
 	updateSchema,
 } from "./programs.zod";
 
@@ -55,6 +58,30 @@ export const router = createRouter({
 				input.targetProgramId,
 				input.sourceProgramId,
 				ctx.institution.id,
+			),
+		),
+	duplicateForCycles: adminProcedure
+		.input(duplicateForCyclesSchema)
+		.mutation(({ ctx, input }) =>
+			service.duplicateForCycles(
+				input.sourceProgramIds,
+				input.targetCycleIds,
+				ctx.institution.id,
+				{ cloneCurriculum: input.cloneCurriculum },
+			),
+		),
+	listExportTemplates: protectedProcedure
+		.input(programIdSchema)
+		.query(({ ctx, input }) =>
+			service.listProgramExportTemplates(input.programId, ctx.institution.id),
+		),
+	setExportTemplates: adminProcedure
+		.input(setExportTemplatesSchema)
+		.mutation(({ ctx, input }) =>
+			service.setProgramExportTemplates(
+				input.programId,
+				ctx.institution.id,
+				input.templates,
 			),
 		),
 });

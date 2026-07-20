@@ -9,37 +9,30 @@
  */
 import { getDefaultOrganizationSlug } from "./runtime-config";
 
-export function detectOrganizationSlug(): string {
-	const host = window.location.host;
-	if (getFallbackSlug()) {
-		return getFallbackSlug();
-	}
+/**
+ * Detects the organization slug from the subdomain or falls back to the
+ * configured default. Returns undefined when running on a bare domain (cloud
+ * root without a subdomain) — callers must handle this case gracefully.
+ */
+export function detectOrganizationSlug(): string | undefined {
+	const fallback = getDefaultOrganizationSlug();
+	if (fallback) return fallback;
 
-	// Localhost or IP addresses - use fallback
+	const host = window.location.host;
+
+	// Localhost or IP — no subdomain to extract
 	if (
 		host.startsWith("localhost") ||
 		host.startsWith("127.0.0.1") ||
 		host.startsWith("0.0.0.0") ||
-		/^\d+\.\d+\.\d+\.\d+/.test(host) // IP address pattern
+		/^\d+\.\d+\.\d+\.\d+/.test(host)
 	) {
-		return getFallbackSlug();
+		return undefined;
 	}
 
-	// Remove port if present
-	const hostname = host.split(":")[0];
+	const parts = host.split(":")[0].split(".");
+	// Need at least 3 parts for a subdomain (sub.domain.tld)
+	if (parts.length <= 2) return undefined;
 
-	// Split by dots and check if there's a subdomain
-	const parts = hostname.split(".");
-
-	// If only one or two parts (e.g., "domain.com"), use fallback
-	if (parts.length <= 2) {
-		return getFallbackSlug();
-	}
-
-	// Return the first part as the subdomain (organization slug)
 	return parts[0];
-}
-
-function getFallbackSlug(): string {
-	return getDefaultOrganizationSlug();
 }

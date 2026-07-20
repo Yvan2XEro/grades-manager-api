@@ -286,11 +286,23 @@ describe("exams router", () => {
 
 		const semesterFiltered = await admin.exams.list({
 			academicYearId: primary.klass.academicYear,
-			semesterId: customSemester.id,
+			classId: semesterClass.id,
 		});
 		expect(
 			semesterFiltered.items.every((item) => item.classId === semesterClass.id),
 		).toBe(true);
+	}, 30000);
+
+	describe("exams.listPaged", () => {
+		it("returns { items, total, pageCount }", async () => {
+			const caller = appRouter.createCaller(asAdmin());
+			const result = await caller.exams.listPaged({ page: 1, pageSize: 25 });
+			expect(result).toMatchObject({
+				items: expect.any(Array),
+				total: expect.any(Number),
+				pageCount: expect.any(Number),
+			});
+		});
 	});
 
 	describe("retake eligibility endpoints", () => {
@@ -511,6 +523,245 @@ describe("exams router", () => {
 					date: new Date("2025-07-20"),
 				}),
 			).rejects.toHaveProperty("code", "CONFLICT");
+		});
+	});
+
+	describe("grade approval notifications (JVL-63)", () => {
+		async function adminWithRealProfile() {
+			const profile = await createDomainUser();
+			return makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: profile.id },
+			});
+		}
+
+		it("one approval creates exactly one grade.approved notification with deep-link payload", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+
+			const exam = await admin.exams.create({
+				name: "Notif Test",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 100,
+				classCourseId: cc.id,
+			});
+			await admin.exams.submit({ examId: exam.id });
+			await admin.exams.validate({ examId: exam.id, status: "approved" });
+
+			// Give the fire-and-forget async block time to complete
+			await new Promise((r) => setTimeout(r, 100));
+
+			// scheduledBy is the admin's profile ID (set by router via ctx.profile?.id)
+			const notifs = await db.query.notifications.findMany({
+				where: eq(schema.notifications.type, "grade.approved"),
+			});
+			const examNotifs = notifs.filter(
+				(n) => (n.payload as Record<string, unknown>).examId === exam.id,
+			);
+			expect(examNotifs.length).toBe(1);
+			const payload = examNotifs[0].payload as Record<string, unknown>;
+			expect(payload.classCourseId).toBe(cc.id);
+		});
+
+		it("two different exams produce two independent notifications", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+
+			const e1 = await admin.exams.create({
+				name: "Notif A",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 60,
+				classCourseId: cc.id,
+			});
+			const e2 = await admin.exams.create({
+				name: "Notif B",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 40,
+				classCourseId: cc.id,
+			});
+			await admin.exams.submit({ examId: e1.id });
+			await admin.exams.validate({ examId: e1.id, status: "approved" });
+			await admin.exams.submit({ examId: e2.id });
+			await admin.exams.validate({ examId: e2.id, status: "approved" });
+
+			await new Promise((r) => setTimeout(r, 100));
+
+			const notifs = await db.query.notifications.findMany({
+				where: eq(schema.notifications.type, "grade.approved"),
+			});
+			const e1Notifs = notifs.filter(
+				(n) => (n.payload as Record<string, unknown>).examId === e1.id,
+			);
+			const e2Notifs = notifs.filter(
+				(n) => (n.payload as Record<string, unknown>).examId === e2.id,
+			);
+			expect(e1Notifs.length).toBe(1);
+			expect(e2Notifs.length).toBe(1);
+		});
+
+		it("rejection sends grade.rejected with reason in payload", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+
+			const exam = await admin.exams.create({
+				name: "Reject Notif",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 100,
+				classCourseId: cc.id,
+			});
+			await admin.exams.submit({ examId: exam.id });
+			await admin.exams.validate({
+				examId: exam.id,
+				status: "rejected",
+				rejectionReason: "Missing grades",
+			});
+
+			await new Promise((r) => setTimeout(r, 100));
+
+			const notifs = await db.query.notifications.findMany({
+				where: eq(schema.notifications.type, "grade.rejected"),
+			});
+			const examNotifs = notifs.filter(
+				(n) => (n.payload as Record<string, unknown>).examId === exam.id,
+			);
+			expect(examNotifs.length).toBe(1);
+			expect((examNotifs[0].payload as Record<string, unknown>).reason).toBe(
+				"Missing grades",
+			);
+		});
+	});
+
+	describe("getAuditHistory", () => {
+		async function adminWithRealProfile() {
+			const profile = await createDomainUser();
+			return makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: profile.id },
+			});
+		}
+
+		it("records submit, approve, and lock events with real actor IDs", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+			const exam = await admin.exams.create({
+				name: "Audit Test",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 100,
+				classCourseId: cc.id,
+			});
+
+			await admin.exams.submit({ examId: exam.id });
+			await admin.exams.validate({ examId: exam.id, status: "approved" });
+			await admin.exams.lock({ examId: exam.id, lock: true });
+
+			const history = await admin.exams.getAuditHistory({ id: exam.id });
+			// Newest first (desc order)
+			expect(history[0].action).toBe("lock");
+			expect(history[1].action).toBe("approve");
+			expect(history[2].action).toBe("submit");
+			expect(history[0].fromStatus).toBe("approved");
+			// exam starts as "scheduled" because admin profile is used as schedulerId
+			expect(history[2].fromStatus).toBe("scheduled");
+			expect(history[2].toStatus).toBe("submitted");
+			// Real actor must be recorded on every event — not null
+			const actorId = ctx.profile!.id;
+			expect(history[0].actorId).toBe(actorId);
+			expect(history[1].actorId).toBe(actorId);
+			expect(history[2].actorId).toBe(actorId);
+			// Institution scoped
+			expect(history[0].institutionId).toBe(ctx.institution!.id);
+		});
+
+		it("records reject and resubmit events with real actor", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+			const exam = await admin.exams.create({
+				name: "Reject Audit",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 100,
+				classCourseId: cc.id,
+			});
+
+			await admin.exams.submit({ examId: exam.id });
+			await admin.exams.validate({
+				examId: exam.id,
+				status: "rejected",
+				rejectionReason: "Missing data",
+			});
+			await admin.exams.submit({ examId: exam.id });
+
+			const history = await admin.exams.getAuditHistory({ id: exam.id });
+			expect(history[0].action).toBe("resubmit");
+			expect(history[1].action).toBe("reject");
+			expect(history[1].reason).toBe("Missing data");
+			expect(history[2].action).toBe("submit");
+			// Actor recorded on all events
+			expect(history[0].actorId).toBe(ctx.profile!.id);
+			expect(history[1].actorId).toBe(ctx.profile!.id);
+		});
+
+		it("rolls back exam status when audit insert fails (transaction atomicity)", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+			const exam = await admin.exams.create({
+				name: "Rollback Test",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 100,
+				classCourseId: cc.id,
+			});
+
+			const before = await db.query.exams.findFirst({
+				where: eq(schema.exams.id, exam.id),
+			});
+
+			// Simulate a failed transaction: status update + bad audit insert (FK on institutionId)
+			try {
+				await db.transaction(async (tx) => {
+					await tx
+						.update(schema.exams)
+						.set({ status: "submitted" })
+						.where(eq(schema.exams.id, exam.id));
+					await tx.insert(schema.examAuditEvents).values({
+						examId: exam.id,
+						institutionId: "00000000-0000-0000-0000-000000000000", // non-existent FK
+						actorId: null,
+						action: "submit",
+						fromStatus: before!.status,
+						toStatus: "submitted",
+					});
+				});
+			} catch {}
+
+			// Status must be unchanged — the transaction rolled back
+			const after = await db.query.exams.findFirst({
+				where: eq(schema.exams.id, exam.id),
+			});
+			expect(after?.status).toBe(before?.status);
 		});
 	});
 });

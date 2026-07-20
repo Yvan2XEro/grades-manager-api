@@ -7,6 +7,7 @@ import { toast } from "@/lib/toast";
 import { Button } from "../../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -132,7 +133,7 @@ export default function PromoteAdmittedDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4 py-1">
+				<DialogBody className="space-y-4 py-1">
 					{/* Last-level warning */}
 					{!baseLoading && isLastLevel && (
 						<div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800/40 dark:bg-amber-900/20">
@@ -271,7 +272,7 @@ export default function PromoteAdmittedDialog({
 							)}
 						</div>
 					)}
-				</div>
+				</DialogBody>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>

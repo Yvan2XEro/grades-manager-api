@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TKAMS — Commercial brochure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+/* ───────────────────────────────────────────────────────────
+   TKAMS — Commercial brochure (EN)
+   Light, editorial, motion/UI-UX crafted. No dark backgrounds.
+   ─────────────────────────────────────────────────────────── */
+.page { background: var(--tk-bg); }
+.inner { min-height: 1123px; padding: 46px 52px 40px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+/* Icons */
+.svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.icbox { display: inline-grid; place-items: center; border-radius: 12px; }
+
+/* Masthead / footer */
+.brow { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid var(--tk-border); position: relative; z-index: 2; margin-bottom: auto; }
+.brow img { height: 28px; width: auto; }
+.brow .meta { font-family: var(--tk-font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tk-muted); font-weight: 600; }
+.foot { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--tk-border); display: flex; justify-content: space-between; align-items: center; font-family: var(--tk-font-mono); font-size: 9px; letter-spacing: 0.08em; color: var(--tk-muted); position: relative; z-index: 2; }
+.foot .pn b { color: var(--tk-ink); }
+
+/* Editorial primitives */
+.eyebrow { display: inline-flex; align-items: center; gap: 11px; font-family: var(--tk-font-mono); }
+.eyebrow .n { display: inline-flex; align-items: center; gap: 6px; color: var(--tk-primary); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; }
+.eyebrow .ln { width: 28px; height: 1px; background: var(--tk-border-strong); }
+.eyebrow .t { color: var(--tk-ink-2); text-transform: uppercase; letter-spacing: 0.2em; font-weight: 500; font-size: 10px; }
+
+.display { font-family: var(--tk-font-display); font-weight: 800; letter-spacing: -0.045em; line-height: 1.03; color: var(--tk-ink); margin: 16px 0 0; }
+h2.display { font-size: 33px; }
+.display em { font-style: normal; color: var(--tk-primary); position: relative; }
+.uline { background-image: linear-gradient(90deg, var(--tk-primary), var(--tk-primary-bright)); background-repeat: no-repeat; background-position: 0 92%; background-size: 100% 6px; padding-bottom: 2px; }
+.lede { font-family: var(--tk-font-sans); font-size: 14.5px; line-height: 1.6; color: var(--tk-ink-2); max-width: 60ch; margin-top: 14px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--tk-font-sans); font-weight: 600; font-size: 13px; padding: 11px 20px; border-radius: 11px; text-decoration: none; }
+.btn.primary { background: var(--tk-primary); color: #fff; box-shadow: 0 10px 22px -10px oklch(0.48 0.2 277 / 60%); }
+.btn.ghost { border: 1.5px solid var(--tk-primary); color: var(--tk-primary); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--tk-font-sans); font-weight: 500; font-size: 11.5px; color: var(--tk-ink-soft); border: 1px solid var(--tk-border); background: var(--tk-surface); padding: 5px 11px; border-radius: 999px; }
+.tag .dt { width: 6px; height: 6px; border-radius: 999px; background: var(--tk-accent-emerald); }
+
+/* Decorative accents */
+.glow { position: absolute; pointer-events: none; border-radius: 50%; z-index: 0; }
+.dotgrid { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(oklch(0.13 0.03 264 / 0.05) 1px, transparent 1px); background-size: 22px 22px; }
+.topbar { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--tk-primary), var(--tk-primary-bright), var(--tk-accent-emerald)); z-index: 3; }
+
+/* Cover */
+.cover-stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 26px; border-top: 1px solid var(--tk-border); position: relative; z-index: 2; }
+.cover-stats .c { padding: 16px 16px 0 0; border-right: 1px solid var(--tk-border); }
+.cover-stats .c:last-child { border-right: 0; }
+.cover-stats .v { font-family: var(--tk-font-display); font-weight: 800; font-size: 28px; letter-spacing: -0.04em; color: var(--tk-ink); line-height: 1; }
+.cover-stats .l { font-family: var(--tk-font-sans); font-size: 10.5px; color: var(--tk-muted); margin-top: 6px; }
+
+/* App capture frame */
+.win { border: 1px solid var(--tk-border-strong); border-radius: 14px; overflow: hidden; background: var(--tk-surface); box-shadow: 0 26px 60px -28px oklch(0.13 0.03 264 / 32%), 0 2px 0 oklch(0.13 0.03 264 / 3%); position: relative; z-index: 2; }
+.win-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid var(--tk-border); background: var(--tk-surface); }
+.win-bar .d { width: 9px; height: 9px; border-radius: 50%; }
+.win-bar .u { margin: 0 auto; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); background: var(--tk-bg-deep); padding: 3px 14px; border-radius: 6px; }
+.win-body { padding: 14px; background: var(--tk-bg); }
+.cap { font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); margin-top: 9px; display: flex; align-items: center; gap: 7px; position: relative; z-index: 2; }
+.cap .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--tk-accent-emerald); box-shadow: 0 0 0 3px oklch(0.58 0.17 149 / 18%); }
+
+.floatchip { position: absolute; z-index: 3; background: var(--tk-surface); border: 1px solid var(--tk-border-strong); border-radius: 12px; padding: 10px 13px; box-shadow: 0 14px 30px -16px oklch(0.13 0.03 264 / 30%); }
+.floatchip .v { font-family: var(--tk-font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.03em; color: var(--tk-primary); line-height: 1; }
+.floatchip .l { font-family: var(--tk-font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--tk-muted); margin-top: 4px; }
+
+.tbl { width: 100%; border-collapse: collapse; font-family: var(--tk-font-mono); font-size: 9px; }
+.tbl th { text-align: center; color: var(--tk-muted); font-weight: 600; padding: 6px 4px; border-bottom: 1px solid var(--tk-border); background: var(--tk-bg-deep); }
+.tbl th:first-child { text-align: left; }
+.tbl td { padding: 6px 4px; border-bottom: 1px solid var(--tk-border); text-align: center; vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl td:first-child { text-align: left; font-family: var(--tk-font-sans); font-weight: 500; }
+.pill { padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+.pill.ok { background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149); }
+.pill.bad { background: oklch(0.95 0.1 27); color: oklch(0.5 0.18 27); }
+
+/* Before / After */
+.ba { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; position: relative; z-index: 2; }
+.ba .col { border-radius: 18px; padding: 24px; }
+.ba .before { border: 1px solid var(--tk-border); background: var(--tk-surface); }
+.ba .after { border: 1.5px solid oklch(0.48 0.2 277 / 32%); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); box-shadow: 0 24px 50px -30px oklch(0.48 0.2 277 / 45%); }
+.ba h3 { font-family: var(--tk-font-display); font-weight: 700; font-size: 15px; margin: 0 0 16px; display: flex; align-items: center; gap: 11px; color: var(--tk-ink); }
+.ba .ic { width: 32px; height: 32px; border-radius: 10px; }
+.ba .before .ic { background: oklch(0.65 0.2 27 / 12%); color: oklch(0.55 0.2 27); }
+.ba .after .ic { background: oklch(0.58 0.17 149 / 16%); color: var(--tk-accent-emerald); }
+.ba ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+.ba li { font-size: 12.5px; line-height: 1.4; display: flex; gap: 10px; align-items: flex-start; }
+.ba li .li-ic { flex: 0 0 auto; margin-top: 1px; }
+.ba .before li { color: var(--tk-muted); } .ba .before li .li-ic { color: oklch(0.6 0.18 27); }
+.ba .after li { color: var(--tk-ink); font-weight: 500; } .ba .after li .li-ic { color: var(--tk-accent-emerald); }
+.quote { margin-top: 20px; padding-left: 20px; border-left: 3px solid var(--tk-primary); position: relative; z-index: 2; }
+.quote p { font-family: var(--tk-font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--tk-ink); margin: 0; line-height: 1.2; }
+
+/* Product flow */
+.flow { display: flex; flex-direction: column; gap: 18px; margin-top: 22px; position: relative; z-index: 2; }
+
+/* Steps timeline */
+.steps { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 26px; z-index: 2; }
+.steps::before { content: ""; position: absolute; top: 17px; left: 17px; right: 17px; height: 2px; background: linear-gradient(90deg, var(--tk-primary), var(--tk-primary-bright)); border-radius: 2px; opacity: 0.5; }
+.step { position: relative; }
+.step .num { width: 34px; height: 34px; border-radius: 999px; background: var(--tk-primary); color: #fff; font-family: var(--tk-font-display); font-weight: 800; display: grid; place-items: center; font-size: 15px; box-shadow: 0 0 0 5px var(--tk-bg); }
+.step h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 14.5px; color: var(--tk-ink); margin: 15px 0 4px; }
+.step p { font-size: 11.5px; line-height: 1.5; color: var(--tk-ink-2); margin: 0; }
+
+/* Benefit cards */
+.bens { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; position: relative; z-index: 2; }
+.ben { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 18px; position: relative; overflow: hidden; }
+.ben::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--tk-primary), var(--tk-primary-bright)); }
+.ben .v { font-family: var(--tk-font-display); font-weight: 800; font-size: 33px; letter-spacing: -0.04em; color: var(--tk-primary); line-height: 1; }
+.ben .l { font-family: var(--tk-font-sans); font-weight: 600; font-size: 12.5px; color: var(--tk-ink); margin-top: 8px; }
+.ben .d { font-size: 10.5px; color: var(--tk-ink-2); margin-top: 3px; line-height: 1.4; }
+
+/* Roles */
+.roles { display: flex; flex-direction: column; gap: 13px; margin-top: 22px; position: relative; z-index: 2; }
+.role { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 20px 24px; display: grid; grid-template-columns: 210px 1fr; gap: 24px; align-items: center; }
+.role .side { border-right: 1px solid var(--tk-border); padding-right: 24px; }
+.role .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--tk-primary-soft); color: var(--tk-primary); }
+.role .rn { font-family: var(--tk-font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--tk-muted); margin-top: 13px; }
+.role h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 16px; letter-spacing: -0.02em; color: var(--tk-ink); margin: 4px 0 0; line-height: 1.2; }
+.role .pts { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 18px; }
+.role .pts div { font-size: 12px; color: var(--tk-ink-2); display: flex; gap: 9px; align-items: flex-start; }
+.role .pts .ck { color: var(--tk-accent-emerald); flex: 0 0 auto; margin-top: 1px; }
+
+/* Pricing */
+.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 22px; align-items: stretch; position: relative; z-index: 2; }
+.plan { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; }
+.plan.feat { border: 2px solid var(--tk-primary); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); box-shadow: 0 24px 50px -30px oklch(0.48 0.2 277 / 45%); }
+.plan .pname { font-family: var(--tk-font-display); font-weight: 700; font-size: 17px; color: var(--tk-ink); display: flex; justify-content: space-between; align-items: center; }
+.plan .badge { font-family: var(--tk-font-mono); font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: var(--tk-primary); color: #fff; padding: 3px 9px; border-radius: 999px; }
+.plan .price { font-family: var(--tk-font-display); font-weight: 800; font-size: 25px; letter-spacing: -0.03em; color: var(--tk-ink); margin: 12px 0 2px; }
+.plan .unit { font-size: 10.5px; color: var(--tk-ink-2); }
+.plan .min { font-size: 10.5px; font-weight: 600; color: var(--tk-primary); margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--tk-border); }
+.plan.feat .min { border-color: oklch(0.48 0.2 277 / 25%); }
+.plan ul { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.plan li { font-size: 11.5px; color: var(--tk-ink-2); display: flex; gap: 8px; align-items: flex-start; }
+.plan li .ck { color: var(--tk-accent-emerald); flex: 0 0 auto; margin-top: 1px; }
+
+.incl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 22px; margin-top: 16px; position: relative; z-index: 2; }
+.incl div { font-size: 12px; color: var(--tk-ink); display: flex; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--tk-border); }
+.incl .ck { width: 18px; height: 18px; border-radius: 999px; background: oklch(0.58 0.17 149 / 14%); color: var(--tk-accent-emerald); display: grid; place-items: center; flex: 0 0 auto; }
+
+/* Reassurance */
+.reas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; position: relative; z-index: 2; }
+.reas .r { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px; }
+.reas .r .ic { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--tk-border); background: var(--tk-bg); color: var(--tk-primary); }
+.reas .r h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 13.5px; color: var(--tk-ink); margin: 12px 0 4px; }
+.reas .r p { font-size: 11px; color: var(--tk-ink-2); margin: 0; line-height: 1.45; }
+
+/* Final CTA */
+.cta-card { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 22px; padding: 38px; position: relative; overflow: hidden; z-index: 2; box-shadow: 0 28px 60px -34px oklch(0.13 0.03 264 / 28%); }
+.contact-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+.contact-row .ci { border-top: 1px solid var(--tk-border); padding-top: 13px; }
+.contact-row .k { font-family: var(--tk-font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--tk-muted); }
+.contact-row .v { font-family: var(--tk-font-display); font-weight: 700; font-size: 15px; color: var(--tk-ink); margin-top: 6px; }
+
+/* Panorama */
+.pano { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 22px; position: relative; z-index: 2; }
+.pano-card { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 18px 20px; }
+.pano-card .hd { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
+.pano-card .ic { width: 38px; height: 38px; border-radius: 10px; background: var(--tk-primary-soft); color: var(--tk-primary); flex: 0 0 auto; }
+.pano-card h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0; flex: 1; letter-spacing: -0.01em; }
+.pano-card .cnt { font-family: var(--tk-font-mono); font-size: 10px; font-weight: 600; color: var(--tk-muted); }
+.pano-card .items { display: flex; flex-wrap: wrap; gap: 6px; }
+.pano-card .it { display: inline-flex; align-items: center; gap: 6px; font-family: var(--tk-font-sans); font-size: 11px; color: var(--tk-ink-2); background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 999px; padding: 4px 11px; }
+.pano-card .it .dt { width: 4px; height: 4px; border-radius: 999px; background: var(--tk-primary); flex: 0 0 auto; }
+
+/* Document showcases */
+.docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 22px; position: relative; z-index: 2; }
+.doc { display: flex; flex-direction: column; gap: 11px; }
+.doc .sheet { border: 1px solid var(--tk-border-strong); border-radius: 8px; background: #fff; aspect-ratio: 1 / 1.32; padding: 13px; display: flex; flex-direction: column; box-shadow: 0 16px 34px -20px oklch(0.13 0.03 264 / 30%); overflow: hidden; }
+.doc .dh { text-align: center; border-bottom: 1.5px solid var(--tk-ink); padding-bottom: 7px; margin-bottom: 8px; }
+.doc .dh .est { font-family: var(--tk-font-display); font-weight: 700; font-size: 7px; letter-spacing: 0.05em; color: var(--tk-ink); text-transform: uppercase; }
+.doc .dh .ttl { font-family: var(--tk-font-display); font-weight: 800; font-size: 9.5px; color: var(--tk-primary); margin-top: 2px; }
+.doc .ln { height: 4px; border-radius: 2px; background: var(--tk-bg-deep); }
+.doc .meta { font-family: var(--tk-font-mono); font-size: 6.5px; color: var(--tk-ink-2); line-height: 1.8; }
+.doc .drow { display: flex; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 6.5px; color: var(--tk-ink-2); padding: 2.5px 0; border-bottom: 1px solid var(--tk-bg-deep); }
+.doc .badge2 { display: inline-block; font-family: var(--tk-font-mono); font-size: 6.5px; font-weight: 700; color: oklch(0.4 0.16 149); background: oklch(0.95 0.1 149); padding: 1px 6px; border-radius: 999px; }
+.doc .df { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; padding-top: 8px; }
+.doc .qr { width: 26px; height: 26px; border-radius: 3px; background: repeating-conic-gradient(var(--tk-ink) 0% 25%, #fff 0% 50%) 0 0 / 6.5px 6.5px; }
+.doc .stamp { width: 30px; height: 30px; border: 1.5px solid var(--tk-primary); border-radius: 50%; display: grid; place-items: center; color: var(--tk-primary); font-family: var(--tk-font-mono); font-size: 5px; line-height: 1.1; text-align: center; transform: rotate(-11deg); opacity: 0.85; }
+.doc .cap2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.doc .cap2 .nm { font-family: var(--tk-font-display); font-weight: 700; font-size: 13px; color: var(--tk-ink); letter-spacing: -0.01em; }
+.doc .cap2 .vq { font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+
+@media print { .page { background: var(--tk-bg); } .win, .ba .after, .plan.feat, .cta-card, .doc .sheet { box-shadow: none; } }
+</style>
+</head>
+<body>
+
+<!-- ░░ Icon sprite ░░ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.7 5.1a2 2 0 0 0 1.2 1.2L20 11l-5.1 1.7a2 2 0 0 0-1.2 1.2L12 19l-1.7-5.1a2 2 0 0 0-1.2-1.2L4 11l5.1-1.7a2 2 0 0 0 1.2-1.2Z"/></symbol>
+  <symbol id="i-grad" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M6 7h12l-2-2"/><path d="M6 7 3 13a3 3 0 0 0 6 0Z"/><path d="M18 7l3 6a3 3 0 0 1-6 0Z"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><polygon points="12 3 21 8 3 8"/><line x1="3" y1="21" x2="21" y2="21"/><line x1="6" y1="11" x2="6" y2="18"/><line x1="10" y1="11" x2="10" y2="18"/><line x1="14" y1="11" x2="14" y2="18"/><line x1="18" y1="11" x2="18" y2="18"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><polyline points="9 12 11.5 14.5 15.5 10"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.1a5.4 5.4 0 0 0-7.7 0L12 6.2l-1.1-1.1a5.4 5.4 0 1 0-7.7 7.7L12 21l8.8-8.2a5.4 5.4 0 0 0 0-7.7Z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9Z"/><circle cx="7.5" cy="7.5" r="1.3"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><polyline points="9.5 13 11 14.5 14.5 11"/></symbol>
+</svg>
+
+<!-- ============ PAGE 1 — COVER ============ -->
+<section class="page" data-screen-label="01 Cover">
+  <div class="topbar"></div>
+  <div class="inner">
+    <div class="glow" style="width: 560px; height: 560px; top: -180px; right: -180px; background: radial-gradient(circle, oklch(0.48 0.2 277 / 14%), transparent 70%);"></div>
+    <div class="glow" style="width: 380px; height: 380px; bottom: 60px; left: -160px; background: radial-gradient(circle, oklch(0.58 0.17 149 / 9%), transparent 70%);"></div>
+
+    <div class="brow">
+      <img src="../assets/logo-tkams.png" alt="TKAMS" />
+      <span class="meta">Commercial brochure · 2026 edition</span>
+    </div>
+
+    <div style="position: relative; z-index: 2; margin-top: 38px;">
+      <div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg> TKAMS</span><span class="ln"></span><span class="t">LMD Student Information System · Francophone Africa</span></div>
+      <h1 class="display" style="font-size: 58px; max-width: 15ch;">From three weeks<br/>to <em class="uline">three hours</em>.</h1>
+      <p class="lede" style="font-size: 16px;">End-of-term deliberation no longer has to consume entire weekends. TKAMS brings grade entry, automated deliberations and verifiable official documents into a single platform — built for universities, colleges and schools.</p>
+      <div style="display: flex; gap: 12px; margin-top: 22px;">
+        <a class="btn primary" href="https://tkams.com/">Request a demo <svg class="svg" width="16" height="16"><use href="#i-arrow"/></svg></a>
+        <a class="btn ghost" href="mailto:contact@tkams.com">contact@tkams.com</a>
+      </div>
+      <div class="tags">
+        <span class="tag"><span class="dt"></span>LMD-native</span>
+        <span class="tag"><span class="dt"></span>Bilingual EN/FR</span>
+        <span class="tag"><span class="dt"></span>Cloud or on-premise</span>
+      </div>
+    </div>
+
+    <div style="position: relative; z-index: 2; margin-top: 30px;">
+      <div class="floatchip" style="top: -14px; right: 6px;"><div class="v">~3 h</div><div class="l">target · vs 3 weeks</div></div>
+      <div class="win">
+        <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">tkams.com/grades</span></div>
+        <div class="win-body">
+          <table class="tbl">
+            <thead><tr><th>Student</th><th>CW</th><th>Exam</th><th>Average</th><th style="text-align:right;">Decision</th></tr></thead>
+            <tbody>
+              <tr><td>MBARGA Jean</td><td>14</td><td>15</td><td style="font-weight:700;">14.6</td><td style="text-align:right;"><span class="pill ok">Admitted</span></td></tr>
+              <tr><td>ATANGANA Rose</td><td>11</td><td>11</td><td style="font-weight:700;">11.0</td><td style="text-align:right;"><span class="pill ok">Admitted</span></td></tr>
+              <tr><td>BELLO Fatima</td><td>9</td><td>6.5</td><td style="font-weight:700;">7.5</td><td style="text-align:right;"><span class="pill bad">Deferred</span></td></tr>
+              <tr><td>FOTSO Marie</td><td>16</td><td>13</td><td style="font-weight:700;">14.2</td><td style="text-align:right;"><span class="pill ok">Admitted</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cap"><span class="dot"></span>Weighted average and decision recomputed on every entry.</div>
+    </div>
+
+    <div class="cover-stats">
+      <div class="c"><div class="v">35+</div><div class="l">Business modules</div></div>
+      <div class="c"><div class="v">24</div><div class="l">Official exports</div></div>
+      <div class="c"><div class="v">7</div><div class="l">RBAC roles</div></div>
+      <div class="c"><div class="v">2</div><div class="l">Languages (EN/FR)</div></div>
+    </div>
+
+    <div class="foot"><span>OverBrand · Douala · Yaoundé</span><span class="pn">tkams.com · <b>01 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 2 — BEFORE / AFTER ============ -->
+<section class="page" data-screen-label="02 Before / After">
+  <div class="inner">
+    <div class="dotgrid" style="opacity: 0.5;"></div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">The problem</span></div>
+    <div style="position: relative; z-index: 2; margin-top: 28px;">
+      <div class="eyebrow"><span class="n">01</span><span class="ln"></span><span class="t">Before / After</span></div>
+      <h2 class="display">The change shows<br/>from the <em>very first session</em>.</h2>
+      <p class="lede">Every year, the same weeks of chaos. TKAMS replaces that scenario with a single flow — traceable and calm.</p>
+    </div>
+
+    <div class="ba">
+      <div class="col before">
+        <h3><span class="icbox ic"><svg class="svg" width="17" height="17"><use href="#i-x"/></svg></span>Today, without TKAMS</h3>
+        <ul>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Grades scattered across paper, Excel and WhatsApp</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Averages recomputed by hand, cascading errors</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Deliberations dragging on for weeks</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Official documents typed one by one</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>No record of who entered what</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Disconnected tools, endless re-entry</li>
+        </ul>
+      </div>
+      <div class="col after">
+        <h3><span class="icbox ic"><svg class="svg" width="17" height="17"><use href="#i-check"/></svg></span>Tomorrow, with TKAMS</h3>
+        <ul>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>One platform, from setup to graduation</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Averages and decisions computed automatically</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Deliberations wrapped up in hours</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Minutes, transcripts and certificates in one click</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Full audit trail on every action</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Everything connected, zero re-entry</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="quote"><p>“TKAMS removes this scenario. One platform, from setup to promotion.”</p></div>
+
+    <div style="margin-top: 24px; position: relative; z-index: 2;">
+      <div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg></span><span class="ln"></span><span class="t">Why TKAMS, not something else</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px;">
+        <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px;">
+          <h4 style="font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0 0 5px;">LMD by design</h4>
+          <p style="font-size: 11.5px; color: var(--tk-ink-2); margin: 0; line-height: 1.5;">Teaching units, ECTS, resits — native. Not a repurposed generic ERP, nor a souped-up spreadsheet.</p>
+        </div>
+        <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px;">
+          <h4 style="font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0 0 5px;">Your rules, no code</h4>
+          <p style="font-size: 11.5px; color: var(--tk-ink-2); margin: 0; line-height: 1.5;">Each institution configures its deliberation — no dependency on a developer.</p>
+        </div>
+        <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px;">
+          <h4 style="font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0 0 5px;">End to end</h4>
+          <p style="font-size: 11.5px; color: var(--tk-ink-2); margin: 0; line-height: 1.5;">From catalog to graduation, all in one — no more patchwork of tools.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot"><span>OverBrand · The problem</span><span class="pn">tkams.com · <b>02 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 3 — PRODUCT IN ACTION ============ -->
+<section class="page" data-screen-label="03 Product in action">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">The product</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">02</span><span class="ln"></span><span class="t">The product in action</span></div>
+      <h2 class="display">Three screens, <em>the whole cycle</em>.</h2>
+      <p class="lede">From entering a grade to signing the minutes — here is how TKAMS works for your teams.</p>
+    </div>
+
+    <div class="flow">
+      <!-- Rules engine -->
+      <div>
+        <div class="win">
+          <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">tkams.com/rules</span></div>
+          <div class="win-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="font-family: var(--tk-font-mono); font-size: 9px;">
+              <div style="color: var(--tk-muted); margin-bottom: 3px;">Pass threshold <b style="float: right; color: var(--tk-primary);">10.0/20</b></div>
+              <div style="height: 5px; background: var(--tk-bg-deep); border-radius: 999px; margin-bottom: 10px;"><div style="width: 50%; height: 100%; background: var(--tk-primary); border-radius: 999px;"></div></div>
+              <div style="color: var(--tk-muted); margin-bottom: 3px;">Eliminatory mark <b style="float: right; color: var(--tk-primary);">6.0/20</b></div>
+              <div style="height: 5px; background: var(--tk-bg-deep); border-radius: 999px; margin-bottom: 10px;"><div style="width: 30%; height: 100%; background: var(--tk-primary); border-radius: 999px;"></div></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 5px 8px; background: var(--tk-surface);"><span style="color: var(--tk-ink-soft);">Compensation</span><span style="width: 22px; height: 12px; background: var(--tk-primary); border-radius: 999px; position: relative; display: inline-block;"><span style="position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; background: #fff; border-radius: 999px;"></span></span></div>
+            </div>
+            <div style="border: 1px solid var(--tk-border); border-radius: 8px; padding: 10px; background: var(--tk-surface);">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;"><span style="font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.1em;">Success</span><span style="font-family: var(--tk-font-display); font-weight: 800; font-size: 20px;">80%</span></div>
+              <div style="height: 6px; background: var(--tk-bg-deep); border-radius: 999px; margin: 6px 0 10px;"><div style="width: 80%; height: 100%; background: linear-gradient(90deg, var(--tk-accent-emerald), var(--tk-primary-bright)); border-radius: 999px;"></div></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-ink-2);">
+                <span style="display: flex; justify-content: space-between;">Admitted<b>6</b></span><span style="display: flex; justify-content: space-between;">Compensated<b>2</b></span>
+                <span style="display: flex; justify-content: space-between;">Deferred<b>1</b></span><span style="display: flex; justify-content: space-between;">Repeating<b>1</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cap"><span class="dot"></span>Rules engine — your criteria, re-evaluated live.</div>
+      </div>
+
+      <!-- Deliberation -->
+      <div>
+        <div class="win">
+          <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">tkams.com/deliberations</span></div>
+          <div class="win-body">
+            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center;"><svg class="svg" width="8" height="8" style="stroke-width:3;"><use href="#i-check"/></svg></span>Draft</span>
+              <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center;"><svg class="svg" width="8" height="8" style="stroke-width:3;"><use href="#i-check"/></svg></span>Open</span>
+              <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center;"><svg class="svg" width="8" height="8" style="stroke-width:3;"><use href="#i-check"/></svg></span>Closed</span>
+              <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center; font-size: 7px; font-weight: 700;">4</span>Signed</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; font-family: var(--tk-font-mono);">
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px;">90%</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Success</div></div>
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: oklch(0.4 0.16 149);">7</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Admitted</div></div>
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: var(--tk-accent-blue);">2</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Comp.</div></div>
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: oklch(0.5 0.18 27);">1</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Deferred</div></div>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 10px; font-family: var(--tk-font-mono); font-size: 9px;">
+              <span style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 4px 9px; color: var(--tk-ink-soft); display: inline-flex; align-items: center; gap: 5px;"><svg class="svg" width="11" height="11"><use href="#i-download"/></svg>Minutes (PDF)</span>
+              <span style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 4px 9px; color: var(--tk-ink-soft); display: inline-flex; align-items: center; gap: 5px;"><svg class="svg" width="11" height="11"><use href="#i-download"/></svg>Transcripts (Excel)</span>
+            </div>
+          </div>
+        </div>
+        <div class="cap"><span class="dot"></span>Deliberation — from draft to signed minutes, exports included.</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 18px; border: 1px solid var(--tk-border); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); border-radius: 14px; padding: 16px 22px; display: flex; align-items: center; gap: 14px; position: relative; z-index: 2;">
+      <span class="icbox" style="width: 38px; height: 38px; background: var(--tk-primary); color: #fff; flex: 0 0 auto;"><svg class="svg" width="18" height="18"><use href="#i-spark"/></svg></span>
+      <p style="margin: 0; font-size: 13px; color: var(--tk-ink-2); line-height: 1.5;"><b style="color: var(--tk-ink);">Interactive demos online.</b> Faithful previews of the interface — every screen is playable live at <b style="color: var(--tk-primary);">tkams.com/produit</b>, sign-up required.</p>
+    </div>
+
+    <div class="foot"><span>OverBrand · The product</span><span class="pn">tkams.com · <b>03 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 4 — CAPABILITIES OVERVIEW ============ -->
+<section class="page" data-screen-label="04 Overview">
+  <div class="inner">
+    <div class="dotgrid" style="opacity: 0.5;"></div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Overview</span></div>
+    <div style="position: relative; z-index: 2; margin-top: 28px;">
+      <div class="eyebrow"><span class="n">03</span><span class="ln"></span><span class="t">Capabilities overview</span></div>
+      <h2 class="display">35+ modules,<br/>six <em>domains</em>.</h2>
+      <p class="lede">An integrated platform — not a collection of tools. The whole academic cycle covered, all in one.</p>
+    </div>
+
+    <div class="pano">
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-building"/></svg></span><h4>Catalog & structure</h4><span class="cnt">08</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Faculties</span><span class="it"><span class="dt"></span>Programs</span><span class="it"><span class="dt"></span>Cycles & levels</span><span class="it"><span class="dt"></span>Teaching units</span><span class="it"><span class="dt"></span>Classes</span><span class="it"><span class="dt"></span>Program options</span><span class="it"><span class="dt"></span>Regional centers</span><span class="it"><span class="dt"></span>Years & semesters</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-grad"/></svg></span><h4>Enrollment & students</h4><span class="cnt">05</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Enrollments</span><span class="it"><span class="dt"></span>Student profiles</span><span class="it"><span class="dt"></span>Course enrollments</span><span class="it"><span class="dt"></span>Auto reg. numbers</span><span class="it"><span class="dt"></span>ECTS credits</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-clip"/></svg></span><h4>Assessments</h4><span class="cnt">06</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Exam types</span><span class="it"><span class="dt"></span>Scheduling</span><span class="it"><span class="dt"></span>Grade entry</span><span class="it"><span class="dt"></span>Tracked delegation</span><span class="it"><span class="dt"></span>Sessions & resits</span><span class="it"><span class="dt"></span>Controlled access</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-scale"/></svg></span><h4>Deliberation & promotion</h4><span class="cnt">06</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Rules engine</span><span class="it"><span class="dt"></span>Deliberations</span><span class="it"><span class="dt"></span>Credit ledger</span><span class="it"><span class="dt"></span>Promotion rules</span><span class="it"><span class="dt"></span>Auto promotion</span><span class="it"><span class="dt"></span>Year transitions</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-download"/></svg></span><h4>Documents & exports</h4><span class="cnt">06</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Academic documents</span><span class="it"><span class="dt"></span>Transcripts & certificates</span><span class="it"><span class="dt"></span>24 export templates</span><span class="it"><span class="dt"></span>Export eligibility</span><span class="it"><span class="dt"></span>Excel / PDF</span><span class="it"><span class="dt"></span>DIPLOMATION (QR)</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-shield"/></svg></span><h4>Governance & integrations</h4><span class="cnt">08</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>7 RBAC roles</span><span class="it"><span class="dt"></span>Audit trail</span><span class="it"><span class="dt"></span>Approval workflows</span><span class="it"><span class="dt"></span>Notifications</span><span class="it"><span class="dt"></span>Batch jobs</span><span class="it"><span class="dt"></span>Signed API & webhooks</span><span class="it"><span class="dt"></span>Multi-institution</span><span class="it"><span class="dt"></span>Bilingual EN/FR</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot"><span>OverBrand · Overview</span><span class="pn">tkams.com · <b>04 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 5 — HOW IT WORKS + BENEFITS ============ -->
+<section class="page" data-screen-label="05 How it works">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">How it works</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">04</span><span class="ln"></span><span class="t">How it works</span></div>
+      <h2 class="display">Four steps,<br/>from enrollment to <em>diploma</em>.</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step"><span class="num">1</span><h4>Configure</h4><p>Faculties, programs, teaching units and deliberation rules — your structure, your rules.</p></div>
+      <div class="step"><span class="num">2</span><h4>Enter grades</h4><p>Teachers enter marks; averages and decisions are computed live.</p></div>
+      <div class="step"><span class="num">3</span><h4>Deliberate</h4><p>Run the deliberation: statistics, traceable approvals, signed minutes.</p></div>
+      <div class="step"><span class="num">4</span><h4>Graduate</h4><p>Transcripts, certificates and diplomas verifiable by QR code via DIPLOMATION, the built-in document-verification service.</p></div>
+    </div>
+
+    <div style="margin-top: 40px;">
+      <div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg></span><span class="ln"></span><span class="t">Concrete benefits</span></div>
+      <h2 class="display" style="font-size: 28px;">Gains, from year one.</h2>
+    </div>
+    <div class="bens">
+      <div class="ben"><div class="v">3 h</div><div class="l">instead of 3 weeks</div><div class="d">to complete a full deliberation</div></div>
+      <div class="ben"><div class="v">0</div><div class="l">calculation error</div><div class="d">automatic weighted averages</div></div>
+      <div class="ben"><div class="v">24</div><div class="l">official exports</div><div class="d">minutes, transcripts and certificates in one click</div></div>
+      <div class="ben"><div class="v">100%</div><div class="l">traceable</div><div class="d">every action time-stamped and auditable</div></div>
+    </div>
+    <p style="margin-top: 12px; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); font-style: italic;">Indicative orders of magnitude — actual gains vary with the size and organization of each institution.</p>
+
+    <div class="foot"><span>OverBrand · How it works</span><span class="pn">tkams.com · <b>05 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 6 — FOR EVERY ROLE ============ -->
+<section class="page" data-screen-label="06 Solutions by role">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Solutions</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">05</span><span class="ln"></span><span class="t">For every role</span></div>
+      <h2 class="display">An answer for<br/>every <em>role</em>.</h2>
+    </div>
+
+    <div class="roles">
+      <div class="role">
+        <div class="side"><span class="icbox ic"><svg class="svg" width="22" height="22"><use href="#i-grad"/></svg></span><div class="rn">Teachers</div><h4>Your grades in minutes, not weeks.</h4></div>
+        <div class="pts">
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Weighted coursework + exam entry</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Averages & decisions, live</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Excel import, transcript export</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Locked after approval</div>
+        </div>
+      </div>
+      <div class="role">
+        <div class="side"><span class="icbox ic"><svg class="svg" width="22" height="22"><use href="#i-scale"/></svg></span><div class="rn">Deans & Management</div><h4>Run deliberations in a single flow.</h4></div>
+        <div class="pts">
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Configurable deliberation rules</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Approval workflows + audit</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Per-cohort dashboard</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Official minutes in one click</div>
+        </div>
+      </div>
+      <div class="role">
+        <div class="side"><span class="icbox ic"><svg class="svg" width="22" height="22"><use href="#i-building"/></svg></span><div class="rn">Administration</div><h4>From catalog to graduation, all traced.</h4></div>
+        <div class="pts">
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Multi-institution hierarchy</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Auto-generated reg. numbers</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>RBAC roles and logging</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Native DIPLOMATION integration</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot"><span>OverBrand · Solutions</span><span class="pn">tkams.com · <b>06 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 7 — PRICING ============ -->
+<section class="page" data-screen-label="07 Pricing">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Pricing</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">06</span><span class="ln"></span><span class="t">Pricing</span></div>
+      <h2 class="display">Simple pricing,<br/>per <em>student</em>.</h2>
+      <p class="lede">No hidden fees. Data migration and onboarding included from the start.</p>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <div class="pname">Standard</div>
+        <div class="price">On request</div>
+        <div class="unit">per student · shared SaaS</div>
+        <div class="min">Quote within 48 h</div>
+        <ul>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>All modules included</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Automatic updates</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Standard support</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Official exports included</li>
+        </ul>
+      </div>
+      <div class="plan feat">
+        <div class="pname">Pro <span class="badge">Recommended</span></div>
+        <div class="price">On request</div>
+        <div class="unit">per student · dedicated infrastructure</div>
+        <div class="min">Tailored quote</div>
+        <ul>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Everything in Standard</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Dedicated infra · enhanced SLA</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Priority onboarding</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>DIPLOMATION integration</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <div class="pname">Enterprise</div>
+        <div class="price">On request</div>
+        <div class="unit">multi-entity · on-premise possible</div>
+        <div class="min">Bespoke study</div>
+        <ul>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Everything in Pro</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Multi-university / governing bodies</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Consolidated reporting</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Team training included</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px;"><div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg></span><span class="ln"></span><span class="t">Everything included</span></div></div>
+    <div class="incl">
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>All business modules</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Continuous updates</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Support & onboarding</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Data migration</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Secure hosting</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Bilingual EN/FR interface</div>
+    </div>
+
+    <div class="foot"><span>OverBrand · Pricing</span><span class="pn">tkams.com · <b>07 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 8 — OFFICIAL DOCUMENTS ============ -->
+<section class="page" data-screen-label="08 Exports & documents">
+  <div class="inner">
+    <div class="dotgrid" style="opacity: 0.5;"></div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Exports</span></div>
+    <div style="position: relative; z-index: 2; margin-top: 28px;">
+      <div class="eyebrow"><span class="n">07</span><span class="ln"></span><span class="t">Exports & documents</span></div>
+      <h2 class="display">Everything is exportable,<br/>in one <em>click</em>.</h2>
+      <p class="lede">Transcripts, certificates, minutes, diplomas, lists — generated from the data, in PDF or Excel, and QR-verifiable via DIPLOMATION.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; margin-top: 22px; position: relative; z-index: 2;">
+      <!-- Export screen (the real UI, not a fabricated document) -->
+      <div>
+        <div class="win">
+          <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">tkams.com/exports</span></div>
+          <div class="win-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 0.65fr auto; gap: 8px; align-items: end;">
+              <div>
+                <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px;">Document</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px 8px; background: var(--tk-surface); font-family: var(--tk-font-sans); font-size: 10px; color: var(--tk-ink);">Transcript <span style="color: var(--tk-muted);">▾</span></div>
+              </div>
+              <div>
+                <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px;">Scope</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px 8px; background: var(--tk-surface); font-family: var(--tk-font-sans); font-size: 10px; color: var(--tk-ink);">Class · Y2 Econ <span style="color: var(--tk-muted);">▾</span></div>
+              </div>
+              <div>
+                <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px;">Format</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px 8px; background: var(--tk-surface); font-family: var(--tk-font-sans); font-size: 10px; color: var(--tk-ink);">PDF <span style="color: var(--tk-muted);">▾</span></div>
+              </div>
+              <span style="background: var(--tk-primary); color: #fff; border-radius: 8px; padding: 7px 14px; font-family: var(--tk-font-sans); font-weight: 600; font-size: 10px; white-space: nowrap;">Generate</span>
+            </div>
+            <div style="margin-top: 12px; border-top: 1px solid var(--tk-border); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 9px;"><span style="color: var(--tk-ink);">transcripts_Y2-econ_220.pdf</span><span style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--tk-accent-emerald);">Ready</span><svg class="svg" width="12" height="12"><use href="#i-download"/></svg></span></div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 9px;"><span style="color: var(--tk-ink);">deliberation_minutes_S3.pdf</span><span style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--tk-accent-emerald);">Ready</span><svg class="svg" width="12" height="12"><use href="#i-download"/></svg></span></div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 9px;"><span style="color: var(--tk-ink);">certificates_batch.zip</span><span style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--tk-accent-emerald);">Ready</span><svg class="svg" width="12" height="12"><use href="#i-download"/></svg></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cap"><span class="dot"></span>Bulk generation · PDF / Excel · verification QR included.</div>
+      </div>
+
+      <!-- Catalogue of real templates -->
+      <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 18px 20px;">
+        <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.12em;">Template catalog</div>
+        <div style="display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); margin-top: 10px; font-size: 11px;"><span style="color: var(--tk-ink);">Transcript</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Certificate of achievement</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Diploma</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Deliberation minutes</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Student list</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">Excel · PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Course / Unit publication</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Evaluation</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">Excel</span></div>
+        </div>
+        <p style="margin: 12px 0 0; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); font-style: italic;">+ Faculty / IPES / Center variants · multi-institution</p>
+      </div>
+    </div>
+
+    <div class="foot"><span>OverBrand · Exports</span><span class="pn">tkams.com · <b>08 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 9 — REASSURANCE + CONTACT ============ -->
+<section class="page" data-screen-label="09 Contact">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Get started</span></div>
+
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">08</span><span class="ln"></span><span class="t">Reassurance</span></div>
+      <h2 class="display" style="font-size: 30px;">Everything to start<br/>with <em>peace of mind</em>.</h2>
+    </div>
+    <div class="reas">
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-spark"/></svg></span><h4>Fast rollout</h4><p>Instance provisioned in minutes; data onboarding supported.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-download"/></svg></span><h4>Migration included</h4><p>Import your existing data (Excel/YAML) right at creation.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-heart"/></svg></span><h4>Human support</h4><p>A team based in Douala and Yaoundé, by your side.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-lock"/></svg></span><h4>Security & sovereignty</h4><p>TLS encryption, RBAC, audit trail, cloud or on-premise.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-shield"/></svg></span><h4>Daily backups</h4><p>Data backed up every day, restoration guaranteed.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-globe"/></svg></span><h4>Bilingual EN/FR</h4><p>French and English interface, natively.</p></div>
+    </div>
+
+    <div class="cta-card" style="margin-top: 28px;">
+      <div class="glow" style="width: 400px; height: 400px; top: -160px; right: -130px; background: radial-gradient(circle, oklch(0.48 0.2 277 / 13%), transparent 70%);"></div>
+      <div style="position: relative; z-index: 1;">
+        <div style="display: flex; gap: 32px; align-items: center;">
+          <div style="flex: 1;">
+            <h2 class="display" style="font-size: 32px; margin: 0;">Book your<br/><em>TKAMS</em> demo.</h2>
+            <p class="lede" style="margin-top: 12px;">See how TKAMS transforms your academic management. A demo is worth a thousand words.</p>
+            <div style="margin-top: 20px;">
+              <a class="btn primary" href="https://tkams.com/" style="font-size: 14px; padding: 13px 24px;">Schedule a demo <svg class="svg" width="16" height="16"><use href="#i-arrow"/></svg></a>
+            </div>
+          </div>
+          <div style="flex: 0 0 auto; text-align: center;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&amp;margin=0&amp;data=https%3A%2F%2Ftkams.com" alt="QR code to tkams.com" width="118" height="118" style="display: block; border: 1px solid var(--tk-border); border-radius: 12px; background: #fff; padding: 9px;" />
+            <div style="font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); margin-top: 7px; letter-spacing: 0.04em;">Scan for the demo</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="ci"><div class="k">Email</div><div class="v">contact@tkams.com</div></div>
+          <div class="ci"><div class="k">Location</div><div class="v">Douala &amp; Yaoundé</div></div>
+          <div class="ci"><div class="k">Web</div><div class="v">tkams.com</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot"><span>Built by OverBrand · © 2026</span><span class="pn">tkams.com · <b>09 / 09</b></span></div>
+  </div>
+</section>
+
+</body>
+</html>

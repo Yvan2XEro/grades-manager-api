@@ -65,3 +65,25 @@ export const graduatedStudentsSchema = z.object({
 	cursor: z.string().optional(),
 	limit: z.number().int().min(1).max(100).default(50),
 });
+
+export const listPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	academicYearId: z.string().optional(),
+	semesterId: z.string().optional(),
+	programId: z.string().optional(),
+});
+
+export const graduatedStudentsPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	programId: z.string().optional(),
+	cycleId: z.string().optional(),
+	query: z.string().optional(),
+});
+
+export const promotionPreviewPagedSchema = z.object({
+	sourceClassId: z.string(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+});

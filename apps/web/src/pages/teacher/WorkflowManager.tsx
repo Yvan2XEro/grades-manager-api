@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Send, ShieldCheck } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Send, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
@@ -22,7 +22,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "../../utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
+
+type ExamItem = RouterOutputs["exams"]["list"]["items"][number];
 
 const WorkflowManager = () => {
 	const { t } = useTranslation();
@@ -31,11 +33,23 @@ const WorkflowManager = () => {
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 
+	const { data: semestersData } = useQuery(
+		trpc.semesters.list.queryOptions({}),
+	);
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
+
 	const { data: classCourses } = useQuery(
 		trpc.classCourses.list.queryOptions({
 			limit: 200,
 			...(filterYear ? { academicYearId: filterYear } : {}),
-			...(filterSemester ? { semesterId: filterSemester } : {}),
+			...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 		}),
 	);
 
@@ -53,22 +67,6 @@ const WorkflowManager = () => {
 				t("teacher.workflow.toast.submitted", {
 					defaultValue: "Exam submitted",
 				}),
-			);
-			queryClient.invalidateQueries(
-				trpc.exams.list.queryKey({
-					classCourseId: selectedClassCourse || undefined,
-				}),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const lockExam = useMutation({
-		mutationFn: (examId: string) =>
-			trpcClient.exams.lock.mutate({ examId, lock: true }),
-		onSuccess: () => {
-			toast.success(
-				t("teacher.workflow.toast.locked", { defaultValue: "Exam locked" }),
 			);
 			queryClient.invalidateQueries(
 				trpc.exams.list.queryKey({
@@ -176,51 +174,81 @@ const WorkflowManager = () => {
 						</p>
 					) : exams.length ? (
 						<div className="space-y-3">
-							{exams.map((exam) => (
-								<div
-									key={exam.id}
-									className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3"
-								>
-									<div>
-										<p className="font-medium text-foreground">{exam.name}</p>
-										<p className="text-muted-foreground text-xs">
-											{exam.type} • {new Date(exam.date).toLocaleDateString()} •{" "}
-											{exam.percentage}%
-										</p>
+							{exams.map((exam: ExamItem) => {
+								const isRejected = exam.status === "rejected";
+								const isApproved = exam.status === "approved";
+								const isSubmitted = exam.status === "submitted";
+								const rejectionReason = exam.rejectionReason;
+								return (
+									<div
+										key={exam.id}
+										className={`rounded-lg border px-4 py-3 ${isRejected ? "border-destructive/40 bg-destructive/5" : ""}`}
+									>
+										<div className="flex flex-wrap items-center justify-between gap-3">
+											<div>
+												<p className="font-medium text-foreground">
+													{exam.name}
+												</p>
+												<p className="text-muted-foreground text-xs">
+													{exam.type} •{" "}
+													{new Date(exam.date).toLocaleDateString()} •{" "}
+													{exam.percentage}%
+												</p>
+											</div>
+											<div className="flex flex-wrap items-center gap-2">
+												<Button
+													type="button"
+													size="sm"
+													onClick={() => submitExam.mutate(exam.id)}
+													disabled={
+														exam.status !== "draft" &&
+														exam.status !== "scheduled"
+													}
+												>
+													<Send className="mr-1 h-4 w-4" />
+													{t("teacher.workflow.actions.submit", {
+														defaultValue: "Submit",
+													})}
+												</Button>
+												<Badge
+													variant={
+														isRejected
+															? "destructive"
+															: isApproved
+																? "success"
+																: "outline"
+													}
+													className="gap-1 uppercase"
+												>
+													{isApproved && (
+														<CheckCircle2 className="h-3.5 w-3.5" />
+													)}
+													{isRejected && <XCircle className="h-3.5 w-3.5" />}
+													{isSubmitted && <Clock className="h-3.5 w-3.5" />}
+													{!isApproved && !isRejected && !isSubmitted && (
+														<AlertCircle className="h-3.5 w-3.5" />
+													)}
+													{exam.status}
+												</Badge>
+											</div>
+										</div>
+										{isRejected && rejectionReason && (
+											<div className="mt-2 flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-destructive text-xs">
+												<XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+												<span>
+													<span className="font-semibold">
+														{t("teacher.workflow.rejectionReason", {
+															defaultValue: "Rejection reason",
+														})}
+														{": "}
+													</span>
+													{rejectionReason}
+												</span>
+											</div>
+										)}
 									</div>
-									<div className="flex flex-wrap items-center gap-2">
-										<Button
-											type="button"
-											size="sm"
-											onClick={() => submitExam.mutate(exam.id)}
-											disabled={
-												exam.status !== "draft" && exam.status !== "scheduled"
-											}
-										>
-											<Send className="mr-1 h-4 w-4" />
-											{t("teacher.workflow.actions.submit", {
-												defaultValue: "Submit",
-											})}
-										</Button>
-										<Button
-											type="button"
-											size="sm"
-											variant="secondary"
-											onClick={() => lockExam.mutate(exam.id)}
-											disabled={exam.isLocked || exam.status !== "approved"}
-										>
-											<ShieldCheck className="mr-1 h-4 w-4" />
-											{t("teacher.workflow.actions.lock", {
-												defaultValue: "Lock",
-											})}
-										</Button>
-										<Badge variant="outline" className="uppercase">
-											<CheckCircle2 className="mr-1 h-4 w-4 text-emerald-600" />
-											{exam.status}
-										</Badge>
-									</div>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					) : (
 						<p className="text-muted-foreground text-xs">

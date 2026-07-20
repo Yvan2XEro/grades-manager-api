@@ -114,6 +114,24 @@
 			}
 		},
 		{
+			"includes": ["apps/website/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noShadowRestrictedNames": "off",
+						"noImplicitAnyLet": "off"
+					},
+					"complexity": {
+						"noBannedTypes": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off",
+						"noParameterAssign": "off"
+					}
+				}
+			}
+		},
+		{
 			"includes": ["apps/server/**"],
 			"linter": {
 				"rules": {

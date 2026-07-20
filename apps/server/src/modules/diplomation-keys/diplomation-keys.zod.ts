@@ -13,3 +13,11 @@ export const updateWebhookSchema = z.object({
 	webhookUrl: z.string().url().nullable(),
 	webhookSecret: z.string().nullable(),
 });
+
+export const activityStatsSchema = z.object({
+	days: z.number().int().min(7).max(90).default(30),
+});
+
+export const callStatsSchema = z.object({
+	days: z.number().int().min(7).max(90).default(30),
+});

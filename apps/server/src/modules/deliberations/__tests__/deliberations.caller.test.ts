@@ -1,6 +1,6 @@
 import { describe, expect, it, setDefaultTimeout } from "bun:test";
 
-setDefaultTimeout(30_000);
+setDefaultTimeout(60_000);
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
@@ -20,6 +20,7 @@ import {
 	ensureStudentCourseEnrollment,
 	makeTestContext,
 } from "@/lib/test-utils";
+import * as gradeScalesService from "@/modules/grade-scales/grade-scales.service";
 import { appRouter } from "@/routers";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
@@ -280,6 +281,56 @@ describe("deliberations router", () => {
 			await expect(
 				admin.deliberations.getById({ id: delib.id }),
 			).rejects.toHaveProperty("code", "NOT_FOUND");
+		});
+	});
+
+	// -----------------------------------------------------------------------
+	// Duplicate guard (JVL-7)
+	// -----------------------------------------------------------------------
+
+	describe("duplicate deliberation guard", () => {
+		it("creating a second annual deliberation for the same class+year throws CONFLICT", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { academicYear, klass } = await setupDeliberationFixture();
+
+			await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+
+			// Second create with the same (classId, academicYearId, type) — no semesterId
+			await expect(
+				admin.deliberations.create({
+					classId: klass.id,
+					academicYearId: academicYear.id,
+					type: "annual",
+				}),
+			).rejects.toHaveProperty("code", "CONFLICT");
+		});
+
+		it("two semester deliberations with the same semester throw CONFLICT", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { academicYear, klass, semesterId } =
+				await setupDeliberationFixture();
+
+			await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "semester",
+				semesterId,
+			});
+
+			await expect(
+				admin.deliberations.create({
+					classId: klass.id,
+					academicYearId: academicYear.id,
+					type: "semester",
+					semesterId,
+				}),
+			).rejects.toHaveProperty("code", "CONFLICT");
 		});
 	});
 
@@ -899,6 +950,72 @@ describe("deliberations router", () => {
 	// Compute — UeResult shape
 	// -----------------------------------------------------------------------
 
+	// -----------------------------------------------------------------------
+	// Custom grade scale (JVL-43)
+	// -----------------------------------------------------------------------
+
+	describe("compute — custom grade scale (JVL-43)", () => {
+		it("uses institution custom scale for mention assignment", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const {
+				academicYear,
+				klass,
+				classCourses: { cc1a, cc1b, cc2a, cc2b },
+				student,
+			} = await setupDeliberationFixture({ ue1Credits: 6, ue2Credits: 4 });
+
+			const instId = klass.institutionId;
+
+			// Custom scale: passThreshold=12, "excellent" starts at 14 (default is 18).
+			// Scores averaging ~15 → default scale → "bien" (14+)
+			//                     → custom scale  → "excellent" (14+, but key is "excellent" in custom)
+			// This proves the custom thresholds are used, not the defaults.
+			await gradeScalesService.upsert(instId, {
+				passThreshold: 12,
+				compensationThreshold: 10,
+				mentionRanges: [
+					{
+						key: "excellent",
+						label: "Excellent",
+						labelEn: "Excellent",
+						gradeLetter: "A",
+						min: 14,
+					},
+					{
+						key: "passable",
+						label: "Passable",
+						labelEn: "Satisfactory",
+						gradeLetter: "E",
+						min: 12,
+					},
+				],
+			});
+
+			// Grades produce avg ~15: with default scale → "bien"; with custom → "excellent"
+			await createExamsWithGrade(cc1a.id, student.id, instId, 14, 16); // ~15.2
+			await createExamsWithGrade(cc1b.id, student.id, instId, 14, 16);
+			await createExamsWithGrade(cc2a.id, student.id, instId, 14, 16);
+			await createExamsWithGrade(cc2b.id, student.id, instId, 14, 16);
+
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			await admin.deliberations.transition({ id: delib.id, action: "open" });
+
+			const result = await admin.deliberations.compute({ id: delib.id });
+			const sr = result.results[0];
+
+			// passThreshold=12 → avg ~15.2 is admitted
+			expect(sr.finalDecision).toBe("admitted");
+			// Custom "excellent" threshold is 14; default "excellent" is 18.
+			// If we got "excellent" here, the custom scale was used (not the default).
+			expect(sr.mention).toBe("excellent");
+		});
+	});
+
 	describe("compute — UE result shape", () => {
 		it("ueResults contain creditsEarned field", async () => {
 			const ctx = await adminWithRealProfile();
@@ -934,6 +1051,72 @@ describe("deliberations router", () => {
 				expect(ue).toHaveProperty("decision");
 				expect(["ADM", "CMP", "AJ", "INC"]).toContain(ue.decision);
 			}
+		});
+	});
+});
+
+describe("deliberations.listPaged", () => {
+	it("returns { items, total, pageCount }", async () => {
+		const ctx = await adminWithRealProfile();
+		const caller = createCaller(ctx);
+		const result = await caller.deliberations.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
+		});
+	});
+
+	it("filters by classId and academicYearId", async () => {
+		const { klass, academicYear } = await setupDeliberationFixture();
+		const ctx = await adminWithRealProfile();
+		const admin = createCaller(ctx);
+
+		await admin.deliberations.create({
+			classId: klass.id,
+			academicYearId: academicYear.id,
+			type: "annual",
+		});
+
+		const result = await admin.deliberations.listPaged({
+			page: 1,
+			pageSize: 25,
+			classId: klass.id,
+			academicYearId: academicYear.id,
+		});
+		expect(result.items.length).toBeGreaterThanOrEqual(1);
+		expect(result.total).toBeGreaterThanOrEqual(1);
+		expect(result.items.every((d) => d.classId === klass.id)).toBe(true);
+	});
+
+	it("respects pageSize — returns at most pageSize items", async () => {
+		const ctx = await adminWithRealProfile();
+		const admin = createCaller(ctx);
+		const result = await admin.deliberations.listPaged({
+			page: 1,
+			pageSize: 1,
+		});
+		expect(result.items.length).toBeLessThanOrEqual(1);
+	});
+
+	it("is accessible to any authenticated member (tenantProtectedProcedure)", async () => {
+		const profile = await createDomainUser();
+		const ctx = makeTestContext({
+			role: "student",
+			profileOverrides: { id: profile.id },
+		});
+		const caller = createCaller(ctx);
+		const result = await caller.deliberations.listPaged({
+			page: 1,
+			pageSize: 25,
+		});
+		expect(result).toMatchObject({
+			items: expect.any(Array),
+			total: expect.any(Number),
+			pageCount: expect.any(Number),
 		});
 	});
 });

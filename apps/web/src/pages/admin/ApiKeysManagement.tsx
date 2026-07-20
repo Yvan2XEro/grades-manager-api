@@ -1,7 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Eye, EyeOff, Key, Plus, Trash2, Webhook } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+	Area,
+	AreaChart,
+	CartesianGrid,
+	Legend,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
+} from "recharts";
 import {
 	ContextMenuItem,
 	ContextMenuSeparator,
@@ -11,7 +21,12 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
-import { Card, CardContent } from "../../components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "../../components/ui/card";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
@@ -32,7 +47,7 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 import type { ApiKey } from "../../utils/type";
 
 export default function ApiKeysManagement() {
@@ -56,10 +71,91 @@ export default function ApiKeysManagement() {
 	const [editWebhookSecret, setEditWebhookSecret] = useState("");
 	const [showEditSecret, setShowEditSecret] = useState(false);
 
+	const ACTIVITY_DAYS = 30;
+	const SERIES_COLORS = [
+		"var(--chart-1)",
+		"var(--chart-2)",
+		"var(--chart-3)",
+		"var(--chart-4)",
+		"var(--chart-5)",
+	];
+
 	const { data: keys = [], isLoading } = useQuery({
 		queryKey: ["diplomation-api-keys"],
 		queryFn: () => trpcClient.diplomationKeys.list.query(),
 	});
+
+	const { data: activityData } = useQuery(
+		trpc.diplomationKeys.activityStats.queryOptions({ days: ACTIVITY_DAYS }),
+	);
+
+	const { data: callData } = useQuery(
+		trpc.diplomationKeys.callStats.queryOptions({ days: ACTIVITY_DAYS }),
+	);
+
+	const { labelMap, allKeyIds, chartData } = useMemo(() => {
+		const labelMap = new Map(
+			(activityData?.keyLabels ?? []).map((k) => [k.id, k.label]),
+		);
+		const allKeyIds = [...labelMap.keys()];
+		if (activityData?.rows.some((r) => r.apiKeyId === null)) {
+			allKeyIds.push("unknown");
+		}
+
+		const byDate = new Map<string, Record<string, number>>();
+		for (const row of activityData?.rows ?? []) {
+			const key = row.apiKeyId ?? "unknown";
+			if (!byDate.has(row.date)) byDate.set(row.date, {});
+			const entry = byDate.get(row.date)!;
+			entry[key] = (entry[key] ?? 0) + row.count;
+		}
+
+		const chartData: Record<string, number | string>[] = [];
+		for (let i = ACTIVITY_DAYS - 1; i >= 0; i--) {
+			const d = new Date();
+			d.setDate(d.getDate() - i);
+			const iso = d.toISOString().slice(0, 10);
+			const display = d.toLocaleDateString("fr-FR", {
+				month: "2-digit",
+				day: "2-digit",
+			});
+			chartData.push({ date: display, ...(byDate.get(iso) ?? {}) });
+		}
+
+		return { labelMap, allKeyIds, chartData };
+	}, [activityData]);
+
+	const { callLabelMap, callKeyIds, callChartData } = useMemo(() => {
+		const callLabelMap = new Map(
+			(callData?.keyLabels ?? []).map((k) => [k.id, k.label]),
+		);
+		const callKeyIds = [...callLabelMap.keys()];
+		if (callData?.rows.some((r) => r.apiKeyId === null)) {
+			callKeyIds.push("unknown");
+		}
+
+		const byDate = new Map<string, Record<string, number>>();
+		for (const row of callData?.rows ?? []) {
+			const key = row.apiKeyId ?? "unknown";
+			if (!byDate.has(row.date)) byDate.set(row.date, {});
+			const entry = byDate.get(row.date)!;
+			entry[key] = (entry[key] ?? 0) + row.count;
+		}
+
+		const callChartData: Record<string, number | string>[] = [];
+		for (let i = ACTIVITY_DAYS - 1; i >= 0; i--) {
+			const d = new Date();
+			d.setDate(d.getDate() - i);
+			const iso = d.toISOString().slice(0, 10);
+			const display = d.toLocaleDateString("fr-FR", {
+				month: "2-digit",
+				day: "2-digit",
+			});
+			callChartData.push({ date: display, ...(byDate.get(iso) ?? {}) });
+		}
+
+		return { callLabelMap, callKeyIds, callChartData };
+	}, [callData]);
 
 	const createMutation = useMutation({
 		mutationFn: async () => {
@@ -159,6 +255,220 @@ export default function ApiKeysManagement() {
 					{t("admin.apiKeys.actions.create")}
 				</Button>
 			</div>
+
+			{/* Activity chart */}
+			<Card>
+				<CardHeader className="pb-2">
+					<CardTitle className="font-medium text-muted-foreground text-sm">
+						{t("admin.apiKeys.activity.title", {
+							defaultValue: "Activité — 30 derniers jours",
+						})}
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					{allKeyIds.length === 0 ? (
+						<p className="py-6 text-center text-muted-foreground text-sm">
+							{t("admin.apiKeys.activity.empty", {
+								defaultValue: "Aucune activité enregistrée.",
+							})}
+						</p>
+					) : (
+						<div className="h-52">
+							<ResponsiveContainer width="100%" height="100%">
+								<AreaChart
+									data={chartData}
+									margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+								>
+									<defs>
+										{allKeyIds.map((keyId, i) => (
+											<linearGradient
+												key={keyId}
+												id={`grad-${i}`}
+												x1="0"
+												y1="0"
+												x2="0"
+												y2="1"
+											>
+												<stop
+													offset="5%"
+													stopColor={SERIES_COLORS[i % SERIES_COLORS.length]}
+													stopOpacity={0.3}
+												/>
+												<stop
+													offset="95%"
+													stopColor={SERIES_COLORS[i % SERIES_COLORS.length]}
+													stopOpacity={0.02}
+												/>
+											</linearGradient>
+										))}
+									</defs>
+									<CartesianGrid
+										strokeDasharray="3 3"
+										vertical={false}
+										stroke="var(--border)"
+									/>
+									<XAxis
+										dataKey="date"
+										tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+										axisLine={false}
+										tickLine={false}
+										interval="preserveStartEnd"
+									/>
+									<YAxis
+										allowDecimals={false}
+										tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+										axisLine={false}
+										tickLine={false}
+									/>
+									<Tooltip
+										contentStyle={{
+											borderRadius: "8px",
+											border: "1px solid var(--border)",
+											backgroundColor: "var(--card)",
+											fontSize: "12px",
+											color: "var(--foreground)",
+										}}
+									/>
+									<Legend
+										formatter={(value) =>
+											labelMap.get(value) ??
+											t("admin.apiKeys.activity.unknownKey", {
+												defaultValue: "Sans clé",
+											})
+										}
+										wrapperStyle={{ fontSize: "11px" }}
+									/>
+									{allKeyIds.map((keyId, i) => (
+										<Area
+											key={keyId}
+											type="monotone"
+											dataKey={keyId}
+											name={
+												labelMap.get(keyId) ??
+												t("admin.apiKeys.activity.unknownKey", {
+													defaultValue: "Sans clé",
+												})
+											}
+											stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
+											fill={`url(#grad-${i})`}
+											strokeWidth={2}
+											dot={false}
+											activeDot={{ r: 4 }}
+										/>
+									))}
+								</AreaChart>
+							</ResponsiveContainer>
+						</div>
+					)}
+				</CardContent>
+			</Card>
+
+			{/* API call activity chart */}
+			<Card>
+				<CardHeader className="pb-2">
+					<CardTitle className="font-medium text-muted-foreground text-sm">
+						{t("admin.apiKeys.callActivity.title", {
+							defaultValue: "Appels API — 30 derniers jours",
+						})}
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					{callKeyIds.length === 0 ? (
+						<p className="py-6 text-center text-muted-foreground text-sm">
+							{t("admin.apiKeys.callActivity.empty", {
+								defaultValue: "Aucun appel enregistré.",
+							})}
+						</p>
+					) : (
+						<div className="h-52">
+							<ResponsiveContainer width="100%" height="100%">
+								<AreaChart
+									data={callChartData}
+									margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+								>
+									<defs>
+										{callKeyIds.map((keyId, i) => (
+											<linearGradient
+												key={keyId}
+												id={`call-grad-${i}`}
+												x1="0"
+												y1="0"
+												x2="0"
+												y2="1"
+											>
+												<stop
+													offset="5%"
+													stopColor={SERIES_COLORS[i % SERIES_COLORS.length]}
+													stopOpacity={0.3}
+												/>
+												<stop
+													offset="95%"
+													stopColor={SERIES_COLORS[i % SERIES_COLORS.length]}
+													stopOpacity={0.02}
+												/>
+											</linearGradient>
+										))}
+									</defs>
+									<CartesianGrid
+										strokeDasharray="3 3"
+										vertical={false}
+										stroke="var(--border)"
+									/>
+									<XAxis
+										dataKey="date"
+										tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+										axisLine={false}
+										tickLine={false}
+										interval="preserveStartEnd"
+									/>
+									<YAxis
+										allowDecimals={false}
+										tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+										axisLine={false}
+										tickLine={false}
+									/>
+									<Tooltip
+										contentStyle={{
+											borderRadius: "8px",
+											border: "1px solid var(--border)",
+											backgroundColor: "var(--card)",
+											fontSize: "12px",
+											color: "var(--foreground)",
+										}}
+									/>
+									<Legend
+										formatter={(value) =>
+											callLabelMap.get(value) ??
+											t("admin.apiKeys.activity.unknownKey", {
+												defaultValue: "Sans clé",
+											})
+										}
+										wrapperStyle={{ fontSize: "11px" }}
+									/>
+									{callKeyIds.map((keyId, i) => (
+										<Area
+											key={keyId}
+											type="monotone"
+											dataKey={keyId}
+											name={
+												callLabelMap.get(keyId) ??
+												t("admin.apiKeys.activity.unknownKey", {
+													defaultValue: "Sans clé",
+												})
+											}
+											stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
+											fill={`url(#call-grad-${i})`}
+											strokeWidth={2}
+											dot={false}
+											activeDot={{ r: 4 }}
+										/>
+									))}
+								</AreaChart>
+							</ResponsiveContainer>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
 			<Card>
 				<CardContent>

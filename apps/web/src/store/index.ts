@@ -22,7 +22,6 @@ export type PermissionSnapshot = {
 
 export type User = {
 	profileId: string;
-	authUserId?: string | null;
 	role: BusinessRole;
 	firstName: string;
 	lastName: string;

@@ -7,10 +7,13 @@ import { Resend } from "resend";
 import { domainUsersRepo } from "@/modules/domain-users";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
+import { adminRoles, superadminRoles } from "./auth-roles";
 import {
 	organizationAccessControl,
 	organizationRoles,
 } from "./organization-roles";
+
+export { adminRoles, superadminRoles };
 
 /**
  * Maps userId → orgId for the duration of a sign-in request.
@@ -71,8 +74,6 @@ type SessionWithActiveOrganization = {
 	activeOrganizationId?: string | null;
 };
 
-export const superadminRoles = ["admin"];
-export const adminRoles = ["admin", ...superadminRoles];
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: "pg",
@@ -83,14 +84,8 @@ export const auth = betterAuth({
 		customSession(async ({ session, user }) => {
 			const sessionWithOrg = session as typeof session &
 				SessionWithActiveOrganization;
-			const domainProfiles = await domainUsersRepo.getDomainsByAuthUserId(
+			const domainProfiles = await domainUsersRepo.getDomainsByMemberships(
 				user.id,
-				{
-					authUserId: user.id,
-					primaryEmail: user.email,
-					firstName: user.name,
-					lastName: "",
-				},
 			);
 			const activeMembership =
 				sessionWithOrg.activeOrganizationId && user.id

@@ -1,7 +1,12 @@
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { businessRoles, domainStatuses } from "@/db/schema/app-schema";
-import { adminProcedure, protectedProcedure, router } from "../../lib/trpc";
+import {
+	adminProcedure,
+	protectedProcedure,
+	router,
+	tenantAdminProcedure,
+} from "../../lib/trpc";
 import * as service from "./users.service";
 import {
 	createUserProfileSchema,
@@ -23,9 +28,33 @@ export const usersRouter = router({
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input }) => service.listUsers(input)),
+	listPaged: tenantAdminProcedure
+		.input(
+			z.object({
+				page: z.number().int().min(1).default(1),
+				pageSize: z.number().int().min(1).max(100).default(25),
+				role: z.enum(businessRoles).optional(),
+				status: z.enum(domainStatuses).optional(),
+				search: z.string().optional(),
+				classId: z.string().optional(),
+				academicYearId: z.string().optional(),
+			}),
+		)
+		.query(({ input, ctx }) =>
+			service.listUsersPaged({
+				...input,
+				institutionId: ctx.institution.id,
+				organizationId: ctx.institution.organizationId!,
+			}),
+		),
 	createProfile: adminProcedure
 		.input(createUserProfileSchema)
-		.mutation(({ input }) => service.createUserProfile(input)),
+		.mutation(({ input, ctx }) =>
+			service.createUserProfile({
+				...input,
+				institutionId: ctx.institution?.id,
+			}),
+		),
 	updateProfile: adminProcedure
 		.input(updateUserProfileSchema)
 		.mutation(({ input }) => {
@@ -47,6 +76,7 @@ export const usersRouter = router({
 			try {
 				return await service.createUserWithAuth(input, {
 					organizationId: ctx.organizationId,
+					institutionId: ctx.institution?.id,
 				});
 			} catch (err) {
 				if (err instanceof service.UserAlreadyExistsError) {

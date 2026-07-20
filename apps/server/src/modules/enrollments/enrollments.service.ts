@@ -131,6 +131,19 @@ export async function listEnrollments(
 	return repo.list({ ...opts, institutionId });
 }
 
+export async function listEnrollmentsPaged(
+	input: {
+		page: number;
+		pageSize: number;
+		classId?: string;
+		academicYearId?: string;
+		status?: schema.EnrollmentStatus;
+	},
+	institutionId: string,
+) {
+	return repo.listPaged({ institutionId, ...input });
+}
+
 export async function getEnrollmentById(id: string, institutionId: string) {
 	const enrollment = await repo.findById(id, institutionId);
 	if (!enrollment) throw new TRPCError({ code: "NOT_FOUND" });

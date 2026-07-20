@@ -1,0 +1,221 @@
+meta:
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante-master
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: Cycle BTS Santé - Fichier maître (filières, spécialités, catégories)
+  description: 'Ce fichier référence les entités de base du BTS Santé. Les UE et EC détaillés sont dans les 8 fichiers par
+    spécialité : inses-sante-{code}.yaml.'
+departments:
+- code: EMS
+  nameFr: Études Médico-Sanitaires
+  nameEn: Medical and Health Studies
+  facultyCode: INSES
+  studyCycleCode: BTS-SANTE
+  description: Filière regroupant les spécialités liées aux soins directs aux patients et à la santé communautaire (Sage-femme,
+    Sciences infirmières, Kinésithérapie, Odontostomatologie, Opticien-Lunetier).
+- code: STBM
+  nameFr: Sciences et Techniques Biomédicales
+  nameEn: Biomedical Sciences and Techniques
+  facultyCode: INSES
+  studyCycleCode: BTS-SANTE
+  description: Filière regroupant les spécialités techniques de support au diagnostic et au traitement (Techniques de laboratoire
+    et d'analyse médicale, Techniques pharmaceutiques, Radiologie et imagerie médicale).
+programs:
+- code: SFM
+  nameFr: Sage-femme
+  nameEn: Midwifery
+  abbreviation: BTS-SFM
+  slug: sage-femme
+  description: Programme BTS spécialité Sage-femme - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Sage-femme
+  specialiteEn: Midwifery
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Sage-femme
+  diplomaTitleEn: Higher Technician Diploma — Midwifery
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-sfm.yaml
+- code: SIN
+  nameFr: Sciences Infirmières
+  nameEn: Nursing Sciences
+  abbreviation: BTS-SIN
+  slug: sciences-infirmieres
+  description: Programme BTS spécialité Sciences Infirmières - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Sciences Infirmières
+  specialiteEn: Nursing Sciences
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Sciences Infirmières
+  diplomaTitleEn: Higher Technician Diploma — Nursing Sciences
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-sin.yaml
+- code: KIN
+  nameFr: Kinésithérapie
+  nameEn: Physiotherapy
+  abbreviation: BTS-KIN
+  slug: kinesitherapie
+  description: Programme BTS spécialité Kinésithérapie - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Kinésithérapie
+  specialiteEn: Physiotherapy
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Kinésithérapie
+  diplomaTitleEn: Higher Technician Diploma — Physiotherapy
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-kin.yaml
+- code: ODO
+  nameFr: Odontostomatologie
+  nameEn: Odontostomatology
+  abbreviation: BTS-ODO
+  slug: odontostomatologie
+  description: Programme BTS spécialité Odontostomatologie - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Odontostomatologie
+  specialiteEn: Odontostomatology
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Odontostomatologie
+  diplomaTitleEn: Higher Technician Diploma — Odontostomatology
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-odo.yaml
+- code: OPT
+  nameFr: Opticien-Lunetier
+  nameEn: Optician
+  abbreviation: BTS-OPT
+  slug: opticien-lunetier
+  description: Programme BTS spécialité Opticien-Lunetier - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Opticien-Lunetier
+  specialiteEn: Optician
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Opticien-Lunetier
+  diplomaTitleEn: Higher Technician Diploma — Optician
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-opt.yaml
+- code: TLB
+  nameFr: Techniques de Laboratoire et d'Analyse Médicale
+  nameEn: Medical Laboratory and Analysis Techniques
+  abbreviation: BTS-TLB
+  slug: techniques-de-laboratoire
+  description: Programme BTS spécialité Techniques de Laboratoire et d'Analyse Médicale - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Techniques de Laboratoire et d'Analyse Médicale
+  specialiteEn: Medical Laboratory and Analysis Techniques
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Techniques de Laboratoire et d'Analyse Médicale
+  diplomaTitleEn: Higher Technician Diploma — Medical Laboratory and Analysis Techniques
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-tlb.yaml
+- code: TPH
+  nameFr: Techniques Pharmaceutiques
+  nameEn: Pharmaceutical Techniques
+  abbreviation: BTS-TPH
+  slug: techniques-pharmaceutiques
+  description: Programme BTS spécialité Techniques Pharmaceutiques - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Techniques Pharmaceutiques
+  specialiteEn: Pharmaceutical Techniques
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Techniques Pharmaceutiques
+  diplomaTitleEn: Higher Technician Diploma — Pharmaceutical Techniques
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-tph.yaml
+- code: IMM
+  nameFr: Radiologie et Imagerie Médicale
+  nameEn: Radiology and Medical Imaging
+  abbreviation: BTS-IMM
+  slug: radiologie-et-imagerie-medicale
+  description: Programme BTS spécialité Radiologie et Imagerie Médicale - 3 ans, 6 semestres, 180 crédits.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Radiologie et Imagerie Médicale
+  specialiteEn: Radiology and Medical Imaging
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Radiologie et Imagerie Médicale
+  diplomaTitleEn: Higher Technician Diploma — Radiology and Medical Imaging
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  detailFile: inses-sante-imm.yaml
+courseUnitCategories:
+- code: FOND
+  name: UE Fondamentales
+  weightPercent: 30
+  description: Unités d'enseignement de base scientifique et théorique
+- code: PROF
+  name: UE Professionnelles
+  weightPercent: 60
+  description: Unités d'enseignement de spécialisation et de pratique professionnelle
+- code: TRAN
+  name: UE Transversales
+  weightPercent: 10
+  description: Unités d'enseignement de compétences générales (langues, TIC, éthique, etc.)

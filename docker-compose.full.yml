@@ -1,0 +1,67 @@
+# Local test for the combined image (backend + frontend in a single container)
+# Usage: docker compose -f docker-compose.full.yml up --build
+#
+# App: http://localhost:3000
+# Admin: admin@test.local / Admin1234!
+
+services:
+  app:
+    image: ghcr.io/yvan2xero/tkams:local
+    build:
+      context: .
+      dockerfile: Dockerfile.full
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://tkams:tkams@postgres:5432/tkams
+      DATABASE_HOST: postgres
+      POSTGRES_USER: tkams
+      BETTER_AUTH_SECRET: local-dev-secret-change-in-prod-32chars
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_COOKIE_SAMESITE: lax
+      BETTER_AUTH_COOKIE_SECURE: "false"
+      CORS_ORIGINS: http://localhost:3000
+      SERVER_PUBLIC_URL: http://localhost:3000
+      SERVE_FRONTEND: "true"
+      STORAGE_DRIVER: local
+      STORAGE_LOCAL_ROOT: /usr/src/app/apps/server/storage/uploads
+      STORAGE_LOCAL_PUBLIC_PATH: /uploads
+      # Seed — creates a demo institution on first boot
+      RUN_SEED: "true"
+      SEED_ORG_NAME: Test University
+      SEED_ORG_SLUG: test-institution
+      SEED_ORG_TYPE: university
+      SEED_ORG_COUNTRY: CM
+      SEED_ADMIN_NAME: Admin Test
+      SEED_ADMIN_EMAIL: admin@test.local
+      SEED_ADMIN_PASSWORD: Admin1234!
+      DEFAULT_ORGANIZATION_SLUG: test-institution
+    ports:
+      - "3000:3000"
+    volumes:
+      - app_uploads:/usr/src/app/apps/server/storage/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: tkams
+      POSTGRES_PASSWORD: tkams
+      POSTGRES_DB: tkams
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "54322:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tkams -d tkams"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  app_uploads:
+  postgres_data:

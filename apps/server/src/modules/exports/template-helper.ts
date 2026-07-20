@@ -1,10 +1,48 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import Handlebars from "handlebars";
 import { defaultExportConfig } from "../../config/export-config";
-import type {
-	Institution,
-	InstitutionMetadata,
+import {
+	DEFAULT_MENTION_RANGES,
+	type Institution,
+	type InstitutionMetadata,
+	type MentionRange,
 } from "../../db/schema/app-schema";
+import {
+	FINANCIAL_CLEARANCE_TEMPLATE,
+	PAYMENT_ORDER_TEMPLATE,
+	PAYMENT_RECEIPT_TEMPLATE,
+} from "./financial-templates";
+import {
+	ATTESTATION_TEMPLATE_CENTER,
+	ATTESTATION_TEMPLATE_FACULTY,
+	ATTESTATION_TEMPLATE_IPES,
+	ATTESTATION_TEMPLATE_STANDARD,
+} from "./templates/attestation-templates";
+import {
+	DIPLOMA_TEMPLATE,
+	DIPLOMA_TEMPLATE_CENTER,
+} from "./templates/diploma-templates";
+import {
+	DELIBERATION_TEMPLATE,
+	DELIBERATION_TEMPLATE_CENTER,
+	EC_TEMPLATE,
+	EC_TEMPLATE_CENTER,
+	EVALUATION_TEMPLATE,
+	EVALUATION_TEMPLATE_CENTER,
+	PV_TEMPLATE,
+	PV_TEMPLATE_CENTER,
+	TEACHING_UNIT_TEMPLATE,
+	TEACHING_UNIT_TEMPLATE_CENTER,
+} from "./templates/publication-templates";
+import {
+	STUDENT_LIST_TEMPLATE,
+	STUDENT_LIST_TEMPLATE_CENTER,
+} from "./templates/student-list-templates";
+import {
+	RELEVE_TEMPLATE_FACULTY,
+	RELEVE_TEMPLATE_IPES,
+	RELEVE_TEMPLATE_STANDARD,
+	TRANSCRIPT_TEMPLATE_CENTER,
+} from "./templates/transcript-templates";
 
 /**
  * Configuration interface for exports
@@ -60,18 +98,7 @@ export interface ExportConfig {
 	};
 }
 
-const defaultGrading: ExportConfig["grading"] = {
-	appreciations: [
-		{ label: "Excellent", min: 18, max: 20 },
-		{ label: "Très Bien", min: 16, max: 17.99 },
-		{ label: "Bien", min: 14, max: 15.99 },
-		{ label: "Assez Bien", min: 12, max: 13.99 },
-		{ label: "Passable", min: 10, max: 11.99 },
-		{ label: "Insuffisant", min: 9, max: 9.99 },
-		{ label: "Faible", min: 8, max: 8.99 },
-		{ label: "Très Faible", min: 6, max: 7.99 },
-		{ label: "Nul", min: 0, max: 5.99 },
-	],
+const defaultGrading = {
 	passing_grade: 10,
 	scale: 20,
 };
@@ -123,10 +150,24 @@ export function loadExportConfig(): ExportConfig {
  * Handles optional hierarchyoptional: Institution → Parent Institution (peut être de type faculty)
  * Une institution n'est pas forcément parrainée par une faculté
  */
+/** Convert MentionRange[] from the grade-scale model to the ExportConfig appreciations format. */
+export function mentionRangesToAppreciations(
+	ranges: MentionRange[],
+): ExportConfig["grading"]["appreciations"] {
+	const sorted = [...ranges].sort((a, b) => b.min - a.min);
+	return sorted.map((r, i) => ({
+		label: r.label,
+		min: r.min,
+		max: i === 0 ? 20 : Math.round((sorted[i - 1].min - 0.01) * 100) / 100,
+	}));
+}
+
 export function institutionToExportConfig(
 	institution: Institution & {
 		parentInstitution?: Institution | null;
 	},
+	gradeScalePassThreshold?: number,
+	gradeScaleMentionRanges?: MentionRange[],
 ): ExportConfig {
 	const metadata = institution.metadata as InstitutionMetadata;
 	const exportConfig = metadata?.export_config;
@@ -165,9 +206,14 @@ export function institutionToExportConfig(
 		},
 		grading: {
 			appreciations:
-				exportConfig?.grading?.appreciations ?? defaultGrading.appreciations,
+				gradeScaleMentionRanges && gradeScaleMentionRanges.length > 0
+					? mentionRangesToAppreciations(gradeScaleMentionRanges)
+					: (exportConfig?.grading?.appreciations ??
+						mentionRangesToAppreciations(DEFAULT_MENTION_RANGES)),
 			passing_grade:
-				exportConfig?.grading?.passing_grade ?? defaultGrading.passing_grade,
+				gradeScalePassThreshold ??
+				exportConfig?.grading?.passing_grade ??
+				defaultGrading.passing_grade,
 			scale: exportConfig?.grading?.scale ?? defaultGrading.scale,
 		},
 		signatures: {
@@ -197,23 +243,90 @@ export function institutionToExportConfig(
 /**
  * Load HTML template from file
  */
+/**
+ * Variant of a template:
+ *   - `"standard"` — institution + tutelle chain (faculty + university).
+ *   - `"center"` — institution + center data (no parent institution chain),
+ *     used for programs whose `centerId` is set.
+ */
+export type TemplateVariant = "standard" | "center";
+
+/**
+ * Establishment type — used at seed time to pick the right standard template
+ * for transcripts and attestations. The `_ipes` and `_faculty` files have a
+ * different DOM structure (an IPES sits under a faculty + university; a
+ * faculty IS itself the unit chapeauting the program).
+ */
+export type EstablishmentType = "institution" | "faculty" | "university";
+
 export function loadTemplate(
-	templateName: "pv" | "evaluation" | "ue" | "deliberation",
+	templateName: string,
+	variant: TemplateVariant = "standard",
+	establishmentType?: EstablishmentType,
 ): string {
-	const templateMap = {
-		pv: "pv-template.html",
-		evaluation: "evaluation-publication.html",
-		ue: "teaching-unit-publication.html",
-		deliberation: "deliberation-template.html",
+	// All templates are bundled as TS string exports — no fs reads, no Docker
+	// COPY rules needed.
+	const financialMap: Record<string, string> = {
+		payment_order: PAYMENT_ORDER_TEMPLATE,
+		payment_receipt: PAYMENT_RECEIPT_TEMPLATE,
+		financial_clearance: FINANCIAL_CLEARANCE_TEMPLATE,
+	};
+	if (templateName in financialMap) return financialMap[templateName]!;
+
+	const standardMap: Record<string, string> = {
+		pv: PV_TEMPLATE,
+		evaluation: EVALUATION_TEMPLATE,
+		ec: EC_TEMPLATE,
+		ue: TEACHING_UNIT_TEMPLATE,
+		deliberation: DELIBERATION_TEMPLATE,
+		diploma: DIPLOMA_TEMPLATE,
+		// Generic fallback. Real defaults for transcript/attestation are split
+		// per establishment type below.
+		transcript: RELEVE_TEMPLATE_STANDARD,
+		attestation: ATTESTATION_TEMPLATE_STANDARD,
+		enrollment_certificate: ATTESTATION_TEMPLATE_STANDARD,
+		student_list: STUDENT_LIST_TEMPLATE,
 	};
 
-	const templatePath = join(
-		import.meta.dir,
-		"templates",
-		templateMap[templateName],
-	);
+	// IPES- and Faculty-specific variants. Picked at seed time.
+	const ipesMap: Record<string, string> = {
+		transcript: RELEVE_TEMPLATE_IPES,
+		attestation: ATTESTATION_TEMPLATE_IPES,
+		enrollment_certificate: ATTESTATION_TEMPLATE_IPES,
+	};
+	const facultyMap: Record<string, string> = {
+		transcript: RELEVE_TEMPLATE_FACULTY,
+		attestation: ATTESTATION_TEMPLATE_FACULTY,
+		enrollment_certificate: ATTESTATION_TEMPLATE_FACULTY,
+	};
 
-	return readFileSync(templatePath, "utf-8");
+	// Center variants: center-only header, no institutional tutelle chain.
+	const centerMap: Record<string, string> = {
+		diploma: DIPLOMA_TEMPLATE_CENTER,
+		transcript: TRANSCRIPT_TEMPLATE_CENTER,
+		attestation: ATTESTATION_TEMPLATE_CENTER,
+		enrollment_certificate: ATTESTATION_TEMPLATE_CENTER,
+		student_list: STUDENT_LIST_TEMPLATE_CENTER,
+		pv: PV_TEMPLATE_CENTER,
+		evaluation: EVALUATION_TEMPLATE_CENTER,
+		ec: EC_TEMPLATE_CENTER,
+		ue: TEACHING_UNIT_TEMPLATE_CENTER,
+		deliberation: DELIBERATION_TEMPLATE_CENTER,
+	};
+
+	if (variant === "center" && centerMap[templateName]) {
+		return centerMap[templateName]!;
+	}
+	if (establishmentType === "institution" && ipesMap[templateName]) {
+		return ipesMap[templateName]!;
+	}
+	if (establishmentType === "faculty" && facultyMap[templateName]) {
+		return facultyMap[templateName]!;
+	}
+	return (
+		standardMap[templateName] ??
+		`<!-- No bundled template for type "${templateName}" -->`
+	);
 }
 
 /**
@@ -233,10 +346,14 @@ export function getAppreciation(score: number, config: ExportConfig): string {
  */
 export function getObservation(
 	score: number | null,
-	config: ExportConfig,
+	_config: ExportConfig,
 ): string {
-	if (score === null) return "Absent";
-	return score >= config.grading.passing_grade ? "Reçu" : "Ajourné";
+	// Per-évaluation observation is intentionally limited to attendance.
+	// Reçu/Ajourné verdicts only make sense at the EC / UE / PV level —
+	// where ALL evaluations are aggregated. Showing them on a single CC
+	// is misleading (a student with 8/20 CC can still pass the EC after a
+	// strong final exam).
+	return score === null ? "Absent" : "Présent";
 }
 
 /**
@@ -256,9 +373,20 @@ export function calculateSuccessRate(
 /**
  * Format number to French locale (XX,XX)
  */
-export function formatNumber(num: number | null, decimals = 2): string {
-	if (!num) return "ABS";
-	return num.toFixed(decimals).replace(".", ",");
+export function formatNumber(
+	num: number | null | undefined,
+	decimals: unknown = 2,
+): string {
+	// Handlebars passes its options hash as the trailing argument, so when a
+	// template calls `{{formatNumber cc}}` (no explicit decimals), `decimals`
+	// arrives as that object. Reject anything that isn't a finite number and
+	// fall back to 2, otherwise `toFixed(NaN)` silently truncates to integers.
+	const d =
+		typeof decimals === "number" && Number.isFinite(decimals) ? decimals : 2;
+	if (num === null || num === undefined) return "ABS";
+	const n = typeof num === "number" ? num : Number(num);
+	if (!Number.isFinite(n)) return "ABS";
+	return n.toFixed(d).replace(".", ",");
 }
 
 /**
@@ -427,4 +555,36 @@ export function resolveStudentGradesWithRetakes(
 	}
 
 	return resolvedGrades;
+}
+
+/**
+ * Handlebars helper that renders a logo, preferring inline SVG over a URL.
+ *
+ * Usage in templates:
+ *   {{{logo svg=center.logoSvg url=center.logoUrl alt="Centre" class="logo"}}}
+ *
+ * If `svg` is a non-empty string, it is emitted as raw SVG markup. Otherwise
+ * it falls back to `<img src="{url}" ...>`. If neither is provided, returns
+ * an empty SafeString so callers don't have to wrap calls in `{{#if}}`.
+ */
+export function logoHelper(this: unknown, options: Handlebars.HelperOptions) {
+	const hash = (options?.hash ?? {}) as {
+		svg?: string | null;
+		url?: string | null;
+		alt?: string;
+		class?: string;
+		style?: string;
+	};
+	const svg = typeof hash.svg === "string" ? hash.svg.trim() : "";
+	if (svg) {
+		return new Handlebars.SafeString(svg);
+	}
+	const url = typeof hash.url === "string" ? hash.url.trim() : "";
+	if (!url) return new Handlebars.SafeString("");
+	const escapeAttr = Handlebars.escapeExpression;
+	const attrs = [`src="${escapeAttr(url)}"`];
+	if (hash.alt) attrs.push(`alt="${escapeAttr(hash.alt)}"`);
+	if (hash.class) attrs.push(`class="${escapeAttr(hash.class)}"`);
+	if (hash.style) attrs.push(`style="${escapeAttr(hash.style)}"`);
+	return new Handlebars.SafeString(`<img ${attrs.join(" ")}>`);
 }

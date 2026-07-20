@@ -8,6 +8,7 @@ import {
 	ensureActorCanEditExam,
 } from "../exam-grade-editors/exam-grade-editors.service";
 import * as examsRepo from "../exams/exams.repo";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import { refreshAfterRetakeGrade } from "../promotion-rules/student-facts.service";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as creditLedger from "../student-credit-ledger/student-credit-ledger.service";
@@ -39,6 +40,20 @@ async function requireClassCourseForInstitution(
 	});
 	if (!classCourse) throw notFound("Class course not found");
 	return classCourse;
+}
+
+async function requireClassForInstitution(
+	classId: string,
+	institutionId: string,
+) {
+	const klass = await db.query.classes.findFirst({
+		where: and(
+			eq(schema.classes.id, classId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+	});
+	if (!klass) throw notFound("Class not found");
+	return klass;
 }
 
 async function requireCourseForInstitution(
@@ -83,10 +98,24 @@ async function recomputeCreditsAfterGradeChange(
 	studentId: string,
 	classCourseId: string,
 ) {
-	const academicYearId = await resolveAcademicYearId(classCourseId);
-	if (academicYearId) {
-		await creditLedger.recomputeForStudent(studentId, academicYearId);
-	}
+	const [row] = await db
+		.select({
+			academicYear: schema.classes.academicYear,
+			institutionId: schema.classes.institutionId,
+		})
+		.from(schema.classCourses)
+		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
+		.where(eq(schema.classCourses.id, classCourseId))
+		.limit(1);
+	if (!row) return;
+	const gradeScale = await gradeScalesService.getForInstitution(
+		row.institutionId,
+	);
+	await creditLedger.recomputeForStudent(
+		studentId,
+		row.academicYear,
+		gradeScale.passThreshold,
+	);
 }
 
 export async function upsertNote(
@@ -103,6 +132,7 @@ export async function upsertNote(
 	});
 	ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
+
 	try {
 		const saved = await repo.upsert({
 			student: studentId,
@@ -148,6 +178,7 @@ export async function updateNote(
 		grade.student,
 		exam.classCourse,
 	);
+
 	const updated = await repo.update(id, score.toString());
 	await logGradeEdit({
 		access,
@@ -204,7 +235,29 @@ export async function listByExam(
 	institutionId: string,
 ) {
 	await requireExamForInstitution(opts.examId, institutionId);
-	return repo.listByExam(opts);
+	const result = await repo.listByExam(opts);
+	// Enrich with student profile data
+	const studentIds = result.items.map((g) => g.student);
+	const profiles =
+		studentIds.length > 0
+			? await db.query.students.findMany({
+					where: (t, { inArray }) => inArray(t.id, studentIds),
+					with: { profile: true },
+					columns: { id: true, registrationNumber: true },
+				})
+			: [];
+	const profileMap = new Map(profiles.map((p) => [p.id, p]));
+	const enriched = result.items.map((g) => {
+		const s = profileMap.get(g.student);
+		return {
+			...g,
+			studentName: s
+				? `${s.profile.firstName} ${s.profile.lastName}`.trim()
+				: null,
+			registrationNumber: s?.registrationNumber ?? null,
+		};
+	});
+	return { ...result, items: enriched };
 }
 
 export async function listByStudent(
@@ -221,6 +274,14 @@ export async function listByClassCourse(
 ) {
 	await requireClassCourseForInstitution(opts.classCourseId, institutionId);
 	return repo.listByClassCourse(opts);
+}
+
+export async function listByClass(
+	opts: Parameters<typeof repo.listByClass>[0],
+	institutionId: string,
+) {
+	await requireClassForInstitution(opts.classId, institutionId);
+	return repo.listByClass(opts);
 }
 
 export async function avgForExam(examId: string, institutionId: string) {

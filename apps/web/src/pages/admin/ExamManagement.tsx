@@ -1,10 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import {
@@ -36,7 +31,8 @@ import {
 } from "@/components/ui/context-menu";
 import { DatePicker } from "@/components/ui/date-picker";
 import { FilterBar } from "@/components/ui/filter-bar";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
@@ -45,7 +41,14 @@ import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
-import { DialogFooter } from "../../components/ui/dialog";
+import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../../components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -70,6 +73,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -87,6 +91,7 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
+import { Textarea } from "../../components/ui/textarea";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -154,6 +159,10 @@ export default function ExamManagement() {
 	const [editingExam, setEditingExam] = useState<Exam | null>(null);
 	const [retakeParentExam, setRetakeParentExam] = useState<Exam | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [rejectTarget, setRejectTarget] = useState<{ examId: string } | null>(
+		null,
+	);
+	const [rejectReason, setRejectReason] = useState("");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [classId, setClassId] = useState<string | null>(null);
@@ -165,13 +174,26 @@ export default function ExamManagement() {
 		setSemesterId(null);
 	}, []);
 
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
 	const yearsQuery = useQuery({
 		...trpc.academicYears.list.queryOptions({}),
 	});
 	useEffect(() => {
 		if (!academicYearId && yearsQuery.data?.items) {
 			const active = yearsQuery.data.items.find((y) => y.isActive);
-			if (active) setAcademicYearId(active.id);
+			if (active) {
+				setAcademicYearId(active.id);
+				setPage(1);
+			}
 		}
 	}, [yearsQuery.data, academicYearId]);
 
@@ -181,57 +203,26 @@ export default function ExamManagement() {
 	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 	const retakeSchema = useMemo(() => buildRetakeSchema(t), [t]);
 
-	const examsQuery = useInfiniteQuery({
-		queryKey: [
-			"exams",
-			academicYearId,
-			searchTerm,
-			classId,
-			semesterId,
-			dateFrom,
-			dateTo,
-		],
-		queryFn: async ({ pageParam }) => {
-			if (!academicYearId) {
-				return {
-					items: [] as Exam[],
-					nextCursor: undefined as string | undefined,
-				};
-			}
-			const { items, nextCursor } = await trpcClient.exams.list.query({
-				academicYearId,
+	const { data: examsData, isLoading: isLoadingExamsQuery } = useQuery(
+		trpc.exams.listPaged.queryOptions(
+			{
+				page,
+				pageSize,
+				academicYearId: academicYearId ?? undefined,
 				query: searchTerm.trim() ? searchTerm.trim() : undefined,
 				classId: classId ?? undefined,
-				semesterId: semesterId ?? undefined,
 				dateFrom: dateFrom ?? undefined,
 				dateTo: dateTo ?? undefined,
-				cursor: pageParam,
-				limit: 20,
-			});
-			return {
-				items: items.map(
-					(exam) =>
-						({
-							...exam,
-							percentage: Number(exam.percentage),
-						}) as Exam,
-				),
-				nextCursor,
-			};
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-		enabled: Boolean(academicYearId),
-	});
-	const exams = examsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+			},
+			{ enabled: Boolean(academicYearId) },
+		),
+	);
+	const exams: Exam[] = (examsData?.items ?? []).map((exam) => ({
+		...exam,
+		percentage: Number(exam.percentage),
+	}));
 	const isLoadingExams =
-		examsQuery.isLoading || (!academicYearId && yearsQuery.isLoading);
-	const isFetchingNextPage = examsQuery.isFetchingNextPage;
-	const hasNextPage = Boolean(examsQuery.hasNextPage);
-	const fetchNextPage = examsQuery.fetchNextPage;
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+		isLoadingExamsQuery || (!academicYearId && yearsQuery.isLoading);
 
 	const _semestersQuery = useQuery({
 		...trpc.semesters.list.queryOptions({}),
@@ -283,7 +274,7 @@ export default function ExamManagement() {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			toast.success(t("admin.exams.toast.createSuccess"));
 			setIsFormOpen(false);
 			form.reset();
@@ -307,7 +298,7 @@ export default function ExamManagement() {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			toast.success(t("admin.exams.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingExam(null);
@@ -327,7 +318,7 @@ export default function ExamManagement() {
 			await trpcClient.exams.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			toast.success(t("admin.exams.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
@@ -343,6 +334,8 @@ export default function ExamManagement() {
 
 	const selection = useRowSelection(exams);
 
+	const { confirm, ConfirmDialog } = useConfirm();
+
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
 			await Promise.all(
@@ -350,7 +343,7 @@ export default function ExamManagement() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -376,7 +369,7 @@ export default function ExamManagement() {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			toast.success(t("admin.exams.toast.retakeSuccess"));
 			setIsRetakeFormOpen(false);
 			setRetakeParentExam(null);
@@ -396,7 +389,7 @@ export default function ExamManagement() {
 			await trpcClient.exams.submit.mutate({ examId });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			toast.success(t("admin.exams.toast.submitSuccess"));
 		},
 		onError: (error: unknown) => {
@@ -412,14 +405,20 @@ export default function ExamManagement() {
 		mutationFn: async ({
 			examId,
 			status,
+			rejectionReason,
 		}: {
 			examId: string;
 			status: "approved" | "rejected";
+			rejectionReason?: string;
 		}) => {
-			await trpcClient.exams.validate.mutate({ examId, status });
+			await trpcClient.exams.validate.mutate({
+				examId,
+				status,
+				rejectionReason,
+			});
 		},
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			if (variables.status === "approved") {
 				toast.success(t("admin.exams.toast.approveSuccess"));
 			} else {
@@ -521,6 +520,7 @@ export default function ExamManagement() {
 					setSemesterId(null);
 					setDateFrom(null);
 					setDateTo(null);
+					setPage(1);
 				}}
 			>
 				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -530,7 +530,7 @@ export default function ExamManagement() {
 						</p>
 						<DebouncedSearchField
 							value={searchTerm}
-							onChange={setSearchTerm}
+							onChange={handleFilter(setSearchTerm)}
 							placeholder={t("admin.exams.filters.searchPlaceholder")}
 							disabled={!academicYearId}
 						/>
@@ -541,7 +541,7 @@ export default function ExamManagement() {
 						</p>
 						<AcademicYearSelect
 							value={academicYearId}
-							onChange={(value) => setAcademicYearId(value)}
+							onChange={handleFilter(setAcademicYearId)}
 							disabled={isLoadingExams}
 						/>
 					</div>
@@ -552,7 +552,7 @@ export default function ExamManagement() {
 						<ClassSelect
 							academicYearId={academicYearId}
 							value={classId}
-							onChange={setClassId}
+							onChange={handleFilter(setClassId)}
 							disabled={!academicYearId}
 						/>
 					</div>
@@ -560,7 +560,10 @@ export default function ExamManagement() {
 						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.exams.filters.semester")}
 						</p>
-						<SemesterSelect value={semesterId} onChange={setSemesterId} />
+						<SemesterSelect
+							value={semesterId}
+							onChange={handleFilter(setSemesterId)}
+						/>
 					</div>
 					<div className="space-y-1.5">
 						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
@@ -568,7 +571,7 @@ export default function ExamManagement() {
 						</p>
 						<DatePicker
 							value={dateFrom ?? undefined}
-							onChange={(d) => setDateFrom(d ?? null)}
+							onChange={(d) => handleFilter(setDateFrom)(d ?? null)}
 							placeholder={t("admin.exams.filters.dateFromPlaceholder")}
 							disabled={!academicYearId}
 						/>
@@ -579,7 +582,7 @@ export default function ExamManagement() {
 						</p>
 						<DatePicker
 							value={dateTo ?? undefined}
-							onChange={(d) => setDateTo(d ?? null)}
+							onChange={(d) => handleFilter(setDateTo)(d ?? null)}
 							placeholder={t("admin.exams.filters.dateToPlaceholder")}
 							disabled={!academicYearId}
 						/>
@@ -625,18 +628,20 @@ export default function ExamManagement() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1 h-3.5 w-3.5" />
@@ -875,12 +880,10 @@ export default function ExamManagement() {
 																			{t("admin.exams.actions.approve")}
 																		</DropdownMenuItem>
 																		<DropdownMenuItem
-																			onClick={() =>
-																				validateExamMutation.mutate({
-																					examId: exam.id,
-																					status: "rejected",
-																				})
-																			}
+																			onClick={() => {
+																				setRejectTarget({ examId: exam.id });
+																				setRejectReason("");
+																			}}
 																			disabled={validateExamMutation.isPending}
 																			className="text-red-600 focus:text-red-600"
 																		>
@@ -920,20 +923,17 @@ export default function ExamManagement() {
 									</TableBody>
 								</Table>
 							</div>
-							<div ref={sentinelRef} className="h-1" />
-							{hasNextPage ? (
-								<div className="mt-4 flex justify-center">
-									<Button
-										variant="outline"
-										onClick={() => fetchNextPage()}
-										disabled={isFetchingNextPage}
-									>
-										{isFetchingNextPage
-											? t("common.loading")
-											: t("admin.exams.pagination.loadMore")}
-									</Button>
-								</div>
-							) : null}
+							<TablePagination
+								page={page}
+								pageCount={examsData?.pageCount ?? 1}
+								total={examsData?.total ?? 0}
+								pageSize={pageSize}
+								onPageChange={setPage}
+								onPageSizeChange={(s) => {
+									setPageSize(s);
+									setPage(1);
+								}}
+							/>
 						</>
 					)}
 				</CardContent>
@@ -1223,6 +1223,55 @@ export default function ExamManagement() {
 					</form>
 				</Form>
 			</FormModal>
+			<ConfirmDialog />
+
+			{/* Rejection reason dialog */}
+			<Dialog
+				open={!!rejectTarget}
+				onOpenChange={(o) => {
+					if (!o) setRejectTarget(null);
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>{t("admin.exams.actions.reject")}</DialogTitle>
+					</DialogHeader>
+					<DialogBody className="space-y-3 py-2">
+						<Label htmlFor="reject-reason">
+							{t("admin.exams.rejectReasonLabel")}
+						</Label>
+						<Textarea
+							id="reject-reason"
+							rows={3}
+							placeholder={t("admin.exams.rejectReasonPlaceholder")}
+							value={rejectReason}
+							onChange={(e) => setRejectReason(e.target.value)}
+						/>
+					</DialogBody>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setRejectTarget(null)}>
+							{t("common.cancel")}
+						</Button>
+						<Button
+							variant="destructive"
+							disabled={!rejectReason.trim() || validateExamMutation.isPending}
+							onClick={() => {
+								if (!rejectTarget) return;
+								validateExamMutation.mutate(
+									{
+										examId: rejectTarget.examId,
+										status: "rejected",
+										rejectionReason: rejectReason.trim(),
+									},
+									{ onSettled: () => setRejectTarget(null) },
+								);
+							}}
+						>
+							{t("admin.exams.actions.reject")}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

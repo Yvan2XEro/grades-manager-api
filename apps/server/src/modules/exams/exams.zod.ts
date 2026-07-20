@@ -16,6 +16,13 @@ export const baseSchema = z.object({
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });
 
+export const examStatuses = [
+	"draft",
+	"submitted",
+	"approved",
+	"rejected",
+] as const;
+
 export const listSchema = z.object({
 	classCourseId: z.string().optional(),
 	dateFrom: z.coerce.date().optional(),
@@ -23,7 +30,10 @@ export const listSchema = z.object({
 	academicYearId: z.string().optional(),
 	query: z.string().trim().min(1).optional(),
 	classId: z.string().optional(),
-	semesterId: z.string().optional(),
+	teacherId: z.string().optional(),
+	status: z.enum(examStatuses).optional(),
+	statuses: z.array(z.enum(examStatuses)).optional(),
+	ueSemester: z.enum(["fall", "spring", "annual"]).optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });
@@ -34,10 +44,16 @@ export const lockSchema = z.object({ examId: z.string(), lock: z.boolean() });
 
 export const submitSchema = z.object({ examId: z.string() });
 
-export const validateSchema = z.object({
-	examId: z.string(),
-	status: z.enum(["approved", "rejected"]),
-});
+export const validateSchema = z
+	.object({
+		examId: z.string(),
+		status: z.enum(["approved", "rejected"]),
+		rejectionReason: z.string().min(1).optional(),
+	})
+	.refine((d) => d.status !== "rejected" || !!d.rejectionReason, {
+		message: "rejectionReason is required when status is rejected",
+		path: ["rejectionReason"],
+	});
 
 export const retakeEligibilitySchema = z.object({
 	examId: z.string(),
@@ -60,4 +76,17 @@ export const createRetakeSchema = z.object({
 	name: z.string().optional(),
 	date: z.coerce.date(),
 	scoringPolicy: z.enum(retakeScoringPolicies).optional().default("replace"),
+});
+
+export const listPagedSchema = z.object({
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+	query: z.string().trim().min(1).optional(),
+	classId: z.string().optional(),
+	academicYearId: z.string().optional(),
+	status: z.enum(examStatuses).optional(),
+	statuses: z.array(z.enum(examStatuses)).optional(),
+	teacherId: z.string().optional(),
+	dateFrom: z.coerce.date().optional(),
+	dateTo: z.coerce.date().optional(),
 });

@@ -1,4 +1,14 @@
-import { and, eq, gt, ilike, inArray, or, type SQL, sql } from "drizzle-orm";
+import {
+	and,
+	count,
+	eq,
+	gt,
+	ilike,
+	inArray,
+	or,
+	type SQL,
+	sql,
+} from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -257,38 +267,142 @@ export async function search(
 }
 
 /**
- * Compute assigned credits per class by summing distinct UE credits
- * for courses assigned via classCourses.
+ * Compute assigned credits per class by summing each distinct teaching unit's
+ * credits once (deduplicating by UE id, not by credit value).
  */
 export async function getAssignedCredits(
 	classIds: string[],
 ): Promise<Record<string, number>> {
 	if (classIds.length === 0) return {};
+
+	// CTE: one row per (class, teachingUnit) pair — prevents double-counting
+	// when a UE has multiple courses (ECs) all assigned to the same class.
+	const uniqueUEsPerClass = db.$with("unique_ues_per_class").as(
+		db
+			.selectDistinctOn([schema.classCourses.class, schema.teachingUnits.id], {
+				classId: schema.classCourses.class,
+				credits: schema.teachingUnits.credits,
+			})
+			.from(schema.classCourses)
+			.innerJoin(
+				schema.courses,
+				eq(schema.courses.id, schema.classCourses.course),
+			)
+			.innerJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+			)
+			.where(inArray(schema.classCourses.class, classIds)),
+	);
+
 	const rows = await db
+		.with(uniqueUEsPerClass)
 		.select({
-			classId: schema.classCourses.class,
-			credits:
-				sql<number>`coalesce(sum(distinct ${schema.teachingUnits.credits}), 0)`.as(
-					"credits",
-				),
+			classId: uniqueUEsPerClass.classId,
+			credits: sql<number>`coalesce(sum(${uniqueUEsPerClass.credits}), 0)`.as(
+				"credits",
+			),
 		})
-		.from(schema.classCourses)
-		.innerJoin(
-			schema.courses,
-			eq(schema.courses.id, schema.classCourses.course),
-		)
-		.innerJoin(
-			schema.teachingUnits,
-			eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
-		)
-		.where(inArray(schema.classCourses.class, classIds))
-		.groupBy(schema.classCourses.class);
+		.from(uniqueUEsPerClass)
+		.groupBy(uniqueUEsPerClass.classId);
 
 	const map: Record<string, number> = {};
 	for (const row of rows) {
 		map[row.classId] = Number(row.credits);
 	}
 	return map;
+}
+
+export async function listPaged(
+	institutionId: string,
+	opts: {
+		page: number;
+		pageSize: number;
+		academicYearId?: string;
+		semesterId?: string;
+		programId?: string;
+	},
+) {
+	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const offset = (Math.max(opts.page, 1) - 1) * size;
+	const conditions = [
+		eq(schema.classes.institutionId, institutionId),
+		opts.academicYearId
+			? eq(schema.classes.academicYear, opts.academicYearId)
+			: undefined,
+		opts.semesterId
+			? eq(schema.classes.semesterId, opts.semesterId)
+			: undefined,
+		opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
+	].filter(Boolean) as ReturnType<typeof eq>[];
+	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+
+	const [rows, [{ total }]] = await Promise.all([
+		db
+			.select({
+				...classSelection,
+				studentCount: sql<number>`(select count(*) from ${schema.enrollments} where ${schema.enrollments.classId} = ${schema.classes.id})`,
+			})
+			.from(schema.classes)
+			.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+			.leftJoin(
+				schema.academicYears,
+				eq(schema.academicYears.id, schema.classes.academicYear),
+			)
+			.leftJoin(
+				schema.cycleLevels,
+				eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+			)
+			.leftJoin(
+				schema.studyCycles,
+				eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+			)
+			.leftJoin(
+				schema.programOptions,
+				eq(schema.programOptions.id, schema.classes.programOptionId),
+			)
+			.leftJoin(
+				schema.semesters,
+				eq(schema.semesters.id, schema.classes.semesterId),
+			)
+			.where(where)
+			.orderBy(schema.classes.code)
+			.limit(size)
+			.offset(offset),
+		// Count query mirrors the data query joins so that any future filter on a
+		// joined column (e.g. cycleId via cycleLevels) does not cause a runtime error.
+		db
+			.select({ total: count() })
+			.from(schema.classes)
+			.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+			.leftJoin(
+				schema.academicYears,
+				eq(schema.academicYears.id, schema.classes.academicYear),
+			)
+			.leftJoin(
+				schema.cycleLevels,
+				eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+			)
+			.leftJoin(
+				schema.studyCycles,
+				eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+			)
+			.leftJoin(
+				schema.programOptions,
+				eq(schema.programOptions.id, schema.classes.programOptionId),
+			)
+			.leftJoin(
+				schema.semesters,
+				eq(schema.semesters.id, schema.classes.semesterId),
+			)
+			.where(where),
+	]);
+	const totalCount = Number(total ?? 0);
+	return {
+		items: rows,
+		total: totalCount,
+		pageCount: Math.ceil(totalCount / size),
+	};
 }
 
 export type KlassRecord = NonNullable<Awaited<ReturnType<typeof findById>>>;

@@ -1,9 +1,4 @@
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,8 +10,9 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -62,6 +58,16 @@ const TeachingUnitManagement = () => {
 	const [selectedProgramId, setSelectedProgramId] = useState<string>("");
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+
+	const handleFilter =
+		<T,>(setter: (v: T) => void) =>
+		(value: T) => {
+			setter(value);
+			setPage(1);
+		};
+
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 	const programList = programs?.items ?? [];
 	const _selectedProgram = useMemo(
@@ -69,30 +75,18 @@ const TeachingUnitManagement = () => {
 		[programList, selectedProgramId],
 	);
 
-	const {
-		data: unitsData,
-		isLoading,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		queryKey: ["teachingUnits", selectedProgramId || undefined],
-		queryFn: async ({ pageParam }) => {
-			return trpcClient.teachingUnits.list.query({
-				programId: selectedProgramId || undefined,
-				cursor: pageParam,
-				limit: 20,
-			});
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-	});
+	const { data, isLoading } = useQuery(
+		trpc.teachingUnits.listPaged.queryOptions({
+			page,
+			pageSize,
+			programId: selectedProgramId || undefined,
+		}),
+	);
 
-	const unitItems = unitsData?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, {
-		enabled: hasNextPage && !isFetchingNextPage,
-	});
+	const unitItems = data?.items ?? [];
 	const selection = useRowSelection(unitItems);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const programMap = useMemo(
 		() => new Map(programList.map((program) => [program.id, program])),
@@ -107,11 +101,7 @@ const TeachingUnitManagement = () => {
 					defaultValue: "Teaching unit deleted",
 				}),
 			);
-			queryClient.invalidateQueries(
-				trpc.teachingUnits.list.queryKey({
-					programId: selectedProgramId || undefined,
-				}),
-			);
+			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryKey());
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
@@ -125,11 +115,7 @@ const TeachingUnitManagement = () => {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries(
-				trpc.teachingUnits.list.queryKey({
-					programId: selectedProgramId || undefined,
-				}),
-			);
+			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryKey());
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -160,6 +146,7 @@ const TeachingUnitManagement = () => {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-8 w-8" />
+				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -177,7 +164,7 @@ const TeachingUnitManagement = () => {
 						})}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/teaching-units/+")}>
+				<Button onClick={() => navigate("/admin/programs/teaching-units/new")}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.teachingUnits.actions.create", {
 						defaultValue: "Create UE",
@@ -203,9 +190,9 @@ const TeachingUnitManagement = () => {
 					<div className="flex flex-wrap items-center gap-2">
 						<Select
 							value={selectedProgramId || undefined}
-							onValueChange={(value) => {
-								setSelectedProgramId(value);
-							}}
+							onValueChange={(v) =>
+								handleFilter(setSelectedProgramId)(v === "all" ? "" : v)
+							}
 						>
 							<SelectTrigger className="min-w-48">
 								<SelectValue
@@ -226,6 +213,7 @@ const TeachingUnitManagement = () => {
 							variant="outline"
 							onClick={() => {
 								setSelectedProgramId("");
+								setPage(1);
 							}}
 							disabled={!selectedProgramId}
 						>
@@ -243,18 +231,20 @@ const TeachingUnitManagement = () => {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -305,7 +295,9 @@ const TeachingUnitManagement = () => {
 														<>
 															<ContextMenuItem
 																onSelect={() =>
-																	navigate(`/admin/teaching-units/${unit.id}`)
+																	navigate(
+																		`/admin/programs/teaching-units/${unit.id}/details`,
+																	)
 																}
 															>
 																<span>
@@ -370,7 +362,9 @@ const TeachingUnitManagement = () => {
 																variant="ghost"
 																size="sm"
 																onClick={() =>
-																	navigate(`/admin/teaching-units/${unit.id}`)
+																	navigate(
+																		`/admin/programs/teaching-units/${unit.id}/details`,
+																	)
 																}
 															>
 																{t("common.actions.open", {
@@ -393,7 +387,17 @@ const TeachingUnitManagement = () => {
 									</Table>
 								)}
 							</div>
-							<div ref={sentinelRef} className="h-1" />
+							<TablePagination
+								page={page}
+								pageCount={data?.pageCount ?? 1}
+								total={data?.total ?? 0}
+								pageSize={pageSize}
+								onPageChange={setPage}
+								onPageSizeChange={(s) => {
+									setPageSize(s);
+									setPage(1);
+								}}
+							/>
 						</>
 					) : (
 						<Empty>
@@ -414,7 +418,9 @@ const TeachingUnitManagement = () => {
 								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
-								<Button onClick={() => navigate("/admin/teaching-units/+")}>
+								<Button
+									onClick={() => navigate("/admin/programs/teaching-units/new")}
+								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.teachingUnits.actions.create", {
 										defaultValue: "Create UE",

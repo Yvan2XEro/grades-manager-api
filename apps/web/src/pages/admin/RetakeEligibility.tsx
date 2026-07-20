@@ -12,7 +12,7 @@ import {
 	Users,
 	XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AcademicYearSelect } from "@/components/inputs";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
@@ -29,6 +29,7 @@ import {
 import { ContextMenuItem } from "@/components/ui/context-menu";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -102,6 +103,18 @@ export default function RetakeEligibility() {
 
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
+
+	const { data: semestersData } = useQuery(
+		trpc.semesters.list.queryOptions({}),
+	);
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
 	const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 	const [overrideModal, setOverrideModal] = useState<OverrideModalState>({
 		isOpen: false,
@@ -115,7 +128,7 @@ export default function RetakeEligibility() {
 	const examsQuery = useQuery({
 		...trpc.exams.list.queryOptions({
 			academicYearId: academicYearId ?? undefined,
-			...(filterSemester ? { semesterId: filterSemester } : {}),
+			...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			limit: 100,
 		}),
 		enabled: Boolean(academicYearId),
@@ -597,7 +610,7 @@ export default function RetakeEligibility() {
 							})}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 px-6 py-4">
+					<DialogBody className="space-y-4 px-6 py-4">
 						<div className="space-y-2">
 							<Label>{t("admin.retake.table.student")}</Label>
 							<p className="font-medium">{overrideModal.row?.studentName}</p>
@@ -613,7 +626,7 @@ export default function RetakeEligibility() {
 								placeholder={t("admin.retake.override.reasonPlaceholder")}
 							/>
 						</div>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button variant="outline" onClick={closeOverrideModal}>
 							{t("common.actions.cancel")}

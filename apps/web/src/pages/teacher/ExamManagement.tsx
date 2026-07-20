@@ -2,10 +2,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
-import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+	AlertTriangle,
+	CheckCircle2,
+	ClipboardList,
+	Clock,
+	Pencil,
+	Plus,
+	Trash2,
+	XCircle,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
@@ -14,7 +24,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
-import { trpcClient } from "../../utils/trpc";
+import { type RouterOutputs, trpcClient } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
 	z.object({
@@ -40,6 +50,8 @@ interface Exam {
 	percentage: number;
 	classCourse: string;
 	isLocked: boolean;
+	status?: string;
+	rejectionReason?: string | null;
 }
 
 interface ClassCourse {
@@ -70,23 +82,36 @@ export default function ExamManagement() {
 	const { t } = useTranslation();
 	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 
+	const { data: semestersData } = useQuery({
+		queryKey: ["semesters"],
+		queryFn: () => trpcClient.semesters.list.query({}),
+	});
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
+
 	const { data: exams, isLoading } = useQuery({
-		queryKey: ["teacherExams", filterYear, filterSemester],
+		queryKey: ["teacherExams", filterYear, filterUeSemester],
 		queryFn: async () => {
 			const { items } = await trpcClient.exams.list.query({
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return items as Exam[];
 		},
 	});
 
 	const { data: classCourses } = useQuery({
-		queryKey: ["teacherClassCourses", filterYear, filterSemester],
+		queryKey: ["teacherClassCourses", filterYear, filterUeSemester],
 		queryFn: async () => {
 			const { items } = await trpcClient.classCourses.list.query({
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return items as ClassCourse[];
 		},
@@ -170,6 +195,28 @@ export default function ExamManagement() {
 		},
 		onError: (error: any) => {
 			toast.error(error.message || t("teacher.exams.toast.deleteError"));
+		},
+	});
+
+	const resubmitMutation = useMutation({
+		mutationFn: async (examId: string) => {
+			await trpcClient.exams.submit.mutate({ examId });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["teacherExams"] });
+			toast.success(
+				t("teacher.exams.toast.resubmitSuccess", {
+					defaultValue: "Exam resubmitted for approval",
+				}),
+			);
+		},
+		onError: (error: any) => {
+			toast.error(
+				error.message ||
+					t("teacher.exams.toast.resubmitError", {
+						defaultValue: "Failed to resubmit exam",
+					}),
+			);
 		},
 	});
 
@@ -284,63 +331,100 @@ export default function ExamManagement() {
 							</thead>
 							<tbody>
 								{exams?.map((exam) => (
-									<tr key={exam.id}>
-										<td className="font-medium">{exam.name}</td>
-										<td>
-											{courseMap.get(
-												classCourseMap.get(exam.classCourse)?.course || "",
-											)}
-										</td>
-										<td>
-											{classMap.get(
-												classCourseMap.get(exam.classCourse)?.class || "",
-											)}
-										</td>
-										<td>{exam.type}</td>
-										<td>{format(new Date(exam.date), "MMM d, yyyy")}</td>
-										<td>
-											{t("teacher.exams.table.percentageValue", {
-												value: exam.percentage,
-											})}
-										</td>
-										<td>
-											<span
-												className={`badge ${exam.isLocked ? "badge-warning" : "badge-success"}`}
-											>
-												{exam.isLocked
-													? t("teacher.exams.status.locked")
-													: t("teacher.exams.status.open")}
-											</span>
-										</td>
-										<td>
-											<div className="flex gap-2">
-												<button
-													onClick={() => {
-														setEditingExam(exam);
-														reset({
-															name: exam.name,
-															type: exam.type,
-															date: exam.date.split("T")[0],
-															percentage: exam.percentage,
-															classCourseId: exam.classCourse,
-														});
-														setIsFormOpen(true);
-													}}
-													className="btn btn-square btn-sm btn-ghost"
-													disabled={exam.isLocked}
-												>
-													<Pencil className="h-4 w-4" />
-												</button>
-												<button
-													onClick={() => openDeleteModal(exam.id)}
-													className="btn btn-square btn-sm btn-ghost text-error"
-													disabled={exam.isLocked}
-												>
-													<Trash2 className="h-4 w-4" />
-												</button>
-											</div>
-										</td>
-									</tr>
+									<>
+										<tr key={exam.id}>
+											<td className="font-medium">{exam.name}</td>
+											<td>
+												{courseMap.get(
+													classCourseMap.get(exam.classCourse)?.course || "",
+												)}
+											</td>
+											<td>
+												{classMap.get(
+													classCourseMap.get(exam.classCourse)?.class || "",
+												)}
+											</td>
+											<td>{exam.type}</td>
+											<td>{format(new Date(exam.date), "MMM d, yyyy")}</td>
+											<td>
+												{t("teacher.exams.table.percentageValue", {
+													value: exam.percentage,
+												})}
+											</td>
+											<td>
+												<ExamStatusBadge exam={exam} t={t} />
+											</td>
+											<td>
+												<div className="flex gap-2">
+													<button
+														onClick={() => {
+															setEditingExam(exam);
+															reset({
+																name: exam.name,
+																type: exam.type,
+																date: exam.date.split("T")[0],
+																percentage: exam.percentage,
+																classCourseId: exam.classCourse,
+															});
+															setIsFormOpen(true);
+														}}
+														className="btn btn-square btn-sm btn-ghost"
+														disabled={exam.isLocked}
+													>
+														<Pencil className="h-4 w-4" />
+													</button>
+													<button
+														onClick={() => openDeleteModal(exam.id)}
+														className="btn btn-square btn-sm btn-ghost text-error"
+														disabled={exam.isLocked}
+													>
+														<Trash2 className="h-4 w-4" />
+													</button>
+												</div>
+											</td>
+										</tr>
+										{exam.status === "rejected" && (
+											<tr key={`${exam.id}-rejection`}>
+												<td colSpan={8} className="pt-0 pb-2">
+													<div className="flex flex-wrap items-start gap-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-800 text-sm">
+														<XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+														<div className="flex-1">
+															{exam.rejectionReason && (
+																<p>
+																	<span className="font-medium">
+																		{t("teacher.exams.rejection.label")}
+																	</span>{" "}
+																	{exam.rejectionReason}
+																</p>
+															)}
+															<div className="mt-2 flex flex-wrap gap-2">
+																<Link
+																	to={`/teacher/grades/${exam.classCourse}`}
+																	className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2.5 py-1 text-red-700 text-xs hover:bg-red-200"
+																>
+																	{t("teacher.exams.rejection.fixGrades", {
+																		defaultValue: "Corriger les notes",
+																	})}
+																</Link>
+																<button
+																	type="button"
+																	onClick={() =>
+																		resubmitMutation.mutate(exam.id)
+																	}
+																	disabled={resubmitMutation.isPending}
+																	className="inline-flex items-center gap-1 rounded-md bg-red-700 px-2.5 py-1 text-white text-xs hover:bg-red-800 disabled:opacity-50"
+																>
+																	{t("teacher.exams.rejection.resubmit", {
+																		defaultValue: "Re-soumettre",
+																	})}
+																</button>
+															</div>
+														</div>
+													</div>
+												</td>
+											</tr>
+										)}
+									</>
 								))}
 							</tbody>
 						</table>
@@ -525,5 +609,47 @@ export default function ExamManagement() {
 				isLoading={deleteMutation.isPending}
 			/>
 		</div>
+	);
+}
+
+type ExamRow = RouterOutputs["exams"]["list"]["items"][number];
+
+function ExamStatusBadge({ exam, t }: { exam: ExamRow; t: TFunction }) {
+	if (exam.isLocked) {
+		return (
+			<span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800 text-xs">
+				<Clock className="h-3 w-3" />
+				{t("teacher.exams.status.locked")}
+			</span>
+		);
+	}
+	if (exam.status === "approved") {
+		return (
+			<span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-800 text-xs">
+				<CheckCircle2 className="h-3 w-3" />
+				{t("teacher.exams.status.approved")}
+			</span>
+		);
+	}
+	if (exam.status === "rejected") {
+		return (
+			<span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 font-medium text-red-800 text-xs">
+				<XCircle className="h-3 w-3" />
+				{t("teacher.exams.status.rejected")}
+			</span>
+		);
+	}
+	if (exam.status === "submitted") {
+		return (
+			<span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 font-medium text-blue-800 text-xs">
+				<AlertTriangle className="h-3 w-3" />
+				{t("teacher.exams.status.submitted")}
+			</span>
+		);
+	}
+	return (
+		<span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600 text-xs">
+			{t("teacher.exams.status.open")}
+		</span>
 	);
 }
