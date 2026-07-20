@@ -1,6 +1,7 @@
 import {
 	applicationCreate,
 	applicationDelete,
+	applicationOne,
 	applicationReadAppMonitoring,
 	applicationRedeploy,
 	applicationSaveDockerProvider,
@@ -182,5 +183,13 @@ export const dokploy = {
 	async deleteProject(projectId: string) {
 		configure();
 		unwrap(await projectRemove({ body: { projectId } }));
+	},
+
+	async getApplicationEnv(applicationId: string): Promise<string> {
+		configure();
+		const data = unwrap(
+			await applicationOne({ query: { applicationId } }),
+		) as unknown as { env?: string | null };
+		return data.env ?? "";
 	},
 };

@@ -5,6 +5,7 @@ import {
 	ChevronLeft,
 	ExternalLink,
 	HelpCircle,
+	Mail,
 	Play,
 	RotateCcw,
 	Square,
@@ -182,6 +183,230 @@ function ProvisioningCard({
 					);
 				})}
 			</div>
+		</div>
+	);
+}
+
+// ─── Email settings ───────────────────────────────────────────────────────────
+
+type EmailProvider = "resend" | "smtp";
+
+function EmailSettingsCard({
+	instance,
+	dict: d,
+}: {
+	instance: InstanceData;
+	dict: Dict;
+}) {
+	const dd = d.dashboard.detail;
+	const [provider, setProvider] = useState<EmailProvider>("resend");
+	const [resendApiKey, setResendApiKey] = useState("");
+	const [emailFrom, setEmailFrom] = useState("");
+	const [smtpHost, setSmtpHost] = useState("");
+	const [smtpPort, setSmtpPort] = useState("587");
+	const [smtpUser, setSmtpUser] = useState("");
+	const [smtpPass, setSmtpPass] = useState("");
+	const [saving, setSaving] = useState(false);
+	const [saved, setSaved] = useState(false);
+	const [error, setError] = useState("");
+
+	if (!instance.dokployAppId) {
+		return (
+			<div className="mt-6 rounded-[1rem] border border-tk-border bg-tk-surface p-5">
+				<div className="flex items-center gap-3">
+					<Mail size={14} strokeWidth={1.75} className="text-tk-muted" />
+					<p className="font-body text-[0.875rem] text-tk-muted">
+						{dd.email_no_app}
+					</p>
+				</div>
+			</div>
+		);
+	}
+
+	const handleSave = async () => {
+		setSaving(true);
+		setSaved(false);
+		setError("");
+		try {
+			const body =
+				provider === "resend"
+					? { provider, resendApiKey, emailFrom }
+					: { provider, smtpHost, smtpPort, smtpUser, smtpPass, emailFrom };
+
+			const res = await fetch(`/api/provision/${instance.id}/email`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				credentials: "include",
+				body: JSON.stringify(body),
+			});
+
+			if (res.ok) {
+				setSaved(true);
+			} else {
+				const data = await res.json();
+				setError(data.error ?? dd.email_error);
+			}
+		} catch {
+			setError(dd.email_error);
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const inputCls =
+		"w-full rounded-[0.5rem] border border-tk-border bg-tk-bg px-3 py-2 font-code text-[0.875rem] text-tk-ink outline-none transition-colors focus:border-tk-primary/50 placeholder:text-tk-muted/50";
+	const labelCls =
+		"mb-1 block font-code text-[0.6875rem] text-tk-muted uppercase tracking-[0.07em]";
+
+	return (
+		<div className="mt-6 rounded-[1rem] border border-tk-border bg-tk-surface p-5">
+			<div className="mb-5 flex items-center gap-2.5">
+				<div className="flex h-7 w-7 items-center justify-center rounded-[0.5rem] bg-tk-primary/8">
+					<Mail size={14} strokeWidth={1.75} className="text-tk-primary" />
+				</div>
+				<p className="font-display font-semibold text-[0.9375rem] text-tk-ink">
+					{dd.email_title}
+				</p>
+			</div>
+
+			{/* Provider toggle */}
+			<div className="mb-5">
+				<p className={labelCls}>{dd.email_provider_label}</p>
+				<div className="flex gap-2">
+					{(["resend", "smtp"] as const).map((p) => (
+						<button
+							key={p}
+							type="button"
+							onClick={() => setProvider(p)}
+							className={cn(
+								"rounded-[0.5rem] border px-3.5 py-1.5 font-body text-[0.8125rem] transition-all duration-150",
+								provider === p
+									? "border-tk-primary/30 bg-tk-primary/8 font-medium text-tk-primary"
+									: "border-tk-border bg-tk-bg text-tk-muted hover:border-tk-ink/15 hover:text-tk-ink",
+							)}
+						>
+							{p === "resend"
+								? dd.email_provider_resend
+								: dd.email_provider_smtp}
+						</button>
+					))}
+				</div>
+			</div>
+
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				{/* Shared: EMAIL_FROM */}
+				<div className="sm:col-span-2">
+					<label className={labelCls}>{dd.email_from_label}</label>
+					<input
+						type="email"
+						value={emailFrom}
+						onChange={(e) => setEmailFrom(e.target.value)}
+						placeholder={dd.email_from_placeholder}
+						className={inputCls}
+						disabled={saving}
+					/>
+				</div>
+
+				{/* Resend fields */}
+				{provider === "resend" && (
+					<div className="sm:col-span-2">
+						<label className={labelCls}>{dd.email_api_key_label}</label>
+						<input
+							type="password"
+							value={resendApiKey}
+							onChange={(e) => setResendApiKey(e.target.value)}
+							placeholder={dd.email_api_key_placeholder}
+							className={inputCls}
+							disabled={saving}
+						/>
+					</div>
+				)}
+
+				{/* SMTP fields */}
+				{provider === "smtp" && (
+					<>
+						<div>
+							<label className={labelCls}>{dd.email_smtp_host_label}</label>
+							<input
+								type="text"
+								value={smtpHost}
+								onChange={(e) => setSmtpHost(e.target.value)}
+								placeholder="smtp.example.com"
+								className={inputCls}
+								disabled={saving}
+							/>
+						</div>
+						<div>
+							<label className={labelCls}>{dd.email_smtp_port_label}</label>
+							<input
+								type="number"
+								value={smtpPort}
+								onChange={(e) => setSmtpPort(e.target.value)}
+								placeholder="587"
+								className={inputCls}
+								disabled={saving}
+							/>
+						</div>
+						<div>
+							<label className={labelCls}>{dd.email_smtp_user_label}</label>
+							<input
+								type="text"
+								value={smtpUser}
+								onChange={(e) => setSmtpUser(e.target.value)}
+								placeholder="user@example.com"
+								className={inputCls}
+								disabled={saving}
+							/>
+						</div>
+						<div>
+							<label className={labelCls}>{dd.email_smtp_pass_label}</label>
+							<input
+								type="password"
+								value={smtpPass}
+								onChange={(e) => setSmtpPass(e.target.value)}
+								placeholder="••••••••"
+								className={inputCls}
+								disabled={saving}
+							/>
+						</div>
+					</>
+				)}
+			</div>
+
+			<div className="mt-5 flex flex-wrap items-center gap-3">
+				<button
+					type="button"
+					onClick={handleSave}
+					disabled={saving}
+					className={cn(
+						"inline-flex items-center gap-2 rounded-[0.625rem] border px-4 py-2 font-body font-medium text-[0.875rem] transition-all duration-150",
+						saving
+							? "cursor-not-allowed border-tk-border text-tk-muted opacity-50"
+							: "border-transparent bg-tk-primary text-white shadow-sm hover:bg-tk-primary/90",
+					)}
+				>
+					{saving ? (
+						<RotateCcw size={14} strokeWidth={1.75} className="animate-spin" />
+					) : (
+						<Mail size={14} strokeWidth={1.75} />
+					)}
+					{saving ? dd.email_saving : dd.email_save_btn}
+				</button>
+				{saved && (
+					<p className="font-body text-[0.8125rem] text-[oklch(0.42_0.14_149)]">
+						{dd.email_saved}
+					</p>
+				)}
+				{error && (
+					<p className="font-body text-[0.8125rem] text-[oklch(0.5_0.18_25)]">
+						{error}
+					</p>
+				)}
+			</div>
+
+			<p className="mt-3 font-body text-[0.75rem] text-tk-muted">
+				{dd.email_restart_note}
+			</p>
 		</div>
 	);
 }
@@ -667,6 +892,9 @@ export function InstanceDetailClient({
 					</Link>
 				</div>
 			</div>
+
+			{/* ── Email settings ───────────────────────────────────────────── */}
+			<EmailSettingsCard instance={instance} dict={d} />
 
 			{/* ── Danger zone ──────────────────────────────────────────────── */}
 			<div className="mt-8">
