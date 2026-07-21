@@ -1,0 +1,103 @@
+# Combined image (API + frontend) — Dokploy / Traefik
+#
+# Single container serving both the Hono API and the React SPA.
+# Use this when you want one domain instead of separate api.* / app.* subdomains.
+#
+# Required env vars (set in Dokploy → Environment):
+#   APP_DOMAIN              e.g. myuniversity.tkams.com
+#   BETTER_AUTH_SECRET      min 32 chars (openssl rand -base64 32)
+#   POSTGRES_PASSWORD       strong password for the database
+#   DEFAULT_ORGANIZATION_SLUG
+#
+# Optional:
+#   IMAGE_TAG               defaults to "latest"
+#   RUN_SEED                set to "true" on first boot to seed demo data
+#   SEED_*                  see Dockerfile.full header for the full list
+
+services:
+  app:
+    image: ghcr.io/yvan2xero/tkams:${IMAGE_TAG:-latest}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tkams}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tkams}
+      DATABASE_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-tkams}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: https://${APP_DOMAIN}
+      BETTER_AUTH_COOKIE_SAMESITE: none
+      BETTER_AUTH_COOKIE_SECURE: "true"
+      CORS_ORIGINS: https://${APP_DOMAIN}
+      SERVER_PUBLIC_URL: https://${APP_DOMAIN}
+      SERVE_FRONTEND: "true"
+      STORAGE_DRIVER: local
+      STORAGE_LOCAL_ROOT: /usr/src/app/apps/server/storage/uploads
+      STORAGE_LOCAL_PUBLIC_PATH: /uploads
+      DEFAULT_ORGANIZATION_SLUG: ${DEFAULT_ORGANIZATION_SLUG}
+      # Email — Option A: Resend
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      # Email — Option B: SMTP (used when RESEND_API_KEY is not set)
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@example.com}
+      # Seed (first boot only — set RUN_SEED=false afterwards)
+      RUN_SEED: ${RUN_SEED:-false}
+      SEED_ORG_NAME: ${SEED_ORG_NAME:-}
+      SEED_ORG_SLUG: ${SEED_ORG_SLUG:-}
+      SEED_ORG_TYPE: ${SEED_ORG_TYPE:-university}
+      SEED_ORG_COUNTRY: ${SEED_ORG_COUNTRY:-CM}
+      SEED_ADMIN_NAME: ${SEED_ADMIN_NAME:-}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      SEED_FOUNDATION_URL: ${SEED_FOUNDATION_URL:-}
+      SEED_ACADEMICS_URL: ${SEED_ACADEMICS_URL:-}
+      SEED_USERS_URL: ${SEED_USERS_URL:-}
+    expose:
+      - "3000"
+    volumes:
+      - uploads:/usr/src/app/apps/server/storage/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.tkams-${APP_DOMAIN}.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.tkams-${APP_DOMAIN}.entrypoints=websecure"
+      - "traefik.http.routers.tkams-${APP_DOMAIN}.tls=true"
+      - "traefik.http.routers.tkams-${APP_DOMAIN}.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tkams-${APP_DOMAIN}.loadbalancer.server.port=3000"
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tkams}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-tkams}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - internal
+
+volumes:
+  uploads:
+  pgdata:
+
+networks:
+  internal:
+  traefik:
+    name: dokploy-network
+    external: true
