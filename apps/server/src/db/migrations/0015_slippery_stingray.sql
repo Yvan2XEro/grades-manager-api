@@ -1,1 +1,0 @@
-ALTER TABLE "class_courses" ADD COLUMN "attendance_excused_counts_as_absent" boolean DEFAULT false NOT NULL;
