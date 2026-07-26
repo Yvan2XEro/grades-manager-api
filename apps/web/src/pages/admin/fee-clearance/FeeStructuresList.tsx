@@ -34,6 +34,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
 	Table,
 	TableBody,
 	TableCell,
@@ -237,6 +244,26 @@ function CreateStructureDialog({
 		totalAmount: "",
 		currency: "XAF",
 		description: "",
+		programId: "",
+		cycleLevelId: "",
+	});
+	const [studyCycleId, setStudyCycleId] = useState("");
+
+	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
+
+	// Derive cycle from selected program (programs carry their own cycleId)
+	const selectedProgram = programs?.items?.find((p) => p.id === form.programId);
+	const derivedCycleId = selectedProgram?.cycleId ?? "";
+
+	// studyCycleId tracks either the auto-derived cycle or a manual override
+	const activeCycleId = derivedCycleId || studyCycleId;
+
+	const { data: allCycles } = useQuery(
+		trpc.studyCycles.listCycles.queryOptions({}),
+	);
+	const { data: levels } = useQuery({
+		...trpc.studyCycles.listLevels.queryOptions({ cycleId: activeCycleId }),
+		enabled: !!activeCycleId,
 	});
 
 	const mut = useMutation({
@@ -247,6 +274,8 @@ function CreateStructureDialog({
 				totalAmount: Number(form.totalAmount),
 				currency: form.currency,
 				description: form.description || undefined,
+				programId: form.programId || undefined,
+				cycleLevelId: form.cycleLevelId || undefined,
 			}),
 		onSuccess: () => {
 			toast.success(t("common.created"));
@@ -257,7 +286,10 @@ function CreateStructureDialog({
 				totalAmount: "",
 				currency: "XAF",
 				description: "",
+				programId: "",
+				cycleLevelId: "",
 			});
+			setStudyCycleId("");
 		},
 	});
 
@@ -314,6 +346,84 @@ function CreateStructureDialog({
 							}
 						/>
 					</div>
+					<div>
+						<Label>{t("feeClearance.structures.fields.program")}</Label>
+						<Select
+							value={form.programId || "_none_"}
+							onValueChange={(v) => {
+								setForm((f) => ({
+									...f,
+									programId: v === "_none_" ? "" : v,
+									cycleLevelId: "",
+								}));
+								setStudyCycleId("");
+							}}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder={t("common.optional")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="_none_">{t("common.none")}</SelectItem>
+								{programs?.items?.map((p) => (
+									<SelectItem key={p.id} value={p.id}>
+										{p.shortName ?? p.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					{/* Show cycle select only when no program is chosen (or program has no cycle) */}
+					{!derivedCycleId && (
+						<div>
+							<Label>{t("feeClearance.structures.fields.studyCycle")}</Label>
+							<Select
+								value={studyCycleId || "_none_"}
+								onValueChange={(v) => {
+									const val = v === "_none_" ? "" : v;
+									setStudyCycleId(val);
+									setForm((f) => ({ ...f, cycleLevelId: "" }));
+								}}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder={t("common.optional")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="_none_">{t("common.none")}</SelectItem>
+									{allCycles?.items?.map((c) => (
+										<SelectItem key={c.id} value={c.id}>
+											{c.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+					{activeCycleId && (
+						<div>
+							<Label>{t("feeClearance.structures.fields.cycleLevel")}</Label>
+							<Select
+								value={form.cycleLevelId || "_none_"}
+								onValueChange={(v) =>
+									setForm((f) => ({
+										...f,
+										cycleLevelId: v === "_none_" ? "" : v,
+									}))
+								}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder={t("common.optional")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="_none_">{t("common.none")}</SelectItem>
+									{levels?.map((l) => (
+										<SelectItem key={l.id} value={l.id}>
+											{l.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>

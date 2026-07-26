@@ -292,69 +292,49 @@ export default function ClassManagement() {
 		[programs, selectedProgramId],
 	);
 
+	// Use the program's own cycleId — programs belong to a single study cycle
+	const programCycleId = selectedProgram?.cycleId ?? "";
+
 	const { data: defaultCycleLevels = [] } = useQuery({
-		queryKey: ["cycleLevelsByInstitution", selectedProgram?.institutionId],
+		queryKey: ["cycleLevelsByProgram", programCycleId],
 		queryFn: async () => {
-			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
+			if (!programCycleId) return [] as CycleLevelOption[];
+			// Get the cycle metadata so we can attach it to each level
 			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				institutionId: selectedProgram.institutionId,
 				limit: 100,
 			});
-			if (!cycles.length) return [];
-			const levels = await Promise.all(
-				cycles.map(async (cycle) => {
-					const levelList = await trpcClient.studyCycles.listLevels.query({
-						cycleId: cycle.id,
-					});
-					return levelList.map((level) => ({
-						...level,
-						cycle: {
-							id: cycle.id,
-							name: cycle.name,
-							code: cycle.code,
-						},
-					}));
-				}),
-			);
-			return levels.flat() as CycleLevelOption[];
+			const cycle = cycles.find((c) => c.id === programCycleId);
+			if (!cycle) return [];
+			const levelList = await trpcClient.studyCycles.listLevels.query({
+				cycleId: programCycleId,
+			});
+			return levelList.map((level) => ({
+				...level,
+				cycle: { id: cycle.id, name: cycle.name, code: cycle.code },
+			})) as CycleLevelOption[];
 		},
-		enabled: Boolean(selectedProgram?.institutionId),
+		enabled: Boolean(programCycleId),
 	});
 
 	const { data: searchCycleLevels = [] } = useQuery({
-		queryKey: [
-			"cycleLevels",
-			"search",
-			cycleLevelSearch,
-			selectedProgram?.institutionId,
-		],
+		queryKey: ["cycleLevels", "search", cycleLevelSearch, programCycleId],
 		queryFn: async () => {
-			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
+			if (!programCycleId) return [] as CycleLevelOption[];
 			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				institutionId: selectedProgram.institutionId,
 				limit: 100,
 			});
-			if (!cycles.length) return [];
-			const levels = await Promise.all(
-				cycles.map(async (cycle) => {
-					const items = await trpcClient.cycleLevels.search.query({
-						query: cycleLevelSearch,
-						cycleId: cycle.id,
-					});
-					return items.map((level) => ({
-						...level,
-						cycle: {
-							id: cycle.id,
-							name: cycle.name,
-							code: cycle.code,
-						},
-					}));
-				}),
-			);
-			return levels.flat() as CycleLevelOption[];
+			const cycle = cycles.find((c) => c.id === programCycleId);
+			if (!cycle) return [];
+			const items = await trpcClient.cycleLevels.search.query({
+				query: cycleLevelSearch,
+				cycleId: programCycleId,
+			});
+			return items.map((level) => ({
+				...level,
+				cycle: { id: cycle.id, name: cycle.name, code: cycle.code },
+			})) as CycleLevelOption[];
 		},
-		enabled:
-			Boolean(selectedProgram?.institutionId) && cycleLevelSearch.length >= 2,
+		enabled: Boolean(programCycleId) && cycleLevelSearch.length >= 2,
 	});
 
 	const cycleLevels =

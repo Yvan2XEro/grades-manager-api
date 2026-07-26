@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
@@ -31,6 +31,12 @@ export default function FeeStructureInstallmentsTab() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [showAdd, setShowAdd] = useState(false);
+	const [editTarget, setEditTarget] = useState<{
+		id: string;
+		label: string;
+		amount: string;
+		dueDate: string;
+	} | null>(null);
 
 	const { data: structure } = useQuery(
 		trpc.feeClearance.getStructure.queryOptions({ id: id! }),
@@ -97,6 +103,20 @@ export default function FeeStructureInstallmentsTab() {
 									<Button
 										variant="ghost"
 										size="sm"
+										onClick={() =>
+											setEditTarget({
+												id: inst.id,
+												label: inst.label,
+												amount: inst.amount ?? "",
+												dueDate: inst.dueDate ? inst.dueDate.slice(0, 10) : "",
+											})
+										}
+									>
+										<Pencil className="h-4 w-4" />
+									</Button>
+									<Button
+										variant="ghost"
+										size="sm"
 										onClick={() => deleteInstallmentMut.mutate(inst.id)}
 									>
 										<Trash2 className="h-4 w-4 text-destructive" />
@@ -120,7 +140,117 @@ export default function FeeStructureInstallmentsTab() {
 					setShowAdd(false);
 				}}
 			/>
+
+			{editTarget && (
+				<EditInstallmentDialog
+					open={!!editTarget}
+					onOpenChange={(o) => {
+						if (!o) setEditTarget(null);
+					}}
+					installment={editTarget}
+					currency={structure.currency}
+					onSaved={() => {
+						queryClient.invalidateQueries({
+							queryKey: trpc.feeClearance.getStructure.queryKey({ id: id! }),
+						});
+						setEditTarget(null);
+					}}
+				/>
+			)}
 		</div>
+	);
+}
+
+function EditInstallmentDialog({
+	open,
+	onOpenChange,
+	installment,
+	currency,
+	onSaved,
+}: {
+	open: boolean;
+	onOpenChange: (o: boolean) => void;
+	installment: { id: string; label: string; amount: string; dueDate: string };
+	currency: string;
+	onSaved: () => void;
+}) {
+	const { t } = useTranslation();
+	const [form, setForm] = useState({
+		label: installment.label,
+		amount: installment.amount,
+		dueDate: installment.dueDate,
+	});
+
+	const mut = useMutation({
+		mutationFn: () =>
+			trpcClient.feeClearance.updateInstallment.mutate({
+				id: installment.id,
+				label: form.label || undefined,
+				amount: form.amount ? Number(form.amount) : undefined,
+				dueDate: form.dueDate || undefined,
+			}),
+		onSuccess: () => {
+			toast.success(t("common.saved"));
+			onSaved();
+		},
+		onError: (e) => toast.error(e.message),
+	});
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>
+						{t("feeClearance.structures.installments.edit")}
+					</DialogTitle>
+				</DialogHeader>
+				<DialogBody className="space-y-4">
+					<div>
+						<Label>{t("feeClearance.structures.installments.label")}</Label>
+						<Input
+							value={form.label}
+							onChange={(e) =>
+								setForm((f) => ({ ...f, label: e.target.value }))
+							}
+						/>
+					</div>
+					<div>
+						<Label>
+							{t("feeClearance.structures.installments.amount")} ({currency})
+						</Label>
+						<Input
+							type="number"
+							min={0}
+							value={form.amount}
+							onChange={(e) =>
+								setForm((f) => ({ ...f, amount: e.target.value }))
+							}
+						/>
+					</div>
+					<div>
+						<Label>{t("feeClearance.structures.installments.dueDate")}</Label>
+						<Input
+							type="date"
+							value={form.dueDate}
+							onChange={(e) =>
+								setForm((f) => ({ ...f, dueDate: e.target.value }))
+							}
+						/>
+					</div>
+				</DialogBody>
+				<DialogFooter>
+					<Button variant="outline" onClick={() => onOpenChange(false)}>
+						{t("common.cancel")}
+					</Button>
+					<Button
+						disabled={!form.label || mut.isPending}
+						onClick={() => mut.mutate()}
+					>
+						{t("common.save")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 }
 
