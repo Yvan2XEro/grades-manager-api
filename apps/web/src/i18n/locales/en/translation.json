@@ -4840,7 +4840,8 @@
         "totalAmount": "Total amount",
         "currency": "Currency",
         "description": "Description",
-        "isActive": "Active"
+        "isActive": "Active",
+        "studyCycle": "Study cycle"
       },
       "installments": {
         "title": "Payment installments",
@@ -4848,7 +4849,8 @@
         "label": "Label",
         "amount": "Amount",
         "dueDate": "Due date",
-        "empty": "No installments defined. Students can pay in one or multiple free-form payments."
+        "empty": "No installments defined. Students can pay in one or multiple free-form payments.",
+        "edit": "Edit installment"
       },
       "impact": {
         "title": "Impact preview",
@@ -4888,7 +4890,9 @@
       },
       "forceMatch": "Force Match",
       "forced": "Forced",
-      "xlsxLoaded": "Xlsx Loaded"
+      "xlsxLoaded": "Xlsx Loaded",
+      "notes": "Batch note (optional)",
+      "notesPlaceholder": "E.g. bank transfer of July 15 2026"
     },
     "assignments": {
       "title": "Student Payments",
@@ -4920,7 +4924,15 @@
         "partial": "Partial",
         "paid": "Paid",
         "exempt": "Exempt"
-      }
+      },
+      "assignStudentTitle": "Assign a student",
+      "assignStudentSubmit": "Assign",
+      "bulkAssignModeStudents": "Selected students",
+      "discountLabel": "Discount amount",
+      "discountReasonLabel": "Reason (optional)",
+      "exemptNotes": "Exemption reason (optional)",
+      "exemptConfirmTitle": "Mark student as exempt?",
+      "exemptConfirmDescription": "The student will be marked as exempt. You may enter an optional reason."
     },
     "payments": {
       "title": "Payment history",

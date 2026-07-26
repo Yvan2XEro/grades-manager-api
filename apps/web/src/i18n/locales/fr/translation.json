@@ -4845,7 +4845,8 @@
         "totalAmount": "Montant total",
         "currency": "Devise",
         "description": "Description",
-        "isActive": "Actif"
+        "isActive": "Actif",
+        "studyCycle": "Cycle d'études"
       },
       "installments": {
         "title": "Tranches de paiement",
@@ -4853,7 +4854,8 @@
         "label": "Libellé",
         "amount": "Montant",
         "dueDate": "Échéance",
-        "empty": "Aucune tranche définie. Les étudiants peuvent payer en une ou plusieurs fois librement."
+        "empty": "Aucune tranche définie. Les étudiants peuvent payer en une ou plusieurs fois librement.",
+        "edit": "Modifier la tranche"
       },
       "impact": {
         "title": "Aperçu d'impact",
@@ -4893,7 +4895,9 @@
       },
       "forceMatch": "Force Match",
       "forced": "Forced",
-      "xlsxLoaded": "Xlsx Loaded"
+      "xlsxLoaded": "Xlsx Loaded",
+      "notes": "Note de batch (optionnelle)",
+      "notesPlaceholder": "Ex : virement du 15 juillet 2026"
     },
     "assignments": {
       "title": "Paiements étudiants",
@@ -4925,7 +4929,15 @@
         "partial": "Partiel",
         "paid": "Soldé",
         "exempt": "Exonéré"
-      }
+      },
+      "assignStudentTitle": "Affecter un étudiant",
+      "assignStudentSubmit": "Affecter",
+      "bulkAssignModeStudents": "Étudiants sélectionnés",
+      "discountLabel": "Montant de la remise",
+      "discountReasonLabel": "Motif (optionnel)",
+      "exemptNotes": "Motif d'exonération (optionnel)",
+      "exemptConfirmTitle": "Exonérer cet étudiant ?",
+      "exemptConfirmDescription": "L'étudiant sera marqué comme exonéré. Vous pouvez saisir un motif facultatif."
     },
     "payments": {
       "title": "Historique des paiements",
