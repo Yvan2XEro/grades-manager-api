@@ -176,6 +176,7 @@ export default function BankImportDialog({
 	const [csvText, setCsvText] = useState("");
 	const [parsedRows, setParsedRows] = useState<ParsedRow[] | null>(null);
 	const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
+	const [batchNotes, setBatchNotes] = useState("");
 	const [showPreview, setShowPreview] = useState(false);
 	const [forceMatchRefs, setForceMatchRefs] = useState<Set<string>>(new Set());
 
@@ -194,6 +195,7 @@ export default function BankImportDialog({
 				rows,
 				paymentMethod: paymentMethod as never,
 				forceMatchRefs: [...forceMatchRefs],
+				batchNotes: batchNotes || undefined,
 			}),
 		onSuccess: (data) => {
 			toast.success(
@@ -213,6 +215,7 @@ export default function BankImportDialog({
 		setParsedRows(null);
 		setShowPreview(false);
 		setForceMatchRefs(new Set());
+		setBatchNotes("");
 		onOpenChange(false);
 	}
 
@@ -358,6 +361,19 @@ export default function BankImportDialog({
 								</SelectItem>
 							</SelectContent>
 						</Select>
+					</div>
+
+					{/* Batch notes */}
+					<div className="flex items-center gap-3">
+						<Label className="shrink-0">
+							{t("feeClearance.bankImport.notes")}
+						</Label>
+						<Textarea
+							rows={2}
+							value={batchNotes}
+							placeholder={t("feeClearance.bankImport.notesPlaceholder")}
+							onChange={(e) => setBatchNotes(e.target.value)}
+						/>
 					</div>
 
 					{/* Preview table */}

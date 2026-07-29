@@ -5,6 +5,16 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +41,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -61,6 +72,7 @@ export default function RoomsManagement() {
 	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editing, setEditing] = useState<Room | null>(null);
+	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
 	const form = useForm<RoomForm>({
 		resolver: zodResolver(roomSchema),
@@ -234,15 +246,12 @@ export default function RoomsManagement() {
 									{room.campus ?? "—"}
 								</TableCell>
 								<TableCell>
-									<input
-										type="checkbox"
+									<Switch
 										checked={room.isActive}
-										onChange={(e) =>
-											toggleActiveMut.mutate({
-												id: room.id,
-												isActive: e.target.checked,
-											})
+										onCheckedChange={(v) =>
+											toggleActiveMut.mutate({ id: room.id, isActive: v })
 										}
+										disabled={toggleActiveMut.isPending}
 									/>
 								</TableCell>
 								<TableCell className="flex justify-end gap-1">
@@ -256,7 +265,7 @@ export default function RoomsManagement() {
 									<Button
 										size="icon"
 										variant="ghost"
-										onClick={() => deleteMut.mutate(room.id)}
+										onClick={() => setDeleteConfirmId(room.id)}
 									>
 										<Trash2 className="h-4 w-4 text-destructive" />
 									</Button>
@@ -391,6 +400,34 @@ export default function RoomsManagement() {
 					</Form>
 				</DialogContent>
 			</Dialog>
+
+			<AlertDialog
+				open={!!deleteConfirmId}
+				onOpenChange={(o) => {
+					if (!o) setDeleteConfirmId(null);
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("common.confirmDeleteDesc")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+						<AlertDialogAction
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							onClick={() =>
+								deleteConfirmId && deleteMut.mutate(deleteConfirmId)
+							}
+							disabled={deleteMut.isPending}
+						>
+							{t("common.delete")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

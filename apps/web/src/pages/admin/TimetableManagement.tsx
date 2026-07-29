@@ -4,11 +4,13 @@ import {
 	AlertTriangle,
 	Calendar,
 	Download,
+	Pencil,
 	Plus,
 	Trash2,
 	Upload,
+	XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
@@ -16,11 +18,18 @@ import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
-import { Label } from "@/components/ui/label";
-import { type GridSession, WeeklyGrid } from "@/components/ui/weekly-grid";
-import { toast } from "@/lib/toast";
-import { Badge } from "../../components/ui/badge";
-import { Button } from "../../components/ui/button";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogBody,
@@ -28,26 +37,28 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "../../components/ui/dialog";
+} from "@/components/ui/dialog";
 import {
 	Empty,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyTitle,
-} from "../../components/ui/empty";
-import { Input } from "../../components/ui/input";
+} from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "../../components/ui/select";
+} from "@/components/ui/select";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
-} from "../../components/ui/tooltip";
+} from "@/components/ui/tooltip";
+import { type GridSession, WeeklyGrid } from "@/components/ui/weekly-grid";
+import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 import { TimetableImportDialog } from "./timetable/TimetableImportDialog";
 
@@ -61,6 +72,8 @@ type ClassCourse = {
 };
 
 const NO_ROOM_SENTINEL = "__none__";
+const ALL_TEACHERS = "__all_teachers__";
+const ALL_COURSES = "__all_courses__";
 
 const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
 const sessionSchema = z
@@ -95,19 +108,45 @@ export default function TimetableManagement() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 
+	// ── Filters ─────────────────────────────────────────────────────────────
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [semesterId, setSemesterId] = useState<string | null>(null);
 	const [classId, setClassId] = useState<string | null>(null);
 	const [teacherId, setTeacherId] = useState<string | null>(null);
 	const [classCourseId, setClassCourseId] = useState<string | null>(null);
+
+	// Initialize year filter to the active academic year
+	const yearListQuery = useQuery(trpc.academicYears.list.queryOptions({}));
+	const [yearInitialized, setYearInitialized] = useState(false);
+	useEffect(() => {
+		const active = yearListQuery.data?.items.find((y) => y.isActive)?.id;
+		if (!yearInitialized && active) {
+			setAcademicYearId(active);
+			setYearInitialized(true);
+		}
+	}, [yearListQuery.data, yearInitialized]);
+
+	const hasFilters = !!(
+		academicYearId ||
+		classId ||
+		teacherId ||
+		classCourseId
+	);
+
+	function clearFilters() {
+		setAcademicYearId(null);
+		setSemesterId(null);
+		setClassId(null);
+		setTeacherId(null);
+		setClassCourseId(null);
+		setYearInitialized(false); // allow re-init to active year on next mount
+	}
+
+	// ── Dialog state ─────────────────────────────────────────────────────────
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [importOpen, setImportOpen] = useState(false);
 	const [editingSession, setEditingSession] = useState<Session | null>(null);
-
-	const sessionForm = useForm<SessionForm>({
-		resolver: zodResolver(sessionSchema),
-		defaultValues: DEFAULT_SESSION,
-	});
+	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
 	const DAYS = [
 		{ value: "mon", label: t("teacher.timetable.days.mon") },
@@ -118,6 +157,12 @@ export default function TimetableManagement() {
 		{ value: "sat", label: t("teacher.timetable.days.sat") },
 	];
 
+	const sessionForm = useForm<SessionForm>({
+		resolver: zodResolver(sessionSchema),
+		defaultValues: DEFAULT_SESSION,
+	});
+
+	// ── Queries ───────────────────────────────────────────────────────────────
 	const { data: classCoursesData } = useQuery({
 		queryKey: [
 			"classCourses-for-timetable",
@@ -134,7 +179,6 @@ export default function TimetableManagement() {
 			});
 			return items as ClassCourse[];
 		},
-		enabled: true,
 	});
 
 	const { data: teachersData } = useQuery({
@@ -160,20 +204,18 @@ export default function TimetableManagement() {
 
 	const roomsQuery = useQuery(trpc.rooms.list.queryOptions({}));
 	const activeRooms = (roomsQuery.data ?? []).filter((r) => r.isActive);
-
 	const sessions: Session[] = sessionsQuery.data ?? [];
+	const classCourses = classCoursesData ?? [];
 
-	// Warning: selected classCourse has no teacher assigned
 	const selectedCourse = classCourseId
-		? (classCoursesData ?? []).find((cc) => cc.id === classCourseId)
+		? (classCourses.find((cc) => cc.id === classCourseId) ?? null)
 		: null;
 	const missingTeacherWarning =
 		selectedCourse !== null &&
 		selectedCourse !== undefined &&
 		!selectedCourse.teacher;
 
-	const classCourses = classCoursesData ?? [];
-
+	// ── Mutations ─────────────────────────────────────────────────────────────
 	const invalidate = () => {
 		queryClient.invalidateQueries(trpc.timetable.list.queryFilter({}));
 	};
@@ -192,17 +234,13 @@ export default function TimetableManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: (
-			data: SessionForm & {
-				classCourseId: string;
-				academicYearId: string;
-			},
+			data: SessionForm & { classCourseId: string; academicYearId: string },
 		) =>
 			trpcClient.timetable.create.mutate({
 				...data,
 				roomId: data.roomId === NO_ROOM_SENTINEL ? undefined : data.roomId,
 				validFrom: data.validFrom || undefined,
 				validUntil: data.validUntil || undefined,
-				// semesterId intentionally omitted — backend derives it from the classCourse
 			}),
 		onSuccess: (res) => {
 			toast.success(t("teacher.timetable.toast.created"));
@@ -234,11 +272,13 @@ export default function TimetableManagement() {
 		mutationFn: (id: string) => trpcClient.timetable.delete.mutate({ id }),
 		onSuccess: () => {
 			toast.success(t("teacher.timetable.toast.deleted"));
+			setDeleteConfirmId(null);
 			invalidate();
 		},
 		onError: (err) => toast.error(err.message),
 	});
 
+	// ── Export ────────────────────────────────────────────────────────────────
 	function handleExport() {
 		const rows = sessions.map((s) => ({
 			classCourseId: s.classCourseId,
@@ -258,6 +298,7 @@ export default function TimetableManagement() {
 		XLSX.writeFile(wb, "timetable.xlsx");
 	}
 
+	// ── Dialog helpers ────────────────────────────────────────────────────────
 	function openCreate() {
 		setEditingSession(null);
 		sessionForm.reset(DEFAULT_SESSION);
@@ -267,6 +308,19 @@ export default function TimetableManagement() {
 	function openEdit(session: GridSession) {
 		const s = sessions.find((x) => x.id === session.id);
 		if (!s) return;
+		setEditingSession(s);
+		sessionForm.reset({
+			dayOfWeek: s.dayOfWeek as SessionForm["dayOfWeek"],
+			startTime: s.startTime,
+			endTime: s.endTime,
+			roomId: s.roomId ?? NO_ROOM_SENTINEL,
+			validFrom: s.validFrom ?? "",
+			validUntil: s.validUntil ?? "",
+		});
+		setIsDialogOpen(true);
+	}
+
+	function openEditFromList(s: Session) {
 		setEditingSession(s);
 		sessionForm.reset({
 			dayOfWeek: s.dayOfWeek as SessionForm["dayOfWeek"],
@@ -298,17 +352,109 @@ export default function TimetableManagement() {
 		subLabel: s.classCourse?.classRef?.name,
 	}));
 
+	const canAddSession = !!classCourseId && !!academicYearId;
+
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
-				<div>
-					<h1 className="font-semibold text-xl">
-						{t("teacher.timetable.title")}
-					</h1>
-					<p className="text-muted-foreground text-sm">
-						{t("teacher.timetable.subtitle")}
-					</p>
+		<div className="space-y-5">
+			{/* ── Filter bar ─────────────────────────────────────────────────────── */}
+			<div className="flex flex-wrap items-end gap-3">
+				<AcademicYearSelect
+					value={academicYearId}
+					onChange={(v) => {
+						setAcademicYearId(v);
+						setSemesterId(null);
+						setClassId(null);
+						setTeacherId(null);
+						setClassCourseId(null);
+					}}
+					autoSelectActive={false}
+					allowAll
+					allLabel={t("teacher.timetable.allYears") ?? "Toutes les années"}
+					className="w-48"
+				/>
+				{academicYearId && (
+					<div className="w-44">
+						<SemesterSelect
+							academicYearId={academicYearId}
+							value={semesterId}
+							onChange={setSemesterId}
+						/>
+					</div>
+				)}
+				<div className="w-48">
+					<ClassSelect
+						academicYearId={academicYearId}
+						value={classId}
+						onChange={(v) => {
+							setClassId(v);
+							setClassCourseId(null);
+						}}
+					/>
 				</div>
+				<Select
+					value={teacherId ?? ALL_TEACHERS}
+					onValueChange={(v) => {
+						setTeacherId(v === ALL_TEACHERS ? null : v);
+						setClassCourseId(null);
+					}}
+				>
+					<SelectTrigger className="w-48">
+						<SelectValue placeholder={t("teacher.timetable.allTeachers")} />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value={ALL_TEACHERS}>
+							{t("teacher.timetable.allTeachers")}
+						</SelectItem>
+						{(teachersData ?? []).map((u) => (
+							<SelectItem key={u.id} value={u.id}>
+								{u.firstName} {u.lastName}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select
+					value={classCourseId ?? ALL_COURSES}
+					onValueChange={(v) => setClassCourseId(v === ALL_COURSES ? null : v)}
+				>
+					<SelectTrigger className="w-60">
+						<SelectValue placeholder={t("teacher.timetable.allCourses")} />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value={ALL_COURSES}>
+							{t("teacher.timetable.allCourses")}
+						</SelectItem>
+						{classCourses.map((cc) => (
+							<SelectItem key={cc.id} value={cc.id}>
+								{cc.courseRef?.name ?? cc.code}
+								{cc.classRef && (
+									<span className="ml-1 text-muted-foreground text-xs">
+										— {cc.classRef.name}
+									</span>
+								)}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				{hasFilters && (
+					<Button
+						variant="ghost"
+						size="sm"
+						className="gap-1.5 text-muted-foreground"
+						onClick={clearFilters}
+					>
+						<XCircle className="size-4" />
+						{t("common.clearFilters")}
+					</Button>
+				)}
+			</div>
+
+			{/* ── Action bar ──────────────────────────────────────────────────────── */}
+			<div className="flex items-center justify-between">
+				<p className="text-muted-foreground text-sm">
+					{sessionsQuery.isSuccess && sessions.length > 0
+						? `${sessions.length} séance${sessions.length > 1 ? "s" : ""}`
+						: null}
+				</p>
 				<div className="flex items-center gap-2">
 					<Button
 						variant="outline"
@@ -333,14 +479,14 @@ export default function TimetableManagement() {
 								<Button
 									onClick={openCreate}
 									size="sm"
-									disabled={!classCourseId || !academicYearId}
+									disabled={!canAddSession}
 								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("teacher.timetable.newSession")}
 								</Button>
 							</span>
 						</TooltipTrigger>
-						{(!classCourseId || !academicYearId) && (
+						{!canAddSession && (
 							<TooltipContent>
 								{t("teacher.timetable.selectCourse")}
 							</TooltipContent>
@@ -349,113 +495,16 @@ export default function TimetableManagement() {
 				</div>
 			</div>
 
-			<div className="mb-4 flex flex-wrap gap-4">
-				<div className="w-64">
-					<Label className="mb-1.5 block text-xs">
-						{t("teacher.timetable.filterByYear")}
-					</Label>
-					<AcademicYearSelect
-						value={academicYearId}
-						onChange={(v) => {
-							setAcademicYearId(v);
-							setSemesterId(null);
-							setClassId(null);
-							setTeacherId(null);
-							setClassCourseId(null);
-						}}
-					/>
-				</div>
-				{academicYearId && (
-					<div className="w-52">
-						<Label className="mb-1.5 block text-xs">
-							{t("teacher.timetable.filterBySemester")}
-						</Label>
-						<SemesterSelect
-							academicYearId={academicYearId}
-							value={semesterId}
-							onChange={setSemesterId}
-						/>
-					</div>
-				)}
-				<div className="w-52">
-					<Label className="mb-1.5 block text-xs">
-						{t("teacher.timetable.filterByClass")}
-					</Label>
-					<ClassSelect
-						academicYearId={academicYearId}
-						value={classId}
-						onChange={(v) => {
-							setClassId(v);
-							setClassCourseId(null);
-						}}
-					/>
-				</div>
-				<div className="w-52">
-					<Label className="mb-1.5 block text-xs">
-						{t("teacher.timetable.filterByTeacher")}
-					</Label>
-					<Select
-						value={teacherId ?? "__all_teachers__"}
-						onValueChange={(v) => {
-							setTeacherId(v === "__all_teachers__" ? null : v);
-							setClassCourseId(null);
-						}}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder={t("teacher.timetable.allTeachers")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="__all_teachers__">
-								{t("teacher.timetable.allTeachers")}
-							</SelectItem>
-							{(teachersData ?? []).map((u) => (
-								<SelectItem key={u.id} value={u.id}>
-									{u.firstName} {u.lastName}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-				<div className="w-72">
-					<Label className="mb-1.5 block text-xs">
-						{t("teacher.timetable.filterByCourse")}
-					</Label>
-					<Select
-						value={classCourseId ?? "__all_courses__"}
-						onValueChange={(v) =>
-							setClassCourseId(v === "__all_courses__" ? null : v)
-						}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder={t("teacher.timetable.selectCourse")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="__all_courses__">
-								{t("teacher.timetable.allCourses")}
-							</SelectItem>
-							{classCourses.map((cc) => (
-								<SelectItem key={cc.id} value={cc.id}>
-									{cc.courseRef?.name ?? cc.code}
-									{cc.classRef && (
-										<span className="ml-1 text-muted-foreground text-xs">
-											— {cc.classRef.name}
-										</span>
-									)}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-			</div>
-
+			{/* ── Missing teacher warning ──────────────────────────────────────── */}
 			{missingTeacherWarning && (
-				<div className="mb-4 flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+				<div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
 					<AlertTriangle className="h-4 w-4 shrink-0" />
 					{t("teacher.timetable.warnings.missingTeacher")}
 				</div>
 			)}
 
-			{!classCourseId && !classId && !teacherId ? (
+			{/* ── Content ──────────────────────────────────────────────────────── */}
+			{!hasFilters ? (
 				<Empty>
 					<EmptyHeader>
 						<Calendar className="h-8 w-8 text-muted-foreground/40" />
@@ -477,50 +526,69 @@ export default function TimetableManagement() {
 				</Empty>
 			) : (
 				<>
+					{/* Weekly grid — always shown when there are sessions */}
 					<WeeklyGrid
 						sessions={gridSessions}
 						onSessionClick={openEdit}
 						className="mb-4"
 					/>
-					<div className="mt-4 space-y-1">
-						{sessions.map((s) => (
-							<div
-								key={s.id}
-								className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
-							>
-								<span>
-									<Badge variant="outline" className="mr-2 text-xs">
+
+					{/* Session management list — only when a specific course is selected */}
+					{classCourseId && sessions.length > 0 && (
+						<div className="space-y-1.5">
+							<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+								{selectedCourse?.courseRef?.name ??
+									t("teacher.timetable.allCourses")}
+							</p>
+							{sessions.map((s) => (
+								<div
+									key={s.id}
+									className="flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm"
+								>
+									<Badge variant="outline" className="shrink-0 text-xs">
 										{DAYS.find((d) => d.value === s.dayOfWeek)?.label ??
 											s.dayOfWeek}
 									</Badge>
-									{s.startTime} – {s.endTime}
+									<span className="font-medium tabular-nums">
+										{s.startTime} – {s.endTime}
+									</span>
 									{(s.roomRef?.name ?? s.room) && (
-										<span className="ml-2 text-muted-foreground">
-											({s.roomRef?.name ?? s.room})
+										<span className="text-muted-foreground">
+											{s.roomRef?.name ?? s.room}
 										</span>
 									)}
 									{(s.validFrom || s.validUntil) && (
-										<span className="ml-2 text-muted-foreground text-xs">
+										<span className="ml-auto shrink-0 text-muted-foreground text-xs">
 											{t("teacher.timetable.validity")}: {s.validFrom ?? "…"} →{" "}
 											{s.validUntil ?? "…"}
 										</span>
 									)}
-								</span>
-								<Button
-									variant="ghost"
-									size="icon"
-									className="h-7 w-7 text-destructive hover:text-destructive"
-									onClick={() => deleteMutation.mutate(s.id)}
-									disabled={deleteMutation.isPending}
-								>
-									<Trash2 className="h-3.5 w-3.5" />
-								</Button>
-							</div>
-						))}
-					</div>
+									<div className="ml-auto flex shrink-0 gap-1">
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-7 w-7 text-muted-foreground hover:text-foreground"
+											onClick={() => openEditFromList(s)}
+										>
+											<Pencil className="h-3.5 w-3.5" />
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-7 w-7 text-destructive/70 hover:text-destructive"
+											onClick={() => setDeleteConfirmId(s.id)}
+										>
+											<Trash2 className="h-3.5 w-3.5" />
+										</Button>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
 				</>
 			)}
 
+			{/* ── Session dialog ────────────────────────────────────────────────── */}
 			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
@@ -634,6 +702,21 @@ export default function TimetableManagement() {
 							</div>
 						</DialogBody>
 						<DialogFooter>
+							{editingSession && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className="mr-auto text-destructive/80 hover:text-destructive"
+									onClick={() => {
+										setIsDialogOpen(false);
+										setDeleteConfirmId(editingSession.id);
+									}}
+								>
+									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+									{t("teacher.timetable.delete")}
+								</Button>
+							)}
 							<Button
 								type="button"
 								variant="outline"
@@ -654,6 +737,40 @@ export default function TimetableManagement() {
 				</DialogContent>
 			</Dialog>
 
+			{/* ── Delete confirmation ───────────────────────────────────────────── */}
+			<AlertDialog
+				open={!!deleteConfirmId}
+				onOpenChange={(o) => {
+					if (!o) setDeleteConfirmId(null);
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("teacher.timetable.confirmDelete")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("teacher.timetable.confirmDeleteDesc")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>
+							{t("teacher.timetable.cancel")}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							onClick={() =>
+								deleteConfirmId && deleteMutation.mutate(deleteConfirmId)
+							}
+							disabled={deleteMutation.isPending}
+						>
+							{t("teacher.timetable.delete")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			{/* ── Import dialog ─────────────────────────────────────────────────── */}
 			<TimetableImportDialog
 				open={importOpen}
 				onOpenChange={setImportOpen}

@@ -36,7 +36,8 @@
       "rename": "Renommer",
       "deselectAll": "Tout désélectionner",
       "selectAll": "Tout sélectionner",
-      "clear": "Clear"
+      "clear": "Effacer",
+      "clearFilters": "Réinitialiser les filtres"
     },
     "fields": {
       "email": "E-mail",
@@ -108,7 +109,8 @@
     "add": "Add",
     "error": "Error",
     "hide": "Hide",
-    "total": "Total"
+    "total": "Total",
+    "confirmDeleteDesc": "Cette action est irréversible."
   },
   "navigation": {
     "breadcrumbs": {
@@ -2343,8 +2345,10 @@
       "selectAll": "Tout sélectionner",
       "status": {
         "pending": "En attente",
-        "sent": "Envoyée",
-        "failed": "Échouée"
+        "sent": "Envoyées",
+        "failed": "Échouées",
+        "all": "Tout",
+        "retrying": "En cours de retry"
       },
       "tabs": {
         "all": "Tout",
@@ -2371,7 +2375,8 @@
       "gradeValidatedDesc": "Un examen a été validé et verrouillé pour publication.",
       "windowOpened": "Fenêtre d'inscription ouverte",
       "windowOpenedDesc": "Les étudiants peuvent s'inscrire pour la classe sélectionnée.",
-      "justNow": "À l'instant"
+      "justNow": "À l'instant",
+      "flushConfirmDesc": "Cela va immédiatement tenter l'envoi de toutes les notifications en attente. Continuer ?"
     },
     "teachingUnits": {
       "title": "Unités d'enseignement",
@@ -4055,7 +4060,10 @@
       },
       "errors": {
         "endBeforeStart": "L'heure de fin doit être après l'heure de début."
-      }
+      },
+      "confirmDelete": "Supprimer cette séance ?",
+      "confirmDeleteDesc": "Cette action est irréversible.",
+      "allYears": "Toutes les années"
     },
     "rooms": {
       "title": "Salles",
@@ -4845,7 +4853,8 @@
         "totalAmount": "Montant total",
         "currency": "Devise",
         "description": "Description",
-        "isActive": "Actif"
+        "isActive": "Actif",
+        "studyCycle": "Cycle d'études"
       },
       "installments": {
         "title": "Tranches de paiement",
@@ -4853,7 +4862,8 @@
         "label": "Libellé",
         "amount": "Montant",
         "dueDate": "Échéance",
-        "empty": "Aucune tranche définie. Les étudiants peuvent payer en une ou plusieurs fois librement."
+        "empty": "Aucune tranche définie. Les étudiants peuvent payer en une ou plusieurs fois librement.",
+        "edit": "Modifier la tranche"
       },
       "impact": {
         "title": "Aperçu d'impact",
@@ -4893,7 +4903,9 @@
       },
       "forceMatch": "Force Match",
       "forced": "Forced",
-      "xlsxLoaded": "Xlsx Loaded"
+      "xlsxLoaded": "Xlsx Loaded",
+      "notes": "Note de batch (optionnelle)",
+      "notesPlaceholder": "Ex : virement du 15 juillet 2026"
     },
     "assignments": {
       "title": "Paiements étudiants",
@@ -4925,7 +4937,15 @@
         "partial": "Partiel",
         "paid": "Soldé",
         "exempt": "Exonéré"
-      }
+      },
+      "assignStudentTitle": "Affecter un étudiant",
+      "assignStudentSubmit": "Affecter",
+      "bulkAssignModeStudents": "Étudiants sélectionnés",
+      "discountLabel": "Montant de la remise",
+      "discountReasonLabel": "Motif (optionnel)",
+      "exemptNotes": "Motif d'exonération (optionnel)",
+      "exemptConfirmTitle": "Exonérer cet étudiant ?",
+      "exemptConfirmDescription": "L'étudiant sera marqué comme exonéré. Vous pouvez saisir un motif facultatif."
     },
     "payments": {
       "title": "Historique des paiements",
@@ -5171,18 +5191,237 @@
   },
   "admissions": {
     "fields": {
-      "firstName": "Prénom",
-      "lastName": "Nom",
-      "email": "Email",
-      "phone": "Téléphone",
+      "firstName": "Prénom(s)",
+      "lastName": "Nom de famille",
+      "email": "Adresse email",
+      "phone": "Téléphone principal",
       "dateOfBirth": "Date de naissance",
       "nationality": "Nationalité",
       "previousDiploma": "Dernier diplôme",
       "previousInstitution": "Établissement précédent",
-      "program": "Programme",
+      "program": "1er vœu — Programme",
       "academicYear": "Année académique",
       "class": "Classe souhaitée",
-      "personalStatement": "Motivation"
+      "personalStatement": "Lettre de motivation",
+      "gender": "Genre",
+      "placeOfBirth": "Lieu de naissance",
+      "countryOfBirth": "Pays de naissance",
+      "exactDateOfBirth": "Date précise sur l’acte de naissance",
+      "idCardNumber": "N° CNI / Passeport",
+      "maritalStatus": "Statut matrimonial",
+      "employmentStatus": "Situation professionnelle",
+      "primaryLanguage": "Langue principale",
+      "hasDisability": "Situation de handicap",
+      "photo": "Photo d’identité",
+      "whatsapp": "WhatsApp",
+      "address": "Adresse résidentielle",
+      "city": "Ville",
+      "postalBox": "Boîte postale (BP)",
+      "originCountry": "Pays d’origine",
+      "originRegion": "Région d’origine",
+      "originDepartment": "Département d’origine",
+      "studentStatus": "Statut étudiant",
+      "entryDiplomaType": "Type de diplôme d’accès",
+      "bacSeries": "Série / Filière",
+      "bacYear": "Année d’obtention",
+      "bacMention": "Mention",
+      "bacAverage": "Moyenne générale",
+      "bacInstitution": "Établissement d’obtention",
+      "bacCountry": "Pays d’obtention",
+      "bacMatricule": "N° matricule",
+      "hasPriorHigherEd": "Avez-vous déjà suivi des études supérieures ?",
+      "priorInstitution": "Établissement",
+      "priorField": "Filière / Spécialité",
+      "priorLevel": "Dernier niveau atteint",
+      "priorStartYear": "Année de début",
+      "priorEndYear": "Année de fin",
+      "priorResult": "Résultats",
+      "secondChoiceProgram": "2ème vœu",
+      "thirdChoiceProgram": "3ème vœu",
+      "academicLevel": "Niveau d’entrée souhaité",
+      "trainingType": "Type de formation",
+      "fatherName": "Nom complet du père",
+      "fatherProfession": "Profession du père",
+      "fatherPhone": "Téléphone du père",
+      "fatherAlive": "Père en vie",
+      "motherName": "Nom complet de la mère",
+      "motherProfession": "Profession de la mère",
+      "motherPhone": "Téléphone de la mère",
+      "motherAlive": "Mère en vie",
+      "guardianName": "Nom du tuteur légal",
+      "guardianRelation": "Lien de parenté",
+      "guardianPhone": "Téléphone du tuteur",
+      "emergencyContactName": "Nom du contact d’urgence",
+      "emergencyContactPhone": "Téléphone du contact d’urgence",
+      "emergencyContactCity": "Ville du contact d’urgence"
+    },
+    "steps": {
+      "1": {
+        "title": "État civil",
+        "subtitle": "Informations d’identité personnelle"
+      },
+      "2": {
+        "title": "Coordonnées",
+        "subtitle": "Contact et origine géographique"
+      },
+      "3": {
+        "title": "Baccalauréat",
+        "subtitle": "Diplôme d’accès à l’enseignement supérieur"
+      },
+      "4": {
+        "title": "Études supérieures",
+        "subtitle": "Parcours académique antérieur"
+      },
+      "5": {
+        "title": "Choix de formation",
+        "subtitle": "Filières et vœux de formation"
+      },
+      "6": {
+        "title": "Famille",
+        "subtitle": "Contacts parentaux et d’urgence"
+      },
+      "7": {
+        "title": "Documents",
+        "subtitle": "Pièces justificatives à préparer"
+      },
+      "8": {
+        "title": "Récapitulatif",
+        "subtitle": "Vérification avant soumission"
+      }
+    },
+    "options": {
+      "gender": {
+        "masculin": "Masculin",
+        "feminin": "Féminin"
+      },
+      "maritalStatus": {
+        "celibataire": "Célibataire",
+        "marie": "Marié(e)",
+        "divorce": "Divorcé(e)",
+        "veuf": "Veuf / Veuve"
+      },
+      "employmentStatus": {
+        "sans_emploi": "Sans emploi",
+        "employe": "Employé(e)",
+        "fonctionnaire": "Fonctionnaire",
+        "commercant": "Commerçant(e)",
+        "autre": "Autre"
+      },
+      "studentStatus": {
+        "camerounais": "Camerounais",
+        "etranger_cemac": "Étranger (zone CEMAC)",
+        "etranger_hors_cemac": "Étranger (hors CEMAC)"
+      },
+      "diplomaType": {
+        "bac_camerounais": "Baccalauréat Camerounais",
+        "gce_alevel": "GCE A-Level",
+        "equivalent_etranger": "Équivalent étranger",
+        "autre": "Autre diplôme"
+      },
+      "bacMention": {
+        "tres_bien": "Très Bien",
+        "bien": "Bien",
+        "assez_bien": "Assez Bien",
+        "passable": "Passable",
+        "admis": "Admis"
+      },
+      "academicLevel": {
+        "L1": "Licence 1 (L1)",
+        "L2": "Licence 2 (L2)",
+        "L3": "Licence 3 (L3)",
+        "M1": "Master 1 (M1)",
+        "M2": "Master 2 (M2)",
+        "Doctorat": "Doctorat"
+      },
+      "trainingType": {
+        "initiale": "Formation initiale",
+        "professionnalisante": "Formation professionnalisante",
+        "continue": "Formation continue"
+      },
+      "priorResult": {
+        "admis": "Admis",
+        "non_admis": "Non admis",
+        "en_cours": "En cours"
+      },
+      "language": {
+        "francais": "Français",
+        "anglais": "Anglais"
+      }
+    },
+    "wizard": {
+      "next": "Suivant",
+      "back": "Précédent",
+      "submit": "Soumettre ma candidature",
+      "submitting": "Soumission en cours...",
+      "stepOf": "Étape {{current}} / {{total}}",
+      "draftNotice": "Vous avez une saisie en cours.",
+      "resumeDraft": "Reprendre",
+      "newForm": "Recommencer",
+      "optional": "optionnel",
+      "certify": "Je certifie sur l’honneur l’exactitude de toutes les informations fournies dans ce formulaire d’admission.",
+      "certifyRequired": "Vous devez certifier l’exactitude des informations avant de soumettre.",
+      "editStep": "Modifier",
+      "noValue": "Non renseigné",
+      "priorHigherEdYes": "Oui, j’ai déjà suivi des études supérieures",
+      "priorHigherEdNo": "Non, c’est ma première inscription dans l’enseignement supérieur"
+    },
+    "recap": {
+      "identity": "État civil",
+      "contact": "Coordonnées & Origine",
+      "diploma": "Baccalauréat",
+      "higherEd": "Études supérieures",
+      "programs": "Choix de formation",
+      "family": "Famille & Urgence",
+      "noPriorHigherEd": "Première inscription dans le supérieur",
+      "noGuardian": "Aucun tuteur légal renseigné"
+    },
+    "documents": {
+      "title": "Documents à préparer",
+      "subtitle": "Préparez ces pièces pour le dépôt de dossier. Certaines peuvent être soumises maintenant si disponibles.",
+      "required": "Obligatoire",
+      "recommended": "Recommandé",
+      "items": {
+        "photo": "Photos d’identité 4×4 cm (fond blanc ou rouge, nom au dos)",
+        "cni": "Copie de la CNI (Camerounais) ou Passeport (Étrangers)",
+        "birthCert": "Extrait d’acte de naissance (original + copie certifiée, moins de 3 mois)",
+        "bacCert": "Attestation de réussite au BAC / GCE A-Level",
+        "bacTranscript": "Relevé de notes du BAC / GCE A-Level",
+        "priorTranscript": "Relevé de notes de dernière année + attestation de réussite (si études sup.)"
+      }
+    },
+    "validation": {
+      "firstNameRequired": "Le prénom est requis",
+      "lastNameRequired": "Le nom de famille est requis",
+      "emailRequired": "L’adresse email est requise",
+      "emailInvalid": "Format d’email invalide",
+      "phoneRequired": "Le numéro de téléphone est requis",
+      "genderRequired": "Le genre est requis",
+      "dateOfBirthRequired": "La date de naissance est requise",
+      "placeOfBirthRequired": "Le lieu de naissance est requis",
+      "idCardRequired": "Le numéro de CNI ou passeport est requis",
+      "maritalStatusRequired": "Le statut matrimonial est requis",
+      "nationalityRequired": "La nationalité est requise",
+      "studentStatusRequired": "Le statut étudiant est requis",
+      "originCountryRequired": "Le pays d’origine est requis",
+      "diplomaTypeRequired": "Le type de diplôme est requis",
+      "bacSeriesRequired": "La série est requise",
+      "bacYearRequired": "L’année d’obtention est requise",
+      "bacMentionRequired": "La mention est requise",
+      "bacInstitutionRequired": "L’établissement est requis",
+      "bacCountryRequired": "Le pays d’obtention est requis",
+      "academicYearRequired": "L’année académique est requise",
+      "programRequired": "Le 1er vœu (programme) est requis",
+      "academicLevelRequired": "Le niveau d’entrée est requis",
+      "fatherNameRequired": "Le nom du père est requis",
+      "fatherProfessionRequired": "La profession du père est requise",
+      "motherNameRequired": "Le nom de la mère est requis",
+      "motherProfessionRequired": "La profession de la mère est requise",
+      "emergencyNameRequired": "Le nom du contact d’urgence est requis",
+      "emergencyPhoneRequired": "Le téléphone du contact d’urgence est requis",
+      "emergencyCityRequired": "La ville du contact d’urgence est requise",
+      "priorInstitutionRequired": "L’établissement est requis",
+      "priorFieldRequired": "La filière est requise",
+      "priorLevelRequired": "Le niveau est requis"
     },
     "statuses": {
       "draft": "Brouillon",
@@ -5190,7 +5429,8 @@
       "under_review": "En étude",
       "accepted": "Acceptée",
       "rejected": "Rejetée",
-      "waitlisted": "Liste d’attente"
+      "waitlisted": "Liste d’attente",
+      "converted": "Converti"
     },
     "documentStatuses": {
       "pending": "En attente",
@@ -5198,23 +5438,23 @@
       "invalid": "Invalide"
     },
     "public": {
-      "title": "Demande d’admission",
-      "subtitle": "Soumettez votre dossier en ligne et gardez le code de référence pour suivre l’avancement.",
+      "title": "Pré-inscription en ligne",
+      "subtitle": "Remplissez votre dossier de candidature en ligne. Vous recevrez un code de référence pour suivre votre dossier.",
       "selectProgram": "Choisir un programme",
       "selectYear": "Choisir une année académique",
       "selectClass": "Choisir une classe",
-      "noClass": "Aucune classe préférée",
-      "submit": "Soumettre la demande",
+      "noClass": "Aucune préférence",
+      "submit": "Soumettre la candidature",
       "submitting": "Soumission...",
-      "submitSuccess": "Demande soumise",
-      "successTitle": "Demande reçue",
-      "successDescription": "Votre demande a été enregistrée. Conservez ce code de référence pour suivre le dossier et compléter les documents.",
-      "referenceLabel": "Code de référence",
-      "trackApplication": "Suivre la demande"
+      "submitSuccess": "Candidature soumise avec succès",
+      "successTitle": "Candidature enregistrée",
+      "successDescription": "Votre dossier a bien été reçu. Conservez ce code de référence — il vous permettra de suivre l’avancement et de compléter vos documents.",
+      "referenceLabel": "Votre code de référence",
+      "trackApplication": "Suivre ma candidature"
     },
     "status": {
       "title": "Suivi de candidature",
-      "subtitle": "Entrez votre code de référence pour suivre la revue et la checklist documentaire.",
+      "subtitle": "Entrez votre code de référence pour suivre l’avancement et gérer vos documents.",
       "search": "Rechercher",
       "checklist": "Checklist documentaire",
       "noRequirements": "Aucune pièce requise configurée pour ce programme.",
@@ -5229,33 +5469,67 @@
       "documentSubmitted": "Document soumis"
     },
     "admin": {
-      "title": "Admissions",
-      "subtitle": "Étudier les candidatures, valider les documents, décider et convertir les candidats acceptés.",
+      "title": "Gestion des admissions",
+      "subtitle": "Étudier les candidatures, valider les documents, rendre les décisions et convertir les candidats acceptés.",
+      "searchPlaceholder": "Rechercher par nom, email ou référence…",
       "allStatuses": "Tous les statuts",
+      "allPrograms": "Tous les programmes",
+      "allYears": "Toutes les années",
+      "cols": {
+        "reference": "Référence",
+        "name": "Candidat",
+        "status": "Statut",
+        "date": "Soumission"
+      },
       "queue": "File des candidatures",
       "empty": "Aucune candidature trouvée.",
-      "selectApplication": "Sélectionnez une candidature à traiter.",
+      "selectApplication": "Sélectionnez une candidature dans la liste pour la traiter.",
       "reviewTitle": "Décision",
-      "reviewNotes": "Notes de décision",
+      "reviewNotes": "Notes de décision (obligatoires pour le rejet)",
       "markUnderReview": "Mettre en étude",
       "accept": "Accepter",
       "waitlist": "Liste d’attente",
       "reject": "Rejeter",
-      "documentsTitle": "Documents",
+      "documentsTitle": "Pièces justificatives",
       "missingFile": "Aucun fichier soumis",
       "valid": "Valide",
       "invalid": "Invalide",
       "convertTitle": "Convertir en étudiant",
       "useApplicationClass": "Utiliser la classe demandée",
       "registrationNumber": "Matricule",
-      "autoRegistration": "Auto-généré si vide",
-      "convert": "Convertir",
+      "autoRegistration": "Auto-généré si laissé vide",
+      "convert": "Convertir en étudiant",
       "converted": "Converti",
+      "applicantProfile": "Profil du candidat",
+      "secondChoice": "2ème vœu",
+      "thirdChoice": "3ème vœu",
+      "academicInfo": "Informations académiques",
+      "familyInfo": "Famille & urgence",
+      "fullDossier": "Voir le dossier complet",
+      "notFound": "Candidature introuvable",
+      "terminalState": "Aucune action disponible",
+      "convertExplain": "Cette action va créer en une seule étape :",
+      "convertStep1": "Un profil institutionnel",
+      "convertStep2": "Un dossier étudiant avec un matricule",
+      "convertStep3": "Une inscription dans la promotion",
+      "convertIrreversible": "Cette opération est irréversible. Une fois effectuée, le candidat devient étudiant actif.",
+      "assignClass": "Affecter une classe",
+      "assignClassHint": "Sélectionnez la promotion dans laquelle inscrire l'étudiant.",
+      "selectClass": "Choisir une classe…",
+      "noClassesWarning": "Aucune classe disponible pour ce programme / cette année.",
+      "noClassesHint": "Créez d'abord une classe pour ce programme et cette année académique dans la section Catalogue.",
+      "registrationHint": "Si laissé vide, le matricule sera généré automatiquement selon le format configuré.",
+      "converting": "Conversion en cours…",
+      "tabs": {
+        "dossier": "Dossier",
+        "documents": "Documents",
+        "decision": "Décision"
+      },
       "toasts": {
         "updated": "Candidature mise à jour",
         "reviewed": "Décision enregistrée",
         "documentReviewed": "Document revu",
-        "converted": "Candidature convertie"
+        "converted": "Candidature convertie en dossier étudiant"
       }
     }
   },

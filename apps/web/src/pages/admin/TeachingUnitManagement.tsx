@@ -152,18 +152,8 @@ const TeachingUnitManagement = () => {
 	}
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<div>
-					<h1 className="text-foreground">
-						{t("admin.teachingUnits.title", { defaultValue: "Teaching units" })}
-					</h1>
-					<p className="text-muted-foreground">
-						{t("admin.teachingUnits.subtitle", {
-							defaultValue: "Manage UE catalog, semesters, and prerequisites.",
-						})}
-					</p>
-				</div>
+		<div className="space-y-5">
+			<div className="flex justify-end">
 				<Button onClick={() => navigate("/admin/programs/teaching-units/new")}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.teachingUnits.actions.create", {

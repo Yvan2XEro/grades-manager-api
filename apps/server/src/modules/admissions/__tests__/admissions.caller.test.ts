@@ -187,7 +187,7 @@ describe("admissions.list (admin)", () => {
 		});
 
 		const adminCtx = asRealAdmin();
-		const submitted = await caller(adminCtx).admissions.list({
+		const { rows: submitted } = await caller(adminCtx).admissions.list({
 			status: "submitted",
 			limit: 50,
 			offset: 0,

@@ -1,6 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import type { z } from "zod";
-import type { AdmissionApplicationStatus } from "@/db/schema/app-schema";
+import type {
+	AdmissionApplicationStatus,
+	Gender,
+} from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import { conflict, notFound } from "../_shared/errors";
@@ -15,6 +18,13 @@ import type {
 	submitDocumentSchema,
 	upsertRequirementSchema,
 } from "./admissions.zod";
+
+function mapApplicantGender(raw: string | null | undefined): Gender | null {
+	if (!raw) return null;
+	if (raw === "masculin" || raw === "male") return "male";
+	if (raw === "feminin" || raw === "female") return "female";
+	return "other";
+}
 
 // Statuses from which an admin can render a final decision.
 const REVIEWABLE_STATUSES: AdmissionApplicationStatus[] = [
@@ -128,8 +138,12 @@ export async function submitApplication(
 		institutionId,
 		applicantId: applicant!.id,
 		programId: input.programId,
+		secondChoiceProgramId: input.secondChoiceProgramId ?? null,
+		thirdChoiceProgramId: input.thirdChoiceProgramId ?? null,
 		classId: input.classId ?? null,
 		academicYearId: input.academicYearId,
+		academicLevel: input.academicLevel ?? null,
+		trainingType: input.trainingType ?? null,
 		personalStatement: input.personalStatement ?? null,
 		status: "submitted",
 		submittedAt: new Date(),
@@ -182,6 +196,7 @@ export async function listApplications(
 		status?: string | null;
 		programId?: string | null;
 		academicYearId?: string | null;
+		search?: string | null;
 		limit: number;
 		offset: number;
 	},
@@ -331,8 +346,8 @@ export async function convertAcceptedApplication(
 				primaryEmail: app.applicant.email,
 				phone: app.applicant.phone ?? null,
 				dateOfBirth: app.applicant.dateOfBirth ?? null,
-				placeOfBirth: null,
-				gender: null,
+				placeOfBirth: app.applicant.placeOfBirth ?? null,
+				gender: mapApplicantGender(app.applicant.gender),
 				nationality: app.applicant.nationality ?? null,
 				status: "active",
 			})

@@ -84,6 +84,7 @@ export default function FeeAssignmentsList() {
 	const [search, setSearch] = useState("");
 	const [showBulkAssign, setShowBulkAssign] = useState(false);
 	const [showBankImport, setShowBankImport] = useState(false);
+	const [showAssignStudent, setShowAssignStudent] = useState(false);
 
 	const { data: classes } = useQuery(
 		trpc.classes.list.queryOptions(
@@ -138,6 +139,9 @@ export default function FeeAssignmentsList() {
 					<Button variant="outline" onClick={() => setShowBankImport(true)}>
 						<FileUp className="mr-2 h-4 w-4" />
 						{t("feeClearance.bankImport.button")}
+					</Button>
+					<Button variant="outline" onClick={() => setShowAssignStudent(true)}>
+						{t("feeClearance.assignments.assignStudentTitle")}
 					</Button>
 					<Button variant="outline" onClick={() => setShowBulkAssign(true)}>
 						<Users className="mr-2 h-4 w-4" />
@@ -336,13 +340,24 @@ export default function FeeAssignmentsList() {
 					});
 				}}
 			/>
+
+			<AssignStudentDialog
+				open={showAssignStudent}
+				onOpenChange={setShowAssignStudent}
+				onDone={() => {
+					queryClient.invalidateQueries({
+						queryKey: trpc.feeClearance.listAssignments.queryKey(),
+					});
+					setShowAssignStudent(false);
+				}}
+			/>
 		</div>
 	);
 }
 
 type PreviewResult = RouterOutputs["feeClearance"]["previewBulkAssign"];
 
-type BulkMode = "class" | "program" | "year";
+type BulkMode = "class" | "program" | "year" | "students";
 
 function BulkAssignDialog({
 	open,
@@ -359,6 +374,8 @@ function BulkAssignDialog({
 	const [structureId, setStructureId] = useState("");
 	const [classId, setClassId] = useState("");
 	const [programId, setProgramId] = useState("");
+	const [studentIds, setStudentIds] = useState<string[]>([]);
+	const [studentSearch, setStudentSearch] = useState("");
 	const [showPreview, setShowPreview] = useState(false);
 
 	const canPreview =
@@ -367,7 +384,9 @@ function BulkAssignDialog({
 			? !!classId
 			: mode === "program"
 				? !!programId
-				: !!yearId);
+				: mode === "students"
+					? studentIds.length > 0
+					: !!yearId);
 
 	const { data: structures } = useQuery(
 		trpc.feeClearance.listStructures.queryOptions({
@@ -376,6 +395,13 @@ function BulkAssignDialog({
 		}),
 	);
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
+	const { data: studentSearchResults } = useQuery({
+		...trpc.students.list.queryOptions({
+			q: studentSearch || undefined,
+			limit: 20,
+		}),
+		enabled: mode === "students" && studentSearch.length >= 2,
+	});
 
 	// Preview queries per mode
 	const previewClass = useQuery({
@@ -400,17 +426,27 @@ function BulkAssignDialog({
 		}),
 		enabled: showPreview && mode === "year" && canPreview,
 	});
+	const previewStudents = useQuery({
+		...trpc.feeClearance.previewBulkAssignStudents.queryOptions({
+			studentIds: studentIds.length > 0 ? studentIds : ["__placeholder__"],
+			feeStructureId: structureId,
+		}),
+		enabled: showPreview && mode === "students" && canPreview,
+	});
 
 	const activePreview =
 		mode === "class"
 			? previewClass.data
 			: mode === "program"
 				? previewProgram.data
-				: previewYear.data;
+				: mode === "students"
+					? previewStudents.data
+					: previewYear.data;
 	const previewLoading =
 		previewClass.isFetching ||
 		previewProgram.isFetching ||
-		previewYear.isFetching;
+		previewYear.isFetching ||
+		previewStudents.isFetching;
 
 	const mut = useMutation({
 		mutationFn: () => {
@@ -424,6 +460,12 @@ function BulkAssignDialog({
 				return trpcClient.feeClearance.bulkAssignProgram.mutate({
 					programId,
 					academicYearId: yearId,
+					feeStructureId: structureId,
+					skipExisting: true,
+				});
+			if (mode === "students")
+				return trpcClient.feeClearance.bulkAssignStudents.mutate({
+					studentIds,
 					feeStructureId: structureId,
 					skipExisting: true,
 				});
@@ -449,6 +491,8 @@ function BulkAssignDialog({
 		setStructureId("");
 		setClassId("");
 		setProgramId("");
+		setStudentIds([]);
+		setStudentSearch("");
 	}
 
 	return (
@@ -482,22 +526,27 @@ function BulkAssignDialog({
 								<SelectItem value="year">
 									{t("feeClearance.bulkAssign.modeYear")}
 								</SelectItem>
+								<SelectItem value="students">
+									{t("feeClearance.assignments.bulkAssignModeStudents")}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
 
-					{/* Year selector (all modes) */}
-					<div>
-						<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
-						<AcademicYearSelect
-							value={yearId || null}
-							onChange={(v) => {
-								setYearId(v);
-								reset();
-							}}
-							autoSelectActive
-						/>
-					</div>
+					{/* Year selector (all modes except students) */}
+					{mode !== "students" && (
+						<div>
+							<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
+							<AcademicYearSelect
+								value={yearId || null}
+								onChange={(v) => {
+									setYearId(v);
+									reset();
+								}}
+								autoSelectActive
+							/>
+						</div>
+					)}
 
 					{/* Mode-specific scope selector */}
 					{mode === "class" && (
@@ -535,6 +584,57 @@ function BulkAssignDialog({
 									))}
 								</SelectContent>
 							</Select>
+						</div>
+					)}
+					{mode === "students" && (
+						<div className="space-y-2">
+							<Label>{t("feeClearance.assignments.assignStudentTitle")}</Label>
+							<Input
+								placeholder={t("common.search")}
+								value={studentSearch}
+								onChange={(e) => {
+									setStudentSearch(e.target.value);
+									setShowPreview(false);
+								}}
+							/>
+							{studentSearchResults?.items &&
+								studentSearchResults.items.length > 0 && (
+									<div className="max-h-40 overflow-y-auto rounded border text-sm">
+										{studentSearchResults.items.map((s) => {
+											const name =
+												`${s.profile?.firstName ?? ""} ${s.profile?.lastName ?? ""}`.trim();
+											const checked = studentIds.includes(s.id);
+											return (
+												<label
+													key={s.id}
+													className="flex cursor-pointer items-center gap-2 px-3 py-1.5 hover:bg-muted/50"
+												>
+													<input
+														type="checkbox"
+														className="h-4 w-4 rounded border"
+														checked={checked}
+														onChange={(e) => {
+															setStudentIds((ids) =>
+																e.target.checked
+																	? [...ids, s.id]
+																	: ids.filter((x) => x !== s.id),
+															);
+															setShowPreview(false);
+														}}
+													/>
+													<span>{name || s.registrationNumber}</span>
+												</label>
+											);
+										})}
+									</div>
+								)}
+							{studentIds.length > 0 && (
+								<p className="text-muted-foreground text-xs">
+									{studentIds.length}{" "}
+									{t("feeClearance.assignments.fields.student")}(s)
+									sélectionné(s)
+								</p>
+							)}
 						</div>
 					)}
 
@@ -663,5 +763,201 @@ function PreviewPanel({ preview }: { preview: PreviewResult }) {
 				</p>
 			)}
 		</div>
+	);
+}
+
+function AssignStudentDialog({
+	open,
+	onOpenChange,
+	onDone,
+}: {
+	open: boolean;
+	onOpenChange: (o: boolean) => void;
+	onDone: () => void;
+}) {
+	const { t } = useTranslation();
+	const [yearId, setYearId] = useState("");
+	const [structureId, setStructureId] = useState("");
+	const [studentSearch, setStudentSearch] = useState("");
+	const [studentId, setStudentId] = useState("");
+	const [discountAmount, setDiscountAmount] = useState("0");
+	const [discountReason, setDiscountReason] = useState("");
+	const [notes, setNotes] = useState("");
+
+	const { data: structures } = useQuery(
+		trpc.feeClearance.listStructures.queryOptions({
+			academicYearId: yearId || undefined,
+			isActive: true,
+		}),
+	);
+	const { data: studentResults } = useQuery({
+		...trpc.students.list.queryOptions({
+			q: studentSearch || undefined,
+			limit: 15,
+		}),
+		enabled: studentSearch.length >= 2,
+	});
+
+	const mut = useMutation({
+		mutationFn: () =>
+			trpcClient.feeClearance.assignStudent.mutate({
+				studentId,
+				academicYearId: yearId,
+				feeStructureId: structureId,
+				discountAmount: Number(discountAmount) || 0,
+				discountReason: discountReason || undefined,
+				notes: notes || undefined,
+			}),
+		onSuccess: () => {
+			toast.success(t("common.saved"));
+			onDone();
+			setStudentId("");
+			setStudentSearch("");
+			setStructureId("");
+			setDiscountAmount("0");
+			setDiscountReason("");
+			setNotes("");
+		},
+		onError: (e) => toast.error(e.message),
+	});
+
+	const selectedStudent = studentResults?.items?.find(
+		(s) => s.id === studentId,
+	);
+	const selectedName = selectedStudent
+		? `${selectedStudent.profile?.firstName ?? ""} ${selectedStudent.profile?.lastName ?? ""}`.trim()
+		: "";
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>
+						{t("feeClearance.assignments.assignStudentTitle")}
+					</DialogTitle>
+				</DialogHeader>
+				<DialogBody className="space-y-4">
+					<div>
+						<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
+						<AcademicYearSelect
+							value={yearId || null}
+							onChange={(v) => {
+								setYearId(v);
+								setStructureId("");
+							}}
+							autoSelectActive
+						/>
+					</div>
+					<div>
+						<Label>{t("feeClearance.assignments.fields.structure")}</Label>
+						<Select
+							value={structureId}
+							onValueChange={setStructureId}
+							disabled={!yearId}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{structures?.map((s) => (
+									<SelectItem key={s.id} value={s.id}>
+										{s.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-2">
+						<Label>{t("feeClearance.assignments.fields.student")}</Label>
+						{studentId && selectedName && (
+							<p className="rounded bg-muted px-2 py-1 text-sm">
+								{selectedName}
+								<button
+									type="button"
+									className="ml-2 text-muted-foreground hover:text-destructive"
+									onClick={() => {
+										setStudentId("");
+										setStudentSearch("");
+									}}
+								>
+									&#x2715;
+								</button>
+							</p>
+						)}
+						{!studentId && (
+							<>
+								<Input
+									placeholder={t("common.search")}
+									value={studentSearch}
+									onChange={(e) => setStudentSearch(e.target.value)}
+								/>
+								{studentResults?.items && studentResults.items.length > 0 && (
+									<div className="max-h-40 overflow-y-auto rounded border text-sm">
+										{studentResults.items.map((s) => {
+											const name =
+												`${s.profile?.firstName ?? ""} ${s.profile?.lastName ?? ""}`.trim();
+											return (
+												<button
+													key={s.id}
+													type="button"
+													className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-muted/50"
+													onClick={() => {
+														setStudentId(s.id);
+														setStudentSearch(name || s.registrationNumber);
+													}}
+												>
+													<span>{name || s.registrationNumber}</span>
+													<span className="ml-auto text-muted-foreground">
+														{s.registrationNumber}
+													</span>
+												</button>
+											);
+										})}
+									</div>
+								)}
+							</>
+						)}
+					</div>
+					<div>
+						<Label>{t("feeClearance.assignments.discountLabel")}</Label>
+						<Input
+							type="number"
+							min={0}
+							value={discountAmount}
+							onChange={(e) => setDiscountAmount(e.target.value)}
+						/>
+					</div>
+					{Number(discountAmount) > 0 && (
+						<div>
+							<Label>{t("feeClearance.assignments.discountReasonLabel")}</Label>
+							<Input
+								value={discountReason}
+								placeholder={t("common.optional")}
+								onChange={(e) => setDiscountReason(e.target.value)}
+							/>
+						</div>
+					)}
+					<div>
+						<Label>{t("feeClearance.bankImport.notes")}</Label>
+						<Input
+							value={notes}
+							placeholder={t("common.optional")}
+							onChange={(e) => setNotes(e.target.value)}
+						/>
+					</div>
+				</DialogBody>
+				<DialogFooter>
+					<Button variant="outline" onClick={() => onOpenChange(false)}>
+						{t("common.cancel")}
+					</Button>
+					<Button
+						disabled={!studentId || !yearId || !structureId || mut.isPending}
+						onClick={() => mut.mutate()}
+					>
+						{t("feeClearance.assignments.assignStudentSubmit")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 }

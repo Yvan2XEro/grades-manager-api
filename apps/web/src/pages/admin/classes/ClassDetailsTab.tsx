@@ -107,24 +107,16 @@ export default function ClassDetailsTab() {
 		[programs, selectedProgramId],
 	);
 
-	// --- Cycle levels (cascade from program → institution → cycles → levels) ---
+	// --- Cycle levels (cascade from program.cycleId directly) ---
 	const { data: cycleLevels = [] } = useQuery({
-		queryKey: ["cycleLevelsByInstitution", selectedProgram?.institutionId],
-		queryFn: async () => {
-			if (!selectedProgram?.institutionId) return [];
-			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				institutionId: selectedProgram.institutionId,
-				limit: 100,
-			});
-			if (!cycles.length) return [];
-			const levelLists = await Promise.all(
-				cycles.map((cycle) =>
-					trpcClient.studyCycles.listLevels.query({ cycleId: cycle.id }),
-				),
-			);
-			return levelLists.flat();
-		},
-		enabled: Boolean(selectedProgram?.institutionId),
+		queryKey: ["cycleLevelsByProgram", selectedProgram?.cycleId],
+		queryFn: () =>
+			selectedProgram?.cycleId
+				? trpcClient.studyCycles.listLevels.query({
+						cycleId: selectedProgram.cycleId,
+					})
+				: Promise.resolve([]),
+		enabled: Boolean(selectedProgram?.cycleId),
 	});
 
 	// --- Program options ---

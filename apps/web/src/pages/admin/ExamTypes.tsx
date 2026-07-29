@@ -205,14 +205,8 @@ export default function ExamTypes() {
 	};
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-				<div>
-					<h1 className="text-foreground">{t("admin.examTypes.title")}</h1>
-					<p className="text-muted-foreground">
-						{t("admin.examTypes.subtitle")}
-					</p>
-				</div>
+		<div className="space-y-5">
+			<div className="flex justify-end">
 				<Button onClick={handleOpenCreate}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.examTypes.actions.add")}

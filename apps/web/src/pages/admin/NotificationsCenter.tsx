@@ -12,6 +12,16 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TablePagination } from "@/components/ui/table-pagination";
@@ -22,12 +32,12 @@ import { trpc, trpcClient } from "../../utils/trpc";
 
 type StatusFilter = "all" | "pending" | "retrying" | "sent" | "failed";
 
-const STATUS_TABS: { key: StatusFilter; label: string }[] = [
-	{ key: "all", label: "Tout" },
-	{ key: "pending", label: "En attente" },
-	{ key: "retrying", label: "En cours de retry" },
-	{ key: "sent", label: "Envoyées" },
-	{ key: "failed", label: "Échouées" },
+const STATUS_TAB_KEYS: StatusFilter[] = [
+	"all",
+	"pending",
+	"retrying",
+	"sent",
+	"failed",
 ];
 
 const statusConfig = {
@@ -103,6 +113,7 @@ const NotificationsCenter = () => {
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
+	const [flushConfirm, setFlushConfirm] = useState(false);
 
 	const handleFilter =
 		<T,>(setter: (v: T) => void) =>
@@ -193,7 +204,7 @@ const NotificationsCenter = () => {
 				<Button
 					variant="outline"
 					size="sm"
-					onClick={() => flushMutation.mutate()}
+					onClick={() => setFlushConfirm(true)}
 					disabled={flushMutation.isPending}
 					className="gap-2"
 				>
@@ -213,30 +224,30 @@ const NotificationsCenter = () => {
 						[
 							{
 								key: "pending",
-								label: "En attente",
+								labelKey: "admin.notifications.status.pending",
 								icon: <Clock className="h-4 w-4" />,
 								color: "text-muted-foreground",
 							},
 							{
 								key: "retrying",
-								label: "Retry",
+								labelKey: "admin.notifications.status.retrying",
 								icon: <RotateCcw className="h-4 w-4" />,
 								color: "text-amber-600",
 							},
 							{
 								key: "failed",
-								label: "Échouées",
+								labelKey: "admin.notifications.status.failed",
 								icon: <AlertTriangle className="h-4 w-4" />,
 								color: "text-destructive",
 							},
 							{
 								key: "sent",
-								label: "Envoyées",
+								labelKey: "admin.notifications.status.sent",
 								icon: <CheckCircle2 className="h-4 w-4" />,
 								color: "text-primary",
 							},
 						] as const
-					).map(({ key, label, icon, color }) => (
+					).map(({ key, labelKey, icon, color }) => (
 						<button
 							key={key}
 							type="button"
@@ -248,7 +259,9 @@ const NotificationsCenter = () => {
 								<p className="font-semibold text-foreground text-lg leading-none">
 									{statsData[key]}
 								</p>
-								<p className="mt-0.5 text-muted-foreground text-xs">{label}</p>
+								<p className="mt-0.5 text-muted-foreground text-xs">
+									{t(labelKey)}
+								</p>
 							</div>
 						</button>
 					))}
@@ -257,19 +270,21 @@ const NotificationsCenter = () => {
 
 			{/* Tabs */}
 			<div className="flex items-center gap-1 border-b">
-				{STATUS_TABS.map((tab) => (
+				{STATUS_TAB_KEYS.map((key) => (
 					<button
-						key={tab.key}
+						key={key}
 						type="button"
-						onClick={() => handleFilter(setStatusFilter)(tab.key)}
+						onClick={() => handleFilter(setStatusFilter)(key)}
 						className={cn(
 							"relative px-4 py-2.5 font-medium text-sm transition-colors",
-							statusFilter === tab.key
+							statusFilter === key
 								? "text-primary after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:rounded-full after:bg-primary"
 								: "text-muted-foreground hover:text-foreground",
 						)}
 					>
-						{tab.label}
+						{key === "all"
+							? t("common.all")
+							: t(`admin.notifications.status.${key}`)}
 					</button>
 				))}
 
@@ -301,12 +316,14 @@ const NotificationsCenter = () => {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => flushMutation.mutate()}
+							onClick={() => setFlushConfirm(true)}
 							disabled={flushMutation.isPending}
 							className="h-7 gap-1.5 text-xs"
 						>
 							<RefreshCw className="h-3.5 w-3.5" />
-							Flush
+							{t("admin.notifications.actions.flush", {
+								defaultValue: "Flush",
+							})}
 						</Button>
 					</div>
 				</div>
@@ -461,6 +478,38 @@ const NotificationsCenter = () => {
 					setPage(1);
 				}}
 			/>
+
+			<AlertDialog open={flushConfirm} onOpenChange={setFlushConfirm}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("admin.notifications.actions.flush", {
+								defaultValue: "Flush pending",
+							})}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("admin.notifications.flushConfirmDesc", {
+								defaultValue:
+									"This will immediately attempt delivery of all pending notifications. Continue?",
+							})}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								flushMutation.mutate();
+								setFlushConfirm(false);
+							}}
+							disabled={flushMutation.isPending}
+						>
+							{t("admin.notifications.actions.flush", {
+								defaultValue: "Flush",
+							})}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 };
