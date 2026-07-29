@@ -1,4 +1,14 @@
-import { and, desc, eq, isNull, or } from "drizzle-orm";
+import {
+	and,
+	count,
+	desc,
+	eq,
+	ilike,
+	inArray,
+	isNull,
+	or,
+	type SQL,
+} from "drizzle-orm";
 import { db } from "@/db";
 import {
 	type AdmissionApplicationStatus,
@@ -79,36 +89,82 @@ export async function listApplications(
 		status?: AdmissionApplicationStatus | null;
 		programId?: string | null;
 		academicYearId?: string | null;
+		search?: string | null;
 		limit: number;
 		offset: number;
 	},
 ) {
-	const conditions = [eq(admissionApplications.institutionId, institutionId)];
+	const conditions: SQL[] = [
+		eq(admissionApplications.institutionId, institutionId),
+	];
 
-	if (filters.status) {
+	if (filters.status)
 		conditions.push(eq(admissionApplications.status, filters.status));
-	}
-	if (filters.programId) {
+	if (filters.programId)
 		conditions.push(eq(admissionApplications.programId, filters.programId));
-	}
-	if (filters.academicYearId) {
+	if (filters.academicYearId)
 		conditions.push(
 			eq(admissionApplications.academicYearId, filters.academicYearId),
 		);
+
+	// Search must be resolved against the applicants table first — the relational
+	// query API does not join applicants in the WHERE clause of the root query.
+	if (filters.search?.trim()) {
+		const q = `%${filters.search.trim()}%`;
+		const matched = await db
+			.select({ id: applicants.id })
+			.from(applicants)
+			.where(
+				and(
+					eq(applicants.institutionId, institutionId),
+					or(
+						ilike(applicants.firstName, q),
+						ilike(applicants.lastName, q),
+						ilike(applicants.email, q),
+						ilike(applicants.referenceCode, q),
+					),
+				),
+			);
+		if (matched.length === 0) return { rows: [], total: 0 };
+		conditions.push(
+			inArray(
+				admissionApplications.applicantId,
+				matched.map((r) => r.id),
+			),
+		);
 	}
 
-	return db.query.admissionApplications.findMany({
-		where: and(...conditions),
-		with: {
-			applicant: true,
-			program: { columns: { id: true, name: true, code: true } },
-			academicYear: { columns: { id: true, name: true } },
-			reviewedBy: { columns: { id: true, firstName: true, lastName: true } },
-		},
-		orderBy: [desc(admissionApplications.createdAt)],
-		limit: filters.limit,
-		offset: filters.offset,
-	});
+	const where = and(...conditions);
+
+	const [rows, [{ total }]] = await Promise.all([
+		db.query.admissionApplications.findMany({
+			where,
+			with: {
+				applicant: {
+					columns: {
+						id: true,
+						firstName: true,
+						lastName: true,
+						email: true,
+						phone: true,
+						referenceCode: true,
+						gender: true,
+						nationality: true,
+						dateOfBirth: true,
+					},
+				},
+				program: { columns: { id: true, name: true, code: true } },
+				academicYear: { columns: { id: true, name: true } },
+				reviewedBy: { columns: { id: true, firstName: true, lastName: true } },
+			},
+			orderBy: [desc(admissionApplications.submittedAt)],
+			limit: filters.limit,
+			offset: filters.offset,
+		}),
+		db.select({ total: count() }).from(admissionApplications).where(where),
+	]);
+
+	return { rows, total };
 }
 
 export async function updateApplicationStatus(
@@ -180,6 +236,10 @@ export async function findClassesForInstitution(institutionId: string) {
 			code: true,
 			program: true,
 			academicYear: true,
+			cycleLevelId: true,
+		},
+		with: {
+			cycleLevel: { columns: { code: true, name: true } },
 		},
 		orderBy: [desc(classes.createdAt)],
 	});

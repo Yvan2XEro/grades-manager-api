@@ -78,8 +78,9 @@ async function resolveTenantContext(
 		});
 	}
 
-	// Fallback: resolve via the X-Organization-Slug header sent by the client
-	if (!organizationId && orgSlugHint && session?.user?.id) {
+	// Fallback: resolve via the X-Organization-Slug header sent by the client.
+	// When a session exists, we also resolve membership.
+	if (!organizationId && orgSlugHint) {
 		const org = await db
 			.select({ id: authSchema.organization.id })
 			.from(authSchema.organization)
@@ -87,24 +88,25 @@ async function resolveTenantContext(
 			.limit(1)
 			.then((rows) => rows[0]);
 		if (org) {
-			const [member] = await db
-				.select()
-				.from(authSchema.member)
-				.where(
-					and(
-						eq(authSchema.member.organizationId, org.id),
-						eq(authSchema.member.userId, session.user.id),
-					),
-				)
-				.limit(1);
-			if (member) {
-				organizationId = org.id;
-				memberRecord = member;
+			organizationId = org.id;
+			// Only look up membership when the user is authenticated.
+			if (session?.user?.id) {
+				const [member] = await db
+					.select()
+					.from(authSchema.member)
+					.where(
+						and(
+							eq(authSchema.member.organizationId, org.id),
+							eq(authSchema.member.userId, session.user.id),
+						),
+					)
+					.limit(1);
+				if (member) memberRecord = member;
 			}
 		}
 	}
 
-	// Reject requests without an active organization
+	// Reject requests without any resolvable organization context.
 	if (!organizationId) {
 		throw new TRPCError({
 			code: "PRECONDITION_FAILED",
@@ -113,7 +115,8 @@ async function resolveTenantContext(
 		});
 	}
 
-	if (!memberRecord) {
+	// Authenticated requests must have a valid membership record.
+	if (session?.user?.id && !memberRecord) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
 			message:
@@ -121,7 +124,7 @@ async function resolveTenantContext(
 		});
 	}
 
-	if (memberRecord.organizationId !== organizationId) {
+	if (memberRecord && memberRecord.organizationId !== organizationId) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
 			message: "Active organization mismatch for the current membership.",

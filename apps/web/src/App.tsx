@@ -10,6 +10,7 @@ import AccountSettings from "./pages/AccountSettings";
 import AcademicResultsHub from "./pages/admin/AcademicResultsHub";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import AcademicYearTransitions from "./pages/admin/AcademicYearTransitions";
+import AdmissionDetail from "./pages/admin/AdmissionDetail";
 import AdmissionsManagement from "./pages/admin/AdmissionsManagement";
 import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
 import AttendanceManagement from "./pages/admin/attendance/AttendanceManagement";
@@ -270,6 +271,7 @@ function App() {
 						<Route index element={<AdminDashboard />} />
 						<Route path="academic-years" element={<AcademicYearManagement />} />
 						<Route path="admissions" element={<AdmissionsManagement />} />
+						<Route path="admissions/:id" element={<AdmissionDetail />} />
 						{/* Legacy redirects: standalone → UsersHub tabs */}
 						<Route
 							path="guardians"

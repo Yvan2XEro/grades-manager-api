@@ -182,19 +182,8 @@ export default function StudyCycleManagement() {
 	};
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<div>
-					<h1 className="text-foreground">
-						{t("admin.studyCycles.title", { defaultValue: "Study cycles" })}
-					</h1>
-					<p className="text-muted-foreground">
-						{t("admin.studyCycles.subtitle", {
-							defaultValue:
-								"Group programs by cycle and tune the credit flow across levels.",
-						})}
-					</p>
-				</div>
+		<div className="space-y-5">
+			<div className="flex justify-end">
 				<Button
 					type="button"
 					onClick={() => {

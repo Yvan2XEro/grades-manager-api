@@ -4353,6 +4353,68 @@ export const applicants = pgTable(
 		nationality: text("nationality"),
 		previousDiploma: text("previous_diploma"),
 		previousInstitution: text("previous_institution"),
+
+		// ── Extended identity ──────────────────────────────────────────────────
+		gender: text("gender"), // masculin | feminin
+		placeOfBirth: text("place_of_birth"),
+		countryOfBirth: text("country_of_birth"),
+		exactDateOfBirth: boolean("exact_date_of_birth").notNull().default(true),
+		idCardNumber: text("id_card_number"),
+		maritalStatus: text("marital_status"), // celibataire|marie|divorce|veuf
+		employmentStatus: text("employment_status"),
+		primaryLanguage: text("primary_language"), // francais|anglais
+		hasDisability: boolean("has_disability").notNull().default(false),
+		photoUrl: text("photo_url"),
+
+		// ── Contact extensions ─────────────────────────────────────────────────
+		whatsapp: text("whatsapp"),
+		address: text("address"),
+		city: text("city"),
+		postalBox: text("postal_box"),
+
+		// ── Geographic origin ──────────────────────────────────────────────────
+		originCountry: text("origin_country"),
+		originRegion: text("origin_region"),
+		originDepartment: text("origin_department"),
+		studentStatus: text("student_status"), // camerounais|etranger_cemac|etranger_hors_cemac
+
+		// ── Entry diploma (BAC / GCE) ──────────────────────────────────────────
+		entryDiplomaType: text("entry_diploma_type"),
+		bacSeries: text("bac_series"),
+		bacYear: text("bac_year"),
+		bacMention: text("bac_mention"),
+		bacAverage: text("bac_average"),
+		bacInstitution: text("bac_institution"),
+		bacCountry: text("bac_country"),
+		bacMatricule: text("bac_matricule"),
+
+		// ── Prior higher education ─────────────────────────────────────────────
+		hasPriorHigherEd: boolean("has_prior_higher_ed").notNull().default(false),
+		priorInstitution: text("prior_institution"),
+		priorField: text("prior_field"),
+		priorLevel: text("prior_level"),
+		priorStartYear: text("prior_start_year"),
+		priorEndYear: text("prior_end_year"),
+		priorResult: text("prior_result"),
+
+		// ── Family ────────────────────────────────────────────────────────────
+		fatherName: text("father_name"),
+		fatherProfession: text("father_profession"),
+		fatherPhone: text("father_phone"),
+		fatherAlive: boolean("father_alive"),
+		motherName: text("mother_name"),
+		motherProfession: text("mother_profession"),
+		motherPhone: text("mother_phone"),
+		motherAlive: boolean("mother_alive"),
+		guardianName: text("guardian_name"),
+		guardianRelation: text("guardian_relation"),
+		guardianPhone: text("guardian_phone"),
+
+		// ── Emergency contact ─────────────────────────────────────────────────
+		emergencyContactName: text("emergency_contact_name"),
+		emergencyContactPhone: text("emergency_contact_phone"),
+		emergencyContactCity: text("emergency_contact_city"),
+
 		/** Short code (e.g. APP-2026-XXXX) for status lookup without a login. */
 		referenceCode: text("reference_code").notNull(),
 		createdAt: timestamp("created_at", { withTimezone: true })
@@ -4396,6 +4458,16 @@ export const admissionApplications = pgTable(
 			.notNull()
 			.default("draft"),
 		personalStatement: text("personal_statement"),
+		secondChoiceProgramId: text("second_choice_program_id").references(
+			() => programs.id,
+			{ onDelete: "set null" },
+		),
+		thirdChoiceProgramId: text("third_choice_program_id").references(
+			() => programs.id,
+			{ onDelete: "set null" },
+		),
+		academicLevel: text("academic_level"), // L1|L2|L3|M1|M2|Doctorat
+		trainingType: text("training_type"), // initiale|professionnalisante|continue
 		reviewNotes: text("review_notes"),
 		reviewedById: text("reviewed_by_id").references(() => domainUsers.id, {
 			onDelete: "set null",
