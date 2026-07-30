@@ -112,7 +112,8 @@
     "error": "Error",
     "hide": "Hide",
     "total": "Total",
-    "confirmDeleteDesc": "This action cannot be undone."
+    "confirmDeleteDesc": "This action cannot be undone.",
+    "clearFilters": "Clear filters"
   },
   "teacher": {
     "courses": {
@@ -533,7 +534,8 @@
       },
       "confirmDelete": "Delete this session?",
       "confirmDeleteDesc": "This action cannot be undone.",
-      "allYears": "All years"
+      "allYears": "All years",
+      "print": "Print"
     },
     "rooms": {
       "title": "Rooms",

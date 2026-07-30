@@ -112,7 +112,8 @@
     "error": "Error",
     "hide": "Hide",
     "total": "Total",
-    "confirmDeleteDesc": "Cette action est irréversible."
+    "confirmDeleteDesc": "Cette action est irréversible.",
+    "clearFilters": "Réinitialiser les filtres"
   },
   "navigation": {
     "breadcrumbs": {
@@ -4166,7 +4167,8 @@
       },
       "confirmDelete": "Supprimer cette séance ?",
       "confirmDeleteDesc": "Cette action est irréversible.",
-      "allYears": "Toutes les années"
+      "allYears": "Toutes les années",
+      "print": "Imprimer"
     },
     "rooms": {
       "title": "Salles",
