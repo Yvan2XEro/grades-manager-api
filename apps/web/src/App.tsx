@@ -98,6 +98,7 @@ import RetakeEligibility from "./pages/admin/RetakeEligibility";
 import RoomsManagement from "./pages/admin/RoomsManagement";
 import RuleManagement from "./pages/admin/RuleManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
+import StatisticsHub from "./pages/admin/statistics/StatisticsHub";
 import StudyCycleDetail from "./pages/admin/study-cycles/StudyCycleDetail";
 import StudyCycleDetailsTab from "./pages/admin/study-cycles/StudyCycleDetailsTab";
 import StudyCycleLevelsTab from "./pages/admin/study-cycles/StudyCycleLevelsTab";
@@ -289,6 +290,7 @@ function App() {
 						<Route path="monitoring" element={<MonitoringDashboard />} />
 						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
 						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
+						<Route path="statistics" element={<StatisticsHub />} />
 						<Route path="fee-clearance">
 							<Route element={<FeeClearanceHub />}>
 								<Route index element={<Navigate to="structures" replace />} />

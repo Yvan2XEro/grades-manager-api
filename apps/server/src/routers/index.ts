@@ -36,6 +36,7 @@ import { programsRouter } from "../modules/programs";
 import { promotionRulesRouter } from "../modules/promotion-rules";
 import { registrationNumbersRouter } from "../modules/registration-numbers";
 import { semestersRouter } from "../modules/semesters";
+import { statsRouter } from "../modules/stats";
 import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
 import { studentCreditLedgerRouter } from "../modules/student-credit-ledger";
 import { studentsRouter } from "../modules/students";
@@ -97,6 +98,7 @@ export const appRouter = router({
 	attendance: attendanceRouter,
 	admissions: admissionsRouter,
 	profiles: profilesRouter,
+	stats: statsRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
 	ArrowUpRight,
+	BarChart3,
 	BookOpen,
-	Building2,
 	Calendar,
 	CalendarDays,
 	CheckCircle2,
@@ -14,9 +14,10 @@ import {
 	TrendingUp,
 	UserPlus,
 	Users,
+	Wallet,
 } from "lucide-react";
 import type React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import {
@@ -31,49 +32,47 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
-import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { trpcClient } from "../../utils/trpc";
+import { trpc } from "../../utils/trpc";
 
 /* ─── Types ──────────────────────────────────────────── */
 
-type StatCardData = {
+type KpiCard = {
 	key: string;
 	count: number;
 	icon: React.ReactNode;
 	gradient: string;
 	iconColor: string;
 	href: string;
+	suffix?: string;
 };
 
-type ProgramStats = { name: string; students: number };
-type EnrollmentStatus = { name: string; value: number; color: string };
+/* ─── Animated KPI card ──────────────────────────────── */
 
-/* ─── Animated stat card ─────────────────────────────── */
-
-function StatCard({ stat, label }: { stat: StatCardData; label: string }) {
-	const count = useAnimatedCounter(stat.count);
+function StatCard({ card, label }: { card: KpiCard; label: string }) {
+	const count = useAnimatedCounter(card.count);
 	return (
 		<motion.div
 			variants={staggerItem}
 			whileHover={{ y: -3 }}
 			transition={{ duration: 0.15 }}
 		>
-			<Link to={stat.href}>
+			<Link to={card.href}>
 				<Card className="group cursor-pointer border-0 shadow-sm transition-all duration-200 hover:shadow-lg">
 					<CardContent className="flex items-center gap-4 p-5">
 						<div
 							className={cn(
 								"flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-110",
-								stat.gradient,
-								stat.iconColor,
+								card.gradient,
+								card.iconColor,
 							)}
 						>
-							{stat.icon}
+							{card.icon}
 						</div>
 						<div className="min-w-0 flex-1">
 							<p className="truncate font-medium text-muted-foreground text-xs uppercase tracking-wide">
@@ -81,6 +80,9 @@ function StatCard({ stat, label }: { stat: StatCardData; label: string }) {
 							</p>
 							<p className="animate-counter-in font-bold font-heading text-2xl text-foreground tabular-nums leading-tight">
 								{count.toLocaleString()}
+								{card.suffix && (
+									<span className="font-semibold text-base">{card.suffix}</span>
+								)}
 							</p>
 						</div>
 						<ArrowUpRight className="group-hover:-translate-y-0.5 h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
@@ -121,8 +123,6 @@ function DashboardSkeleton() {
 
 const RADIAN = Math.PI / 180;
 
-// Lowercase name prevents React Compiler from treating this as a component
-// (Recharts calls it as a plain function, not via React.createElement)
 const renderPieLabel = ({
 	cx,
 	cy,
@@ -189,29 +189,19 @@ const QUICK_ACTIONS = [
 			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
 	{
-		label: "Résultats & exports",
-		icon: <TrendingUp className="h-4 w-4" />,
-		href: "/admin/grades/export",
+		label: "Statistiques détaillées",
+		icon: <BarChart3 className="h-4 w-4" />,
+		href: "/admin/statistics",
 		color:
 			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
 ];
 
-/* ─── Exam status badge ──────────────────────────────── */
-
-const examStatusConfig: Record<string, { label: string; className: string }> = {
-	draft: { label: "Brouillon", className: "bg-muted text-muted-foreground" },
-	open: { label: "Ouvert", className: "bg-primary/10 text-primary" },
-	submitted: {
-		label: "Soumis",
-		className: "bg-muted text-foreground border border-border",
-	},
-	approved: { label: "Approuvé", className: "bg-primary/20 text-primary" },
-	rejected: {
-		label: "Rejeté",
-		className: "bg-destructive/10 text-destructive",
-	},
-	closed: { label: "Clôturé", className: "bg-muted text-muted-foreground" },
+const STATUS_COLORS: Record<string, string> = {
+	active: "var(--chart-2)",
+	pending: "var(--chart-3)",
+	completed: "var(--chart-1)",
+	withdrawn: "var(--chart-4)",
 };
 
 /* ─── Main component ─────────────────────────────────── */
@@ -219,188 +209,111 @@ const examStatusConfig: Record<string, { label: string; className: string }> = {
 const AdminDashboard: React.FC = () => {
 	const { t } = useTranslation();
 
-	const { data, isLoading, isError, error } = useQuery({
-		queryKey: ["adminDashboard"],
-		queryFn: async () => {
-			const [
-				institutionsRes,
-				programsRes,
-				coursesRes,
-				examsRes,
-				studentsRes,
-				yearsRes,
-				activeEnrollsRes,
-				pendingEnrollsRes,
-				completedEnrollsRes,
-				submittedExamsRes,
-				deliberationsRes,
-			] = await Promise.all([
-				trpcClient.institutions.list.query({}),
-				trpcClient.programs.list.query({}),
-				trpcClient.courses.list.query({}),
-				trpcClient.exams.list.query({ limit: 100 }),
-				trpcClient.students.list.query({}),
-				trpcClient.academicYears.list.query({}),
-				trpcClient.enrollments.list
-					.query({ status: "active", limit: 500 })
-					.catch(() => ({ items: [] })),
-				trpcClient.enrollments.list
-					.query({ status: "pending", limit: 500 })
-					.catch(() => ({ items: [] })),
-				trpcClient.enrollments.list
-					.query({ status: "completed", limit: 500 })
-					.catch(() => ({ items: [] })),
-				trpcClient.exams.list
-					.query({ limit: 100 })
-					.catch(() => ({ items: [] })),
-				trpcClient.deliberations.list
-					.query({ limit: 100 })
-					.catch(() => ({ items: [] })),
-			]);
+	const [yearId, setYearId] = useState<string | null>(null);
+	const [yearInitialized, setYearInitialized] = useState(false);
 
-			const programs = programsRes?.items ?? [];
-			const activeYear = yearsRes?.items?.find((y) => y.isActive);
-
-			const counts = {
-				institutions: Array.isArray(institutionsRes)
-					? institutionsRes.length
-					: (institutionsRes?.items?.length ?? 0),
-				programs: programs.length,
-				courses: coursesRes?.items?.length ?? 0,
-				exams: examsRes?.items?.length ?? 0,
-				students: studentsRes?.items?.length ?? 0,
-				activeEnrollments: activeEnrollsRes?.items?.length ?? 0,
-			};
-
-			// Enrollment distribution for donut chart
-			const enrollmentStatus: EnrollmentStatus[] = [
-				{
-					name: "Actif",
-					value: activeEnrollsRes?.items?.length ?? 0,
-					color: "var(--chart-2)",
-				},
-				{
-					name: "En attente",
-					value: pendingEnrollsRes?.items?.length ?? 0,
-					color: "var(--chart-3)",
-				},
-				{
-					name: "Terminé",
-					value: completedEnrollsRes?.items?.length ?? 0,
-					color: "var(--chart-1)",
-				},
-			].filter((e) => e.value > 0);
-
-			// Program stats (students per program)
-			const programStats: ProgramStats[] = activeYear
-				? await Promise.all(
-						programs.slice(0, 10).map(async (program) => {
-							const { items: classes } = await trpcClient.classes.list.query({
-								programId: program.id,
-								academicYearId: activeYear.id,
-							});
-							let total = 0;
-							for (const cls of classes) {
-								const { items: studs } = await trpcClient.students.list.query({
-									classId: cls.id,
-								});
-								total += studs.length;
-							}
-							return { name: program.name, students: total };
-						}),
-					)
-				: [];
-
-			// Recent exams (sorted by date desc)
-			const recentExams = (examsRes?.items ?? [])
-				.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-				.slice(0, 6);
-
-			const statCards: StatCardData[] = [
-				{
-					key: "institutions",
-					count: counts.institutions,
-					icon: <Building2 className="h-5 w-5" />,
-					gradient: "bg-primary/10",
-					iconColor: "text-primary",
-					href: "/admin/institution/faculties",
-				},
-				{
-					key: "programs",
-					count: counts.programs,
-					icon: <School className="h-5 w-5" />,
-					gradient: "bg-primary/10",
-					iconColor: "text-primary",
-					href: "/admin/programs",
-				},
-				{
-					key: "courses",
-					count: counts.courses,
-					icon: <BookOpen className="h-5 w-5" />,
-					gradient: "bg-primary/10",
-					iconColor: "text-primary",
-					href: "/admin/programs/courses",
-				},
-				{
-					key: "exams",
-					count: counts.exams,
-					icon: <ClipboardCheck className="h-5 w-5" />,
-					gradient: "bg-primary/10",
-					iconColor: "text-primary",
-					href: "/admin/exams",
-				},
-				{
-					key: "students",
-					count: counts.students,
-					icon: <Users className="h-5 w-5" />,
-					gradient: "bg-primary/10",
-					iconColor: "text-primary",
-					href: "/admin/students",
-				},
-				{
-					key: "activeEnrollments",
-					count: counts.activeEnrollments,
-					icon: <GraduationCap className="h-5 w-5" />,
-					gradient: "bg-primary/10",
-					iconColor: "text-primary",
-					href: "/admin/classes/enrollments",
-				},
-			];
-
-			const pendingApprovalCount = (submittedExamsRes?.items ?? []).filter(
-				(e) => (e as any).status === "submitted",
-			).length;
-			const openDeliberationsCount = (deliberationsRes?.items ?? []).filter(
-				(d) => (d as any).status === "open",
-			).length;
-
-			return {
-				statCards,
-				programStats,
-				enrollmentStatus,
-				recentExams,
-				activeYear: activeYear?.name,
-				pendingApprovalCount,
-				openDeliberationsCount,
-			};
-		},
-	});
-
+	const yearListQuery = useQuery(trpc.academicYears.list.queryOptions({}));
 	useEffect(() => {
-		if (isError && error instanceof Error) {
-			toast.error(error.message);
+		const active = yearListQuery.data?.items.find((y) => y.isActive);
+		if (!yearInitialized && active) {
+			setYearId(active.id);
+			setYearInitialized(true);
 		}
-	}, [isError, error]);
+	}, [yearListQuery.data, yearInitialized]);
+
+	const yearParam = { academicYearId: yearId ?? undefined };
+
+	const overviewQuery = useQuery(trpc.stats.overview.queryOptions(yearParam));
+	const enrollmentQuery = useQuery(
+		trpc.stats.enrollmentStats.queryOptions(yearParam),
+	);
+
+	const isLoading =
+		overviewQuery.isLoading ||
+		enrollmentQuery.isLoading ||
+		yearListQuery.isLoading;
 
 	if (isLoading) return <DashboardSkeleton />;
 
-	const stats = data?.statCards ?? [];
-	const programStats = data?.programStats ?? [];
-	const enrollmentStatus = data?.enrollmentStatus ?? [];
-	const recentExams = data?.recentExams ?? [];
-	const activeYear = data?.activeYear ?? t("admin.dashboard.noActiveYear");
-	const pendingApprovalCount = data?.pendingApprovalCount ?? 0;
-	const openDeliberationsCount = data?.openDeliberationsCount ?? 0;
+	const ov = overviewQuery.data;
+	const en = enrollmentQuery.data;
+
+	const activeYearName =
+		yearListQuery.data?.items.find((y) => y.id === yearId)?.name ??
+		(yearId == null ? t("admin.dashboard.noActiveYear") : "—");
+
+	const kpiCards: KpiCard[] = [
+		{
+			key: "activeStudents",
+			count: ov?.activeStudents ?? 0,
+			icon: <Users className="h-5 w-5" />,
+			gradient: "bg-primary/10",
+			iconColor: "text-primary",
+			href: "/admin/students",
+		},
+		{
+			key: "enrollments",
+			count: en?.total ?? 0,
+			icon: <GraduationCap className="h-5 w-5" />,
+			gradient: "bg-primary/10",
+			iconColor: "text-primary",
+			href: "/admin/classes/enrollments",
+		},
+		{
+			key: "admissionsTotal",
+			count: ov?.admissionsTotal ?? 0,
+			icon: <School className="h-5 w-5" />,
+			gradient: "bg-primary/10",
+			iconColor: "text-primary",
+			href: "/admin/admissions",
+		},
+		{
+			key: "examsPending",
+			count: ov?.examsPending ?? 0,
+			icon: <ClipboardCheck className="h-5 w-5" />,
+			gradient: "bg-amber-500/10",
+			iconColor: "text-amber-600 dark:text-amber-400",
+			href: "/admin/exams",
+		},
+		{
+			key: "deliberationsOpen",
+			count: ov?.deliberationsOpen ?? 0,
+			icon: <BookOpen className="h-5 w-5" />,
+			gradient: "bg-blue-500/10",
+			iconColor: "text-blue-600 dark:text-blue-400",
+			href: "/admin/academic-results/deliberations",
+		},
+		{
+			key: "feeCollectionRate",
+			count: ov?.feeCollectionRate ?? 0,
+			icon: <Wallet className="h-5 w-5" />,
+			gradient: "bg-green-500/10",
+			iconColor: "text-green-600 dark:text-green-400",
+			href: "/admin/fee-clearance",
+			suffix: "%",
+		},
+	];
+
+	const byProgram = (en?.byProgram ?? []).map((p) => ({
+		name: p.programName,
+		students: p.count,
+	}));
+	const byStatus = (en?.byStatus ?? [])
+		.filter((s) => s.count > 0)
+		.map((s) => ({
+			name:
+				s.status === "active"
+					? "Actif"
+					: s.status === "pending"
+						? "En attente"
+						: s.status === "completed"
+							? "Terminé"
+							: s.status === "withdrawn"
+								? "Retiré"
+								: s.status,
+			value: s.count,
+			color: STATUS_COLORS[s.status] ?? "var(--chart-5)",
+		}));
 
 	return (
 		<div className="space-y-8">
@@ -421,26 +334,37 @@ const AdminDashboard: React.FC = () => {
 						})}
 					</p>
 				</div>
-				<motion.div
-					whileHover={{ scale: 1.02 }}
-					transition={{ duration: 0.15 }}
-					className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5"
-				>
-					<Calendar className="h-4 w-4 text-primary" />
-					<span className="font-semibold text-primary text-sm">
-						{t("admin.dashboard.activeYear", { year: activeYear })}
-					</span>
-				</motion.div>
+				<div className="flex items-center gap-3">
+					<motion.div
+						whileHover={{ scale: 1.02 }}
+						transition={{ duration: 0.15 }}
+						className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5"
+					>
+						<Calendar className="h-4 w-4 text-primary" />
+						<span className="font-semibold text-primary text-sm">
+							{activeYearName}
+						</span>
+					</motion.div>
+					<div className="w-48">
+						<AcademicYearSelect
+							value={yearId}
+							onChange={setYearId}
+							allowAll
+							allLabel={t("common.allYears", { defaultValue: "Toutes" })}
+							autoSelectActive={false}
+						/>
+					</div>
+				</div>
 			</motion.div>
 
 			{/* ── Action needed ────────────────────────── */}
-			{(pendingApprovalCount > 0 || openDeliberationsCount > 0) && (
+			{((ov?.examsPending ?? 0) > 0 || (ov?.deliberationsOpen ?? 0) > 0) && (
 				<motion.div
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
 					className="grid gap-3 sm:grid-cols-2"
 				>
-					{pendingApprovalCount > 0 && (
+					{(ov?.examsPending ?? 0) > 0 && (
 						<Link to="/admin/exams/list?status=submitted">
 							<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:hover:bg-amber-900/30">
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40">
@@ -448,8 +372,8 @@ const AdminDashboard: React.FC = () => {
 								</div>
 								<div className="min-w-0 flex-1">
 									<p className="font-semibold text-amber-900 text-sm dark:text-amber-200">
-										{pendingApprovalCount} examen
-										{pendingApprovalCount > 1 ? "s" : ""} en attente
+										{ov?.examsPending} examen
+										{(ov?.examsPending ?? 0) > 1 ? "s" : ""} en attente
 										d'approbation
 									</p>
 									<p className="mt-0.5 text-amber-700 text-xs dark:text-amber-400">
@@ -459,7 +383,7 @@ const AdminDashboard: React.FC = () => {
 							</div>
 						</Link>
 					)}
-					{openDeliberationsCount > 0 && (
+					{(ov?.deliberationsOpen ?? 0) > 0 && (
 						<Link to="/admin/academic-results/deliberations">
 							<div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 transition-colors hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:hover:bg-blue-900/30">
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
@@ -467,8 +391,8 @@ const AdminDashboard: React.FC = () => {
 								</div>
 								<div className="min-w-0 flex-1">
 									<p className="font-semibold text-blue-900 text-sm dark:text-blue-200">
-										{openDeliberationsCount} délibération
-										{openDeliberationsCount > 1 ? "s" : ""} en cours
+										{ov?.deliberationsOpen} délibération
+										{(ov?.deliberationsOpen ?? 0) > 1 ? "s" : ""} en cours
 									</p>
 									<p className="mt-0.5 text-blue-700 text-xs dark:text-blue-400">
 										Voir les délibérations →
@@ -487,12 +411,12 @@ const AdminDashboard: React.FC = () => {
 				animate="visible"
 				className="grid grid-cols-2 gap-4 lg:grid-cols-3"
 			>
-				{stats.map((stat) => (
+				{kpiCards.map((card) => (
 					<StatCard
-						key={stat.key}
-						stat={stat}
-						label={t(`admin.dashboard.stats.${stat.key}`, {
-							defaultValue: stat.key,
+						key={card.key}
+						card={card}
+						label={t(`admin.dashboard.stats.${card.key}`, {
+							defaultValue: card.key,
 						})}
 					/>
 				))}
@@ -526,10 +450,10 @@ const AdminDashboard: React.FC = () => {
 					</CardHeader>
 					<CardContent>
 						<div className="h-64">
-							{programStats.length > 0 ? (
+							{byProgram.length > 0 ? (
 								<ResponsiveContainer width="100%" height="100%">
 									<BarChart
-										data={programStats}
+										data={byProgram}
 										margin={{ top: 4, right: 16, left: 0, bottom: 60 }}
 									>
 										<defs>
@@ -616,13 +540,13 @@ const AdminDashboard: React.FC = () => {
 						</div>
 					</CardHeader>
 					<CardContent>
-						{enrollmentStatus.length > 0 ? (
+						{byStatus.length > 0 ? (
 							<div className="space-y-4">
 								<div className="h-48">
 									<ResponsiveContainer width="100%" height="100%">
 										<PieChart>
 											<Pie
-												data={enrollmentStatus}
+												data={byStatus}
 												cx="50%"
 												cy="50%"
 												innerRadius={45}
@@ -634,7 +558,7 @@ const AdminDashboard: React.FC = () => {
 												animationDuration={800}
 												animationEasing="ease-out"
 											>
-												{enrollmentStatus.map((entry) => (
+												{byStatus.map((entry) => (
 													<Cell key={entry.name} fill={entry.color} />
 												))}
 											</Pie>
@@ -649,10 +573,8 @@ const AdminDashboard: React.FC = () => {
 										</PieChart>
 									</ResponsiveContainer>
 								</div>
-
-								{/* Legend */}
 								<div className="space-y-2">
-									{enrollmentStatus.map((entry) => (
+									{byStatus.map((entry) => (
 										<div
 											key={entry.name}
 											className="flex items-center justify-between"
@@ -690,69 +612,71 @@ const AdminDashboard: React.FC = () => {
 				transition={{ delay: 0.5, duration: 0.45, ease: "easeOut" }}
 				className="grid gap-6 lg:grid-cols-5"
 			>
-				{/* Recent exams */}
+				{/* Fee clearance summary */}
 				<Card className="border-0 shadow-sm lg:col-span-3">
 					<CardHeader className="flex flex-row items-center justify-between pb-3">
 						<div className="flex items-center gap-2">
-							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-								<ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
+								<Wallet className="h-4 w-4 text-green-600 dark:text-green-400" />
 							</div>
-							<CardTitle className="text-base">Examens récents</CardTitle>
+							<CardTitle className="text-base">Scolarité</CardTitle>
 						</div>
 						<Link
-							to="/admin/exams"
+							to="/admin/fee-clearance"
 							className="flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-primary"
 						>
 							Voir tout
 							<ArrowUpRight className="h-3.5 w-3.5" />
 						</Link>
 					</CardHeader>
-					<CardContent className="p-0">
-						{recentExams.length === 0 ? (
-							<div className="flex flex-col items-center justify-center gap-2 py-10 text-muted-foreground">
-								<ClipboardList className="h-8 w-8 opacity-30" />
-								<p className="text-sm">Aucun examen récent</p>
+					<CardContent className="space-y-4">
+						<div className="grid grid-cols-3 gap-4">
+							{[
+								{
+									label: "Attendu",
+									value: formatAmount(ov?.feeExpected ?? 0),
+									color: "text-foreground",
+								},
+								{
+									label: "Collecté",
+									value: formatAmount(ov?.feeCollected ?? 0),
+									color: "text-green-600 dark:text-green-400",
+								},
+								{
+									label: "Restant",
+									value: formatAmount(ov?.feeOutstanding ?? 0),
+									color: "text-destructive",
+								},
+							].map((item) => (
+								<div key={item.label}>
+									<p className="text-muted-foreground text-xs">{item.label}</p>
+									<p
+										className={cn(
+											"mt-0.5 font-semibold text-sm tabular-nums",
+											item.color,
+										)}
+									>
+										{item.value}
+									</p>
+								</div>
+							))}
+						</div>
+						<div>
+							<div className="mb-1.5 flex items-center justify-between text-xs">
+								<span className="text-muted-foreground">Taux de collecte</span>
+								<span className="font-semibold">
+									{ov?.feeCollectionRate ?? 0}%
+								</span>
 							</div>
-						) : (
-							<div className="divide-y">
-								{recentExams.map((exam) => {
-									const status = exam.status ?? "draft";
-									const cfg =
-										examStatusConfig[status] ?? examStatusConfig.draft;
-									return (
-										<div
-											key={exam.id}
-											className="flex items-center gap-4 px-6 py-3 transition-colors hover:bg-muted/40"
-										>
-											<div className="min-w-0 flex-1">
-												<p className="truncate font-medium text-foreground text-sm">
-													{exam.name}
-												</p>
-												<p className="truncate text-muted-foreground text-xs">
-													{exam.courseName ?? "—"} · {exam.className ?? "—"}
-												</p>
-											</div>
-											<div className="flex shrink-0 items-center gap-3">
-												<span
-													className={cn(
-														"rounded-full px-2 py-0.5 font-medium text-[11px]",
-														cfg.className,
-													)}
-												>
-													{cfg.label}
-												</span>
-												<span className="text-muted-foreground text-xs tabular-nums">
-													{new Intl.DateTimeFormat("fr-FR", {
-														day: "2-digit",
-														month: "short",
-													}).format(new Date(exam.date))}
-												</span>
-											</div>
-										</div>
-									);
-								})}
+							<div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+								<div
+									className="h-full rounded-full bg-green-500 transition-all duration-700"
+									style={{
+										width: `${Math.min(ov?.feeCollectionRate ?? 0, 100)}%`,
+									}}
+								/>
 							</div>
-						)}
+						</div>
 					</CardContent>
 				</Card>
 
@@ -789,5 +713,12 @@ const AdminDashboard: React.FC = () => {
 		</div>
 	);
 };
+
+function formatAmount(n: number) {
+	return `${new Intl.NumberFormat("fr-FR", {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0,
+	}).format(n)} XAF`;
+}
 
 export default AdminDashboard;

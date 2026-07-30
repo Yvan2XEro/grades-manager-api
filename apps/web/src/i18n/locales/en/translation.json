@@ -92,6 +92,8 @@
     "loadMore": "Charger plus",
     "cancel": "Cancel",
     "all": "All",
+    "allYears": "All years",
+    "noData": "No data",
     "selectAll": "Select all",
     "selectedCount": "{{count}} selected",
     "active": "Active",
@@ -1202,6 +1204,7 @@
         "notifications": "Notifications",
         "batchJobs": "Batch Jobs",
         "feeClearance": "Fee Clearance",
+        "statistics": "Statistics",
         "students": "Students",
         "studentPromotion": "Student promotion",
         "courses": "Courses",
@@ -1243,7 +1246,8 @@
         "assessment": "Assessment",
         "people": "People",
         "inscriptions": "Enrollments & Admissions",
-        "results": "Results & Promotion"
+        "results": "Results & Promotion",
+        "analytics": "Analytics"
       },
       "teacher": {
         "dashboard": "Overview",
@@ -1384,9 +1388,108 @@
         "students": "Students",
         "teachers": "Teachers",
         "institutions": "Institutions",
-        "activeEnrollments": "Active Enrollments"
+        "activeEnrollments": "Active Enrollments",
+        "activeStudents": "Active students",
+        "enrollments": "Total enrollments",
+        "admissionsTotal": "Applications",
+        "examsPending": "Exams pending",
+        "deliberationsOpen": "Open deliberations",
+        "feeCollectionRate": "Collection rate"
       },
-      "subtitle": "Overview of your academic institution."
+      "subtitle": "Overview of your academic institution.",
+      "quickActions": {
+        "addStudent": "Add a student",
+        "scheduleExam": "Schedule an exam",
+        "enrollments": "Manage enrollments",
+        "academicYears": "Academic years",
+        "statistics": "Detailed statistics"
+      }
+    },
+    "statistics": {
+      "title": "Statistics",
+      "description": "Key performance indicators for the institution",
+      "export": "Export Excel",
+      "noData": "No data available",
+      "noDeliberations": "No deliberations recorded",
+      "noMentions": "No mentions assigned",
+      "tabs": {
+        "students": "Students",
+        "performance": "Performance",
+        "finances": "Finances",
+        "admissions": "Admissions"
+      },
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "unknown": "Not specified"
+      },
+      "enrollment": {
+        "totalLabel": "Active enrollments",
+        "byProgram": "Students by program",
+        "byStatus": "Status breakdown",
+        "byGender": "Gender breakdown",
+        "status": {
+          "active": "Active",
+          "pending": "Pending",
+          "completed": "Completed",
+          "withdrawn": "Withdrawn"
+        }
+      },
+      "performance": {
+        "studentsDeliberated": "Students deliberated",
+        "avgGeneral": "General average",
+        "byDecision": "Results by decision",
+        "byMention": "Results by mention",
+        "decision": {
+          "passed": "Passed",
+          "failed": "Failed",
+          "repeating": "Repeating",
+          "excluded": "Excluded",
+          "deferred": "Deferred",
+          "unknown": "Unknown"
+        },
+        "mention": {
+          "passable": "Pass",
+          "assez_bien": "Fairly good",
+          "bien": "Good",
+          "tres_bien": "Very good",
+          "excellent": "Excellent",
+          "unknown": "Not assigned"
+        }
+      },
+      "finances": {
+        "title": "Financial overview",
+        "expected": "Expected amount",
+        "collected": "Collected amount",
+        "outstanding": "Outstanding balance",
+        "collectionRate": "Collection rate",
+        "monthlyTrend": "Monthly collection trend",
+        "byMethod": "By payment method",
+        "method": {
+          "cash": "Cash",
+          "bank_transfer": "Bank transfer",
+          "mobile_money": "Mobile money",
+          "check": "Check",
+          "bank_import": "Bank import"
+        }
+      },
+      "admissions": {
+        "total": "Applications",
+        "conversionRate": "Conversion rate",
+        "converted": "Enrolled applicants",
+        "byProgram": "Applications by program",
+        "byStatus": "Status breakdown",
+        "status": {
+          "draft": "Draft",
+          "submitted": "Submitted",
+          "pending": "Pending",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "waitlisted": "Waitlisted",
+          "enrolled": "Enrolled"
+        }
+      }
     },
     "monitoring": {
       "title": "Service monitoring",

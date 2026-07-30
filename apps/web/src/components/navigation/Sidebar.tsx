@@ -180,6 +180,18 @@ const Sidebar: React.FC = () => {
 				],
 			},
 			{
+				key: "analytics",
+				titleKey: "navigation.sidebar.groups.analytics",
+				items: [
+					{
+						to: "/admin/statistics",
+						icon: <BarChart3 className={IC} />,
+						labelKey: "navigation.sidebar.admin.statistics",
+						badge: "new" as NavBadgeType,
+					},
+				],
+			},
+			{
 				key: "system",
 				titleKey: "navigation.sidebar.groups.system",
 				items: [

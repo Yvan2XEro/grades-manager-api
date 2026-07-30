@@ -92,6 +92,8 @@
     "loadMore": "Charger plus",
     "cancel": "Annuler",
     "all": "Tous",
+    "allYears": "Toutes les années",
+    "noData": "Aucune donnée",
     "selectAll": "Tout sélectionner",
     "selectedCount": "{{count}} sélectionné(s)",
     "active": "Actif",
@@ -200,6 +202,7 @@
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
         "feeClearance": "Quitus / Frais",
+        "statistics": "Statistiques",
         "students": "Etudiants",
         "studentPromotion": "Promotion des etudiants",
         "courses": "Cours",
@@ -241,7 +244,8 @@
         "assessment": "Évaluations",
         "people": "Personnes",
         "inscriptions": "Inscriptions & Admissions",
-        "results": "Résultats & Promotion"
+        "results": "Résultats & Promotion",
+        "analytics": "Analytique"
       },
       "teacher": {
         "dashboard": "Tableau de bord",
@@ -514,9 +518,108 @@
         "students": "Étudiants",
         "teachers": "Enseignants",
         "institutions": "Institutions",
-        "activeEnrollments": "Inscriptions actives"
+        "activeEnrollments": "Inscriptions actives",
+        "activeStudents": "Étudiants actifs",
+        "enrollments": "Inscriptions totales",
+        "admissionsTotal": "Candidatures",
+        "examsPending": "Examens en attente",
+        "deliberationsOpen": "Délibérations ouvertes",
+        "feeCollectionRate": "Taux de collecte"
       },
-      "subtitle": "Vue d'ensemble de votre établissement académique."
+      "subtitle": "Vue d'ensemble de votre établissement académique.",
+      "quickActions": {
+        "addStudent": "Ajouter un étudiant",
+        "scheduleExam": "Planifier un examen",
+        "enrollments": "Gérer les inscriptions",
+        "academicYears": "Années académiques",
+        "statistics": "Statistiques détaillées"
+      }
+    },
+    "statistics": {
+      "title": "Statistiques",
+      "description": "Indicateurs clés de performance de l'institution",
+      "export": "Exporter Excel",
+      "noData": "Aucune donnée disponible",
+      "noDeliberations": "Aucune délibération enregistrée",
+      "noMentions": "Aucune mention attribuée",
+      "tabs": {
+        "students": "Étudiants",
+        "performance": "Performance",
+        "finances": "Finances",
+        "admissions": "Admissions"
+      },
+      "gender": {
+        "male": "Homme",
+        "female": "Femme",
+        "other": "Autre",
+        "unknown": "Non renseigné"
+      },
+      "enrollment": {
+        "totalLabel": "Inscriptions actives",
+        "byProgram": "Inscrits par programme",
+        "byStatus": "Répartition par statut",
+        "byGender": "Répartition par genre",
+        "status": {
+          "active": "Actif",
+          "pending": "En attente",
+          "completed": "Terminé",
+          "withdrawn": "Retiré"
+        }
+      },
+      "performance": {
+        "studentsDeliberated": "Étudiants délibérés",
+        "avgGeneral": "Moyenne générale",
+        "byDecision": "Résultats par décision",
+        "byMention": "Résultats par mention",
+        "decision": {
+          "passed": "Admis",
+          "failed": "Échoué",
+          "repeating": "Redoublant",
+          "excluded": "Exclu",
+          "deferred": "Reporté",
+          "unknown": "Inconnu"
+        },
+        "mention": {
+          "passable": "Passable",
+          "assez_bien": "Assez bien",
+          "bien": "Bien",
+          "tres_bien": "Très bien",
+          "excellent": "Excellent",
+          "unknown": "Non attribuée"
+        }
+      },
+      "finances": {
+        "title": "Vue financière",
+        "expected": "Montant attendu",
+        "collected": "Montant collecté",
+        "outstanding": "Reste à percevoir",
+        "collectionRate": "Taux de recouvrement",
+        "monthlyTrend": "Évolution mensuelle des encaissements",
+        "byMethod": "Par moyen de paiement",
+        "method": {
+          "cash": "Espèces",
+          "bank_transfer": "Virement",
+          "mobile_money": "Mobile money",
+          "check": "Chèque",
+          "bank_import": "Import bancaire"
+        }
+      },
+      "admissions": {
+        "total": "Candidatures",
+        "conversionRate": "Taux de conversion",
+        "converted": "Candidats inscrits",
+        "byProgram": "Candidatures par programme",
+        "byStatus": "Répartition par statut",
+        "status": {
+          "draft": "Brouillon",
+          "submitted": "Soumis",
+          "pending": "En attente",
+          "approved": "Accepté",
+          "rejected": "Refusé",
+          "waitlisted": "Liste d'attente",
+          "enrolled": "Inscrit"
+        }
+      }
     },
     "apiKeys": {
       "title": "Clés API",
