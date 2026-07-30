@@ -4270,7 +4270,12 @@
       "uploadingDocument": "Téléversement du justificatif…",
       "submitExcuse": "Valider l'excuse",
       "marked": "Tout marquer",
-      "absentOrLate": "Absents / En retard"
+      "absentOrLate": "Absents / En retard",
+      "timetableSlot": "Créneau horaire",
+      "timetableSlotPlaceholder": "Sélectionner un créneau",
+      "noSlots": "Aucun créneau configuré pour ce cours",
+      "isExceptional": "Séance hors planning",
+      "isExceptionalHint": "Cocher si cette séance n'est pas dans l'emploi du temps"
     },
     "attendanceRates": {
       "title": "Taux de présence",

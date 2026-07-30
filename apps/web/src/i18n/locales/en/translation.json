@@ -621,7 +621,12 @@
       "uploadingDocument": "Uploading document…",
       "submitExcuse": "Submit excuse",
       "marked": "Mark all",
-      "absentOrLate": "Absent / Late"
+      "absentOrLate": "Absent / Late",
+      "timetableSlot": "Timetable slot",
+      "timetableSlotPlaceholder": "Select a slot",
+      "noSlots": "No timetable slots configured for this course",
+      "isExceptional": "Unscheduled session",
+      "isExceptionalHint": "Check if this session is not in the timetable"
     },
     "attendanceRates": {
       "title": "Attendance rates",
