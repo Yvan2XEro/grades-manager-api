@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
@@ -8,6 +8,8 @@ import { getTestInstitution } from "@/lib/test-context-state";
 import { appRouter } from "@/routers";
 import {
 	asAdmin,
+	createAcademicYear,
+	createClass,
 	createClassCourse,
 	createDomainUser,
 	createStudent,
@@ -31,6 +33,15 @@ async function createRoom(overrides: Partial<schema.NewRoom> = {}) {
 }
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
+
+/** Admin context with a real domain_users row — required for batch_jobs.created_by FK */
+async function adminWithRealProfile() {
+	const profile = await createDomainUser();
+	return makeTestContext({
+		role: "administrator",
+		profileOverrides: { id: profile.id },
+	});
+}
 
 /** Resolve the academicYearId for a given classCourse */
 async function getAcademicYear(classCourseId: string) {
@@ -897,5 +908,433 @@ describe("myStudentTimetable scoping", () => {
 		);
 		const sessions = await callerStudent.timetable.myStudentTimetable({});
 		expect(sessions.every((s) => s.classCourseId !== cc.id)).toBe(true);
+	});
+});
+
+describe("copySessionsAcrossYears", () => {
+	it("copies sessions from source year to target year via class mapping", async () => {
+		const { copySessionsAcrossYears } = await import("../timetable.service");
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		const sourceClass = await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-COPY-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		const sourceCC = await createClassCourse({
+			class: sourceClass.id,
+			code: `CC-COPY-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: sourceCC.id,
+			academicYearId: sourceYear.id,
+			dayOfWeek: "mon",
+			startTime: "08:00",
+			endTime: "10:00",
+			room: "A101",
+		});
+
+		const targetClass = await createClass({
+			academicYear: targetYear.id,
+			code: sourceClass.code,
+			institutionId,
+		});
+		const targetCC = await createClassCourse({
+			class: targetClass.id,
+			code: sourceCC.code,
+			institutionId,
+		});
+
+		const classMapping: Record<string, string> = {
+			[sourceClass.id]: targetClass.id,
+		};
+		const result = await copySessionsAcrossYears(
+			sourceYear.id,
+			targetYear.id,
+			institutionId,
+			classMapping,
+		);
+
+		expect(result.copied).toBe(1);
+		expect(result.skipped).toBe(0);
+		expect(result.notMatched).toBe(0);
+
+		const copied = await db.query.courseSessions.findFirst({
+			where: and(
+				eq(schema.courseSessions.classCourseId, targetCC.id),
+				eq(schema.courseSessions.academicYearId, targetYear.id),
+			),
+		});
+		expect(copied).toBeTruthy();
+		expect(copied?.dayOfWeek).toBe("mon");
+		expect(copied?.startTime).toBe("08:00");
+		expect(copied?.room).toBe("A101");
+	});
+
+	it("skips sessions already present in target year (idempotent)", async () => {
+		const { copySessionsAcrossYears } = await import("../timetable.service");
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		const sourceClass = await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-IDEM-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		const sourceCC = await createClassCourse({
+			class: sourceClass.id,
+			code: `CC-IDEM-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: sourceCC.id,
+			academicYearId: sourceYear.id,
+			dayOfWeek: "tue",
+			startTime: "10:00",
+			endTime: "12:00",
+		});
+
+		const targetClass = await createClass({
+			academicYear: targetYear.id,
+			code: sourceClass.code,
+			institutionId,
+		});
+		const targetCC = await createClassCourse({
+			class: targetClass.id,
+			code: sourceCC.code,
+			institutionId,
+		});
+
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: targetCC.id,
+			academicYearId: targetYear.id,
+			dayOfWeek: "tue",
+			startTime: "10:00",
+			endTime: "12:00",
+		});
+
+		const classMapping: Record<string, string> = {
+			[sourceClass.id]: targetClass.id,
+		};
+		const result = await copySessionsAcrossYears(
+			sourceYear.id,
+			targetYear.id,
+			institutionId,
+			classMapping,
+		);
+
+		expect(result.copied).toBe(0);
+		expect(result.skipped).toBe(1);
+		expect(result.notMatched).toBe(0);
+	});
+
+	it("counts notMatched when source class has no mapping", async () => {
+		const { copySessionsAcrossYears } = await import("../timetable.service");
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		const sourceClass = await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-MISS-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		const sourceCC = await createClassCourse({
+			class: sourceClass.id,
+			code: `CC-MISS-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: sourceCC.id,
+			academicYearId: sourceYear.id,
+			dayOfWeek: "wed",
+			startTime: "13:00",
+			endTime: "15:00",
+		});
+
+		const result = await copySessionsAcrossYears(
+			sourceYear.id,
+			targetYear.id,
+			institutionId,
+			{},
+		);
+
+		expect(result.copied).toBe(0);
+		expect(result.skipped).toBe(0);
+		expect(result.notMatched).toBe(1);
+	});
+
+	it("counts notMatched when target classCourse code does not exist in target class", async () => {
+		const { copySessionsAcrossYears } = await import("../timetable.service");
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		const sourceClass = await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-NCC-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		const sourceCC = await createClassCourse({
+			class: sourceClass.id,
+			code: `CC-NCC-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: sourceCC.id,
+			academicYearId: sourceYear.id,
+			dayOfWeek: "thu",
+			startTime: "15:00",
+			endTime: "17:00",
+		});
+
+		const targetClass = await createClass({
+			academicYear: targetYear.id,
+			code: sourceClass.code,
+			institutionId,
+		});
+		await createClassCourse({
+			class: targetClass.id,
+			code: `CC-DIFFERENT-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+
+		const classMapping: Record<string, string> = {
+			[sourceClass.id]: targetClass.id,
+		};
+		const result = await copySessionsAcrossYears(
+			sourceYear.id,
+			targetYear.id,
+			institutionId,
+			classMapping,
+		);
+
+		expect(result.notMatched).toBe(1);
+		expect(result.copied).toBe(0);
+	});
+});
+
+describe("timetable.copyFromYear batch job (via batchJobs router)", () => {
+	it("previews a timetable.copyFromYear job", async () => {
+		const admin = createCaller(await adminWithRealProfile());
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		const sourceClass = await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-PV-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		const sourceCC = await createClassCourse({
+			class: sourceClass.id,
+			institutionId,
+		});
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: sourceCC.id,
+			academicYearId: sourceYear.id,
+			dayOfWeek: "mon",
+			startTime: "08:00",
+			endTime: "10:00",
+		});
+
+		const previewed = await admin.batchJobs.preview({
+			type: "timetable.copyFromYear",
+			params: {
+				sourceAcademicYearId: sourceYear.id,
+				targetAcademicYearId: targetYear.id,
+			},
+		});
+
+		expect(previewed.type).toBe("timetable.copyFromYear");
+		expect(previewed.status).toBe("previewed");
+		expect(previewed.steps.length).toBe(1);
+		expect(previewed.steps[0].name).toBe("Copy timetable sessions");
+		expect(
+			(previewed.previewResult as Record<string, unknown>).sessionCount,
+		).toBe(1);
+	});
+
+	it("runs timetable.copyFromYear to completion and copies sessions", async () => {
+		const admin = createCaller(await adminWithRealProfile());
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		const sourceClass = await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-RUN-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		const sourceCC = await createClassCourse({
+			class: sourceClass.id,
+			code: `CC-RUN-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: sourceCC.id,
+			academicYearId: sourceYear.id,
+			dayOfWeek: "fri",
+			startTime: "15:00",
+			endTime: "17:00",
+		});
+
+		const targetClass = await createClass({
+			academicYear: targetYear.id,
+			code: sourceClass.code,
+			institutionId,
+		});
+		const targetCC = await createClassCourse({
+			class: targetClass.id,
+			code: sourceCC.code,
+			institutionId,
+		});
+
+		const previewed = await admin.batchJobs.preview({
+			type: "timetable.copyFromYear",
+			params: {
+				sourceAcademicYearId: sourceYear.id,
+				targetAcademicYearId: targetYear.id,
+			},
+		});
+
+		const completed = await admin.batchJobs.run({ jobId: previewed.id });
+
+		expect(completed?.status).toBe("completed");
+
+		const copied = await db.query.courseSessions.findFirst({
+			where: and(
+				eq(schema.courseSessions.classCourseId, targetCC.id),
+				eq(schema.courseSessions.academicYearId, targetYear.id),
+			),
+		});
+		expect(copied).toBeTruthy();
+		expect(copied?.dayOfWeek).toBe("fri");
+		expect(copied?.startTime).toBe("15:00");
+	});
+
+	it("preview fails when source year has no sessions", async () => {
+		const admin = createCaller(asAdmin());
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		await expect(
+			admin.batchJobs.preview({
+				type: "timetable.copyFromYear",
+				params: {
+					sourceAcademicYearId: sourceYear.id,
+					targetAcademicYearId: targetYear.id,
+				},
+			}),
+		).rejects.toThrow();
+	});
+
+	it("preview fails when source equals target", async () => {
+		const admin = createCaller(asAdmin());
+		const institutionId = getTestInstitution().id;
+		const year = await createAcademicYear({ institutionId });
+
+		await expect(
+			admin.batchJobs.preview({
+				type: "timetable.copyFromYear",
+				params: {
+					sourceAcademicYearId: year.id,
+					targetAcademicYearId: year.id,
+				},
+			}),
+		).rejects.toThrow();
+	});
+});
+
+describe("academicYear.setup with includeTimetable", () => {
+	it("includes timetable step in preview when includeTimetable=true", async () => {
+		const admin = createCaller(await adminWithRealProfile());
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		const sourceClass = await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-SETT-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+		const sourceCC = await createClassCourse({
+			class: sourceClass.id,
+			institutionId,
+		});
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: sourceCC.id,
+			academicYearId: sourceYear.id,
+			dayOfWeek: "mon",
+			startTime: "08:00",
+			endTime: "10:00",
+		});
+
+		const previewed = await admin.batchJobs.preview({
+			type: "academicYear.setup",
+			params: {
+				sourceAcademicYearId: sourceYear.id,
+				targetAcademicYearId: targetYear.id,
+				includeTimetable: true,
+			},
+		});
+
+		expect(previewed.steps.length).toBe(3);
+		expect(previewed.steps[2].name).toBe("Copy timetable sessions");
+		expect(
+			(previewed.previewResult as Record<string, unknown>).sessionCount,
+		).toBe(1);
+	});
+
+	it("does not include timetable step when includeTimetable=false (default)", async () => {
+		const admin = createCaller(await adminWithRealProfile());
+		const institutionId = getTestInstitution().id;
+
+		const sourceYear = await createAcademicYear({ institutionId });
+		const targetYear = await createAcademicYear({ institutionId });
+
+		await createClass({
+			academicYear: sourceYear.id,
+			code: `CL-NOSET-${randomUUID().slice(0, 4)}`,
+			institutionId,
+		});
+
+		const previewed = await admin.batchJobs.preview({
+			type: "academicYear.setup",
+			params: {
+				sourceAcademicYearId: sourceYear.id,
+				targetAcademicYearId: targetYear.id,
+			},
+		});
+
+		expect(previewed.steps.length).toBe(2);
+		expect(
+			(previewed.previewResult as Record<string, unknown>).sessionCount,
+		).toBe(0);
 	});
 });

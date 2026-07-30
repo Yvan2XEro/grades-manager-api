@@ -535,7 +535,8 @@
       "confirmDelete": "Delete this session?",
       "confirmDeleteDesc": "This action cannot be undone.",
       "allYears": "All years",
-      "print": "Print"
+      "print": "Print",
+      "copyFromYear": "Copy from another year"
     },
     "rooms": {
       "title": "Rooms",
@@ -1880,7 +1881,10 @@
         "previewSummary": "{{classCount}} classes and {{classCourseCount}} course assignments will be copied from \"{{sourceYearName}}\" to \"{{targetYearName}}\".",
         "confirm": "Start setup",
         "success": "Academic year setup started",
-        "noClasses": "No classes found in the selected year"
+        "noClasses": "No classes found in the selected year",
+        "includeTimetable": "Include timetable",
+        "timetableSummary_one": "{{count}} session to copy from source year",
+        "timetableSummary_other": "{{count}} sessions to copy from source year"
       }
     },
     "classCourses": {
@@ -4424,6 +4428,19 @@
         "title": "Override eligibility",
         "reason": "Reason (optional)",
         "reasonPlaceholder": "Explain the override..."
+      }
+    },
+    "timetable": {
+      "copyDialog": {
+        "title": "Copy Timetable",
+        "description": "Copies sessions from another academic year into the currently selected target year.",
+        "sourceYear": "Source year",
+        "sourceYearPlaceholder": "Select the year to copy from",
+        "previewSummary_one": "{{count}} session from \"{{sourceYearName}}\" to \"{{targetYearName}}\"",
+        "previewSummary_other": "{{count}} sessions from \"{{sourceYearName}}\" to \"{{targetYearName}}\"",
+        "confirm": "Start copy",
+        "success": "Copy started successfully",
+        "noTargetYear": "First select a target year in the filters"
       }
     }
   },

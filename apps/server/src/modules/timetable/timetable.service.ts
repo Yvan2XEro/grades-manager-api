@@ -833,3 +833,92 @@ async function resolveAcademicYearFromClassCourse(
 	}
 	return cc.classRef.academicYear;
 }
+
+export type CopySessionsResult = {
+	copied: number;
+	skipped: number;
+	notMatched: number;
+};
+
+/**
+ * Copies all timetable sessions from sourceYearId to targetYearId.
+ * classMapping maps source class IDs to target class IDs.
+ * Sessions with no matching classCourse in the target year are counted in notMatched.
+ * Sessions already present in the target (same classCourseId+dayOfWeek+startTime) are skipped.
+ */
+export async function copySessionsAcrossYears(
+	sourceYearId: string,
+	targetYearId: string,
+	institutionId: string,
+	classMapping: Record<string, string>,
+): Promise<CopySessionsResult> {
+	const { db } = await import("@/db");
+	const { and, eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	const result: CopySessionsResult = { copied: 0, skipped: 0, notMatched: 0 };
+
+	const sourceSessions = await db.query.courseSessions.findMany({
+		where: and(
+			eq(schema.courseSessions.academicYearId, sourceYearId),
+			eq(schema.courseSessions.institutionId, institutionId),
+		),
+		with: { classCourse: true },
+	});
+
+	for (const session of sourceSessions) {
+		const sourceClassId = session.classCourse?.class;
+		if (!sourceClassId) {
+			result.notMatched++;
+			continue;
+		}
+
+		const targetClassId = classMapping[sourceClassId];
+		if (!targetClassId) {
+			result.notMatched++;
+			continue;
+		}
+
+		const targetCC = await db.query.classCourses.findFirst({
+			where: and(
+				eq(schema.classCourses.class, targetClassId),
+				eq(schema.classCourses.code, session.classCourse.code),
+				eq(schema.classCourses.institutionId, institutionId),
+			),
+		});
+		if (!targetCC) {
+			result.notMatched++;
+			continue;
+		}
+
+		const existing = await db.query.courseSessions.findFirst({
+			where: and(
+				eq(schema.courseSessions.classCourseId, targetCC.id),
+				eq(schema.courseSessions.dayOfWeek, session.dayOfWeek),
+				eq(schema.courseSessions.startTime, session.startTime),
+				eq(schema.courseSessions.academicYearId, targetYearId),
+			),
+		});
+		if (existing) {
+			result.skipped++;
+			continue;
+		}
+
+		await db.insert(schema.courseSessions).values({
+			institutionId,
+			classCourseId: targetCC.id,
+			academicYearId: targetYearId,
+			dayOfWeek: session.dayOfWeek,
+			startTime: session.startTime,
+			endTime: session.endTime,
+			room: session.room,
+			roomId: session.roomId,
+			semesterId: session.semesterId,
+			validFrom: session.validFrom,
+			validUntil: session.validUntil,
+		});
+		result.copied++;
+	}
+
+	return result;
+}

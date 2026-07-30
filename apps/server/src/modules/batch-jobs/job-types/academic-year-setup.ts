@@ -12,6 +12,7 @@ import type {
 const paramsSchema = z.object({
 	sourceAcademicYearId: z.string(),
 	targetAcademicYearId: z.string(),
+	includeTimetable: z.boolean().default(false),
 });
 
 type Params = z.infer<typeof paramsSchema>;
@@ -70,9 +71,26 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 				),
 			);
 
+		let sessionCount = 0;
+		if (params.includeTimetable) {
+			const sessions = await db
+				.select({ id: schema.courseSessions.id })
+				.from(schema.courseSessions)
+				.where(
+					and(
+						eq(
+							schema.courseSessions.academicYearId,
+							params.sourceAcademicYearId,
+						),
+						eq(schema.courseSessions.institutionId, ctx.institutionId),
+					),
+				);
+			sessionCount = sessions.length;
+		}
+
 		await ctx.log(
 			"info",
-			`Preview: ${sourceClasses.length} classes, ${classCourses.length} class courses from "${sourceYear.name}" to "${targetYear.name}"`,
+			`Preview: ${sourceClasses.length} classes, ${classCourses.length} class courses from "${sourceYear.name}" to "${targetYear.name}"${params.includeTimetable ? `, ${sessionCount} timetable sessions` : ""}`,
 		);
 
 		const steps = [
@@ -84,6 +102,9 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 				name: "Copy class course assignments",
 				estimatedItems: classCourses.length,
 			},
+			...(params.includeTimetable
+				? [{ name: "Copy timetable sessions", estimatedItems: sessionCount }]
+				: []),
 		];
 
 		return {
@@ -93,8 +114,9 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 				targetYearName: targetYear.name,
 				classCount: sourceClasses.length,
 				classCourseCount: classCourses.length,
+				sessionCount,
 			},
-			totalItems: sourceClasses.length + classCourses.length,
+			totalItems: sourceClasses.length + classCourses.length + sessionCount,
 		} satisfies PreviewResult;
 	},
 
@@ -103,6 +125,8 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 			await executeCopyClasses(params, step, ctx);
 		} else if (step.stepIndex === 1) {
 			await executeCopyClassCourses(params, step, ctx);
+		} else if (step.stepIndex === 2 && params.includeTimetable) {
+			await executeCopyTimetable(params, step, ctx);
 		}
 	},
 
@@ -129,6 +153,24 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 			"info",
 			`Rolled back: deleted ${targetClasses.length} classes (and their course assignments)`,
 		);
+
+		if (params.includeTimetable) {
+			await db
+				.delete(schema.courseSessions)
+				.where(
+					and(
+						eq(
+							schema.courseSessions.academicYearId,
+							params.targetAcademicYearId,
+						),
+						eq(schema.courseSessions.institutionId, ctx.institutionId),
+					),
+				);
+			await ctx.log(
+				"info",
+				"Rolled back: deleted timetable sessions from target year",
+			);
+		}
 	},
 };
 
@@ -272,5 +314,45 @@ async function executeCopyClassCourses(
 	await ctx.log(
 		"info",
 		`Copied ${processed - skipped} class courses, skipped ${skipped} existing`,
+	);
+}
+
+async function executeCopyTimetable(
+	params: Params,
+	step: schema.BatchJobStep,
+	ctx: JobContext,
+) {
+	const steps = await repo.getStepsForJob(ctx.jobId);
+	const step0 = steps.find((s) => s.stepIndex === 0);
+	const classMapping = (
+		step0?.data as { classMapping?: Record<string, string> }
+	)?.classMapping;
+
+	if (!classMapping || Object.keys(classMapping).length === 0) {
+		await ctx.log(
+			"warn",
+			"No class mapping found from step 1, skipping timetable copy",
+		);
+		return;
+	}
+
+	const { copySessionsAcrossYears } = await import(
+		"../../timetable/timetable.service"
+	);
+	const result = await copySessionsAcrossYears(
+		params.sourceAcademicYearId,
+		params.targetAcademicYearId,
+		ctx.institutionId,
+		classMapping,
+	);
+
+	await ctx.reportStepProgress(step.id, {
+		itemsProcessed: result.copied + result.skipped,
+		itemsSkipped: result.skipped,
+	});
+
+	await ctx.log(
+		"info",
+		`Timetable: copied ${result.copied}, skipped ${result.skipped} (already existed), ${result.notMatched} not matched (course missing in target year)`,
 	);
 }
