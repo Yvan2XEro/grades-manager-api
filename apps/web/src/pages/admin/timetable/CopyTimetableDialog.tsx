@@ -1,12 +1,10 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "@/lib/toast";
-import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
-import { Button } from "../../components/ui/button";
-import { Checkbox } from "../../components/ui/checkbox";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogBody,
@@ -15,14 +13,16 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "../../components/ui/dialog";
-import { Label } from "../../components/ui/label";
-import { trpcClient } from "../../utils/trpc";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/lib/toast";
+import { trpcClient } from "@/utils/trpc";
 
 interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	targetYear: { id: string; name: string };
+	currentYearId: string | null;
+	currentYearName?: string | null;
 }
 
 type PreviewData = {
@@ -31,32 +31,28 @@ type PreviewData = {
 	summary: {
 		sourceYearName: string;
 		targetYearName: string;
-		classCount: number;
-		classCourseCount: number;
 		sessionCount: number;
 	};
 };
 
-export default function AcademicYearSetupDialog({
+export function CopyTimetableDialog({
 	open,
 	onOpenChange,
-	targetYear,
+	currentYearId,
+	currentYearName,
 }: Props) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const queryClient = useQueryClient();
 	const [sourceYearId, setSourceYearId] = useState<string | null>(null);
-	const [includeTimetable, setIncludeTimetable] = useState(false);
 	const [previewData, setPreviewData] = useState<PreviewData | null>(null);
 
 	const previewMutation = useMutation({
 		mutationFn: () =>
 			trpcClient.batchJobs.preview.mutate({
-				type: "academicYear.setup",
+				type: "timetable.copyFromYear",
 				params: {
 					sourceAcademicYearId: sourceYearId!,
-					targetAcademicYearId: targetYear.id,
-					includeTimetable,
+					targetAcademicYearId: currentYearId!,
 				},
 			}),
 		onSuccess: (data) => {
@@ -75,8 +71,7 @@ export default function AcademicYearSetupDialog({
 	const runMutation = useMutation({
 		mutationFn: (jobId: string) => trpcClient.batchJobs.run.mutate({ jobId }),
 		onSuccess: () => {
-			toast.success(t("admin.academicYears.setup.success"));
-			queryClient.invalidateQueries({ queryKey: ["batchJobs"] });
+			toast.success(t("admin.timetable.copyDialog.success"));
 			handleClose();
 			navigate(`/admin/batch-jobs/${previewData?.jobId}`);
 		},
@@ -85,7 +80,6 @@ export default function AcademicYearSetupDialog({
 
 	function handleClose() {
 		setSourceYearId(null);
-		setIncludeTimetable(false);
 		setPreviewData(null);
 		onOpenChange(false);
 	}
@@ -94,9 +88,9 @@ export default function AcademicYearSetupDialog({
 		<Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>{t("admin.academicYears.setup.title")}</DialogTitle>
+					<DialogTitle>{t("admin.timetable.copyDialog.title")}</DialogTitle>
 					<DialogDescription>
-						{t("admin.academicYears.setup.description")}
+						{t("admin.timetable.copyDialog.description")}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -104,42 +98,32 @@ export default function AcademicYearSetupDialog({
 					{!previewData ? (
 						<div className="space-y-4">
 							<div className="space-y-2">
-								<Label>{t("admin.academicYears.setup.sourceYear")}</Label>
+								<Label>{t("admin.timetable.copyDialog.sourceYear")}</Label>
 								<AcademicYearSelect
 									value={sourceYearId}
 									onChange={setSourceYearId}
 									autoSelectActive={false}
 									placeholder={t(
-										"admin.academicYears.setup.sourceYearPlaceholder",
+										"admin.timetable.copyDialog.sourceYearPlaceholder",
 									)}
-									excludeIds={[targetYear.id]}
+									excludeIds={currentYearId ? [currentYearId] : []}
 								/>
 							</div>
-							<div className="flex items-center gap-2 pt-1">
-								<Checkbox
-									id="include-timetable"
-									checked={includeTimetable}
-									onCheckedChange={(v) => setIncludeTimetable(!!v)}
-								/>
-								<label
-									htmlFor="include-timetable"
-									className="cursor-pointer text-sm"
-								>
-									{t("admin.academicYears.setup.includeTimetable")}
-								</label>
-							</div>
+							{currentYearName && (
+								<p className="text-muted-foreground text-sm">
+									→ {currentYearName}
+								</p>
+							)}
 						</div>
 					) : (
 						<div className="space-y-4">
 							<p className="text-sm">
-								{t("admin.academicYears.setup.previewSummary", {
-									classCount: previewData.summary.classCount,
-									classCourseCount: previewData.summary.classCourseCount,
+								{t("admin.timetable.copyDialog.previewSummary", {
+									count: previewData.summary.sessionCount,
 									sourceYearName: previewData.summary.sourceYearName,
 									targetYearName: previewData.summary.targetYearName,
 								})}
 							</p>
-
 							<div className="space-y-2">
 								{previewData.steps.map((step, i) => (
 									<div
@@ -155,14 +139,6 @@ export default function AcademicYearSetupDialog({
 									</div>
 								))}
 							</div>
-
-							{includeTimetable && previewData.summary.sessionCount > 0 && (
-								<p className="text-muted-foreground text-sm">
-									{t("admin.academicYears.setup.timetableSummary", {
-										count: previewData.summary.sessionCount,
-									})}
-								</p>
-							)}
 						</div>
 					)}
 				</DialogBody>
@@ -174,7 +150,9 @@ export default function AcademicYearSetupDialog({
 					{!previewData ? (
 						<Button
 							onClick={() => previewMutation.mutate()}
-							disabled={!sourceYearId || previewMutation.isPending}
+							disabled={
+								!sourceYearId || !currentYearId || previewMutation.isPending
+							}
 						>
 							{previewMutation.isPending && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -189,7 +167,7 @@ export default function AcademicYearSetupDialog({
 							{runMutation.isPending && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							)}
-							{t("admin.academicYears.setup.confirm")}
+							{t("admin.timetable.copyDialog.confirm")}
 						</Button>
 					)}
 				</DialogFooter>

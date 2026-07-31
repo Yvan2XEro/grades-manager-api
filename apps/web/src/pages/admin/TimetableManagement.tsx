@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	AlertTriangle,
 	Calendar,
+	Copy,
 	Download,
 	Pencil,
 	Plus,
@@ -61,6 +62,7 @@ import {
 import { type GridSession, WeeklyGrid } from "@/components/ui/weekly-grid";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
+import { CopyTimetableDialog } from "./timetable/CopyTimetableDialog";
 import { TimetableImportDialog } from "./timetable/TimetableImportDialog";
 
 type Session = RouterOutputs["timetable"]["list"][number];
@@ -146,6 +148,7 @@ export default function TimetableManagement() {
 	// ── Dialog state ─────────────────────────────────────────────────────────
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [importOpen, setImportOpen] = useState(false);
+	const [copyOpen, setCopyOpen] = useState(false);
 	const [editingSession, setEditingSession] = useState<Session | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -207,6 +210,9 @@ export default function TimetableManagement() {
 	const institutionQuery = useQuery(trpc.institutions.get.queryOptions());
 	const activeRooms = (roomsQuery.data ?? []).filter((r) => r.isActive);
 	const sessions: Session[] = sessionsQuery.data ?? [];
+	const currentYearName =
+		yearListQuery.data?.items.find((y) => y.id === academicYearId)?.name ??
+		null;
 	const classCourses = classCoursesData ?? [];
 
 	const selectedCourse = classCourseId
@@ -663,6 +669,15 @@ td.time-col{background:#f8fafc;text-align:center;vertical-align:middle;padding:4
 					<Button
 						variant="outline"
 						size="sm"
+						onClick={() => setCopyOpen(true)}
+						disabled={!academicYearId}
+					>
+						<Copy className="mr-1.5 h-4 w-4" />
+						{t("teacher.timetable.copyFromYear")}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
 						onClick={() => setImportOpen(true)}
 					>
 						<Upload className="mr-1.5 h-4 w-4" />
@@ -989,6 +1004,14 @@ td.time-col{background:#f8fafc;text-align:center;vertical-align:middle;padding:4
 				onOpenChange={setImportOpen}
 				onImported={invalidate}
 				classCourses={classCourses}
+			/>
+
+			{/* ── Copy timetable dialog ───────────────────────────────────────────── */}
+			<CopyTimetableDialog
+				open={copyOpen}
+				onOpenChange={setCopyOpen}
+				currentYearId={academicYearId}
+				currentYearName={currentYearName}
 			/>
 		</div>
 	);

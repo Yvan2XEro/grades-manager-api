@@ -13,6 +13,7 @@ import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
+import { Checkbox } from "../../../components/ui/checkbox";
 import {
 	Dialog,
 	DialogBody,
@@ -88,6 +89,10 @@ export default function AttendanceManagement() {
 	const [newSessionDate, setNewSessionDate] = useState(
 		new Date().toISOString().slice(0, 10),
 	);
+	const [newCourseSessionId, setNewCourseSessionId] = useState<string | null>(
+		null,
+	);
+	const [isExceptional, setIsExceptional] = useState(false);
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const [excuseDialogOpen, setExcuseDialogOpen] = useState(false);
 	const [excuseTarget, setExcuseTarget] = useState<{
@@ -166,6 +171,13 @@ export default function AttendanceManagement() {
 		enabled: !!classCourseId,
 	});
 
+	const timetableSlotsQuery = useQuery({
+		...trpc.timetable.list.queryOptions({
+			classCourseId: classCourseId ?? "",
+		}),
+		enabled: !!classCourseId && createDialogOpen,
+	});
+
 	const invalidateSessions = () => {
 		queryClient.invalidateQueries(trpc.attendance.listSessions.queryFilter({}));
 	};
@@ -181,10 +193,16 @@ export default function AttendanceManagement() {
 			trpcClient.attendance.createSession.mutate({
 				classCourseId: classCourseId!,
 				sessionDate: newSessionDate,
+				courseSessionId: isExceptional
+					? undefined
+					: (newCourseSessionId ?? undefined),
+				isExceptional: isExceptional || undefined,
 			}),
 		onSuccess: (session) => {
 			toast.success(t("teacher.attendanceManagement.toast.sessionCreated"));
 			setCreateDialogOpen(false);
+			setNewCourseSessionId(null);
+			setIsExceptional(false);
 			setPendingSelectId(session.id);
 			invalidateSessions();
 		},
@@ -676,11 +694,61 @@ export default function AttendanceManagement() {
 								onChange={(e) => setNewSessionDate(e.target.value)}
 							/>
 						</div>
+						{!isExceptional && (
+							<div>
+								<Label className="mb-1 block">
+									{t("teacher.attendanceManagement.timetableSlot")}
+								</Label>
+								<Select
+									value={newCourseSessionId ?? ""}
+									onValueChange={(v) => setNewCourseSessionId(v || null)}
+								>
+									<SelectTrigger>
+										<SelectValue
+											placeholder={t(
+												"teacher.attendanceManagement.timetableSlotPlaceholder",
+											)}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{(timetableSlotsQuery.data ?? []).length === 0 ? (
+											<div className="px-3 py-2 text-muted-foreground text-sm">
+												{t("teacher.attendanceManagement.noSlots")}
+											</div>
+										) : (
+											(timetableSlotsQuery.data ?? []).map((slot) => (
+												<SelectItem key={slot.id} value={slot.id}>
+													{t(`teacher.timetable.days.${slot.dayOfWeek}`)}{" "}
+													{slot.startTime}–{slot.endTime}
+												</SelectItem>
+											))
+										)}
+									</SelectContent>
+								</Select>
+							</div>
+						)}
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id="isExceptional"
+								checked={isExceptional}
+								onCheckedChange={(checked) => {
+									setIsExceptional(!!checked);
+									if (checked) setNewCourseSessionId(null);
+								}}
+							/>
+							<label htmlFor="isExceptional" className="cursor-pointer text-sm">
+								{t("teacher.attendanceManagement.isExceptional")}
+							</label>
+						</div>
 					</DialogBody>
 					<DialogFooter>
 						<Button
 							variant="outline"
-							onClick={() => setCreateDialogOpen(false)}
+							onClick={() => {
+								setCreateDialogOpen(false);
+								setNewCourseSessionId(null);
+								setIsExceptional(false);
+							}}
 						>
 							{t("common.cancel")}
 						</Button>
@@ -689,6 +757,7 @@ export default function AttendanceManagement() {
 							disabled={
 								!classCourseId ||
 								!newSessionDate ||
+								(!isExceptional && !newCourseSessionId) ||
 								createSessionMutation.isPending
 							}
 						>

@@ -831,7 +831,10 @@
         "previewSummary": "{{classCount}} classes et {{classCourseCount}} affectations de cours seront copiées de \"{{sourceYearName}}\" vers \"{{targetYearName}}\".",
         "confirm": "Démarrer la configuration",
         "success": "Configuration de l'année académique lancée",
-        "noClasses": "Aucune classe trouvée dans l'année sélectionnée"
+        "noClasses": "Aucune classe trouvée dans l'année sélectionnée",
+        "includeTimetable": "Inclure l'emploi du temps",
+        "timetableSummary_one": "{{count}} séance à copier depuis l'année source",
+        "timetableSummary_other": "{{count}} séances à copier depuis l'année source"
       }
     },
     "classCourses": {
@@ -3419,6 +3422,19 @@
         "reason": "Raison (optionnel)",
         "reasonPlaceholder": "Expliquer la modification..."
       }
+    },
+    "timetable": {
+      "copyDialog": {
+        "title": "Copier l'emploi du temps",
+        "description": "Copie les séances d'une autre année académique vers l'année actuellement sélectionnée.",
+        "sourceYear": "Année source",
+        "sourceYearPlaceholder": "Sélectionner l'année à copier",
+        "previewSummary_one": "{{count}} séance de \"{{sourceYearName}}\" vers \"{{targetYearName}}\"",
+        "previewSummary_other": "{{count}} séances de \"{{sourceYearName}}\" vers \"{{targetYearName}}\"",
+        "confirm": "Lancer la copie",
+        "success": "Copie lancée avec succès",
+        "noTargetYear": "Sélectionnez d'abord une année cible dans les filtres"
+      }
     }
   },
   "teacher": {
@@ -4168,7 +4184,8 @@
       "confirmDelete": "Supprimer cette séance ?",
       "confirmDeleteDesc": "Cette action est irréversible.",
       "allYears": "Toutes les années",
-      "print": "Imprimer"
+      "print": "Imprimer",
+      "copyFromYear": "Copier depuis une autre année"
     },
     "rooms": {
       "title": "Salles",
@@ -4253,7 +4270,12 @@
       "uploadingDocument": "Téléversement du justificatif…",
       "submitExcuse": "Valider l'excuse",
       "marked": "Tout marquer",
-      "absentOrLate": "Absents / En retard"
+      "absentOrLate": "Absents / En retard",
+      "timetableSlot": "Créneau horaire",
+      "timetableSlotPlaceholder": "Sélectionner un créneau",
+      "noSlots": "Aucun créneau configuré pour ce cours",
+      "isExceptional": "Séance hors planning",
+      "isExceptionalHint": "Cocher si cette séance n'est pas dans l'emploi du temps"
     },
     "attendanceRates": {
       "title": "Taux de présence",

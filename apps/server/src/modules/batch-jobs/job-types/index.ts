@@ -4,6 +4,7 @@ import { bulkDocumentGenerationJob } from "./bulk-document-generation";
 import { creditLedgerRecomputeJob } from "./credit-ledger-recompute";
 import { promotionApplyJob } from "./promotion-apply";
 import { studentFactsRefreshJob } from "./student-facts-refresh";
+import { timetableCopyJob } from "./timetable-copy";
 
 export function registerAllJobTypes() {
 	registerJobType(creditLedgerRecomputeJob);
@@ -11,4 +12,5 @@ export function registerAllJobTypes() {
 	registerJobType(promotionApplyJob);
 	registerJobType(academicYearSetupJob);
 	registerJobType(bulkDocumentGenerationJob);
+	registerJobType(timetableCopyJob);
 }
