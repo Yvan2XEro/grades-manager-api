@@ -12,6 +12,7 @@ import {
 	FileCog,
 	FileSpreadsheet,
 	FileText,
+	FileUp,
 	Gavel,
 	GraduationCap,
 	Heart,
@@ -210,6 +211,11 @@ const Sidebar: React.FC = () => {
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
 						badge: "new" as NavBadgeType,
+					},
+					{
+						to: "/admin/import",
+						icon: <FileUp className={IC} />,
+						labelKey: "navigation.sidebar.admin.dataImport",
 					},
 					{
 						to: "/admin/fee-clearance",

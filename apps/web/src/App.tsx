@@ -75,6 +75,7 @@ import GradeScaleSettings from "./pages/admin/GradeScaleSettings";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
 import InstitutionHub from "./pages/admin/InstitutionHub";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
+import DataImportHub from "./pages/admin/import/DataImportHub";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import ProgramsHub from "./pages/admin/ProgramsHub";
@@ -290,6 +291,7 @@ function App() {
 						<Route path="monitoring" element={<MonitoringDashboard />} />
 						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
 						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
+						<Route path="import" element={<DataImportHub />} />
 						<Route path="statistics" element={<StatisticsHub />} />
 						<Route path="fee-clearance">
 							<Route element={<FeeClearanceHub />}>
