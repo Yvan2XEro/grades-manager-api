@@ -1211,6 +1211,7 @@
         "monitoring": "Monitoring",
         "notifications": "Notifications",
         "batchJobs": "Batch Jobs",
+        "dataImport": "Data Import",
         "feeClearance": "Fee Clearance",
         "statistics": "Statistics",
         "students": "Students",
@@ -4447,6 +4448,44 @@
         "success": "Copy started successfully",
         "noTargetYear": "First select a target year in the filters"
       }
+    },
+    "dataImport": {
+      "title": "Data Import",
+      "subtitle": "Import your institution data from Excel or CSV",
+      "tabs": {
+        "structure": "Academic Structure",
+        "people": "People",
+        "enrollments": "Enrollments",
+        "grades": "Grades"
+      },
+      "downloadTemplate": "Download template",
+      "uploadZone": "Drag your file here or click to select",
+      "uploadZoneAccept": "Excel (.xlsx) or CSV (.csv) · max 10 MB",
+      "preview": {
+        "valid": "{{count}} valid row(s)",
+        "skipped": "{{count}} skipped (already exist)",
+        "errors": "{{count}} error(s)",
+        "warnings": "{{count}} warning(s)",
+        "row": "Row",
+        "column": "Column",
+        "message": "Message",
+        "noErrors": "No errors"
+      },
+      "confirm": "Run import",
+      "uploading": "Uploading…",
+      "previewing": "Analysing file…",
+      "noFile": "No file selected",
+      "errorBlocker": "Fix errors before confirming",
+      "toast": {
+        "uploadOk": "File received",
+        "importStarted": "Import started"
+      },
+      "prereqHint": {
+        "people": "Import academic structure first if classes don't exist yet.",
+        "enrollments": "Students and classes must exist before importing enrollments.",
+        "grades": "Exams must exist before importing grades."
+      },
+      "newFile": "New file"
     }
   },
   "dean": {

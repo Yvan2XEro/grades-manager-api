@@ -8,6 +8,10 @@ export const BATCH_JOB_TYPES = [
 	"academicYear.setup",
 	"documents.generateBulk",
 	"timetable.copyFromYear",
+	"import.academicStructure",
+	"import.people",
+	"import.enrollments",
+	"import.gradesBulk",
 ] as const;
 
 export type BatchJobType = (typeof BATCH_JOB_TYPES)[number];

@@ -523,6 +523,64 @@ diplomationApi.post("/documents", async (c) => {
 
 app.route("/api/diplomation", diplomationApi);
 
+// ── Import API ─────────────────────────────────────────────────────────
+
+import { saveImportFile } from "./modules/data-import/import-file-storage";
+import { generateImportTemplate } from "./modules/data-import/template-generator";
+
+const VALID_TEMPLATE_TYPES = [
+	"academic-structure",
+	"people",
+	"enrollments",
+	"grades-bulk",
+] as const;
+
+app.post("/api/import/upload", async (c) => {
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	if (!session) return c.json({ error: "Unauthorized" }, 401);
+
+	const body = await c.req.parseBody();
+	const file = body.file;
+	if (!file || typeof file === "string") {
+		return c.json({ error: "No file provided" }, 400);
+	}
+	const blob = file as File;
+	const ext = blob.name.toLowerCase().endsWith(".csv") ? ".csv" : ".xlsx";
+	const MAX_BYTES = 10 * 1024 * 1024;
+	if (blob.size > MAX_BYTES) {
+		return c.json({ error: "File exceeds 10 MB limit" }, 400);
+	}
+	const buffer = Buffer.from(await blob.arrayBuffer());
+	const fileId = await saveImportFile(buffer, ext);
+	return c.json({ fileId });
+});
+
+app.get("/api/import/template/:type", async (c) => {
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	if (!session) return c.json({ error: "Unauthorized" }, 401);
+
+	const type = c.req.param("type") as string;
+	if (
+		!VALID_TEMPLATE_TYPES.includes(
+			type as (typeof VALID_TEMPLATE_TYPES)[number],
+		)
+	) {
+		return c.json({ error: "Unknown template type" }, 400);
+	}
+	const buffer = await generateImportTemplate(
+		type as (typeof VALID_TEMPLATE_TYPES)[number],
+	);
+	c.header(
+		"Content-Type",
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	);
+	c.header(
+		"Content-Disposition",
+		`attachment; filename="template-${type}.xlsx"`,
+	);
+	return c.body(buffer as unknown as ReadableStream);
+});
+
 // SPA static files — active only in the combined image (SERVE_FRONTEND=true).
 // Registered last so API routes always take precedence.
 if (process.env.SERVE_FRONTEND === "true") {

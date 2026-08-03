@@ -23,6 +23,7 @@ import { classCoursesRouter } from "../modules/class-courses";
 import { classesRouter } from "../modules/classes";
 import { coursesRouter } from "../modules/courses";
 import { cycleLevelsRouter } from "../modules/cycle-levels";
+import { dataImportRouter } from "../modules/data-import";
 import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
@@ -82,6 +83,7 @@ export const appRouter = router({
 	exportTemplates: exportTemplatesRouter,
 	users: usersRouter,
 	workflows: workflowsRouter,
+	dataImport: dataImportRouter,
 	notifications: notificationsRouter,
 	batchJobs: batchJobsRouter,
 	deliberations: deliberationsRouter,
