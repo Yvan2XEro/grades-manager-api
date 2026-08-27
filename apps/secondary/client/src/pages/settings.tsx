@@ -7,11 +7,6 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectOption } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { trpc } from "@/utils/trpc";
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
@@ -19,15 +14,15 @@ import { trpc } from "@/utils/trpc";
 const schoolProfileSchema = z.object({
 	name: z.string().min(1, "Required"),
 	minesecCode: z.string().max(50).optional(),
-	region: z.string().max(100).optional(),
-	schoolType: z.enum(["public", "private", "confessional"]).optional(),
+	city: z.string().max(100).optional(),
+	type: z.enum(["lycee", "college", "mixed"]).optional(),
 	address: z.string().optional(),
 	phone: z.string().max(30).optional(),
 	email: z.string().email("Invalid email").optional().or(z.literal("")),
 });
 
 const academicConfigSchema = z.object({
-	assessmentMode: z.enum(["sequences", "composition"]),
+	assessmentMode: z.enum(["six_sequence", "composition"]),
 });
 
 type SchoolProfileValues = z.infer<typeof schoolProfileSchema>;
@@ -57,45 +52,50 @@ function SectionCard({
 	);
 }
 
-function ComingSoonSave({ label }: { label: string }) {
-	return (
-		<Tooltip>
-			<TooltipTrigger asChild>
-				<span className="inline-block">
-					<Button type="button" disabled>
-						{label}
-					</Button>
-				</span>
-			</TooltipTrigger>
-			<TooltipContent>Coming soon</TooltipContent>
-		</Tooltip>
-	);
-}
-
 // ─── School Profile form ──────────────────────────────────────────────────────
 
 function SchoolProfileForm() {
 	const { t } = useTranslation();
+	const utils = trpc.useUtils();
 
-	// NOTE: No institution.update procedure exists yet. The form renders
-	// with empty defaults; the Save button is disabled with "Coming soon".
-	const {
-		register,
-		formState: { errors },
-	} = useForm<SchoolProfileValues>({
-		resolver: zodResolver(schoolProfileSchema),
-		defaultValues: {
-			name: "",
-			minesecCode: "",
-			region: "",
-			address: "",
-			phone: "",
-			email: "",
-		},
+	const { data: institution } = trpc.institutions.get.useQuery();
+	const update = trpc.institutions.update.useMutation({
+		onSuccess: () => utils.institutions.get.invalidate(),
 	});
 
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = useForm<SchoolProfileValues>({
+		resolver: zodResolver(schoolProfileSchema),
+		values: institution
+			? {
+					name: institution.name,
+					minesecCode: institution.minesecCode ?? "",
+					city: institution.city ?? "",
+					type: (institution.type as SchoolProfileValues["type"]) ?? undefined,
+					address: institution.address ?? "",
+					phone: institution.phone ?? "",
+					email: institution.email ?? "",
+				}
+			: undefined,
+	});
+
+	const onSubmit = (data: SchoolProfileValues) => {
+		update.mutate({
+			name: data.name,
+			minesecCode: data.minesecCode || undefined,
+			city: data.city || undefined,
+			type: data.type,
+			address: data.address || undefined,
+			phone: data.phone || undefined,
+			email: data.email || undefined,
+		});
+	};
+
 	return (
-		<form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+		<form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<FormField
 					label={t("settings.school_name", "School name")}
@@ -113,26 +113,28 @@ function SchoolProfileForm() {
 				</FormField>
 
 				<FormField
-					label={t("settings.region", "Region / Division")}
-					error={errors.region?.message}
+					label={t("settings.city", "City / Division")}
+					error={errors.city?.message}
 				>
-					<Input placeholder="e.g. Centre, Mfoundi" {...register("region")} />
+					<Input placeholder="e.g. Yaoundé, Mfoundi" {...register("city")} />
 				</FormField>
 
 				<FormField
 					label={t("settings.school_type", "School type")}
-					error={errors.schoolType?.message}
+					error={errors.type?.message}
 				>
-					<Select {...register("schoolType")}>
-						<SelectOption value="">— Select —</SelectOption>
-						<SelectOption value="public">
-							{t("settings.type_public", "Public")}
+					<Select {...register("type")}>
+						<SelectOption value="">
+							— {t("common.select", "Select")} —
 						</SelectOption>
-						<SelectOption value="private">
-							{t("settings.type_private", "Private")}
+						<SelectOption value="lycee">
+							{t("settings.type_lycee", "Lycée")}
 						</SelectOption>
-						<SelectOption value="confessional">
-							{t("settings.type_confessional", "Confessional")}
+						<SelectOption value="college">
+							{t("settings.type_college", "Collège")}
+						</SelectOption>
+						<SelectOption value="mixed">
+							{t("settings.type_mixed", "Mixed (Lycée + Collège)")}
 						</SelectOption>
 					</Select>
 				</FormField>
@@ -166,14 +168,18 @@ function SchoolProfileForm() {
 			>
 				<textarea
 					rows={3}
-					placeholder="Street address, city…"
+					placeholder="Street address…"
 					className="flex min-h-[72px] w-full rounded-md border border-input bg-input px-3 py-2 text-sm outline-none transition-all duration-150 placeholder:text-muted-foreground/55 focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
 					{...register("address")}
 				/>
 			</FormField>
 
 			<div className="pt-1">
-				<ComingSoonSave label={t("settings.save_profile", "Save Profile")} />
+				<Button type="submit" disabled={isSubmitting || update.isPending}>
+					{update.isPending
+						? t("common.saving", "Saving…")
+						: t("settings.save_profile", "Save Profile")}
+				</Button>
 			</div>
 		</form>
 	);
@@ -183,18 +189,37 @@ function SchoolProfileForm() {
 
 function AcademicConfigForm() {
 	const { t } = useTranslation();
+	const utils = trpc.useUtils();
 
-	// NOTE: No institution.update procedure exists yet.
-	const { register } = useForm<AcademicConfigValues>({
-		resolver: zodResolver(academicConfigSchema),
-		defaultValues: { assessmentMode: "sequences" },
+	const { data: institution } = trpc.institutions.get.useQuery();
+	const update = trpc.institutions.update.useMutation({
+		onSuccess: () => utils.institutions.get.invalidate(),
 	});
 
+	const {
+		register,
+		handleSubmit,
+		formState: { isSubmitting },
+	} = useForm<AcademicConfigValues>({
+		resolver: zodResolver(academicConfigSchema),
+		values: institution
+			? {
+					assessmentMode:
+						(institution.assessmentMode as AcademicConfigValues["assessmentMode"]) ??
+						"six_sequence",
+				}
+			: undefined,
+	});
+
+	const onSubmit = (data: AcademicConfigValues) => {
+		update.mutate({ assessmentMode: data.assessmentMode });
+	};
+
 	return (
-		<form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+		<form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
 			<FormField label={t("settings.assessment_mode", "Assessment mode")}>
 				<Select {...register("assessmentMode")}>
-					<SelectOption value="sequences">
+					<SelectOption value="six_sequence">
 						{t(
 							"settings.mode_sequences",
 							"Sequences — 6 sequences per trimester (3 terms × 2 sequences)",
@@ -227,9 +252,11 @@ function AcademicConfigForm() {
 			</div>
 
 			<div className="pt-1">
-				<ComingSoonSave
-					label={t("settings.save_config", "Save Configuration")}
-				/>
+				<Button type="submit" disabled={isSubmitting || update.isPending}>
+					{update.isPending
+						? t("common.saving", "Saving…")
+						: t("settings.save_config", "Save Configuration")}
+				</Button>
 			</div>
 		</form>
 	);

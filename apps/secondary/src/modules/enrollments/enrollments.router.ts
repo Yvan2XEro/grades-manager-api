@@ -1,8 +1,10 @@
+import { z } from "zod";
 import {
 	adminProcedure,
 	tenantProcedure,
 	router as trpcRouter,
 } from "../../lib/trpc";
+import * as repo from "./enrollments.repo";
 import * as service from "./enrollments.service";
 import {
 	createSchema,
@@ -28,4 +30,18 @@ export const router = trpcRouter({
 	countActive: tenantProcedure.query(({ ctx }) =>
 		service.countActive(ctx.institution.id),
 	),
+	getByStudent: tenantProcedure
+		.input(
+			z.object({
+				studentId: z.string().uuid(),
+				academicYearId: z.string().uuid(),
+			}),
+		)
+		.query(({ ctx, input }) =>
+			repo.findByStudentAndYear(
+				input.studentId,
+				input.academicYearId,
+				ctx.institution.id,
+			),
+		),
 });

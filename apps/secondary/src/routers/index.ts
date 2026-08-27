@@ -6,6 +6,7 @@ import { router as classCouncilsRouter } from "../modules/class-councils";
 import { router as classesRouter } from "../modules/classes";
 import { router as enrollmentsRouter } from "../modules/enrollments";
 import { router as financeRouter } from "../modules/finance";
+import { router as institutionsRouter } from "../modules/institutions";
 import { router as officialExamsRouter } from "../modules/official-exams";
 import { router as reportCardsRouter } from "../modules/report-cards";
 import { router as staffRouter } from "../modules/staff";
@@ -27,6 +28,7 @@ export const appRouter = router({
 	classes: classesRouter,
 	enrollments: enrollmentsRouter,
 	finance: financeRouter,
+	institutions: institutionsRouter,
 	officialExams: officialExamsRouter,
 	reportCards: reportCardsRouter,
 	staff: staffRouter,
