@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { Select, SelectOption } from "@/components/ui/select";
@@ -92,6 +93,18 @@ export function ReportCardsList() {
 				<Badge variant="outline">
 					{row.original.language?.toUpperCase() ?? "FR"}
 				</Badge>
+			),
+		},
+		{
+			id: "actions",
+			header: t("common.actions", "Actions"),
+			cell: ({ row }) => (
+				<Link
+					to={`/report-cards/${row.original.id}`}
+					className="text-primary text-xs hover:underline"
+				>
+					{t("common.view", "View")}
+				</Link>
 			),
 		},
 	];

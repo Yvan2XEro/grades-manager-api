@@ -1,6 +1,7 @@
-import { CheckCircle, GraduationCap, Save } from "lucide-react";
+import { CheckCircle, ExternalLink, GraduationCap, Save } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { Select, SelectOption } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
@@ -150,23 +151,32 @@ export function GradeEntry() {
 						<span className="font-medium text-foreground text-sm">
 							{enrollments.length} {t("grades.students", "students")}
 						</span>
-						<button
-							onClick={handleSave}
-							disabled={batchUpsert.isPending}
-							className={cn(
-								"inline-flex items-center gap-2 rounded-lg px-4 py-1.5 font-medium text-sm transition-colors",
-								saved
-									? "bg-green-500 text-white"
-									: "bg-primary text-primary-foreground hover:bg-primary/90",
-							)}
-						>
-							{saved ? (
-								<CheckCircle className="h-4 w-4" />
-							) : (
-								<Save className="h-4 w-4" />
-							)}
-							{saved ? t("grades.saved", "Saved!") : t("grades.save", "Save")}
-						</button>
+						<div className="flex items-center gap-3">
+							<Link
+								to={`/grades/${classId}/${subjectId}/${termId}`}
+								className="inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
+							>
+								<ExternalLink className="h-3.5 w-3.5" />
+								{t("grades.view_grid", "View full grid")}
+							</Link>
+							<button
+								onClick={handleSave}
+								disabled={batchUpsert.isPending}
+								className={cn(
+									"inline-flex items-center gap-2 rounded-lg px-4 py-1.5 font-medium text-sm transition-colors",
+									saved
+										? "bg-green-500 text-white"
+										: "bg-primary text-primary-foreground hover:bg-primary/90",
+								)}
+							>
+								{saved ? (
+									<CheckCircle className="h-4 w-4" />
+								) : (
+									<Save className="h-4 w-4" />
+								)}
+								{saved ? t("grades.saved", "Saved!") : t("grades.save", "Save")}
+							</button>
+						</div>
 					</div>
 					<table className="w-full text-sm">
 						<thead className="bg-muted/40 text-muted-foreground">

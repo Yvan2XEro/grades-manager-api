@@ -1,25 +1,9 @@
 import { ArrowLeft, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router";
+import { Link, NavLink, Outlet, useParams } from "react-router";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
-
-function InfoRow({
-	label,
-	value,
-}: {
-	label: string;
-	value: string | null | undefined;
-}) {
-	return (
-		<div className="flex flex-col gap-0.5">
-			<span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-				{label}
-			</span>
-			<span className="text-foreground text-sm">{value || "—"}</span>
-		</div>
-	);
-}
 
 function DetailSkeleton() {
 	return (
@@ -28,6 +12,11 @@ function DetailSkeleton() {
 			<div className="space-y-1">
 				<Skeleton className="h-8 w-56" />
 				<Skeleton className="h-4 w-32" />
+			</div>
+			<div className="flex gap-4 border-border border-b pb-px">
+				{[1, 2, 3, 4].map((i) => (
+					<Skeleton key={i} className="h-8 w-20" />
+				))}
 			</div>
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 				<div className="space-y-5 rounded-xl border border-border p-5">
@@ -51,6 +40,13 @@ function DetailSkeleton() {
 	);
 }
 
+const TAB_NAV = [
+	{ to: "profile", label: "students.tab_profile" },
+	{ to: "grades", label: "students.tab_grades" },
+	{ to: "fees", label: "students.tab_fees" },
+	{ to: "attendance", label: "students.tab_attendance" },
+] as const;
+
 export function StudentDetail() {
 	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
@@ -70,25 +66,6 @@ export function StudentDetail() {
 			</div>
 		);
 	}
-
-	const formatDate = (value: Date | string | null | undefined) => {
-		if (!value) return "—";
-		return new Date(value).toLocaleDateString();
-	};
-
-	const genderLabel = (g: string | null | undefined) => {
-		if (!g) return "—";
-		if (g === "M") return t("students.gender_m");
-		if (g === "F") return t("students.gender_f");
-		return g;
-	};
-
-	const langLabel = (l: string | null | undefined) => {
-		if (!l) return "—";
-		if (l === "fr") return "Français";
-		if (l === "en") return "English";
-		return l;
-	};
 
 	return (
 		<div className="space-y-6">
@@ -111,50 +88,29 @@ export function StudentDetail() {
 				</p>
 			</div>
 
-			{/* Info grid */}
-			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-				{/* Left column */}
-				<div className="space-y-5 rounded-xl border border-border p-5">
-					<InfoRow
-						label={t("students.registration_number")}
-						value={student.registrationNumber}
-					/>
-					<InfoRow label={t("students.mnu")} value={student.mnu} />
-					<InfoRow
-						label={t("students.gender")}
-						value={genderLabel(student.gender)}
-					/>
-					<InfoRow
-						label={t("students.dob")}
-						value={formatDate(student.dateOfBirth)}
-					/>
-					<InfoRow label={t("students.pob")} value={student.placeOfBirth} />
-				</div>
-
-				{/* Right column */}
-				<div className="space-y-5 rounded-xl border border-border p-5">
-					<InfoRow
-						label={t("students.contact_name")}
-						value={student.contactName}
-					/>
-					<InfoRow
-						label={t("students.contact_phone")}
-						value={student.contactPhone}
-					/>
-					<InfoRow
-						label={t("students.contact_email")}
-						value={student.contactEmail}
-					/>
-					<InfoRow
-						label={t("students.contact_relation")}
-						value={student.contactRelation}
-					/>
-					<InfoRow
-						label={t("students.report_card_language")}
-						value={langLabel(student.reportCardLanguage)}
-					/>
-				</div>
+			{/* Tab nav */}
+			<div className="flex border-border border-b" role="tablist">
+				{TAB_NAV.map(({ to, label }) => (
+					<NavLink
+						key={to}
+						to={to}
+						className={({ isActive }) =>
+							cn(
+								"inline-flex items-center justify-center whitespace-nowrap px-4 py-2 font-medium text-sm transition-colors",
+								"-mb-px border-b-2 focus-visible:outline-none",
+								isActive
+									? "border-primary text-foreground"
+									: "border-transparent text-muted-foreground hover:text-foreground",
+							)
+						}
+					>
+						{t(label, to)}
+					</NavLink>
+				))}
 			</div>
+
+			{/* Active tab content */}
+			<Outlet context={student} />
 		</div>
 	);
 }

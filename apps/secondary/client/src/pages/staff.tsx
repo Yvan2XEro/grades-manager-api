@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
@@ -43,9 +44,12 @@ export function Staff() {
 			id: "name",
 			header: t("staff.col_name", "Name"),
 			cell: ({ row }) => (
-				<span className="font-medium text-foreground">
+				<Link
+					to={`/staff/${row.original.id}`}
+					className="font-medium text-foreground hover:text-primary hover:underline"
+				>
 					{row.original.lastName} {row.original.firstName}
-				</span>
+				</Link>
 			),
 		},
 		{
