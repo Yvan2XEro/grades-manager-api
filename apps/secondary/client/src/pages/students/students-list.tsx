@@ -1,10 +1,12 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Search, UserPlus } from "lucide-react";
+import { Pencil, Search, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
+import { StudentFormDialog } from "./student-form-dialog";
 
 type Student = {
 	id: string;
@@ -19,6 +21,10 @@ export function StudentsList() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingStudent, setEditingStudent] = useState<Student | undefined>(
+		undefined,
+	);
 
 	const { data, isLoading } = trpc.students.list.useQuery({
 		search: search || undefined,
@@ -69,12 +75,26 @@ export function StudentsList() {
 			id: "actions",
 			header: t("students.col_actions", "Actions"),
 			cell: ({ row }) => (
-				<Link
-					to={`/students/${row.original.id}`}
-					className="text-primary text-xs hover:underline"
-				>
-					{t("common.edit", "Edit")}
-				</Link>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 px-2 text-xs"
+						onClick={() => {
+							setEditingStudent(row.original);
+							setDialogOpen(true);
+						}}
+					>
+						<Pencil className="mr-1 h-3 w-3" />
+						{t("common.edit", "Edit")}
+					</Button>
+					<Link
+						to={`/students/${row.original.id}`}
+						className="text-primary text-xs hover:underline"
+					>
+						{t("common.view", "View")}
+					</Link>
+				</div>
 			),
 		},
 	];
@@ -90,10 +110,15 @@ export function StudentsList() {
 						{t("students.subtitle", "Student records management")}
 					</p>
 				</div>
-				<button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90">
-					<UserPlus className="h-4 w-4" />
+				<Button
+					onClick={() => {
+						setEditingStudent(undefined);
+						setDialogOpen(true);
+					}}
+				>
+					<UserPlus className="mr-2 h-4 w-4" />
 					{t("students.add", "Add student")}
-				</button>
+				</Button>
 			</div>
 
 			<div className="relative">
@@ -123,6 +148,13 @@ export function StudentsList() {
 					setPageSize(s);
 					setPage(1);
 				}}
+			/>
+
+			<StudentFormDialog
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				onSuccess={() => {}}
+				student={editingStudent}
 			/>
 		</div>
 	);

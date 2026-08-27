@@ -35,6 +35,8 @@
 		"tracks": "Filières",
 		"staff": "Personnel",
 		"grades": "Notes",
+		"terms": "Trimestres",
+		"subject_assignments": "Affectations",
 		"attendance": "Présences",
 		"report_cards": "Bulletins",
 		"class_councils": "Conseils de classe",
@@ -96,6 +98,7 @@
 		"title": "Élèves",
 		"subtitle": "Gestion des dossiers élèves",
 		"add": "Ajouter un élève",
+		"edit": "Modifier l'élève",
 		"search_placeholder": "Rechercher par nom, MNU…",
 		"col_name": "Nom & Prénom",
 		"col_mnu": "MNU",
@@ -106,6 +109,8 @@
 		"empty_desc": "Commencez par ajouter les élèves de votre établissement.",
 		"first_name": "Prénom",
 		"last_name": "Nom de famille",
+		"date_of_birth": "Date de naissance",
+		"place_of_birth": "Lieu de naissance",
 		"dob": "Date de naissance",
 		"pob": "Lieu de naissance",
 		"gender": "Sexe",
@@ -114,40 +119,63 @@
 		"mnu": "Matricule National (MNU)",
 		"registration_number": "Numéro d'inscription",
 		"photo": "Photo",
+		"contact_info": "Informations de contact",
 		"contact_name": "Nom du contact",
 		"contact_phone": "Téléphone du contact",
 		"contact_email": "Email du contact",
 		"contact_relation": "Lien de parenté",
+		"relation_father": "Père",
+		"relation_mother": "Mère",
+		"relation_guardian": "Tuteur",
 		"report_card_language": "Langue du bulletin"
 	},
 	"classes": {
 		"title": "Classes",
 		"subtitle": "Gestion des classes de l'établissement",
+		"add": "Ajouter une classe",
 		"col_name": "Nom",
 		"col_code": "Code",
 		"col_level": "Niveau",
 		"empty_title": "Aucune classe",
 		"empty_desc": "Créez les classes de votre établissement.",
 		"roster": "Liste des élèves",
-		"students_enrolled": "élèves inscrits"
+		"students_enrolled": "élèves inscrits",
+		"academic_year": "Année scolaire",
+		"track": "Filière",
+		"room": "Salle",
+		"max_capacity": "Capacité maximale"
 	},
 	"subjects": {
 		"title": "Matières",
 		"subtitle": "Catalogue des matières enseignées",
+		"add": "Ajouter une matière",
+		"edit": "Modifier la matière",
 		"col_name": "Matière",
 		"col_code": "Code",
 		"col_coeff": "Coefficient",
 		"empty_title": "Aucune matière",
-		"empty_desc": "Ajoutez les matières à votre catalogue."
+		"empty_desc": "Ajoutez les matières à votre catalogue.",
+		"name": "Nom (EN)",
+		"name_fr": "Nom (FR)",
+		"code": "Code",
+		"minesec_code": "Code MINESEC",
+		"subject_group": "Groupe"
 	},
 	"staff": {
 		"title": "Personnel",
 		"subtitle": "Gestion du personnel de l'établissement",
+		"add": "Ajouter un membre",
+		"edit": "Modifier le membre",
 		"col_name": "Nom",
 		"col_email": "Email",
 		"col_role": "Rôle",
 		"empty_title": "Aucun membre du personnel",
-		"empty_desc": "Ajoutez les membres du personnel."
+		"empty_desc": "Ajoutez les membres du personnel.",
+		"first_name": "Prénom",
+		"last_name": "Nom de famille",
+		"email": "Email",
+		"phone": "Téléphone",
+		"role": "Rôle"
 	},
 	"enrollments": {
 		"title": "Inscriptions",
@@ -262,11 +290,21 @@
 		"archived": "Archivée"
 	},
 	"terms": {
+		"title": "Trimestres",
+		"subtitle": "Gestion des trimestres par année scolaire",
+		"create": "Créer un trimestre",
+		"term_number": "Numéro de trimestre",
 		"term_1": "1er Trimestre",
 		"term_2": "2ème Trimestre",
 		"term_3": "3ème Trimestre",
-		"open": "Ouvert",
-		"closed": "Clôturé"
+		"open": "Ouvrir",
+		"close": "Clôturer",
+		"closed": "Clôturé",
+		"archived": "Archivé",
+		"start_date": "Date de début",
+		"end_date": "Date de fin",
+		"no_terms": "Pas encore créé",
+		"select_year": "Année scolaire"
 	},
 	"councils": {
 		"title": "Conseil de classe",
@@ -316,5 +354,14 @@
 		"col_code": "Code",
 		"col_level": "Cycle",
 		"empty": "Aucune filière définie"
+	},
+	"subject_assignments": {
+		"title": "Affectations",
+		"subtitle": "Affecter les enseignants aux matières par classe",
+		"assign": "Affecter",
+		"unassigned": "Aucune matière affectée pour cette classe",
+		"col_subject": "Matière",
+		"col_teacher": "Enseignant",
+		"select_class": "Classe"
 	}
 }

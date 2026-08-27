@@ -1,9 +1,12 @@
 import {
 	BookOpen,
+	BookUser,
+	Calendar,
 	CalendarCheck,
 	ClipboardList,
 	CreditCard,
 	FileText,
+	GraduationCap,
 	Layers,
 	LayoutDashboard,
 	LogOut,
@@ -47,7 +50,13 @@ const sections: {
 			{ to: "/students", label: "nav.students", Icon: Users },
 			{ to: "/enrollments", label: "nav.enrollments", Icon: UserCheck },
 			{ to: "/classes", label: "nav.classes", Icon: School },
+			{ to: "/terms", label: "nav.terms", Icon: Calendar },
 			{ to: "/subjects", label: "nav.subjects", Icon: BookOpen },
+			{
+				to: "/subject-assignments",
+				label: "nav.subject_assignments",
+				Icon: BookUser,
+			},
 			{ to: "/tracks", label: "nav.tracks", Icon: Layers },
 			{ to: "/staff", label: "nav.staff", Icon: UserCog },
 		],
@@ -55,6 +64,7 @@ const sections: {
 	{
 		label: "Assessments",
 		items: [
+			{ to: "/grades", label: "nav.grades", Icon: GraduationCap },
 			{ to: "/report-cards", label: "nav.report_cards", Icon: FileText },
 			{ to: "/class-councils", label: "nav.class_councils", Icon: Users2 },
 			{

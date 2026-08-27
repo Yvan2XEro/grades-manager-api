@@ -1,8 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { Pencil, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
+import { StaffFormDialog } from "./staff-form-dialog";
 
 type StaffMember = {
 	id: string;
@@ -10,6 +13,7 @@ type StaffMember = {
 	lastName: string;
 	email: string;
 	role: string | null;
+	phone?: string | null;
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -24,6 +28,10 @@ export function Staff() {
 	const { t } = useTranslation();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingStaff, setEditingStaff] = useState<StaffMember | undefined>(
+		undefined,
+	);
 
 	const { data, isLoading } = trpc.staff.list.useQuery({ page, pageSize });
 
@@ -58,6 +66,24 @@ export function Staff() {
 				</span>
 			),
 		},
+		{
+			id: "actions",
+			header: t("common.actions", "Actions"),
+			cell: ({ row }) => (
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 px-2 text-xs"
+					onClick={() => {
+						setEditingStaff(row.original);
+						setDialogOpen(true);
+					}}
+				>
+					<Pencil className="mr-1 h-3 w-3" />
+					{t("common.edit", "Edit")}
+				</Button>
+			),
+		},
 	];
 
 	return (
@@ -71,6 +97,15 @@ export function Staff() {
 						{t("staff.subtitle", "Staff management")}
 					</p>
 				</div>
+				<Button
+					onClick={() => {
+						setEditingStaff(undefined);
+						setDialogOpen(true);
+					}}
+				>
+					<UserPlus className="mr-2 h-4 w-4" />
+					{t("staff.add", "Add staff member")}
+				</Button>
 			</div>
 
 			<DataTable
@@ -86,6 +121,13 @@ export function Staff() {
 					setPageSize(s);
 					setPage(1);
 				}}
+			/>
+
+			<StaffFormDialog
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				onSuccess={() => {}}
+				staff={editingStaff}
 			/>
 		</div>
 	);

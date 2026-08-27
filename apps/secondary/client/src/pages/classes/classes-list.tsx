@@ -1,9 +1,12 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
+import { ClassFormDialog } from "./class-form-dialog";
 
 type SchoolClass = {
 	id: string;
@@ -17,10 +20,11 @@ export function ClassesList() {
 	const { academicYearId } = useParams<{ academicYearId: string }>();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
+	const [dialogOpen, setDialogOpen] = useState(false);
 
 	const { data, isLoading } = trpc.classes.list.useQuery(
 		{ academicYearId: academicYearId || undefined, page, pageSize },
-		{ enabled: !!academicYearId },
+		{ enabled: true },
 	);
 
 	const items = data?.items ?? [];
@@ -70,6 +74,10 @@ export function ClassesList() {
 						{t("classes.subtitle", "Class management")}
 					</p>
 				</div>
+				<Button onClick={() => setDialogOpen(true)}>
+					<Plus className="mr-2 h-4 w-4" />
+					{t("classes.add", "Add class")}
+				</Button>
 			</div>
 
 			<DataTable
@@ -85,6 +93,12 @@ export function ClassesList() {
 					setPageSize(s);
 					setPage(1);
 				}}
+			/>
+
+			<ClassFormDialog
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				onSuccess={() => {}}
 			/>
 		</div>
 	);

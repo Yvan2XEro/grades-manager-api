@@ -35,6 +35,8 @@
 		"tracks": "Tracks",
 		"staff": "Staff",
 		"grades": "Grades",
+		"terms": "Terms",
+		"subject_assignments": "Subject Assignments",
 		"attendance": "Attendance",
 		"report_cards": "Report Cards",
 		"class_councils": "Class Councils",
@@ -96,6 +98,7 @@
 		"title": "Students",
 		"subtitle": "Student records management",
 		"add": "Add student",
+		"edit": "Edit student",
 		"search_placeholder": "Search by name, MNU…",
 		"col_name": "Name",
 		"col_mnu": "MNU",
@@ -106,6 +109,8 @@
 		"empty_desc": "Start by adding students to your institution.",
 		"first_name": "First name",
 		"last_name": "Last name",
+		"date_of_birth": "Date of birth",
+		"place_of_birth": "Place of birth",
 		"dob": "Date of birth",
 		"pob": "Place of birth",
 		"gender": "Gender",
@@ -114,40 +119,63 @@
 		"mnu": "National ID (MNU)",
 		"registration_number": "Registration number",
 		"photo": "Photo",
+		"contact_info": "Contact information",
 		"contact_name": "Contact name",
 		"contact_phone": "Contact phone",
 		"contact_email": "Contact email",
 		"contact_relation": "Relationship",
+		"relation_father": "Father",
+		"relation_mother": "Mother",
+		"relation_guardian": "Guardian",
 		"report_card_language": "Report card language"
 	},
 	"classes": {
 		"title": "Classes",
 		"subtitle": "Class management",
+		"add": "Add class",
 		"col_name": "Name",
 		"col_code": "Code",
 		"col_level": "Level",
 		"empty_title": "No classes",
 		"empty_desc": "Create classes for your institution.",
 		"roster": "Class roster",
-		"students_enrolled": "students enrolled"
+		"students_enrolled": "students enrolled",
+		"academic_year": "Academic year",
+		"track": "Track",
+		"room": "Room",
+		"max_capacity": "Max capacity"
 	},
 	"subjects": {
 		"title": "Subjects",
 		"subtitle": "Subject catalogue",
+		"add": "Add subject",
+		"edit": "Edit subject",
 		"col_name": "Subject",
 		"col_code": "Code",
 		"col_coeff": "Coefficient",
 		"empty_title": "No subjects",
-		"empty_desc": "Add subjects to your catalogue."
+		"empty_desc": "Add subjects to your catalogue.",
+		"name": "Subject name (EN)",
+		"name_fr": "Subject name (FR)",
+		"code": "Code",
+		"minesec_code": "MINESEC code",
+		"subject_group": "Subject group"
 	},
 	"staff": {
 		"title": "Staff",
 		"subtitle": "Staff management",
+		"add": "Add staff member",
+		"edit": "Edit staff member",
 		"col_name": "Name",
 		"col_email": "Email",
 		"col_role": "Role",
 		"empty_title": "No staff members",
-		"empty_desc": "Add staff members to your institution."
+		"empty_desc": "Add staff members to your institution.",
+		"first_name": "First name",
+		"last_name": "Last name",
+		"email": "Email",
+		"phone": "Phone",
+		"role": "Role"
 	},
 	"enrollments": {
 		"title": "Enrollments",
@@ -262,11 +290,21 @@
 		"archived": "Archived"
 	},
 	"terms": {
+		"title": "Terms",
+		"subtitle": "Manage academic terms by year",
+		"create": "Create term",
+		"term_number": "Term number",
 		"term_1": "Term 1",
 		"term_2": "Term 2",
 		"term_3": "Term 3",
 		"open": "Open",
-		"closed": "Closed"
+		"close": "Close",
+		"closed": "Closed",
+		"archived": "Archived",
+		"start_date": "Start date",
+		"end_date": "End date",
+		"no_terms": "Not created yet",
+		"select_year": "Academic year"
 	},
 	"councils": {
 		"title": "Class council",
@@ -316,5 +354,14 @@
 		"col_code": "Code",
 		"col_level": "Cycle",
 		"empty": "No tracks defined"
+	},
+	"subject_assignments": {
+		"title": "Subject Assignments",
+		"subtitle": "Assign teachers to subjects per class",
+		"assign": "Assign",
+		"unassigned": "No subjects assigned for this class",
+		"col_subject": "Subject",
+		"col_teacher": "Teacher",
+		"select_class": "Class"
 	}
 }

@@ -21,7 +21,9 @@ import { Settings } from "@/pages/settings";
 import { Staff } from "@/pages/staff";
 import { StudentDetail } from "@/pages/students/student-detail";
 import { StudentsList } from "@/pages/students/students-list";
+import { SubjectAssignments } from "@/pages/subject-assignments/subject-assignments";
 import { Subjects } from "@/pages/subjects";
+import { TermsList } from "@/pages/terms/terms-list";
 import { TracksList } from "@/pages/tracks/tracks-list";
 
 function Dashboard() {
@@ -60,6 +62,11 @@ export function AppRoutes() {
 								<Route path="attendance" element={<AttendanceOverview />} />
 								<Route path="grades" element={<GradeEntry />} />
 								<Route path="tracks" element={<TracksList />} />
+								<Route path="terms" element={<TermsList />} />
+								<Route
+									path="subject-assignments"
+									element={<SubjectAssignments />}
+								/>
 								<Route path="settings" element={<Settings />} />
 							</Routes>
 						</AppShell>

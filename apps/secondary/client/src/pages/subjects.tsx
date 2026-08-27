@@ -1,15 +1,19 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Search } from "lucide-react";
+import { Pencil, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
+import { SubjectFormDialog } from "./subject-form-dialog";
 
 type Subject = {
 	id: string;
 	name: string;
+	nameFr?: string | null;
 	code: string | null;
 	subjectGroup: string | null;
+	minesecCode?: string | null;
 };
 
 export function Subjects() {
@@ -17,6 +21,10 @@ export function Subjects() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingSubject, setEditingSubject] = useState<Subject | undefined>(
+		undefined,
+	);
 
 	const { data, isLoading } = trpc.subjects.list.useQuery({
 		search: search || undefined,
@@ -53,6 +61,24 @@ export function Subjects() {
 				</span>
 			),
 		},
+		{
+			id: "actions",
+			header: t("common.actions", "Actions"),
+			cell: ({ row }) => (
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 px-2 text-xs"
+					onClick={() => {
+						setEditingSubject(row.original);
+						setDialogOpen(true);
+					}}
+				>
+					<Pencil className="mr-1 h-3 w-3" />
+					{t("common.edit", "Edit")}
+				</Button>
+			),
+		},
 	];
 
 	return (
@@ -66,6 +92,15 @@ export function Subjects() {
 						{t("subjects.subtitle", "Subject catalogue")}
 					</p>
 				</div>
+				<Button
+					onClick={() => {
+						setEditingSubject(undefined);
+						setDialogOpen(true);
+					}}
+				>
+					<Plus className="mr-2 h-4 w-4" />
+					{t("subjects.add", "Add subject")}
+				</Button>
 			</div>
 
 			<div className="relative">
@@ -95,6 +130,13 @@ export function Subjects() {
 					setPageSize(s);
 					setPage(1);
 				}}
+			/>
+
+			<SubjectFormDialog
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				onSuccess={() => {}}
+				subject={editingSubject}
 			/>
 		</div>
 	);
