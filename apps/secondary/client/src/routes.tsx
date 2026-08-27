@@ -34,6 +34,7 @@ import { StudentProfileTab } from "@/pages/students/tabs/profile-tab";
 import { SubjectAssignments } from "@/pages/subject-assignments/subject-assignments";
 import { Subjects } from "@/pages/subjects";
 import { TermsList } from "@/pages/terms/terms-list";
+import { TrackDetail } from "@/pages/tracks/track-detail";
 import { TracksList } from "@/pages/tracks/tracks-list";
 
 function Dashboard() {
@@ -120,6 +121,7 @@ export function AppRoutes() {
 
 								{/* Other */}
 								<Route path="tracks" element={<TracksList />} />
+								<Route path="tracks/:id" element={<TrackDetail />} />
 								<Route path="terms" element={<TermsList />} />
 								<Route
 									path="subject-assignments"

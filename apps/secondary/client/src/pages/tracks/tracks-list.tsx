@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
@@ -36,7 +37,17 @@ export function TracksList() {
 			accessorKey: "name",
 			header: t("tracks.col_name", "Track"),
 			cell: ({ row }) => (
-				<span className="font-medium text-foreground">{row.original.name}</span>
+				<Link
+					to={`/tracks/${row.original.id}`}
+					state={{
+						name: row.original.name,
+						code: row.original.code,
+						cycleLevel: row.original.cycleLevel,
+					}}
+					className="font-medium text-foreground hover:underline"
+				>
+					{row.original.name}
+				</Link>
 			),
 		},
 		{
