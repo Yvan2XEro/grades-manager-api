@@ -21,6 +21,7 @@ export const router = trpcRouter({
 				input.classId,
 				input.termId,
 				input.status,
+				{ page: input.page, pageSize: input.pageSize },
 			),
 		),
 

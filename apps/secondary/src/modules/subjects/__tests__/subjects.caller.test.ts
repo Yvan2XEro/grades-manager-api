@@ -13,13 +13,13 @@ beforeAll(async () => {
 describe("subjects.list", () => {
 	it("rejects unauthenticated requests", async () => {
 		const caller = appRouter.createCaller(asGuest());
-		await expect(caller.subjects.list()).rejects.toBeDefined();
+		await expect(caller.subjects.list({})).rejects.toBeDefined();
 	});
 
 	it("returns an array for authenticated users", async () => {
 		const caller = appRouter.createCaller(asAdmin());
-		const result = await caller.subjects.list();
-		expect(Array.isArray(result)).toBe(true);
+		const result = await caller.subjects.list({});
+		expect(Array.isArray(result.items)).toBe(true);
 	});
 });
 

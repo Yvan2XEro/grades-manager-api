@@ -23,6 +23,7 @@ export const router = trpcRouter({
 				ctx.institution.id,
 				input.academicYearId,
 				input.examType,
+				{ page: input.page, pageSize: input.pageSize },
 			),
 		),
 

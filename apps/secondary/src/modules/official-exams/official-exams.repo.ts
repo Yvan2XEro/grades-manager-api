@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "../../db";
 import {
 	enrollments,
@@ -13,7 +13,9 @@ export async function findAllSessions(
 	institutionId: string,
 	academicYearId?: string,
 	examType?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
+	const { page = 1, pageSize = 25 } = opts;
 	const conditions = [eq(officialExamSessions.institutionId, institutionId)];
 	if (academicYearId) {
 		conditions.push(eq(officialExamSessions.academicYearId, academicYearId));
@@ -22,11 +24,20 @@ export async function findAllSessions(
 		conditions.push(eq(officialExamSessions.examType, examType));
 	}
 
-	return db
-		.select()
-		.from(officialExamSessions)
-		.where(and(...conditions))
-		.orderBy(officialExamSessions.createdAt);
+	const [items, totalRows] = await Promise.all([
+		db
+			.select()
+			.from(officialExamSessions)
+			.where(and(...conditions))
+			.orderBy(officialExamSessions.createdAt)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize),
+		db
+			.select({ count: count() })
+			.from(officialExamSessions)
+			.where(and(...conditions)),
+	]);
+	return { items, total: Number(totalRows[0]?.count ?? 0) };
 }
 
 export async function findSessionById(id: string, institutionId: string) {

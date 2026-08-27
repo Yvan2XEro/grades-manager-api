@@ -3,9 +3,10 @@ import * as repo from "./students.repo";
 
 export async function list(
 	institutionId: string,
-	opts: { search?: string; limit?: number; offset?: number },
+	opts: { search?: string; page?: number; pageSize?: number },
 ) {
-	return repo.findAll(institutionId, opts);
+	const { items, total } = await repo.findAll(institutionId, opts);
+	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };
 }
 
 export async function create(

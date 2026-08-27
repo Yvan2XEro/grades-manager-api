@@ -1,60 +1,60 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router";
+import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
 
-type SchoolClass = {
+type Track = {
 	id: string;
 	name: string;
-	code: string | null;
-	level: string | null;
+	code: string;
+	cycleLevel: string;
 };
 
-export function ClassesList() {
+const CYCLE_LEVEL_VARIANTS: Record<
+	string,
+	"default" | "secondary" | "info" | "success"
+> = {
+	first_cycle: "info",
+	second_cycle: "success",
+	technical: "secondary",
+};
+
+export function TracksList() {
 	const { t } = useTranslation();
-	const { academicYearId } = useParams<{ academicYearId: string }>();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 
-	const { data, isLoading } = trpc.classes.list.useQuery(
-		{ academicYearId: academicYearId || undefined, page, pageSize },
-		{ enabled: !!academicYearId },
-	);
+	const { data, isLoading } = trpc.tracks.list.useQuery({ page, pageSize });
 
 	const items = data?.items ?? [];
 	const total = data?.total ?? 0;
 
-	const columns: ColumnDef<SchoolClass>[] = [
+	const columns: ColumnDef<Track>[] = [
 		{
-			id: "name",
-			header: t("classes.col_name", "Name"),
+			accessorKey: "name",
+			header: t("tracks.col_name", "Track"),
 			cell: ({ row }) => (
-				<Link
-					to={`/classes/${row.original.id}`}
-					className="font-medium text-foreground hover:text-primary hover:underline"
-				>
-					{row.original.name}
-				</Link>
+				<span className="font-medium text-foreground">{row.original.name}</span>
 			),
 		},
 		{
 			accessorKey: "code",
-			header: t("classes.col_code", "Code"),
+			header: t("tracks.col_code", "Code"),
 			cell: ({ row }) => (
-				<span className="text-muted-foreground">
-					{row.original.code ?? "—"}
-				</span>
+				<span className="text-muted-foreground">{row.original.code}</span>
 			),
 		},
 		{
-			accessorKey: "level",
-			header: t("classes.col_level", "Level"),
+			accessorKey: "cycleLevel",
+			header: t("tracks.col_level", "Cycle"),
 			cell: ({ row }) => (
-				<span className="text-muted-foreground">
-					{row.original.level ?? "—"}
-				</span>
+				<Badge
+					variant={CYCLE_LEVEL_VARIANTS[row.original.cycleLevel] ?? "secondary"}
+				>
+					{row.original.cycleLevel.replace("_", " ")}
+				</Badge>
 			),
 		},
 	];
@@ -64,10 +64,13 @@ export function ClassesList() {
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="font-bold text-2xl text-foreground">
-						{t("classes.title", "Classes")}
+						{t("tracks.title", "Tracks")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						{t("classes.subtitle", "Class management")}
+						{t(
+							"tracks.subtitle",
+							"Subject tracks for Cameroonian secondary schools",
+						)}
 					</p>
 				</div>
 			</div>
@@ -79,7 +82,7 @@ export function ClassesList() {
 				page={page}
 				pageSize={pageSize}
 				isLoading={isLoading}
-				emptyMessage={t("classes.empty_title", "No classes")}
+				emptyMessage={t("tracks.empty", "No tracks defined")}
 				onPageChange={setPage}
 				onPageSizeChange={(s) => {
 					setPageSize(s);

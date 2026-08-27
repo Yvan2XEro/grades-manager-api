@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "../../db";
 import {
 	classCouncils,
@@ -12,17 +12,28 @@ export async function findAll(
 	classId?: string,
 	termId?: string,
 	status?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
+	const { page = 1, pageSize = 25 } = opts;
 	const conditions = [eq(classCouncils.institutionId, institutionId)];
 	if (classId) conditions.push(eq(classCouncils.classId, classId));
 	if (termId) conditions.push(eq(classCouncils.termId, termId));
 	if (status) conditions.push(eq(classCouncils.status, status));
 
-	return db
-		.select()
-		.from(classCouncils)
-		.where(and(...conditions))
-		.orderBy(classCouncils.createdAt);
+	const [items, totalRows] = await Promise.all([
+		db
+			.select()
+			.from(classCouncils)
+			.where(and(...conditions))
+			.orderBy(classCouncils.createdAt)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize),
+		db
+			.select({ count: count() })
+			.from(classCouncils)
+			.where(and(...conditions)),
+	]);
+	return { items, total: Number(totalRows[0]?.count ?? 0) };
 }
 
 export async function findById(id: string, institutionId: string) {

@@ -5,8 +5,15 @@ export async function list(
 	institutionId: string,
 	academicYearId: string,
 	classId?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
-	return repo.findAll(institutionId, academicYearId, classId);
+	const { items, total } = await repo.findAll(
+		institutionId,
+		academicYearId,
+		classId,
+		opts,
+	);
+	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };
 }
 
 export async function create(

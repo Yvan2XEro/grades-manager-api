@@ -32,6 +32,7 @@
 		"enrollments": "Inscriptions",
 		"classes": "Classes",
 		"subjects": "Matières",
+		"tracks": "Filières",
 		"staff": "Personnel",
 		"grades": "Notes",
 		"attendance": "Présences",
@@ -64,7 +65,11 @@
 		"previous": "Précédent",
 		"required": "Requis",
 		"optional": "Optionnel",
-		"no_data": "Aucune donnée"
+		"no_data": "Aucune donnée",
+		"rows_per_page": "Lignes par page",
+		"pagination_info": "{{from}}–{{to}} sur {{total}}",
+		"page_of": "Page {{page}} sur {{pageCount}}",
+		"no_results": "Aucun résultat"
 	},
 	"dashboard": {
 		"title": "Tableau de bord",
@@ -122,7 +127,9 @@
 		"col_code": "Code",
 		"col_level": "Niveau",
 		"empty_title": "Aucune classe",
-		"empty_desc": "Créez les classes de votre établissement."
+		"empty_desc": "Créez les classes de votre établissement.",
+		"roster": "Liste des élèves",
+		"students_enrolled": "élèves inscrits"
 	},
 	"subjects": {
 		"title": "Matières",
@@ -301,5 +308,13 @@
 		"institution_desc": "Les informations de l'établissement sont gérées par l'administrateur système.",
 		"academic_year": "Année scolaire active",
 		"academic_year_desc": "Gérez les années scolaires depuis le menu principal."
+	},
+	"tracks": {
+		"title": "Filières",
+		"subtitle": "Filières pour les établissements secondaires camerounais",
+		"col_name": "Filière",
+		"col_code": "Code",
+		"col_level": "Cycle",
+		"empty": "Aucune filière définie"
 	}
 }

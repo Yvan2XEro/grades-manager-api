@@ -26,3 +26,9 @@ export const updateSchema = z.object({
 });
 
 export const idSchema = z.object({ id: z.string().uuid() });
+
+export const listSchema = z.object({
+	search: z.string().optional(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
+});

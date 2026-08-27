@@ -11,11 +11,12 @@ import {
 } from "./enrollments.zod";
 
 export const router = trpcRouter({
-	list: tenantProcedure
-		.input(listSchema)
-		.query(({ ctx, input }) =>
-			service.list(ctx.institution.id, input.academicYearId, input.classId),
-		),
+	list: tenantProcedure.input(listSchema).query(({ ctx, input }) =>
+		service.list(ctx.institution.id, input.academicYearId, input.classId, {
+			page: input.page,
+			pageSize: input.pageSize,
+		}),
+	),
 	create: adminProcedure
 		.input(createSchema)
 		.mutation(({ ctx, input }) => service.create(input, ctx.institution.id)),

@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const listSchema = z.object({
 	academicYearId: z.string().uuid().optional(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
 });
 
 export const createSchema = z.object({

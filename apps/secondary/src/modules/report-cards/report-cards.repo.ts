@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { enrollments, reportCards } from "../../db/schema";
 
@@ -7,21 +7,30 @@ export async function findAll(
 	academicYearId: string,
 	termId?: string,
 	classId?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
-	const baseQuery = db
-		.select()
-		.from(reportCards)
-		.innerJoin(enrollments, eq(reportCards.enrollmentId, enrollments.id))
-		.where(
-			and(
-				eq(reportCards.institutionId, institutionId),
-				eq(enrollments.academicYearId, academicYearId),
-				termId ? eq(reportCards.termId, termId) : undefined,
-				classId ? eq(enrollments.classId, classId) : undefined,
-			),
-		);
-
-	return baseQuery;
+	const { page = 1, pageSize = 25 } = opts;
+	const where = and(
+		eq(reportCards.institutionId, institutionId),
+		eq(enrollments.academicYearId, academicYearId),
+		termId ? eq(reportCards.termId, termId) : undefined,
+		classId ? eq(enrollments.classId, classId) : undefined,
+	);
+	const [rows, totalRows] = await Promise.all([
+		db
+			.select()
+			.from(reportCards)
+			.innerJoin(enrollments, eq(reportCards.enrollmentId, enrollments.id))
+			.where(where)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize),
+		db
+			.select({ count: count() })
+			.from(reportCards)
+			.innerJoin(enrollments, eq(reportCards.enrollmentId, enrollments.id))
+			.where(where),
+	]);
+	return { rows, total: Number(totalRows[0]?.count ?? 0) };
 }
 
 export async function findById(id: string, institutionId: string) {

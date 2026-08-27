@@ -1,12 +1,12 @@
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, count, eq, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import { students } from "../../db/schema";
 
 export async function findAll(
 	institutionId: string,
-	opts: { search?: string; limit?: number; offset?: number },
+	opts: { search?: string; page?: number; pageSize?: number },
 ) {
-	const { search, limit = 50, offset = 0 } = opts;
+	const { search, page = 1, pageSize = 25 } = opts;
 	const where = search
 		? and(
 				eq(students.institutionId, institutionId),
@@ -17,13 +17,17 @@ export async function findAll(
 				),
 			)
 		: eq(students.institutionId, institutionId);
-	return db
-		.select()
-		.from(students)
-		.where(where)
-		.orderBy(students.lastName, students.firstName)
-		.limit(limit)
-		.offset(offset);
+	const [items, totalRows] = await Promise.all([
+		db
+			.select()
+			.from(students)
+			.where(where)
+			.orderBy(students.lastName, students.firstName)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize),
+		db.select({ count: count() }).from(students).where(where),
+	]);
+	return { items, total: Number(totalRows[0]?.count ?? 0) };
 }
 
 export async function findById(id: string, institutionId: string) {

@@ -1,18 +1,30 @@
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { classes, enrollments, students } from "../../db/schema";
 
 export async function findByYear(
 	academicYearId: string | undefined,
 	institutionId: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
+	const { page = 1, pageSize = 25 } = opts;
 	const where = academicYearId
 		? and(
 				eq(classes.academicYearId, academicYearId),
 				eq(classes.institutionId, institutionId),
 			)
 		: eq(classes.institutionId, institutionId);
-	return db.select().from(classes).where(where).orderBy(classes.name);
+	const [items, totalRows] = await Promise.all([
+		db
+			.select()
+			.from(classes)
+			.where(where)
+			.orderBy(classes.name)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize),
+		db.select({ count: count() }).from(classes).where(where),
+	]);
+	return { items, total: Number(totalRows[0]?.count ?? 0) };
 }
 
 export async function findById(id: string, institutionId: string) {

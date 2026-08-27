@@ -6,8 +6,16 @@ export async function list(
 	classId?: string,
 	termId?: string,
 	status?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
-	return repo.findAll(institutionId, classId, termId, status);
+	const { items, total } = await repo.findAll(
+		institutionId,
+		classId,
+		termId,
+		status,
+		opts,
+	);
+	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };
 }
 
 export async function getCouncil(id: string, institutionId: string) {

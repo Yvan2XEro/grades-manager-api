@@ -40,7 +40,7 @@ describe("classes.list", () => {
 	it("returns empty array for a new year", async () => {
 		const caller = appRouter.createCaller(asAdmin());
 		const result = await caller.classes.list({ academicYearId });
-		expect(result).toEqual([]);
+		expect(result.items).toEqual([]);
 	});
 });
 

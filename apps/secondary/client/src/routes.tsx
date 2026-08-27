@@ -7,6 +7,7 @@ import { ForgotPasswordPage } from "@/pages/auth/forgot-password";
 import { LoginPage } from "@/pages/auth/login";
 import { ResetPasswordPage } from "@/pages/auth/reset-password";
 import { ClassCouncilsList } from "@/pages/class-councils/councils-list";
+import { ClassDetail } from "@/pages/classes/class-detail";
 import { ClassesList } from "@/pages/classes/classes-list";
 import { AdminDashboard } from "@/pages/dashboards/admin-dashboard";
 import { PrincipalDashboard } from "@/pages/dashboards/principal-dashboard";
@@ -18,8 +19,10 @@ import { OfficialExamsList } from "@/pages/official-exams/official-exams-list";
 import { ReportCardsList } from "@/pages/report-cards/report-cards-list";
 import { Settings } from "@/pages/settings";
 import { Staff } from "@/pages/staff";
+import { StudentDetail } from "@/pages/students/student-detail";
 import { StudentsList } from "@/pages/students/students-list";
 import { Subjects } from "@/pages/subjects";
+import { TracksList } from "@/pages/tracks/tracks-list";
 
 function Dashboard() {
 	const { data: session } = useSession();
@@ -44,8 +47,10 @@ export function AppRoutes() {
 							<Routes>
 								<Route index element={<Dashboard />} />
 								<Route path="students" element={<StudentsList />} />
+								<Route path="students/:id" element={<StudentDetail />} />
 								<Route path="enrollments" element={<Enrollments />} />
 								<Route path="classes" element={<ClassesList />} />
+								<Route path="classes/:id" element={<ClassDetail />} />
 								<Route path="subjects" element={<Subjects />} />
 								<Route path="staff" element={<Staff />} />
 								<Route path="report-cards" element={<ReportCardsList />} />
@@ -54,6 +59,7 @@ export function AppRoutes() {
 								<Route path="finance" element={<FinanceOverview />} />
 								<Route path="attendance" element={<AttendanceOverview />} />
 								<Route path="grades" element={<GradeEntry />} />
+								<Route path="tracks" element={<TracksList />} />
 								<Route path="settings" element={<Settings />} />
 							</Routes>
 						</AppShell>

@@ -7,8 +7,15 @@ export async function listSessions(
 	institutionId: string,
 	academicYearId?: string,
 	examType?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
-	return repo.findAllSessions(institutionId, academicYearId, examType);
+	const { items, total } = await repo.findAllSessions(
+		institutionId,
+		academicYearId,
+		examType,
+		opts,
+	);
+	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };
 }
 
 export async function getSession(id: string, institutionId: string) {

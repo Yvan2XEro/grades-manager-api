@@ -9,14 +9,21 @@ export async function list(
 	academicYearId: string,
 	termId?: string,
 	classId?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
-	const results = await repo.findAll(
+	const { rows, total } = await repo.findAll(
 		institutionId,
 		academicYearId,
 		termId,
 		classId,
+		opts,
 	);
-	return results.map((row) => row.report_cards);
+	return {
+		items: rows.map((row) => row.report_cards),
+		total,
+		page: opts.page ?? 1,
+		pageSize: opts.pageSize ?? 25,
+	};
 }
 
 export async function get(id: string, institutionId: string) {

@@ -1,8 +1,12 @@
 import { conflict, notFound } from "../../lib/errors";
 import * as repo from "./tracks.repo";
 
-export async function list(institutionId: string) {
-	return repo.findAll(institutionId);
+export async function list(
+	institutionId: string,
+	opts: { page?: number; pageSize?: number } = {},
+) {
+	const { items, total } = await repo.findAll(institutionId, opts);
+	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };
 }
 
 export async function create(

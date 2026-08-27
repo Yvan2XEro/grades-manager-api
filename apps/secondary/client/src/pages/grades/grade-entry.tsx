@@ -1,6 +1,7 @@
 import { CheckCircle, GraduationCap, Save } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Select, SelectOption } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -12,18 +13,21 @@ export function GradeEntry() {
 	const [assessmentType, setAssessmentType] = useState("sequence_1");
 	const [saved, setSaved] = useState(false);
 
-	const { data: classes = [] } = trpc.classes.list.useQuery({});
-	const { data: subjects = [] } = trpc.subjects.list.useQuery();
+	const { data: classesData } = trpc.classes.list.useQuery({ pageSize: 200 });
+	const classes = classesData?.items ?? [];
+	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 200 });
+	const subjects = subjectsData?.items ?? [];
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = years.find((y) => (y as any).isActive) ?? years[0];
 	const { data: terms = [] } = trpc.terms.list.useQuery(
 		{ academicYearId: activeYear?.id ?? "" },
 		{ enabled: !!activeYear?.id },
 	);
-	const { data: enrollments = [] } = trpc.enrollments.list.useQuery(
-		{ academicYearId: activeYear?.id ?? "", classId },
+	const { data: enrollmentsData } = trpc.enrollments.list.useQuery(
+		{ academicYearId: activeYear?.id ?? "", classId, pageSize: 200 },
 		{ enabled: !!classId && !!activeYear?.id },
 	);
+	const enrollments = enrollmentsData?.items ?? [];
 
 	const batchUpsert = trpc.assessments.batchUpsert.useMutation({
 		onSuccess: () => {
@@ -67,89 +71,76 @@ export function GradeEntry() {
 		<div className="space-y-5">
 			<div>
 				<h1 className="font-bold text-2xl text-foreground">
-					{t("grades.title", "Saisie des notes")}
+					{t("grades.title", "Grade entry")}
 				</h1>
 				<p className="text-muted-foreground text-sm">
-					{t(
-						"grades.subtitle",
-						"Entrez les notes des élèves par matière et séquence",
-					)}
+					{t("grades.subtitle", "Enter student grades by subject and sequence")}
 				</p>
 			</div>
 
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				<div>
 					<label className="mb-1 block font-medium text-muted-foreground text-xs">
-						{t("grades.class", "Classe")}
+						{t("grades.class", "Class")}
 					</label>
-					<select
-						value={classId}
-						onChange={(e) => setClassId(e.target.value)}
-						className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-					>
-						<option value="">
-							{t("grades.select_class", "— Sélectionner —")}
-						</option>
+					<Select value={classId} onChange={(e) => setClassId(e.target.value)}>
+						<SelectOption value="">
+							{t("grades.select_class", "— Select —")}
+						</SelectOption>
 						{classes.map((c) => (
-							<option key={c.id} value={c.id}>
-								{(c as any).name || c.id}
-							</option>
+							<SelectOption key={c.id} value={c.id}>
+								{c.name}
+							</SelectOption>
 						))}
-					</select>
+					</Select>
 				</div>
 				<div>
 					<label className="mb-1 block font-medium text-muted-foreground text-xs">
-						{t("grades.subject", "Matière")}
+						{t("grades.subject", "Subject")}
 					</label>
-					<select
+					<Select
 						value={subjectId}
 						onChange={(e) => setSubjectId(e.target.value)}
-						className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 					>
-						<option value="">
-							{t("grades.select_subject", "— Sélectionner —")}
-						</option>
+						<SelectOption value="">
+							{t("grades.select_subject", "— Select —")}
+						</SelectOption>
 						{subjects.map((s) => (
-							<option key={s.id} value={s.id}>
-								{(s as any).name || s.id}
-							</option>
+							<SelectOption key={s.id} value={s.id}>
+								{s.name}
+							</SelectOption>
 						))}
-					</select>
+					</Select>
 				</div>
 				<div>
 					<label className="mb-1 block font-medium text-muted-foreground text-xs">
-						{t("grades.term", "Trimestre")}
+						{t("grades.term", "Term")}
 					</label>
-					<select
-						value={termId}
-						onChange={(e) => setTermId(e.target.value)}
-						className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-					>
-						<option value="">
-							{t("grades.select_term", "— Sélectionner —")}
-						</option>
+					<Select value={termId} onChange={(e) => setTermId(e.target.value)}>
+						<SelectOption value="">
+							{t("grades.select_term", "— Select —")}
+						</SelectOption>
 						{terms.map((trm) => (
-							<option key={trm.id} value={trm.id}>
+							<SelectOption key={trm.id} value={trm.id}>
 								{(trm as any).name || trm.id}
-							</option>
+							</SelectOption>
 						))}
-					</select>
+					</Select>
 				</div>
 				<div>
 					<label className="mb-1 block font-medium text-muted-foreground text-xs">
-						{t("grades.type", "Type d'évaluation")}
+						{t("grades.type", "Assessment type")}
 					</label>
-					<select
+					<Select
 						value={assessmentType}
 						onChange={(e) => setAssessmentType(e.target.value)}
-						className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 					>
 						{ASSESSMENT_TYPES.map((a) => (
-							<option key={a.value} value={a.value}>
+							<SelectOption key={a.value} value={a.value}>
 								{a.label}
-							</option>
+							</SelectOption>
 						))}
-					</select>
+					</Select>
 				</div>
 			</div>
 
@@ -157,7 +148,7 @@ export function GradeEntry() {
 				<div className="overflow-hidden rounded-xl border border-border">
 					<div className="flex items-center justify-between bg-muted/30 px-4 py-3">
 						<span className="font-medium text-foreground text-sm">
-							{enrollments.length} {t("grades.students", "élèves")}
+							{enrollments.length} {t("grades.students", "students")}
 						</span>
 						<button
 							onClick={handleSave}
@@ -174,19 +165,17 @@ export function GradeEntry() {
 							) : (
 								<Save className="h-4 w-4" />
 							)}
-							{saved
-								? t("grades.saved", "Enregistré !")
-								: t("grades.save", "Enregistrer")}
+							{saved ? t("grades.saved", "Saved!") : t("grades.save", "Save")}
 						</button>
 					</div>
 					<table className="w-full text-sm">
 						<thead className="bg-muted/40 text-muted-foreground">
 							<tr>
 								<th className="px-4 py-2 text-left font-medium">
-									{t("grades.col_student", "Élève")}
+									{t("grades.col_student", "Student")}
 								</th>
 								<th className="px-4 py-2 text-left font-medium">
-									{t("grades.col_grade", "Note /20")}
+									{t("grades.col_grade", "Grade /20")}
 								</th>
 							</tr>
 						</thead>
@@ -200,10 +189,7 @@ export function GradeEntry() {
 										<div className="flex flex-col items-center gap-2">
 											<GraduationCap className="h-8 w-8 opacity-30" />
 											<p>
-												{t(
-													"grades.no_students",
-													"Aucun élève dans cette classe",
-												)}
+												{t("grades.no_students", "No students in this class")}
 											</p>
 										</div>
 									</td>
@@ -250,10 +236,7 @@ export function GradeEntry() {
 				<div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
 					<GraduationCap className="h-12 w-12 opacity-20" />
 					<p className="font-medium">
-						{t(
-							"grades.select_all",
-							"Sélectionnez une classe, une matière et un trimestre",
-						)}
+						{t("grades.select_all", "Select a class, subject and term")}
 					</p>
 				</div>
 			)}

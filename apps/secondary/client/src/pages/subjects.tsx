@@ -1,87 +1,101 @@
-import { BookOpen } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Search } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { DataTable } from "@/components/ui/data-table";
 import { trpc } from "@/utils/trpc";
+
+type Subject = {
+	id: string;
+	name: string;
+	code: string | null;
+	subjectGroup: string | null;
+};
 
 export function Subjects() {
 	const { t } = useTranslation();
-	const { data: subjects = [], isLoading } = trpc.subjects.list.useQuery();
+	const [search, setSearch] = useState("");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+
+	const { data, isLoading } = trpc.subjects.list.useQuery({
+		search: search || undefined,
+		page,
+		pageSize,
+	});
+
+	const items = data?.items ?? [];
+	const total = data?.total ?? 0;
+
+	const columns: ColumnDef<Subject>[] = [
+		{
+			accessorKey: "name",
+			header: t("subjects.col_name", "Subject"),
+			cell: ({ row }) => (
+				<span className="font-medium text-foreground">{row.original.name}</span>
+			),
+		},
+		{
+			accessorKey: "code",
+			header: t("subjects.col_code", "Code"),
+			cell: ({ row }) => (
+				<span className="text-muted-foreground">
+					{row.original.code ?? "—"}
+				</span>
+			),
+		},
+		{
+			accessorKey: "subjectGroup",
+			header: t("subjects.col_coeff", "Group"),
+			cell: ({ row }) => (
+				<span className="text-muted-foreground">
+					{row.original.subjectGroup ?? "—"}
+				</span>
+			),
+		},
+	];
 
 	return (
 		<div className="space-y-5">
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="font-bold text-2xl text-foreground">
-						{t("subjects.title", "Matières")}
+						{t("subjects.title", "Subjects")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						{t("subjects.subtitle", "Catalogue des matières enseignées")}
+						{t("subjects.subtitle", "Subject catalogue")}
 					</p>
 				</div>
 			</div>
 
-			<div className="overflow-hidden rounded-xl border border-border">
-				<table className="w-full text-sm">
-					<thead className="bg-muted/40 text-muted-foreground">
-						<tr>
-							<th className="px-4 py-3 text-left font-medium">
-								{t("subjects.col_name", "Matière")}
-							</th>
-							<th className="px-4 py-3 text-left font-medium">
-								{t("subjects.col_code", "Code")}
-							</th>
-							<th className="px-4 py-3 text-left font-medium">
-								{t("subjects.col_group", "Groupe")}
-							</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-border">
-						{isLoading ? (
-							<tr>
-								<td
-									colSpan={3}
-									className="px-4 py-8 text-center text-muted-foreground"
-								>
-									{t("common.loading", "Chargement…")}
-								</td>
-							</tr>
-						) : subjects.length === 0 ? (
-							<tr>
-								<td
-									colSpan={3}
-									className="px-4 py-12 text-center text-muted-foreground"
-								>
-									<div className="flex flex-col items-center gap-3">
-										<BookOpen className="h-10 w-10 opacity-30" />
-										<p className="font-medium">
-											{t("subjects.empty_title", "Aucune matière")}
-										</p>
-										<p className="text-xs">
-											{t(
-												"subjects.empty_desc",
-												"Ajoutez les matières à votre catalogue.",
-											)}
-										</p>
-									</div>
-								</td>
-							</tr>
-						) : (
-							subjects.map((s) => (
-								<tr key={s.id} className="transition-colors hover:bg-muted/30">
-									<td className="px-4 py-3 font-medium text-foreground">
-										{s.name}
-									</td>
-									<td className="px-4 py-3 text-muted-foreground">
-										{s.code ?? "—"}
-									</td>
-									<td className="px-4 py-3 text-muted-foreground">
-										{s.subjectGroup ?? "—"}
-									</td>
-								</tr>
-							))
-						)}
-					</tbody>
-				</table>
+			<div className="relative">
+				<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+				<input
+					type="text"
+					placeholder={t("common.search", "Search…")}
+					value={search}
+					onChange={(e) => {
+						setSearch(e.target.value);
+						setPage(1);
+					}}
+					className="w-full rounded-lg border border-input bg-background py-2 pr-4 pl-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				/>
 			</div>
+
+			<DataTable
+				columns={columns}
+				data={items}
+				total={total}
+				page={page}
+				pageSize={pageSize}
+				isLoading={isLoading}
+				emptyMessage={t("subjects.empty_title", "No subjects")}
+				onPageChange={setPage}
+				onPageSizeChange={(s) => {
+					setPageSize(s);
+					setPage(1);
+				}}
+			/>
 		</div>
 	);
 }

@@ -1,13 +1,24 @@
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { subjects, trackSubjectCoefficients, tracks } from "../../db/schema";
 
-export async function findAll(institutionId: string) {
-	return db
-		.select()
-		.from(tracks)
-		.where(eq(tracks.institutionId, institutionId))
-		.orderBy(tracks.code);
+export async function findAll(
+	institutionId: string,
+	opts: { page?: number; pageSize?: number } = {},
+) {
+	const { page = 1, pageSize = 25 } = opts;
+	const where = eq(tracks.institutionId, institutionId);
+	const [items, totalRows] = await Promise.all([
+		db
+			.select()
+			.from(tracks)
+			.where(where)
+			.orderBy(tracks.code)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize),
+		db.select({ count: count() }).from(tracks).where(where),
+	]);
+	return { items, total: Number(totalRows[0]?.count ?? 0) };
 }
 
 export async function findById(id: string, institutionId: string) {

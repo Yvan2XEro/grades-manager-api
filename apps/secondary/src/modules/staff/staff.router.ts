@@ -4,10 +4,12 @@ import {
 	router as trpcRouter,
 } from "../../lib/trpc";
 import * as service from "./staff.service";
-import { createSchema, idSchema, updateSchema } from "./staff.zod";
+import { createSchema, idSchema, listSchema, updateSchema } from "./staff.zod";
 
 export const router = trpcRouter({
-	list: tenantProcedure.query(({ ctx }) => service.list(ctx.institution.id)),
+	list: tenantProcedure
+		.input(listSchema)
+		.query(({ ctx, input }) => service.list(ctx.institution.id, input)),
 	create: adminProcedure
 		.input(createSchema)
 		.mutation(({ ctx, input }) => service.create(input, ctx.institution.id)),

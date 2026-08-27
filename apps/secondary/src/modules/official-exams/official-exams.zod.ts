@@ -11,6 +11,8 @@ export const createSessionSchema = z.object({
 export const listSessionsSchema = z.object({
 	academicYearId: z.string().uuid().optional(),
 	examType: z.enum(["BEPC", "PROBATOIRE", "BAC"]).optional(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
 });
 
 export const registerCandidateSchema = z.object({

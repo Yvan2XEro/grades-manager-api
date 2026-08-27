@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { enrollments, students } from "../../db/schema";
 
@@ -6,36 +6,47 @@ export async function findAll(
 	institutionId: string,
 	academicYearId: string,
 	classId?: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
+	const { page = 1, pageSize = 25 } = opts;
 	const conditions = [
 		eq(enrollments.institutionId, institutionId),
 		eq(enrollments.academicYearId, academicYearId),
 	];
 	if (classId) conditions.push(eq(enrollments.classId, classId));
-	return db
-		.select({
-			enrollment: {
-				id: enrollments.id,
-				studentId: enrollments.studentId,
-				classId: enrollments.classId,
-				academicYearId: enrollments.academicYearId,
-				admissionType: enrollments.admissionType,
-				status: enrollments.status,
-				createdAt: enrollments.createdAt,
-			},
-			student: {
-				id: students.id,
-				firstName: students.firstName,
-				lastName: students.lastName,
-				gender: students.gender,
-				mnu: students.mnu,
-				registrationNumber: students.registrationNumber,
-			},
-		})
-		.from(enrollments)
-		.innerJoin(students, eq(enrollments.studentId, students.id))
-		.where(and(...conditions))
-		.orderBy(students.lastName, students.firstName);
+	const [items, totalRows] = await Promise.all([
+		db
+			.select({
+				enrollment: {
+					id: enrollments.id,
+					studentId: enrollments.studentId,
+					classId: enrollments.classId,
+					academicYearId: enrollments.academicYearId,
+					admissionType: enrollments.admissionType,
+					status: enrollments.status,
+					createdAt: enrollments.createdAt,
+				},
+				student: {
+					id: students.id,
+					firstName: students.firstName,
+					lastName: students.lastName,
+					gender: students.gender,
+					mnu: students.mnu,
+					registrationNumber: students.registrationNumber,
+				},
+			})
+			.from(enrollments)
+			.innerJoin(students, eq(enrollments.studentId, students.id))
+			.where(and(...conditions))
+			.orderBy(students.lastName, students.firstName)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize),
+		db
+			.select({ count: count() })
+			.from(enrollments)
+			.where(and(...conditions)),
+	]);
+	return { items, total: Number(totalRows[0]?.count ?? 0) };
 }
 
 export async function findById(id: string, institutionId: string) {

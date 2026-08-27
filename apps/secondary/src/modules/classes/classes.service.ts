@@ -4,8 +4,14 @@ import * as repo from "./classes.repo";
 export async function list(
 	academicYearId: string | undefined,
 	institutionId: string,
+	opts: { page?: number; pageSize?: number } = {},
 ) {
-	return repo.findByYear(academicYearId, institutionId);
+	const { items, total } = await repo.findByYear(
+		academicYearId,
+		institutionId,
+		opts,
+	);
+	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };
 }
 
 export async function create(

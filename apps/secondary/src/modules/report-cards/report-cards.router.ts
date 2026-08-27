@@ -15,6 +15,7 @@ export const router = trpcRouter({
 				input.academicYearId,
 				input.termId,
 				input.classId,
+				{ page: input.page, pageSize: input.pageSize },
 			),
 		),
 	get: tenantProcedure

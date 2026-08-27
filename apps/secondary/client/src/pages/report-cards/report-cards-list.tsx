@@ -1,60 +1,182 @@
-import { FileText } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/ui/data-table";
+import { Select, SelectOption } from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
+
+type ReportCardStatus =
+	| "draft"
+	| "generated"
+	| "validated_admin"
+	| "validated_vp"
+	| "signed"
+	| "published";
+
+const STATUS_VARIANTS: Record<
+	ReportCardStatus,
+	"secondary" | "info" | "success" | "warning" | "default"
+> = {
+	draft: "secondary",
+	generated: "info",
+	validated_admin: "warning",
+	validated_vp: "warning",
+	signed: "success",
+	published: "default",
+};
+
+type ReportCard = {
+	id: string;
+	enrollmentId: string;
+	termId: string;
+	status: string | null;
+	language: string | null;
+};
 
 export function ReportCardsList() {
 	const { t } = useTranslation();
-	const { data: years = [] } = trpc.academicYears.list.useQuery();
-	const activeYear = years.find((y) => (y as any).isActive) ?? years[0];
 	const [yearId, setYearId] = useState("");
-	const effectiveYearId = yearId || activeYear?.id || "";
+	const [termId, setTermId] = useState("");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
+
+	const { data: years = [] } = trpc.academicYears.list.useQuery();
+
+	const { data: terms = [] } = trpc.terms.list.useQuery(
+		{ academicYearId: yearId },
+		{ enabled: !!yearId },
+	);
+
+	const { data, isLoading } = trpc.reportCards.list.useQuery(
+		{ academicYearId: yearId, termId: termId || undefined, page, pageSize },
+		{ enabled: !!yearId },
+	);
+
+	const items = (data?.items ?? []) as ReportCard[];
+	const total = data?.total ?? 0;
+
+	const columns: ColumnDef<ReportCard>[] = [
+		{
+			id: "enrollment",
+			header: t("enrollments.col_student", "Student"),
+			cell: ({ row }) => (
+				<span className="font-mono text-muted-foreground text-xs">
+					{row.original.enrollmentId}
+				</span>
+			),
+		},
+		{
+			id: "term",
+			header: t("grades.term", "Term"),
+			cell: ({ row }) => (
+				<span className="text-muted-foreground">{row.original.termId}</span>
+			),
+		},
+		{
+			id: "status",
+			header: t("common.status", "Status"),
+			cell: ({ row }) => {
+				const status = row.original.status as ReportCardStatus;
+				return (
+					<Badge variant={STATUS_VARIANTS[status] ?? "secondary"}>
+						{t(`report_cards.status_${status}`, status)}
+					</Badge>
+				);
+			},
+		},
+		{
+			id: "language",
+			header: t("students.report_card_language", "Language"),
+			cell: ({ row }) => (
+				<Badge variant="outline">
+					{row.original.language?.toUpperCase() ?? "FR"}
+				</Badge>
+			),
+		},
+	];
 
 	return (
 		<div className="space-y-5">
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="font-bold text-2xl text-foreground">
-						{t("report_cards.title", "Bulletins de notes")}
+						{t("report_cards.title", "Report Cards")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						{t(
-							"report_cards.subtitle",
-							"Génération et consultation des bulletins",
-						)}
+						{t("report_cards.subtitle", "Generate and view report cards")}
 					</p>
 				</div>
 			</div>
 
-			<div className="flex items-center gap-3">
+			<div className="flex flex-wrap items-center gap-3">
 				<label className="font-medium text-foreground text-sm">
-					{t("report_cards.year_label", "Année scolaire")}
+					{t("report_cards.year_label", "Academic year")}
 				</label>
-				<select
-					value={effectiveYearId}
-					onChange={(e) => setYearId(e.target.value)}
-					className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+				<Select
+					value={yearId}
+					onChange={(e) => {
+						setYearId(e.target.value);
+						setTermId("");
+						setPage(1);
+					}}
 				>
+					<SelectOption value="">
+						— {t("enrollments.select_year", "Select an academic year")} —
+					</SelectOption>
 					{years.map((y) => (
-						<option key={y.id} value={y.id}>
+						<SelectOption key={y.id} value={y.id}>
 							{y.name}
-						</option>
+						</SelectOption>
 					))}
-				</select>
+				</Select>
+
+				{yearId && (
+					<>
+						<label className="font-medium text-foreground text-sm">
+							{t("grades.term", "Term")}
+						</label>
+						<Select
+							value={termId}
+							onChange={(e) => {
+								setTermId(e.target.value);
+								setPage(1);
+							}}
+						>
+							<SelectOption value="">
+								— {t("common.no_data", "All")} —
+							</SelectOption>
+							{terms.map((term) => (
+								<SelectOption key={term.id} value={term.id}>
+									{t(
+										`terms.term_${term.termNumber}`,
+										`Term ${term.termNumber}`,
+									)}
+								</SelectOption>
+							))}
+						</Select>
+					</>
+				)}
 			</div>
 
-			<div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
-				<FileText className="h-12 w-12 opacity-20" />
-				<p className="font-medium">
-					{t("report_cards.empty", "Aucun bulletin généré")}
-				</p>
-				<p className="text-xs">
-					{t(
-						"report_cards.empty_desc",
-						"Les bulletins sont générés après la saisie des notes et les conseils de classe.",
-					)}
-				</p>
-			</div>
+			<DataTable
+				columns={columns}
+				data={items}
+				total={total}
+				page={page}
+				pageSize={pageSize}
+				isLoading={isLoading}
+				emptyMessage={
+					!yearId
+						? t("enrollments.select_year", "Select an academic year")
+						: t("report_cards.empty", "No report cards generated")
+				}
+				onPageChange={setPage}
+				onPageSizeChange={(s) => {
+					setPageSize(s);
+					setPage(1);
+				}}
+			/>
 		</div>
 	);
 }

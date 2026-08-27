@@ -16,6 +16,8 @@ export const listSchema = z.object({
 	classId: z.string().uuid().optional(),
 	termId: z.string().uuid().optional(),
 	status: z.enum(["draft", "scheduled", "held", "signed"]).optional(),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
 });
 
 export const addDecisionSchema = z.object({

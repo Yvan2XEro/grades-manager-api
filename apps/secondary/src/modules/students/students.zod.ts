@@ -23,6 +23,6 @@ export const idSchema = z.object({ id: z.string().uuid() });
 
 export const listSchema = z.object({
 	search: z.string().optional(),
-	limit: z.number().int().min(1).max(200).optional().default(50),
-	offset: z.number().int().min(0).optional().default(0),
+	page: z.number().int().min(1).default(1),
+	pageSize: z.number().int().min(1).max(100).default(25),
 });
