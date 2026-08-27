@@ -9,7 +9,22 @@
 		"email": "Email address",
 		"password": "Password",
 		"sign_in": "Sign in",
-		"invalid_credentials": "Invalid email or password"
+		"invalid_credentials": "Invalid email or password",
+		"forgot_password": "Forgot password?",
+		"forgot_password_title": "Reset your password",
+		"forgot_password_desc": "Enter your email address and we'll send you a reset link.",
+		"send_reset_link": "Send reset link",
+		"check_email": "Check your email",
+		"check_email_desc": "If an account exists with that email, you'll receive a reset link shortly.",
+		"reset_password_title": "Set new password",
+		"new_password": "New password",
+		"confirm_password": "Confirm password",
+		"passwords_dont_match": "Passwords don't match",
+		"update_password": "Update password",
+		"password_updated": "Password updated!",
+		"password_updated_desc": "You can now sign in with your new password.",
+		"invalid_reset_link": "Invalid or expired reset link.",
+		"back_to_login": "Back to login"
 	},
 	"nav": {
 		"dashboard": "Dashboard",

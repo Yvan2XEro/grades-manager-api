@@ -3,7 +3,9 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { AppShell } from "@/components/layout/app-shell";
 import { useSession } from "@/lib/auth-client";
 import { AttendanceOverview } from "@/pages/attendance/attendance-overview";
+import { ForgotPasswordPage } from "@/pages/auth/forgot-password";
 import { LoginPage } from "@/pages/auth/login";
+import { ResetPasswordPage } from "@/pages/auth/reset-password";
 import { ClassCouncilsList } from "@/pages/class-councils/councils-list";
 import { ClassesList } from "@/pages/classes/classes-list";
 import { AdminDashboard } from "@/pages/dashboards/admin-dashboard";
@@ -31,6 +33,8 @@ export function AppRoutes() {
 	return (
 		<Routes>
 			<Route path="/login" element={<LoginPage />} />
+			<Route path="/forgot-password" element={<ForgotPasswordPage />} />
+			<Route path="/reset-password" element={<ResetPasswordPage />} />
 
 			<Route
 				path="/*"

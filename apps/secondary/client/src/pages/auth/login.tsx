@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { signIn } from "@/lib/auth-client";
 
 export function LoginPage() {
@@ -30,120 +32,49 @@ export function LoginPage() {
 	}
 
 	return (
-		<div
-			style={{
-				minHeight: "100vh",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-				background: "var(--color-bg)",
-			}}
-		>
-			<div
-				style={{
-					background: "var(--color-surface)",
-					border: "1px solid var(--color-border)",
-					borderRadius: "var(--radius)",
-					padding: "2rem",
-					width: "100%",
-					maxWidth: "400px",
-				}}
-			>
-				<h1
-					style={{
-						color: "var(--color-primary)",
-						fontSize: "1.5rem",
-						fontWeight: 700,
-						marginBottom: "0.25rem",
-					}}
-				>
-					{t("app.name")}
-				</h1>
-				<p style={{ color: "var(--color-text-muted)", marginBottom: "1.5rem" }}>
-					{t("app.tagline")}
-				</p>
+		<div className="flex min-h-screen items-center justify-center bg-background p-4">
+			<div className="w-full max-w-sm rounded-xl border border-border bg-card p-8 text-card-foreground shadow-sm">
+				<h1 className="font-bold text-2xl text-primary">{t("app.name")}</h1>
+				<p className="mb-6 text-muted-foreground text-sm">{t("app.tagline")}</p>
 
-				<form
-					onSubmit={handleSubmit}
-					style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-				>
+				<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 					<div>
-						<label
-							style={{
-								display: "block",
-								fontSize: "0.875rem",
-								marginBottom: "0.25rem",
-							}}
-						>
+						<label className="mb-1 block font-medium text-foreground text-sm">
 							{t("auth.email")}
 						</label>
-						<input
+						<Input
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							required
-							style={{
-								width: "100%",
-								padding: "0.5rem 0.75rem",
-								border: "1px solid var(--color-border)",
-								borderRadius: "var(--radius)",
-								background: "var(--color-bg)",
-								color: "var(--color-text)",
-								fontSize: "0.875rem",
-								boxSizing: "border-box",
-							}}
 						/>
 					</div>
+
 					<div>
-						<label
-							style={{
-								display: "block",
-								fontSize: "0.875rem",
-								marginBottom: "0.25rem",
-							}}
-						>
+						<label className="mb-1 block font-medium text-foreground text-sm">
 							{t("auth.password")}
 						</label>
-						<input
+						<Input
 							type="password"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							required
-							style={{
-								width: "100%",
-								padding: "0.5rem 0.75rem",
-								border: "1px solid var(--color-border)",
-								borderRadius: "var(--radius)",
-								background: "var(--color-bg)",
-								color: "var(--color-text)",
-								fontSize: "0.875rem",
-								boxSizing: "border-box",
-							}}
 						/>
+						<div className="mt-1 text-right">
+							<Link
+								to="/forgot-password"
+								className="text-primary text-sm hover:underline"
+							>
+								{t("auth.forgot_password")}
+							</Link>
+						</div>
 					</div>
 
-					{error && (
-						<p style={{ color: "oklch(0.55 0.22 25)", fontSize: "0.875rem" }}>
-							{error}
-						</p>
-					)}
+					{error && <p className="text-destructive text-sm">{error}</p>}
 
-					<button
-						type="submit"
-						disabled={loading}
-						style={{
-							background: "var(--color-primary)",
-							color: "#fff",
-							border: "none",
-							borderRadius: "var(--radius)",
-							padding: "0.625rem 1rem",
-							fontWeight: 600,
-							cursor: loading ? "not-allowed" : "pointer",
-							opacity: loading ? 0.7 : 1,
-						}}
-					>
+					<Button type="submit" disabled={loading} className="w-full">
 						{loading ? t("common.loading") : t("auth.sign_in")}
-					</button>
+					</Button>
 				</form>
 			</div>
 		</div>
