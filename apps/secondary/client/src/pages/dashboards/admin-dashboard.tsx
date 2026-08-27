@@ -1,6 +1,7 @@
 import { BookOpen, GraduationCap, School, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/utils/trpc";
 
 interface StatCardProps {
 	label: string;
@@ -31,6 +32,11 @@ function StatCard({ label, value, icon, className }: StatCardProps) {
 export function AdminDashboard() {
 	const { t } = useTranslation();
 
+	const { data: studentsData } = trpc.students.list.useQuery({ pageSize: 1 });
+	const { data: classesData } = trpc.classes.list.useQuery({ pageSize: 1 });
+	const { data: staffData } = trpc.staff.list.useQuery({ pageSize: 1 });
+	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 1 });
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -45,22 +51,22 @@ export function AdminDashboard() {
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				<StatCard
 					label={t("dashboard.students", "Élèves")}
-					value="—"
+					value={studentsData?.total ?? "—"}
 					icon={<Users className="h-6 w-6" />}
 				/>
 				<StatCard
 					label={t("dashboard.classes", "Classes")}
-					value="—"
+					value={classesData?.total ?? "—"}
 					icon={<School className="h-6 w-6" />}
 				/>
 				<StatCard
 					label={t("dashboard.staff", "Personnel")}
-					value="—"
+					value={staffData?.total ?? "—"}
 					icon={<GraduationCap className="h-6 w-6" />}
 				/>
 				<StatCard
 					label={t("dashboard.subjects", "Matières")}
-					value="—"
+					value={subjectsData?.total ?? "—"}
 					icon={<BookOpen className="h-6 w-6" />}
 				/>
 			</div>

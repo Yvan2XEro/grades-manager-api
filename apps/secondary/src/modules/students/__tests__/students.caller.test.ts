@@ -16,10 +16,11 @@ describe("students.list", () => {
 		await expect(caller.students.list({})).rejects.toBeDefined();
 	});
 
-	it("returns array for authenticated users", async () => {
+	it("returns paginated result for authenticated users", async () => {
 		const caller = appRouter.createCaller(asAdmin());
 		const result = await caller.students.list({});
-		expect(Array.isArray(result)).toBe(true);
+		expect(Array.isArray(result.items)).toBe(true);
+		expect(typeof result.total).toBe("number");
 	});
 });
 

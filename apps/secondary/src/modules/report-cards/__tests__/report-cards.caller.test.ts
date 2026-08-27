@@ -137,10 +137,11 @@ describe("reportCards.list", () => {
 		).rejects.toBeDefined();
 	});
 
-	it("returns empty array initially", async () => {
+	it("returns paginated result initially", async () => {
 		const caller = appRouter.createCaller(asAdmin());
 		const result = await caller.reportCards.list({ academicYearId });
-		expect(Array.isArray(result)).toBe(true);
+		expect(Array.isArray(result.items)).toBe(true);
+		expect(typeof result.total).toBe("number");
 	});
 
 	it("filters by term when provided", async () => {
@@ -149,7 +150,7 @@ describe("reportCards.list", () => {
 			academicYearId,
 			termId,
 		});
-		expect(Array.isArray(result)).toBe(true);
+		expect(Array.isArray(result.items)).toBe(true);
 	});
 
 	it("filters by class when provided", async () => {
@@ -158,7 +159,7 @@ describe("reportCards.list", () => {
 			academicYearId,
 			classId,
 		});
-		expect(Array.isArray(result)).toBe(true);
+		expect(Array.isArray(result.items)).toBe(true);
 	});
 });
 
