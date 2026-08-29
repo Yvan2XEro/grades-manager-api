@@ -50,7 +50,7 @@ export const teacherProcedure = withInstitution.use(async ({ ctx, next }) => {
 	if (!role || !["teacher", "admin"].includes(role)) {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
-	return next({ ctx });
+	return next({ ctx: { ...ctx, callerRole: role } });
 });
 
 export const principalProcedure = withInstitution.use(async ({ ctx, next }) => {

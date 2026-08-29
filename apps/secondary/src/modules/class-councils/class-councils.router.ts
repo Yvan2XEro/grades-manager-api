@@ -10,6 +10,7 @@ import {
 	idSchema,
 	listSchema,
 	updateCouncilSchema,
+	updateDecisionSchema,
 } from "./class-councils.zod";
 
 export const router = trpcRouter({
@@ -55,4 +56,11 @@ export const router = trpcRouter({
 		.mutation(({ ctx, input }) =>
 			service.addDecision(input, ctx.institution.id),
 		),
+
+	updateDecision: adminProcedure
+		.input(updateDecisionSchema)
+		.mutation(({ ctx, input }) => {
+			const { id, ...fields } = input;
+			return service.updateDecision(id, ctx.institution.id, fields);
+		}),
 });

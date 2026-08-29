@@ -1,14 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
@@ -51,6 +52,15 @@ export function TrackDetail() {
 	const [saved, setSaved] = useState(false);
 
 	// ── Queries ──────────────────────────────────────────────────────────────
+
+	const { data: track } = trpc.tracks.get.useQuery(
+		{ id: id! },
+		{ enabled: !!id },
+	);
+	useBreadcrumbs([
+		{ label: t("nav.tracks", "Tracks"), href: "/tracks" },
+		{ label: track?.name ?? trackState.name ?? "…" },
+	]);
 
 	const { data: subjectsData, isLoading: isLoadingSubjects } =
 		trpc.subjects.list.useQuery({ page: 1, pageSize: 100 });
@@ -129,23 +139,22 @@ export function TrackDetail() {
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="flex items-center gap-3">
-				<Link to="/tracks">
-					<Button
-						variant="ghost"
-						size="icon-sm"
-						aria-label={t("common.back", "Back")}
-					>
-						<ArrowLeft />
-					</Button>
-				</Link>
 				<div className="flex-1">
 					<div className="flex items-center gap-2">
 						<h1 className="font-bold text-2xl text-foreground">{trackName}</h1>
-						{cycleLevel && (
-							<Badge variant={CYCLE_VARIANTS[cycleLevel] ?? "secondary"}>
-								{cycleLevel.replace(/_/g, " ")}
-							</Badge>
-						)}
+						{cycleLevel &&
+							(() => {
+								const CYCLE_LABELS: Record<string, string> = {
+									first_cycle: t("tracks.cycle_first", "1st cycle"),
+									second_cycle: t("tracks.cycle_second", "2nd cycle"),
+									technical: t("tracks.cycle_technical", "Technical"),
+								};
+								return (
+									<Badge variant={CYCLE_VARIANTS[cycleLevel] ?? "secondary"}>
+										{CYCLE_LABELS[cycleLevel] ?? cycleLevel.replace(/_/g, " ")}
+									</Badge>
+								);
+							})()}
 					</div>
 					{trackCode && (
 						<p className="text-muted-foreground text-sm">
@@ -176,7 +185,7 @@ export function TrackDetail() {
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div className="overflow-hidden rounded-xl border border-border">
 						<table className="w-full">
-							<thead>
+							<thead className="border-border border-b bg-muted/60 text-muted-foreground">
 								<tr className="border-border border-b bg-muted/50">
 									<th className="px-4 py-3 text-left font-medium text-muted-foreground text-sm">
 										{t("tracks.detail.col_subject", "Subject")}

@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
 	Dialog,
 	DialogContent,
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectOption } from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
@@ -55,6 +55,7 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 		register,
 		handleSubmit,
 		reset,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
@@ -119,30 +120,40 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 						error={errors.academicYearId?.message}
 						required
 					>
-						<Select {...register("academicYearId")}>
-							<SelectOption value="">
-								— {t("common.select", "Select")} —
-							</SelectOption>
-							{years.map((y) => (
-								<SelectOption key={y.id} value={y.id}>
-									{y.name}
-								</SelectOption>
-							))}
-						</Select>
+						<Controller
+							name="academicYearId"
+							control={control}
+							render={({ field }) => (
+								<Combobox
+									options={years.map((y) => ({ value: y.id, label: y.name }))}
+									value={field.value ?? ""}
+									onValueChange={field.onChange}
+									placeholder={t("common.select", "Select…")}
+								/>
+							)}
+						/>
 					</FormField>
 
 					<FormField
 						label={t("classes.track", "Track")}
 						error={errors.trackId?.message}
 					>
-						<Select {...register("trackId")}>
-							<SelectOption value="">—</SelectOption>
-							{tracks.map((tr) => (
-								<SelectOption key={tr.id} value={tr.id}>
-									{tr.name}
-								</SelectOption>
-							))}
-						</Select>
+						<Controller
+							name="trackId"
+							control={control}
+							render={({ field }) => (
+								<Combobox
+									options={tracks.map((tr) => ({
+										value: tr.id,
+										label: tr.name,
+									}))}
+									value={field.value ?? ""}
+									onValueChange={(val) => field.onChange(val || undefined)}
+									placeholder={t("common.optional", "Optional…")}
+									clearable
+								/>
+							)}
+						/>
 					</FormField>
 
 					<div className="grid grid-cols-2 gap-3">

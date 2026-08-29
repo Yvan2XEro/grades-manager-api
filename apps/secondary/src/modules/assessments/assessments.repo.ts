@@ -1,6 +1,44 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../../db";
-import { assessments } from "../../db/schema";
+import { assessments, staff, subjectAssignments } from "../../db/schema";
+
+export async function findStaffByAuthUser(
+	authUserId: string,
+	institutionId: string,
+) {
+	const rows = await db
+		.select({ id: staff.id })
+		.from(staff)
+		.where(
+			and(
+				eq(staff.authUserId, authUserId),
+				eq(staff.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	return rows[0] ?? null;
+}
+
+export async function findAssignment(
+	staffId: string,
+	classId: string,
+	subjectId: string,
+	institutionId: string,
+) {
+	const rows = await db
+		.select({ id: subjectAssignments.id })
+		.from(subjectAssignments)
+		.where(
+			and(
+				eq(subjectAssignments.staffId, staffId),
+				eq(subjectAssignments.classId, classId),
+				eq(subjectAssignments.subjectId, subjectId),
+				eq(subjectAssignments.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	return rows[0] ?? null;
+}
 
 export async function findByClassSubjectTerm(
 	institutionId: string,
@@ -34,6 +72,40 @@ export async function findByStudentTerm(
 				eq(assessments.institutionId, institutionId),
 				eq(assessments.studentId, studentId),
 				eq(assessments.termId, termId),
+			),
+		);
+}
+
+export async function findByClassTerm(
+	institutionId: string,
+	classId: string,
+	termId: string,
+) {
+	return db
+		.select()
+		.from(assessments)
+		.where(
+			and(
+				eq(assessments.institutionId, institutionId),
+				eq(assessments.classId, classId),
+				eq(assessments.termId, termId),
+			),
+		);
+}
+
+export async function findAllForClass(institutionId: string, classId: string) {
+	return db
+		.select({
+			termId: assessments.termId,
+			subjectId: assessments.subjectId,
+			studentId: assessments.studentId,
+			value: assessments.value,
+		})
+		.from(assessments)
+		.where(
+			and(
+				eq(assessments.institutionId, institutionId),
+				eq(assessments.classId, classId),
 			),
 		);
 }

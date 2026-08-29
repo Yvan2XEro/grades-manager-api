@@ -63,6 +63,21 @@ export async function findByEnrollmentAndTerm(
 	return result[0] ?? null;
 }
 
+export async function updateStatus(
+	id: string,
+	status: string,
+	institutionId: string,
+) {
+	const [updated] = await db
+		.update(reportCards)
+		.set({ status, updatedAt: new Date() })
+		.where(
+			and(eq(reportCards.id, id), eq(reportCards.institutionId, institutionId)),
+		)
+		.returning();
+	return updated ?? null;
+}
+
 export async function upsert(data: {
 	institutionId: string;
 	enrollmentId: string;

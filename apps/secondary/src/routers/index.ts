@@ -4,6 +4,7 @@ import { router as assessmentsRouter } from "../modules/assessments";
 import { router as attendanceRouter } from "../modules/attendance";
 import { router as classCouncilsRouter } from "../modules/class-councils";
 import { router as classesRouter } from "../modules/classes";
+import { router as commentsRouter } from "../modules/comments";
 import { router as enrollmentsRouter } from "../modules/enrollments";
 import { router as financeRouter } from "../modules/finance";
 import { router as institutionsRouter } from "../modules/institutions";
@@ -22,6 +23,7 @@ export const appRouter = router({
 		service: "tkams-secondary",
 	})),
 	academicYears: academicYearsRouter,
+	comments: commentsRouter,
 	assessments: assessmentsRouter,
 	attendance: attendanceRouter,
 	classCouncils: classCouncilsRouter,

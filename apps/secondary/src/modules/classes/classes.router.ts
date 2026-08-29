@@ -14,6 +14,8 @@ import {
 export const router = trpcRouter({
 	list: tenantProcedure.input(listSchema).query(({ ctx, input }) =>
 		service.list(input.academicYearId, ctx.institution.id, {
+			search: input.search,
+			level: input.level,
 			page: input.page,
 			pageSize: input.pageSize,
 		}),

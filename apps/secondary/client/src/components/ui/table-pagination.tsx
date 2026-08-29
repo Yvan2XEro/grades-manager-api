@@ -6,7 +6,13 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Select, SelectOption } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 interface TablePaginationProps {
 	page: number;
@@ -35,18 +41,22 @@ export function TablePagination({
 			<div className="flex items-center gap-2 text-muted-foreground text-sm">
 				<span>{t("common.rows_per_page", "Rows per page")}</span>
 				<Select
-					value={pageSize}
-					onChange={(e) => {
-						onPageSizeChange(Number(e.target.value));
+					value={String(pageSize)}
+					onValueChange={(val) => {
+						onPageSizeChange(Number(val));
 						onPageChange(1);
 					}}
-					className="h-8 w-20 px-2 py-1"
 				>
-					{PAGE_SIZE_OPTIONS.map((s) => (
-						<SelectOption key={s} value={s}>
-							{s}
-						</SelectOption>
-					))}
+					<SelectTrigger className="h-8 w-20 px-2">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{PAGE_SIZE_OPTIONS.map((s) => (
+							<SelectItem key={s} value={String(s)}>
+								{s}
+							</SelectItem>
+						))}
+					</SelectContent>
 				</Select>
 				<span>
 					{total === 0

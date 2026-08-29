@@ -13,8 +13,9 @@ export const createSchema = z.object({
 export const listSchema = z.object({
 	academicYearId: z.string().uuid(),
 	classId: z.string().uuid().optional(),
+	search: z.string().optional(),
 	page: z.number().int().min(1).default(1),
-	pageSize: z.number().int().min(1).max(100).default(25),
+	pageSize: z.number().int().min(1).max(500).default(25),
 });
 
 export const updateStatusSchema = z.object({

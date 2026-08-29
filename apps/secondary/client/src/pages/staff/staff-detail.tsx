@@ -1,14 +1,9 @@
-import { ArrowLeft, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-	Link,
-	NavLink,
-	Outlet,
-	useOutletContext,
-	useParams,
-} from "react-router";
+import { NavLink, Outlet, useOutletContext, useParams } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -61,11 +56,6 @@ function DetailSkeleton() {
 	);
 }
 
-const TAB_NAV = [
-	{ to: "profile", label: "staff.tab_profile" },
-	{ to: "assignments", label: "staff.tab_assignments" },
-] as const;
-
 type StaffData = {
 	id: string;
 	firstName: string;
@@ -78,13 +68,24 @@ type StaffData = {
 export function StaffProfileTab() {
 	const { t } = useTranslation();
 	const staff = useOutletContext<StaffData>();
+	useBreadcrumbs([
+		{ label: t("nav.staff", "Staff"), href: "/staff" },
+		{
+			label: `${staff.firstName} ${staff.lastName}`,
+			href: `/staff/${staff.id}`,
+		},
+		{ label: t("staff.tab_profile", "Profile") },
+	]);
 	return (
 		<div className="max-w-md space-y-5 rounded-xl border border-border p-5">
 			<InfoRow label={t("staff.col_email", "Email")} value={staff.email} />
 			<InfoRow label={t("staff.col_phone", "Phone")} value={staff.phone} />
 			<InfoRow
 				label={t("staff.col_role", "Role")}
-				value={ROLE_LABELS[staff.role ?? ""] ?? staff.role ?? "—"}
+				value={t(
+					`staff.role_${staff.role ?? "staff"}`,
+					ROLE_LABELS[staff.role ?? ""] ?? staff.role ?? "—",
+				)}
 			/>
 		</div>
 	);
@@ -93,6 +94,11 @@ export function StaffProfileTab() {
 export function StaffDetail() {
 	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
+
+	const TAB_NAV = [
+		{ to: `/staff/${id}/profile`, label: "staff.tab_profile" },
+		{ to: `/staff/${id}/assignments`, label: "staff.tab_assignments" },
+	];
 
 	const { data: staff, isLoading } = trpc.staff.get.useQuery(
 		{ id: id! },
@@ -112,15 +118,6 @@ export function StaffDetail() {
 
 	return (
 		<div className="space-y-6">
-			{/* Back */}
-			<Link
-				to="/staff"
-				className="inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-			>
-				<ArrowLeft className="h-4 w-4" />
-				{t("nav.staff", "Staff")}
-			</Link>
-
 			{/* Title */}
 			<div className="flex items-center gap-3">
 				<div>
@@ -128,7 +125,10 @@ export function StaffDetail() {
 						{staff.firstName} {staff.lastName}
 					</h1>
 					<Badge variant="secondary" className="mt-1">
-						{ROLE_LABELS[staff.role ?? ""] ?? staff.role ?? "staff"}
+						{t(
+							`staff.role_${staff.role ?? "staff"}`,
+							ROLE_LABELS[staff.role ?? ""] ?? staff.role ?? "staff",
+						)}
 					</Badge>
 				</div>
 			</div>

@@ -1,6 +1,13 @@
-import { BookOpen, ClipboardList } from "lucide-react";
+import {
+	BookOpen,
+	CalendarDays,
+	ClipboardList,
+	School,
+	Users,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -30,8 +37,29 @@ function StatCard({ label, value, icon, className }: StatCardProps) {
 	);
 }
 
+interface QuickLinkProps {
+	to: string;
+	icon: React.ReactNode;
+	label: string;
+}
+
+function QuickLink({ to, icon, label }: QuickLinkProps) {
+	return (
+		<Link
+			to={to}
+			className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-colors hover:bg-muted/40"
+		>
+			<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+				{icon}
+			</div>
+			<span className="font-medium text-foreground text-sm">{label}</span>
+		</Link>
+	);
+}
+
 export function TeacherDashboard() {
 	const { t } = useTranslation();
+	const { data: session } = useSession();
 
 	const { data: academicYears = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = academicYears.find((y) => y.status === "active");
@@ -47,15 +75,22 @@ export function TeacherDashboard() {
 		{ enabled: !!activeYear },
 	);
 
-	// Unique classes from assignments
 	const uniqueClasses = new Set(assignments.map((a) => a.assignment.classId))
 		.size;
+	const uniqueSubjects = new Set(assignments.map((a) => a.assignment.subjectId))
+		.size;
+
+	const userName = session?.user?.name ?? session?.user?.email ?? "";
 
 	return (
 		<div className="space-y-6">
 			<div>
 				<h1 className="font-bold text-2xl text-foreground">
-					{t("dashboard.welcome", "Bienvenue")}
+					{userName
+						? t("dashboard.welcome_name", "Bienvenue, {{name}}", {
+								name: userName,
+							})
+						: t("dashboard.welcome", "Bienvenue")}
 				</h1>
 				<p className="text-muted-foreground text-sm">
 					{t("dashboard.teacher_subtitle", "Espace enseignant")}
@@ -68,11 +103,11 @@ export function TeacherDashboard() {
 				<StatCard
 					label={t("dashboard.my_classes", "Mes classes")}
 					value={uniqueClasses}
-					icon={<BookOpen className="h-6 w-6" />}
+					icon={<School className="h-6 w-6" />}
 				/>
 				<StatCard
 					label={t("dashboard.my_subjects", "Mes matières")}
-					value={assignments.length}
+					value={uniqueSubjects}
 					icon={<ClipboardList className="h-6 w-6" />}
 				/>
 			</div>
@@ -94,7 +129,7 @@ export function TeacherDashboard() {
 					</div>
 				) : (
 					<table className="w-full text-sm">
-						<thead className="border-border border-b bg-muted/20">
+						<thead className="border-border border-b bg-muted/60 text-muted-foreground">
 							<tr>
 								<th className="px-4 py-2 text-left font-medium text-muted-foreground">
 									{t("dashboard.class", "Classe")}
@@ -133,6 +168,35 @@ export function TeacherDashboard() {
 						</tbody>
 					</table>
 				)}
+			</div>
+
+			{/* Quick access */}
+			<div>
+				<h2 className="mb-3 font-semibold text-base text-foreground">
+					{t("dashboard.quick_access", "Accès rapide")}
+				</h2>
+				<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+					<QuickLink
+						to="/classes"
+						icon={<School className="h-5 w-5" />}
+						label={t("nav.classes", "Classes")}
+					/>
+					<QuickLink
+						to="/grades"
+						icon={<BookOpen className="h-5 w-5" />}
+						label={t("nav.grades", "Notes")}
+					/>
+					<QuickLink
+						to="/students"
+						icon={<Users className="h-5 w-5" />}
+						label={t("nav.students", "Élèves")}
+					/>
+					<QuickLink
+						to="/attendance"
+						icon={<CalendarDays className="h-5 w-5" />}
+						label={t("nav.attendance", "Présences")}
+					/>
+				</div>
 			</div>
 		</div>
 	);

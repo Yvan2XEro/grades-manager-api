@@ -17,13 +17,19 @@ export const listSchema = z.object({
 	termId: z.string().uuid().optional(),
 	status: z.enum(["draft", "scheduled", "held", "signed"]).optional(),
 	page: z.number().int().min(1).default(1),
-	pageSize: z.number().int().min(1).max(100).default(25),
+	pageSize: z.number().int().min(1).max(500).default(25),
 });
 
 export const addDecisionSchema = z.object({
 	councilId: z.string().uuid(),
 	enrollmentId: z.string().uuid(),
 	decision: z.string().min(1).max(40),
+	note: z.string().max(500).optional(),
+});
+
+export const updateDecisionSchema = z.object({
+	id: z.string().uuid(),
+	decision: z.string().min(1).max(40).optional(),
 	note: z.string().max(500).optional(),
 });
 

@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 export const listSchema = z.object({
+	orderBy: z.enum(["name", "code"]).optional().default("code"),
+	orderDir: z.enum(["asc", "desc"]).optional().default("asc"),
 	page: z.number().int().min(1).default(1),
-	pageSize: z.number().int().min(1).max(100).default(25),
+	pageSize: z.number().int().min(1).max(500).default(25),
 });
 
 export const createSchema = z.object({
@@ -22,3 +24,5 @@ export const upsertCoefficientSchema = z.object({
 export const getGridSchema = z.object({
 	trackId: z.string().uuid(),
 });
+
+export const idSchema = z.object({ id: z.string().uuid() });

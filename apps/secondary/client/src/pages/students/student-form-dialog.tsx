@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -11,7 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectOption } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
@@ -27,9 +35,16 @@ const schema = z.object({
 	contactEmail: z.string().optional(),
 	contactRelation: z.enum(["father", "mother", "guardian"]).optional(),
 	reportCardLanguage: z.enum(["fr", "en"]),
+	// Only used for creation — class to enroll the student into
+	classId: z.string().uuid().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
+
+interface ClassOption {
+	id: string;
+	name: string;
+}
 
 interface StudentData {
 	id: string;
@@ -38,7 +53,7 @@ interface StudentData {
 	gender?: string | null;
 	mnu?: string | null;
 	registrationNumber?: string | null;
-	dateOfBirth?: Date | null;
+	dateOfBirth?: Date | string | null;
 	placeOfBirth?: string | null;
 	contactName?: string | null;
 	contactPhone?: string | null;
@@ -52,6 +67,9 @@ interface Props {
 	onOpenChange: (open: boolean) => void;
 	onSuccess: () => void;
 	student?: StudentData;
+	// Pass these to enable the class enrollment step on creation
+	activeYearId?: string;
+	classes?: ClassOption[];
 }
 
 export function StudentFormDialog({
@@ -59,13 +77,28 @@ export function StudentFormDialog({
 	onOpenChange,
 	onSuccess,
 	student,
+	activeYearId,
+	classes = [],
 }: Props) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 
+	const enroll = trpc.enrollments.create.useMutation();
+
 	const create = trpc.students.create.useMutation({
-		onSuccess: () => {
+		onSuccess: async (newStudent, variables) => {
+			// Auto-enroll in the chosen class if provided
+			const classId = (variables as FormValues).classId;
+			if (classId && activeYearId) {
+				await enroll.mutateAsync({
+					studentId: newStudent.id,
+					classId,
+					academicYearId: activeYearId,
+					admissionType: "new",
+				});
+			}
 			utils.students.list.invalidate();
+			utils.enrollments.list.invalidate();
 			onSuccess();
 			onOpenChange(false);
 		},
@@ -83,6 +116,7 @@ export function StudentFormDialog({
 		register,
 		handleSubmit,
 		reset,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
@@ -131,7 +165,8 @@ export function StudentFormDialog({
 		if (student) {
 			await update.mutateAsync({ id: student.id, ...payload });
 		} else {
-			await create.mutateAsync(payload);
+			// Pass classId along — the onSuccess handler reads it to enroll
+			await create.mutateAsync({ ...payload, classId: data.classId } as any);
 		}
 	});
 
@@ -140,7 +175,8 @@ export function StudentFormDialog({
 		onOpenChange(open);
 	};
 
-	const mutationError = create.error ?? update.error;
+	const mutationError = create.error ?? update.error ?? enroll.error;
+	const isNew = !student;
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
@@ -175,27 +211,88 @@ export function StudentFormDialog({
 							label={t("students.col_gender", "Gender")}
 							error={errors.gender?.message}
 						>
-							<Select {...register("gender")}>
-								<SelectOption value="">—</SelectOption>
-								<SelectOption value="M">
-									{t("students.gender_m", "Male")}
-								</SelectOption>
-								<SelectOption value="F">
-									{t("students.gender_f", "Female")}
-								</SelectOption>
-							</Select>
+							<Controller
+								name="gender"
+								control={control}
+								render={({ field }) => (
+									<Select
+										value={field.value ?? ""}
+										onValueChange={(val) =>
+											field.onChange(
+												val === "" ? undefined : (val as FormValues["gender"]),
+											)
+										}
+									>
+										<SelectTrigger>
+											<SelectValue placeholder="—" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="M">
+												{t("students.gender_m", "Male")}
+											</SelectItem>
+											<SelectItem value="F">
+												{t("students.gender_f", "Female")}
+											</SelectItem>
+										</SelectContent>
+									</Select>
+								)}
+							/>
 						</FormField>
 						<FormField label="MNU" error={errors.mnu?.message}>
 							<Input {...register("mnu")} />
 						</FormField>
 					</div>
 
+					{/* Class enrollment — new students only, when year is available */}
+					{isNew && activeYearId && classes.length > 0 && (
+						<FormField
+							label={t("students.enroll_class", "Enroll in class")}
+							error={errors.classId?.message}
+						>
+							<Controller
+								name="classId"
+								control={control}
+								render={({ field }) => (
+									<Combobox
+										options={[
+											{
+												value: "none",
+												label: t(
+													"students.no_class_yet",
+													"— No class (enroll later) —",
+												),
+											},
+											...classes.map((c) => ({ value: c.id, label: c.name })),
+										]}
+										value={field.value ?? "none"}
+										onValueChange={(val) =>
+											field.onChange(val === "none" ? undefined : val)
+										}
+										placeholder={t("students.select_class", "Select a class…")}
+										clearable={false}
+									/>
+								)}
+							/>
+						</FormField>
+					)}
+
 					<div className="grid grid-cols-2 gap-3">
 						<FormField
 							label={t("students.date_of_birth", "Date of birth")}
 							error={errors.dateOfBirth?.message}
 						>
-							<Input type="date" {...register("dateOfBirth")} />
+							<Controller
+								name="dateOfBirth"
+								control={control}
+								render={({ field }) => (
+									<DatePicker
+										value={field.value ?? ""}
+										onChange={field.onChange}
+										startMonth={new Date(1940, 0)}
+										endMonth={new Date()}
+									/>
+								)}
+							/>
 						</FormField>
 						<FormField
 							label={t("students.place_of_birth", "Place of birth")}
@@ -232,18 +329,37 @@ export function StudentFormDialog({
 								label={t("students.contact_relation", "Relationship")}
 								error={errors.contactRelation?.message}
 							>
-								<Select {...register("contactRelation")}>
-									<SelectOption value="">—</SelectOption>
-									<SelectOption value="father">
-										{t("students.relation_father", "Father")}
-									</SelectOption>
-									<SelectOption value="mother">
-										{t("students.relation_mother", "Mother")}
-									</SelectOption>
-									<SelectOption value="guardian">
-										{t("students.relation_guardian", "Guardian")}
-									</SelectOption>
-								</Select>
+								<Controller
+									name="contactRelation"
+									control={control}
+									render={({ field }) => (
+										<Select
+											value={field.value ?? ""}
+											onValueChange={(val) =>
+												field.onChange(
+													val === ""
+														? undefined
+														: (val as FormValues["contactRelation"]),
+												)
+											}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="—" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="father">
+													{t("students.relation_father", "Father")}
+												</SelectItem>
+												<SelectItem value="mother">
+													{t("students.relation_mother", "Mother")}
+												</SelectItem>
+												<SelectItem value="guardian">
+													{t("students.relation_guardian", "Guardian")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									)}
+								/>
 							</FormField>
 						</div>
 					</div>
@@ -252,10 +368,21 @@ export function StudentFormDialog({
 						label={t("students.report_card_language", "Report card language")}
 						error={errors.reportCardLanguage?.message}
 					>
-						<Select {...register("reportCardLanguage")}>
-							<SelectOption value="fr">Français</SelectOption>
-							<SelectOption value="en">English</SelectOption>
-						</Select>
+						<Controller
+							name="reportCardLanguage"
+							control={control}
+							render={({ field }) => (
+								<Select value={field.value} onValueChange={field.onChange}>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="fr">Français</SelectItem>
+										<SelectItem value="en">English</SelectItem>
+									</SelectContent>
+								</Select>
+							)}
+						/>
 					</FormField>
 
 					{mutationError && (

@@ -3,7 +3,14 @@ import * as repo from "./staff.repo";
 
 export async function list(
 	institutionId: string,
-	opts: { search?: string; page?: number; pageSize?: number } = {},
+	opts: {
+		search?: string;
+		role?: string;
+		orderBy?: string;
+		orderDir?: string;
+		page?: number;
+		pageSize?: number;
+	} = {},
 ) {
 	const { items, total } = await repo.findAll(institutionId, opts);
 	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };

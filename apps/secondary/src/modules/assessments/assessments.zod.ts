@@ -35,3 +35,17 @@ export const studentResultsSchema = z.object({
 	studentId: z.string().uuid(),
 	termId: z.string().uuid(),
 });
+
+export const classAveragesSchema = z.object({
+	classId: z.string().uuid(),
+	termId: z.string().uuid(),
+});
+
+export const completionBySubjectSchema = z.object({
+	classId: z.string().uuid(),
+	termId: z.string().uuid(),
+});
+
+export const completionMatrixSchema = z.object({
+	classId: z.string().uuid(),
+});

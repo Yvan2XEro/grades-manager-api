@@ -1,6 +1,6 @@
 import { and, eq, sum } from "drizzle-orm";
 import { db } from "../../db";
-import { feeSchedules, payments } from "../../db/schema";
+import { enrollments, feeSchedules, payments, students } from "../../db/schema";
 
 export async function findAllSchedules(
 	institutionId: string,
@@ -69,8 +69,25 @@ export async function findAllPayments(
 	}
 
 	return db
-		.select()
+		.select({
+			id: payments.id,
+			institutionId: payments.institutionId,
+			enrollmentId: payments.enrollmentId,
+			amount: payments.amount,
+			feeType: payments.feeType,
+			paymentMethod: payments.paymentMethod,
+			reference: payments.reference,
+			paidAt: payments.paidAt,
+			recordedById: payments.recordedById,
+			note: payments.note,
+			createdAt: payments.createdAt,
+			updatedAt: payments.updatedAt,
+			studentFirstName: students.firstName,
+			studentLastName: students.lastName,
+		})
 		.from(payments)
+		.leftJoin(enrollments, eq(payments.enrollmentId, enrollments.id))
+		.leftJoin(students, eq(enrollments.studentId, students.id))
 		.where(and(...conditions))
 		.orderBy(payments.paidAt)
 		.limit(limit)

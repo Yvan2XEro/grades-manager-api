@@ -29,6 +29,12 @@ export const idSchema = z.object({ id: z.string().uuid() });
 
 export const listSchema = z.object({
 	search: z.string().optional(),
+	role: z.enum(ROLES).optional(),
+	orderBy: z
+		.enum(["lastName", "firstName", "email"])
+		.optional()
+		.default("lastName"),
+	orderDir: z.enum(["asc", "desc"]).optional().default("asc"),
 	page: z.number().int().min(1).default(1),
-	pageSize: z.number().int().min(1).max(100).default(25),
+	pageSize: z.number().int().min(1).max(500).default(25),
 });

@@ -23,6 +23,14 @@ export const idSchema = z.object({ id: z.string().uuid() });
 
 export const listSchema = z.object({
 	search: z.string().optional(),
+	gender: z.enum(["M", "F"]).optional(),
+	classId: z.string().uuid().optional(),
+	academicYearId: z.string().uuid().optional(),
+	orderBy: z
+		.enum(["lastName", "firstName", "mnu"])
+		.optional()
+		.default("lastName"),
+	orderDir: z.enum(["asc", "desc"]).optional().default("asc"),
 	page: z.number().int().min(1).default(1),
-	pageSize: z.number().int().min(1).max(100).default(25),
+	pageSize: z.number().int().min(1).max(500).default(25),
 });

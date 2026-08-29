@@ -591,6 +591,7 @@ export const officialExamSessions = pgTable("official_exam_sessions", {
 		.notNull()
 		.references(() => academicYears.id, { onDelete: "cascade" }),
 	examType: varchar("exam_type", { length: 20 }).notNull(), // BEPC | PROBATOIRE | BAC
+	series: varchar("series", { length: 10 }), // A4 | C | D | TI | etc. — required for BAC/PROB
 	sessionYear: integer("session_year").notNull(),
 	centerCode: varchar("center_code", { length: 30 }),
 	registrationDeadline: timestamp("registration_deadline", {
@@ -617,6 +618,9 @@ export const officialExamRegistrations = pgTable(
 		candidateNumber: varchar("candidate_number", { length: 30 }),
 		isEligible: boolean("is_eligible").notNull().default(true),
 		hasPaidFee: boolean("has_paid_fee").notNull().default(false),
+		feeAmount: numeric("fee_amount", { precision: 10, scale: 2 }),
+		feePaidAt: timestamp("fee_paid_at", { withTimezone: true }),
+		feeTransactionRef: varchar("fee_transaction_ref", { length: 100 }),
 		isAdmitted: boolean("is_admitted"),
 		mention: varchar("mention", { length: 30 }),
 		...timestamps(),

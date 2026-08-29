@@ -1,22 +1,46 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, ilike, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { classes, enrollments, students } from "../../db/schema";
 
 export async function findByYear(
 	academicYearId: string | undefined,
 	institutionId: string,
-	opts: { page?: number; pageSize?: number } = {},
+	opts: {
+		search?: string;
+		level?: string;
+		page?: number;
+		pageSize?: number;
+	} = {},
 ) {
-	const { page = 1, pageSize = 25 } = opts;
-	const where = academicYearId
-		? and(
-				eq(classes.academicYearId, academicYearId),
-				eq(classes.institutionId, institutionId),
-			)
-		: eq(classes.institutionId, institutionId);
+	const { search, level, page = 1, pageSize = 25 } = opts;
+	const conditions = [eq(classes.institutionId, institutionId)];
+	if (academicYearId)
+		conditions.push(eq(classes.academicYearId, academicYearId));
+	if (level) conditions.push(eq(classes.level, level));
+	if (search) conditions.push(ilike(classes.name, `%${search}%`));
+	const where = and(...conditions);
+
 	const [items, totalRows] = await Promise.all([
 		db
-			.select()
+			.select({
+				id: classes.id,
+				name: classes.name,
+				code: classes.code,
+				level: classes.level,
+				academicYearId: classes.academicYearId,
+				trackId: classes.trackId,
+				classMasterId: classes.classMasterId,
+				room: classes.room,
+				maxCapacity: classes.maxCapacity,
+				institutionId: classes.institutionId,
+				createdAt: classes.createdAt,
+				updatedAt: classes.updatedAt,
+				studentCount: sql<number>`(
+					select count(*) from ${enrollments}
+					where ${enrollments.classId} = ${classes.id}
+					and ${enrollments.status} = 'active'
+				)`.mapWith(Number),
+			})
 			.from(classes)
 			.where(where)
 			.orderBy(classes.name)

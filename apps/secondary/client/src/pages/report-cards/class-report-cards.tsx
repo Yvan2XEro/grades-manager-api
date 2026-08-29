@@ -49,7 +49,7 @@ export function ClassReportCards() {
 	const [pageSize, setPageSize] = useState(25);
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
-	const activeYear = years.find((y) => (y as any).isActive) ?? years[0];
+	const activeYear = years.find((y) => y.status === "active") ?? years[0];
 
 	const { data: classData } = trpc.classes.get.useQuery(
 		{ id: classId! },
@@ -92,12 +92,26 @@ export function ClassReportCards() {
 		},
 		{ enabled: !!activeYear?.id && !!classId },
 	);
-	const enrollments = enrollmentsData?.items ?? [];
+	const enrollments = (enrollmentsData?.items ?? []) as Array<{
+		enrollment: { id: string; studentId: string };
+		student: { id: string; firstName: string; lastName: string };
+	}>;
+
+	const enrollmentToStudent = new Map(
+		enrollments.map((e) => [
+			e.enrollment.id,
+			{
+				studentId: e.student.id,
+				firstName: e.student.firstName,
+				lastName: e.student.lastName,
+			},
+		]),
+	);
 
 	const handleGenerateAll = () => {
 		if (!termId) return;
-		for (const e of enrollments as any[]) {
-			const studentId = e.student?.id ?? e.studentId;
+		for (const e of enrollments) {
+			const studentId = e.student.id;
 			if (studentId) {
 				generate.mutate({ studentId, termId });
 			}
@@ -107,15 +121,26 @@ export function ClassReportCards() {
 	const columns: ColumnDef<ReportCard>[] = [
 		{
 			id: "enrollment",
+			enableSorting: false,
 			header: t("enrollments.col_student", "Student"),
-			cell: ({ row }) => (
-				<span className="font-mono text-muted-foreground text-xs">
-					{row.original.enrollmentId}
-				</span>
-			),
+			cell: ({ row }) => {
+				const info = enrollmentToStudent.get(row.original.enrollmentId);
+				return (
+					<span className="font-medium text-foreground text-sm">
+						{info ? (
+							`${info.lastName} ${info.firstName}`
+						) : (
+							<span className="font-mono text-muted-foreground text-xs">
+								{row.original.enrollmentId.slice(0, 8)}…
+							</span>
+						)}
+					</span>
+				);
+			},
 		},
 		{
 			id: "status",
+			enableSorting: false,
 			header: t("common.status", "Status"),
 			cell: ({ row }) => {
 				const status = row.original.status as ReportCardStatus;
@@ -128,9 +153,10 @@ export function ClassReportCards() {
 		},
 		{
 			id: "generated_at",
+			enableSorting: false,
 			header: t("report_cards.col_generated_at", "Generated at"),
 			cell: ({ row }) => {
-				const createdAt = (row.original as any).createdAt;
+				const createdAt = row.original.createdAt;
 				return (
 					<span className="text-muted-foreground text-sm">
 						{createdAt ? new Date(createdAt).toLocaleDateString() : "—"}
@@ -140,11 +166,12 @@ export function ClassReportCards() {
 		},
 		{
 			id: "actions",
+			enableSorting: false,
 			header: t("common.actions", "Actions"),
 			cell: ({ row }) => {
 				const card = row.original;
-				const enrollmentSnap = card.snapshotData as any;
-				const studentId = enrollmentSnap?.studentId;
+				const info = enrollmentToStudent.get(card.enrollmentId);
+				const studentId = info?.studentId;
 				return (
 					<div className="flex items-center gap-2">
 						<Link
@@ -181,7 +208,15 @@ export function ClassReportCards() {
 						{t("report_cards.class_title", "Report Cards")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						{[classData?.name, (termData as any)?.name]
+						{[
+							classData?.name,
+							termData
+								? t(
+										`terms.term_${termData.termNumber}`,
+										`Term ${termData.termNumber}`,
+									)
+								: null,
+						]
 							.filter(Boolean)
 							.join(" · ")}
 					</p>

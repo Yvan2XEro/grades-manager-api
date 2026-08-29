@@ -1,28 +1,77 @@
-import { and, count, eq, ilike, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { db } from "../../db";
-import { students } from "../../db/schema";
+import { enrollments, students } from "../../db/schema";
 
 export async function findAll(
 	institutionId: string,
-	opts: { search?: string; page?: number; pageSize?: number },
+	opts: {
+		search?: string;
+		gender?: string;
+		classId?: string;
+		academicYearId?: string;
+		orderBy?: "lastName" | "firstName" | "mnu";
+		orderDir?: "asc" | "desc";
+		page?: number;
+		pageSize?: number;
+	},
 ) {
-	const { search, page = 1, pageSize = 25 } = opts;
-	const where = search
-		? and(
-				eq(students.institutionId, institutionId),
-				or(
-					ilike(students.firstName, `%${search}%`),
-					ilike(students.lastName, `%${search}%`),
-					ilike(students.mnu, `%${search}%`),
-				),
-			)
-		: eq(students.institutionId, institutionId);
+	const {
+		search,
+		gender,
+		classId,
+		academicYearId,
+		orderBy = "lastName",
+		orderDir = "asc",
+		page = 1,
+		pageSize = 25,
+	} = opts;
+
+	// When filtering by class/year, pre-fetch matching student IDs via enrollments
+	let enrolledStudentIds: string[] | undefined;
+	if (classId || academicYearId) {
+		const enrollmentConditions = [eq(enrollments.institutionId, institutionId)];
+		if (classId) enrollmentConditions.push(eq(enrollments.classId, classId));
+		if (academicYearId)
+			enrollmentConditions.push(eq(enrollments.academicYearId, academicYearId));
+		const rows = await db
+			.select({ studentId: enrollments.studentId })
+			.from(enrollments)
+			.where(and(...enrollmentConditions));
+		enrolledStudentIds = rows.map((r) => r.studentId);
+		if (enrolledStudentIds.length === 0) {
+			return { items: [], total: 0 };
+		}
+	}
+
+	const conditions = [eq(students.institutionId, institutionId)];
+	if (enrolledStudentIds)
+		conditions.push(inArray(students.id, enrolledStudentIds));
+	if (gender) conditions.push(eq(students.gender, gender));
+	if (search) {
+		conditions.push(
+			or(
+				ilike(students.firstName, `%${search}%`),
+				ilike(students.lastName, `%${search}%`),
+				ilike(students.mnu, `%${search}%`),
+			)!,
+		);
+	}
+	const where = and(...conditions);
+
+	const sortCol =
+		orderBy === "firstName"
+			? students.firstName
+			: orderBy === "mnu"
+				? students.mnu
+				: students.lastName;
+	const sortExpr = orderDir === "desc" ? desc(sortCol) : asc(sortCol);
+
 	const [items, totalRows] = await Promise.all([
 		db
 			.select()
 			.from(students)
 			.where(where)
-			.orderBy(students.lastName, students.firstName)
+			.orderBy(sortExpr)
 			.limit(pageSize)
 			.offset((page - 1) * pageSize),
 		db.select({ count: count() }).from(students).where(where),

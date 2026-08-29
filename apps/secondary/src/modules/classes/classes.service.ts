@@ -4,7 +4,12 @@ import * as repo from "./classes.repo";
 export async function list(
 	academicYearId: string | undefined,
 	institutionId: string,
-	opts: { page?: number; pageSize?: number } = {},
+	opts: {
+		search?: string;
+		level?: string;
+		page?: number;
+		pageSize?: number;
+	} = {},
 ) {
 	const { items, total } = await repo.findByYear(
 		academicYearId,

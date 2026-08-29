@@ -2,22 +2,56 @@ import { GraduationCap } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router";
-import { Select, SelectOption } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { PillCombobox } from "@/components/ui/combobox";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 
-type StudentData = { id: string };
+type StudentData = { id: string; firstName: string; lastName: string };
+
+function getAppreciation(avg: number, t: (key: string, fb: string) => string) {
+	if (avg >= 16)
+		return {
+			label: t("grades.mention_excellent", "Excellent"),
+			cls: "success",
+		};
+	if (avg >= 14)
+		return { label: t("grades.mention_good", "Good"), cls: "info" };
+	if (avg >= 12)
+		return {
+			label: t("grades.mention_fairly_good", "Fairly good"),
+			cls: "info",
+		};
+	if (avg >= 10)
+		return { label: t("grades.mention_passing", "Passing"), cls: "warning" };
+	return { label: t("grades.mention_failing", "Failing"), cls: "destructive" };
+}
 
 export function StudentGradesTab() {
 	const { t } = useTranslation();
 	const student = useOutletContext<StudentData>();
+	useBreadcrumbs([
+		{ label: t("nav.students", "Students"), href: "/students" },
+		{
+			label: `${student.firstName} ${student.lastName}`,
+			href: `/students/${student.id}`,
+		},
+		{ label: t("students.tab_grades", "Grades") },
+	]);
 	const [termId, setTermId] = useState("");
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
-	const activeYear = years.find((y) => (y as any).isActive) ?? years[0];
+	const activeYear = years.find((y) => y.status === "active") ?? years[0];
 
 	const { data: terms = [] } = trpc.terms.list.useQuery(
 		{ academicYearId: activeYear?.id ?? "" },
 		{ enabled: !!activeYear?.id },
+	);
+
+	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 500 });
+	const subjectMap = new Map(
+		(subjectsData?.items ?? []).map((s) => [s.id, s.name]),
 	);
 
 	const { data: assessments = [], isLoading } =
@@ -26,59 +60,99 @@ export function StudentGradesTab() {
 			{ enabled: !!student.id && !!termId },
 		);
 
-	// Group assessments by subjectId and compute averages
-	const bySubject = assessments.reduce<
-		Record<
-			string,
-			{ subjectId: string; sum: number; count: number; types: string[] }
-		>
-	>((acc, a) => {
-		const sid = a.subjectId;
-		if (!acc[sid]) {
-			acc[sid] = { subjectId: sid, sum: 0, count: 0, types: [] };
-		}
+	// Group by subject and compute average
+	const bySubject: Record<
+		string,
+		{ sum: number; count: number; absent: number }
+	> = {};
+	for (const a of assessments) {
+		if (!bySubject[a.subjectId])
+			bySubject[a.subjectId] = { sum: 0, count: 0, absent: 0 };
 		if (a.value !== null) {
-			acc[sid].sum += Number(a.value);
-			acc[sid].count += 1;
+			bySubject[a.subjectId].sum += Number(a.value);
+			bySubject[a.subjectId].count += 1;
+		} else {
+			bySubject[a.subjectId].absent += 1;
 		}
-		acc[sid].types.push(a.assessmentType);
-		return acc;
-	}, {});
+	}
 
-	const rows = Object.values(bySubject).map((s) => ({
-		subjectId: s.subjectId,
-		avg: s.count > 0 ? Math.round((s.sum / s.count) * 100) / 100 : null,
-		assessmentCount: s.count,
+	const rows = Object.entries(bySubject).map(([subjectId, data]) => ({
+		subjectId,
+		subjectName: subjectMap.get(subjectId) ?? subjectId,
+		avg:
+			data.count > 0 ? Math.round((data.sum / data.count) * 100) / 100 : null,
+		assessmentCount: data.count,
+		absentCount: data.absent,
 	}));
+
+	// Compute overall average (mean of subject averages)
+	const gradedSubjects = rows.filter((r) => r.avg !== null);
+	const overallAvg =
+		gradedSubjects.length > 0
+			? Math.round(
+					(gradedSubjects.reduce((s, r) => s + (r.avg ?? 0), 0) /
+						gradedSubjects.length) *
+						100,
+				) / 100
+			: null;
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-center gap-3">
-				<label className="font-medium text-foreground text-sm">
-					{t("grades.term", "Term")}
-				</label>
-				<Select value={termId} onChange={(e) => setTermId(e.target.value)}>
-					<SelectOption value="">
-						— {t("grades.select_term", "Select a term")} —
-					</SelectOption>
-					{terms.map((term) => (
-						<SelectOption key={term.id} value={term.id}>
-							{t(`terms.term_${term.termNumber}`, `Term ${term.termNumber}`)}
-						</SelectOption>
-					))}
-				</Select>
-			</div>
+			<PillCombobox
+				options={terms.map((term) => ({
+					value: term.id,
+					label: t(`terms.term_${term.termNumber}`, `Term ${term.termNumber}`),
+				}))}
+				value={termId}
+				onValueChange={setTermId}
+				placeholder={t("grades.select_term", "Term…")}
+			/>
 
 			{!termId ? (
 				<div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
 					<GraduationCap className="h-10 w-10 opacity-20" />
 					<p className="font-medium">
-						{t("grades.select_all", "Select a term to view grades")}
+						{t("grades.select_term_prompt", "Select a term to view grades")}
 					</p>
 				</div>
 			) : isLoading ? (
-				<div className="py-8 text-center text-muted-foreground text-sm">
-					{t("common.loading", "Loading…")}
+				<div className="overflow-hidden rounded-xl border border-border">
+					<table className="w-full text-sm">
+						<thead className="border-border border-b bg-muted/60 text-muted-foreground">
+							<tr>
+								<th className="px-4 py-2.5 text-left font-medium">
+									{t("subjects.col_name", "Subject")}
+								</th>
+								<th className="px-4 py-2.5 text-right font-medium">
+									{t("grades.col_avg", "Average /20")}
+								</th>
+								<th className="px-4 py-2.5 text-center font-medium">
+									{t("grades.col_appreciation", "Grade")}
+								</th>
+								<th className="px-4 py-2.5 text-right font-medium text-xs">
+									{t("grades.col_count", "Entries")}
+								</th>
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-border">
+							{Array.from({ length: 6 }, (_, i) => (
+								<tr key={i}>
+									<td className="px-4 py-2.5">
+										<Skeleton className="h-4 w-32" />
+									</td>
+									<td className="px-4 py-2.5 text-right">
+										<Skeleton className="ml-auto h-4 w-10" />
+									</td>
+									<td className="px-4 py-2.5 text-center">
+										<Skeleton className="mx-auto h-5 w-16 rounded-full" />
+									</td>
+									<td className="px-4 py-2.5 text-right">
+										<Skeleton className="ml-auto h-4 w-6" />
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			) : rows.length === 0 ? (
 				<div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
@@ -90,37 +164,110 @@ export function StudentGradesTab() {
 			) : (
 				<div className="overflow-hidden rounded-xl border border-border">
 					<table className="w-full text-sm">
-						<thead className="bg-muted/40 text-muted-foreground">
+						<thead className="border-border border-b bg-muted/60 text-muted-foreground">
 							<tr>
-								<th className="px-4 py-2 text-left font-medium">
-									{t("grades.subject", "Subject")}
+								<th className="px-4 py-2.5 text-left font-medium">
+									{t("subjects.col_name", "Subject")}
 								</th>
-								<th className="px-4 py-2 text-right font-medium">
+								<th className="px-4 py-2.5 text-right font-medium">
 									{t("grades.col_avg", "Average /20")}
 								</th>
-								<th className="px-4 py-2 text-right font-medium">
-									{t("grades.col_count", "Assessments")}
+								<th className="px-4 py-2.5 text-center font-medium">
+									{t("grades.col_appreciation", "Grade")}
+								</th>
+								<th className="px-4 py-2.5 text-right font-medium text-xs">
+									{t("grades.col_count", "Entries")}
 								</th>
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-border">
-							{rows.map((row) => (
-								<tr
-									key={row.subjectId}
-									className="transition-colors hover:bg-muted/20"
-								>
-									<td className="px-4 py-2 font-mono text-muted-foreground text-xs">
-										{row.subjectId}
-									</td>
-									<td className="px-4 py-2 text-right font-medium">
-										{row.avg !== null ? row.avg : "—"}
-									</td>
-									<td className="px-4 py-2 text-right text-muted-foreground">
-										{row.assessmentCount}
-									</td>
-								</tr>
-							))}
+							{rows.map((row) => {
+								const appr =
+									row.avg !== null ? getAppreciation(row.avg, t) : null;
+								return (
+									<tr
+										key={row.subjectId}
+										className="transition-colors hover:bg-muted/20"
+									>
+										<td className="px-4 py-2.5 font-medium text-foreground">
+											{row.subjectName}
+										</td>
+										<td className="px-4 py-2.5 text-right tabular-nums">
+											{row.avg !== null ? (
+												<span
+													className={
+														row.avg < 10
+															? "font-bold text-destructive"
+															: "font-semibold"
+													}
+												>
+													{row.avg}
+												</span>
+											) : (
+												<span className="text-muted-foreground">—</span>
+											)}
+										</td>
+										<td className="px-4 py-2.5 text-center">
+											{appr && (
+												<Badge
+													variant={
+														appr.cls as
+															| "success"
+															| "info"
+															| "warning"
+															| "destructive"
+													}
+												>
+													{appr.label}
+												</Badge>
+											)}
+										</td>
+										<td className="px-4 py-2.5 text-right text-muted-foreground text-xs">
+											{row.assessmentCount}
+											{row.absentCount > 0 && (
+												<span className="ml-1 text-orange-500">
+													({row.absentCount} abs.)
+												</span>
+											)}
+										</td>
+									</tr>
+								);
+							})}
 						</tbody>
+						{overallAvg !== null && (
+							<tfoot>
+								<tr className="bg-muted/30">
+									<td
+										className="px-4 py-3 font-bold text-foreground"
+										colSpan={1}
+									>
+										{t("grades.overall_avg", "General average")}
+									</td>
+									<td className="px-4 py-3 text-right font-bold tabular-nums">
+										{overallAvg}
+									</td>
+									<td className="px-4 py-3 text-center">
+										{(() => {
+											const appr = getAppreciation(overallAvg, t);
+											return (
+												<Badge
+													variant={
+														appr.cls as
+															| "success"
+															| "info"
+															| "warning"
+															| "destructive"
+													}
+												>
+													{appr.label}
+												</Badge>
+											);
+										})()}
+									</td>
+									<td />
+								</tr>
+							</tfoot>
+						)}
 					</table>
 				</div>
 			)}

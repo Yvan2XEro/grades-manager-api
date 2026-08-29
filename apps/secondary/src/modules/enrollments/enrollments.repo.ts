@@ -1,4 +1,4 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import { enrollments, students } from "../../db/schema";
 
@@ -6,14 +6,23 @@ export async function findAll(
 	institutionId: string,
 	academicYearId: string,
 	classId?: string,
-	opts: { page?: number; pageSize?: number } = {},
+	opts: { search?: string; page?: number; pageSize?: number } = {},
 ) {
-	const { page = 1, pageSize = 25 } = opts;
+	const { search, page = 1, pageSize = 25 } = opts;
 	const conditions = [
 		eq(enrollments.institutionId, institutionId),
 		eq(enrollments.academicYearId, academicYearId),
 	];
 	if (classId) conditions.push(eq(enrollments.classId, classId));
+	if (search) {
+		conditions.push(
+			or(
+				ilike(students.firstName, `%${search}%`),
+				ilike(students.lastName, `%${search}%`),
+				ilike(students.mnu, `%${search}%`),
+			)!,
+		);
+	}
 	const [items, totalRows] = await Promise.all([
 		db
 			.select({

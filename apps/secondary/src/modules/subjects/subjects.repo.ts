@@ -1,24 +1,43 @@
-import { and, count, eq, ilike } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNotNull } from "drizzle-orm";
 import { db } from "../../db";
 import { subjects } from "../../db/schema";
 
 export async function findAll(
 	institutionId: string,
-	opts: { search?: string; page?: number; pageSize?: number } = {},
+	opts: {
+		search?: string;
+		subjectGroup?: string;
+		orderBy?: string;
+		orderDir?: string;
+		page?: number;
+		pageSize?: number;
+	} = {},
 ) {
-	const { search, page = 1, pageSize = 25 } = opts;
-	const where = search
-		? and(
-				eq(subjects.institutionId, institutionId),
-				ilike(subjects.name, `%${search}%`),
-			)
-		: eq(subjects.institutionId, institutionId);
+	const {
+		search,
+		subjectGroup,
+		orderBy = "name",
+		orderDir = "asc",
+		page = 1,
+		pageSize = 25,
+	} = opts;
+	const conditions = [eq(subjects.institutionId, institutionId)];
+	if (subjectGroup) conditions.push(eq(subjects.subjectGroup, subjectGroup));
+	if (search) conditions.push(ilike(subjects.name, `%${search}%`));
+	const where = and(...conditions);
+	const col =
+		orderBy === "code"
+			? subjects.code
+			: orderBy === "subjectGroup"
+				? subjects.subjectGroup
+				: subjects.name;
+	const order = orderDir === "desc" ? desc(col) : asc(col);
 	const [items, totalRows] = await Promise.all([
 		db
 			.select()
 			.from(subjects)
 			.where(where)
-			.orderBy(subjects.name)
+			.orderBy(order)
 			.limit(pageSize)
 			.offset((page - 1) * pageSize),
 		db.select({ count: count() }).from(subjects).where(where),
@@ -44,6 +63,20 @@ export async function findByCode(code: string, institutionId: string) {
 		)
 		.limit(1);
 	return rows[0] ?? null;
+}
+
+export async function distinctGroups(institutionId: string) {
+	const rows = await db
+		.selectDistinct({ subjectGroup: subjects.subjectGroup })
+		.from(subjects)
+		.where(
+			and(
+				eq(subjects.institutionId, institutionId),
+				isNotNull(subjects.subjectGroup),
+			),
+		)
+		.orderBy(asc(subjects.subjectGroup));
+	return rows.map((r) => r.subjectGroup).filter(Boolean) as string[];
 }
 
 export async function insert(data: typeof subjects.$inferInsert) {

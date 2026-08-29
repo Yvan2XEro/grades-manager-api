@@ -3,7 +3,15 @@ import { Pencil, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable, type SortingState } from "@/components/ui/data-table";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
 import { SubjectFormDialog } from "./subject-form-dialog";
 
@@ -19,15 +27,33 @@ type Subject = {
 export function Subjects() {
 	const { t } = useTranslation();
 	const [search, setSearch] = useState("");
+	const [groupFilter, setGroupFilter] = useState<string>("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editingSubject, setEditingSubject] = useState<Subject | undefined>(
 		undefined,
 	);
+	const [sorting, setSorting] = useState<SortingState>([
+		{ id: "name", desc: false },
+	]);
 
+	const sortCol = sorting[0];
+	const orderBy = (
+		sortCol?.id === "code"
+			? "code"
+			: sortCol?.id === "subjectGroup"
+				? "subjectGroup"
+				: "name"
+	) as "name" | "code" | "subjectGroup";
+	const orderDir = (sortCol?.desc ? "desc" : "asc") as "asc" | "desc";
+
+	const { data: groups } = trpc.subjects.groups.useQuery();
 	const { data, isLoading } = trpc.subjects.list.useQuery({
 		search: search || undefined,
+		subjectGroup: groupFilter !== "all" ? groupFilter : undefined,
+		orderBy,
+		orderDir,
 		page,
 		pageSize,
 	});
@@ -37,33 +63,53 @@ export function Subjects() {
 
 	const columns: ColumnDef<Subject>[] = [
 		{
+			id: "name",
 			accessorKey: "name",
+			enableSorting: true,
 			header: t("subjects.col_name", "Subject"),
 			cell: ({ row }) => (
-				<span className="font-medium text-foreground">{row.original.name}</span>
+				<div>
+					<span className="font-medium text-foreground">
+						{row.original.name}
+					</span>
+					{row.original.nameFr && row.original.nameFr !== row.original.name && (
+						<p className="text-muted-foreground text-xs">
+							{row.original.nameFr}
+						</p>
+					)}
+				</div>
 			),
 		},
 		{
+			id: "code",
 			accessorKey: "code",
+			enableSorting: true,
 			header: t("subjects.col_code", "Code"),
 			cell: ({ row }) => (
-				<span className="text-muted-foreground">
+				<span className="font-mono text-muted-foreground text-sm">
 					{row.original.code ?? "—"}
 				</span>
 			),
 		},
 		{
+			id: "subjectGroup",
 			accessorKey: "subjectGroup",
-			header: t("subjects.col_coeff", "Group"),
-			cell: ({ row }) => (
-				<span className="text-muted-foreground">
-					{row.original.subjectGroup ?? "—"}
-				</span>
-			),
+			enableSorting: true,
+			header: t("subjects.col_group", "Group"),
+			cell: ({ row }) => {
+				const g = row.original.subjectGroup;
+				if (!g) return <span className="text-muted-foreground">—</span>;
+				return (
+					<span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 font-medium text-muted-foreground text-xs">
+						{g}
+					</span>
+				);
+			},
 		},
 		{
 			id: "actions",
-			header: t("common.actions", "Actions"),
+			header: "",
+			enableSorting: false,
 			cell: ({ row }) => (
 				<Button
 					variant="ghost"
@@ -89,7 +135,9 @@ export function Subjects() {
 						{t("subjects.title", "Subjects")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						{t("subjects.subtitle", "Subject catalogue")}
+						{total > 0
+							? `${total} ${t("subjects.count_subjects", "subjects")}`
+							: t("subjects.subtitle", "Subject catalogue")}
 					</p>
 				</div>
 				<Button
@@ -103,18 +151,43 @@ export function Subjects() {
 				</Button>
 			</div>
 
-			<div className="relative">
-				<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-				<input
-					type="text"
-					placeholder={t("common.search", "Search…")}
-					value={search}
-					onChange={(e) => {
-						setSearch(e.target.value);
-						setPage(1);
-					}}
-					className="w-full rounded-lg border border-input bg-background py-2 pr-4 pl-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-				/>
+			{/* Filters */}
+			<div className="flex flex-wrap items-center gap-3">
+				<div className="relative flex-1" style={{ minWidth: 200 }}>
+					<Search className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder={t("subjects.search_placeholder", "Search by name…")}
+						value={search}
+						onChange={(e) => {
+							setSearch(e.target.value);
+							setPage(1);
+						}}
+						className="pl-9"
+					/>
+				</div>
+				{groups && groups.length > 0 && (
+					<Select
+						value={groupFilter}
+						onValueChange={(v) => {
+							setGroupFilter(v);
+							setPage(1);
+						}}
+					>
+						<SelectTrigger className="w-44">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">
+								{t("subjects.all_groups", "All groups")}
+							</SelectItem>
+							{groups.map((g) => (
+								<SelectItem key={g} value={g}>
+									{g}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				)}
 			</div>
 
 			<DataTable
@@ -124,7 +197,16 @@ export function Subjects() {
 				page={page}
 				pageSize={pageSize}
 				isLoading={isLoading}
-				emptyMessage={t("subjects.empty_title", "No subjects")}
+				sorting={sorting}
+				onSortingChange={(next) => {
+					setSorting(next);
+					setPage(1);
+				}}
+				emptyMessage={
+					search || groupFilter !== "all"
+						? t("subjects.empty_filtered", "No subjects match your filters")
+						: t("subjects.empty_title", "No subjects")
+				}
 				onPageChange={setPage}
 				onPageSizeChange={(s) => {
 					setPageSize(s);

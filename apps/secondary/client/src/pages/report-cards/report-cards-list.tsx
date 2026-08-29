@@ -3,9 +3,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
+import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
-import { Select, SelectOption } from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
+
+type EnrollmentItem = {
+	enrollment: { id: string; studentId: string };
+	student: { id: string; firstName: string; lastName: string };
+};
 
 type ReportCardStatus =
 	| "draft"
@@ -37,20 +42,49 @@ type ReportCard = {
 
 export function ReportCardsList() {
 	const { t } = useTranslation();
-	const [yearId, setYearId] = useState("");
 	const [termId, setTermId] = useState("");
+	const [classIdFilter, setClassIdFilter] = useState("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
+	const activeYear = years.find((y) => y.status === "active") ?? years[0];
+	const yearId = activeYear?.id ?? "";
 
 	const { data: terms = [] } = trpc.terms.list.useQuery(
 		{ academicYearId: yearId },
 		{ enabled: !!yearId },
 	);
 
+	const { data: classesData } = trpc.classes.list.useQuery(
+		{ academicYearId: yearId, pageSize: 200 },
+		{ enabled: !!yearId },
+	);
+	const classes = classesData?.items ?? [];
+
+	const { data: enrollmentsData } = trpc.enrollments.list.useQuery(
+		{ academicYearId: yearId, pageSize: 500 },
+		{ enabled: !!yearId },
+	);
+	const enrollmentItems = (enrollmentsData?.items ?? []) as EnrollmentItem[];
+	const enrollmentToStudent = new Map(
+		enrollmentItems.map((e) => [e.enrollment.id, e.student]),
+	);
+	const termToLabel = new Map(
+		terms.map((trm) => [
+			trm.id,
+			t(`terms.term_${trm.termNumber}`, `Term ${trm.termNumber}`),
+		]),
+	);
+
 	const { data, isLoading } = trpc.reportCards.list.useQuery(
-		{ academicYearId: yearId, termId: termId || undefined, page, pageSize },
+		{
+			academicYearId: yearId,
+			termId: termId || undefined,
+			classId: classIdFilter !== "all" ? classIdFilter : undefined,
+			page,
+			pageSize,
+		},
 		{ enabled: !!yearId },
 	);
 
@@ -60,25 +94,40 @@ export function ReportCardsList() {
 	const columns: ColumnDef<ReportCard>[] = [
 		{
 			id: "enrollment",
+			enableSorting: false,
 			header: t("enrollments.col_student", "Student"),
+			cell: ({ row }) => {
+				const student = enrollmentToStudent.get(row.original.enrollmentId);
+				return (
+					<span className="font-medium text-foreground text-sm">
+						{student ? (
+							`${student.lastName} ${student.firstName}`
+						) : (
+							<span className="font-mono text-muted-foreground text-xs">
+								{row.original.enrollmentId.slice(0, 8)}…
+							</span>
+						)}
+					</span>
+				);
+			},
+		},
+		{
+			id: "term",
+			enableSorting: false,
+			header: t("grades.term", "Term"),
 			cell: ({ row }) => (
-				<span className="font-mono text-muted-foreground text-xs">
-					{row.original.enrollmentId}
+				<span className="text-muted-foreground text-sm">
+					{termToLabel.get(row.original.termId) ??
+						`…${row.original.termId.slice(-4)}`}
 				</span>
 			),
 		},
 		{
-			id: "term",
-			header: t("grades.term", "Term"),
-			cell: ({ row }) => (
-				<span className="text-muted-foreground">{row.original.termId}</span>
-			),
-		},
-		{
 			id: "status",
+			enableSorting: false,
 			header: t("common.status", "Status"),
 			cell: ({ row }) => {
-				const status = row.original.status as ReportCardStatus;
+				const status = (row.original.status ?? "draft") as ReportCardStatus;
 				return (
 					<Badge variant={STATUS_VARIANTS[status] ?? "secondary"}>
 						{t(`report_cards.status_${status}`, status)}
@@ -88,6 +137,7 @@ export function ReportCardsList() {
 		},
 		{
 			id: "language",
+			enableSorting: false,
 			header: t("students.report_card_language", "Language"),
 			cell: ({ row }) => (
 				<Badge variant="outline">
@@ -97,7 +147,8 @@ export function ReportCardsList() {
 		},
 		{
 			id: "actions",
-			header: t("common.actions", "Actions"),
+			enableSorting: false,
+			header: "",
 			cell: ({ row }) => (
 				<Link
 					to={`/report-cards/${row.original.id}`}
@@ -117,58 +168,50 @@ export function ReportCardsList() {
 						{t("report_cards.title", "Report Cards")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						{t("report_cards.subtitle", "Generate and view report cards")}
+						{total > 0
+							? `${total} ${t("report_cards.count_cards", "report cards")}`
+							: t("report_cards.subtitle", "Generate and view report cards")}
 					</p>
 				</div>
 			</div>
 
 			<div className="flex flex-wrap items-center gap-3">
-				<label className="font-medium text-foreground text-sm">
-					{t("report_cards.year_label", "Academic year")}
-				</label>
-				<Select
-					value={yearId}
-					onChange={(e) => {
-						setYearId(e.target.value);
-						setTermId("");
-						setPage(1);
-					}}
-				>
-					<SelectOption value="">
-						— {t("enrollments.select_year", "Select an academic year")} —
-					</SelectOption>
-					{years.map((y) => (
-						<SelectOption key={y.id} value={y.id}>
-							{y.name}
-						</SelectOption>
-					))}
-				</Select>
-
-				{yearId && (
-					<>
-						<label className="font-medium text-foreground text-sm">
-							{t("grades.term", "Term")}
-						</label>
-						<Select
-							value={termId}
-							onChange={(e) => {
-								setTermId(e.target.value);
+				<div className="w-44">
+					<Combobox
+						options={terms.map((term) => ({
+							value: term.id,
+							label: t(
+								`terms.term_${term.termNumber}`,
+								`Term ${term.termNumber}`,
+							),
+						}))}
+						value={termId}
+						onValueChange={(val) => {
+							setTermId(val);
+							setPage(1);
+						}}
+						placeholder={t("class_councils.all_terms", "All terms")}
+						disabled={terms.length === 0}
+					/>
+				</div>
+				{classes.length > 0 && (
+					<div className="w-48">
+						<Combobox
+							options={[
+								{
+									value: "all",
+									label: t("enrollments.all_classes", "All classes"),
+								},
+								...classes.map((c) => ({ value: c.id, label: c.name })),
+							]}
+							value={classIdFilter}
+							onValueChange={(val) => {
+								setClassIdFilter(val || "all");
 								setPage(1);
 							}}
-						>
-							<SelectOption value="">
-								— {t("common.no_data", "All")} —
-							</SelectOption>
-							{terms.map((term) => (
-								<SelectOption key={term.id} value={term.id}>
-									{t(
-										`terms.term_${term.termNumber}`,
-										`Term ${term.termNumber}`,
-									)}
-								</SelectOption>
-							))}
-						</Select>
-					</>
+							placeholder={t("enrollments.col_class", "Class")}
+						/>
+					</div>
 				)}
 			</div>
 
@@ -181,7 +224,7 @@ export function ReportCardsList() {
 				isLoading={isLoading}
 				emptyMessage={
 					!yearId
-						? t("enrollments.select_year", "Select an academic year")
+						? t("enrollments.select_year", "No active academic year")
 						: t("report_cards.empty", "No report cards generated")
 				}
 				onPageChange={setPage}

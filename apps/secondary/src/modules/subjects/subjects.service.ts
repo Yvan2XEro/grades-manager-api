@@ -1,9 +1,20 @@
 import { conflict, notFound } from "../../lib/errors";
 import * as repo from "./subjects.repo";
 
+export async function groups(institutionId: string) {
+	return repo.distinctGroups(institutionId);
+}
+
 export async function list(
 	institutionId: string,
-	opts: { search?: string; page?: number; pageSize?: number } = {},
+	opts: {
+		search?: string;
+		subjectGroup?: string;
+		orderBy?: string;
+		orderDir?: string;
+		page?: number;
+		pageSize?: number;
+	} = {},
 ) {
 	const { items, total } = await repo.findAll(institutionId, opts);
 	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };

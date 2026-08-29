@@ -1,15 +1,25 @@
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 
-type StaffData = { id: string };
+type StaffData = { id: string; firstName: string; lastName: string };
 
 export function StaffAssignmentsTab() {
 	const { t } = useTranslation();
 	const staff = useOutletContext<StaffData>();
+	useBreadcrumbs([
+		{ label: t("nav.staff", "Staff"), href: "/staff" },
+		{
+			label: `${staff.firstName} ${staff.lastName}`,
+			href: `/staff/${staff.id}`,
+		},
+		{ label: t("staff.tab_assignments", "Assignments") },
+	]);
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
-	const activeYear = years.find((y) => (y as any).isActive) ?? years[0];
+	const activeYear = years.find((y) => y.status === "active") ?? years[0];
 
 	const { data: assignments = [], isLoading } =
 		trpc.subjectAssignments.list.useQuery(
@@ -19,8 +29,37 @@ export function StaffAssignmentsTab() {
 
 	if (isLoading) {
 		return (
-			<div className="py-8 text-center text-muted-foreground text-sm">
-				{t("common.loading", "Loading…")}
+			<div className="overflow-hidden rounded-xl border border-border">
+				<table className="w-full text-sm">
+					<thead className="border-border border-b bg-muted/60 text-muted-foreground">
+						<tr>
+							<th className="px-4 py-2 text-left font-medium">
+								{t("subjects.col_name", "Subject")}
+							</th>
+							<th className="px-4 py-2 text-left font-medium">
+								{t("classes.col_name", "Class")}
+							</th>
+							<th className="px-4 py-2 text-left font-medium">
+								{t("academic_years.col_name", "Academic year")}
+							</th>
+						</tr>
+					</thead>
+					<tbody className="divide-y divide-border">
+						{Array.from({ length: 5 }, (_, i) => (
+							<tr key={i}>
+								<td className="px-4 py-2">
+									<Skeleton className="h-4 w-32" />
+								</td>
+								<td className="px-4 py-2">
+									<Skeleton className="h-4 w-24" />
+								</td>
+								<td className="px-4 py-2">
+									<Skeleton className="h-4 w-28" />
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
 			</div>
 		);
 	}
@@ -35,10 +74,12 @@ export function StaffAssignmentsTab() {
 		);
 	}
 
+	const yearMap = new Map(years.map((y) => [y.id, y.name]));
+
 	return (
 		<div className="overflow-hidden rounded-xl border border-border">
 			<table className="w-full text-sm">
-				<thead className="bg-muted/40 text-muted-foreground">
+				<thead className="border-border border-b bg-muted/60 text-muted-foreground">
 					<tr>
 						<th className="px-4 py-2 text-left font-medium">
 							{t("subjects.col_name", "Subject")}
@@ -53,15 +94,18 @@ export function StaffAssignmentsTab() {
 				</thead>
 				<tbody className="divide-y divide-border">
 					{assignments.map((a: any) => (
-						<tr key={a.id} className="transition-colors hover:bg-muted/20">
+						<tr
+							key={a.assignment.id}
+							className="transition-colors hover:bg-muted/20"
+						>
 							<td className="px-4 py-2 font-medium text-foreground">
-								{a.subject?.name ?? a.subjectId}
+								{a.subject?.name ?? "—"}
 							</td>
 							<td className="px-4 py-2 text-muted-foreground">
-								{a.class?.name ?? a.classId}
+								{a.class?.name ?? "—"}
 							</td>
 							<td className="px-4 py-2 text-muted-foreground">
-								{a.academicYear?.name ?? a.academicYearId}
+								{yearMap.get(a.assignment.academicYearId) ?? "—"}
 							</td>
 						</tr>
 					))}

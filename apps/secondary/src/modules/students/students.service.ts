@@ -3,7 +3,16 @@ import * as repo from "./students.repo";
 
 export async function list(
 	institutionId: string,
-	opts: { search?: string; page?: number; pageSize?: number },
+	opts: {
+		search?: string;
+		gender?: string;
+		classId?: string;
+		academicYearId?: string;
+		orderBy?: "lastName" | "firstName" | "mnu";
+		orderDir?: "asc" | "desc";
+		page?: number;
+		pageSize?: number;
+	},
 ) {
 	const { items, total } = await repo.findAll(institutionId, opts);
 	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };

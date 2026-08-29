@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectOption } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
 
 const ROLES = [
@@ -85,6 +91,7 @@ export function StaffFormDialog({
 		register,
 		handleSubmit,
 		reset,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
@@ -168,13 +175,29 @@ export function StaffFormDialog({
 							label={t("staff.role", "Role")}
 							error={errors.role?.message}
 						>
-							<Select {...register("role")}>
-								{ROLES.map((r) => (
-									<SelectOption key={r} value={r}>
-										{ROLE_LABELS[r] ?? r}
-									</SelectOption>
-								))}
-							</Select>
+							<Controller
+								name="role"
+								control={control}
+								render={({ field }) => (
+									<Select
+										value={field.value ?? ""}
+										onValueChange={field.onChange}
+									>
+										<SelectTrigger>
+											<SelectValue
+												placeholder={t("common.select", "Select…")}
+											/>
+										</SelectTrigger>
+										<SelectContent>
+											{ROLES.map((r) => (
+												<SelectItem key={r} value={r}>
+													{ROLE_LABELS[r] ?? r}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								)}
+							/>
 						</FormField>
 					</div>
 

@@ -14,7 +14,10 @@ let _pglite: import("@electric-sql/pglite").PGlite | null = null;
 if (USE_PGLITE) {
 	const { PGlite } = await import("@electric-sql/pglite");
 	const { drizzle } = await import("drizzle-orm/pglite");
-	_pglite = new PGlite();
+	// Use a file-based data dir when provided so data survives restarts.
+	// Tests always use in-memory (no PGLITE_DATA_DIR in test env).
+	const dataDir = IS_TEST ? undefined : process.env.PGLITE_DATA_DIR;
+	_pglite = dataDir ? new PGlite(dataDir) : new PGlite();
 	// @ts-expect-error — PGlite and pg-core share the same Drizzle API surface
 	db = drizzle(_pglite, { schema });
 } else {
@@ -33,65 +36,4 @@ export async function pushSchema(): Promise<void> {
 	const migrationsFolder = path.resolve(import.meta.dir, "./migrations");
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	await migrate(db as any, { migrationsFolder });
-	// Better-Auth tables (not in Drizzle schema)
-	await _pglite.exec(`
-		CREATE TABLE IF NOT EXISTS "user" (
-			id TEXT PRIMARY KEY,
-			name TEXT NOT NULL,
-			email TEXT NOT NULL UNIQUE,
-			email_verified BOOLEAN NOT NULL DEFAULT false,
-			image TEXT,
-			created_at TIMESTAMP NOT NULL DEFAULT now(),
-			updated_at TIMESTAMP NOT NULL DEFAULT now()
-		);
-		CREATE TABLE IF NOT EXISTS organization (
-			id TEXT PRIMARY KEY,
-			name TEXT NOT NULL,
-			slug TEXT UNIQUE,
-			logo TEXT,
-			metadata TEXT,
-			created_at TIMESTAMP NOT NULL DEFAULT now()
-		);
-		CREATE TABLE IF NOT EXISTS member (
-			id TEXT PRIMARY KEY,
-			organization_id TEXT NOT NULL,
-			user_id TEXT NOT NULL,
-			role TEXT NOT NULL DEFAULT 'member',
-			created_at TIMESTAMP NOT NULL DEFAULT now()
-		);
-		CREATE TABLE IF NOT EXISTS session (
-			id TEXT PRIMARY KEY,
-			user_id TEXT NOT NULL,
-			token TEXT NOT NULL UNIQUE,
-			expires_at TIMESTAMP NOT NULL,
-			ip_address TEXT,
-			user_agent TEXT,
-			active_organization_id TEXT,
-			created_at TIMESTAMP NOT NULL DEFAULT now(),
-			updated_at TIMESTAMP NOT NULL DEFAULT now()
-		);
-		CREATE TABLE IF NOT EXISTS account (
-			id TEXT PRIMARY KEY,
-			user_id TEXT NOT NULL,
-			account_id TEXT NOT NULL,
-			provider_id TEXT NOT NULL,
-			access_token TEXT,
-			refresh_token TEXT,
-			id_token TEXT,
-			access_token_expires_at TIMESTAMP,
-			refresh_token_expires_at TIMESTAMP,
-			scope TEXT,
-			password TEXT,
-			created_at TIMESTAMP NOT NULL DEFAULT now(),
-			updated_at TIMESTAMP NOT NULL DEFAULT now()
-		);
-		CREATE TABLE IF NOT EXISTS verification (
-			id TEXT PRIMARY KEY,
-			identifier TEXT NOT NULL,
-			value TEXT NOT NULL,
-			expires_at TIMESTAMP NOT NULL,
-			created_at TIMESTAMP,
-			updated_at TIMESTAMP
-		);
-	`);
 }

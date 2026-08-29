@@ -1,9 +1,182 @@
-import { ArrowLeft, User } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, User } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Link, NavLink, Outlet, useParams } from "react-router";
+import { NavLink, Outlet, useParams } from "react-router";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { FormField } from "@/components/ui/form-field";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
+
+const enrollSchema = z.object({
+	academicYearId: z.string().min(1, "Required"),
+	classId: z.string().min(1, "Required"),
+	admissionType: z.enum(["new", "transfer", "repeat", "promoted"]),
+});
+type EnrollFormValues = z.infer<typeof enrollSchema>;
+
+function EnrollDialog({
+	studentId,
+	open,
+	onOpenChange,
+}: {
+	studentId: string;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+}) {
+	const { t } = useTranslation();
+	const utils = trpc.useUtils();
+	const { data: years = [] } = trpc.academicYears.list.useQuery();
+
+	const {
+		handleSubmit,
+		setValue,
+		watch,
+		reset,
+		formState: { errors },
+	} = useForm<EnrollFormValues>({
+		resolver: zodResolver(enrollSchema),
+		defaultValues: {
+			admissionType: "new" as const,
+			academicYearId: "",
+			classId: "",
+		},
+	});
+
+	const academicYearId = watch("academicYearId") ?? "";
+	const classId = watch("classId") ?? "";
+	const admissionType = watch("admissionType") ?? "new";
+
+	const { data: classesData } = trpc.classes.list.useQuery(
+		{ academicYearId, pageSize: 200 },
+		{ enabled: !!academicYearId },
+	);
+	const classes = classesData?.items ?? [];
+
+	const enroll = trpc.enrollments.create.useMutation({
+		onSuccess: () => {
+			utils.enrollments.list.invalidate();
+			reset();
+			onOpenChange(false);
+		},
+	});
+
+	const onSubmit = (values: EnrollFormValues) => {
+		enroll.mutate({ ...values, studentId });
+	};
+
+	return (
+		<Dialog
+			open={open}
+			onOpenChange={(v) => {
+				reset();
+				onOpenChange(v);
+			}}
+		>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>
+						{t("enrollments.create_title", "Enroll in Class")}
+					</DialogTitle>
+				</DialogHeader>
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+					<FormField
+						label={t("enrollments.field_year", "Academic Year")}
+						error={errors.academicYearId?.message}
+					>
+						<Combobox
+							options={years.map((y) => ({ value: y.id, label: y.name }))}
+							value={academicYearId}
+							onValueChange={(val) => {
+								setValue("academicYearId", val);
+								setValue("classId", "");
+							}}
+							placeholder={t("common.select", "Select…")}
+						/>
+					</FormField>
+					<FormField
+						label={t("enrollments.field_class", "Class")}
+						error={errors.classId?.message}
+					>
+						<Combobox
+							options={classes.map((c) => ({ value: c.id, label: c.name }))}
+							value={classId}
+							onValueChange={(val) => setValue("classId", val)}
+							placeholder={t("common.select", "Select…")}
+							disabled={!academicYearId}
+						/>
+					</FormField>
+					<FormField
+						label={t("enrollments.field_admission_type", "Admission type")}
+						error={errors.admissionType?.message}
+					>
+						<Select
+							value={admissionType}
+							onValueChange={(val) =>
+								setValue(
+									"admissionType",
+									val as EnrollFormValues["admissionType"],
+								)
+							}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="new">
+									{t("enrollments.type_new", "New student")}
+								</SelectItem>
+								<SelectItem value="promoted">
+									{t("enrollments.type_promoted", "Promoted")}
+								</SelectItem>
+								<SelectItem value="repeat">
+									{t("enrollments.type_repeat", "Repeating")}
+								</SelectItem>
+								<SelectItem value="transfer">
+									{t("enrollments.type_transfer", "Transfer")}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</FormField>
+					<div className="flex justify-end gap-3 pt-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => {
+								reset();
+								onOpenChange(false);
+							}}
+						>
+							{t("common.cancel", "Cancel")}
+						</Button>
+						<Button type="submit" disabled={enroll.isPending}>
+							{enroll.isPending
+								? t("common.saving", "Saving…")
+								: t("enrollments.enroll_btn", "Enroll")}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}
 
 function DetailSkeleton() {
 	return (
@@ -40,16 +213,33 @@ function DetailSkeleton() {
 	);
 }
 
-const TAB_NAV = [
-	{ to: "profile", label: "students.tab_profile" },
-	{ to: "grades", label: "students.tab_grades" },
-	{ to: "fees", label: "students.tab_fees" },
-	{ to: "attendance", label: "students.tab_attendance" },
-] as const;
-
 export function StudentDetail() {
 	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
+
+	const TAB_NAV = [
+		{
+			to: `/students/${id}/profile`,
+			label: "students.tab_profile",
+			fallback: "Profile",
+		},
+		{
+			to: `/students/${id}/grades`,
+			label: "students.tab_grades",
+			fallback: "Grades",
+		},
+		{
+			to: `/students/${id}/fees`,
+			label: "students.tab_fees",
+			fallback: "Fees",
+		},
+		{
+			to: `/students/${id}/attendance`,
+			label: "students.tab_attendance",
+			fallback: "Attendance",
+		},
+	];
+	const [showEnroll, setShowEnroll] = useState(false);
 
 	const { data: student, isLoading } = trpc.students.get.useQuery(
 		{ id: id! },
@@ -69,28 +259,23 @@ export function StudentDetail() {
 
 	return (
 		<div className="space-y-6">
-			{/* Back */}
-			<Link
-				to="/students"
-				className="inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-			>
-				<ArrowLeft className="h-4 w-4" />
-				{t("nav.students")}
-			</Link>
-
-			{/* Title */}
-			<div>
-				<h1 className="font-bold text-2xl text-foreground">
-					{student.firstName} {student.lastName}
-				</h1>
-				<p className="text-muted-foreground text-sm">
-					{student.registrationNumber}
-				</p>
+			<div className="flex items-start justify-between gap-4">
+				<div>
+					<h1 className="font-bold text-2xl text-foreground">
+						{student.firstName} {student.lastName}
+					</h1>
+					<p className="text-muted-foreground text-sm">
+						{student.registrationNumber}
+					</p>
+				</div>
+				<Button size="sm" onClick={() => setShowEnroll(true)}>
+					<Plus className="mr-2 h-4 w-4" />
+					{t("enrollments.enroll_btn", "Enroll")}
+				</Button>
 			</div>
 
-			{/* Tab nav */}
 			<div className="flex border-border border-b" role="tablist">
-				{TAB_NAV.map(({ to, label }) => (
+				{TAB_NAV.map(({ to, label, fallback }) => (
 					<NavLink
 						key={to}
 						to={to}
@@ -104,13 +289,18 @@ export function StudentDetail() {
 							)
 						}
 					>
-						{t(label, to)}
+						{t(label, fallback)}
 					</NavLink>
 				))}
 			</div>
 
-			{/* Active tab content */}
 			<Outlet context={student} />
+
+			<EnrollDialog
+				studentId={student.id}
+				open={showEnroll}
+				onOpenChange={setShowEnroll}
+			/>
 		</div>
 	);
 }

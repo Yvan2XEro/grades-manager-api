@@ -1,11 +1,14 @@
 import {
-	adminProcedure,
+	teacherProcedure,
 	tenantProcedure,
 	router as trpcRouter,
 } from "../../lib/trpc";
 import * as service from "./assessments.service";
 import {
 	batchUpsertSchema,
+	classAveragesSchema,
+	completionBySubjectSchema,
+	completionMatrixSchema,
 	listSchema,
 	studentResultsSchema,
 	upsertSchema,
@@ -23,19 +26,25 @@ export const router = trpcRouter({
 			),
 		),
 
-	upsert: adminProcedure
+	upsert: teacherProcedure
 		.input(upsertSchema)
 		.mutation(({ ctx, input }) =>
-			service.upsert(input, ctx.institution.id, ctx.session?.user.id),
+			service.upsert(
+				input,
+				ctx.institution.id,
+				ctx.session.user.id,
+				ctx.callerRole,
+			),
 		),
 
-	batchUpsert: adminProcedure
+	batchUpsert: teacherProcedure
 		.input(batchUpsertSchema)
 		.mutation(({ ctx, input }) =>
 			service.batchUpsert(
 				input.items,
 				ctx.institution.id,
-				ctx.session?.user.id,
+				ctx.session.user.id,
+				ctx.callerRole,
 			),
 		),
 
@@ -47,5 +56,27 @@ export const router = trpcRouter({
 				input.studentId,
 				input.termId,
 			),
+		),
+
+	getClassAverages: tenantProcedure
+		.input(classAveragesSchema)
+		.query(({ ctx, input }) =>
+			service.getClassAverages(ctx.institution.id, input.classId, input.termId),
+		),
+
+	getCompletionBySubject: tenantProcedure
+		.input(completionBySubjectSchema)
+		.query(({ ctx, input }) =>
+			service.getCompletionBySubject(
+				ctx.institution.id,
+				input.classId,
+				input.termId,
+			),
+		),
+
+	getCompletionMatrix: tenantProcedure
+		.input(completionMatrixSchema)
+		.query(({ ctx, input }) =>
+			service.getCompletionMatrix(ctx.institution.id, input.classId),
 		),
 });

@@ -5,7 +5,7 @@ export async function list(
 	institutionId: string,
 	academicYearId: string,
 	classId?: string,
-	opts: { page?: number; pageSize?: number } = {},
+	opts: { search?: string; page?: number; pageSize?: number } = {},
 ) {
 	const { items, total } = await repo.findAll(
 		institutionId,

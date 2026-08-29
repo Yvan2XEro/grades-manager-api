@@ -5,12 +5,15 @@ import {
 } from "../../lib/trpc";
 import * as service from "./official-exams.service";
 import {
+	bulkRegisterSchema,
+	checkEligibilitySchema,
 	createSessionSchema,
 	idSchema,
 	listCandidatesSchema,
 	listSessionsSchema,
 	registerCandidateSchema,
 	updateRegistrationSchema,
+	updateSessionSchema,
 } from "./official-exams.zod";
 
 export const router = trpcRouter({
@@ -38,6 +41,13 @@ export const router = trpcRouter({
 		.mutation(({ ctx, input }) =>
 			service.createSession(input, ctx.institution.id),
 		),
+
+	updateSession: adminProcedure
+		.input(updateSessionSchema)
+		.mutation(({ ctx, input }) => {
+			const { id, ...fields } = input;
+			return service.updateSession(id, ctx.institution.id, fields);
+		}),
 
 	// ─── Candidate Registrations ─────────────────────────────────────────
 
@@ -70,4 +80,20 @@ export const router = trpcRouter({
 			const { id, ...fields } = input;
 			return service.updateRegistration(id, ctx.institution.id, fields);
 		}),
+
+	bulkRegisterCandidates: adminProcedure
+		.input(bulkRegisterSchema)
+		.mutation(({ ctx, input }) =>
+			service.bulkRegisterCandidates(input, ctx.institution.id),
+		),
+
+	checkEligibility: adminProcedure
+		.input(checkEligibilitySchema)
+		.mutation(({ ctx, input }) =>
+			service.checkEligibility(
+				input.registrationId,
+				ctx.institution.id,
+				input.minAverage,
+			),
+		),
 });

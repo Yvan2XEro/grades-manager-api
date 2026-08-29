@@ -1,11 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar, Plus } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -13,8 +15,13 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
-import { Input } from "@/components/ui/input";
-import { Select, SelectOption } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
 
 // ─── Term create form ────────────────────────────────────────────────────────
@@ -55,6 +62,7 @@ function CreateTermDialog({
 		register,
 		handleSubmit,
 		reset,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<CreateFormValues>({
 		resolver: zodResolver(createSchema),
@@ -85,14 +93,27 @@ function CreateTermDialog({
 						error={errors.termNumber?.message}
 						required
 					>
-						<Select {...register("termNumber")}>
-							<SelectOption value="">—</SelectOption>
-							{availableTerms.map((n) => (
-								<SelectOption key={n} value={n}>
-									{t(`terms.term_${n}`, `Term ${n}`)}
-								</SelectOption>
-							))}
-						</Select>
+						<Controller
+							name="termNumber"
+							control={control}
+							render={({ field }) => (
+								<Select
+									value={field.value ?? ""}
+									onValueChange={field.onChange}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="—" />
+									</SelectTrigger>
+									<SelectContent>
+										{availableTerms.map((n) => (
+											<SelectItem key={n} value={String(n)}>
+												{t(`terms.term_${n}`, `Term ${n}`)}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							)}
+						/>
 					</FormField>
 
 					<FormField
@@ -100,7 +121,18 @@ function CreateTermDialog({
 						error={errors.startDate?.message}
 						required
 					>
-						<Input type="date" {...register("startDate")} />
+						<Controller
+							name="startDate"
+							control={control}
+							render={({ field }) => (
+								<DatePicker
+									value={field.value ?? ""}
+									onChange={field.onChange}
+									startMonth={new Date(2020, 0)}
+									endMonth={new Date(2035, 11)}
+								/>
+							)}
+						/>
 					</FormField>
 
 					<FormField
@@ -108,7 +140,18 @@ function CreateTermDialog({
 						error={errors.endDate?.message}
 						required
 					>
-						<Input type="date" {...register("endDate")} />
+						<Controller
+							name="endDate"
+							control={control}
+							render={({ field }) => (
+								<DatePicker
+									value={field.value ?? ""}
+									onChange={field.onChange}
+									startMonth={new Date(2020, 0)}
+									endMonth={new Date(2035, 11)}
+								/>
+							)}
+						/>
 					</FormField>
 
 					{create.error && (
@@ -160,7 +203,7 @@ function TermStatusBadge({ status }: { status: string }) {
 	);
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Shared content (used by Settings tab and standalone page) ───────────────
 
 type Term = {
 	id: string;
@@ -171,7 +214,7 @@ type Term = {
 	academicYearId: string;
 };
 
-export function TermsList() {
+export function TermsContent() {
 	const { t } = useTranslation();
 	const [selectedYearId, setSelectedYearId] = useState<string>("");
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -179,7 +222,11 @@ export function TermsList() {
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const utils = trpc.useUtils();
 
-	const yearId = selectedYearId || years[0]?.id || "";
+	const yearId =
+		selectedYearId ||
+		years.find((y) => y.status === "active")?.id ||
+		years[0]?.id ||
+		"";
 
 	const { data: terms = [], isLoading } = trpc.terms.list.useQuery(
 		{ academicYearId: yearId },
@@ -202,40 +249,28 @@ export function TermsList() {
 	};
 
 	return (
-		<div className="space-y-6">
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="font-bold text-2xl text-foreground">
-						{t("terms.title", "Terms")}
-					</h1>
-					<p className="text-muted-foreground text-sm">
-						{t("terms.subtitle", "Manage academic terms by year")}
-					</p>
+		<div className="space-y-5">
+			<div className="flex items-center justify-between gap-4">
+				<div className="w-56">
+					<label className="mb-1 block font-medium text-muted-foreground text-xs">
+						{t("terms.select_year", "Academic year")}
+					</label>
+					<Combobox
+						options={years.map((y) => ({ value: y.id, label: y.name }))}
+						value={yearId}
+						onValueChange={setSelectedYearId}
+						placeholder={t("common.select", "Select…")}
+						clearable={false}
+					/>
 				</div>
 				<Button
 					onClick={() => setCreateDialogOpen(true)}
 					disabled={!yearId || existingTermNumbers.length >= 3}
+					size="sm"
 				>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("terms.create", "Create term")}
 				</Button>
-			</div>
-
-			<div className="flex items-center gap-3">
-				<label className="whitespace-nowrap font-medium text-foreground text-sm">
-					{t("terms.select_year", "Academic year")}
-				</label>
-				<Select
-					className="w-48"
-					value={yearId}
-					onChange={(e) => setSelectedYearId(e.target.value)}
-				>
-					{years.map((y) => (
-						<SelectOption key={y.id} value={y.id}>
-							{y.name}
-						</SelectOption>
-					))}
-				</Select>
 			</div>
 
 			{!yearId ? (

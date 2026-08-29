@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, Plus } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router";
 import { z } from "zod";
@@ -15,14 +15,17 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectOption } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type StudentData = { id: string; firstName: string; lastName: string };
-
-// ─── Record payment form ──────────────────────────────────────────────────────
 
 const recordPaymentSchema = z.object({
 	amount: z.number().int().positive("Amount must be positive"),
@@ -63,6 +66,7 @@ function RecordPaymentDialog({
 		register,
 		handleSubmit,
 		reset,
+		control,
 		formState: { errors },
 	} = useForm<RecordPaymentValues>({
 		resolver: zodResolver(recordPaymentSchema),
@@ -100,17 +104,28 @@ function RecordPaymentDialog({
 						error={errors.paymentMethod?.message}
 						required
 					>
-						<Select {...register("paymentMethod")}>
-							<SelectOption value="cash">
-								{t("fees.method_cash", "Cash")}
-							</SelectOption>
-							<SelectOption value="mtn_momo">MTN Mobile Money</SelectOption>
-							<SelectOption value="orange_money">Orange Money</SelectOption>
-							<SelectOption value="bank_transfer">
-								{t("fees.method_bank_transfer", "Bank transfer")}
-							</SelectOption>
-							<SelectOption value="campost">CamPost</SelectOption>
-						</Select>
+						<Controller
+							name="paymentMethod"
+							control={control}
+							render={({ field }) => (
+								<Select value={field.value} onValueChange={field.onChange}>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="cash">
+											{t("fees.method_cash", "Cash")}
+										</SelectItem>
+										<SelectItem value="mtn_momo">MTN Mobile Money</SelectItem>
+										<SelectItem value="orange_money">Orange Money</SelectItem>
+										<SelectItem value="bank_transfer">
+											{t("fees.method_bank_transfer", "Bank transfer")}
+										</SelectItem>
+										<SelectItem value="campost">CamPost</SelectItem>
+									</SelectContent>
+								</Select>
+							)}
+						/>
 					</FormField>
 
 					<FormField
@@ -139,24 +154,27 @@ function RecordPaymentDialog({
 	);
 }
 
-// ─── Main tab ─────────────────────────────────────────────────────────────────
-
 export function StudentFeesTab() {
 	const { t } = useTranslation();
 	const student = useOutletContext<StudentData>();
+	useBreadcrumbs([
+		{ label: t("nav.students", "Students"), href: "/students" },
+		{
+			label: `${student.firstName} ${student.lastName}`,
+			href: `/students/${student.id}`,
+		},
+		{ label: t("students.tab_fees", "Fees") },
+	]);
 	const [dialogOpen, setDialogOpen] = useState(false);
 
-	// Get active academic year
 	const { data: academicYears = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = academicYears.find((y) => y.status === "active");
 
-	// Get enrollment for this student in the active year
 	const { data: enrollment } = trpc.enrollments.getByStudent.useQuery(
 		{ studentId: student.id, academicYearId: activeYear?.id ?? "" },
 		{ enabled: !!activeYear },
 	);
 
-	// Get payments and balance
 	const { data: payments = [] } = trpc.finance.listPayments.useQuery(
 		{ enrollmentId: enrollment?.id ?? "" },
 		{ enabled: !!enrollment },
@@ -176,16 +194,8 @@ export function StudentFeesTab() {
 
 	const formatDate = (d: Date | string) => new Date(d).toLocaleDateString();
 
-	const methodLabel = (m: string) => {
-		const map: Record<string, string> = {
-			cash: "Cash",
-			mtn_momo: "MTN MoMo",
-			orange_money: "Orange Money",
-			bank_transfer: "Bank transfer",
-			campost: "CamPost",
-		};
-		return map[m] ?? m;
-	};
+	const methodLabel = (m: string) =>
+		t(`fees.method_${m}`, m.replace(/_/g, " "));
 
 	if (!activeYear) {
 		return (
@@ -218,7 +228,6 @@ export function StudentFeesTab() {
 
 	return (
 		<div className="space-y-4">
-			{/* Balance summary */}
 			<div className="flex items-center justify-between rounded-xl border border-border bg-card p-5">
 				<div>
 					<p className="text-muted-foreground text-sm">
@@ -234,7 +243,6 @@ export function StudentFeesTab() {
 				</Button>
 			</div>
 
-			{/* Payments list */}
 			<div className="overflow-hidden rounded-xl border border-border">
 				<div className="border-border border-b bg-muted/30 px-4 py-3">
 					<h2 className="font-semibold text-foreground text-sm">
@@ -251,7 +259,7 @@ export function StudentFeesTab() {
 					</div>
 				) : (
 					<table className="w-full text-sm">
-						<thead className="border-border border-b bg-muted/20">
+						<thead className="border-border border-b bg-muted/60 text-muted-foreground">
 							<tr>
 								<th className="px-4 py-2 text-left font-medium text-muted-foreground">
 									{t("fees.date", "Date")}
@@ -289,7 +297,6 @@ export function StudentFeesTab() {
 				)}
 			</div>
 
-			{/* Dialog */}
 			{dialogOpen && (
 				<RecordPaymentDialog
 					enrollmentId={enrollment.id}

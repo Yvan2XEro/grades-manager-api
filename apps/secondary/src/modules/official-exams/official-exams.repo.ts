@@ -1,4 +1,4 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import {
 	enrollments,
@@ -106,6 +106,9 @@ export async function findAllRegistrations(
 				candidateNumber: officialExamRegistrations.candidateNumber,
 				isEligible: officialExamRegistrations.isEligible,
 				hasPaidFee: officialExamRegistrations.hasPaidFee,
+				feeAmount: officialExamRegistrations.feeAmount,
+				feePaidAt: officialExamRegistrations.feePaidAt,
+				feeTransactionRef: officialExamRegistrations.feeTransactionRef,
 				isAdmitted: officialExamRegistrations.isAdmitted,
 				mention: officialExamRegistrations.mention,
 				createdAt: officialExamRegistrations.createdAt,
@@ -161,6 +164,28 @@ export async function findRegistrationBySessionAndEnrollment(
 	return rows[0] ?? null;
 }
 
+export async function findStudentByEnrollment(
+	enrollmentId: string,
+	institutionId: string,
+) {
+	const rows = await db
+		.select({
+			mnu: students.mnu,
+			firstName: students.firstName,
+			lastName: students.lastName,
+		})
+		.from(enrollments)
+		.innerJoin(students, eq(enrollments.studentId, students.id))
+		.where(
+			and(
+				eq(enrollments.id, enrollmentId),
+				eq(enrollments.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	return rows[0] ?? null;
+}
+
 export async function insertRegistration(
 	data: typeof officialExamRegistrations.$inferInsert,
 ) {
@@ -187,4 +212,49 @@ export async function updateRegistration(
 		)
 		.returning();
 	return row ?? null;
+}
+
+export async function findEnrollmentIdsByClass(
+	classId: string,
+	institutionId: string,
+) {
+	const rows = await db
+		.select({ id: enrollments.id })
+		.from(enrollments)
+		.where(
+			and(
+				eq(enrollments.classId, classId),
+				eq(enrollments.institutionId, institutionId),
+				eq(enrollments.status, "active"),
+			),
+		);
+	return rows.map((r) => r.id);
+}
+
+export async function findExistingRegistrationEnrollmentIds(
+	examSessionId: string,
+	enrollmentIds: string[],
+) {
+	if (enrollmentIds.length === 0) return new Set<string>();
+	const rows = await db
+		.select({ enrollmentId: officialExamRegistrations.enrollmentId })
+		.from(officialExamRegistrations)
+		.where(
+			and(
+				eq(officialExamRegistrations.examSessionId, examSessionId),
+				inArray(officialExamRegistrations.enrollmentId, enrollmentIds),
+			),
+		);
+	return new Set(rows.map((r) => r.enrollmentId));
+}
+
+export async function bulkInsertRegistrations(
+	items: (typeof officialExamRegistrations.$inferInsert)[],
+) {
+	if (items.length === 0) return [];
+	return db
+		.insert(officialExamRegistrations)
+		.values(items)
+		.onConflictDoNothing()
+		.returning();
 }

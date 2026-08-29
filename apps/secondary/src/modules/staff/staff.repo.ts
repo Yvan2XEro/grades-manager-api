@@ -1,28 +1,51 @@
-import { and, count, eq, ilike, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import { staff } from "../../db/schema";
 
 export async function findAll(
 	institutionId: string,
-	opts: { search?: string; page?: number; pageSize?: number } = {},
+	opts: {
+		search?: string;
+		role?: string;
+		orderBy?: string;
+		orderDir?: string;
+		page?: number;
+		pageSize?: number;
+	} = {},
 ) {
-	const { search, page = 1, pageSize = 25 } = opts;
-	const where = search
-		? and(
-				eq(staff.institutionId, institutionId),
-				or(
-					ilike(staff.firstName, `%${search}%`),
-					ilike(staff.lastName, `%${search}%`),
-					ilike(staff.email, `%${search}%`),
-				),
-			)
-		: eq(staff.institutionId, institutionId);
+	const {
+		search,
+		role,
+		orderBy = "lastName",
+		orderDir = "asc",
+		page = 1,
+		pageSize = 25,
+	} = opts;
+	const conditions = [eq(staff.institutionId, institutionId)];
+	if (role) conditions.push(eq(staff.role, role));
+	if (search) {
+		conditions.push(
+			or(
+				ilike(staff.firstName, `%${search}%`),
+				ilike(staff.lastName, `%${search}%`),
+				ilike(staff.email, `%${search}%`),
+			)!,
+		);
+	}
+	const where = and(...conditions);
+	const col =
+		orderBy === "firstName"
+			? staff.firstName
+			: orderBy === "email"
+				? staff.email
+				: staff.lastName;
+	const order = orderDir === "desc" ? desc(col) : asc(col);
 	const [items, totalRows] = await Promise.all([
 		db
 			.select()
 			.from(staff)
 			.where(where)
-			.orderBy(staff.lastName, staff.firstName)
+			.orderBy(order)
 			.limit(pageSize)
 			.offset((page - 1) * pageSize),
 		db.select({ count: count() }).from(staff).where(where),

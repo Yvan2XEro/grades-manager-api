@@ -1,11 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookUser, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
 	Dialog,
 	DialogContent,
@@ -13,7 +14,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
-import { Select, SelectOption } from "@/components/ui/select";
 import { trpc } from "@/utils/trpc";
 
 // ─── Assign dialog ────────────────────────────────────────────────────────────
@@ -64,9 +64,9 @@ function AssignDialog({
 	});
 
 	const {
-		register,
 		handleSubmit,
 		reset,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<AssignFormValues>({
 		resolver: zodResolver(assignSchema),
@@ -99,14 +99,21 @@ function AssignDialog({
 						error={errors.subjectId?.message}
 						required
 					>
-						<Select {...register("subjectId")}>
-							<SelectOption value="">—</SelectOption>
-							{availableSubjects.map((s) => (
-								<SelectOption key={s.id} value={s.id}>
-									{s.name}
-								</SelectOption>
-							))}
-						</Select>
+						<Controller
+							name="subjectId"
+							control={control}
+							render={({ field }) => (
+								<Combobox
+									options={availableSubjects.map((s) => ({
+										value: s.id,
+										label: s.name,
+									}))}
+									value={field.value ?? ""}
+									onValueChange={field.onChange}
+									placeholder={t("common.select", "Select…")}
+								/>
+							)}
+						/>
 					</FormField>
 
 					<FormField
@@ -114,14 +121,21 @@ function AssignDialog({
 						error={errors.staffId?.message}
 						required
 					>
-						<Select {...register("staffId")}>
-							<SelectOption value="">—</SelectOption>
-							{staffList.map((m) => (
-								<SelectOption key={m.id} value={m.id}>
-									{m.lastName} {m.firstName}
-								</SelectOption>
-							))}
-						</Select>
+						<Controller
+							name="staffId"
+							control={control}
+							render={({ field }) => (
+								<Combobox
+									options={staffList.map((m) => ({
+										value: m.id,
+										label: `${m.lastName} ${m.firstName}`,
+									}))}
+									value={field.value ?? ""}
+									onValueChange={field.onChange}
+									placeholder={t("common.select", "Select…")}
+								/>
+							)}
+						/>
 					</FormField>
 
 					{assign.error && (
@@ -175,13 +189,14 @@ type Assignment = {
 
 export function SubjectAssignments() {
 	const { t } = useTranslation();
-	const [selectedYearId, setSelectedYearId] = useState<string>("");
 	const [selectedClassId, setSelectedClassId] = useState<string>("");
 	const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+	const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 	const utils = trpc.useUtils();
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
-	const yearId = selectedYearId || years[0]?.id || "";
+	const activeYear = years.find((y) => y.status === "active") ?? years[0];
+	const yearId = activeYear?.id ?? "";
 
 	const { data: classesData } = trpc.classes.list.useQuery(
 		{ academicYearId: yearId, page: 1, pageSize: 100 },
@@ -198,7 +213,10 @@ export function SubjectAssignments() {
 		);
 
 	const remove = trpc.subjectAssignments.delete.useMutation({
-		onSuccess: () => utils.subjectAssignments.list.invalidate(),
+		onSuccess: () => {
+			utils.subjectAssignments.list.invalidate();
+			setPendingDeleteId(null);
+		},
 	});
 
 	const existingSubjectIds = (assignments as Assignment[]).map(
@@ -228,52 +246,24 @@ export function SubjectAssignments() {
 				</Button>
 			</div>
 
-			<div className="flex flex-wrap items-center gap-4">
-				<div className="flex items-center gap-2">
-					<label className="whitespace-nowrap font-medium text-foreground text-sm">
-						{t("terms.select_year", "Academic year")}
-					</label>
-					<Select
-						className="w-40"
-						value={yearId}
-						onChange={(e) => {
-							setSelectedYearId(e.target.value);
-							setSelectedClassId("");
-						}}
-					>
-						{years.map((y) => (
-							<SelectOption key={y.id} value={y.id}>
-								{y.name}
-							</SelectOption>
-						))}
-					</Select>
-				</div>
-
-				<div className="flex items-center gap-2">
-					<label className="whitespace-nowrap font-medium text-foreground text-sm">
-						{t("subject_assignments.select_class", "Class")}
-					</label>
-					<Select
-						className="w-40"
-						value={classId}
-						onChange={(e) => setSelectedClassId(e.target.value)}
-						disabled={!yearId || classes.length === 0}
-					>
-						<SelectOption value="">—</SelectOption>
-						{classes.map((c) => (
-							<SelectOption key={c.id} value={c.id}>
-								{c.name}
-							</SelectOption>
-						))}
-					</Select>
-				</div>
+			<div className="w-56">
+				<label className="mb-1 block font-medium text-muted-foreground text-xs">
+					{t("subject_assignments.select_class", "Class")}
+				</label>
+				<Combobox
+					options={classes.map((c) => ({ value: c.id, label: c.name }))}
+					value={classId}
+					onValueChange={setSelectedClassId}
+					placeholder={t("subject_assignments.select_class", "Select class…")}
+					disabled={!yearId || classes.length === 0}
+				/>
 			</div>
 
 			{!yearId || !classId ? (
 				<div className="rounded-xl border border-border bg-muted/30 p-10 text-center text-muted-foreground">
 					{t(
 						"subject_assignments.select_class",
-						"Select a year and class to view assignments",
+						"Select a class to view assignments",
 					)}
 				</div>
 			) : isLoading ? (
@@ -298,7 +288,7 @@ export function SubjectAssignments() {
 			) : (
 				<div className="overflow-hidden rounded-xl border border-border">
 					<table className="w-full text-sm">
-						<thead className="bg-muted/50">
+						<thead className="border-border border-b bg-muted/60 text-muted-foreground">
 							<tr>
 								<th className="px-4 py-3 text-left font-medium text-foreground">
 									{t("subject_assignments.col_subject", "Subject")}
@@ -331,15 +321,36 @@ export function SubjectAssignments() {
 										{a.staff.lastName} {a.staff.firstName}
 									</td>
 									<td className="px-4 py-3 text-right">
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-7 px-2 text-destructive hover:text-destructive"
-											onClick={() => remove.mutate({ id: a.assignment.id })}
-											disabled={remove.isPending}
-										>
-											<Trash2 className="h-3 w-3" />
-										</Button>
+										{pendingDeleteId === a.assignment.id ? (
+											<div className="flex items-center justify-end gap-1">
+												<Button
+													variant="destructive"
+													size="sm"
+													className="h-7 px-2 text-xs"
+													onClick={() => remove.mutate({ id: a.assignment.id })}
+													disabled={remove.isPending}
+												>
+													{t("common.confirm", "Confirm")}
+												</Button>
+												<Button
+													variant="ghost"
+													size="sm"
+													className="h-7 px-2 text-xs"
+													onClick={() => setPendingDeleteId(null)}
+												>
+													{t("common.cancel", "Cancel")}
+												</Button>
+											</div>
+										) : (
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-7 px-2 text-destructive hover:text-destructive"
+												onClick={() => setPendingDeleteId(a.assignment.id)}
+											>
+												<Trash2 className="h-3 w-3" />
+											</Button>
+										)}
 									</td>
 								</tr>
 							))}

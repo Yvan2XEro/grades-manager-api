@@ -7,6 +7,9 @@ import * as service from "./subjects.service";
 import { createSchema, listSchema, updateSchema } from "./subjects.zod";
 
 export const router = trpcRouter({
+	groups: tenantProcedure.query(({ ctx }) =>
+		service.groups(ctx.institution.id),
+	),
 	list: tenantProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) => service.list(ctx.institution.id, input)),

@@ -1,11 +1,28 @@
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
+import { cors } from "hono/cors";
 import { auth } from "./src/lib/auth";
 import { createContext } from "./src/lib/context";
 import { appRouter } from "./src/routers/index";
 
 const app = new Hono();
+
+const allowedOrigins = (process.env.CORS_ORIGINS ?? "http://localhost:5173")
+	.split(",")
+	.map((o) => o.trim());
+
+app.use(
+	"*",
+	cors({
+		origin: (origin) =>
+			allowedOrigins.includes(origin) ? origin : allowedOrigins[0]!,
+		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+		allowHeaders: ["Content-Type", "Authorization", "X-Organization-Slug"],
+		credentials: true,
+		maxAge: 86400,
+	}),
+);
 
 app.on(["GET", "POST"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 

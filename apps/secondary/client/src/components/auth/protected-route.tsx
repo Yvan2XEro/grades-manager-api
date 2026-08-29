@@ -1,5 +1,6 @@
 import { Navigate } from "react-router";
 import { useSession } from "@/lib/auth-client";
+import { OrgGuard } from "./org-guard";
 
 interface Props {
 	children: React.ReactNode;
@@ -14,5 +15,5 @@ export function ProtectedRoute({ children }: Props) {
 		return <Navigate to="/login" replace />;
 	}
 
-	return <>{children}</>;
+	return <OrgGuard>{children}</OrgGuard>;
 }

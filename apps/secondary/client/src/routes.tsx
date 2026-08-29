@@ -1,22 +1,32 @@
 import { Navigate, Route, Routes } from "react-router";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { AppShell } from "@/components/layout/app-shell";
-import { useSession } from "@/lib/auth-client";
+import { authClient, useSession } from "@/lib/auth-client";
 import { AttendanceOverview } from "@/pages/attendance/attendance-overview";
 import { ForgotPasswordPage } from "@/pages/auth/forgot-password";
 import { LoginPage } from "@/pages/auth/login";
 import { ResetPasswordPage } from "@/pages/auth/reset-password";
+import { CouncilDetail } from "@/pages/class-councils/council-detail";
 import { ClassCouncilsList } from "@/pages/class-councils/councils-list";
+import { ClassAssignments } from "@/pages/classes/class-assignments";
 import { ClassDetail } from "@/pages/classes/class-detail";
+import { ClassGrades } from "@/pages/classes/class-grades";
+import { ClassRoster } from "@/pages/classes/class-roster";
 import { ClassesList } from "@/pages/classes/classes-list";
 import { AdminDashboard } from "@/pages/dashboards/admin-dashboard";
 import { PrincipalDashboard } from "@/pages/dashboards/principal-dashboard";
 import { TeacherDashboard } from "@/pages/dashboards/teacher-dashboard";
 import { Enrollments } from "@/pages/enrollments";
 import { FinanceOverview } from "@/pages/finance/finance-overview";
+import { CommentsGrid } from "@/pages/grades/comments-grid";
 import { GradeEntry } from "@/pages/grades/grade-entry";
 import { GradeGrid } from "@/pages/grades/grade-grid";
+import { ExamSessionDetail } from "@/pages/official-exams/exam-session-detail";
+import { ExamSessionNew } from "@/pages/official-exams/exam-session-new";
 import { OfficialExamsList } from "@/pages/official-exams/official-exams-list";
+import { ExamCandidatesTab } from "@/pages/official-exams/tabs/candidates-tab";
+import { ExamResultsTab } from "@/pages/official-exams/tabs/results-tab";
+import { ExamSettingsTab } from "@/pages/official-exams/tabs/settings-tab";
 import { ClassReportCards } from "@/pages/report-cards/class-report-cards";
 import { ReportCardPreview } from "@/pages/report-cards/report-card-preview";
 import { ReportCardsList } from "@/pages/report-cards/report-cards-list";
@@ -33,13 +43,14 @@ import { StudentGradesTab } from "@/pages/students/tabs/grades-tab";
 import { StudentProfileTab } from "@/pages/students/tabs/profile-tab";
 import { SubjectAssignments } from "@/pages/subject-assignments/subject-assignments";
 import { Subjects } from "@/pages/subjects";
-import { TermsList } from "@/pages/terms/terms-list";
 import { TrackDetail } from "@/pages/tracks/track-detail";
 import { TracksList } from "@/pages/tracks/tracks-list";
 
 function Dashboard() {
 	const { data: session } = useSession();
-	const role = (session as any)?.session?.member?.role ?? "teacher";
+	const { data: org } = authClient.useActiveOrganization();
+	const myMember = org?.members?.find((m) => m.userId === session?.user?.id);
+	const role = myMember?.role ?? "teacher";
 	if (role === "admin") return <AdminDashboard />;
 	if (role === "principal") return <PrincipalDashboard />;
 	return <TeacherDashboard />;
@@ -76,7 +87,12 @@ export function AppRoutes() {
 
 								{/* Classes */}
 								<Route path="classes" element={<ClassesList />} />
-								<Route path="classes/:id" element={<ClassDetail />} />
+								<Route path="classes/:id/*" element={<ClassDetail />}>
+									<Route index element={<Navigate to="roster" replace />} />
+									<Route path="roster" element={<ClassRoster />} />
+									<Route path="grades" element={<ClassGrades />} />
+									<Route path="assignments" element={<ClassAssignments />} />
+								</Route>
 
 								{/* Subjects */}
 								<Route path="subjects" element={<Subjects />} />
@@ -102,9 +118,20 @@ export function AppRoutes() {
 
 								{/* Class councils */}
 								<Route path="class-councils" element={<ClassCouncilsList />} />
+								<Route path="class-councils/:id" element={<CouncilDetail />} />
 
 								{/* Official exams */}
 								<Route path="official-exams" element={<OfficialExamsList />} />
+								<Route path="official-exams/new" element={<ExamSessionNew />} />
+								<Route
+									path="official-exams/:id/*"
+									element={<ExamSessionDetail />}
+								>
+									<Route index element={<Navigate to="candidates" replace />} />
+									<Route path="candidates" element={<ExamCandidatesTab />} />
+									<Route path="results" element={<ExamResultsTab />} />
+									<Route path="settings" element={<ExamSettingsTab />} />
+								</Route>
 
 								{/* Finance */}
 								<Route path="finance" element={<FinanceOverview />} />
@@ -118,11 +145,18 @@ export function AppRoutes() {
 									path="grades/:classId/:subjectId/:termId"
 									element={<GradeGrid />}
 								/>
+								<Route
+									path="grades/:classId/:subjectId/:termId/comments"
+									element={<CommentsGrid />}
+								/>
 
 								{/* Other */}
 								<Route path="tracks" element={<TracksList />} />
 								<Route path="tracks/:id" element={<TrackDetail />} />
-								<Route path="terms" element={<TermsList />} />
+								<Route
+									path="terms"
+									element={<Navigate to="/settings" replace />}
+								/>
 								<Route
 									path="subject-assignments"
 									element={<SubjectAssignments />}

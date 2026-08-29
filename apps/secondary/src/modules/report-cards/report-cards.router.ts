@@ -4,7 +4,13 @@ import {
 	router as trpcRouter,
 } from "../../lib/trpc";
 import * as service from "./report-cards.service";
-import { generateSchema, idSchema, listSchema } from "./report-cards.zod";
+import {
+	generatePdfSchema,
+	generateSchema,
+	idSchema,
+	listSchema,
+	updateStatusSchema,
+} from "./report-cards.zod";
 
 export const router = trpcRouter({
 	list: tenantProcedure
@@ -25,5 +31,15 @@ export const router = trpcRouter({
 		.input(generateSchema)
 		.mutation(({ ctx, input }) =>
 			service.generate(input.studentId, input.termId, ctx.institution.id),
+		),
+	generatePdf: adminProcedure
+		.input(generatePdfSchema)
+		.mutation(({ ctx, input }) =>
+			service.generatePdf(input.id, ctx.institution.id),
+		),
+	updateStatus: adminProcedure
+		.input(updateStatusSchema)
+		.mutation(({ ctx, input }) =>
+			service.updateStatus(input.id, input.status, ctx.institution.id),
 		),
 });

@@ -8,6 +8,27 @@
       "when": 1787834597167,
       "tag": "0000_dizzy_liz_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787866118049,
+      "tag": "0001_true_slayback",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787914610332,
+      "tag": "0002_small_gladiator",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787942741874,
+      "tag": "0003_familiar_korath",
+      "breakpoints": true
     }
   ]
 }
