@@ -31,9 +31,17 @@ export { db };
 export type DB = typeof db;
 
 export async function pushSchema(): Promise<void> {
-	if (!_pglite) return;
-	const { migrate } = await import("drizzle-orm/pglite/migrator");
-	const migrationsFolder = path.resolve(import.meta.dir, "./migrations");
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	await migrate(db as any, { migrationsFolder });
+	// Allow overriding the migrations folder via env (needed when running from a bundle).
+	const migrationsFolder =
+		process.env.MIGRATIONS_DIR ?? path.resolve(import.meta.dir, "./migrations");
+
+	if (_pglite) {
+		const { migrate } = await import("drizzle-orm/pglite/migrator");
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		await migrate(db as any, { migrationsFolder });
+	} else {
+		const { migrate } = await import("drizzle-orm/node-postgres/migrator");
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		await migrate(db as any, { migrationsFolder });
+	}
 }

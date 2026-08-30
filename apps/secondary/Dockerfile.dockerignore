@@ -1,0 +1,43 @@
+# Exclude source code of other apps (heavy, unused by secondary build)
+# BUT keep their package.json (bun needs them to resolve workspace deps)
+apps/server/src/
+apps/server/dist/
+apps/server/out/
+apps/server/data/
+apps/server/storage/
+apps/server/seed/
+apps/server/.env*
+apps/server/node_modules/
+apps/server/drizzle.config.ts
+apps/server/docker-entrypoint.sh
+
+apps/web/src/
+apps/web/dist/
+apps/web/node_modules/
+apps/web/.env*
+
+apps/website/src/
+apps/website/dist/
+apps/website/node_modules/
+apps/website/.env*
+
+apps/remotion/src/
+apps/remotion/out/
+apps/remotion/node_modules/
+
+# Secondary build artifacts
+apps/secondary/out/
+apps/secondary/dist/
+apps/secondary/data/
+apps/secondary/storage/
+apps/secondary/client/node_modules/
+apps/secondary/.env*
+
+# Root
+node_modules/
+.git/
+.claude/
+docs/
+**/.DS_Store
+**/Thumbs.db
+**/*.log
