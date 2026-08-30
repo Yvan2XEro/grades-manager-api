@@ -1,5 +1,4 @@
 import { and, eq, inArray } from "drizzle-orm";
-import puppeteer from "puppeteer";
 import { db } from "../../db";
 import {
 	academicYears,
@@ -16,6 +15,7 @@ import {
 	trackSubjectCoefficients,
 } from "../../db/schema";
 import { notFound } from "../../lib/errors";
+import { htmlToPdf } from "../../lib/pdf";
 import * as repo from "./report-cards.repo";
 
 export async function list(
@@ -687,27 +687,143 @@ export async function generatePdf(
 		mentionCode: snapshot.mentionCode ?? null,
 	});
 
-	const browser = await puppeteer.launch({
-		headless: true,
-		args: ["--no-sandbox", "--disable-setuid-sandbox"],
-		executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+	const pdf = await htmlToPdf(html);
+	const pdfBase64 = pdf.toString("base64");
+	const filename = `bulletin_${row.students.lastName.toLowerCase()}_${row.students.firstName.toLowerCase()}_t${term.termNumber}.pdf`;
+	return { pdfBase64, filename };
+}
+
+/**
+ * Generate all report cards for every student in a class+term in one server call.
+ * Returns a count of successfully generated cards.
+ */
+export async function batchGenerate(
+	classId: string,
+	termId: string,
+	academicYearId: string,
+	institutionId: string,
+): Promise<{ generated: number; errors: number }> {
+	const enrollmentRows = await repo.findEnrollmentsByClass(
+		classId,
+		academicYearId,
+		institutionId,
+	);
+	let generated = 0;
+	let errors = 0;
+	for (const row of enrollmentRows) {
+		try {
+			await generate(row.student.id, termId, institutionId);
+			generated++;
+		} catch {
+			errors++;
+		}
+	}
+	return { generated, errors };
+}
+
+/**
+ * Generate a single PDF containing all bulletin cards for the class+term,
+ * with page breaks between students.
+ */
+export async function batchPdf(
+	classId: string,
+	termId: string,
+	academicYearId: string,
+	institutionId: string,
+): Promise<{ pdfBase64: string; filename: string; count: number }> {
+	const [cards, termRows, institutionRows, classRows, yearRows] =
+		await Promise.all([
+			repo.findByClassAndTerm(classId, termId, academicYearId, institutionId),
+			db
+				.select()
+				.from(terms)
+				.where(
+					and(eq(terms.id, termId), eq(terms.institutionId, institutionId)),
+				)
+				.limit(1),
+			db
+				.select()
+				.from(institutions)
+				.where(eq(institutions.id, institutionId))
+				.limit(1),
+			db
+				.select()
+				.from(classes)
+				.where(
+					and(
+						eq(classes.id, classId),
+						eq(classes.institutionId, institutionId),
+					),
+				)
+				.limit(1),
+			db
+				.select()
+				.from(academicYears)
+				.where(
+					and(
+						eq(academicYears.id, academicYearId),
+						eq(academicYears.institutionId, institutionId),
+					),
+				)
+				.limit(1),
+		]);
+
+	const term = termRows[0];
+	if (!term) throw notFound("Term not found");
+	const institution = institutionRows[0];
+	if (!institution) throw notFound("Institution not found");
+	const classRow = classRows[0];
+	if (!classRow) throw notFound("Class not found");
+	const yearRow = yearRows[0];
+
+	if (cards.length === 0) {
+		throw notFound("No report cards found for this class and term");
+	}
+
+	const pages = cards.map((row) => {
+		const snapshot = (row.reportCard.snapshotData ?? {}) as SnapshotData;
+		const subjectRows = Object.values(
+			snapshot.subjectAverages ?? {},
+		) as SubjectAvgEntry[];
+		return buildBulletinHtml({
+			institution: {
+				name: institution.name,
+				city: institution.city,
+				minesecCode: institution.minesecCode,
+				logoUrl: institution.logoUrl,
+			},
+			student: {
+				firstName: row.student.firstName,
+				lastName: row.student.lastName,
+				gender: row.student.gender,
+				mnu: row.student.mnu,
+				dateOfBirth: row.student.dateOfBirth,
+			},
+			className: classRow.name,
+			yearName: yearRow?.name ?? academicYearId,
+			termNumber: term.termNumber,
+			language: row.reportCard.language ?? "fr",
+			subjectRows,
+			overallAverage:
+				typeof snapshot.overallAverage === "number"
+					? snapshot.overallAverage
+					: null,
+			rank: typeof snapshot.rank === "number" ? snapshot.rank : null,
+			mentionCode: snapshot.mentionCode ?? null,
+		});
 	});
 
-	try {
-		const page = await browser.newPage();
-		await page.setContent(html, {
-			waitUntil: "domcontentloaded",
-			timeout: 30_000,
-		});
-		const pdf = await page.pdf({
-			format: "A4",
-			printBackground: true,
-			margin: { top: "0mm", right: "0mm", bottom: "0mm", left: "0mm" },
-		});
-		const pdfBase64 = Buffer.from(pdf).toString("base64");
-		const filename = `bulletin_${row.students.lastName.toLowerCase()}_${row.students.firstName.toLowerCase()}_t${term.termNumber}.pdf`;
-		return { pdfBase64, filename };
-	} finally {
-		await browser.close();
-	}
+	// Merge individual bulletin HTMLs into one printable document with page breaks
+	const mergedHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<style>* { margin:0; padding:0; box-sizing:border-box; }
+.bulletin-page { page-break-after: always; }
+.bulletin-page:last-child { page-break-after: avoid; }</style>
+</head><body>
+${pages.map((h) => `<div class="bulletin-page">${h.replace(/<!DOCTYPE html>[\s\S]*?<body>/, "").replace(/<\/body>[\s\S]*$/, "")}</div>`).join("\n")}
+</body></html>`;
+
+	const pdf = await htmlToPdf(mergedHtml);
+	const pdfBase64 = pdf.toString("base64");
+	const filename = `bulletins_${classRow.name.toLowerCase().replace(/\s+/g, "_")}_t${term.termNumber}.pdf`;
+	return { pdfBase64, filename, count: cards.length };
 }

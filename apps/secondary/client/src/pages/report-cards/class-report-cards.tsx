@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { RefreshCw } from "lucide-react";
+import { Download, FileDown, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
@@ -37,6 +37,15 @@ type ReportCard = {
 	snapshotData: unknown;
 	createdAt?: Date | string | null;
 };
+
+function downloadBase64Pdf(base64: string, filename: string) {
+	const link = document.createElement("a");
+	link.href = `data:application/pdf;base64,${base64}`;
+	link.download = filename;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+}
 
 export function ClassReportCards() {
 	const { t } = useTranslation();
@@ -78,12 +87,33 @@ export function ClassReportCards() {
 	const total = data?.total ?? 0;
 
 	const generate = trpc.reportCards.generate.useMutation({
-		onSuccess: () => {
-			utils.reportCards.list.invalidate();
+		onSuccess: () => utils.reportCards.list.invalidate(),
+	});
+
+	const batchGenerate = trpc.reportCards.batchGenerate.useMutation({
+		onSuccess: () => utils.reportCards.list.invalidate(),
+	});
+
+	const batchPdf = trpc.reportCards.batchPdf.useMutation({
+		onSuccess: (result) => {
+			downloadBase64Pdf(result.pdfBase64, result.filename);
 		},
 	});
 
-	// Fetch enrollments to get student IDs for "Generate all"
+	const downloadPdf = trpc.reportCards.generatePdf.useMutation({
+		onSuccess: (result) => {
+			downloadBase64Pdf(result.pdfBase64, result.filename);
+		},
+	});
+
+	const enrollmentToStudent = new Map<
+		string,
+		{ studentId: string; firstName: string; lastName: string }
+	>();
+	for (const _item of items) {
+		// populated via separate enrollments query below
+	}
+
 	const { data: enrollmentsData } = trpc.enrollments.list.useQuery(
 		{
 			academicYearId: activeYear?.id ?? "",
@@ -96,26 +126,22 @@ export function ClassReportCards() {
 		enrollment: { id: string; studentId: string };
 		student: { id: string; firstName: string; lastName: string };
 	}>;
-
-	const enrollmentToStudent = new Map(
-		enrollments.map((e) => [
-			e.enrollment.id,
-			{
-				studentId: e.student.id,
-				firstName: e.student.firstName,
-				lastName: e.student.lastName,
-			},
-		]),
-	);
+	for (const e of enrollments) {
+		enrollmentToStudent.set(e.enrollment.id, {
+			studentId: e.student.id,
+			firstName: e.student.firstName,
+			lastName: e.student.lastName,
+		});
+	}
 
 	const handleGenerateAll = () => {
-		if (!termId) return;
-		for (const e of enrollments) {
-			const studentId = e.student.id;
-			if (studentId) {
-				generate.mutate({ studentId, termId });
-			}
-		}
+		if (!classId || !termId || !activeYear?.id) return;
+		batchGenerate.mutate({ classId, termId, academicYearId: activeYear.id });
+	};
+
+	const handleDownloadAllPdfs = () => {
+		if (!classId || !termId || !activeYear?.id) return;
+		batchPdf.mutate({ classId, termId, academicYearId: activeYear.id });
 	};
 
 	const columns: ColumnDef<ReportCard>[] = [
@@ -194,6 +220,18 @@ export function ClassReportCards() {
 									: t("report_cards.regenerate", "Regenerate")}
 							</Button>
 						)}
+						{card.status !== "draft" && (
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-6 px-2 text-xs"
+								disabled={downloadPdf.isPending}
+								onClick={() => downloadPdf.mutate({ id: card.id })}
+							>
+								<Download className="mr-1 h-3 w-3" />
+								PDF
+							</Button>
+						)}
 					</div>
 				);
 			},
@@ -221,14 +259,38 @@ export function ClassReportCards() {
 							.join(" · ")}
 					</p>
 				</div>
-				<Button
-					onClick={handleGenerateAll}
-					disabled={generate.isPending || !termId}
-				>
-					<RefreshCw className="mr-2 h-4 w-4" />
-					{t("report_cards.generate_all", "Generate all")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						onClick={handleDownloadAllPdfs}
+						disabled={batchPdf.isPending || !termId || items.length === 0}
+					>
+						<FileDown className="mr-2 h-4 w-4" />
+						{batchPdf.isPending
+							? t("report_cards.generating_pdf", "Generating…")
+							: t("report_cards.download_all_pdfs", "Download all PDFs")}
+					</Button>
+					<Button
+						onClick={handleGenerateAll}
+						disabled={batchGenerate.isPending || !termId}
+					>
+						<RefreshCw className="mr-2 h-4 w-4" />
+						{batchGenerate.isPending
+							? t("report_cards.generating", "Generating…")
+							: t("report_cards.generate_all", "Generate all")}
+					</Button>
+				</div>
 			</div>
+
+			{batchGenerate.data && (
+				<div className="rounded-md bg-muted px-4 py-2 text-sm">
+					{t("report_cards.batch_result", {
+						generated: batchGenerate.data.generated,
+						errors: batchGenerate.data.errors,
+						defaultValue: "Generated: {{generated}}, Errors: {{errors}}",
+					})}
+				</div>
+			)}
 
 			<DataTable
 				columns={columns}

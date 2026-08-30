@@ -64,3 +64,11 @@ export const checkEligibilitySchema = z.object({
 	// Minimum annual average required (default: 8/20 — MINESEC threshold)
 	minAverage: z.number().min(0).max(20).optional().default(8),
 });
+
+export const printEligibilityListSchema = z.object({
+	examSessionId: z.string().uuid(),
+});
+
+export const printCandidateListSchema = z.object({
+	examSessionId: z.string().uuid(),
+});

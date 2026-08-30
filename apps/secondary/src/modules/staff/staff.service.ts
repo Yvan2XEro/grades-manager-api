@@ -68,3 +68,24 @@ export async function updateStaff(
 export async function count(institutionId: string) {
 	return repo.countAll(institutionId);
 }
+
+export async function bulkCreate(
+	rows: {
+		firstName: string;
+		lastName: string;
+		email: string;
+		phone?: string;
+		role?: string;
+	}[],
+	institutionId: string,
+) {
+	const values = rows.map((r) => ({
+		institutionId,
+		firstName: r.firstName,
+		lastName: r.lastName,
+		email: r.email,
+		phone: r.phone,
+		role: r.role ?? "teacher",
+	}));
+	return repo.bulkInsert(values);
+}

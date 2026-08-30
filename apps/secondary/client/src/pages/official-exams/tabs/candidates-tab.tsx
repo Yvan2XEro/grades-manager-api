@@ -1,5 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle, Download, Plus, UserCheck, Users } from "lucide-react";
+import {
+	CheckCircle,
+	Download,
+	FileDown,
+	Plus,
+	UserCheck,
+	Users,
+} from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -727,6 +734,29 @@ export function ExamCandidatesTab() {
 		utils.officialExams.listCandidates.invalidate({ examSessionId: id! });
 	};
 
+	const printEligibilityList =
+		trpc.officialExams.printEligibilityList.useMutation({
+			onSuccess: (result) => {
+				const link = document.createElement("a");
+				link.href = `data:application/pdf;base64,${result.pdfBase64}`;
+				link.download = result.filename;
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			},
+		});
+
+	const printCandidateList = trpc.officialExams.printCandidateList.useMutation({
+		onSuccess: (result) => {
+			const link = document.createElement("a");
+			link.href = `data:application/pdf;base64,${result.pdfBase64}`;
+			link.download = result.filename;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		},
+	});
+
 	const exportCsv = () => {
 		const header = [
 			"N° candidat",
@@ -771,10 +801,41 @@ export function ExamCandidatesTab() {
 			{/* Action bar */}
 			<div className="flex items-center justify-end gap-2">
 				{typedCandidates.length > 0 && (
-					<Button variant="outline" size="sm" onClick={exportCsv}>
-						<Download className="mr-1.5 h-4 w-4" />
-						{t("official_exams.export_csv", "Export CSV")}
-					</Button>
+					<>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={printEligibilityList.isPending}
+							onClick={() =>
+								id && printEligibilityList.mutate({ examSessionId: id })
+							}
+						>
+							<FileDown className="mr-1.5 h-4 w-4" />
+							{printEligibilityList.isPending
+								? t("common.loading", "Loading…")
+								: t(
+										"official_exams.print_eligibility_list",
+										"Eligibility list",
+									)}
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={printCandidateList.isPending}
+							onClick={() =>
+								id && printCandidateList.mutate({ examSessionId: id })
+							}
+						>
+							<FileDown className="mr-1.5 h-4 w-4" />
+							{printCandidateList.isPending
+								? t("common.loading", "Loading…")
+								: t("official_exams.print_candidate_list", "Candidate list")}
+						</Button>
+						<Button variant="outline" size="sm" onClick={exportCsv}>
+							<Download className="mr-1.5 h-4 w-4" />
+							{t("official_exams.export_csv", "Export CSV")}
+						</Button>
+					</>
 				)}
 				{yearId && id && (
 					<>

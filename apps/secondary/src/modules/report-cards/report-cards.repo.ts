@@ -1,6 +1,6 @@
 import { and, count, eq } from "drizzle-orm";
 import { db } from "../../db";
-import { enrollments, reportCards } from "../../db/schema";
+import { enrollments, reportCards, students } from "../../db/schema";
 
 export async function findAll(
 	institutionId: string,
@@ -76,6 +76,73 @@ export async function updateStatus(
 		)
 		.returning();
 	return updated ?? null;
+}
+
+export async function findByClassAndTerm(
+	classId: string,
+	termId: string,
+	academicYearId: string,
+	institutionId: string,
+) {
+	const rows = await db
+		.select({
+			reportCard: reportCards,
+			student: {
+				id: students.id,
+				firstName: students.firstName,
+				lastName: students.lastName,
+				gender: students.gender,
+				mnu: students.mnu,
+				dateOfBirth: students.dateOfBirth,
+			},
+			enrollment: {
+				id: enrollments.id,
+				studentId: enrollments.studentId,
+			},
+		})
+		.from(reportCards)
+		.innerJoin(enrollments, eq(reportCards.enrollmentId, enrollments.id))
+		.innerJoin(students, eq(enrollments.studentId, students.id))
+		.where(
+			and(
+				eq(reportCards.institutionId, institutionId),
+				eq(reportCards.termId, termId),
+				eq(enrollments.classId, classId),
+				eq(enrollments.academicYearId, academicYearId),
+			),
+		)
+		.orderBy(students.lastName, students.firstName);
+	return rows;
+}
+
+export async function findEnrollmentsByClass(
+	classId: string,
+	academicYearId: string,
+	institutionId: string,
+) {
+	const rows = await db
+		.select({
+			enrollment: {
+				id: enrollments.id,
+				studentId: enrollments.studentId,
+			},
+			student: {
+				id: students.id,
+				firstName: students.firstName,
+				lastName: students.lastName,
+			},
+		})
+		.from(enrollments)
+		.innerJoin(students, eq(enrollments.studentId, students.id))
+		.where(
+			and(
+				eq(enrollments.institutionId, institutionId),
+				eq(enrollments.classId, classId),
+				eq(enrollments.academicYearId, academicYearId),
+			),
+		)
+		.orderBy(students.lastName, students.firstName);
+	return rows;
 }
 
 export async function upsert(data: {

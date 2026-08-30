@@ -1,6 +1,6 @@
 import { ChevronRight, LogOut } from "lucide-react";
-import { useContext } from "react";
-import { Link, useNavigate } from "react-router";
+import { useContext, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
 	Popover,
 	PopoverContent,
@@ -70,10 +70,23 @@ interface Props {
 
 export function AppShell({ children }: Props) {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { data: session } = useSession();
 	const { data: org } = authClient.useActiveOrganization();
-	const { data: years = [] } = trpc.academicYears.list.useQuery();
-	const activeYear = years.find((y) => y.status === "active");
+	const { data: years, isSuccess: yearsLoaded } =
+		trpc.academicYears.list.useQuery();
+	const activeYear = (years ?? []).find((y) => y.status === "active");
+
+	// Redirect to onboarding when no academic year exists (first connection)
+	useEffect(() => {
+		if (
+			yearsLoaded &&
+			(years ?? []).length === 0 &&
+			!location.pathname.includes("onboarding")
+		) {
+			navigate("/onboarding", { replace: true });
+		}
+	}, [yearsLoaded, years, location.pathname]);
 
 	const myMember = org?.members?.find((m) => m.userId === session?.user?.id);
 	const role = myMember?.role ?? "teacher";

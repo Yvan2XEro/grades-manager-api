@@ -24,3 +24,8 @@ export const updateStatusSchema = z.object({
 });
 
 export const idSchema = z.object({ id: z.string().uuid() });
+
+export const printClassRosterSchema = z.object({
+	classId: z.string().uuid(),
+	academicYearId: z.string().uuid(),
+});

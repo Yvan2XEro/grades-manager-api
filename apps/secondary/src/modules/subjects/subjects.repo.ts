@@ -96,3 +96,8 @@ export async function update(
 		.returning();
 	return row ?? null;
 }
+
+export async function bulkInsert(rows: (typeof subjects.$inferInsert)[]) {
+	if (rows.length === 0) return [];
+	return db.insert(subjects).values(rows).onConflictDoNothing().returning();
+}

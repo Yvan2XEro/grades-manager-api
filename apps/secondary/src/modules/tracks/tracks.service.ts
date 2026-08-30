@@ -59,6 +59,42 @@ export async function upsertCoefficient(
 	});
 }
 
+export async function bulkCreate(
+	rows: {
+		name: string;
+		code: string;
+		cycleLevel: "first_cycle" | "second_cycle" | "technical";
+		isOfficial?: boolean;
+	}[],
+	institutionId: string,
+) {
+	const values = rows.map((r) => ({
+		institutionId,
+		name: r.name,
+		code: r.code,
+		cycleLevel: r.cycleLevel,
+		isOfficial: r.isOfficial ?? false,
+	}));
+	return repo.bulkInsert(values);
+}
+
+export async function bulkUpsertCoefficients(
+	rows: {
+		trackId: string;
+		subjectId: string;
+		coefficient: number;
+		isOfficialExamSubject?: boolean;
+	}[],
+) {
+	const values = rows.map((r) => ({
+		trackId: r.trackId,
+		subjectId: r.subjectId,
+		coefficient: r.coefficient,
+		isOfficialExamSubject: r.isOfficialExamSubject ?? false,
+	}));
+	return repo.bulkUpsertCoefficients(values);
+}
+
 export async function getCoefficientsGrid(
 	trackId: string,
 	institutionId: string,

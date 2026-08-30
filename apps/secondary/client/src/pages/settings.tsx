@@ -1,9 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, Copy, ShieldCheck, ShieldOff } from "lucide-react";
+import {
+	CheckCircle2,
+	Copy,
+	Rocket,
+	ShieldCheck,
+	ShieldOff,
+} from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
@@ -631,16 +638,24 @@ export function Settings() {
 
 	return (
 		<div className="max-w-2xl space-y-5">
-			<div>
-				<h1 className="font-bold text-2xl text-foreground">
-					{t("settings.title", "Settings")}
-				</h1>
-				<p className="text-muted-foreground text-sm">
-					{t(
-						"settings.subtitle",
-						"Configure your school and application preferences",
-					)}
-				</p>
+			<div className="flex items-start justify-between">
+				<div>
+					<h1 className="font-bold text-2xl text-foreground">
+						{t("settings.title", "Settings")}
+					</h1>
+					<p className="text-muted-foreground text-sm">
+						{t(
+							"settings.subtitle",
+							"Configure your school and application preferences",
+						)}
+					</p>
+				</div>
+				<Button variant="outline" size="sm" asChild>
+					<Link to="/onboarding">
+						<Rocket className="mr-1.5 h-3.5 w-3.5" />
+						{t("onboarding.setup_wizard", "Setup wizard")}
+					</Link>
+				</Button>
 			</div>
 
 			<Tabs defaultValue="school">

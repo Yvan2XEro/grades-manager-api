@@ -1,7 +1,12 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../db";
-import { termAverages, terms } from "../../db/schema";
+import { institutions, termAverages, terms } from "../../db/schema";
 import { conflict, notFound } from "../../lib/errors";
+import { htmlToPdf } from "../../lib/pdf";
+import {
+	buildCandidateListHtml,
+	buildEligibilityListHtml,
+} from "../../lib/pdf-templates";
 import * as repo from "./official-exams.repo";
 
 // ─── Official Exam Sessions ──────────────────────────────────────────
@@ -342,4 +347,92 @@ export async function checkEligibility(
 	await repo.updateRegistration(registrationId, institutionId, { isEligible });
 
 	return { isEligible, annualAverage };
+}
+
+export async function printEligibilityList(
+	examSessionId: string,
+	institutionId: string,
+): Promise<{ pdfBase64: string; filename: string }> {
+	const [session, registrations, institutionRows] = await Promise.all([
+		repo.findSessionById(examSessionId, institutionId),
+		repo.findAllRegistrations(examSessionId, institutionId),
+		db
+			.select()
+			.from(institutions)
+			.where(eq(institutions.id, institutionId))
+			.limit(1),
+	]);
+	if (!session) throw notFound("Exam session not found");
+	const institution = institutionRows[0];
+	if (!institution) throw notFound("Institution not found");
+
+	const html = buildEligibilityListHtml({
+		institution: {
+			name: institution.name,
+			city: institution.city,
+			minesecCode: institution.minesecCode,
+		},
+		examType: session.examType,
+		sessionYear: session.sessionYear,
+		series: session.series,
+		candidates: registrations.map((r) => ({
+			lastName: r.student.lastName,
+			firstName: r.student.firstName,
+			mnu: r.student.mnu,
+			isEligible: r.registration.isEligible,
+			annualAverage: null,
+			hasPaidFee: r.registration.hasPaidFee,
+			candidateNumber: r.registration.candidateNumber,
+		})),
+	});
+
+	const pdf = await htmlToPdf(html);
+	const pdfBase64 = pdf.toString("base64");
+	const filename = `eligibilite_${session.examType.toLowerCase()}_${session.sessionYear}.pdf`;
+	return { pdfBase64, filename };
+}
+
+export async function printCandidateList(
+	examSessionId: string,
+	institutionId: string,
+): Promise<{ pdfBase64: string; filename: string }> {
+	const [session, registrations, institutionRows] = await Promise.all([
+		repo.findSessionById(examSessionId, institutionId),
+		repo.findAllRegistrations(examSessionId, institutionId),
+		db
+			.select()
+			.from(institutions)
+			.where(eq(institutions.id, institutionId))
+			.limit(1),
+	]);
+	if (!session) throw notFound("Exam session not found");
+	const institution = institutionRows[0];
+	if (!institution) throw notFound("Institution not found");
+
+	const html = buildCandidateListHtml({
+		institution: {
+			name: institution.name,
+			city: institution.city,
+			minesecCode: institution.minesecCode,
+			centerCode: session.centerCode,
+		},
+		examType: session.examType,
+		sessionYear: session.sessionYear,
+		series: session.series,
+		candidates: registrations.map((r) => ({
+			candidateNumber: r.registration.candidateNumber,
+			lastName: r.student.lastName,
+			firstName: r.student.firstName,
+			mnu: r.student.mnu,
+			dateOfBirth: r.student.dateOfBirth,
+			isEligible: r.registration.isEligible,
+			isAdmitted: r.registration.isAdmitted,
+			mention: r.registration.mention,
+		})),
+	});
+
+	const pdf = await htmlToPdf(html);
+	const pdfBase64 = pdf.toString("base64");
+	const filename = `candidats_${session.examType.toLowerCase()}_${session.sessionYear}.pdf`;
+	return { pdfBase64, filename };
 }

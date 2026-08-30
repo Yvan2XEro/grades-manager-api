@@ -30,3 +30,15 @@ export const listSchema = z.object({
 export const idSchema = z.object({ id: z.string().uuid() });
 
 export const generatePdfSchema = z.object({ id: z.string().uuid() });
+
+export const batchGenerateSchema = z.object({
+	classId: z.string().uuid(),
+	termId: z.string().uuid(),
+	academicYearId: z.string().uuid(),
+});
+
+export const batchPdfSchema = z.object({
+	classId: z.string().uuid(),
+	termId: z.string().uuid(),
+	academicYearId: z.string().uuid(),
+});

@@ -11,6 +11,7 @@ export async function update(
 		phone?: string;
 		email?: string;
 		assessmentMode?: string;
+		logoUrl?: string;
 	},
 ) {
 	return repo.updateById(institutionId, data);

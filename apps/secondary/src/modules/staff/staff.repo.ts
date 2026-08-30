@@ -76,6 +76,11 @@ export async function insert(data: typeof staff.$inferInsert) {
 	return row!;
 }
 
+export async function bulkInsert(rows: (typeof staff.$inferInsert)[]) {
+	if (rows.length === 0) return [];
+	return db.insert(staff).values(rows).onConflictDoNothing().returning();
+}
+
 export async function update(
 	id: string,
 	institutionId: string,

@@ -9,6 +9,7 @@ import * as service from "./enrollments.service";
 import {
 	createSchema,
 	listSchema,
+	printClassRosterSchema,
 	updateStatusSchema,
 } from "./enrollments.zod";
 
@@ -41,6 +42,15 @@ export const router = trpcRouter({
 		.query(({ ctx, input }) =>
 			repo.findByStudentAndYear(
 				input.studentId,
+				input.academicYearId,
+				ctx.institution.id,
+			),
+		),
+	printClassRoster: adminProcedure
+		.input(printClassRosterSchema)
+		.mutation(({ ctx, input }) =>
+			service.printClassRoster(
+				input.classId,
 				input.academicYearId,
 				ctx.institution.id,
 			),

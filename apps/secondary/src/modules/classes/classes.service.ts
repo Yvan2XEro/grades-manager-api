@@ -65,3 +65,28 @@ export async function getRoster(classId: string, institutionId: string) {
 	if (!cls) throw notFound("Class not found");
 	return repo.getRoster(classId, institutionId);
 }
+
+export async function bulkCreate(
+	rows: {
+		name: string;
+		code: string;
+		level: string;
+		academicYearId: string;
+		trackId?: string;
+		room?: string;
+		maxCapacity?: number;
+	}[],
+	institutionId: string,
+) {
+	const values = rows.map((r) => ({
+		institutionId,
+		academicYearId: r.academicYearId,
+		trackId: r.trackId,
+		name: r.name,
+		code: r.code,
+		level: r.level,
+		room: r.room,
+		maxCapacity: r.maxCapacity,
+	}));
+	return repo.bulkInsert(values);
+}

@@ -9,4 +9,5 @@ export const updateSchema = z.object({
 	phone: z.string().max(30).optional(),
 	email: z.string().email().optional().or(z.literal("")),
 	assessmentMode: z.enum(["six_sequence", "composition"]).optional(),
+	logoUrl: z.string().url().optional().or(z.literal("")),
 });

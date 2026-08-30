@@ -119,6 +119,7 @@ export async function findAllRegistrations(
 				lastName: students.lastName,
 				mnu: students.mnu,
 				registrationNumber: students.registrationNumber,
+				dateOfBirth: students.dateOfBirth,
 			},
 		})
 		.from(officialExamRegistrations)

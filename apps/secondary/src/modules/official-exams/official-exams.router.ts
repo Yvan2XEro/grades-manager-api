@@ -11,6 +11,8 @@ import {
 	idSchema,
 	listCandidatesSchema,
 	listSessionsSchema,
+	printCandidateListSchema,
+	printEligibilityListSchema,
 	registerCandidateSchema,
 	updateRegistrationSchema,
 	updateSessionSchema,
@@ -95,5 +97,15 @@ export const router = trpcRouter({
 				ctx.institution.id,
 				input.minAverage,
 			),
+		),
+	printEligibilityList: adminProcedure
+		.input(printEligibilityListSchema)
+		.mutation(({ ctx, input }) =>
+			service.printEligibilityList(input.examSessionId, ctx.institution.id),
+		),
+	printCandidateList: adminProcedure
+		.input(printCandidateListSchema)
+		.mutation(({ ctx, input }) =>
+			service.printCandidateList(input.examSessionId, ctx.institution.id),
 		),
 });

@@ -80,6 +80,32 @@ export async function upsertCoefficient(data: {
 	return row!;
 }
 
+export async function bulkInsert(rows: (typeof tracks.$inferInsert)[]) {
+	if (rows.length === 0) return [];
+	return db.insert(tracks).values(rows).onConflictDoNothing().returning();
+}
+
+export async function bulkUpsertCoefficients(
+	rows: (typeof trackSubjectCoefficients.$inferInsert)[],
+) {
+	if (rows.length === 0) return [];
+	return db
+		.insert(trackSubjectCoefficients)
+		.values(rows)
+		.onConflictDoUpdate({
+			target: [
+				trackSubjectCoefficients.trackId,
+				trackSubjectCoefficients.subjectId,
+			],
+			set: {
+				coefficient: trackSubjectCoefficients.coefficient,
+				isOfficialExamSubject: trackSubjectCoefficients.isOfficialExamSubject,
+				updatedAt: new Date(),
+			},
+		})
+		.returning();
+}
+
 export async function getCoefficientsGrid(trackId: string) {
 	return db
 		.select({

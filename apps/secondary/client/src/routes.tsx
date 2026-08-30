@@ -27,6 +27,7 @@ import { OfficialExamsList } from "@/pages/official-exams/official-exams-list";
 import { ExamCandidatesTab } from "@/pages/official-exams/tabs/candidates-tab";
 import { ExamResultsTab } from "@/pages/official-exams/tabs/results-tab";
 import { ExamSettingsTab } from "@/pages/official-exams/tabs/settings-tab";
+import { OnboardingPage } from "@/pages/onboarding/onboarding";
 import { ClassReportCards } from "@/pages/report-cards/class-report-cards";
 import { ReportCardPreview } from "@/pages/report-cards/report-card-preview";
 import { ReportCardsList } from "@/pages/report-cards/report-cards-list";
@@ -62,6 +63,15 @@ export function AppRoutes() {
 			<Route path="/login" element={<LoginPage />} />
 			<Route path="/forgot-password" element={<ForgotPasswordPage />} />
 			<Route path="/reset-password" element={<ResetPasswordPage />} />
+
+			<Route
+				path="/onboarding"
+				element={
+					<ProtectedRoute>
+						<OnboardingPage />
+					</ProtectedRoute>
+				}
+			/>
 
 			<Route
 				path="/*"

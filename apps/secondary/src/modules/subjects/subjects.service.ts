@@ -42,6 +42,27 @@ export async function create(
 	});
 }
 
+export async function bulkCreate(
+	rows: {
+		name: string;
+		nameFr?: string;
+		code: string;
+		minesecCode?: string;
+		subjectGroup?: string;
+	}[],
+	institutionId: string,
+) {
+	const values = rows.map((r) => ({
+		institutionId,
+		name: r.name,
+		nameFr: r.nameFr ?? "",
+		code: r.code,
+		minesecCode: r.minesecCode,
+		subjectGroup: r.subjectGroup,
+	}));
+	return repo.bulkInsert(values);
+}
+
 export async function updateSubject(
 	id: string,
 	institutionId: string,

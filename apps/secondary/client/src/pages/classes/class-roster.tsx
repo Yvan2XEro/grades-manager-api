@@ -1,7 +1,8 @@
-import { Search, Users } from "lucide-react";
+import { FileDown, Search, Users } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
@@ -55,6 +56,20 @@ export function ClassRoster() {
 		{ enabled: !!classId },
 	);
 
+	const { data: years = [] } = trpc.academicYears.list.useQuery();
+	const activeYear = years.find((y) => y.status === "active") ?? years[0];
+
+	const printRoster = trpc.enrollments.printClassRoster.useMutation({
+		onSuccess: (result) => {
+			const link = document.createElement("a");
+			link.href = `data:application/pdf;base64,${result.pdfBase64}`;
+			link.download = result.filename;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		},
+	});
+
 	if (isLoading) {
 		return (
 			<div className="overflow-hidden rounded-xl border border-border">
@@ -95,9 +110,31 @@ export function ClassRoster() {
 				<h2 className="font-semibold text-foreground">
 					{t("classes.roster", "Roster")}
 				</h2>
-				<span className="text-muted-foreground text-sm">
-					{roster.length} {t("classes.students_enrolled", "students")}
-				</span>
+				<div className="flex items-center gap-3">
+					<span className="text-muted-foreground text-sm">
+						{roster.length} {t("classes.students_enrolled", "students")}
+					</span>
+					{activeYear && roster.length > 0 && (
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={printRoster.isPending}
+							onClick={() =>
+								classId &&
+								activeYear &&
+								printRoster.mutate({
+									classId,
+									academicYearId: activeYear.id,
+								})
+							}
+						>
+							<FileDown className="mr-1.5 h-4 w-4" />
+							{printRoster.isPending
+								? t("common.loading", "Loading…")
+								: t("classes.print_roster", "Print roster")}
+						</Button>
+					)}
+				</div>
 			</div>
 
 			<div className="relative">

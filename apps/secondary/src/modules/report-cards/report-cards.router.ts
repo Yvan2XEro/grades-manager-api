@@ -5,6 +5,8 @@ import {
 } from "../../lib/trpc";
 import * as service from "./report-cards.service";
 import {
+	batchGenerateSchema,
+	batchPdfSchema,
 	generatePdfSchema,
 	generateSchema,
 	idSchema,
@@ -41,5 +43,25 @@ export const router = trpcRouter({
 		.input(updateStatusSchema)
 		.mutation(({ ctx, input }) =>
 			service.updateStatus(input.id, input.status, ctx.institution.id),
+		),
+	batchGenerate: adminProcedure
+		.input(batchGenerateSchema)
+		.mutation(({ ctx, input }) =>
+			service.batchGenerate(
+				input.classId,
+				input.termId,
+				input.academicYearId,
+				ctx.institution.id,
+			),
+		),
+	batchPdf: adminProcedure
+		.input(batchPdfSchema)
+		.mutation(({ ctx, input }) =>
+			service.batchPdf(
+				input.classId,
+				input.termId,
+				input.academicYearId,
+				ctx.institution.id,
+			),
 		),
 });

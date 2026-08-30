@@ -84,6 +84,11 @@ export async function insert(data: typeof classes.$inferInsert) {
 	return row!;
 }
 
+export async function bulkInsert(rows: (typeof classes.$inferInsert)[]) {
+	if (rows.length === 0) return [];
+	return db.insert(classes).values(rows).onConflictDoNothing().returning();
+}
+
 export async function getRoster(classId: string, institutionId: string) {
 	return db
 		.select({
