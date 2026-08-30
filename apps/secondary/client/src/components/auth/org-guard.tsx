@@ -9,7 +9,16 @@ interface Props {
 
 export function OrgGuard({ children }: Props) {
 	const { data: session, isPending } = useSession();
-	const [orgs, setOrgs] = useState<any[]>([]);
+	const [orgs, setOrgs] = useState<
+		{
+			id: string;
+			name: string;
+			slug: string;
+			createdAt: Date;
+			logo?: string | null | undefined;
+			metadata?: any;
+		}[]
+	>([]);
 	const [loadingOrgs, setLoadingOrgs] = useState(false);
 	const [activating, setActivating] = useState(false);
 
@@ -62,7 +71,7 @@ export function OrgGuard({ children }: Props) {
 					{orgs.map((org) => (
 						<Button
 							key={org.id}
-							variant="outline"
+							variant="ghost"
 							className="h-auto justify-start gap-3 py-3"
 							onClick={() => handleActivate(org.id)}
 						>

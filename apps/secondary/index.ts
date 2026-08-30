@@ -2,9 +2,13 @@ import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
+import { pushSchema } from "./src/db/index";
 import { auth } from "./src/lib/auth";
 import { createContext } from "./src/lib/context";
 import { appRouter } from "./src/routers/index";
+
+// Apply migrations on startup (no-op for PostgreSQL, runs migrator for PGlite)
+await pushSchema();
 
 const app = new Hono();
 
