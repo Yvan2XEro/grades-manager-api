@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { cn } from "@/lib/utils";
@@ -441,12 +442,11 @@ function EditInstitutionDialog({
 
 					<div className="grid grid-cols-2 gap-3">
 						<div className="space-y-1.5">
-							<Label htmlFor="edit-phone">Phone</Label>
-							<Input
-								id="edit-phone"
+							<Label>Phone</Label>
+							<PhoneInput
+								defaultCountry="CM"
 								value={phone}
-								onChange={(e) => setPhone(e.target.value)}
-								placeholder="+237 600 000 000"
+								onChange={(v) => setPhone(v ?? "")}
 							/>
 						</div>
 						<div className="space-y-1.5">

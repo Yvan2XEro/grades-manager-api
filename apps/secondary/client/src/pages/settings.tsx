@@ -18,6 +18,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
 	Select,
 	SelectContent,
@@ -528,10 +529,16 @@ function SchoolProfileForm() {
 					label={t("settings.phone", "Phone")}
 					error={errors.phone?.message}
 				>
-					<Input
-						type="tel"
-						placeholder="+237 6XX XXX XXX"
-						{...register("phone")}
+					<Controller
+						name="phone"
+						control={control}
+						render={({ field }) => (
+							<PhoneInput
+								defaultCountry="CM"
+								value={field.value ?? ""}
+								onChange={field.onChange}
+							/>
+						)}
 					/>
 				</FormField>
 

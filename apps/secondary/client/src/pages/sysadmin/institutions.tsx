@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { cn } from "@/lib/utils";
@@ -265,11 +266,10 @@ function CreateInstitutionDialog({
 							<Label htmlFor="inst-phone">
 								{t("sysadmin.institutions.field_phone", "Phone")}
 							</Label>
-							<Input
-								id="inst-phone"
+							<PhoneInput
+								defaultCountry="CM"
 								value={phone}
-								onChange={(e) => setPhone(e.target.value)}
-								placeholder="+237 600 000 000"
+								onChange={(v) => setPhone(v ?? "")}
 							/>
 						</div>
 						<div className="space-y-1.5">

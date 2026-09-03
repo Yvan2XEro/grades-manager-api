@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
 	Select,
 	SelectContent,
@@ -169,7 +170,17 @@ export function StaffFormDialog({
 							label={t("staff.phone", "Phone")}
 							error={errors.phone?.message}
 						>
-							<Input {...register("phone")} />
+							<Controller
+								name="phone"
+								control={control}
+								render={({ field }) => (
+									<PhoneInput
+										defaultCountry="CM"
+										value={field.value ?? ""}
+										onChange={field.onChange}
+									/>
+								)}
+							/>
 						</FormField>
 						<FormField
 							label={t("staff.role", "Role")}
