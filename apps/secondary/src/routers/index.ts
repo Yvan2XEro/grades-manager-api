@@ -14,6 +14,7 @@ import { router as staffRouter } from "../modules/staff";
 import { router as studentsRouter } from "../modules/students";
 import { router as subjectAssignmentsRouter } from "../modules/subject-assignments";
 import { router as subjectsRouter } from "../modules/subjects";
+import { router as systemAdminRouter } from "../modules/system-admin";
 import { router as termsRouter } from "../modules/terms";
 import { router as tracksRouter } from "../modules/tracks";
 
@@ -37,6 +38,7 @@ export const appRouter = router({
 	students: studentsRouter,
 	subjectAssignments: subjectAssignmentsRouter,
 	subjects: subjectsRouter,
+	systemAdmin: systemAdminRouter,
 	terms: termsRouter,
 	tracks: tracksRouter,
 });

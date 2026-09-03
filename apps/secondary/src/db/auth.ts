@@ -20,6 +20,11 @@ export const user = pgTable("user", {
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
 	twoFactorEnabled: boolean("two_factor_enabled").default(false),
+	// Better-Auth admin plugin fields
+	role: text("role"),
+	banned: boolean("banned").default(false),
+	banReason: text("ban_reason"),
+	banExpires: timestamp("ban_expires"),
 });
 
 export const session = pgTable(
@@ -46,7 +51,7 @@ export const account = pgTable(
 	"account",
 	{
 		id: text("id").primaryKey(),
-		issuer: text("issuer").notNull(),
+		issuer: text("issuer"),
 		accountId: text("account_id").notNull(),
 		providerId: text("provider_id").notNull(),
 		userId: text("user_id")

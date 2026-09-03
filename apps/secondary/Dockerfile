@@ -52,6 +52,7 @@ WORKDIR /repo/apps/secondary
 # 3. Copy PGlite WASM blobs so the server can fall back to embedded DB if needed
 RUN bun run build:client && \
     bun build ./index.ts --outdir ./out --target bun && \
+    cp -r ./src/db/migrations ./out/migrations && \
     cp /repo/node_modules/@electric-sql/pglite/dist/postgres.data ./out/ && \
     cp /repo/node_modules/@electric-sql/pglite/dist/postgres.wasm ./out/
 

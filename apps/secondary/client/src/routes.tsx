@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { SystemAdminGuard } from "@/components/auth/system-admin-guard";
 import { AppShell } from "@/components/layout/app-shell";
+import { SysAdminShell } from "@/components/layout/sysadmin-shell";
 import { authClient, useSession } from "@/lib/auth-client";
 import { AttendanceOverview } from "@/pages/attendance/attendance-overview";
 import { ForgotPasswordPage } from "@/pages/auth/forgot-password";
@@ -44,12 +46,36 @@ import { StudentGradesTab } from "@/pages/students/tabs/grades-tab";
 import { StudentProfileTab } from "@/pages/students/tabs/profile-tab";
 import { SubjectAssignments } from "@/pages/subject-assignments/subject-assignments";
 import { Subjects } from "@/pages/subjects";
+import {
+	InstitutionAcademicTab,
+	InstitutionMembersTab,
+	InstitutionOverviewTab,
+	SysAdminInstitutionDetail,
+} from "@/pages/sysadmin/institution-detail";
+import { InstitutionTemplatesTab } from "@/pages/sysadmin/institution-templates";
+import { SysAdminInstitutions } from "@/pages/sysadmin/institutions";
+import { SysAdminOverview } from "@/pages/sysadmin/overview";
+import {
+	SysAdminProfileTab,
+	SysAdminSecurityTab,
+	SysAdminSettings,
+} from "@/pages/sysadmin/settings";
+import {
+	SysAdminUserDetail,
+	UserMembershipsTab,
+	UserProfileTab,
+} from "@/pages/sysadmin/user-detail";
+import { SysAdminUsers } from "@/pages/sysadmin/users";
 import { TrackDetail } from "@/pages/tracks/track-detail";
 import { TracksList } from "@/pages/tracks/tracks-list";
 
 function Dashboard() {
 	const { data: session } = useSession();
 	const { data: org } = authClient.useActiveOrganization();
+	// System admins have no institution — redirect them to their panel
+	if ((session?.user as { role?: string } | undefined)?.role === "admin") {
+		return <Navigate to="/sysadmin" replace />;
+	}
 	const myMember = org?.members?.find((m) => m.userId === session?.user?.id);
 	const role = myMember?.role ?? "teacher";
 	if (role === "admin") return <AdminDashboard />;
@@ -174,6 +200,59 @@ export function AppRoutes() {
 								<Route path="settings" element={<Settings />} />
 							</Routes>
 						</AppShell>
+					</ProtectedRoute>
+				}
+			/>
+
+			{/* System Admin — separate layout, no institution context */}
+			<Route
+				path="/sysadmin/*"
+				element={
+					<ProtectedRoute>
+						<SystemAdminGuard>
+							<SysAdminShell>
+								<Routes>
+									<Route index element={<SysAdminOverview />} />
+									<Route
+										path="institutions"
+										element={<SysAdminInstitutions />}
+									/>
+									<Route
+										path="institutions/:id/*"
+										element={<SysAdminInstitutionDetail />}
+									>
+										<Route index element={<Navigate to="overview" replace />} />
+										<Route
+											path="overview"
+											element={<InstitutionOverviewTab />}
+										/>
+										<Route path="members" element={<InstitutionMembersTab />} />
+										<Route
+											path="academic"
+											element={<InstitutionAcademicTab />}
+										/>
+										<Route
+											path="templates"
+											element={<InstitutionTemplatesTab />}
+										/>
+									</Route>
+									<Route path="users" element={<SysAdminUsers />} />
+									<Route path="users/:id/*" element={<SysAdminUserDetail />}>
+										<Route index element={<Navigate to="profile" replace />} />
+										<Route path="profile" element={<UserProfileTab />} />
+										<Route
+											path="memberships"
+											element={<UserMembershipsTab />}
+										/>
+									</Route>
+									<Route path="settings/*" element={<SysAdminSettings />}>
+										<Route index element={<Navigate to="profile" replace />} />
+										<Route path="profile" element={<SysAdminProfileTab />} />
+										<Route path="security" element={<SysAdminSecurityTab />} />
+									</Route>
+								</Routes>
+							</SysAdminShell>
+						</SystemAdminGuard>
 					</ProtectedRoute>
 				}
 			/>

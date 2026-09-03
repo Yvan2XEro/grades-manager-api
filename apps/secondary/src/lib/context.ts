@@ -12,7 +12,7 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
 		const rows = await db
 			.select()
 			.from(institutions)
-			.where(eq(institutions.id, session.session.activeOrganizationId))
+			.where(eq(institutions.orgId, session.session.activeOrganizationId))
 			.limit(1);
 		institution = rows[0] ?? null;
 	}

@@ -28,7 +28,8 @@ const timestamps = () => ({
 // Maps 1-to-1 with Better-Auth organization. id = org.id
 
 export const institutions = pgTable("institutions", {
-	id: uuid("id").primaryKey(),
+	id: uuid("id").primaryKey().defaultRandom(),
+	orgId: text("org_id").unique(), // Better-Auth organization ID (nanoid format)
 	name: varchar("name", { length: 255 }).notNull(),
 	minesecCode: varchar("minesec_code", { length: 50 }),
 	type: varchar("type", { length: 20 }).notNull().default("lycee"), // lycee | college | mixed
@@ -40,6 +41,7 @@ export const institutions = pgTable("institutions", {
 	assessmentMode: varchar("assessment_mode", { length: 20 })
 		.notNull()
 		.default("six_sequence"), // six_sequence | composition
+	suspended: boolean("suspended").notNull().default(false),
 	...timestamps(),
 });
 
@@ -599,6 +601,39 @@ export const officialExamSessions = pgTable("official_exam_sessions", {
 	}),
 	...timestamps(),
 });
+
+// ─── Official exam registrations ──────────────────────────────────────────────
+
+// ─── Print templates ──────────────────────────────────────────────────────────
+
+export const printTemplateTypes = [
+	"report_card",
+	"class_roster",
+	"eligibility_list",
+	"candidate_list",
+] as const;
+export type PrintTemplateType = (typeof printTemplateTypes)[number];
+
+export const printTemplates = pgTable(
+	"print_templates",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		institutionId: uuid("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		type: text("type").$type<PrintTemplateType>().notNull(),
+		name: varchar("name", { length: 255 }).notNull(),
+		htmlContent: text("html_content").notNull(),
+		...timestamps(),
+	},
+	(t) => [
+		index("print_templates_institution_idx").on(t.institutionId),
+		uniqueIndex("print_templates_institution_type_idx").on(
+			t.institutionId,
+			t.type,
+		),
+	],
+);
 
 // ─── Official exam registrations ──────────────────────────────────────────────
 

@@ -29,17 +29,21 @@ async function getMemberRole(ctx: {
 	session: NonNullable<Context["session"]>;
 	institution: NonNullable<Context["institution"]>;
 }): Promise<string | null> {
+	// Use orgId (Better-Auth nanoid) not institution UUID for the member lookup
 	const result = await ctx.db.execute(
-		sql`SELECT role FROM member WHERE user_id = ${ctx.session.user.id} AND organization_id = ${ctx.institution.id} LIMIT 1`,
+		sql`SELECT role FROM member WHERE user_id = ${ctx.session.user.id} AND organization_id = ${ctx.institution.orgId} LIMIT 1`,
 	);
 	return (result.rows[0] as { role: string } | undefined)?.role ?? null;
 }
+
+// "owner" is the role Better-Auth assigns to organization creators
+const ADMIN_ROLES = ["admin", "owner"];
 
 export const tenantProcedure = withInstitution;
 
 export const adminProcedure = withInstitution.use(async ({ ctx, next }) => {
 	const role = await getMemberRole(ctx);
-	if (role !== "admin") {
+	if (!role || !ADMIN_ROLES.includes(role)) {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
 	return next({ ctx });
@@ -47,7 +51,7 @@ export const adminProcedure = withInstitution.use(async ({ ctx, next }) => {
 
 export const teacherProcedure = withInstitution.use(async ({ ctx, next }) => {
 	const role = await getMemberRole(ctx);
-	if (!role || !["teacher", "admin"].includes(role)) {
+	if (!role || !["teacher", ...ADMIN_ROLES].includes(role)) {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
 	return next({ ctx: { ...ctx, callerRole: role } });
@@ -55,7 +59,16 @@ export const teacherProcedure = withInstitution.use(async ({ ctx, next }) => {
 
 export const principalProcedure = withInstitution.use(async ({ ctx, next }) => {
 	const role = await getMemberRole(ctx);
-	if (!role || !["principal", "admin"].includes(role)) {
+	if (!role || !["principal", ...ADMIN_ROLES].includes(role)) {
+		throw new TRPCError({ code: "FORBIDDEN" });
+	}
+	return next({ ctx });
+});
+
+// Platform-level super admin (Better-Auth admin plugin role = "admin")
+export const systemAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
+	const role = (ctx.session as { user: { role?: string } }).user.role;
+	if (role !== "admin") {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
 	return next({ ctx });

@@ -1,4 +1,5 @@
 import {
+	adminClient,
 	organizationClient,
 	twoFactorClient,
 } from "better-auth/client/plugins";
@@ -6,7 +7,7 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
 	baseURL: import.meta.env.VITE_SERVER_URL ?? "http://localhost:3001",
-	plugins: [organizationClient(), twoFactorClient()],
+	plugins: [organizationClient(), twoFactorClient(), adminClient()],
 });
 
 export const { useSession, signIn, signOut } = authClient;

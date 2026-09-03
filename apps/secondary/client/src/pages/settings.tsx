@@ -1,13 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+	Building2,
+	Camera,
 	CheckCircle2,
 	Copy,
+	Loader2,
 	Rocket,
 	ShieldCheck,
 	ShieldOff,
 } from "lucide-react";
 import QRCode from "qrcode";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -43,8 +46,296 @@ const academicConfigSchema = z.object({
 	assessmentMode: z.enum(["six_sequence", "composition"]),
 });
 
+const profileSchema = z.object({
+	name: z.string().min(1, "Name is required"),
+});
+
+const changePasswordSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Current password is required"),
+		newPassword: z
+			.string()
+			.min(8, "New password must be at least 8 characters"),
+		confirmPassword: z.string().min(1, "Please confirm your password"),
+	})
+	.refine((d) => d.newPassword === d.confirmPassword, {
+		message: "Passwords don't match",
+		path: ["confirmPassword"],
+	});
+
 type SchoolProfileValues = z.infer<typeof schoolProfileSchema>;
 type AcademicConfigValues = z.infer<typeof academicConfigSchema>;
+type ProfileValues = z.infer<typeof profileSchema>;
+type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getInitials(name?: string | null) {
+	if (!name) return "?";
+	const parts = name.trim().split(/\s+/);
+	if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+async function uploadFile(file: File): Promise<string> {
+	const fd = new FormData();
+	fd.append("file", file);
+	const res = await fetch(
+		`${import.meta.env.VITE_SERVER_URL ?? "http://localhost:3001"}/api/upload`,
+		{ method: "POST", body: fd, credentials: "include" },
+	);
+	if (!res.ok) throw new Error("Upload failed");
+	const json = (await res.json()) as { url: string };
+	return json.url;
+}
+
+// ─── Profile tab ──────────────────────────────────────────────────────────────
+
+function ProfileTab() {
+	const { t } = useTranslation();
+	const { data: session, refetch } = useSession();
+	const user = session?.user;
+
+	// Avatar upload
+	const fileRef = useRef<HTMLInputElement>(null);
+	const [avatarLoading, setAvatarLoading] = useState(false);
+	const [avatarError, setAvatarError] = useState("");
+
+	const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setAvatarError("");
+		setAvatarLoading(true);
+		try {
+			const url = await uploadFile(file);
+			await authClient.updateUser({ image: url });
+			await refetch();
+		} catch {
+			setAvatarError("Upload failed. Try again.");
+		} finally {
+			setAvatarLoading(false);
+			e.target.value = "";
+		}
+	};
+
+	// Name form
+	const [profileSuccess, setProfileSuccess] = useState(false);
+	const [profileError, setProfileError] = useState("");
+	const {
+		register: regProfile,
+		handleSubmit: handleProfile,
+		formState: { errors: profileErrors, isSubmitting: profileSubmitting },
+	} = useForm<ProfileValues>({
+		resolver: zodResolver(profileSchema),
+		values: { name: user?.name ?? "" },
+	});
+
+	const onSaveProfile = async (data: ProfileValues) => {
+		setProfileError("");
+		setProfileSuccess(false);
+		const res = await authClient.updateUser({ name: data.name });
+		if (res.error) {
+			setProfileError(res.error.message ?? "Error saving profile");
+		} else {
+			await refetch();
+			setProfileSuccess(true);
+		}
+	};
+
+	// Change password form
+	const [pwSuccess, setPwSuccess] = useState(false);
+	const [pwError, setPwError] = useState("");
+	const {
+		register: regPw,
+		handleSubmit: handlePw,
+		reset: resetPw,
+		formState: { errors: pwErrors, isSubmitting: pwSubmitting },
+	} = useForm<ChangePasswordValues>({
+		resolver: zodResolver(changePasswordSchema),
+	});
+
+	const onChangePassword = async (data: ChangePasswordValues) => {
+		setPwError("");
+		setPwSuccess(false);
+		const res = await authClient.changePassword({
+			currentPassword: data.currentPassword,
+			newPassword: data.newPassword,
+			revokeOtherSessions: false,
+		});
+		if (res.error) {
+			setPwError(res.error.message ?? "Error changing password");
+		} else {
+			resetPw();
+			setPwSuccess(true);
+		}
+	};
+
+	const image = (user as { image?: string | null } | undefined)?.image;
+
+	return (
+		<div className="space-y-5">
+			{/* Personal info */}
+			<div className="overflow-hidden rounded-xl border border-border">
+				<div className="border-border border-b bg-muted/30 px-5 py-4">
+					<h2 className="font-semibold text-foreground text-sm">
+						{t("settings.personal_info", "Personal information")}
+					</h2>
+				</div>
+				<div className="space-y-5 px-5 py-4">
+					{/* Avatar */}
+					<div className="flex items-center gap-4">
+						<div className="relative">
+							<div
+								className="flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-primary/10"
+								onClick={() => fileRef.current?.click()}
+							>
+								{avatarLoading ? (
+									<Loader2 className="h-6 w-6 animate-spin text-primary" />
+								) : image ? (
+									<img
+										src={image}
+										alt="Avatar"
+										className="h-full w-full object-cover"
+									/>
+								) : (
+									<span className="font-semibold text-primary text-xl">
+										{getInitials(user?.name)}
+									</span>
+								)}
+							</div>
+							<button
+								type="button"
+								className="-bottom-1 -right-1 absolute flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow"
+								onClick={() => fileRef.current?.click()}
+							>
+								<Camera className="h-3 w-3" />
+							</button>
+						</div>
+						<div>
+							<p className="font-medium text-foreground text-sm">
+								{t("settings.profile_photo", "Profile photo")}
+							</p>
+							<p className="text-muted-foreground text-xs">
+								{t("settings.profile_photo_hint", "PNG or JPG, max 10 MB")}
+							</p>
+							{avatarError && (
+								<p className="mt-0.5 text-destructive text-xs">{avatarError}</p>
+							)}
+						</div>
+						<input
+							ref={fileRef}
+							type="file"
+							accept="image/*"
+							className="hidden"
+							onChange={handleAvatarChange}
+						/>
+					</div>
+
+					{/* Name + email form */}
+					<form className="space-y-4" onSubmit={handleProfile(onSaveProfile)}>
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<FormField
+								label={t("settings.full_name", "Full name")}
+								error={profileErrors.name?.message}
+								required
+							>
+								<Input {...regProfile("name")} placeholder="Your name" />
+							</FormField>
+							<FormField label={t("settings.email_address", "Email address")}>
+								<Input
+									value={user?.email ?? ""}
+									disabled
+									className="text-muted-foreground"
+								/>
+							</FormField>
+						</div>
+
+						{profileError && (
+							<p className="text-destructive text-sm">{profileError}</p>
+						)}
+						{profileSuccess && (
+							<p className="text-emerald-600 text-sm">
+								{t("settings.profile_saved", "Profile saved.")}
+							</p>
+						)}
+
+						<Button type="submit" disabled={profileSubmitting}>
+							{profileSubmitting
+								? t("common.saving", "Saving…")
+								: t("settings.save_profile", "Save Profile")}
+						</Button>
+					</form>
+				</div>
+			</div>
+
+			{/* Change password */}
+			<div className="overflow-hidden rounded-xl border border-border">
+				<div className="border-border border-b bg-muted/30 px-5 py-4">
+					<h2 className="font-semibold text-foreground text-sm">
+						{t("settings.change_password", "Change password")}
+					</h2>
+				</div>
+				<div className="px-5 py-4">
+					<form className="space-y-4" onSubmit={handlePw(onChangePassword)}>
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<FormField
+								label={t("settings.current_password", "Current password")}
+								error={pwErrors.currentPassword?.message}
+								required
+							>
+								<Input
+									type="password"
+									{...regPw("currentPassword")}
+									autoComplete="current-password"
+								/>
+							</FormField>
+						</div>
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<FormField
+								label={t("settings.new_password", "New password")}
+								error={pwErrors.newPassword?.message}
+								required
+							>
+								<Input
+									type="password"
+									{...regPw("newPassword")}
+									autoComplete="new-password"
+								/>
+							</FormField>
+							<FormField
+								label={t("settings.confirm_password", "Confirm new password")}
+								error={pwErrors.confirmPassword?.message}
+								required
+							>
+								<Input
+									type="password"
+									{...regPw("confirmPassword")}
+									autoComplete="new-password"
+								/>
+							</FormField>
+						</div>
+
+						{pwError && <p className="text-destructive text-sm">{pwError}</p>}
+						{pwSuccess && (
+							<p className="text-emerald-600 text-sm">
+								{t(
+									"settings.password_changed",
+									"Password changed successfully.",
+								)}
+							</p>
+						)}
+
+						<Button type="submit" disabled={pwSubmitting}>
+							{pwSubmitting
+								? t("common.saving", "Saving…")
+								: t("settings.change_password_btn", "Change password")}
+						</Button>
+					</form>
+				</div>
+			</div>
+		</div>
+	);
+}
 
 // ─── School Profile form ──────────────────────────────────────────────────────
 
@@ -56,6 +347,27 @@ function SchoolProfileForm() {
 	const update = trpc.institutions.update.useMutation({
 		onSuccess: () => utils.institutions.get.invalidate(),
 	});
+
+	// Logo upload
+	const logoRef = useRef<HTMLInputElement>(null);
+	const [logoLoading, setLogoLoading] = useState(false);
+	const [logoError, setLogoError] = useState("");
+
+	const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setLogoError("");
+		setLogoLoading(true);
+		try {
+			const url = await uploadFile(file);
+			update.mutate({ logoUrl: url });
+		} catch {
+			setLogoError("Upload failed. Try again.");
+		} finally {
+			setLogoLoading(false);
+			e.target.value = "";
+		}
+	};
 
 	const {
 		register,
@@ -89,8 +401,69 @@ function SchoolProfileForm() {
 		});
 	};
 
+	const logoUrl = (institution as { logoUrl?: string | null } | undefined)
+		?.logoUrl;
+
 	return (
-		<form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+		<form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+			{/* Logo upload */}
+			<div className="flex items-center gap-4">
+				<div
+					className="relative flex h-20 w-20 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/40"
+					onClick={() => logoRef.current?.click()}
+				>
+					{logoLoading ? (
+						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+					) : logoUrl ? (
+						<img
+							src={logoUrl}
+							alt="Logo"
+							className="h-full w-full object-contain p-1"
+						/>
+					) : (
+						<Building2 className="h-8 w-8 text-muted-foreground/40" />
+					)}
+					<div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/0 transition-colors hover:bg-black/20">
+						<Camera className="h-5 w-5 text-white opacity-0 transition-opacity hover:opacity-100" />
+					</div>
+				</div>
+				<div>
+					<p className="font-medium text-foreground text-sm">
+						{t("settings.school_logo", "School logo")}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{t("settings.logo_hint", "PNG or JPG, recommended 256×256 px")}
+					</p>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						className="mt-2 h-7 text-xs"
+						onClick={() => logoRef.current?.click()}
+						disabled={logoLoading}
+					>
+						{logoLoading ? (
+							<Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+						) : (
+							<Camera className="mr-1.5 h-3 w-3" />
+						)}
+						{logoUrl
+							? t("settings.change_logo", "Change logo")
+							: t("settings.upload_logo", "Upload logo")}
+					</Button>
+					{logoError && (
+						<p className="mt-1 text-destructive text-xs">{logoError}</p>
+					)}
+				</div>
+				<input
+					ref={logoRef}
+					type="file"
+					accept="image/*"
+					className="hidden"
+					onChange={handleLogoChange}
+				/>
+			</div>
+
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<FormField
 					label={t("settings.school_name", "School name")}
@@ -630,6 +1003,8 @@ export function Settings() {
 
 	const { data: academicYears = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = academicYears.find((y) => y.status === "active");
+	const { data: myRole } = trpc.institutions.myRole.useQuery();
+	const isAdmin = myRole?.isAdmin ?? false;
 
 	const handleLanguageChange = (lang: string) => {
 		i18n.changeLanguage(lang);
@@ -650,25 +1025,36 @@ export function Settings() {
 						)}
 					</p>
 				</div>
-				<Button variant="outline" size="sm" asChild>
-					<Link to="/onboarding">
-						<Rocket className="mr-1.5 h-3.5 w-3.5" />
-						{t("onboarding.setup_wizard", "Setup wizard")}
-					</Link>
-				</Button>
+				{isAdmin && (
+					<Button variant="outline" size="sm" asChild>
+						<Link to="/onboarding">
+							<Rocket className="mr-1.5 h-3.5 w-3.5" />
+							{t("onboarding.setup_wizard", "Setup wizard")}
+						</Link>
+					</Button>
+				)}
 			</div>
 
-			<Tabs defaultValue="school">
+			<Tabs defaultValue="profile">
 				<TabsList className="mb-4">
-					<TabsTrigger value="school">
-						{t("settings.tab_school", "School")}
+					<TabsTrigger value="profile">
+						{t("settings.tab_profile", "Profile")}
 					</TabsTrigger>
-					<TabsTrigger value="academic">
-						{t("settings.tab_academic", "Academic")}
-					</TabsTrigger>
-					<TabsTrigger value="terms">
-						{t("settings.tab_terms", "Terms")}
-					</TabsTrigger>
+					{isAdmin && (
+						<TabsTrigger value="school">
+							{t("settings.tab_school", "School")}
+						</TabsTrigger>
+					)}
+					{isAdmin && (
+						<TabsTrigger value="academic">
+							{t("settings.tab_academic", "Academic")}
+						</TabsTrigger>
+					)}
+					{isAdmin && (
+						<TabsTrigger value="terms">
+							{t("settings.tab_terms", "Terms")}
+						</TabsTrigger>
+					)}
 					<TabsTrigger value="preferences">
 						{t("settings.tab_preferences", "Preferences")}
 					</TabsTrigger>
@@ -680,62 +1066,72 @@ export function Settings() {
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="school" className="mt-0">
-					<div className="overflow-hidden rounded-xl border border-border">
-						<div className="border-border border-b bg-muted/30 px-5 py-4">
-							<h2 className="font-semibold text-foreground text-sm">
-								{t("settings.school_profile", "School Profile")}
-							</h2>
-							<p className="mt-0.5 text-muted-foreground text-xs">
-								{t(
-									"settings.school_profile_desc",
-									"Basic information about your institution",
-								)}
-							</p>
-						</div>
-						<div className="px-5 py-4">
-							<SchoolProfileForm />
-						</div>
-					</div>
+				<TabsContent value="profile" className="mt-0">
+					<ProfileTab />
 				</TabsContent>
 
-				<TabsContent value="academic" className="mt-0">
-					<div className="overflow-hidden rounded-xl border border-border">
-						<div className="border-border border-b bg-muted/30 px-5 py-4">
-							<h2 className="font-semibold text-foreground text-sm">
-								{t("settings.academic_config", "Academic Configuration")}
-							</h2>
-							<p className="mt-0.5 text-muted-foreground text-xs">
-								{t(
-									"settings.academic_config_desc",
-									"Assessment model used for grade calculation",
-								)}
-							</p>
+				{isAdmin && (
+					<TabsContent value="school" className="mt-0">
+						<div className="overflow-hidden rounded-xl border border-border">
+							<div className="border-border border-b bg-muted/30 px-5 py-4">
+								<h2 className="font-semibold text-foreground text-sm">
+									{t("settings.school_profile", "School Profile")}
+								</h2>
+								<p className="mt-0.5 text-muted-foreground text-xs">
+									{t(
+										"settings.school_profile_desc",
+										"Basic information about your institution",
+									)}
+								</p>
+							</div>
+							<div className="px-5 py-4">
+								<SchoolProfileForm />
+							</div>
 						</div>
-						<div className="px-5 py-4">
-							<AcademicConfigForm />
-						</div>
-					</div>
-				</TabsContent>
+					</TabsContent>
+				)}
 
-				<TabsContent value="terms" className="mt-0">
-					<div className="overflow-hidden rounded-xl border border-border">
-						<div className="border-border border-b bg-muted/30 px-5 py-4">
-							<h2 className="font-semibold text-foreground text-sm">
-								{t("terms.title", "Terms")}
-							</h2>
-							<p className="mt-0.5 text-muted-foreground text-xs">
-								{t(
-									"terms.settings_desc",
-									"Open a term to allow grade entry. Close it to lock the period.",
-								)}
-							</p>
+				{isAdmin && (
+					<TabsContent value="academic" className="mt-0">
+						<div className="overflow-hidden rounded-xl border border-border">
+							<div className="border-border border-b bg-muted/30 px-5 py-4">
+								<h2 className="font-semibold text-foreground text-sm">
+									{t("settings.academic_config", "Academic Configuration")}
+								</h2>
+								<p className="mt-0.5 text-muted-foreground text-xs">
+									{t(
+										"settings.academic_config_desc",
+										"Assessment model used for grade calculation",
+									)}
+								</p>
+							</div>
+							<div className="px-5 py-4">
+								<AcademicConfigForm />
+							</div>
 						</div>
-						<div className="px-5 py-5">
-							<TermsContent />
+					</TabsContent>
+				)}
+
+				{isAdmin && (
+					<TabsContent value="terms" className="mt-0">
+						<div className="overflow-hidden rounded-xl border border-border">
+							<div className="border-border border-b bg-muted/30 px-5 py-4">
+								<h2 className="font-semibold text-foreground text-sm">
+									{t("terms.title", "Terms")}
+								</h2>
+								<p className="mt-0.5 text-muted-foreground text-xs">
+									{t(
+										"terms.settings_desc",
+										"Open a term to allow grade entry. Close it to lock the period.",
+									)}
+								</p>
+							</div>
+							<div className="px-5 py-5">
+								<TermsContent />
+							</div>
 						</div>
-					</div>
-				</TabsContent>
+					</TabsContent>
+				)}
 
 				<TabsContent value="preferences" className="mt-0">
 					<div className="overflow-hidden rounded-xl border border-border">

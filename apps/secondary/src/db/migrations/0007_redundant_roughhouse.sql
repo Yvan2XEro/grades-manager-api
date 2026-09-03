@@ -1,0 +1,1 @@
+ALTER TABLE "institutions" ADD COLUMN "suspended" boolean DEFAULT false NOT NULL;

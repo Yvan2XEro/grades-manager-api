@@ -1,4 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter } from "react-router";
@@ -14,7 +15,9 @@ createRoot(root).render(
 		<trpc.Provider client={trpcClient} queryClient={queryClient}>
 			<QueryClientProvider client={queryClient}>
 				<HashRouter>
-					<AppRoutes />
+					<NuqsAdapter>
+						<AppRoutes />
+					</NuqsAdapter>
 				</HashRouter>
 			</QueryClientProvider>
 		</trpc.Provider>

@@ -1,11 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	BookOpen,
 	Building2,
 	Calendar,
+	CheckCircle,
 	CheckCircle2,
 	ChevronRight,
+	Circle,
 	Download,
 	Layers,
+	Loader2,
 	Plus,
 	Table2,
 	Trash2,
@@ -16,9 +20,11 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
 	Select,
 	SelectContent,
@@ -67,7 +73,6 @@ function parseCsv(text: string): string[][] {
 // ─── Step progress indicator ──────────────────────────────────────────────────
 
 function StepProgress({ current }: { current: number }) {
-	const { t } = useTranslation();
 	return (
 		<div className="flex items-center gap-0">
 			{STEPS.map((step, idx) => {
@@ -131,11 +136,18 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 			: undefined,
 	});
 
-	const [_logoFile, setLogoFile] = useState<File | null>(null);
+	// Logo: store URL locally; include in submit, NOT in a separate mutation
+	const [logoUrl, setLogoUrl] = useState<string | null>(
+		institution?.logoUrl ?? null,
+	);
 	const [uploading, setUploading] = useState(false);
 
+	// Sync logoUrl when institution loads
+	useEffect(() => {
+		if (institution?.logoUrl) setLogoUrl(institution.logoUrl);
+	}, [institution?.logoUrl]);
+
 	const handleLogoUpload = async (file: File) => {
-		setLogoFile(file);
 		setUploading(true);
 		try {
 			const fd = new FormData();
@@ -146,9 +158,7 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 				credentials: "include",
 			});
 			const data = await res.json();
-			if (data.url) {
-				update.mutate({ logoUrl: data.url });
-			}
+			if (data.url) setLogoUrl(data.url);
 		} catch {
 			// ignore upload error
 		} finally {
@@ -165,8 +175,27 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 			address: data.address || undefined,
 			phone: data.phone || undefined,
 			email: data.email || undefined,
+			logoUrl: logoUrl || undefined,
 		});
 	};
+
+	const SCHOOL_TYPES = [
+		{
+			value: "lycee",
+			label: t("settings.type_lycee", "Lycée"),
+			desc: t("settings.type_lycee_desc", "2nd cycle only (6e–Tle)"),
+		},
+		{
+			value: "college",
+			label: t("settings.type_college", "Collège"),
+			desc: t("settings.type_college_desc", "1st cycle only (6e–3e)"),
+		},
+		{
+			value: "mixed",
+			label: t("settings.type_mixed", "Lycée + Collège"),
+			desc: t("settings.type_mixed_desc", "Both cycles on the same campus"),
+		},
+	] as const;
 
 	return (
 		<form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
@@ -182,9 +211,9 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 			{/* Logo upload */}
 			<div className="flex items-center gap-4">
 				<div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted">
-					{institution?.logoUrl ? (
+					{logoUrl ? (
 						<img
-							src={institution.logoUrl}
+							src={logoUrl}
 							alt="logo"
 							className="h-full w-full object-cover"
 						/>
@@ -210,14 +239,52 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 						asChild
 					>
 						<span>
-							<Upload className="mr-1.5 h-3.5 w-3.5" />
+							{uploading ? (
+								<Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+							) : (
+								<Upload className="mr-1.5 h-3.5 w-3.5" />
+							)}
 							{uploading
-								? t("common.loading", "Loading…")
+								? t("onboarding.uploading", "Uploading…")
 								: t("onboarding.upload_logo", "Upload logo")}
 						</span>
 					</Button>
 				</label>
 			</div>
+
+			{/* School type — RadioGroup */}
+			<FormField label={t("settings.school_type", "School type")}>
+				<Controller
+					name="type"
+					control={control}
+					render={({ field }) => (
+						<RadioGroup
+							value={field.value ?? ""}
+							onValueChange={(v) => field.onChange(v || undefined)}
+							className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+						>
+							{SCHOOL_TYPES.map((opt) => (
+								<label
+									key={opt.value}
+									className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
+										field.value === opt.value
+											? "border-primary bg-primary/5"
+											: "border-border hover:border-primary/40 hover:bg-muted/40"
+									}`}
+								>
+									<RadioGroupItem value={opt.value} className="mt-0.5" />
+									<div>
+										<p className="font-medium text-foreground text-sm">
+											{opt.label}
+										</p>
+										<p className="text-muted-foreground text-xs">{opt.desc}</p>
+									</div>
+								</label>
+							))}
+						</RadioGroup>
+					)}
+				/>
+			</FormField>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<FormField
@@ -236,33 +303,6 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 				<FormField label={t("settings.city", "City / Division")}>
 					<Input placeholder="e.g. Yaoundé, Mfoundi" {...register("city")} />
 				</FormField>
-				<FormField label={t("settings.school_type", "School type")}>
-					<Controller
-						name="type"
-						control={control}
-						render={({ field }) => (
-							<Select
-								value={field.value ?? ""}
-								onValueChange={(v) => field.onChange(v || undefined)}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder={t("common.select", "Select…")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="lycee">
-										{t("settings.type_lycee", "Lycée")}
-									</SelectItem>
-									<SelectItem value="college">
-										{t("settings.type_college", "Collège")}
-									</SelectItem>
-									<SelectItem value="mixed">
-										{t("settings.type_mixed", "Mixed")}
-									</SelectItem>
-								</SelectContent>
-							</Select>
-						)}
-					/>
-				</FormField>
 				<FormField label={t("settings.phone", "Phone")}>
 					<Input
 						type="tel"
@@ -270,7 +310,10 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 						{...register("phone")}
 					/>
 				</FormField>
-				<FormField label={t("settings.email", "Email")}>
+				<FormField
+					label={t("settings.email", "Email")}
+					className="sm:col-span-2"
+				>
 					<Input
 						type="email"
 						placeholder="school@example.cm"
@@ -288,7 +331,10 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 			</FormField>
 
 			<div className="flex justify-end">
-				<Button type="submit" disabled={update.isPending}>
+				<Button type="submit" disabled={update.isPending || uploading}>
+					{update.isPending ? (
+						<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+					) : null}
 					{t("common.next", "Next")}
 					<ChevronRight className="ml-1.5 h-4 w-4" />
 				</Button>
@@ -298,6 +344,74 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 }
 
 // ─── Step 2: Academic year + terms ────────────────────────────────────────────
+
+// Derive default MINESEC-standard term dates from a start year (e.g. 2024)
+function defaultTermDates(startYear: number) {
+	const y = startYear;
+	const n = startYear + 1;
+	return {
+		yearStart: `${y}-09-01`,
+		yearEnd: `${n}-07-31`,
+		t1Start: `${y}-09-01`,
+		t1End: `${y}-12-20`,
+		t2Start: `${n}-01-06`,
+		t2End: `${n}-03-28`,
+		t3Start: `${n}-04-07`,
+		t3End: `${n}-07-11`,
+	};
+}
+
+const academicYearSchema = z
+	.object({
+		yearName: z.string().min(1, "Required"),
+		yearStart: z.string().min(1, "Required"),
+		yearEnd: z.string().min(1, "Required"),
+		t1Start: z.string().min(1, "Required"),
+		t1End: z.string().min(1, "Required"),
+		t2Start: z.string().min(1, "Required"),
+		t2End: z.string().min(1, "Required"),
+		t3Start: z.string().min(1, "Required"),
+		t3End: z.string().min(1, "Required"),
+	})
+	.superRefine((d, ctx) => {
+		const pairs = [
+			{ start: d.t1Start, end: d.t1End, label: "Term 1" },
+			{ start: d.t2Start, end: d.t2End, label: "Term 2" },
+			{ start: d.t3Start, end: d.t3End, label: "Term 3" },
+		];
+		for (const p of pairs) {
+			if (p.start && p.end && p.start >= p.end) {
+				ctx.addIssue({
+					code: "custom",
+					message: `${p.label}: start must be before end`,
+					path: [`${p.label.replace(" ", "").toLowerCase()}End`],
+				});
+			}
+		}
+		if (d.t1End && d.t2Start && d.t1End >= d.t2Start) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Term 2 must start after Term 1 ends",
+				path: ["t2Start"],
+			});
+		}
+		if (d.t2End && d.t3Start && d.t2End >= d.t3Start) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Term 3 must start after Term 2 ends",
+				path: ["t3Start"],
+			});
+		}
+		if (d.yearStart && d.yearEnd && d.yearStart >= d.yearEnd) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Year end must be after year start",
+				path: ["yearEnd"],
+			});
+		}
+	});
+
+type AcademicYearFormValues = z.infer<typeof academicYearSchema>;
 
 function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 	const { t } = useTranslation();
@@ -309,37 +423,56 @@ function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const hasYear = years.length > 0;
 
+	const currentYear = new Date().getFullYear();
+	// If after June, default to next academic year
+	const defaultStartYear =
+		new Date().getMonth() >= 6 ? currentYear : currentYear - 1;
+	const defaults = defaultTermDates(defaultStartYear);
+
 	const {
 		register,
 		handleSubmit,
+		watch,
+		setValue,
 		formState: { errors },
-	} = useForm({
+	} = useForm<AcademicYearFormValues>({
+		resolver: zodResolver(academicYearSchema),
 		defaultValues: {
-			yearName: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
-			yearStart: "",
-			yearEnd: "",
-			t1Start: "",
-			t1End: "",
-			t2Start: "",
-			t2End: "",
-			t3Start: "",
-			t3End: "",
+			yearName: `${defaultStartYear}-${defaultStartYear + 1}`,
+			...defaults,
 		},
 	});
 
-	const onSubmit = async (data: any) => {
+	// Auto-suggest dates when year name matches YYYY-YYYY pattern
+	const yearName = watch("yearName");
+	useEffect(() => {
+		const match = yearName?.match(/^(\d{4})-(\d{4})$/);
+		if (match) {
+			const sy = Number(match[1]);
+			const ey = Number(match[2]);
+			if (ey === sy + 1) {
+				const d = defaultTermDates(sy);
+				setValue("yearStart", d.yearStart);
+				setValue("yearEnd", d.yearEnd);
+				setValue("t1Start", d.t1Start);
+				setValue("t1End", d.t1End);
+				setValue("t2Start", d.t2Start);
+				setValue("t2End", d.t2End);
+				setValue("t3Start", d.t3Start);
+				setValue("t3End", d.t3End);
+			}
+		}
+	}, [yearName, setValue]);
+
+	const onSubmit = async (data: AcademicYearFormValues) => {
 		if (hasYear) {
 			onNext();
 			return;
 		}
 		const year = await createYear.mutateAsync({
 			name: data.yearName,
-			startDate: new Date(
-				data.yearStart || `${new Date().getFullYear()}-09-01`,
-			),
-			endDate: new Date(
-				data.yearEnd || `${new Date().getFullYear() + 1}-07-31`,
-			),
+			startDate: new Date(data.yearStart),
+			endDate: new Date(data.yearEnd),
 		});
 		const terms = [
 			{ termNumber: 1, startDate: data.t1Start, endDate: data.t1End },
@@ -347,14 +480,12 @@ function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 			{ termNumber: 3, startDate: data.t3Start, endDate: data.t3End },
 		];
 		for (const term of terms) {
-			if (term.startDate && term.endDate) {
-				await createTerm.mutateAsync({
-					academicYearId: year.id,
-					termNumber: term.termNumber as 1 | 2 | 3,
-					startDate: new Date(term.startDate),
-					endDate: new Date(term.endDate),
-				});
-			}
+			await createTerm.mutateAsync({
+				academicYearId: year.id,
+				termNumber: term.termNumber as 1 | 2 | 3,
+				startDate: new Date(term.startDate),
+				endDate: new Date(term.endDate),
+			});
 		}
 		await activateYear.mutateAsync({ id: year.id });
 		utils.academicYears.list.invalidate();
@@ -400,6 +531,12 @@ function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 		);
 	}
 
+	const TERMS = [
+		{ n: 1, startKey: "t1Start", endKey: "t1End" },
+		{ n: 2, startKey: "t2Start", endKey: "t2End" },
+		{ n: 3, startKey: "t3Start", endKey: "t3End" },
+	] as const;
+
 	return (
 		<form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
 			<div>
@@ -409,29 +546,53 @@ function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 				<p className="text-muted-foreground text-sm">
 					{t(
 						"onboarding.step2_desc",
-						"Create your first academic year and set the 3 term dates.",
+						"Set the academic year and term dates. Dates are pre-filled with MINESEC standard calendar — adjust as needed.",
 					)}
 				</p>
 			</div>
 
-			<FormField label={t("academic_years.year_name", "Year name")} required>
-				<Input
-					placeholder="2024-2025"
-					{...register("yearName", { required: "Required" })}
-				/>
-			</FormField>
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+				<FormField
+					label={t("academic_years.year_name", "Year name")}
+					required
+					error={errors.yearName?.message}
+					className="sm:col-span-1"
+				>
+					<Input placeholder="2024-2025" {...register("yearName")} />
+				</FormField>
+				<FormField
+					label={t("academic_years.year_start", "Year start")}
+					required
+					error={errors.yearStart?.message}
+				>
+					<Input type="date" {...register("yearStart")} />
+				</FormField>
+				<FormField
+					label={t("academic_years.year_end", "Year end")}
+					required
+					error={errors.yearEnd?.message}
+				>
+					<Input type="date" {...register("yearEnd")} />
+				</FormField>
+			</div>
 
-			{[1, 2, 3].map((n) => (
+			{TERMS.map(({ n, startKey, endKey }) => (
 				<div key={n} className="space-y-2 rounded-xl border border-border p-4">
 					<p className="font-medium text-foreground text-sm">
 						{t(`terms.term_${n}`, `Term ${n}`)}
 					</p>
 					<div className="grid grid-cols-2 gap-3">
-						<FormField label={t("common.start_date", "Start date")}>
-							<Input type="date" {...register(`t${n}Start` as any)} />
+						<FormField
+							label={t("common.start_date", "Start date")}
+							error={(errors as any)[startKey]?.message}
+						>
+							<Input type="date" {...register(startKey)} />
 						</FormField>
-						<FormField label={t("common.end_date", "End date")}>
-							<Input type="date" {...register(`t${n}End` as any)} />
+						<FormField
+							label={t("common.end_date", "End date")}
+							error={(errors as any)[endKey]?.message}
+						>
+							<Input type="date" {...register(endKey)} />
 						</FormField>
 					</div>
 				</div>
@@ -439,10 +600,11 @@ function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 
 			<div className="flex justify-end">
 				<Button type="submit" disabled={isPending}>
-					{isPending
-						? t("common.loading", "Loading…")
-						: t("common.next", "Next")}
-					<ChevronRight className="ml-1.5 h-4 w-4" />
+					{isPending ? (
+						<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+					) : null}
+					{isPending ? t("common.saving", "Saving…") : t("common.next", "Next")}
+					{!isPending && <ChevronRight className="ml-1.5 h-4 w-4" />}
 				</Button>
 			</div>
 		</form>
@@ -1189,6 +1351,48 @@ function Step4Subjects({ onNext }: { onNext: () => void }) {
 
 // ─── Step 5: Coefficient matrix ───────────────────────────────────────────────
 
+// MINESEC standard coefficients by track code → subject code → coeff
+const MINESEC_DEFAULT_COEFFS: Record<string, Record<string, number>> = {
+	C: {
+		MATH: 7,
+		PHY: 6,
+		SVT: 5,
+		CHIM: 4,
+		FR: 4,
+		EN: 3,
+		PHILO: 2,
+		HG: 2,
+		EPS: 1,
+	},
+	A: {
+		FR: 7,
+		PHILO: 6,
+		HG: 5,
+		EN: 4,
+		MATH: 3,
+		SVT: 2,
+		EPS: 1,
+	},
+	G: {
+		MATH: 5,
+		ECO: 6,
+		GEST: 6,
+		FR: 4,
+		EN: 3,
+		HG: 3,
+		EPS: 1,
+	},
+	F: {
+		MATH: 6,
+		PHY: 5,
+		TECH: 8,
+		FR: 3,
+		EN: 2,
+		HG: 2,
+		EPS: 1,
+	},
+};
+
 function Step5Coefficients({ onNext }: { onNext: () => void }) {
 	const { t } = useTranslation();
 	const { data: tracksData } = trpc.tracks.list.useQuery({ pageSize: 100 });
@@ -1198,55 +1402,138 @@ function Step5Coefficients({ onNext }: { onNext: () => void }) {
 	const tracks = tracksData && "items" in tracksData ? tracksData.items : [];
 	const subjects = subjectsData?.items ?? [];
 
-	const [selectedTrack, setSelectedTrack] = useState<string>("");
+	const [selectedTrackId, setSelectedTrackId] = useState<string>("");
 	const { data: gridData } = trpc.tracks.getCoefficientsGrid.useQuery(
-		{ trackId: selectedTrack },
-		{ enabled: !!selectedTrack },
+		{ trackId: selectedTrackId },
+		{ enabled: !!selectedTrackId },
 	);
 
-	// Local coefficient state: subjectId -> coefficient
-	const [coeffs, setCoeffs] = useState<Record<string, number>>({});
+	// All-track coefficient state: trackId → { subjectId → coeff }
+	// Persists across track switches so user doesn't lose work
+	const [allCoeffs, setAllCoeffs] = useState<
+		Record<string, Record<string, number>>
+	>({});
+	const [initializedTracks, setInitializedTracks] = useState<Set<string>>(
+		new Set(),
+	);
 
+	// When grid data loads for a track, seed the local state (only once per track)
 	useEffect(() => {
-		if (gridData) {
-			const map: Record<string, number> = {};
-			for (const row of gridData) {
-				map[row.subject.id] = row.coefficient;
-			}
-			setCoeffs(map);
-		} else {
-			setCoeffs({});
+		if (!selectedTrackId || !gridData) return;
+		if (initializedTracks.has(selectedTrackId)) return;
+		const map: Record<string, number> = {};
+		for (const row of gridData) {
+			map[row.subject.id] = row.coefficient;
 		}
-	}, [gridData]);
+		setAllCoeffs((prev) => ({ ...prev, [selectedTrackId]: map }));
+		setInitializedTracks((prev) => new Set([...prev, selectedTrackId]));
+	}, [gridData, selectedTrackId]);
+
+	// Initialize first track when tracks load
+	useEffect(() => {
+		if (tracks.length > 0 && !selectedTrackId) {
+			setSelectedTrackId(tracks[0].id);
+		}
+	}, [tracks]);
+
+	const currentCoeffs = allCoeffs[selectedTrackId] ?? {};
+
+	const setCoeff = (subjectId: string, value: number) => {
+		setAllCoeffs((prev) => ({
+			...prev,
+			[selectedTrackId]: {
+				...(prev[selectedTrackId] ?? {}),
+				[subjectId]: value,
+			},
+		}));
+	};
+
+	// Track is "complete" if every subject has a non-zero coefficient
+	const isTrackComplete = (trackId: string) => {
+		const coeffs = allCoeffs[trackId] ?? {};
+		return (
+			subjects.length > 0 && subjects.every((s) => (coeffs[s.id] ?? 0) > 0)
+		);
+	};
+
+	// Apply MINESEC standard suggestions for the selected track
+	const handlePrefill = () => {
+		if (!selectedTrackId) return;
+		const track = tracks.find((t) => t.id === selectedTrackId);
+		if (!track) return;
+		const defaults = MINESEC_DEFAULT_COEFFS[track.code] ?? {};
+		const map: Record<string, number> = {
+			...(allCoeffs[selectedTrackId] ?? {}),
+		};
+		for (const s of subjects) {
+			const code = s.code?.toUpperCase();
+			if (code && defaults[code] && !map[s.id]) {
+				map[s.id] = defaults[code];
+			}
+		}
+		setAllCoeffs((prev) => ({ ...prev, [selectedTrackId]: map }));
+	};
+
+	const hasMinesecDefaults = () => {
+		const track = tracks.find((t) => t.id === selectedTrackId);
+		return track ? !!MINESEC_DEFAULT_COEFFS[track.code] : false;
+	};
 
 	const { trigger: csvTrigger, input: csvInput } = useCsvImport(
 		(rows) => rows,
 		(rows) => {
-			// rows: [subject_code, coefficient, is_official_exam_subject]
-			const map: Record<string, number> = {};
+			const map: Record<string, number> = {
+				...(allCoeffs[selectedTrackId] ?? {}),
+			};
 			for (const r of rows) {
 				const subj = subjects.find((s) => s.code === r[0]);
 				if (subj && r[1]) map[subj.id] = Number(r[1]) || 0;
 			}
-			setCoeffs((prev) => ({ ...prev, ...map }));
+			setAllCoeffs((prev) => ({ ...prev, [selectedTrackId]: map }));
 		},
 	);
 
 	const handleSave = async () => {
-		if (selectedTrack && Object.keys(coeffs).length > 0) {
-			const items = Object.entries(coeffs)
-				.filter(([, v]) => v > 0)
-				.map(([subjectId, coefficient]) => ({
-					trackId: selectedTrack,
-					subjectId,
-					coefficient,
-				}));
-			if (items.length > 0) {
-				await bulkUpsert.mutateAsync({ items });
+		const allItems: {
+			trackId: string;
+			subjectId: string;
+			coefficient: number;
+		}[] = [];
+		for (const [trackId, coeffs] of Object.entries(allCoeffs)) {
+			for (const [subjectId, coefficient] of Object.entries(coeffs)) {
+				if (coefficient > 0) allItems.push({ trackId, subjectId, coefficient });
 			}
+		}
+		if (allItems.length > 0) {
+			await bulkUpsert.mutateAsync({ items: allItems });
 		}
 		onNext();
 	};
+
+	if (tracks.length === 0) {
+		return (
+			<div className="space-y-5">
+				<div>
+					<h2 className="font-semibold text-foreground text-lg">
+						{t("onboarding.step5_title", "Coefficient matrix")}
+					</h2>
+					<p className="text-muted-foreground text-sm">
+						{t(
+							"onboarding.no_tracks_yet",
+							"No tracks yet — you can configure coefficients later.",
+						)}
+					</p>
+				</div>
+				<div className="flex justify-end gap-2">
+					<Button variant="outline" onClick={onNext}>
+						{t("common.skip", "Skip")}
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
+	const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
 
 	return (
 		<div className="space-y-5">
@@ -1258,117 +1545,138 @@ function Step5Coefficients({ onNext }: { onNext: () => void }) {
 				<p className="text-muted-foreground text-sm">
 					{t(
 						"onboarding.step5_desc",
-						"For each track, set the coefficient of each subject. You can also do this later from the Tracks page.",
+						"For each track, set the coefficient for each subject. Changes persist as you switch between tracks.",
 					)}
 				</p>
 			</div>
 
-			{tracks.length === 0 ? (
-				<p className="text-muted-foreground text-sm">
-					{t(
-						"onboarding.no_tracks_yet",
-						"No tracks yet — you can configure coefficients later.",
-					)}
-				</p>
-			) : (
-				<>
-					<div className="flex flex-wrap items-center gap-3">
-						<Select value={selectedTrack} onValueChange={setSelectedTrack}>
-							<SelectTrigger className="w-48">
-								<SelectValue
-									placeholder={t("onboarding.select_track", "Select track…")}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{tracks.map((tr) => (
-									<SelectItem key={tr.id} value={tr.id}>
-										{tr.name} ({tr.code})
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{selectedTrack && (
-							<>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() =>
-										downloadCsv(
-											`coefficients-${selectedTrack}.csv`,
-											"subject_code,coefficient,is_official_exam",
-											subjects.map(
-												(s) => `${s.code},${coeffs[s.id] ?? 0},false`,
-											),
-										)
-									}
-								>
-									<Download className="mr-1.5 h-3.5 w-3.5" />
-									{t("onboarding.download_template", "Download template")}
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={csvTrigger}
-								>
-									<Upload className="mr-1.5 h-3.5 w-3.5" />
-									{t("onboarding.import_csv", "Import CSV")}
-								</Button>
-							</>
-						)}
-					</div>
+			<div className="flex gap-4">
+				{/* Vertical track tabs */}
+				<div className="flex w-44 shrink-0 flex-col gap-1">
+					{tracks.map((tr) => {
+						const complete = isTrackComplete(tr.id);
+						const active = tr.id === selectedTrackId;
+						return (
+							<button
+								key={tr.id}
+								type="button"
+								onClick={() => setSelectedTrackId(tr.id)}
+								className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+									active
+										? "bg-primary/10 font-medium text-primary"
+										: "text-foreground hover:bg-muted"
+								}`}
+							>
+								<span className="shrink-0">
+									{complete ? (
+										<CheckCircle className="h-4 w-4 text-green-500" />
+									) : (
+										<Circle className="h-4 w-4 text-muted-foreground" />
+									)}
+								</span>
+								<span className="min-w-0">
+									<span className="block truncate font-medium">{tr.code}</span>
+									<span className="block truncate text-muted-foreground text-xs">
+										{tr.name}
+									</span>
+								</span>
+							</button>
+						);
+					})}
+				</div>
 
+				{/* Coefficient grid for selected track */}
+				<div className="min-w-0 flex-1 space-y-3">
 					{selectedTrack && (
-						<div className="overflow-x-auto rounded-xl border border-border">
-							<table className="w-full text-sm">
-								<thead className="bg-muted/60 text-muted-foreground">
-									<tr>
-										<th className="px-4 py-2.5 text-left font-medium">
-											{t("subjects.col_name", "Subject")}
-										</th>
-										<th className="px-4 py-2.5 text-left font-medium">
-											{t("tracks.coefficient", "Coefficient")}
-										</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-border">
-									{subjects.map((s) => (
-										<tr key={s.id}>
-											<td className="px-4 py-2 font-medium">{s.name}</td>
-											<td className="px-4 py-2">
-												<Input
-													type="number"
-													min={0}
-													max={20}
-													value={coeffs[s.id] ?? 0}
-													onChange={(e) =>
-														setCoeffs((prev) => ({
-															...prev,
-															[s.id]: Number(e.target.value),
-														}))
-													}
-													className="h-7 w-16 text-xs"
-												/>
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
+						<div className="flex flex-wrap items-center gap-2">
+							<span className="font-semibold text-foreground text-sm">
+								{selectedTrack.name} ({selectedTrack.code})
+							</span>
+							{hasMinesecDefaults() && (
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={handlePrefill}
+								>
+									{t("onboarding.prefill_minesec", "Pre-fill MINESEC defaults")}
+								</Button>
+							)}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() =>
+									downloadCsv(
+										`coefficients-${selectedTrack.code}.csv`,
+										"subject_code,coefficient,is_official_exam",
+										subjects.map(
+											(s) => `${s.code},${currentCoeffs[s.id] ?? 0},false`,
+										),
+									)
+								}
+							>
+								<Download className="mr-1.5 h-3.5 w-3.5" />
+								{t("onboarding.download_template", "Template")}
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={csvTrigger}
+							>
+								<Upload className="mr-1.5 h-3.5 w-3.5" />
+								{t("onboarding.import_csv", "Import")}
+							</Button>
 						</div>
 					)}
-				</>
-			)}
+
+					<div className="overflow-x-auto rounded-xl border border-border">
+						<table className="w-full text-sm">
+							<thead className="bg-muted/60 text-muted-foreground">
+								<tr>
+									<th className="px-4 py-2.5 text-left font-medium">
+										{t("subjects.col_name", "Subject")}
+									</th>
+									<th className="px-4 py-2.5 text-left font-medium">
+										{t("tracks.coefficient", "Coeff.")}
+									</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-border">
+								{subjects.map((s) => (
+									<tr key={s.id}>
+										<td className="px-4 py-1.5 font-medium">{s.name}</td>
+										<td className="px-4 py-1.5">
+											<Input
+												type="number"
+												min={0}
+												max={20}
+												value={currentCoeffs[s.id] ?? 0}
+												onChange={(e) => setCoeff(s.id, Number(e.target.value))}
+												className="h-7 w-16 text-xs"
+											/>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
 
 			<div className="flex justify-end gap-2">
 				<Button variant="outline" onClick={onNext}>
 					{t("common.skip", "Skip")}
 				</Button>
 				<Button onClick={handleSave} disabled={bulkUpsert.isPending}>
+					{bulkUpsert.isPending ? (
+						<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+					) : null}
 					{bulkUpsert.isPending
-						? t("common.loading", "Loading…")
+						? t("common.saving", "Saving…")
 						: t("common.next", "Next")}
-					<ChevronRight className="ml-1.5 h-4 w-4" />
+					{!bulkUpsert.isPending && <ChevronRight className="ml-1.5 h-4 w-4" />}
 				</Button>
 			</div>
 		</div>

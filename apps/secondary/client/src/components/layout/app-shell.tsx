@@ -1,5 +1,6 @@
-import { ChevronRight, LogOut } from "lucide-react";
+import { ChevronRight, Globe, LogOut, Settings } from "lucide-react";
 import { useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
 	Popover,
@@ -76,18 +77,21 @@ export function AppShell({ children }: Props) {
 	const { data: years, isSuccess: yearsLoaded } =
 		trpc.academicYears.list.useQuery();
 	const activeYear = (years ?? []).find((y) => y.status === "active");
+	const isSysAdmin =
+		(session?.user as { role?: string } | undefined)?.role === "admin";
 
 	// Redirect to onboarding when no academic year exists (first connection)
+	// System admins have no institution context — skip this redirect
 	useEffect(() => {
 		if (
+			!isSysAdmin &&
 			yearsLoaded &&
 			(years ?? []).length === 0 &&
 			!location.pathname.includes("onboarding")
 		) {
 			navigate("/onboarding", { replace: true });
 		}
-	}, [yearsLoaded, years, location.pathname]);
-
+	}, [isSysAdmin, yearsLoaded, years, location.pathname]);
 	const myMember = org?.members?.find((m) => m.userId === session?.user?.id);
 	const role = myMember?.role ?? "teacher";
 
@@ -97,6 +101,13 @@ export function AppShell({ children }: Props) {
 			: role === "principal"
 				? PrincipalSidebar
 				: TeacherSidebar;
+
+	const { i18n } = useTranslation();
+	const toggleLang = () => {
+		const next = i18n.language === "fr" ? "en" : "fr";
+		i18n.changeLanguage(next);
+		localStorage.setItem("i18n_lang", next);
+	};
 
 	const handleSignOut = () =>
 		signOut({ fetchOptions: { onSuccess: () => navigate("/login") } });
@@ -136,6 +147,23 @@ export function AppShell({ children }: Props) {
 									</p>
 								</div>
 								<div className="my-1 h-px bg-border" />
+								<Link
+									to="/settings"
+									className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-foreground text-sm transition-colors hover:bg-muted"
+								>
+									<Settings className="h-4 w-4" />
+									Settings & profile
+								</Link>
+								<button
+									type="button"
+									onClick={toggleLang}
+									className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-foreground text-sm transition-colors hover:bg-muted"
+								>
+									<Globe className="h-4 w-4" />
+									{i18n.language === "fr"
+										? "Switch to English"
+										: "Passer en français"}
+								</button>
 								<button
 									type="button"
 									onClick={handleSignOut}
