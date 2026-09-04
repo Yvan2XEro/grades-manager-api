@@ -1,9 +1,12 @@
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
 	Building2,
-	MoreHorizontal,
+	Eye,
+	PauseCircle,
+	PlayCircle,
 	Plus,
 	Search,
+	Trash2,
 	UserSearch,
 } from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
@@ -19,13 +22,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -309,7 +305,7 @@ function CreateInstitutionDialog({
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="ghost" onClick={onClose}>
-							{t("cancel", "Cancel")}
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={create.isPending || !name.trim()}>
 							{create.isPending
@@ -338,48 +334,54 @@ function RowActions({
 }) {
 	const { t } = useTranslation();
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="icon" className="h-8 w-8">
-					<MoreHorizontal className="h-4 w-4" />
-					<span className="sr-only">Open menu</span>
-				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end">
-				<DropdownMenuItem asChild>
-					<Link to={`/sysadmin/institutions/${institution.id}`}>
+		<div className="flex items-center gap-1">
+			<Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+				<Link to={`/sysadmin/institutions/${institution.id}`}>
+					<Eye className="h-4 w-4" />
+					<span className="sr-only">
 						{t("sysadmin.institutions.view_details", "View details")}
-					</Link>
-				</DropdownMenuItem>
-				<DropdownMenuSeparator />
-				{institution.suspended ? (
-					<DropdownMenuItem
-						className="text-emerald-600 focus:text-emerald-600"
-						onSelect={() => onActivate(institution.id)}
-					>
+					</span>
+				</Link>
+			</Button>
+			{institution.suspended ? (
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-emerald-600 hover:text-emerald-600"
+					onClick={() => onActivate(institution.id)}
+				>
+					<PlayCircle className="h-4 w-4" />
+					<span className="sr-only">
 						{t("sysadmin.institutions.reactivate", "Reactivate")}
-					</DropdownMenuItem>
-				) : (
-					<DropdownMenuItem
-						className="text-amber-600 focus:text-amber-600"
-						onSelect={() =>
-							onSuspend({ id: institution.id, name: institution.name })
-						}
-					>
-						{t("sysadmin.institutions.suspend", "Suspend")}
-					</DropdownMenuItem>
-				)}
-				<DropdownMenuSeparator />
-				<DropdownMenuItem
-					className="text-rose-600 focus:text-rose-600"
-					onSelect={() =>
-						onDelete({ id: institution.id, name: institution.name })
+					</span>
+				</Button>
+			) : (
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-amber-600 hover:text-amber-600"
+					onClick={() =>
+						onSuspend({ id: institution.id, name: institution.name })
 					}
 				>
+					<PauseCircle className="h-4 w-4" />
+					<span className="sr-only">
+						{t("sysadmin.institutions.suspend", "Suspend")}
+					</span>
+				</Button>
+			)}
+			<Button
+				variant="ghost"
+				size="icon"
+				className="h-8 w-8 text-rose-600 hover:text-rose-600"
+				onClick={() => onDelete({ id: institution.id, name: institution.name })}
+			>
+				<Trash2 className="h-4 w-4" />
+				<span className="sr-only">
 					{t("sysadmin.institutions.delete_institution", "Delete institution")}
-				</DropdownMenuItem>
-			</DropdownMenuContent>
-		</DropdownMenu>
+				</span>
+			</Button>
+		</div>
 	);
 }
 
@@ -726,7 +728,7 @@ export function SysAdminInstitutions() {
 					</p>
 					<div className="flex justify-end gap-2 pt-2">
 						<Button variant="ghost" onClick={() => setSuspendTarget(null)}>
-							{t("cancel", "Cancel")}
+							{t("common.cancel")}
 						</Button>
 						<Button
 							className="bg-amber-600 text-white hover:bg-amber-700"
@@ -763,7 +765,7 @@ export function SysAdminInstitutions() {
 					</p>
 					<div className="flex justify-end gap-2 pt-2">
 						<Button variant="ghost" onClick={() => setDeleteTarget(null)}>
-							{t("cancel", "Cancel")}
+							{t("common.cancel")}
 						</Button>
 						<Button
 							variant="destructive"

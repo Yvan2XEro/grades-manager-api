@@ -1,5 +1,14 @@
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
-import { MoreHorizontal, Plus, Search, Users } from "lucide-react";
+import {
+	Eye,
+	Plus,
+	Search,
+	Shield,
+	ShieldOff,
+	UserCheck,
+	Users,
+	UserX,
+} from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,13 +23,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
@@ -164,7 +166,7 @@ function CreateUserDialog({
 					{error && <p className="text-destructive text-sm">{error}</p>}
 					<div className="flex justify-end gap-2 pt-1">
 						<Button variant="ghost" onClick={handleClose}>
-							{t("cancel", "Cancel")}
+							{t("common.cancel")}
 						</Button>
 						<Button
 							disabled={
@@ -245,7 +247,7 @@ function BanDialog({
 				</div>
 				<div className="flex justify-end gap-2 pt-1">
 					<Button variant="ghost" onClick={onClose}>
-						{t("cancel", "Cancel")}
+						{t("common.cancel")}
 					</Button>
 					<Button
 						variant="destructive"
@@ -316,7 +318,7 @@ function RoleDialog({
 				</p>
 				<div className="flex justify-end gap-2 pt-1">
 					<Button variant="ghost" onClick={onClose}>
-						{t("cancel", "Cancel")}
+						{t("common.cancel")}
 					</Button>
 					<Button
 						variant={targetRole === "admin" ? "default" : "destructive"}
@@ -354,47 +356,61 @@ function RowActions({
 }) {
 	const { t } = useTranslation();
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="icon" className="h-8 w-8">
-					<MoreHorizontal className="h-4 w-4" />
-					<span className="sr-only">Open menu</span>
-				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end">
-				<DropdownMenuItem asChild>
-					<Link to={`/sysadmin/users/${user.id}`}>
+		<div className="flex items-center gap-1">
+			<Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+				<Link to={`/sysadmin/users/${user.id}`}>
+					<Eye className="h-4 w-4" />
+					<span className="sr-only">
 						{t("sysadmin.users.view_profile", "View profile")}
-					</Link>
-				</DropdownMenuItem>
-				<DropdownMenuSeparator />
-				{user.banned ? (
-					<DropdownMenuItem
-						className="text-emerald-600 focus:text-emerald-600"
-						disabled={isUnbanning}
-						onSelect={() => onUnban(user.id)}
-					>
-						{t("sysadmin.users.unban_user", "Unban user")}
-					</DropdownMenuItem>
-				) : (
-					<DropdownMenuItem
-						className="text-rose-600 focus:text-rose-600"
-						onSelect={() => onBan({ id: user.id, name: user.name })}
-					>
-						{t("sysadmin.users.ban_user", "Ban user")}
-					</DropdownMenuItem>
-				)}
-				<DropdownMenuItem
-					onSelect={() =>
-						onRole({ id: user.id, name: user.name, role: user.role })
-					}
+					</span>
+				</Link>
+			</Button>
+			{user.banned ? (
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-emerald-600 hover:text-emerald-600"
+					disabled={isUnbanning}
+					onClick={() => onUnban(user.id)}
 				>
+					<UserCheck className="h-4 w-4" />
+					<span className="sr-only">
+						{t("sysadmin.users.unban_user", "Unban user")}
+					</span>
+				</Button>
+			) : (
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-rose-600 hover:text-rose-600"
+					onClick={() => onBan({ id: user.id, name: user.name })}
+				>
+					<UserX className="h-4 w-4" />
+					<span className="sr-only">
+						{t("sysadmin.users.ban_user", "Ban user")}
+					</span>
+				</Button>
+			)}
+			<Button
+				variant="ghost"
+				size="icon"
+				className="h-8 w-8"
+				onClick={() =>
+					onRole({ id: user.id, name: user.name, role: user.role })
+				}
+			>
+				{user.role === "admin" ? (
+					<ShieldOff className="h-4 w-4" />
+				) : (
+					<Shield className="h-4 w-4" />
+				)}
+				<span className="sr-only">
 					{user.role === "admin"
 						? t("sysadmin.users.revoke_admin", "Revoke admin")
 						: t("sysadmin.users.make_admin", "Make admin")}
-				</DropdownMenuItem>
-			</DropdownMenuContent>
-		</DropdownMenu>
+				</span>
+			</Button>
+		</div>
 	);
 }
 

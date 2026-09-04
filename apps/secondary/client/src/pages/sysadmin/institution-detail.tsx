@@ -6,8 +6,6 @@ import {
 	GraduationCap,
 	ImagePlus,
 	Loader2,
-	MoreHorizontal,
-	MoreVertical,
 	PauseCircle,
 	Pencil,
 	PlayCircle,
@@ -30,13 +28,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -50,9 +41,9 @@ type Member =
 type AcademicYear =
 	RouterOutputs["systemAdmin"]["listInstitutionAcademicYears"][number];
 
-function formatDate(d: string | Date | null | undefined) {
+function formatDate(d: string | Date | null | undefined, locale = "en-GB") {
 	if (!d) return "—";
-	return new Intl.DateTimeFormat("en-GB", {
+	return new Intl.DateTimeFormat(locale, {
 		day: "2-digit",
 		month: "short",
 		year: "numeric",
@@ -119,6 +110,7 @@ function UserSearchField({
 	value: { id: string; name: string } | null;
 	onSelect: (u: { id: string; name: string } | null) => void;
 }) {
+	const { t } = useTranslation();
 	const [search, setSearch] = useState("");
 	const { data } = trpc.systemAdmin.listUsers.useQuery(
 		{ search: search || undefined, pageSize: 8, page: 1 },
@@ -135,14 +127,14 @@ function UserSearchField({
 				onClick={() => onSelect(null)}
 				className="h-6 px-2 text-muted-foreground text-xs"
 			>
-				Change
+				{t("sysadmin.institution_detail.change")}
 			</Button>
 		</div>
 	) : (
 		<div className="relative">
 			<UserSearch className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 			<Input
-				placeholder="Search by name or email…"
+				placeholder={t("sysadmin.institution_detail.search_user_placeholder")}
 				value={search}
 				onChange={(e) => setSearch(e.target.value)}
 				className="pl-9"
@@ -167,7 +159,7 @@ function UserSearchField({
 			)}
 			{search.length >= 2 && data?.rows.length === 0 && (
 				<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover px-3 py-2 text-muted-foreground text-sm shadow-md">
-					No users found
+					{t("sysadmin.institution_detail.no_users_found")}
 				</div>
 			)}
 		</div>
@@ -187,6 +179,7 @@ function AddMemberDialog({
 	onClose: () => void;
 	onDone: () => void;
 }) {
+	const { t } = useTranslation();
 	const [user, setUser] = useState<{ id: string; name: string } | null>(null);
 	const [role, setRole] = useState<"admin" | "member">("member");
 
@@ -203,23 +196,31 @@ function AddMemberDialog({
 		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
 			<DialogContent className="sm:max-w-sm">
 				<DialogHeader>
-					<DialogTitle>Add member</DialogTitle>
+					<DialogTitle>
+						{t("sysadmin.institution_detail.add_member")}
+					</DialogTitle>
 				</DialogHeader>
 				<div className="space-y-4">
 					<div className="space-y-1.5">
-						<Label>User</Label>
+						<Label>{t("sysadmin.institution_detail.field_user")}</Label>
 						<UserSearchField value={user} onSelect={setUser} />
 					</div>
 					<div className="space-y-1.5">
-						<Label>Role</Label>
+						<Label>{t("sysadmin.institution_detail.field_role")}</Label>
 						<Combobox
 							options={[
-								{ value: "member", label: "Member" },
-								{ value: "admin", label: "Admin" },
+								{
+									value: "member",
+									label: t("sysadmin.institution_detail.role_member"),
+								},
+								{
+									value: "admin",
+									label: t("sysadmin.institution_detail.role_admin"),
+								},
 							]}
 							value={role}
 							onValueChange={(v) => setRole(v as "admin" | "member")}
-							placeholder="Select role"
+							placeholder={t("sysadmin.institution_detail.select_role")}
 						/>
 					</div>
 					{add.error && (
@@ -228,7 +229,7 @@ function AddMemberDialog({
 				</div>
 				<div className="flex justify-end gap-2 pt-2">
 					<Button variant="ghost" onClick={onClose}>
-						Cancel
+						{t("common.cancel")}
 					</Button>
 					<Button
 						disabled={!user || add.isPending}
@@ -236,7 +237,9 @@ function AddMemberDialog({
 							user && add.mutate({ institutionId, userId: user.id, role })
 						}
 					>
-						{add.isPending ? "Adding…" : "Add member"}
+						{add.isPending
+							? t("sysadmin.institution_detail.adding")
+							: t("sysadmin.institution_detail.add_member_btn")}
 					</Button>
 				</div>
 			</DialogContent>
@@ -283,6 +286,7 @@ function EditInstitutionDialog({
 	onClose: () => void;
 	onDone: () => void;
 }) {
+	const { t } = useTranslation();
 	const [name, setName] = useState(institution.name);
 	const [type, setType] = useState<"lycee" | "college" | "mixed">(
 		institution.type as "lycee" | "college" | "mixed",
@@ -316,17 +320,19 @@ function EditInstitutionDialog({
 		}
 	};
 
-	const TYPE_LABELS: Record<string, string> = {
-		lycee: "Lycée",
-		college: "Collège",
-		mixed: "Mixed",
+	const typeLabels: Record<string, string> = {
+		lycee: t("sysadmin.institutions.type_lycee"),
+		college: t("sysadmin.institutions.type_college"),
+		mixed: t("sysadmin.institutions.type_mixed"),
 	};
 
 	return (
 		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle>Edit institution</DialogTitle>
+					<DialogTitle>
+						{t("sysadmin.institution_detail.edit_institution")}
+					</DialogTitle>
 				</DialogHeader>
 				<form
 					onSubmit={(e) => {
@@ -347,7 +353,7 @@ function EditInstitutionDialog({
 				>
 					{/* Logo upload */}
 					<div className="space-y-2">
-						<Label>Logo</Label>
+						<Label>{t("sysadmin.institution_detail.logo")}</Label>
 						<div className="flex items-center gap-3">
 							{logoUrl ? (
 								<img
@@ -368,7 +374,9 @@ function EditInstitutionDialog({
 								) : (
 									<ImagePlus className="h-4 w-4" />
 								)}
-								{uploading ? "Uploading…" : "Change logo"}
+								{uploading
+									? t("sysadmin.institution_detail.uploading")
+									: t("sysadmin.institution_detail.change_logo")}
 								<input
 									type="file"
 									accept="image/*"
@@ -383,14 +391,16 @@ function EditInstitutionDialog({
 									onClick={() => setLogoUrl("")}
 									className="text-muted-foreground text-xs hover:text-destructive"
 								>
-									Remove
+									{t("sysadmin.institution_detail.remove_logo")}
 								</button>
 							)}
 						</div>
 					</div>
 
 					<div className="space-y-1.5">
-						<Label htmlFor="edit-name">Name</Label>
+						<Label htmlFor="edit-name">
+							{t("sysadmin.institution_detail.edit_name")}
+						</Label>
 						<Input
 							id="edit-name"
 							value={name}
@@ -400,20 +410,20 @@ function EditInstitutionDialog({
 					</div>
 
 					<div className="space-y-2">
-						<Label>Type</Label>
+						<Label>{t("sysadmin.institution_detail.edit_type")}</Label>
 						<div className="flex gap-2">
-							{(["lycee", "college", "mixed"] as const).map((t) => (
+							{(["lycee", "college", "mixed"] as const).map((t_) => (
 								<button
-									key={t}
+									key={t_}
 									type="button"
-									onClick={() => setType(t)}
+									onClick={() => setType(t_)}
 									className={`flex-1 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
-										type === t
+										type === t_
 											? "border-primary bg-primary/5 text-foreground"
 											: "border-border text-muted-foreground hover:bg-muted/40"
 									}`}
 								>
-									{TYPE_LABELS[t]}
+									{typeLabels[t_]}
 								</button>
 							))}
 						</div>
@@ -421,7 +431,9 @@ function EditInstitutionDialog({
 
 					<div className="grid grid-cols-2 gap-3">
 						<div className="space-y-1.5">
-							<Label htmlFor="edit-city">City</Label>
+							<Label htmlFor="edit-city">
+								{t("sysadmin.institution_detail.edit_city")}
+							</Label>
 							<Input
 								id="edit-city"
 								value={city}
@@ -430,7 +442,9 @@ function EditInstitutionDialog({
 							/>
 						</div>
 						<div className="space-y-1.5">
-							<Label htmlFor="edit-code">MINESEC code</Label>
+							<Label htmlFor="edit-code">
+								{t("sysadmin.institution_detail.edit_minesec_code")}
+							</Label>
 							<Input
 								id="edit-code"
 								value={minesecCode}
@@ -442,7 +456,7 @@ function EditInstitutionDialog({
 
 					<div className="grid grid-cols-2 gap-3">
 						<div className="space-y-1.5">
-							<Label>Phone</Label>
+							<Label>{t("sysadmin.institution_detail.edit_phone")}</Label>
 							<PhoneInput
 								defaultCountry="CM"
 								value={phone}
@@ -450,7 +464,9 @@ function EditInstitutionDialog({
 							/>
 						</div>
 						<div className="space-y-1.5">
-							<Label htmlFor="edit-email">Email</Label>
+							<Label htmlFor="edit-email">
+								{t("sysadmin.institution_detail.edit_email")}
+							</Label>
 							<Input
 								id="edit-email"
 								type="email"
@@ -462,7 +478,9 @@ function EditInstitutionDialog({
 					</div>
 
 					<div className="space-y-1.5">
-						<Label htmlFor="edit-address">Address</Label>
+						<Label htmlFor="edit-address">
+							{t("sysadmin.institution_detail.edit_address")}
+						</Label>
 						<Input
 							id="edit-address"
 							value={address}
@@ -477,13 +495,15 @@ function EditInstitutionDialog({
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="ghost" onClick={onClose}>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button
 							type="submit"
 							disabled={update.isPending || uploading || !name.trim()}
 						>
-							{update.isPending ? "Saving…" : "Save changes"}
+							{update.isPending
+								? t("sysadmin.institution_detail.saving")
+								: t("sysadmin.institution_detail.save_changes")}
 						</Button>
 					</div>
 				</form>
@@ -496,15 +516,16 @@ function EditInstitutionDialog({
 
 export function InstitutionOverviewTab() {
 	const { id } = useParams<{ id: string }>();
+	const { t, i18n } = useTranslation();
 	const { data, isLoading } = trpc.systemAdmin.getInstitution.useQuery(
 		{ id: id! },
 		{ enabled: !!id },
 	);
 
-	const TYPE_LABELS: Record<string, string> = {
-		lycee: "Lycée",
-		college: "Collège",
-		mixed: "Mixed",
+	const typeLabels: Record<string, string> = {
+		lycee: t("sysadmin.institutions.type_lycee"),
+		college: t("sysadmin.institutions.type_college"),
+		mixed: t("sysadmin.institutions.type_mixed"),
 	};
 
 	if (isLoading) {
@@ -524,7 +545,7 @@ export function InstitutionOverviewTab() {
 		return (
 			<div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
 				<Building2 className="h-8 w-8 opacity-20" />
-				<p className="text-sm">Institution not found.</p>
+				<p className="text-sm">{t("sysadmin.institution_detail.not_found")}</p>
 			</div>
 		);
 	}
@@ -532,31 +553,33 @@ export function InstitutionOverviewTab() {
 	return (
 		<div className="space-y-5">
 			<p className="text-muted-foreground text-sm">
-				{data.memberCount ?? 0} member{data.memberCount !== 1 ? "s" : ""}
+				{t("sysadmin.institution_detail.members_count", {
+					count: data.memberCount ?? 0,
+				})}
 			</p>
 
 			{/* Stat cards */}
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 				<StatCard
-					label="Students"
+					label={t("sysadmin.institution_detail.stat_students")}
 					value={data.studentCount ?? 0}
 					icon={<GraduationCap className="h-4 w-4" />}
 					accent="bg-blue-500/10 text-blue-600"
 				/>
 				<StatCard
-					label="Staff"
+					label={t("sysadmin.institution_detail.stat_staff")}
 					value={data.staffCount ?? 0}
 					icon={<Users className="h-4 w-4" />}
 					accent="bg-violet-500/10 text-violet-600"
 				/>
 				<StatCard
-					label="Classes"
+					label={t("sysadmin.institution_detail.stat_classes")}
 					value={data.classCount ?? 0}
 					icon={<BookOpen className="h-4 w-4" />}
 					accent="bg-amber-500/10 text-amber-600"
 				/>
 				<StatCard
-					label="Academic years"
+					label={t("sysadmin.institution_detail.stat_academic_years")}
 					value={data.academicYearCount ?? 0}
 					icon={<Calendar className="h-4 w-4" />}
 					accent="bg-emerald-500/10 text-emerald-600"
@@ -565,41 +588,68 @@ export function InstitutionOverviewTab() {
 
 			{/* Details */}
 			<div className="divide-y divide-border rounded-xl border border-border bg-card px-5">
-				<DetailRow label="Type" value={TYPE_LABELS[data.type] ?? data.type} />
-				<DetailRow label="City" value={data.city ?? "—"} />
-				<DetailRow label="Phone" value={data.phone ?? "—"} />
-				<DetailRow label="Email" value={data.email ?? "—"} />
-				<DetailRow label="Address" value={data.address ?? "—"} />
-				<DetailRow label="MINESEC code" value={data.minesecCode ?? "—"} />
-				<DetailRow label="Assessment mode" value={data.assessmentMode ?? "—"} />
-				<DetailRow label="Org slug" value={data.orgSlug ?? "—"} />
 				<DetailRow
-					label="Status"
+					label={t("sysadmin.institution_detail.row_type")}
+					value={typeLabels[data.type] ?? data.type}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_city")}
+					value={data.city ?? "—"}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_phone")}
+					value={data.phone ?? "—"}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_email")}
+					value={data.email ?? "—"}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_address")}
+					value={data.address ?? "—"}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_minesec_code")}
+					value={data.minesecCode ?? "—"}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_assessment_mode")}
+					value={data.assessmentMode ?? "—"}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_org_slug")}
+					value={data.orgSlug ?? "—"}
+				/>
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_status")}
 					value={
 						data.suspended ? (
 							<span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600 text-xs">
-								Suspended
+								{t("sysadmin.institution_detail.status_suspended")}
 							</span>
 						) : (
 							<span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs">
-								Active
+								{t("sysadmin.institution_detail.status_active")}
 							</span>
 						)
 					}
 				/>
 				<DetailRow
-					label="Active year"
+					label={t("sysadmin.institution_detail.row_active_year")}
 					value={
 						data.hasActiveYear ? (
 							<span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs">
-								Yes
+								{t("sysadmin.institution_detail.active_year_yes")}
 							</span>
 						) : (
-							<span className="text-muted-foreground">No</span>
+							<span className="text-muted-foreground">{t("common.no")}</span>
 						)
 					}
 				/>
-				<DetailRow label="Created" value={formatDate(data.createdAt)} />
+				<DetailRow
+					label={t("sysadmin.institution_detail.row_created")}
+					value={formatDate(data.createdAt, i18n.language)}
+				/>
 			</div>
 		</div>
 	);
@@ -609,6 +659,7 @@ export function InstitutionOverviewTab() {
 
 export function InstitutionMembersTab() {
 	const { id } = useParams<{ id: string }>();
+	const { t, i18n } = useTranslation();
 	const [showAdd, setShowAdd] = useState(false);
 	const [confirmRemove, setConfirmRemove] = useState<Member | null>(null);
 
@@ -651,7 +702,7 @@ export function InstitutionMembersTab() {
 			id: "name",
 			accessorKey: "name",
 			enableSorting: true,
-			header: "Name",
+			header: t("sysadmin.institution_detail.col_name"),
 			cell: ({ row }) => (
 				<span className="font-medium text-foreground">{row.original.name}</span>
 			),
@@ -660,7 +711,7 @@ export function InstitutionMembersTab() {
 			id: "email",
 			accessorKey: "email",
 			enableSorting: true,
-			header: "Email",
+			header: t("sysadmin.institution_detail.col_email"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
 					{row.original.email}
@@ -671,7 +722,7 @@ export function InstitutionMembersTab() {
 			id: "orgRole",
 			accessorKey: "orgRole",
 			enableSorting: true,
-			header: "Role",
+			header: t("sysadmin.institution_detail.col_role"),
 			cell: ({ row }) => (
 				<span className="rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs capitalize">
 					{row.original.orgRole}
@@ -682,10 +733,10 @@ export function InstitutionMembersTab() {
 			id: "joinedAt",
 			accessorKey: "joinedAt",
 			enableSorting: true,
-			header: "Joined",
+			header: t("sysadmin.institution_detail.col_joined"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
-					{formatDate(row.original.joinedAt)}
+					{formatDate(row.original.joinedAt, i18n.language)}
 				</span>
 			),
 		},
@@ -693,47 +744,33 @@ export function InstitutionMembersTab() {
 			id: "actions",
 			header: "",
 			cell: ({ row }) => (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size="icon" className="h-8 w-8">
-							<MoreHorizontal className="h-4 w-4" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{row.original.orgRole === "admin" ? (
-							<DropdownMenuItem
-								onSelect={() =>
-									updateRole.mutate({
-										institutionId: id!,
-										userId: row.original.userId,
-										role: "member",
-									})
-								}
-							>
-								Set as Member
-							</DropdownMenuItem>
-						) : (
-							<DropdownMenuItem
-								onSelect={() =>
-									updateRole.mutate({
-										institutionId: id!,
-										userId: row.original.userId,
-										role: "admin",
-									})
-								}
-							>
-								Set as Admin
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							className="text-rose-600 focus:text-rose-600"
-							onSelect={() => setConfirmRemove(row.original)}
-						>
-							Remove member
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<div className="flex items-center gap-1">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 text-xs"
+						disabled={updateRole.isPending}
+						onClick={() =>
+							updateRole.mutate({
+								institutionId: id!,
+								userId: row.original.userId,
+								role: row.original.orgRole === "admin" ? "member" : "admin",
+							})
+						}
+					>
+						{row.original.orgRole === "admin"
+							? t("sysadmin.institution_detail.set_as_member")
+							: t("sysadmin.institution_detail.set_as_admin")}
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8 text-rose-600 hover:text-rose-600"
+						onClick={() => setConfirmRemove(row.original)}
+					>
+						<Trash2 className="h-4 w-4" />
+					</Button>
+				</div>
 			),
 		},
 	];
@@ -743,7 +780,7 @@ export function InstitutionMembersTab() {
 			<div className="flex justify-end">
 				<Button size="sm" onClick={() => setShowAdd(true)}>
 					<Plus className="mr-1.5 h-4 w-4" />
-					Add member
+					{t("sysadmin.institution_detail.add_member_button")}
 				</Button>
 			</div>
 
@@ -763,7 +800,7 @@ export function InstitutionMembersTab() {
 						page: 1,
 					});
 				}}
-				emptyMessage="No members — institution may have no linked organization."
+				emptyMessage={t("sysadmin.institution_detail.no_members")}
 				onPageChange={(p) => setQuery({ page: p })}
 				onPageSizeChange={(s) => setQuery({ pageSize: s, page: 1 })}
 			/>
@@ -781,15 +818,18 @@ export function InstitutionMembersTab() {
 			>
 				<DialogContent className="sm:max-w-sm">
 					<DialogHeader>
-						<DialogTitle>Remove member?</DialogTitle>
+						<DialogTitle>
+							{t("sysadmin.institution_detail.remove_member_title")}
+						</DialogTitle>
 					</DialogHeader>
 					<p className="text-muted-foreground text-sm">
-						<strong className="text-foreground">{confirmRemove?.name}</strong>{" "}
-						will lose access to this institution immediately.
+						{t("sysadmin.institution_detail.remove_member_desc", {
+							name: confirmRemove?.name ?? "",
+						})}
 					</p>
 					<div className="flex justify-end gap-2 pt-2">
 						<Button variant="ghost" onClick={() => setConfirmRemove(null)}>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button
 							variant="destructive"
@@ -802,7 +842,9 @@ export function InstitutionMembersTab() {
 								})
 							}
 						>
-							{remove.isPending ? "Removing…" : "Remove"}
+							{remove.isPending
+								? t("sysadmin.institution_detail.removing")
+								: t("sysadmin.institution_detail.remove")}
 						</Button>
 					</div>
 				</DialogContent>
@@ -815,6 +857,7 @@ export function InstitutionMembersTab() {
 
 export function InstitutionAcademicTab() {
 	const { id } = useParams<{ id: string }>();
+	const { t, i18n } = useTranslation();
 	const { data, isLoading } =
 		trpc.systemAdmin.listInstitutionAcademicYears.useQuery(
 			{ institutionId: id! },
@@ -828,7 +871,7 @@ export function InstitutionAcademicTab() {
 			id: "name",
 			accessorKey: "name",
 			enableSorting: true,
-			header: "Year",
+			header: t("sysadmin.institution_detail.col_year"),
 			cell: ({ row }) => (
 				<span className="font-medium text-foreground">{row.original.name}</span>
 			),
@@ -837,7 +880,7 @@ export function InstitutionAcademicTab() {
 			id: "status",
 			accessorKey: "status",
 			enableSorting: true,
-			header: "Status",
+			header: t("sysadmin.institution_detail.col_status"),
 			cell: ({ row }) => {
 				const s = row.original.status;
 				const cls =
@@ -857,11 +900,11 @@ export function InstitutionAcademicTab() {
 		},
 		{
 			id: "dates",
-			header: "Period",
+			header: t("sysadmin.institution_detail.col_period"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
-					{formatDate(row.original.startDate)} →{" "}
-					{formatDate(row.original.endDate)}
+					{formatDate(row.original.startDate, i18n.language)} →{" "}
+					{formatDate(row.original.endDate, i18n.language)}
 				</span>
 			),
 		},
@@ -869,7 +912,7 @@ export function InstitutionAcademicTab() {
 			id: "terms",
 			accessorKey: "termCount",
 			enableSorting: true,
-			header: "Terms",
+			header: t("sysadmin.institution_detail.col_terms"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
 					{row.original.termCount ?? 0}
@@ -880,7 +923,7 @@ export function InstitutionAcademicTab() {
 			id: "classes",
 			accessorKey: "classCount",
 			enableSorting: true,
-			header: "Classes",
+			header: t("sysadmin.institution_detail.col_classes"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
 					{row.original.classCount ?? 0}
@@ -889,7 +932,7 @@ export function InstitutionAcademicTab() {
 		},
 		{
 			id: "mode",
-			header: "Assessment",
+			header: t("sysadmin.institution_detail.col_assessment"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm capitalize">
 					{row.original.assessmentMode ?? "—"}
@@ -906,7 +949,7 @@ export function InstitutionAcademicTab() {
 			page={1}
 			pageSize={rows.length || 10}
 			isLoading={isLoading}
-			emptyMessage="No academic years configured yet."
+			emptyMessage={t("sysadmin.institution_detail.no_academic_years")}
 			onPageChange={() => {}}
 			onPageSizeChange={() => {}}
 		/>
@@ -954,12 +997,25 @@ export function SysAdminInstitutionDetail() {
 	});
 
 	const TABS = [
-		{ to: `/sysadmin/institutions/${id}/overview`, label: "Overview" },
-		{ to: `/sysadmin/institutions/${id}/members`, label: "Members" },
-		{ to: `/sysadmin/institutions/${id}/academic`, label: "Academic" },
+		{
+			to: `/sysadmin/institutions/${id}/overview`,
+			label: t("sysadmin.institution_detail.overview_tab"),
+		},
+		{
+			to: `/sysadmin/institutions/${id}/members`,
+			label: t("sysadmin.institution_detail.members_tab"),
+		},
+		{
+			to: `/sysadmin/institutions/${id}/academic`,
+			label: t("sysadmin.institution_detail.academic_tab"),
+		},
 		{
 			to: `/sysadmin/institutions/${id}/templates`,
 			label: t("sysadmin.templates.tab"),
+		},
+		{
+			to: `/sysadmin/institutions/${id}/billing`,
+			label: t("sysadmin.billing.tab"),
 		},
 	];
 
@@ -995,7 +1051,7 @@ export function SysAdminInstitutionDetail() {
 									</h1>
 									{data?.suspended && (
 										<span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600 text-xs">
-											Suspended
+											{t("sysadmin.institution_detail.suspended_badge")}
 										</span>
 									)}
 								</div>
@@ -1009,48 +1065,49 @@ export function SysAdminInstitutionDetail() {
 				</div>
 
 				{!isLoading && data && (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm">
-								<MoreVertical className="h-4 w-4" />
-								<span className="ml-1.5 hidden sm:inline">Actions</span>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="w-52">
-							<DropdownMenuItem onSelect={() => setShowEditDialog(true)}>
-								<Pencil className="mr-2 h-4 w-4" />
-								Edit institution
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							{data.suspended ? (
-								<DropdownMenuItem
-									disabled={activate.isPending}
-									onSelect={() => activate.mutate({ id: data.id })}
-								>
-									<PlayCircle className="mr-2 h-4 w-4" />
-									{activate.isPending
-										? "Reactivating…"
-										: "Reactivate institution"}
-								</DropdownMenuItem>
-							) : (
-								<DropdownMenuItem
-									disabled={suspend.isPending}
-									onSelect={() => suspend.mutate({ id: data.id })}
-								>
-									<PauseCircle className="mr-2 h-4 w-4" />
-									{suspend.isPending ? "Suspending…" : "Suspend institution"}
-								</DropdownMenuItem>
-							)}
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								className="text-rose-600 focus:text-rose-600"
-								onSelect={() => setShowDeleteDialog(true)}
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setShowEditDialog(true)}
+						>
+							<Pencil className="mr-1.5 h-4 w-4" />
+							{t("sysadmin.institution_detail.edit")}
+						</Button>
+						{data.suspended ? (
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={activate.isPending}
+								onClick={() => activate.mutate({ id: data.id })}
 							>
-								<Trash2 className="mr-2 h-4 w-4" />
-								Delete institution
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+								<PlayCircle className="mr-1.5 h-4 w-4" />
+								{activate.isPending
+									? t("sysadmin.institution_detail.reactivating")
+									: t("sysadmin.institution_detail.reactivate")}
+							</Button>
+						) : (
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={suspend.isPending}
+								onClick={() => suspend.mutate({ id: data.id })}
+							>
+								<PauseCircle className="mr-1.5 h-4 w-4" />
+								{suspend.isPending
+									? t("sysadmin.institution_detail.suspending")
+									: t("sysadmin.institution_detail.suspend")}
+							</Button>
+						)}
+						<Button
+							variant="outline"
+							size="icon"
+							className="h-9 w-9 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+							onClick={() => setShowDeleteDialog(true)}
+						>
+							<Trash2 className="h-4 w-4" />
+						</Button>
+					</div>
 				)}
 			</div>
 
@@ -1096,22 +1153,27 @@ export function SysAdminInstitutionDetail() {
 			>
 				<DialogContent className="sm:max-w-sm">
 					<DialogHeader>
-						<DialogTitle>Delete institution?</DialogTitle>
+						<DialogTitle>
+							{t("sysadmin.institution_detail.delete_title")}
+						</DialogTitle>
 					</DialogHeader>
 					<p className="text-muted-foreground text-sm">
-						<strong className="text-foreground">{data?.name}</strong> and all
-						its data will be permanently deleted. This action cannot be undone.
+						{t("sysadmin.institution_detail.delete_desc", {
+							name: data?.name ?? "",
+						})}
 					</p>
 					<div className="flex justify-end gap-2 pt-2">
 						<Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button
 							variant="destructive"
 							disabled={deleteInstitution.isPending}
 							onClick={() => id && deleteInstitution.mutate({ id })}
 						>
-							{deleteInstitution.isPending ? "Deleting…" : "Delete institution"}
+							{deleteInstitution.isPending
+								? t("sysadmin.institution_detail.deleting")
+								: t("sysadmin.institution_detail.delete_btn")}
 						</Button>
 					</div>
 				</DialogContent>

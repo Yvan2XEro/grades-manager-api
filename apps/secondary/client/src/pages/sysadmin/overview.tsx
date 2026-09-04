@@ -280,12 +280,12 @@ export function SysAdminOverview() {
 									<span className="text-muted-foreground text-xs">
 										{inst.city ?? "—"}
 									</span>
-									{inst.orgId ? (
+									{!inst.suspended ? (
 										<span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs">
 											{t("sysadmin.institutions.status_active", "Active")}
 										</span>
 									) : (
-										<span className="rounded-full bg-rose-500/10 px-2 py-0.5 font-medium text-rose-600 text-xs">
+										<span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600 text-xs">
 											{t("sysadmin.institutions.status_suspended", "Suspended")}
 										</span>
 									)}
