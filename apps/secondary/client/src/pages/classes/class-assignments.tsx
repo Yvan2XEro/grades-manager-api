@@ -175,7 +175,7 @@ export function ClassAssignments() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-3">
 				<h2 className="font-semibold text-foreground">
 					{t("subject_assignments.title", "Subject Assignments")}
 				</h2>

@@ -175,7 +175,7 @@ export function StudentProfileTab() {
 	if (isEditing) {
 		return (
 			<form onSubmit={onSubmit} className="space-y-6">
-				<div className="flex items-center justify-between">
+				<div className="flex flex-wrap items-center justify-between gap-3">
 					<p className="font-medium text-foreground text-sm">
 						{t("students.edit", "Edit student")}
 					</p>

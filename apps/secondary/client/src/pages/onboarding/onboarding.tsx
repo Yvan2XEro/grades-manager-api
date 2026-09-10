@@ -526,7 +526,10 @@ function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 				</div>
 				<div className="rounded-xl border border-border bg-muted/30 p-4">
 					{years.map((y) => (
-						<div key={y.id} className="flex items-center justify-between">
+						<div
+							key={y.id}
+							className="flex flex-wrap items-center justify-between gap-3"
+						>
 							<span className="font-medium text-foreground">{y.name}</span>
 							{y.status === "active" && (
 								<span className="rounded-full bg-green-100 px-2 py-0.5 text-green-700 text-xs dark:bg-green-900/30 dark:text-green-400">

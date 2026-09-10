@@ -220,7 +220,7 @@ export function AdminDashboard() {
 					<div className="p-5">
 						{activeYear ? (
 							<div className="space-y-4">
-								<div className="flex items-center justify-between">
+								<div className="flex flex-wrap items-center justify-between gap-3">
 									<span className="text-muted-foreground text-sm">
 										{t("dashboard.year", "Year")}
 									</span>
@@ -228,7 +228,7 @@ export function AdminDashboard() {
 										{activeYear.name}
 									</span>
 								</div>
-								<div className="flex items-center justify-between border-border border-t pt-4">
+								<div className="flex flex-wrap items-center justify-between gap-3 border-border border-t pt-4">
 									<span className="text-muted-foreground text-sm">
 										{t("dashboard.classes_this_year", "Classes")}
 									</span>
@@ -236,7 +236,7 @@ export function AdminDashboard() {
 										{activeYearClassesData?.total ?? "—"}
 									</span>
 								</div>
-								<div className="flex items-center justify-between border-border border-t pt-4">
+								<div className="flex flex-wrap items-center justify-between gap-3 border-border border-t pt-4">
 									<span className="text-muted-foreground text-sm">
 										{t("dashboard.enrollments_this_year", "Enrollments")}
 									</span>

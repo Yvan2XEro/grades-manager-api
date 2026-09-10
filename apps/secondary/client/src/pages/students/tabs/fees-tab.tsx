@@ -230,7 +230,7 @@ export function StudentFeesTab() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-center justify-between rounded-xl border border-border bg-card p-5">
+			<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-5">
 				<div>
 					<p className="text-muted-foreground text-sm">
 						{t("fees.total_paid", "Total paid")} — {activeYear.name}

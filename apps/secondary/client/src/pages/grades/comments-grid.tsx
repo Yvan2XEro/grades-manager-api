@@ -153,7 +153,7 @@ export function CommentsGrid() {
 			</div>
 
 			<div className="overflow-hidden rounded-xl border border-border">
-				<div className="flex items-center justify-between bg-muted/30 px-4 py-3">
+				<div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 px-4 py-3">
 					<span className="font-medium text-foreground text-sm">
 						{enrollments.length} {t("grades.students", "students")}
 					</span>

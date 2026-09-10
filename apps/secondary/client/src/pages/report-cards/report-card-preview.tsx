@@ -252,7 +252,7 @@ export function ReportCardPreview() {
 			{subjectRows.length > 0 ? (
 				<Card>
 					<CardHeader className="pb-2">
-						<div className="flex items-center justify-between">
+						<div className="flex flex-wrap items-center justify-between gap-3">
 							<p className="font-semibold text-foreground">
 								{t("report_cards.subject_averages", "Subject averages")}
 							</p>

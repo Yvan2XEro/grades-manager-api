@@ -141,7 +141,7 @@ export function ExamSettingsTab() {
 	return (
 		<div className="max-w-lg space-y-6">
 			<div className="rounded-xl border border-border bg-card p-6">
-				<div className="mb-4 flex items-center justify-between">
+				<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 					<h2 className="font-semibold text-foreground">
 						{t("official_exams.session_details", "Session details")}
 					</h2>

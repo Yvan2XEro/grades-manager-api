@@ -30,36 +30,38 @@ export function StaffAssignmentsTab() {
 	if (isLoading) {
 		return (
 			<div className="overflow-hidden rounded-xl border border-border">
-				<table className="w-full text-sm">
-					<thead className="border-border border-b bg-muted/60 text-muted-foreground">
-						<tr>
-							<th className="px-4 py-2 text-left font-medium">
-								{t("subjects.col_name", "Subject")}
-							</th>
-							<th className="px-4 py-2 text-left font-medium">
-								{t("staff.col_class", "Class")}
-							</th>
-							<th className="px-4 py-2 text-left font-medium">
-								{t("academic_years.col_name", "Academic year")}
-							</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-border">
-						{Array.from({ length: 5 }, (_, i) => (
-							<tr key={i}>
-								<td className="px-4 py-2">
-									<Skeleton className="h-4 w-32" />
-								</td>
-								<td className="px-4 py-2">
-									<Skeleton className="h-4 w-24" />
-								</td>
-								<td className="px-4 py-2">
-									<Skeleton className="h-4 w-28" />
-								</td>
+				<div className="overflow-x-auto">
+					<table className="w-full text-sm">
+						<thead className="border-border border-b bg-muted/60 text-muted-foreground">
+							<tr>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("subjects.col_name", "Subject")}
+								</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("staff.col_class", "Class")}
+								</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("academic_years.col_name", "Academic year")}
+								</th>
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</thead>
+						<tbody className="divide-y divide-border">
+							{Array.from({ length: 5 }, (_, i) => (
+								<tr key={i}>
+									<td className="px-4 py-2">
+										<Skeleton className="h-4 w-32" />
+									</td>
+									<td className="px-4 py-2">
+										<Skeleton className="h-4 w-24" />
+									</td>
+									<td className="px-4 py-2">
+										<Skeleton className="h-4 w-28" />
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
 			</div>
 		);
 	}
@@ -78,39 +80,41 @@ export function StaffAssignmentsTab() {
 
 	return (
 		<div className="overflow-hidden rounded-xl border border-border">
-			<table className="w-full text-sm">
-				<thead className="border-border border-b bg-muted/60 text-muted-foreground">
-					<tr>
-						<th className="px-4 py-2 text-left font-medium">
-							{t("subjects.col_name", "Subject")}
-						</th>
-						<th className="px-4 py-2 text-left font-medium">
-							{t("staff.col_class", "Class")}
-						</th>
-						<th className="px-4 py-2 text-left font-medium">
-							{t("academic_years.col_name", "Academic year")}
-						</th>
-					</tr>
-				</thead>
-				<tbody className="divide-y divide-border">
-					{assignments.map((a: any) => (
-						<tr
-							key={a.assignment.id}
-							className="transition-colors hover:bg-muted/20"
-						>
-							<td className="px-4 py-2 font-medium text-foreground">
-								{a.subject?.name ?? "—"}
-							</td>
-							<td className="px-4 py-2 text-muted-foreground">
-								{a.class?.name ?? "—"}
-							</td>
-							<td className="px-4 py-2 text-muted-foreground">
-								{yearMap.get(a.assignment.academicYearId) ?? "—"}
-							</td>
+			<div className="overflow-x-auto">
+				<table className="w-full text-sm">
+					<thead className="border-border border-b bg-muted/60 text-muted-foreground">
+						<tr>
+							<th className="px-4 py-2 text-left font-medium">
+								{t("subjects.col_name", "Subject")}
+							</th>
+							<th className="px-4 py-2 text-left font-medium">
+								{t("staff.col_class", "Class")}
+							</th>
+							<th className="px-4 py-2 text-left font-medium">
+								{t("academic_years.col_name", "Academic year")}
+							</th>
 						</tr>
-					))}
-				</tbody>
-			</table>
+					</thead>
+					<tbody className="divide-y divide-border">
+						{assignments.map((a: any) => (
+							<tr
+								key={a.assignment.id}
+								className="transition-colors hover:bg-muted/20"
+							>
+								<td className="px-4 py-2 font-medium text-foreground">
+									{a.subject?.name ?? "—"}
+								</td>
+								<td className="px-4 py-2 text-muted-foreground">
+									{a.class?.name ?? "—"}
+								</td>
+								<td className="px-4 py-2 text-muted-foreground">
+									{yearMap.get(a.assignment.academicYearId) ?? "—"}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	);
 }

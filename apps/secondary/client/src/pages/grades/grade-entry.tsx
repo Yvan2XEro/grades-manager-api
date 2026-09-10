@@ -960,7 +960,7 @@ export function GradeEntry() {
 					</table>
 
 					{/* Bottom status bar */}
-					<div className="flex items-center justify-between border-border border-t bg-muted/20 px-4 py-2 text-muted-foreground text-xs">
+					<div className="flex flex-wrap items-center justify-between gap-3 border-border border-t bg-muted/20 px-4 py-2 text-muted-foreground text-xs">
 						<span className="flex items-center gap-2">
 							<span>
 								<span className="font-semibold text-foreground tabular-nums">

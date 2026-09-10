@@ -248,7 +248,7 @@ export function TermsContent() {
 
 	return (
 		<div className="space-y-5">
-			<div className="flex items-center justify-between gap-4">
+			<div className="flex flex-wrap items-center justify-between gap-3 gap-4">
 				<div className="w-56">
 					<label className="mb-1 block font-medium text-muted-foreground text-xs">
 						{t("terms.select_year", "Academic year")}
@@ -295,7 +295,7 @@ export function TermsContent() {
 								key={n}
 								className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5"
 							>
-								<div className="flex items-center justify-between">
+								<div className="flex flex-wrap items-center justify-between gap-3">
 									<div className="flex items-center gap-2">
 										<Calendar className="h-4 w-4 text-muted-foreground" />
 										<span className="font-semibold text-foreground">

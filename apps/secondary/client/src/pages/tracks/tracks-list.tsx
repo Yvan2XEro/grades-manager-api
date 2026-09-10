@@ -103,7 +103,7 @@ export function TracksList() {
 
 	return (
 		<div className="space-y-5">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h1 className="font-bold text-2xl text-foreground">
 						{t("tracks.title", "Tracks")}

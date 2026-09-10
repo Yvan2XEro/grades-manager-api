@@ -210,7 +210,7 @@ export function SysAdminOverview() {
 
 			{/* Growth chart */}
 			<div className="overflow-hidden rounded-xl border border-border bg-card p-5">
-				<div className="mb-4 flex items-center justify-between">
+				<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 					<h2 className="font-semibold text-base text-card-foreground">
 						{t("sysadmin.overview.growth_chart", "Growth (last 12 months)")}
 					</h2>
@@ -230,7 +230,7 @@ export function SysAdminOverview() {
 
 			{/* Recent institutions */}
 			<div className="overflow-hidden rounded-xl border border-border bg-card">
-				<div className="flex items-center justify-between border-border border-b px-5 py-4">
+				<div className="flex flex-wrap items-center justify-between gap-3 border-border border-b px-5 py-4">
 					<h2 className="font-semibold text-base text-card-foreground">
 						{t("sysadmin.overview.recent_institutions", "Recent Institutions")}
 					</h2>
@@ -266,7 +266,7 @@ export function SysAdminOverview() {
 							<Link
 								key={inst.id}
 								to={`/sysadmin/institutions/${inst.id}`}
-								className="flex items-center justify-between gap-4 px-5 py-3 text-sm transition-colors hover:bg-muted/30"
+								className="flex flex-wrap items-center justify-between gap-3 gap-4 px-5 py-3 text-sm transition-colors hover:bg-muted/30"
 							>
 								<span className="truncate font-medium text-foreground">
 									{inst.name}

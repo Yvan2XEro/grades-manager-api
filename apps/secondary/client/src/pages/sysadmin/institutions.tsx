@@ -72,7 +72,7 @@ function UserSearchField({
 				{t("sysadmin.institutions.field_owner", "Owner admin (optional)")}
 			</Label>
 			{value ? (
-				<div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2">
+				<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
 					<div>
 						<p className="font-medium text-sm">{value.name}</p>
 					</div>
@@ -593,7 +593,7 @@ export function SysAdminInstitutions() {
 
 	return (
 		<div className="space-y-5">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h1 className="font-bold text-2xl text-foreground">
 						{t("sysadmin.institutions.title", "Institutions")}

@@ -147,7 +147,7 @@ export function LoginPage() {
 					</div>
 
 					<div className="flex flex-col gap-1.5">
-						<div className="flex items-center justify-between">
+						<div className="flex flex-wrap items-center justify-between gap-3">
 							<Label htmlFor="password">{t("auth.password")}</Label>
 							<Link
 								to="/forgot-password"

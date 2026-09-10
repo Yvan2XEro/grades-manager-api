@@ -383,7 +383,7 @@ function AttendanceSheet({
 					))}
 				</div>
 				<div className="overflow-hidden rounded-xl border border-border">
-					<div className="flex items-center justify-between bg-muted/30 px-4 py-3">
+					<div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 px-4 py-3">
 						<Skeleton className="h-4 w-32" />
 						<Skeleton className="h-8 w-28" />
 					</div>
@@ -504,7 +504,7 @@ function AttendanceSheet({
 
 			{/* Save + error */}
 			{students.length > 0 && (
-				<div className="flex items-center justify-between">
+				<div className="flex flex-wrap items-center justify-between gap-3">
 					{batchRecord.error ? (
 						<p className="text-destructive text-sm">
 							{batchRecord.error.message ??

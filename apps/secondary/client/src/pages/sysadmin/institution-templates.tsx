@@ -721,7 +721,7 @@ function TypeSidebar({
 					type="button"
 					onClick={() => onSelect(type)}
 					className={cn(
-						"flex items-center justify-between rounded-lg px-3 py-2.5 text-left font-medium text-sm transition-colors",
+						"flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left font-medium text-sm transition-colors",
 						selected === type
 							? "bg-primary text-primary-foreground"
 							: "text-foreground hover:bg-muted",
@@ -840,7 +840,7 @@ function TemplateEditor({
 	return (
 		<div className="flex flex-col gap-5">
 			{/* Header */}
-			<div className="flex items-center justify-between gap-4">
+			<div className="flex flex-wrap items-center justify-between gap-3 gap-4">
 				<div>
 					<h2 className="font-semibold text-base text-foreground">
 						{t(`sysadmin.templates.type_${type}`)}
@@ -932,7 +932,7 @@ function TemplateEditor({
 
 			{/* FR / EN tab + editor */}
 			<div className="space-y-2">
-				<div className="flex items-center justify-between">
+				<div className="flex flex-wrap items-center justify-between gap-3">
 					{/* Language tabs */}
 					<div className="flex overflow-hidden rounded-lg border border-border">
 						{(["fr", "en"] as Lang[]).map((l) => (
@@ -969,7 +969,7 @@ function TemplateEditor({
 			{/* Live preview */}
 			{showPreview && (
 				<div className="space-y-2">
-					<div className="flex items-center justify-between">
+					<div className="flex flex-wrap items-center justify-between gap-3">
 						<Label>
 							{t("sysadmin.templates.preview")} ({lang.toUpperCase()})
 						</Label>

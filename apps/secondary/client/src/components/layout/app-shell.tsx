@@ -175,7 +175,7 @@ export function AppShell({ children }: Props) {
 							</PopoverContent>
 						</Popover>
 					</div>
-					<div className="flex-1 overflow-y-auto p-6">{children}</div>
+					<div className="flex-1 overflow-y-auto p-3 sm:p-6">{children}</div>
 				</main>
 			</SidebarProvider>
 		</BreadcrumbsProvider>

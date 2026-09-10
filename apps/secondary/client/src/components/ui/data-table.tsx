@@ -79,91 +79,96 @@ export function DataTable<TData>({
 
 	return (
 		<div className="overflow-hidden rounded-xl border border-border">
-			<Table>
-				<TableHeader>
-					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow
-							key={headerGroup.id}
-							className="bg-muted/40 hover:bg-muted/40"
-						>
-							{headerGroup.headers.map((header) => {
-								const canSort = header.column.getCanSort();
-								const sorted = header.column.getIsSorted();
-								return (
-									<TableHead
-										key={header.id}
-										onClick={
-											canSort
-												? header.column.getToggleSortingHandler()
-												: undefined
-										}
-										className={canSort ? "cursor-pointer select-none" : ""}
-									>
-										{header.isPlaceholder ? null : (
-											<span className="inline-flex items-center gap-1">
-												{flexRender(
-													header.column.columnDef.header,
-													header.getContext(),
-												)}
-												{canSort && (
-													<span className="text-muted-foreground/60">
-														{sorted === "asc" ? (
-															<ChevronUp className="h-3.5 w-3.5" />
-														) : sorted === "desc" ? (
-															<ChevronDown className="h-3.5 w-3.5" />
-														) : (
-															<ChevronsUpDown className="h-3.5 w-3.5" />
-														)}
-													</span>
-												)}
-											</span>
-										)}
-									</TableHead>
-								);
-							})}
-						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody>
-					{isLoading ? (
-						Array.from({ length: Math.min(pageSize, 6) }, (_, i) => (
-							<TableRow key={i} className="hover:bg-transparent">
-								{columns.map((_, ci) => (
-									<TableCell key={ci}>
-										<Skeleton className="h-4 w-full" />
-									</TableCell>
-								))}
-							</TableRow>
-						))
-					) : table.getRowModel().rows.length === 0 ? (
-						<TableRow>
-							<TableCell
-								colSpan={columns.length}
-								className="h-24 text-center text-muted-foreground"
-							>
-								{emptyMessage ?? t("common.no_data", "No data")}
-							</TableCell>
-						</TableRow>
-					) : (
-						table.getRowModel().rows.map((row, ri) => (
+			<div className="overflow-x-auto">
+				<Table>
+					<TableHeader>
+						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow
-								key={row.id}
-								className={
-									ri % 2 === 1
-										? "bg-black/[0.04] hover:bg-black/[0.06] dark:bg-white/[0.05] dark:hover:bg-white/[0.07]"
-										: "hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
-								}
+								key={headerGroup.id}
+								className="bg-muted/40 hover:bg-muted/40"
 							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id}>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
-								))}
+								{headerGroup.headers.map((header) => {
+									const canSort = header.column.getCanSort();
+									const sorted = header.column.getIsSorted();
+									return (
+										<TableHead
+											key={header.id}
+											onClick={
+												canSort
+													? header.column.getToggleSortingHandler()
+													: undefined
+											}
+											className={canSort ? "cursor-pointer select-none" : ""}
+										>
+											{header.isPlaceholder ? null : (
+												<span className="inline-flex items-center gap-1">
+													{flexRender(
+														header.column.columnDef.header,
+														header.getContext(),
+													)}
+													{canSort && (
+														<span className="text-muted-foreground/60">
+															{sorted === "asc" ? (
+																<ChevronUp className="h-3.5 w-3.5" />
+															) : sorted === "desc" ? (
+																<ChevronDown className="h-3.5 w-3.5" />
+															) : (
+																<ChevronsUpDown className="h-3.5 w-3.5" />
+															)}
+														</span>
+													)}
+												</span>
+											)}
+										</TableHead>
+									);
+								})}
 							</TableRow>
-						))
-					)}
-				</TableBody>
-			</Table>
+						))}
+					</TableHeader>
+					<TableBody>
+						{isLoading ? (
+							Array.from({ length: Math.min(pageSize, 6) }, (_, i) => (
+								<TableRow key={i} className="hover:bg-transparent">
+									{columns.map((_, ci) => (
+										<TableCell key={ci}>
+											<Skeleton className="h-4 w-full" />
+										</TableCell>
+									))}
+								</TableRow>
+							))
+						) : table.getRowModel().rows.length === 0 ? (
+							<TableRow>
+								<TableCell
+									colSpan={columns.length}
+									className="h-24 text-center text-muted-foreground"
+								>
+									{emptyMessage ?? t("common.no_data", "No data")}
+								</TableCell>
+							</TableRow>
+						) : (
+							table.getRowModel().rows.map((row, ri) => (
+								<TableRow
+									key={row.id}
+									className={
+										ri % 2 === 1
+											? "bg-black/[0.04] hover:bg-black/[0.06] dark:bg-white/[0.05] dark:hover:bg-white/[0.07]"
+											: "hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
+									}
+								>
+									{row.getVisibleCells().map((cell) => (
+										<TableCell key={cell.id}>
+											{flexRender(
+												cell.column.columnDef.cell,
+												cell.getContext(),
+											)}
+										</TableCell>
+									))}
+								</TableRow>
+							))
+						)}
+					</TableBody>
+				</Table>
+			</div>
 			<div className="border-border border-t">
 				<TablePagination
 					page={page}

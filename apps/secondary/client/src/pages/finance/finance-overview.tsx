@@ -315,7 +315,7 @@ function FeeScheduleDialog({
 
 					{/* Payment instalments */}
 					<div className="space-y-2">
-						<div className="flex items-center justify-between">
+						<div className="flex flex-wrap items-center justify-between gap-3">
 							<Label>{t("fees.instalments", "Payment instalments")}</Label>
 							<button
 								type="button"
@@ -440,7 +440,7 @@ export function FinanceOverview() {
 
 	return (
 		<div className="space-y-5">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h1 className="font-bold text-2xl text-foreground">
 						{t("finance.title", "Finances")}
@@ -518,7 +518,7 @@ export function FinanceOverview() {
 			{/* Fee schedules */}
 			{schedules.length > 0 && (
 				<div className="overflow-hidden rounded-xl border border-border">
-					<div className="flex items-center justify-between border-border border-b bg-muted/30 px-4 py-3">
+					<div className="flex flex-wrap items-center justify-between gap-3 border-border border-b bg-muted/30 px-4 py-3">
 						<h2 className="font-semibold text-foreground text-sm">
 							{t("fees.schedules_title", "Fee schedules")}
 						</h2>
@@ -534,7 +534,7 @@ export function FinanceOverview() {
 						).map((s) => (
 							<div
 								key={s.id}
-								className="flex items-center justify-between px-4 py-3"
+								className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
 							>
 								<div className="text-foreground text-sm">
 									{s.classId
@@ -594,7 +594,7 @@ export function FinanceOverview() {
 
 			{/* Payments table */}
 			<div className="overflow-hidden rounded-xl border border-border">
-				<div className="flex items-center justify-between border-border border-b bg-muted/30 px-4 py-3">
+				<div className="flex flex-wrap items-center justify-between gap-3 border-border border-b bg-muted/30 px-4 py-3">
 					<h2 className="font-semibold text-foreground text-sm">
 						{t("finance.recent_payments", "Recent payments")}
 					</h2>
