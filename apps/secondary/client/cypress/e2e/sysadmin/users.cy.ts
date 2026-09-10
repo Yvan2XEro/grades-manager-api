@@ -120,20 +120,22 @@ describe("Sysadmin Users", () => {
 		});
 		cy.url({ timeout: 10000 }).should("include", "/sysadmin/users/");
 
-		// Click ban action — button text: t("sysadmin.users.detail.ban_action", "Ban user")
-		cy.findByRole("button", { name: /ban user/i }, { timeout: 10000 }).click();
+		// Click ban action — button text: t("sysadmin.users.detail.ban_action", "Ban")
+		cy.findByRole("button", { name: /^ban$/i }, { timeout: 10000 }).click();
 
-		// Ban dialog opens — confirm by clicking "Ban user" button (the destructive action button)
+		// Ban dialog opens (BanDialog component with reason + duration fields)
+		// Confirm by clicking the destructive "Ban user" button in the dialog
 		cy.findByRole("dialog").should("be.visible");
-		cy.findByRole("button", { name: /ban user/i })
+		cy.findByRole("button", { name: /^ban user$|^bannir$/i })
 			.last()
 			.click();
 
 		// Wait for ban to complete — status badge shows "Banned"
 		cy.contains(/^banned$/i, { timeout: 10000 }).should("be.visible");
 
-		// Unban — button text: t("sysadmin.users.unban_user", "Unban user")
-		cy.findByRole("button", { name: /unban/i }).click();
+		// Unban is in the MoreHorizontal DropdownMenu
+		cy.findByRole("button", { name: /more actions/i }).click();
+		cy.findByRole("menuitem", { name: /^unban$|^débannir$/i }).click();
 
 		// Status reverted — "Banned" badge gone
 		cy.contains(/^banned$/i, { timeout: 10000 }).should("not.exist");
