@@ -148,8 +148,9 @@ describe("Sysadmin Users", () => {
 
 		// Navigate to admin user via their NAME (Link) — email cell is not a link
 		// Seed admin name is "Admin Lycée" (admin@lycee-bilingue.local)
+		// Use a longer timeout to allow search debounce + API response.
 		cy.findByRole("table").within(() => {
-			cy.contains("a", /admin lyc/i, { timeout: 10000 }).click();
+			cy.contains("a", /admin lyc/i, { timeout: 15000 }).click();
 		});
 		cy.url({ timeout: 10000 }).should("include", "/sysadmin/users/");
 

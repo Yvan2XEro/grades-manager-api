@@ -106,21 +106,10 @@ describe("Settings — Profile & Security", () => {
 		// "Continue" submits the password; endpoint is stubbed to return a totpURI
 		cy.findByRole("button", { name: /continue|continuer/i }).click();
 
-		// After stub responds, the verify step shows the QR code and manual key
-		cy.get("body", { timeout: 10000 }).then(($body) => {
-			// img[alt*='qr' i] is invalid in jQuery (no case-insensitive flag).
-			// Use data:image src match + canvas + manual text as fallback.
-			const hasQr =
-				$body.find("img[src*='data:image'], canvas").length > 0 ||
-				$body
-					.find("img")
-					.filter((_i: number, el: HTMLElement) =>
-						/qr/i.test(el.getAttribute("alt") ?? ""),
-					).length > 0;
-			const hasManualKey =
-				$body.text().includes("manually") ||
-				$body.text().includes("manuellement");
-			expect(hasQr || hasManualKey).to.be.true;
-		});
+		// After stub responds, the verify step shows the QR code and manual key.
+		// Use cy.contains() so Cypress retries until the React state update renders the content.
+		cy.contains(/or enter.*manually|manuellement|scan this qr/i, {
+			timeout: 10000,
+		}).should("be.visible");
 	});
 });

@@ -52,7 +52,7 @@ describe("Institution Detail — TC-SA-ID-01 to TC-SA-ID-08", () => {
 			.invoke("text")
 			.should(
 				"match",
-				/\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{1,2}\s+\w+\s+\d{4}|\d{4}-\d{2}-\d{2}/,
+				/\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{1,2}\s+\w+\.?\s+\d{4}|\d{4}-\d{2}-\d{2}/,
 			);
 
 		// Set locale to English and check date format

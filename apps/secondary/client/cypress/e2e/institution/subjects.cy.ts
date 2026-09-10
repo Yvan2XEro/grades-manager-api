@@ -89,24 +89,10 @@ describe("Subjects", () => {
 			cy.findAllByRole("row").not(":first").first().as("targetRow");
 		});
 
-		cy.get("@targetRow").then(($row) => {
-			// jQuery does NOT support case-insensitive attribute selectors ([attr*='val' i]).
-			// Use .filter() with a JS regex instead.
-			const $deleteBtn = $row
-				.find("button[aria-label]")
-				.filter((_i: number, el: HTMLElement) =>
-					/delete|supprimer/i.test(el.getAttribute("aria-label") ?? ""),
-				);
-			if ($deleteBtn.length) {
-				cy.wrap($deleteBtn.first()).click();
-			} else {
-				cy.wrap($row).within(() => {
-					cy.findByRole("button", { name: /edit/i }).click();
-				});
-				cy.findByRole("dialog").within(() => {
-					cy.findByRole("button", { name: /delete|supprimer/i }).click();
-				});
-			}
+		// The delete button has aria-label="Delete subject" — use cy.wrap().within() for
+		// proper Cypress retrying instead of non-retrying jQuery.
+		cy.get("@targetRow").within(() => {
+			cy.findByRole("button", { name: /delete|supprimer/i }).click();
 		});
 
 		// Dialog opens — may not have an accessible name, just check it's visible

@@ -201,7 +201,7 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 	] as const;
 
 	return (
-		<form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+		<form className="space-y-5" noValidate onSubmit={handleSubmit(onSubmit)}>
 			<div>
 				<h2 className="font-semibold text-foreground text-lg">
 					{t("onboarding.step1_title", "Institution profile")}

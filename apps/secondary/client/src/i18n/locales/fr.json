@@ -290,6 +290,7 @@
     "role": "Rôle",
     "tab_profile": "Profil",
     "tab_assignments": "Enseignements",
+    "col_class": "Classe",
     "no_assignments": "Aucune affectation trouvée.",
     "role_teacher": "Enseignant",
     "role_admin": "Administrateur",

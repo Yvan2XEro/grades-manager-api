@@ -15,14 +15,22 @@ function navigateToGradeGrid() {
 	// 1. Select class — PillCombobox trigger, placeholder "Class…"
 	cy.findByRole("button", { name: /class…/i }).click();
 	cy.findByRole("option", { name: /4ème d/i }).click();
+	// Wait for URL to update — confirms setSearchParams fired and React re-rendered
+	cy.url().should("include", "classId=");
 
 	// 2. Select subject — Popover trigger, enabled after class is chosen
-	cy.findByRole("button", { name: /subject…|math/i }).click();
+	cy.findByRole(
+		"button",
+		{ name: /subject…|math/i },
+		{ timeout: 8000 },
+	).click();
 	cy.findByRole("option", { name: /math/i }).click();
+	cy.url().should("include", "subjectId=");
 
-	// 3. Select term — PillCombobox, placeholder "Term…"
-	cy.findByRole("button", { name: /term…/i }).click();
+	// 3. Select term — PillCombobox, placeholder "Term…" / "Select term…"
+	cy.findByRole("button", { name: /term/i }, { timeout: 8000 }).click();
 	cy.findByRole("option", { name: /term 1/i }).click();
+	cy.url().should("include", "termId=");
 
 	// "Full grid" link appears once all three are chosen — explicit timeout for async state update
 	cy.findByRole("link", { name: /full grid/i }, { timeout: 10000 }).click();
@@ -56,14 +64,21 @@ describe("TC-GRD-05 — Grade entry selector interface", () => {
 		// Select class
 		cy.findByRole("button", { name: /class…/i }).click();
 		cy.findByRole("option", { name: /4ème d/i }).click();
+		cy.url().should("include", "classId=");
 
 		// Subject selector is now enabled
-		cy.findByRole("button", { name: /subject…|math/i }).click();
+		cy.findByRole(
+			"button",
+			{ name: /subject…|math/i },
+			{ timeout: 8000 },
+		).click();
 		cy.findByRole("option", { name: /math/i }).click();
+		cy.url().should("include", "subjectId=");
 
 		// Select term
-		cy.findByRole("button", { name: /term…/i }).click();
+		cy.findByRole("button", { name: /term/i }, { timeout: 8000 }).click();
 		cy.findByRole("option", { name: /term 1/i }).click();
+		cy.url().should("include", "termId=");
 
 		// "Full grid" link appears and clicking it navigates to the grade grid
 		cy.findByRole("link", { name: /full grid/i }, { timeout: 10000 })

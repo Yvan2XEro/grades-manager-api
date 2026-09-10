@@ -37,7 +37,7 @@ export function StaffAssignmentsTab() {
 								{t("subjects.col_name", "Subject")}
 							</th>
 							<th className="px-4 py-2 text-left font-medium">
-								{t("classes.col_name", "Class")}
+								{t("staff.col_class", "Class")}
 							</th>
 							<th className="px-4 py-2 text-left font-medium">
 								{t("academic_years.col_name", "Academic year")}
@@ -85,7 +85,7 @@ export function StaffAssignmentsTab() {
 							{t("subjects.col_name", "Subject")}
 						</th>
 						<th className="px-4 py-2 text-left font-medium">
-							{t("classes.col_name", "Class")}
+							{t("staff.col_class", "Class")}
 						</th>
 						<th className="px-4 py-2 text-left font-medium">
 							{t("academic_years.col_name", "Academic year")}
