@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { Confirm } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -191,7 +192,6 @@ export function SubjectAssignments() {
 	const { t } = useTranslation();
 	const [selectedClassId, setSelectedClassId] = useState<string>("");
 	const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-	const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 	const utils = trpc.useUtils();
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
@@ -213,10 +213,7 @@ export function SubjectAssignments() {
 		);
 
 	const remove = trpc.subjectAssignments.delete.useMutation({
-		onSuccess: () => {
-			utils.subjectAssignments.list.invalidate();
-			setPendingDeleteId(null);
-		},
+		onSuccess: () => utils.subjectAssignments.list.invalidate(),
 	});
 
 	const existingSubjectIds = (assignments as Assignment[]).map(
@@ -321,36 +318,29 @@ export function SubjectAssignments() {
 										{a.staff.lastName} {a.staff.firstName}
 									</td>
 									<td className="px-4 py-3 text-right">
-										{pendingDeleteId === a.assignment.id ? (
-											<div className="flex items-center justify-end gap-1">
-												<Button
-													variant="destructive"
-													size="sm"
-													className="h-7 px-2 text-xs"
-													onClick={() => remove.mutate({ id: a.assignment.id })}
-													disabled={remove.isPending}
-												>
-													{t("common.confirm", "Confirm")}
-												</Button>
-												<Button
-													variant="ghost"
-													size="sm"
-													className="h-7 px-2 text-xs"
-													onClick={() => setPendingDeleteId(null)}
-												>
-													{t("common.cancel", "Cancel")}
-												</Button>
-											</div>
-										) : (
-											<Button
-												variant="ghost"
-												size="sm"
-												className="h-7 px-2 text-destructive hover:text-destructive"
-												onClick={() => setPendingDeleteId(a.assignment.id)}
-											>
-												<Trash2 className="h-3 w-3" />
-											</Button>
-										)}
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-7 px-2 text-destructive hover:text-destructive"
+											onClick={async () => {
+												const ok = await Confirm.call({
+													title: t(
+														"subject_assignments.delete_title",
+														"Remove assignment?",
+													),
+													description: t(
+														"subject_assignments.delete_desc",
+														"This teacher will be unassigned from the subject.",
+													),
+													confirmLabel: t("common.delete", "Delete"),
+													destructive: true,
+												});
+												if (!ok) return;
+												remove.mutate({ id: a.assignment.id });
+											}}
+										>
+											<Trash2 className="h-3 w-3" />
+										</Button>
 									</td>
 								</tr>
 							))}

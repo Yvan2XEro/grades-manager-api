@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
@@ -658,7 +659,6 @@ export function UserMembershipsTab() {
 	const { id } = useParams<{ id: string }>();
 	const { t, i18n } = useTranslation();
 	const [showAdd, setShowAdd] = useState(false);
-	const [confirmRemove, setConfirmRemove] = useState<Membership | null>(null);
 
 	const { data, isLoading, refetch } = trpc.systemAdmin.getUser.useQuery(
 		{ userId: id! },
@@ -666,10 +666,7 @@ export function UserMembershipsTab() {
 	);
 
 	const removeMember = trpc.systemAdmin.removeMember.useMutation({
-		onSuccess: () => {
-			refetch();
-			setConfirmRemove(null);
-		},
+		onSuccess: () => refetch(),
 	});
 	const updateRole = trpc.systemAdmin.updateMemberRole.useMutation({
 		onSuccess: () => refetch(),
@@ -766,7 +763,28 @@ export function UserMembershipsTab() {
 							variant="ghost"
 							size="icon"
 							className="h-8 w-8 text-rose-600 hover:text-rose-600"
-							onClick={() => setConfirmRemove(m)}
+							onClick={async () => {
+								const ok = await Confirm.call({
+									title: t(
+										"sysadmin.users.detail.remove_confirm_title",
+										"Remove from institution?",
+									),
+									description: t(
+										"sysadmin.users.detail.remove_confirm_desc",
+										"This user will lose access to {{name}} immediately.",
+										{ name: m.institutionName },
+									),
+									confirmLabel: t("sysadmin.users.detail.remove_btn", "Remove"),
+									destructive: true,
+								});
+								if (!ok) return;
+								id &&
+									m.institutionId &&
+									removeMember.mutate({
+										institutionId: m.institutionId,
+										userId: id,
+									});
+							}}
 						>
 							<Trash2 className="h-4 w-4" />
 						</Button>
@@ -820,50 +838,6 @@ export function UserMembershipsTab() {
 					onDone={() => refetch()}
 				/>
 			)}
-
-			<Dialog
-				open={!!confirmRemove}
-				onOpenChange={(v) => !v && setConfirmRemove(null)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t(
-								"sysadmin.users.detail.remove_confirm_title",
-								"Remove from institution?",
-							)}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t(
-							"sysadmin.users.detail.remove_confirm_desc",
-							"This user will lose access to {{name}} immediately.",
-							{ name: confirmRemove?.institutionName },
-						)}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="ghost" onClick={() => setConfirmRemove(null)}>
-							{t("cancel", "Cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={removeMember.isPending}
-							onClick={() =>
-								id &&
-								confirmRemove?.institutionId &&
-								removeMember.mutate({
-									institutionId: confirmRemove.institutionId,
-									userId: id,
-								})
-							}
-						>
-							{removeMember.isPending
-								? t("sysadmin.users.detail.removing", "Removing…")
-								: t("sysadmin.users.detail.remove_btn", "Remove")}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }
@@ -889,14 +863,10 @@ export function SysAdminUserDetail() {
 	const [showBan, setShowBan] = useState(false);
 	const [showSetPassword, setShowSetPassword] = useState(false);
 	const [showUpdateUser, setShowUpdateUser] = useState(false);
-	const [confirmRevokeSessions, setConfirmRevokeSessions] = useState(false);
-	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [actionError, setActionError] = useState<string | null>(null);
 
 	const [unbanPending, setUnbanPending] = useState(false);
 	const [rolePending, setRolePending] = useState(false);
-	const [revokePending, setRevokePending] = useState(false);
-	const [deletePending, setDeletePending] = useState(false);
 
 	const sendPasswordReset = trpc.systemAdmin.sendPasswordReset.useMutation({
 		onError: (err) => setActionError(err.message),
@@ -933,24 +903,19 @@ export function SysAdminUserDetail() {
 
 	const handleRevokeSessions = async () => {
 		if (!id) return;
-		setRevokePending(true);
 		const res = await authClient.admin.revokeUserSessions({ userId: id });
-		setRevokePending(false);
 		if (res.error) {
 			setActionError(
 				res.error.message ?? t("common.error", "An error occurred"),
 			);
 		} else {
 			refetch();
-			setConfirmRevokeSessions(false);
 		}
 	};
 
 	const handleDelete = async () => {
 		if (!id) return;
-		setDeletePending(true);
 		const res = await authClient.admin.removeUser({ userId: id });
-		setDeletePending(false);
 		if (res.error) {
 			setActionError(
 				res.error.message ?? t("common.error", "An error occurred"),
@@ -1090,9 +1055,26 @@ export function SysAdminUserDetail() {
 								)}
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
-									onSelect={() => {
+									onSelect={async () => {
 										setActionError(null);
-										setConfirmRevokeSessions(true);
+										const ok = await Confirm.call({
+											title: t(
+												"sysadmin.users.detail.revoke_sessions_title",
+												"Revoke all sessions?",
+											),
+											description: t(
+												"sysadmin.users.detail.revoke_sessions_desc",
+												"{{name}} will be signed out from all devices immediately.",
+												{ name: data.name },
+											),
+											confirmLabel: t(
+												"sysadmin.users.detail.revoke_sessions_btn",
+												"Revoke all sessions",
+											),
+											destructive: true,
+										});
+										if (!ok) return;
+										await handleRevokeSessions();
 									}}
 								>
 									<LogOut className="mr-1.5 h-4 w-4" />
@@ -1109,9 +1091,26 @@ export function SysAdminUserDetail() {
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									className="text-rose-600 focus:text-rose-600"
-									onSelect={() => {
+									onSelect={async () => {
 										setActionError(null);
-										setConfirmDelete(true);
+										const ok = await Confirm.call({
+											title: t(
+												"sysadmin.users.detail.delete_title",
+												"Delete user permanently?",
+											),
+											description: t(
+												"sysadmin.users.detail.delete_desc",
+												"This will permanently delete {{name}} along with all their sessions, accounts, and memberships. Cannot be undone.",
+												{ name: data.name },
+											),
+											confirmLabel: t(
+												"sysadmin.users.detail.delete_btn",
+												"Delete permanently",
+											),
+											destructive: true,
+										});
+										if (!ok) return;
+										await handleDelete();
 									}}
 								>
 									<Trash2 className="mr-1.5 h-4 w-4" />
@@ -1180,86 +1179,6 @@ export function SysAdminUserDetail() {
 					}}
 				/>
 			)}
-
-			<Dialog
-				open={confirmRevokeSessions}
-				onOpenChange={(v) => !v && setConfirmRevokeSessions(false)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t(
-								"sysadmin.users.detail.revoke_sessions_title",
-								"Revoke all sessions?",
-							)}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t(
-							"sysadmin.users.detail.revoke_sessions_desc",
-							"{{name}} will be signed out from all devices immediately.",
-							{ name: data?.name },
-						)}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							variant="ghost"
-							onClick={() => setConfirmRevokeSessions(false)}
-						>
-							{t("cancel", "Cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={revokePending}
-							onClick={handleRevokeSessions}
-						>
-							{revokePending
-								? t("sysadmin.users.detail.revoking", "Revoking…")
-								: t(
-										"sysadmin.users.detail.revoke_sessions_btn",
-										"Revoke all sessions",
-									)}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
-
-			<Dialog
-				open={confirmDelete}
-				onOpenChange={(v) => !v && setConfirmDelete(false)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t(
-								"sysadmin.users.detail.delete_title",
-								"Delete user permanently?",
-							)}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t(
-							"sysadmin.users.detail.delete_desc",
-							"This will permanently delete {{name}} along with all their sessions, accounts, and memberships. Cannot be undone.",
-							{ name: data?.name },
-						)}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="ghost" onClick={() => setConfirmDelete(false)}>
-							{t("cancel", "Cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={deletePending}
-							onClick={handleDelete}
-						>
-							{deletePending
-								? t("sysadmin.users.detail.deleting", "Deleting…")
-								: t("sysadmin.users.detail.delete_btn", "Delete permanently")}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

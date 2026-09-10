@@ -724,10 +724,6 @@
     "type_college_desc": "1st cycle only (Form 1–Form 4)",
     "type_mixed_desc": "Both cycles on the same campus",
     "app_version_label": "App version",
-    "institution": "Institution",
-    "institution_desc": "Institution information is managed by the system administrator.",
-    "academic_year": "Active academic year",
-    "academic_year_desc": "Manage academic years from the main menu.",
     "tab_profile": "Profile",
     "tab_school": "School",
     "tab_academic": "Academic",
@@ -760,8 +756,6 @@
     "mode_sequences_desc": "Each trimester has 2 sequences (6 total). The trimester average is the mean of the two sequence grades.",
     "mode_composition_desc": "Each trimester has one composition exam. The grade entered is the term average directly.",
     "save_config": "Save Configuration",
-    "active_year": "Active academic year",
-    "no_active_year": "None",
     "app_version": "App version",
     "about": "About",
     "personal_info": "Personal information",
@@ -1161,5 +1155,11 @@
   "suspended": {
     "title": "Account suspended",
     "description": "Access to this institution has been suspended. Please contact support to resolve this issue."
+  },
+  "error": {
+    "conflict": "Already exists.",
+    "forbidden": "You don't have permission.",
+    "not_found": "Not found.",
+    "unknown": "An unexpected error occurred."
   }
 }

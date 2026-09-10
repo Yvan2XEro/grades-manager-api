@@ -20,6 +20,7 @@ import { useState } from "react";
 import { flushSync } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
@@ -674,7 +675,6 @@ export function InstitutionMembersTab() {
 	const { id } = useParams<{ id: string }>();
 	const { t, i18n } = useTranslation();
 	const [showAdd, setShowAdd] = useState(false);
-	const [confirmRemove, setConfirmRemove] = useState<Member | null>(null);
 
 	const [{ page, pageSize, sortBy, sortDir }, setQuery] = useQueryStates({
 		page: parseAsInteger.withDefault(1),
@@ -701,10 +701,7 @@ export function InstitutionMembersTab() {
 		onSuccess: () => refetch(),
 	});
 	const remove = trpc.systemAdmin.removeMember.useMutation({
-		onSuccess: () => {
-			refetch();
-			setConfirmRemove(null);
-		},
+		onSuccess: () => refetch(),
 	});
 
 	const rows = data?.rows ?? [];
@@ -779,7 +776,22 @@ export function InstitutionMembersTab() {
 						variant="ghost"
 						size="sm"
 						className="h-7 px-2 text-rose-600 text-xs hover:text-rose-600"
-						onClick={() => setConfirmRemove(row.original)}
+						onClick={async () => {
+							const ok = await Confirm.call({
+								title: t("sysadmin.institution_detail.remove_member_title"),
+								description: t(
+									"sysadmin.institution_detail.remove_member_desc",
+									{ name: row.original.name ?? "" },
+								),
+								confirmLabel: t("sysadmin.institution_detail.remove"),
+								destructive: true,
+							});
+							if (!ok) return;
+							remove.mutate({
+								institutionId: id!,
+								userId: row.original.userId,
+							});
+						}}
 					>
 						<Trash2 className="mr-1 h-3 w-3" />
 						{t("sysadmin.institution_detail.remove", "Remove")}
@@ -825,44 +837,6 @@ export function InstitutionMembersTab() {
 				onClose={() => setShowAdd(false)}
 				onDone={() => refetch()}
 			/>
-
-			<Dialog
-				open={!!confirmRemove}
-				onOpenChange={(v) => !v && setConfirmRemove(null)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("sysadmin.institution_detail.remove_member_title")}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t("sysadmin.institution_detail.remove_member_desc", {
-							name: confirmRemove?.name ?? "",
-						})}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="ghost" onClick={() => setConfirmRemove(null)}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={remove.isPending}
-							onClick={() =>
-								confirmRemove &&
-								remove.mutate({
-									institutionId: id!,
-									userId: confirmRemove.userId,
-								})
-							}
-						>
-							{remove.isPending
-								? t("sysadmin.institution_detail.removing")
-								: t("sysadmin.institution_detail.remove")}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }
@@ -991,7 +965,6 @@ export function SysAdminInstitutionDetail() {
 		{ label: data?.name ?? "…" },
 	]);
 
-	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [actionError, setActionError] = useState<string | null>(null);
 
@@ -1126,9 +1099,21 @@ export function SysAdminInstitutionDetail() {
 									<DropdownMenuSeparator />
 									<DropdownMenuItem
 										className="text-rose-600 focus:text-rose-600"
-										onSelect={() => {
+										onSelect={async () => {
 											setActionError(null);
-											setShowDeleteDialog(true);
+											const ok = await Confirm.call({
+												title: t("sysadmin.institution_detail.delete_title"),
+												description: t(
+													"sysadmin.institution_detail.delete_desc",
+													{ name: data?.name ?? "" },
+												),
+												confirmLabel: t(
+													"sysadmin.institution_detail.delete_btn",
+												),
+												destructive: true,
+											});
+											if (!ok) return;
+											id && deleteInstitution.mutate({ id });
 										}}
 									>
 										<Trash2 className="mr-1.5 h-4 w-4" />
@@ -1181,39 +1166,6 @@ export function SysAdminInstitutionDetail() {
 					}}
 				/>
 			)}
-
-			{/* Delete confirm dialog */}
-			<Dialog
-				open={showDeleteDialog}
-				onOpenChange={(v) => !v && setShowDeleteDialog(false)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("sysadmin.institution_detail.delete_title")}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t("sysadmin.institution_detail.delete_desc", {
-							name: data?.name ?? "",
-						})}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={deleteInstitution.isPending}
-							onClick={() => id && deleteInstitution.mutate({ id })}
-						>
-							{deleteInstitution.isPending
-								? t("sysadmin.institution_detail.deleting")
-								: t("sysadmin.institution_detail.delete_btn")}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

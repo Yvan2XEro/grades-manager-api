@@ -2,14 +2,9 @@ import { FileCode2, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/ui/code-editor";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -768,7 +763,6 @@ function TemplateEditor({
 	const utils = trpc.useUtils();
 	const [lang, setLang] = useState<Lang>("fr");
 	const [showPreview, setShowPreview] = useState(false);
-	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 	const [savedMsg, setSavedMsg] = useState(false);
 
 	const { data, isLoading } = trpc.systemAdmin.getInstitutionTemplate.useQuery(
@@ -818,7 +812,6 @@ function TemplateEditor({
 				institutionId,
 				type,
 			});
-			setShowDeleteConfirm(false);
 			setHtmlFr(DEFAULT_TEMPLATES[type].fr);
 			setHtmlEn(DEFAULT_TEMPLATES[type].en);
 			setName(
@@ -859,7 +852,16 @@ function TemplateEditor({
 							variant="ghost"
 							size="sm"
 							className="text-rose-600 hover:text-rose-700"
-							onClick={() => setShowDeleteConfirm(true)}
+							onClick={async () => {
+								const ok = await Confirm.call({
+									title: t("sysadmin.templates.delete_confirm_title"),
+									description: t("sysadmin.templates.delete_confirm_desc"),
+									confirmLabel: t("sysadmin.templates.delete_btn"),
+									destructive: true,
+								});
+								if (!ok) return;
+								del.mutate({ id: data.id });
+							}}
 						>
 							<Trash2 className="mr-1.5 h-4 w-4" />
 							{t("sysadmin.templates.delete")}
@@ -983,37 +985,6 @@ function TemplateEditor({
 					/>
 				</div>
 			)}
-
-			{/* Delete confirm */}
-			<Dialog
-				open={showDeleteConfirm}
-				onOpenChange={(v) => !v && setShowDeleteConfirm(false)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("sysadmin.templates.delete_confirm_title")}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t("sysadmin.templates.delete_confirm_desc")}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={del.isPending}
-							onClick={() => data && del.mutate({ id: data.id })}
-						>
-							{del.isPending
-								? t("sysadmin.templates.deleting")
-								: t("sysadmin.templates.delete_btn")}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

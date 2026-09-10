@@ -716,18 +716,14 @@
     "language": "Langue de l'interface",
     "institution": "Établissement",
     "institution_desc": "Les informations de l'établissement sont gérées par l'administrateur système.",
-    "academic_year": "Année scolaire active",
-    "academic_year_desc": "Gérez les années scolaires depuis le menu principal.",
-    "active_year": "Année scolaire active",
+    "academic_year": "Année académique active",
+    "academic_year_desc": "Gérez les années académiques depuis le menu principal.",
+    "active_year": "Année académique active",
     "no_active_year": "Aucune",
     "type_lycee_desc": "2ème cycle uniquement (6e–Tle)",
     "type_college_desc": "1er cycle uniquement (6e–3e)",
     "type_mixed_desc": "Les deux cycles sur le même campus",
     "app_version_label": "Version de l'application",
-    "institution": "Établissement",
-    "institution_desc": "Les informations de l'établissement sont gérées par l'administrateur système.",
-    "academic_year": "Année académique active",
-    "academic_year_desc": "Gérez les années académiques depuis le menu principal.",
     "tab_profile": "Profil",
     "tab_school": "École",
     "tab_academic": "Académique",
@@ -760,8 +756,6 @@
     "mode_sequences_desc": "Chaque trimestre comporte 2 séquences (6 au total). La moyenne trimestrielle est la moyenne des deux notes de séquence.",
     "mode_composition_desc": "Chaque trimestre comporte un examen de composition. La note saisie est directement la moyenne trimestrielle.",
     "save_config": "Enregistrer la configuration",
-    "active_year": "Année académique active",
-    "no_active_year": "Aucune",
     "app_version": "Version de l'application",
     "about": "À propos",
     "personal_info": "Informations personnelles",
@@ -1161,5 +1155,11 @@
   "suspended": {
     "title": "Compte suspendu",
     "description": "L'accès à cet établissement a été suspendu. Veuillez contacter le support pour résoudre ce problème."
+  },
+  "error": {
+    "conflict": "Existe déjà.",
+    "forbidden": "Permission insuffisante.",
+    "not_found": "Introuvable.",
+    "unknown": "Une erreur inattendue s'est produite."
   }
 }

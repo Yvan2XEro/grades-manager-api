@@ -3,6 +3,8 @@ import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter } from "react-router";
+import { Toaster } from "sonner";
+import { Confirm } from "./components/callable/confirm";
 import "./i18n/index";
 import "./index.css";
 import { AppRoutes } from "./routes";
@@ -19,6 +21,8 @@ createRoot(root).render(
 						<AppRoutes />
 					</NuqsAdapter>
 				</HashRouter>
+				<Confirm />
+				<Toaster richColors closeButton duration={5000} />
 			</QueryClientProvider>
 		</trpc.Provider>
 	</StrictMode>,

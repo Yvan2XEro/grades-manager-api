@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookUser, Check, Plus, Trash2, X } from "lucide-react";
+import { BookUser, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { z } from "zod";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -141,7 +142,6 @@ export function ClassAssignments() {
 	const { t } = useTranslation();
 	const { id: classId } = useParams<{ id: string }>();
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 	const utils = trpc.useUtils();
 
 	const { data: klass } = trpc.classes.get.useQuery(
@@ -165,10 +165,7 @@ export function ClassAssignments() {
 		);
 
 	const remove = trpc.subjectAssignments.delete.useMutation({
-		onSuccess: () => {
-			utils.subjectAssignments.list.invalidate();
-			setPendingDeleteId(null);
-		},
+		onSuccess: () => utils.subjectAssignments.list.invalidate(),
 	});
 
 	type Assignment = (typeof assignments)[number];
@@ -245,33 +242,28 @@ export function ClassAssignments() {
 											{staff.lastName} {staff.firstName}
 										</td>
 										<td className="px-4 py-3">
-											{pendingDeleteId === id ? (
-												<div className="flex items-center gap-1">
-													<button
-														type="button"
-														onClick={() => remove.mutate({ id })}
-														disabled={remove.isPending}
-														className="rounded p-1 text-destructive transition-colors hover:bg-destructive/10"
-													>
-														<Check className="h-4 w-4" />
-													</button>
-													<button
-														type="button"
-														onClick={() => setPendingDeleteId(null)}
-														className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-													>
-														<X className="h-4 w-4" />
-													</button>
-												</div>
-											) : (
-												<button
-													type="button"
-													onClick={() => setPendingDeleteId(id)}
-													className="rounded p-1 text-muted-foreground transition-colors hover:text-destructive"
-												>
-													<Trash2 className="h-4 w-4" />
-												</button>
-											)}
+											<button
+												type="button"
+												onClick={async () => {
+													const ok = await Confirm.call({
+														title: t(
+															"subject_assignments.delete_title",
+															"Remove assignment?",
+														),
+														description: t(
+															"subject_assignments.delete_desc",
+															"This teacher will be unassigned from the subject.",
+														),
+														confirmLabel: t("common.delete", "Delete"),
+														destructive: true,
+													});
+													if (!ok) return;
+													remove.mutate({ id });
+												}}
+												className="rounded p-1 text-muted-foreground transition-colors hover:text-destructive"
+											>
+												<Trash2 className="h-4 w-4" />
+											</button>
 										</td>
 									</tr>
 								);

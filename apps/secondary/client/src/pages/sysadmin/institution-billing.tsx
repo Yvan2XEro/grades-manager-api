@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { z } from "zod";
+import { Confirm } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -302,7 +303,6 @@ export function InstitutionBillingTab() {
 
 	const [showCreate, setShowCreate] = useState(false);
 	const [editContract, setEditContract] = useState<Contract | null>(null);
-	const [deleteTarget, setDeleteTarget] = useState<Contract | null>(null);
 
 	const formulaOptions = [
 		{ value: "per_student", label: t("sysadmin.billing.formula_per_student") },
@@ -328,10 +328,7 @@ export function InstitutionBillingTab() {
 	});
 
 	const deleteContract = trpc.systemAdmin.deleteBillingContract.useMutation({
-		onSuccess: () => {
-			setDeleteTarget(null);
-			invalidate();
-		},
+		onSuccess: invalidate,
 	});
 
 	const suspendInstitution =
@@ -486,7 +483,16 @@ export function InstitutionBillingTab() {
 									size="sm"
 									variant="ghost"
 									className="text-destructive hover:text-destructive"
-									onClick={() => setDeleteTarget(contract)}
+									onClick={async () => {
+										const ok = await Confirm.call({
+											title: t("sysadmin.billing.delete_contract_title"),
+											description: t("sysadmin.billing.delete_contract_desc"),
+											confirmLabel: t("common.delete"),
+											destructive: true,
+										});
+										if (!ok) return;
+										deleteContract.mutate({ id: contract.id });
+									}}
 								>
 									<Trash2 className="h-4 w-4" />
 								</Button>
@@ -548,43 +554,6 @@ export function InstitutionBillingTab() {
 					}}
 				/>
 			)}
-
-			<Dialog
-				open={!!deleteTarget}
-				onOpenChange={(v) => !v && setDeleteTarget(null)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("sysadmin.billing.delete_contract_title")}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t("sysadmin.billing.delete_contract_desc")}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setDeleteTarget(null)}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							type="button"
-							variant="destructive"
-							disabled={deleteContract.isPending}
-							onClick={() =>
-								deleteTarget && deleteContract.mutate({ id: deleteTarget.id })
-							}
-						>
-							{deleteContract.isPending
-								? t("common.deleting")
-								: t("common.delete")}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

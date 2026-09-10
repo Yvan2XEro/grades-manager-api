@@ -13,6 +13,7 @@ import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
@@ -328,9 +329,9 @@ function RowActions({
 	onDelete,
 }: {
 	institution: Institution;
-	onSuspend: (inst: { id: string; name: string }) => void;
+	onSuspend: (inst: { id: string; name: string }) => void | Promise<void>;
 	onActivate: (id: string) => void;
-	onDelete: (inst: { id: string; name: string }) => void;
+	onDelete: (inst: { id: string; name: string }) => void | Promise<void>;
 }) {
 	const { t } = useTranslation();
 	return (
@@ -402,14 +403,6 @@ export function SysAdminInstitutions() {
 		});
 
 	const [showCreate, setShowCreate] = useState(false);
-	const [suspendTarget, setSuspendTarget] = useState<{
-		id: string;
-		name: string;
-	} | null>(null);
-	const [deleteTarget, setDeleteTarget] = useState<{
-		id: string;
-		name: string;
-	} | null>(null);
 
 	const sorting: SortingState = sortBy
 		? [{ id: sortBy, desc: sortDir === "desc" }]
@@ -427,19 +420,13 @@ export function SysAdminInstitutions() {
 		});
 
 	const suspend = trpc.systemAdmin.suspendInstitution.useMutation({
-		onSuccess: () => {
-			setSuspendTarget(null);
-			setTimeout(() => refetch(), 0);
-		},
+		onSuccess: () => setTimeout(() => refetch(), 0),
 	});
 	const activate = trpc.systemAdmin.activateInstitution.useMutation({
 		onSuccess: () => refetch(),
 	});
 	const deleteInst = trpc.systemAdmin.deleteInstitution.useMutation({
-		onSuccess: () => {
-			setDeleteTarget(null);
-			setTimeout(() => refetch(), 0);
-		},
+		onSuccess: () => setTimeout(() => refetch(), 0),
 	});
 
 	const rows = data?.rows ?? [];
@@ -561,9 +548,43 @@ export function SysAdminInstitutions() {
 			cell: ({ row }) => (
 				<RowActions
 					institution={row.original}
-					onSuspend={setSuspendTarget}
+					onSuspend={async (inst) => {
+						const ok = await Confirm.call({
+							title: t(
+								"sysadmin.institutions.suspend_title",
+								"Suspend institution?",
+							),
+							description: t(
+								"sysadmin.institutions.suspend_desc",
+								"{{name}} will be suspended. Users cannot access it until reactivated.",
+								{ name: inst.name },
+							),
+							confirmLabel: t("sysadmin.institutions.suspend_btn", "Suspend"),
+						});
+						if (!ok) return;
+						suspend.mutate({ id: inst.id });
+					}}
 					onActivate={(id) => activate.mutate({ id })}
-					onDelete={setDeleteTarget}
+					onDelete={async (inst) => {
+						const ok = await Confirm.call({
+							title: t(
+								"sysadmin.institutions.delete_title",
+								"Delete institution?",
+							),
+							description: t(
+								"sysadmin.institutions.delete_desc",
+								"This will permanently delete {{name}} and all its academic data. This cannot be undone.",
+								{ name: inst.name },
+							),
+							confirmLabel: t(
+								"sysadmin.institutions.delete_permanently",
+								"Delete permanently",
+							),
+							destructive: true,
+						});
+						if (!ok) return;
+						deleteInst.mutate({ id: inst.id });
+					}}
 				/>
 			),
 		},
@@ -707,83 +728,6 @@ export function SysAdminInstitutions() {
 				onClose={() => setShowCreate(false)}
 				onCreated={() => refetch()}
 			/>
-
-			{/* Suspend confirm */}
-			<Dialog
-				open={!!suspendTarget}
-				onOpenChange={(v) => !v && setSuspendTarget(null)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("sysadmin.institutions.suspend_title", "Suspend institution?")}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t(
-							"sysadmin.institutions.suspend_desc",
-							"{{name}} will be suspended. Users cannot access it until reactivated.",
-							{ name: suspendTarget?.name },
-						)}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="ghost" onClick={() => setSuspendTarget(null)}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							className="bg-amber-600 text-white hover:bg-amber-700"
-							disabled={suspend.isPending}
-							onClick={() =>
-								suspendTarget && suspend.mutate({ id: suspendTarget.id })
-							}
-						>
-							{suspend.isPending
-								? t("sysadmin.institutions.suspending", "Suspending…")
-								: t("sysadmin.institutions.suspend_btn", "Suspend")}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
-
-			{/* Delete confirm */}
-			<Dialog
-				open={!!deleteTarget}
-				onOpenChange={(v) => !v && setDeleteTarget(null)}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("sysadmin.institutions.delete_title", "Delete institution?")}
-						</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{t(
-							"sysadmin.institutions.delete_desc",
-							"This will permanently delete {{name}} and all its academic data. This cannot be undone.",
-							{ name: deleteTarget?.name },
-						)}
-					</p>
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="ghost" onClick={() => setDeleteTarget(null)}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={deleteInst.isPending}
-							onClick={() =>
-								deleteTarget && deleteInst.mutate({ id: deleteTarget.id })
-							}
-						>
-							{deleteInst.isPending
-								? t("sysadmin.institutions.deleting", "Deleting…")
-								: t(
-										"sysadmin.institutions.delete_permanently",
-										"Delete permanently",
-									)}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }
