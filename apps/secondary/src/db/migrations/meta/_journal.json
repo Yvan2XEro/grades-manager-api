@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1787834597167,
-      "tag": "0000_dizzy_liz_osborn",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1787866118049,
-      "tag": "0001_true_slayback",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1787914610332,
-      "tag": "0002_small_gladiator",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1787942741874,
-      "tag": "0003_familiar_korath",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1788114433061,
-      "tag": "0004_useful_alice",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1788115308231,
-      "tag": "0005_quick_hardball",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1788422263480,
-      "tag": "0006_busy_marauders",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1788425441740,
-      "tag": "0007_redundant_roughhouse",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1788446774870,
-      "tag": "0008_tired_mantis",
+      "when": 1788477098369,
+      "tag": "0000_breezy_amazoness",
       "breakpoints": true
     }
   ]

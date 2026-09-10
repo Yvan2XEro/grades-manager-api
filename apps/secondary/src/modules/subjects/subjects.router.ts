@@ -41,4 +41,9 @@ export const router = trpcRouter({
 		.mutation(({ ctx, input }) =>
 			service.bulkCreate(input.items, ctx.institution.id),
 		),
+	delete: adminProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(({ ctx, input }) =>
+			service.deleteSubject(input.id, ctx.institution.id),
+		),
 });

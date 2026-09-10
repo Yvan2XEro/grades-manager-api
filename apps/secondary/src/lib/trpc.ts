@@ -21,6 +21,12 @@ const withInstitution = protectedProcedure.use(({ ctx, next }) => {
 			message: "No active institution",
 		});
 	}
+	if (ctx.institution.suspended) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "ACCOUNT_SUSPENDED",
+		});
+	}
 	return next({ ctx: { ...ctx, institution: ctx.institution } });
 });
 
@@ -49,9 +55,12 @@ export const adminProcedure = withInstitution.use(async ({ ctx, next }) => {
 	return next({ ctx });
 });
 
+// "member" is the Better-Auth org role for teachers and regular staff
+const TEACHER_ROLES = ["teacher", "member", ...ADMIN_ROLES];
+
 export const teacherProcedure = withInstitution.use(async ({ ctx, next }) => {
 	const role = await getMemberRole(ctx);
-	if (!role || !["teacher", ...ADMIN_ROLES].includes(role)) {
+	if (!role || !TEACHER_ROLES.includes(role)) {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
 	return next({ ctx: { ...ctx, callerRole: role } });
@@ -59,7 +68,7 @@ export const teacherProcedure = withInstitution.use(async ({ ctx, next }) => {
 
 export const principalProcedure = withInstitution.use(async ({ ctx, next }) => {
 	const role = await getMemberRole(ctx);
-	if (!role || !["principal", ...ADMIN_ROLES].includes(role)) {
+	if (!role || !["principal", "member", ...ADMIN_ROLES].includes(role)) {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
 	return next({ ctx });

@@ -42,6 +42,7 @@ export async function findAll(
 					gender: students.gender,
 					mnu: students.mnu,
 					registrationNumber: students.registrationNumber,
+					dateOfBirth: students.dateOfBirth,
 				},
 			})
 			.from(enrollments)

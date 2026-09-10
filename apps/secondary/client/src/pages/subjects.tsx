@@ -1,7 +1,17 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Plus, Search } from "lucide-react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
@@ -34,6 +44,9 @@ export function Subjects() {
 	const [editingSubject, setEditingSubject] = useState<Subject | undefined>(
 		undefined,
 	);
+	const [deletingSubject, setDeletingSubject] = useState<Subject | undefined>(
+		undefined,
+	);
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
@@ -47,6 +60,15 @@ export function Subjects() {
 				: "name"
 	) as "name" | "code" | "subjectGroup";
 	const orderDir = (sortCol?.desc ? "desc" : "asc") as "asc" | "desc";
+
+	const utils = trpc.useUtils();
+
+	const deleteSubject = trpc.subjects.delete.useMutation({
+		onSuccess: () => {
+			utils.subjects.list.invalidate();
+			setDeletingSubject(undefined);
+		},
+	});
 
 	const { data: groups } = trpc.subjects.groups.useQuery();
 	const { data, isLoading } = trpc.subjects.list.useQuery({
@@ -111,18 +133,29 @@ export function Subjects() {
 			header: "",
 			enableSorting: false,
 			cell: ({ row }) => (
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-7 px-2 text-xs"
-					onClick={() => {
-						setEditingSubject(row.original);
-						setDialogOpen(true);
-					}}
-				>
-					<Pencil className="mr-1 h-3 w-3" />
-					{t("common.edit", "Edit")}
-				</Button>
+				<div className="flex items-center gap-1">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 px-2 text-xs"
+						onClick={() => {
+							setEditingSubject(row.original);
+							setDialogOpen(true);
+						}}
+					>
+						<Pencil className="mr-1 h-3 w-3" />
+						{t("common.edit", "Edit")}
+					</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 px-2 text-destructive text-xs hover:text-destructive"
+						aria-label={t("subjects.delete_subject", "Delete subject")}
+						onClick={() => setDeletingSubject(row.original)}
+					>
+						<Trash2 className="h-3 w-3" />
+					</Button>
+				</div>
 			),
 		},
 	];
@@ -220,6 +253,40 @@ export function Subjects() {
 				onSuccess={() => {}}
 				subject={editingSubject}
 			/>
+
+			<AlertDialog
+				open={!!deletingSubject}
+				onOpenChange={(open) => !open && setDeletingSubject(undefined)}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("subjects.delete_confirm_title", "Delete subject?")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t(
+								"subjects.delete_confirm_desc",
+								"This will permanently delete the subject. This action cannot be undone.",
+							)}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>
+							{t("common.cancel", "Cancel")}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							onClick={() => {
+								if (deletingSubject) {
+									deleteSubject.mutate({ id: deletingSubject.id });
+								}
+							}}
+						>
+							{t("common.delete", "Delete")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

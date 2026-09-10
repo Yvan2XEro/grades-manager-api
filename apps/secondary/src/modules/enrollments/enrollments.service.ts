@@ -3,7 +3,8 @@ import { db } from "../../db";
 import { academicYears, classes, institutions } from "../../db/schema";
 import { conflict, notFound } from "../../lib/errors";
 import { htmlToPdf } from "../../lib/pdf";
-import { buildClassRosterHtml } from "../../lib/pdf-templates";
+import { buildClassRosterTemplateData } from "../../lib/template-data-builders/class-roster";
+import { resolveAndRender } from "../../lib/template-resolver";
 import * as repo from "./enrollments.repo";
 
 export async function list(
@@ -101,7 +102,8 @@ export async function printClassRoster(
 	const classRow = classRows[0];
 	if (!classRow) throw notFound("Class not found");
 
-	const html = buildClassRosterHtml({
+	const lang = "fr" as "fr" | "en";
+	const data = buildClassRosterTemplateData({
 		institution: {
 			name: institution.name,
 			city: institution.city,
@@ -109,13 +111,22 @@ export async function printClassRoster(
 		},
 		className: classRow.name,
 		yearName: yearRows[0]?.name ?? academicYearId,
+		language: lang,
 		students: items.map((row) => ({
 			firstName: row.student.firstName,
 			lastName: row.student.lastName,
 			mnu: row.student.mnu,
 			registrationNumber: row.student.registrationNumber,
+			dateOfBirth: row.student.dateOfBirth,
+			gender: row.student.gender,
 		})),
 	});
+	const html = await resolveAndRender(
+		institutionId,
+		"class_roster",
+		lang,
+		data,
+	);
 
 	const pdf = await htmlToPdf(html);
 	const pdfBase64 = pdf.toString("base64");

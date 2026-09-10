@@ -227,9 +227,9 @@ export function StaffFormDialog({
 							{t("common.cancel", "Cancel")}
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
-							{staff
-								? t("common.save", "Save")
-								: t("staff.add", "Add staff member")}
+							{isSubmitting
+								? t("common.saving", "Saving…")
+								: t("common.save", "Save")}
 						</Button>
 					</div>
 				</form>

@@ -131,7 +131,8 @@ export function TrackDetail() {
 
 	const subjects = subjectsData?.items ?? [];
 	const isLoading = isLoadingSubjects || isLoadingGrid;
-	const trackName = trackState.name ?? t("tracks.detail.unnamed", "Track");
+	const trackName =
+		track?.name ?? trackState.name ?? t("tracks.detail.unnamed", "Track");
 	const trackCode = trackState.code;
 	const cycleLevel = trackState.cycleLevel;
 

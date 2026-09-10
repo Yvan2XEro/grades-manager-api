@@ -1,8 +1,10 @@
+import { type ReactNode, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { SystemAdminGuard } from "@/components/auth/system-admin-guard";
 import { AppShell } from "@/components/layout/app-shell";
 import { SysAdminShell } from "@/components/layout/sysadmin-shell";
+import { SuspendedScreen } from "@/components/suspended-screen";
 import { authClient, useSession } from "@/lib/auth-client";
 import { AttendanceOverview } from "@/pages/attendance/attendance-overview";
 import { ForgotPasswordPage } from "@/pages/auth/forgot-password";
@@ -46,6 +48,7 @@ import { StudentGradesTab } from "@/pages/students/tabs/grades-tab";
 import { StudentProfileTab } from "@/pages/students/tabs/profile-tab";
 import { SubjectAssignments } from "@/pages/subject-assignments/subject-assignments";
 import { Subjects } from "@/pages/subjects";
+import { InstitutionBillingTab } from "@/pages/sysadmin/institution-billing";
 import {
 	InstitutionAcademicTab,
 	InstitutionMembersTab,
@@ -68,6 +71,7 @@ import {
 import { SysAdminUsers } from "@/pages/sysadmin/users";
 import { TrackDetail } from "@/pages/tracks/track-detail";
 import { TracksList } from "@/pages/tracks/tracks-list";
+import { onSuspended } from "@/utils/trpc";
 
 function Dashboard() {
 	const { data: session } = useSession();
@@ -83,7 +87,35 @@ function Dashboard() {
 	return <TeacherDashboard />;
 }
 
+function AdminOnlyGuard({ children }: { children: ReactNode }) {
+	const { data: session } = useSession();
+	const { data: org } = authClient.useActiveOrganization();
+	const myMember = org?.members?.find((m) => m.userId === session?.user?.id);
+	const role = myMember?.role;
+	if (role !== "admin" && role !== "owner") {
+		return (
+			<div className="flex flex-col items-center gap-4 py-24 text-center">
+				<h1 className="font-bold text-2xl text-foreground">Forbidden</h1>
+				<p className="text-muted-foreground">
+					You do not have permission to access this page.
+				</p>
+			</div>
+		);
+	}
+	return <>{children}</>;
+}
+
 export function AppRoutes() {
+	const [suspended, setSuspended] = useState(false);
+
+	useEffect(() => {
+		onSuspended(() => setSuspended(true));
+	}, []);
+
+	if (suspended) {
+		return <SuspendedScreen />;
+	}
+
 	return (
 		<Routes>
 			<Route path="/login" element={<LoginPage />} />
@@ -131,7 +163,14 @@ export function AppRoutes() {
 								</Route>
 
 								{/* Subjects */}
-								<Route path="subjects" element={<Subjects />} />
+								<Route
+									path="subjects"
+									element={
+										<AdminOnlyGuard>
+											<Subjects />
+										</AdminOnlyGuard>
+									}
+								/>
 
 								{/* Staff */}
 								<Route path="staff" element={<Staff />} />
@@ -187,7 +226,14 @@ export function AppRoutes() {
 								/>
 
 								{/* Other */}
-								<Route path="tracks" element={<TracksList />} />
+								<Route
+									path="tracks"
+									element={
+										<AdminOnlyGuard>
+											<TracksList />
+										</AdminOnlyGuard>
+									}
+								/>
 								<Route path="tracks/:id" element={<TrackDetail />} />
 								<Route
 									path="terms"
@@ -235,6 +281,7 @@ export function AppRoutes() {
 											path="templates"
 											element={<InstitutionTemplatesTab />}
 										/>
+										<Route path="billing" element={<InstitutionBillingTab />} />
 									</Route>
 									<Route path="users" element={<SysAdminUsers />} />
 									<Route path="users/:id/*" element={<SysAdminUserDetail />}>

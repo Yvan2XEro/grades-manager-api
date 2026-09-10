@@ -63,6 +63,21 @@ CREATE TABLE "attendance_sessions" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "billing_contracts" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" uuid NOT NULL,
+	"formula" text DEFAULT 'per_student' NOT NULL,
+	"params" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"currency" varchar(3) DEFAULT 'XAF' NOT NULL,
+	"billing_period_months" integer DEFAULT 12 NOT NULL,
+	"start_date" timestamp with time zone NOT NULL,
+	"end_date" timestamp with time zone,
+	"status" text DEFAULT 'active' NOT NULL,
+	"notes" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "class_councils" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"institution_id" uuid NOT NULL,
@@ -130,7 +145,8 @@ CREATE TABLE "fee_schedules" (
 );
 --> statement-breakpoint
 CREATE TABLE "institutions" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"org_id" text,
 	"name" varchar(255) NOT NULL,
 	"minesec_code" varchar(50),
 	"type" varchar(20) DEFAULT 'lycee' NOT NULL,
@@ -140,8 +156,10 @@ CREATE TABLE "institutions" (
 	"email" varchar(255),
 	"logo_url" text,
 	"assessment_mode" varchar(20) DEFAULT 'six_sequence' NOT NULL,
+	"suspended" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "institutions_org_id_unique" UNIQUE("org_id")
 );
 --> statement-breakpoint
 CREATE TABLE "official_exam_registrations" (
@@ -152,6 +170,9 @@ CREATE TABLE "official_exam_registrations" (
 	"candidate_number" varchar(30),
 	"is_eligible" boolean DEFAULT true NOT NULL,
 	"has_paid_fee" boolean DEFAULT false NOT NULL,
+	"fee_amount" numeric(10, 2),
+	"fee_paid_at" timestamp with time zone,
+	"fee_transaction_ref" varchar(100),
 	"is_admitted" boolean,
 	"mention" varchar(30),
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -163,6 +184,7 @@ CREATE TABLE "official_exam_sessions" (
 	"institution_id" uuid NOT NULL,
 	"academic_year_id" uuid NOT NULL,
 	"exam_type" varchar(20) NOT NULL,
+	"series" varchar(10),
 	"session_year" integer NOT NULL,
 	"center_code" varchar(30),
 	"registration_deadline" timestamp with time zone,
@@ -181,6 +203,17 @@ CREATE TABLE "payments" (
 	"paid_at" timestamp with time zone NOT NULL,
 	"recorded_by_id" uuid,
 	"note" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "print_templates" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" uuid NOT NULL,
+	"type" text NOT NULL,
+	"name" varchar(255) NOT NULL,
+	"html_content_fr" text NOT NULL,
+	"html_content_en" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -313,6 +346,96 @@ CREATE TABLE "tracks" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "account" (
+	"id" text PRIMARY KEY NOT NULL,
+	"issuer" text,
+	"account_id" text NOT NULL,
+	"provider_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"access_token" text,
+	"refresh_token" text,
+	"id_token" text,
+	"access_token_expires_at" timestamp,
+	"refresh_token_expires_at" timestamp,
+	"scope" text,
+	"password" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "invitation" (
+	"id" text PRIMARY KEY NOT NULL,
+	"organization_id" text NOT NULL,
+	"email" text NOT NULL,
+	"role" text,
+	"status" text DEFAULT 'pending' NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"inviter_id" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "member" (
+	"id" text PRIMARY KEY NOT NULL,
+	"organization_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"role" text DEFAULT 'member' NOT NULL,
+	"created_at" timestamp NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "organization" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"slug" text NOT NULL,
+	"logo" text,
+	"created_at" timestamp NOT NULL,
+	"metadata" text,
+	CONSTRAINT "organization_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE "session" (
+	"id" text PRIMARY KEY NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"token" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp NOT NULL,
+	"ip_address" text,
+	"user_agent" text,
+	"user_id" text NOT NULL,
+	"active_organization_id" text,
+	CONSTRAINT "session_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+CREATE TABLE "two_factor" (
+	"id" text PRIMARY KEY NOT NULL,
+	"secret" text NOT NULL,
+	"backup_codes" text NOT NULL,
+	"user_id" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "user" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"email" text NOT NULL,
+	"email_verified" boolean DEFAULT false NOT NULL,
+	"image" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"two_factor_enabled" boolean DEFAULT false,
+	"role" text,
+	"banned" boolean DEFAULT false,
+	"ban_reason" text,
+	"ban_expires" timestamp,
+	CONSTRAINT "user_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
+CREATE TABLE "verification" (
+	"id" text PRIMARY KEY NOT NULL,
+	"identifier" text NOT NULL,
+	"value" text NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 ALTER TABLE "academic_years" ADD CONSTRAINT "academic_years_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "annual_averages" ADD CONSTRAINT "annual_averages_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "annual_averages" ADD CONSTRAINT "annual_averages_enrollment_id_enrollments_id_fk" FOREIGN KEY ("enrollment_id") REFERENCES "public"."enrollments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -330,6 +453,7 @@ ALTER TABLE "attendance_sessions" ADD CONSTRAINT "attendance_sessions_class_id_c
 ALTER TABLE "attendance_sessions" ADD CONSTRAINT "attendance_sessions_subject_id_subjects_id_fk" FOREIGN KEY ("subject_id") REFERENCES "public"."subjects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "attendance_sessions" ADD CONSTRAINT "attendance_sessions_term_id_terms_id_fk" FOREIGN KEY ("term_id") REFERENCES "public"."terms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "attendance_sessions" ADD CONSTRAINT "attendance_sessions_conducted_by_id_staff_id_fk" FOREIGN KEY ("conducted_by_id") REFERENCES "public"."staff"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "billing_contracts" ADD CONSTRAINT "billing_contracts_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "class_councils" ADD CONSTRAINT "class_councils_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "class_councils" ADD CONSTRAINT "class_councils_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "class_councils" ADD CONSTRAINT "class_councils_term_id_terms_id_fk" FOREIGN KEY ("term_id") REFERENCES "public"."terms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -357,6 +481,7 @@ ALTER TABLE "official_exam_sessions" ADD CONSTRAINT "official_exam_sessions_acad
 ALTER TABLE "payments" ADD CONSTRAINT "payments_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_enrollment_id_enrollments_id_fk" FOREIGN KEY ("enrollment_id") REFERENCES "public"."enrollments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_recorded_by_id_staff_id_fk" FOREIGN KEY ("recorded_by_id") REFERENCES "public"."staff"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "print_templates" ADD CONSTRAINT "print_templates_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "report_cards" ADD CONSTRAINT "report_cards_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "report_cards" ADD CONSTRAINT "report_cards_enrollment_id_enrollments_id_fk" FOREIGN KEY ("enrollment_id") REFERENCES "public"."enrollments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "report_cards" ADD CONSTRAINT "report_cards_term_id_terms_id_fk" FOREIGN KEY ("term_id") REFERENCES "public"."terms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -381,12 +506,20 @@ ALTER TABLE "terms" ADD CONSTRAINT "terms_academic_year_id_academic_years_id_fk"
 ALTER TABLE "track_subject_coefficients" ADD CONSTRAINT "track_subject_coefficients_track_id_tracks_id_fk" FOREIGN KEY ("track_id") REFERENCES "public"."tracks"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "track_subject_coefficients" ADD CONSTRAINT "track_subject_coefficients_subject_id_subjects_id_fk" FOREIGN KEY ("subject_id") REFERENCES "public"."subjects"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tracks" ADD CONSTRAINT "tracks_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "invitation" ADD CONSTRAINT "invitation_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "invitation" ADD CONSTRAINT "invitation_inviter_id_user_id_fk" FOREIGN KEY ("inviter_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "member" ADD CONSTRAINT "member_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "member" ADD CONSTRAINT "member_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "ay_inst_idx" ON "academic_years" USING btree ("institution_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "aa_uniq" ON "annual_averages" USING btree ("enrollment_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "assessments_uniq" ON "assessments" USING btree ("student_id","subject_id","term_id","assessment_type");--> statement-breakpoint
 CREATE INDEX "assessments_class_term_idx" ON "assessments" USING btree ("class_id","term_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "ar_session_student_uniq" ON "attendance_records" USING btree ("session_id","student_id");--> statement-breakpoint
 CREATE INDEX "as_class_term_idx" ON "attendance_sessions" USING btree ("class_id","term_id");--> statement-breakpoint
+CREATE INDEX "bc_institution_idx" ON "billing_contracts" USING btree ("institution_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "cc_class_term_uniq" ON "class_councils" USING btree ("class_id","term_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "classes_code_uniq" ON "classes" USING btree ("academic_year_id","code");--> statement-breakpoint
 CREATE INDEX "classes_year_idx" ON "classes" USING btree ("academic_year_id");--> statement-breakpoint
@@ -395,6 +528,8 @@ CREATE UNIQUE INDEX "enrollments_student_year_uniq" ON "enrollments" USING btree
 CREATE INDEX "enrollments_class_idx" ON "enrollments" USING btree ("class_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "oer_uniq" ON "official_exam_registrations" USING btree ("exam_session_id","enrollment_id");--> statement-breakpoint
 CREATE INDEX "payments_enrollment_idx" ON "payments" USING btree ("enrollment_id");--> statement-breakpoint
+CREATE INDEX "print_templates_institution_idx" ON "print_templates" USING btree ("institution_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "print_templates_institution_type_idx" ON "print_templates" USING btree ("institution_id","type");--> statement-breakpoint
 CREATE UNIQUE INDEX "rc_enrollment_term_uniq" ON "report_cards" USING btree ("enrollment_id","term_id");--> statement-breakpoint
 CREATE INDEX "rc_status_inst_idx" ON "report_cards" USING btree ("status","institution_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "staff_email_inst_uniq" ON "staff" USING btree ("institution_id","email");--> statement-breakpoint
@@ -408,4 +543,8 @@ CREATE UNIQUE INDEX "subjects_code_uniq" ON "subjects" USING btree ("institution
 CREATE UNIQUE INDEX "ta_uniq" ON "term_averages" USING btree ("enrollment_id","term_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "terms_uniq" ON "terms" USING btree ("academic_year_id","term_number");--> statement-breakpoint
 CREATE UNIQUE INDEX "tsc_uniq" ON "track_subject_coefficients" USING btree ("track_id","subject_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "tracks_code_uniq" ON "tracks" USING btree ("institution_id","code");
+CREATE UNIQUE INDEX "tracks_code_uniq" ON "tracks" USING btree ("institution_id","code");--> statement-breakpoint
+CREATE UNIQUE INDEX "account_issuer_accountId_uidx" ON "account" USING btree ("issuer","account_id");--> statement-breakpoint
+CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");

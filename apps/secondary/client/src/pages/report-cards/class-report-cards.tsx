@@ -28,14 +28,15 @@ const STATUS_VARIANTS: Record<
 	published: "default",
 };
 
-type ReportCard = {
-	id: string;
+type EnrollmentRow = {
 	enrollmentId: string;
-	termId: string;
-	status: string | null;
-	language: string | null;
-	snapshotData: unknown;
-	createdAt?: Date | string | null;
+	studentId: string;
+	firstName: string;
+	lastName: string;
+	reportCardId: string | null;
+	status: ReportCardStatus | null;
+	createdAt: Date | string | null;
+	overallAverage: number | null;
 };
 
 function downloadBase64Pdf(base64: string, filename: string) {
@@ -72,22 +73,61 @@ export function ClassReportCards() {
 	const termData = terms.find((trm: any) => trm.id === termId);
 
 	const utils = trpc.useUtils();
-	const { data, isLoading } = trpc.reportCards.list.useQuery(
+
+	const { data: enrollmentsData, isLoading: isLoadingEnrollments } =
+		trpc.enrollments.list.useQuery(
+			{
+				academicYearId: activeYear?.id ?? "",
+				classId: classId ?? "",
+				pageSize: 200,
+			},
+			{ enabled: !!activeYear?.id && !!classId },
+		);
+	const enrollmentItems = (enrollmentsData?.items ?? []) as Array<{
+		enrollment: { id: string; studentId: string };
+		student: { id: string; firstName: string; lastName: string };
+	}>;
+
+	const { data: reportCardsData } = trpc.reportCards.list.useQuery(
 		{
 			academicYearId: activeYear?.id ?? "",
 			classId: classId ?? undefined,
 			termId: termId ?? undefined,
-			page,
-			pageSize,
+			page: 1,
+			pageSize: 200,
 		},
 		{ enabled: !!activeYear?.id && !!classId && !!termId },
 	);
+	const reportCardItems = (reportCardsData?.items ?? []) as Array<{
+		id: string;
+		enrollmentId: string;
+		termId: string;
+		status: string | null;
+		createdAt?: Date | string | null;
+		snapshotData?: { overallAverage?: number | null } | null;
+	}>;
+	const cardByEnrollment = new Map(
+		reportCardItems.map((rc) => [rc.enrollmentId, rc]),
+	);
 
-	const items = (data?.items ?? []) as ReportCard[];
-	const total = data?.total ?? 0;
+	const rows: EnrollmentRow[] = enrollmentItems.map((e) => {
+		const rc = cardByEnrollment.get(e.enrollment.id);
+		return {
+			enrollmentId: e.enrollment.id,
+			studentId: e.student.id,
+			firstName: e.student.firstName,
+			lastName: e.student.lastName,
+			reportCardId: rc?.id ?? null,
+			status: (rc?.status ?? null) as ReportCardStatus | null,
+			createdAt: rc?.createdAt ?? null,
+			overallAverage: rc?.snapshotData?.overallAverage ?? null,
+		};
+	});
 
 	const generate = trpc.reportCards.generate.useMutation({
-		onSuccess: () => utils.reportCards.list.invalidate(),
+		onSuccess: () => {
+			utils.reportCards.list.invalidate();
+		},
 	});
 
 	const batchGenerate = trpc.reportCards.batchGenerate.useMutation({
@@ -106,34 +146,6 @@ export function ClassReportCards() {
 		},
 	});
 
-	const enrollmentToStudent = new Map<
-		string,
-		{ studentId: string; firstName: string; lastName: string }
-	>();
-	for (const _item of items) {
-		// populated via separate enrollments query below
-	}
-
-	const { data: enrollmentsData } = trpc.enrollments.list.useQuery(
-		{
-			academicYearId: activeYear?.id ?? "",
-			classId: classId ?? "",
-			pageSize: 200,
-		},
-		{ enabled: !!activeYear?.id && !!classId },
-	);
-	const enrollments = (enrollmentsData?.items ?? []) as Array<{
-		enrollment: { id: string; studentId: string };
-		student: { id: string; firstName: string; lastName: string };
-	}>;
-	for (const e of enrollments) {
-		enrollmentToStudent.set(e.enrollment.id, {
-			studentId: e.student.id,
-			firstName: e.student.firstName,
-			lastName: e.student.lastName,
-		});
-	}
-
 	const handleGenerateAll = () => {
 		if (!classId || !termId || !activeYear?.id) return;
 		batchGenerate.mutate({ classId, termId, academicYearId: activeYear.id });
@@ -144,36 +156,42 @@ export function ClassReportCards() {
 		batchPdf.mutate({ classId, termId, academicYearId: activeYear.id });
 	};
 
-	const columns: ColumnDef<ReportCard>[] = [
+	const columns: ColumnDef<EnrollmentRow>[] = [
 		{
-			id: "enrollment",
+			id: "student",
 			enableSorting: false,
 			header: t("enrollments.col_student", "Student"),
-			cell: ({ row }) => {
-				const info = enrollmentToStudent.get(row.original.enrollmentId);
-				return (
-					<span className="font-medium text-foreground text-sm">
-						{info ? (
-							`${info.lastName} ${info.firstName}`
-						) : (
-							<span className="font-mono text-muted-foreground text-xs">
-								{row.original.enrollmentId.slice(0, 8)}…
-							</span>
-						)}
-					</span>
-				);
-			},
+			cell: ({ row }) => (
+				<span className="font-medium text-foreground text-sm">
+					{row.original.firstName} {row.original.lastName}
+				</span>
+			),
 		},
 		{
 			id: "status",
 			enableSorting: false,
 			header: t("common.status", "Status"),
 			cell: ({ row }) => {
-				const status = row.original.status as ReportCardStatus;
+				const status = row.original.status ?? "draft";
 				return (
-					<Badge variant={STATUS_VARIANTS[status] ?? "secondary"}>
+					<Badge
+						variant={STATUS_VARIANTS[status as ReportCardStatus] ?? "secondary"}
+					>
 						{t(`report_cards.status_${status}`, status)}
 					</Badge>
+				);
+			},
+		},
+		{
+			id: "average",
+			enableSorting: false,
+			header: t("grades.col_avg", "Average /20"),
+			cell: ({ row }) => {
+				const avg = row.original.overallAverage;
+				return (
+					<span className="font-semibold text-sm tabular-nums">
+						{avg != null ? avg.toFixed(2) : "—"}
+					</span>
 				);
 			},
 		},
@@ -195,18 +213,20 @@ export function ClassReportCards() {
 			enableSorting: false,
 			header: t("common.actions", "Actions"),
 			cell: ({ row }) => {
-				const card = row.original;
-				const info = enrollmentToStudent.get(card.enrollmentId);
-				const studentId = info?.studentId;
+				const { reportCardId, status, studentId } = row.original;
 				return (
 					<div className="flex items-center gap-2">
-						<Link
-							to={`/report-cards/${card.id}`}
-							className="text-primary text-xs hover:underline"
-						>
-							{t("common.view", "View")}
-						</Link>
-						{studentId && termId && (
+						{reportCardId ? (
+							<Link
+								to={`/report-cards/${reportCardId}`}
+								className="text-primary text-xs hover:underline"
+							>
+								{t("common.view", "View")}
+							</Link>
+						) : (
+							<span className="text-muted-foreground text-xs">—</span>
+						)}
+						{termId && (
 							<Button
 								variant="ghost"
 								size="sm"
@@ -215,18 +235,18 @@ export function ClassReportCards() {
 								onClick={() => generate.mutate({ studentId, termId })}
 							>
 								<RefreshCw className="mr-1 h-3 w-3" />
-								{card.status === "draft"
+								{!status || status === "draft"
 									? t("report_cards.generate", "Generate")
 									: t("report_cards.regenerate", "Regenerate")}
 							</Button>
 						)}
-						{card.status !== "draft" && (
+						{reportCardId && status && status !== "draft" && (
 							<Button
 								variant="ghost"
 								size="sm"
 								className="h-6 px-2 text-xs"
 								disabled={downloadPdf.isPending}
-								onClick={() => downloadPdf.mutate({ id: card.id })}
+								onClick={() => downloadPdf.mutate({ id: reportCardId })}
 							>
 								<Download className="mr-1 h-3 w-3" />
 								PDF
@@ -263,7 +283,7 @@ export function ClassReportCards() {
 					<Button
 						variant="outline"
 						onClick={handleDownloadAllPdfs}
-						disabled={batchPdf.isPending || !termId || items.length === 0}
+						disabled={batchPdf.isPending || !termId || rows.length === 0}
 					>
 						<FileDown className="mr-2 h-4 w-4" />
 						{batchPdf.isPending
@@ -294,15 +314,18 @@ export function ClassReportCards() {
 
 			<DataTable
 				columns={columns}
-				data={items}
-				total={total}
+				data={rows}
+				total={rows.length}
 				page={page}
 				pageSize={pageSize}
-				isLoading={isLoading}
+				isLoading={isLoadingEnrollments}
 				emptyMessage={
 					!activeYear?.id
 						? t("enrollments.select_year", "Select an academic year")
-						: t("report_cards.empty", "No report cards generated")
+						: t(
+								"report_cards.empty_enrollments",
+								"No students enrolled in this class",
+							)
 				}
 				onPageChange={setPage}
 				onPageSizeChange={(s) => {

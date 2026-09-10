@@ -599,8 +599,8 @@
   },
   "councils": {
     "title": "Conseil de classe",
-    "draft": "Brouillon",
-    "scheduled": "Planifié",
+    "draft": "En attente",
+    "scheduled": "Ouvert",
     "held": "Tenu",
     "signed": "Signé",
     "decision_admitted": "Admis",

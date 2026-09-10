@@ -66,7 +66,7 @@ export function StudentsList() {
 	const columns: ColumnDef<Student>[] = [
 		{
 			id: "lastName",
-			accessorFn: (row) => `${row.lastName} ${row.firstName}`,
+			accessorFn: (row) => `${row.firstName} ${row.lastName}`,
 			header: t("students.col_name", "Name"),
 			enableSorting: true,
 			cell: ({ row }) => (
@@ -74,7 +74,7 @@ export function StudentsList() {
 					to={`/students/${row.original.id}`}
 					className="font-medium text-foreground hover:text-primary hover:underline"
 				>
-					{row.original.lastName} {row.original.firstName}
+					{row.original.firstName} {row.original.lastName}
 				</Link>
 			),
 		},

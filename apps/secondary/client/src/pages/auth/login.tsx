@@ -170,7 +170,9 @@ export function LoginPage() {
 					</div>
 
 					{errors.root && (
-						<p className="text-destructive text-sm">{errors.root.message}</p>
+						<p role="alert" className="text-destructive text-sm">
+							{errors.root.message}
+						</p>
 					)}
 
 					<Button type="submit" disabled={isSubmitting} className="w-full">

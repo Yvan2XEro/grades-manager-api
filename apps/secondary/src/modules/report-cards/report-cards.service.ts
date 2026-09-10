@@ -16,6 +16,8 @@ import {
 } from "../../db/schema";
 import { notFound } from "../../lib/errors";
 import { htmlToPdf } from "../../lib/pdf";
+import { buildReportCardTemplateData } from "../../lib/template-data-builders/report-card";
+import { resolveAndRender } from "../../lib/template-resolver";
 import * as repo from "./report-cards.repo";
 
 export async function list(
@@ -421,190 +423,6 @@ type SnapshotData = {
 	mentionCode?: string | null;
 };
 
-function buildBulletinHtml(data: {
-	institution: {
-		name: string;
-		city?: string | null;
-		minesecCode?: string | null;
-		logoUrl?: string | null;
-	};
-	student: {
-		firstName: string;
-		lastName: string;
-		gender?: string | null;
-		mnu?: string | null;
-		dateOfBirth?: Date | null;
-	};
-	className: string;
-	yearName: string;
-	termNumber: number;
-	language: string;
-	subjectRows: SubjectAvgEntry[];
-	overallAverage: number | null;
-	rank?: number | null;
-	mentionCode?: string | null;
-}): string {
-	const lang = data.language === "en" ? "en" : "fr";
-	const labels =
-		lang === "fr"
-			? {
-					title: "BULLETIN DE NOTES",
-					term: `TRIMESTRE ${data.termNumber}`,
-					student: "Élève",
-					class: "Classe",
-					year: "Année scolaire",
-					mnu: "Matricule",
-					subject: "Matière",
-					coeff: "Coeff.",
-					average: "Moy. /20",
-					appreciation: "Appréc.",
-					overall: "Moyenne générale",
-					rank: "Rang",
-					classRank: "Rang",
-				}
-			: {
-					title: "REPORT CARD",
-					term: `TERM ${data.termNumber}`,
-					student: "Student",
-					class: "Class",
-					year: "Academic year",
-					mnu: "ID",
-					subject: "Subject",
-					coeff: "Coeff.",
-					average: "Avg /20",
-					appreciation: "Grade",
-					overall: "Overall average",
-					rank: "Rank",
-					classRank: "Rank",
-				};
-
-	const appreciation = (avg: number): string => {
-		if (avg >= 16) return lang === "fr" ? "Très bien" : "Excellent";
-		if (avg >= 14) return lang === "fr" ? "Bien" : "Good";
-		if (avg >= 12) return lang === "fr" ? "Assez bien" : "Fair";
-		if (avg >= 10) return lang === "fr" ? "Passable" : "Pass";
-		return lang === "fr" ? "Insuffisant" : "Fail";
-	};
-
-	const subjectName = (row: SubjectAvgEntry) =>
-		lang === "fr" ? row.subjectNameFr || row.subjectName : row.subjectName;
-
-	const rows = data.subjectRows
-		.map(
-			(row) => `
-		<tr>
-			<td class="subject">${subjectName(row)}</td>
-			<td class="num coeff-col">${row.coeff ?? 1}</td>
-			<td class="num">${row.avg.toFixed(2).replace(".", ",")}</td>
-			<td class="appr">${appreciation(row.avg)}</td>
-		</tr>`,
-		)
-		.join("");
-
-	const overallRow =
-		data.overallAverage !== null && data.overallAverage !== undefined
-			? `
-		<tr class="total-row">
-			<td class="subject total-label">${labels.overall}</td>
-			<td class="num coeff-col total-label"></td>
-			<td class="num total-num">${data.overallAverage.toFixed(2).replace(".", ",")}</td>
-			<td class="appr total-appr">${appreciation(data.overallAverage)}</td>
-		</tr>`
-			: "";
-
-	const logoHtml = data.institution.logoUrl
-		? `<img src="${data.institution.logoUrl}" alt="Logo" class="logo" />`
-		: "";
-
-	const dob = data.student.dateOfBirth
-		? data.student.dateOfBirth.toLocaleDateString(
-				lang === "fr" ? "fr-FR" : "en-US",
-			)
-		: "—";
-
-	const rankDisplay =
-		data.rank !== null && data.rank !== undefined
-			? `${data.rank}${lang === "fr" ? (data.rank === 1 ? "er" : "e") : data.rank === 1 ? "st" : data.rank === 2 ? "nd" : data.rank === 3 ? "rd" : "th"}`
-			: "—";
-
-	return `<!DOCTYPE html>
-<html lang="${lang}">
-<head>
-<meta charset="UTF-8" />
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; font-size: 12px; color: #111; background: #fff; padding: 20mm; }
-  .header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; border-bottom: 2px solid #1a56db; padding-bottom: 12px; }
-  .logo { height: 60px; width: auto; }
-  .header-text { flex: 1; }
-  .school-name { font-size: 16px; font-weight: bold; text-transform: uppercase; color: #1a56db; }
-  .school-meta { font-size: 10px; color: #555; margin-top: 2px; }
-  .doc-title { text-align: right; }
-  .doc-title h2 { font-size: 14px; font-weight: bold; text-transform: uppercase; color: #1a56db; }
-  .doc-title .term-label { font-size: 12px; font-weight: bold; margin-top: 2px; }
-  .doc-title .year-label { font-size: 10px; color: #555; }
-  .student-info { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-bottom: 16px; padding: 10px; background: #f3f6ff; border-radius: 4px; }
-  .info-row { display: flex; gap: 6px; }
-  .info-label { font-weight: bold; color: #333; min-width: 80px; }
-  .info-value { color: #111; }
-  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-  thead th { background: #1a56db; color: #fff; padding: 7px 10px; text-align: left; font-size: 11px; font-weight: bold; }
-  tbody tr:nth-child(even) { background: #f8f9fb; }
-  tbody tr td { padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .coeff-col { text-align: center; color: #6b7280; font-size: 11px; }
-  .appr { color: #374151; font-style: italic; }
-  .total-row { background: #e0e7ff !important; font-weight: bold; }
-  .total-label { font-weight: bold; }
-  .total-num { text-align: right; font-weight: bold; }
-  .total-appr { font-weight: bold; font-style: normal; }
-  .footer { margin-top: 20px; font-size: 10px; color: #888; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 8px; }
-</style>
-</head>
-<body>
-<div class="header">
-  ${logoHtml}
-  <div class="header-text">
-    <div class="school-name">${data.institution.name}</div>
-    <div class="school-meta">${[data.institution.city, data.institution.minesecCode].filter(Boolean).join(" · ")}</div>
-  </div>
-  <div class="doc-title">
-    <h2>${labels.title}</h2>
-    <div class="term-label">${labels.term}</div>
-    <div class="year-label">${data.yearName}</div>
-  </div>
-</div>
-
-<div class="student-info">
-  <div class="info-row"><span class="info-label">${labels.student} :</span> <span class="info-value">${data.student.lastName.toUpperCase()} ${data.student.firstName}</span></div>
-  <div class="info-row"><span class="info-label">${labels.class} :</span> <span class="info-value">${data.className}</span></div>
-  <div class="info-row"><span class="info-label">${labels.mnu} :</span> <span class="info-value">${data.student.mnu ?? "—"}</span></div>
-  <div class="info-row"><span class="info-label">Né(e) le :</span> <span class="info-value">${dob}</span></div>
-  <div class="info-row"><span class="info-label">${labels.classRank} :</span> <span class="info-value" style="font-weight:bold;color:#1a56db">${rankDisplay}</span></div>
-</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>${labels.subject}</th>
-      <th class="num" style="text-align:center;width:50px">${labels.coeff}</th>
-      <th class="num" style="text-align:right">${labels.average}</th>
-      <th>${labels.appreciation}</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${rows}
-    ${overallRow}
-  </tbody>
-</table>
-
-<div class="footer">
-  ${data.institution.name} — ${lang === "fr" ? "Document généré automatiquement" : "Auto-generated document"}
-</div>
-</body>
-</html>`;
-}
-
 export async function generatePdf(
 	id: string,
 	institutionId: string,
@@ -656,17 +474,9 @@ export async function generatePdf(
 	const institution = institutionRows[0];
 	if (!institution) throw notFound("Institution not found");
 
-	const subjectRows = Object.values(
-		snapshot.subjectAverages ?? {},
-	) as SubjectAvgEntry[];
-
-	const html = buildBulletinHtml({
-		institution: {
-			name: institution.name,
-			city: institution.city,
-			minesecCode: institution.minesecCode,
-			logoUrl: institution.logoUrl,
-		},
+	const lang = (card.language ?? "fr") as "fr" | "en";
+	const templateData = await buildReportCardTemplateData({
+		snapshot,
 		student: {
 			firstName: row.students.firstName,
 			lastName: row.students.lastName,
@@ -674,18 +484,24 @@ export async function generatePdf(
 			mnu: row.students.mnu,
 			dateOfBirth: row.students.dateOfBirth,
 		},
+		institution: {
+			name: institution.name,
+			city: institution.city,
+			minesecCode: institution.minesecCode,
+			logoUrl: institution.logoUrl,
+		},
 		className: row.classes.name,
 		yearName: row.academic_years.name,
 		termNumber: term.termNumber,
-		language: card.language ?? "fr",
-		subjectRows,
-		overallAverage:
-			typeof snapshot.overallAverage === "number"
-				? snapshot.overallAverage
-				: null,
+		language: lang,
 		rank: typeof snapshot.rank === "number" ? snapshot.rank : null,
-		mentionCode: snapshot.mentionCode ?? null,
 	});
+	const html = await resolveAndRender(
+		institutionId,
+		"report_card",
+		lang,
+		templateData,
+	);
 
 	const pdf = await htmlToPdf(html);
 	const pdfBase64 = pdf.toString("base64");
@@ -780,38 +596,34 @@ export async function batchPdf(
 		throw notFound("No report cards found for this class and term");
 	}
 
-	const pages = cards.map((row) => {
-		const snapshot = (row.reportCard.snapshotData ?? {}) as SnapshotData;
-		const subjectRows = Object.values(
-			snapshot.subjectAverages ?? {},
-		) as SubjectAvgEntry[];
-		return buildBulletinHtml({
-			institution: {
-				name: institution.name,
-				city: institution.city,
-				minesecCode: institution.minesecCode,
-				logoUrl: institution.logoUrl,
-			},
-			student: {
-				firstName: row.student.firstName,
-				lastName: row.student.lastName,
-				gender: row.student.gender,
-				mnu: row.student.mnu,
-				dateOfBirth: row.student.dateOfBirth,
-			},
-			className: classRow.name,
-			yearName: yearRow?.name ?? academicYearId,
-			termNumber: term.termNumber,
-			language: row.reportCard.language ?? "fr",
-			subjectRows,
-			overallAverage:
-				typeof snapshot.overallAverage === "number"
-					? snapshot.overallAverage
-					: null,
-			rank: typeof snapshot.rank === "number" ? snapshot.rank : null,
-			mentionCode: snapshot.mentionCode ?? null,
-		});
-	});
+	const pages = await Promise.all(
+		cards.map(async (row) => {
+			const snapshot = (row.reportCard.snapshotData ?? {}) as SnapshotData;
+			const lang = (row.reportCard.language ?? "fr") as "fr" | "en";
+			const templateData = await buildReportCardTemplateData({
+				snapshot,
+				student: {
+					firstName: row.student.firstName,
+					lastName: row.student.lastName,
+					gender: row.student.gender,
+					mnu: row.student.mnu,
+					dateOfBirth: row.student.dateOfBirth,
+				},
+				institution: {
+					name: institution.name,
+					city: institution.city,
+					minesecCode: institution.minesecCode,
+					logoUrl: institution.logoUrl,
+				},
+				className: classRow.name,
+				yearName: yearRow?.name ?? academicYearId,
+				termNumber: term.termNumber,
+				language: lang,
+				rank: typeof snapshot.rank === "number" ? snapshot.rank : null,
+			});
+			return resolveAndRender(institutionId, "report_card", lang, templateData);
+		}),
+	);
 
 	// Merge individual bulletin HTMLs into one printable document with page breaks
 	const mergedHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>

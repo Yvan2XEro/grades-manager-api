@@ -4,7 +4,6 @@ import {
 	KeyRound,
 	LogOut,
 	Mail,
-	MoreHorizontal,
 	Pencil,
 	Plus,
 	Shield,
@@ -26,14 +25,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -744,56 +735,34 @@ export function UserMembershipsTab() {
 				const m = row.original;
 				if (!m.institutionId) return null;
 				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" className="h-8 w-8">
-								<MoreHorizontal className="h-4 w-4" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuLabel>
-								{t("sysadmin.users.detail.actions", "Actions")}
-							</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							{m.orgRole === "admin" ? (
-								<DropdownMenuItem
-									onSelect={() =>
-										id &&
-										updateRole.mutate({
-											institutionId: m.institutionId!,
-											userId: id,
-											role: "member",
-										})
-									}
-								>
-									{t("sysadmin.users.detail.set_as_member", "Set as Member")}
-								</DropdownMenuItem>
-							) : (
-								<DropdownMenuItem
-									onSelect={() =>
-										id &&
-										updateRole.mutate({
-											institutionId: m.institutionId!,
-											userId: id,
-											role: "admin",
-										})
-									}
-								>
-									{t("sysadmin.users.detail.set_as_admin", "Set as Admin")}
-								</DropdownMenuItem>
-							)}
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								className="text-rose-600 focus:text-rose-600"
-								onSelect={() => setConfirmRemove(m)}
-							>
-								{t(
-									"sysadmin.users.detail.remove_from_institution",
-									"Remove from institution",
-								)}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<div className="flex items-center gap-1">
+						<Button
+							variant="ghost"
+							size="sm"
+							className="h-7 text-xs"
+							disabled={updateRole.isPending}
+							onClick={() =>
+								id &&
+								updateRole.mutate({
+									institutionId: m.institutionId!,
+									userId: id,
+									role: m.orgRole === "admin" ? "member" : "admin",
+								})
+							}
+						>
+							{m.orgRole === "admin"
+								? t("sysadmin.users.detail.set_as_member", "Set as Member")
+								: t("sysadmin.users.detail.set_as_admin", "Set as Admin")}
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 text-rose-600 hover:text-rose-600"
+							onClick={() => setConfirmRemove(m)}
+						>
+							<Trash2 className="h-4 w-4" />
+						</Button>
+					</div>
 				);
 			},
 		},
@@ -1006,107 +975,102 @@ export function SysAdminUserDetail() {
 					)}
 				</div>
 
-				{/* Actions dropdown */}
+				{/* Actions */}
 				{data && (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm">
-								<MoreHorizontal className="mr-1.5 h-4 w-4" />
-								{t("sysadmin.users.detail.actions", "Actions")}
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="w-52">
-							<DropdownMenuItem onSelect={() => setShowUpdateUser(true)}>
-								<Pencil className="mr-2 h-4 w-4" />
-								{t("sysadmin.users.detail.edit_info", "Edit name / info")}
-							</DropdownMenuItem>
-							<DropdownMenuItem onSelect={() => setShowSetPassword(true)}>
-								<KeyRound className="mr-2 h-4 w-4" />
-								{t(
-									"sysadmin.users.detail.set_password_title",
-									"Set new password",
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								disabled={sendPasswordReset.isPending}
-								onSelect={() => sendPasswordReset.mutate({ userId: data.id })}
-							>
-								<Mail className="mr-2 h-4 w-4" />
-								{t(
-									"sysadmin.users.detail.send_reset_email",
-									"Send password reset email",
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
+					<div className="flex flex-wrap items-center gap-1">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setShowUpdateUser(true)}
+						>
+							<Pencil className="mr-1.5 h-4 w-4" />
+							{t("sysadmin.users.detail.edit_info", "Edit")}
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setShowSetPassword(true)}
+						>
+							<KeyRound className="mr-1.5 h-4 w-4" />
+							{t("sysadmin.users.detail.set_password_title", "Password")}
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={sendPasswordReset.isPending}
+							onClick={() => sendPasswordReset.mutate({ userId: data.id })}
+						>
+							<Mail className="mr-1.5 h-4 w-4" />
+							{t("sysadmin.users.detail.send_reset_email", "Reset email")}
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={rolePending}
+							onClick={handleToggleRole}
+						>
 							{data.role === "admin" ? (
-								<DropdownMenuItem
-									disabled={rolePending}
-									onSelect={handleToggleRole}
-								>
-									<ShieldOff className="mr-2 h-4 w-4" />
-									{rolePending
-										? t("sysadmin.users.saving", "Saving…")
-										: t(
-												"sysadmin.users.detail.revoke_admin_action",
-												"Revoke platform admin",
-											)}
-								</DropdownMenuItem>
+								<ShieldOff className="mr-1.5 h-4 w-4" />
 							) : (
-								<DropdownMenuItem
-									disabled={rolePending}
-									onSelect={handleToggleRole}
-								>
-									<Shield className="mr-2 h-4 w-4" />
-									{rolePending
-										? t("sysadmin.users.saving", "Saving…")
-										: t(
-												"sysadmin.users.detail.grant_admin_action",
-												"Grant platform admin",
-											)}
-								</DropdownMenuItem>
+								<Shield className="mr-1.5 h-4 w-4" />
 							)}
-							<DropdownMenuSeparator />
-							{data.banned ? (
-								<DropdownMenuItem
-									disabled={unbanPending}
-									onSelect={handleUnban}
-								>
-									<UserCheck className="mr-2 h-4 w-4" />
-									{unbanPending
-										? t("sysadmin.users.detail.unbanning", "Unbanning…")
-										: t("sysadmin.users.unban_user", "Unban user")}
-								</DropdownMenuItem>
-							) : (
-								<DropdownMenuItem onSelect={() => setShowBan(true)}>
-									<UserX className="mr-2 h-4 w-4" />
-									{t("sysadmin.users.detail.ban_action", "Ban user")}
-								</DropdownMenuItem>
-							)}
-							<DropdownMenuItem onSelect={() => setConfirmRevokeSessions(true)}>
-								<LogOut className="mr-2 h-4 w-4" />
-								{t(
-									"sysadmin.users.detail.revoke_sessions",
-									"Revoke all sessions",
-								)}
-								{(data.sessionCount ?? 0) > 0 && (
-									<span className="ml-auto rounded-full bg-muted px-1.5 text-xs">
-										{data.sessionCount}
-									</span>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								onSelect={() => setConfirmDelete(true)}
-								className="text-rose-600 focus:text-rose-600"
+							{rolePending
+								? t("sysadmin.users.saving", "Saving…")
+								: data.role === "admin"
+									? t(
+											"sysadmin.users.detail.revoke_admin_action",
+											"Revoke admin",
+										)
+									: t(
+											"sysadmin.users.detail.grant_admin_action",
+											"Grant admin",
+										)}
+						</Button>
+						{data.banned ? (
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={unbanPending}
+								onClick={handleUnban}
 							>
-								<Trash2 className="mr-2 h-4 w-4" />
-								{t(
-									"sysadmin.users.detail.delete_permanently_action",
-									"Delete user permanently",
-								)}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+								<UserCheck className="mr-1.5 h-4 w-4" />
+								{unbanPending
+									? t("sysadmin.users.detail.unbanning", "Unbanning…")
+									: t("sysadmin.users.unban_user", "Unban")}
+							</Button>
+						) : (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setShowBan(true)}
+							>
+								<UserX className="mr-1.5 h-4 w-4" />
+								{t("sysadmin.users.detail.ban_action", "Ban")}
+							</Button>
+						)}
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setConfirmRevokeSessions(true)}
+						>
+							<LogOut className="mr-1.5 h-4 w-4" />
+							{t("sysadmin.users.detail.revoke_sessions", "Revoke sessions")}
+							{(data.sessionCount ?? 0) > 0 && (
+								<span className="ml-1 rounded-full bg-muted px-1.5 text-xs">
+									{data.sessionCount}
+								</span>
+							)}
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							className="text-rose-600 hover:text-rose-600"
+							onClick={() => setConfirmDelete(true)}
+						>
+							<Trash2 className="mr-1.5 h-4 w-4" />
+							{t("sysadmin.users.detail.delete_permanently_action", "Delete")}
+						</Button>
+					</div>
 				)}
 			</div>
 

@@ -3,10 +3,8 @@ import { db } from "../../db";
 import { institutions, termAverages, terms } from "../../db/schema";
 import { conflict, notFound } from "../../lib/errors";
 import { htmlToPdf } from "../../lib/pdf";
-import {
-	buildCandidateListHtml,
-	buildEligibilityListHtml,
-} from "../../lib/pdf-templates";
+import { buildCandidateListTemplateData } from "../../lib/template-data-builders/candidate-list";
+import { resolveAndRender } from "../../lib/template-resolver";
 import * as repo from "./official-exams.repo";
 
 // ─── Official Exam Sessions ──────────────────────────────────────────
@@ -366,7 +364,7 @@ export async function printEligibilityList(
 	const institution = institutionRows[0];
 	if (!institution) throw notFound("Institution not found");
 
-	const html = buildEligibilityListHtml({
+	const data = buildCandidateListTemplateData({
 		institution: {
 			name: institution.name,
 			city: institution.city,
@@ -375,16 +373,22 @@ export async function printEligibilityList(
 		examType: session.examType,
 		sessionYear: session.sessionYear,
 		series: session.series,
+		language: "fr",
 		candidates: registrations.map((r) => ({
 			lastName: r.student.lastName,
 			firstName: r.student.firstName,
 			mnu: r.student.mnu,
 			isEligible: r.registration.isEligible,
-			annualAverage: null,
 			hasPaidFee: r.registration.hasPaidFee,
 			candidateNumber: r.registration.candidateNumber,
 		})),
 	});
+	const html = await resolveAndRender(
+		institutionId,
+		"eligibility_list",
+		"fr",
+		data,
+	);
 
 	const pdf = await htmlToPdf(html);
 	const pdfBase64 = pdf.toString("base64");
@@ -409,7 +413,7 @@ export async function printCandidateList(
 	const institution = institutionRows[0];
 	if (!institution) throw notFound("Institution not found");
 
-	const html = buildCandidateListHtml({
+	const data = buildCandidateListTemplateData({
 		institution: {
 			name: institution.name,
 			city: institution.city,
@@ -419,6 +423,7 @@ export async function printCandidateList(
 		examType: session.examType,
 		sessionYear: session.sessionYear,
 		series: session.series,
+		language: "fr",
 		candidates: registrations.map((r) => ({
 			candidateNumber: r.registration.candidateNumber,
 			lastName: r.student.lastName,
@@ -430,6 +435,12 @@ export async function printCandidateList(
 			mention: r.registration.mention,
 		})),
 	});
+	const html = await resolveAndRender(
+		institutionId,
+		"candidate_list",
+		"fr",
+		data,
+	);
 
 	const pdf = await htmlToPdf(html);
 	const pdfBase64 = pdf.toString("base64");

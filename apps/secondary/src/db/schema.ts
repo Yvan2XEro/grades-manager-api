@@ -623,7 +623,8 @@ export const printTemplates = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		type: text("type").$type<PrintTemplateType>().notNull(),
 		name: varchar("name", { length: 255 }).notNull(),
-		htmlContent: text("html_content").notNull(),
+		htmlContentFr: text("html_content_fr").notNull(),
+		htmlContentEn: text("html_content_en").notNull(),
 		...timestamps(),
 	},
 	(t) => [
@@ -661,4 +662,47 @@ export const officialExamRegistrations = pgTable(
 		...timestamps(),
 	},
 	(t) => [uniqueIndex("oer_uniq").on(t.examSessionId, t.enrollmentId)],
+);
+
+// ─── Billing contracts ────────────────────────────────────────────────────────
+
+export const billingFormulaTypes = [
+	"per_student",
+	"per_class",
+	"flat",
+	"tiered",
+] as const;
+export type BillingFormulaType = (typeof billingFormulaTypes)[number];
+
+export const billingContractStatuses = [
+	"active",
+	"suspended",
+	"cancelled",
+] as const;
+export type BillingContractStatus = (typeof billingContractStatuses)[number];
+
+export const billingContracts = pgTable(
+	"billing_contracts",
+	{
+		id: id(),
+		institutionId: uuid("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		formula: text("formula")
+			.$type<BillingFormulaType>()
+			.notNull()
+			.default("per_student"),
+		params: jsonb("params").notNull().default({}),
+		currency: varchar("currency", { length: 3 }).notNull().default("XAF"),
+		billingPeriodMonths: integer("billing_period_months").notNull().default(12),
+		startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+		endDate: timestamp("end_date", { withTimezone: true }),
+		status: text("status")
+			.$type<BillingContractStatus>()
+			.notNull()
+			.default("active"),
+		notes: text("notes"),
+		...timestamps(),
+	},
+	(t) => [index("bc_institution_idx").on(t.institutionId)],
 );

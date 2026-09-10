@@ -1,6 +1,7 @@
 import {
 	CheckCircle,
 	Download,
+	Printer,
 	RefreshCw,
 	Send,
 	ShieldCheck,
@@ -87,6 +88,11 @@ export function ReportCardPreview() {
 		{ id: id! },
 		{ enabled: !!id },
 	);
+	const snapshot = (card?.snapshotData ?? {}) as SnapshotData;
+	const { data: student } = trpc.students.get.useQuery(
+		{ id: snapshot.studentId! },
+		{ enabled: !!snapshot.studentId },
+	);
 
 	const generate = trpc.reportCards.generate.useMutation({
 		onSuccess: () => {
@@ -127,7 +133,6 @@ export function ReportCardPreview() {
 		);
 	}
 
-	const snapshot = (card.snapshotData ?? {}) as SnapshotData;
 	const subjectAverages = snapshot.subjectAverages ?? {};
 	const subjectRows = Object.values(subjectAverages);
 	const classSubjectStats = snapshot.classSubjectStats ?? {};
@@ -170,6 +175,10 @@ export function ReportCardPreview() {
 	};
 	const nextAction = NEXT_ACTION[status];
 
+	const studentName = student
+		? `${student.firstName} ${student.lastName}`
+		: null;
+
 	return (
 		<div className="space-y-6">
 			<div className="flex items-start justify-between gap-4">
@@ -177,6 +186,11 @@ export function ReportCardPreview() {
 					<h1 className="font-bold text-2xl text-foreground">
 						{t("report_cards.preview_title", "Report Card")}
 					</h1>
+					{studentName && (
+						<p className="font-semibold text-foreground text-lg">
+							{studentName}
+						</p>
+					)}
 					<p className="text-muted-foreground text-sm">
 						{snapshot.generatedAt
 							? new Date(snapshot.generatedAt).toLocaleDateString()
@@ -187,6 +201,10 @@ export function ReportCardPreview() {
 					<Badge variant={STATUS_VARIANTS[status] ?? "secondary"}>
 						{t(`report_cards.status_${status}`, status ?? "draft")}
 					</Badge>
+					<Button variant="outline" size="sm" onClick={() => window.print()}>
+						<Printer className="mr-2 h-4 w-4" />
+						{t("report_cards.print", "Print")}
+					</Button>
 					<Button
 						variant={card.status === "draft" ? "default" : "outline"}
 						size="sm"
@@ -307,7 +325,7 @@ export function ReportCardPreview() {
 												className="transition-colors hover:bg-muted/20"
 											>
 												<td className="px-4 py-2 font-medium text-foreground">
-													{row.subjectName}
+													{row.subjectNameFr || row.subjectName}
 												</td>
 												<td className="px-3 py-2 text-center text-muted-foreground">
 													{row.coeff ?? 1}
@@ -371,6 +389,20 @@ export function ReportCardPreview() {
 					</CardContent>
 				</Card>
 			)}
+
+			{/* Observations / Appréciations */}
+			<Card>
+				<CardHeader className="pb-2">
+					<p className="font-semibold text-foreground">
+						{t("report_cards.observations", "Observations / Appréciations")}
+					</p>
+				</CardHeader>
+				<CardContent>
+					<p className="text-muted-foreground text-sm italic">
+						{t("report_cards.no_comment", "No comment recorded.")}
+					</p>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

@@ -3,7 +3,14 @@ import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import * as authSchema from "../../db/auth";
 import * as schema from "../../db/schema";
-import { printTemplateTypes } from "../../db/schema";
+import {
+	type BillingContractStatus,
+	type BillingFormulaType,
+	billingContractStatuses,
+	billingContracts,
+	billingFormulaTypes,
+	printTemplateTypes,
+} from "../../db/schema";
 import { auth } from "../../lib/auth";
 import { systemAdminProcedure, router as trpcRouter } from "../../lib/trpc";
 
@@ -828,7 +835,8 @@ export const router = trpcRouter({
 				institutionId: z.string(),
 				type: z.enum(printTemplateTypes as unknown as [string, ...string[]]),
 				name: z.string().min(1).max(255),
-				htmlContent: z.string().min(1),
+				htmlContentFr: z.string().min(1),
+				htmlContentEn: z.string().min(1),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -851,7 +859,8 @@ export const router = trpcRouter({
 					.update(schema.printTemplates)
 					.set({
 						name: input.name,
-						htmlContent: input.htmlContent,
+						htmlContentFr: input.htmlContentFr,
+						htmlContentEn: input.htmlContentEn,
 						updatedAt: new Date(),
 					})
 					.where(eq(schema.printTemplates.id, existing.id))
@@ -865,7 +874,8 @@ export const router = trpcRouter({
 					institutionId: input.institutionId,
 					type: input.type as schema.PrintTemplateType,
 					name: input.name,
-					htmlContent: input.htmlContent,
+					htmlContentFr: input.htmlContentFr,
+					htmlContentEn: input.htmlContentEn,
 				})
 				.returning();
 			return created;
@@ -878,5 +888,119 @@ export const router = trpcRouter({
 				.delete(schema.printTemplates)
 				.where(eq(schema.printTemplates.id, input.id));
 			return { ok: true };
+		}),
+
+	// ─── Billing contracts ────────────────────────────────────────────────────────
+
+	listBillingContracts: systemAdminProcedure
+		.input(z.object({ institutionId: z.string().uuid() }))
+		.query(async ({ ctx, input }) => {
+			return ctx.db
+				.select()
+				.from(billingContracts)
+				.where(eq(billingContracts.institutionId, input.institutionId))
+				.orderBy(desc(billingContracts.createdAt));
+		}),
+
+	createBillingContract: systemAdminProcedure
+		.input(
+			z.object({
+				institutionId: z.string().uuid(),
+				formula: z.enum(
+					billingFormulaTypes as unknown as [string, ...string[]],
+				),
+				params: z.record(z.string(), z.unknown()).default({}),
+				currency: z.string().max(3).default("XAF"),
+				billingPeriodMonths: z.number().int().min(1).default(12),
+				startDate: z.string().datetime(),
+				endDate: z.string().datetime().optional(),
+				notes: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const [row] = await ctx.db
+				.insert(billingContracts)
+				.values({
+					institutionId: input.institutionId,
+					formula: input.formula as BillingFormulaType,
+					params: input.params,
+					currency: input.currency,
+					billingPeriodMonths: input.billingPeriodMonths,
+					startDate: new Date(input.startDate),
+					endDate: input.endDate ? new Date(input.endDate) : null,
+					notes: input.notes,
+				})
+				.returning();
+			return row;
+		}),
+
+	updateBillingContract: systemAdminProcedure
+		.input(
+			z.object({
+				id: z.string().uuid(),
+				formula: z
+					.enum(billingFormulaTypes as unknown as [string, ...string[]])
+					.optional(),
+				params: z.record(z.string(), z.unknown()).optional(),
+				currency: z.string().max(3).optional(),
+				billingPeriodMonths: z.number().int().min(1).optional(),
+				startDate: z.string().datetime().optional(),
+				endDate: z.string().datetime().nullable().optional(),
+				status: z
+					.enum(billingContractStatuses as unknown as [string, ...string[]])
+					.optional(),
+				notes: z.string().nullable().optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { id, ...fields } = input;
+			const updates: Partial<typeof billingContracts.$inferInsert> = {
+				updatedAt: new Date(),
+			};
+			if (fields.formula !== undefined)
+				updates.formula = fields.formula as BillingFormulaType;
+			if (fields.params !== undefined) updates.params = fields.params;
+			if (fields.currency !== undefined) updates.currency = fields.currency;
+			if (fields.billingPeriodMonths !== undefined)
+				updates.billingPeriodMonths = fields.billingPeriodMonths;
+			if (fields.startDate !== undefined)
+				updates.startDate = new Date(fields.startDate);
+			if (fields.endDate !== undefined)
+				updates.endDate = fields.endDate ? new Date(fields.endDate) : null;
+			if (fields.status !== undefined)
+				updates.status = fields.status as BillingContractStatus;
+			if (fields.notes !== undefined) updates.notes = fields.notes;
+			const [row] = await ctx.db
+				.update(billingContracts)
+				.set(updates)
+				.where(eq(billingContracts.id, id))
+				.returning();
+			if (!row) throw new TRPCError({ code: "NOT_FOUND" });
+			return row;
+		}),
+
+	deleteBillingContract: systemAdminProcedure
+		.input(z.object({ id: z.string().uuid() }))
+		.mutation(async ({ ctx, input }) => {
+			await ctx.db
+				.delete(billingContracts)
+				.where(eq(billingContracts.id, input.id));
+			return { success: true };
+		}),
+
+	// ─── Institution suspension ───────────────────────────────────────────────────
+
+	setInstitutionSuspended: systemAdminProcedure
+		.input(
+			z.object({ institutionId: z.string().uuid(), suspended: z.boolean() }),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const [row] = await ctx.db
+				.update(schema.institutions)
+				.set({ suspended: input.suspended, updatedAt: new Date() })
+				.where(eq(schema.institutions.id, input.institutionId))
+				.returning();
+			if (!row) throw new TRPCError({ code: "NOT_FOUND" });
+			return row;
 		}),
 });

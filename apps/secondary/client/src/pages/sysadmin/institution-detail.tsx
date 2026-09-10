@@ -140,11 +140,16 @@ function UserSearchField({
 				className="pl-9"
 			/>
 			{search.length >= 2 && data && data.rows.length > 0 && (
-				<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md">
+				<div
+					role="listbox"
+					className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md"
+				>
 					{data.rows.map((u) => (
 						<button
 							key={u.id}
 							type="button"
+							role="option"
+							aria-selected={false}
 							className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted/60"
 							onClick={() => {
 								onSelect({ id: u.id, name: u.name });
@@ -764,11 +769,12 @@ export function InstitutionMembersTab() {
 					</Button>
 					<Button
 						variant="ghost"
-						size="icon"
-						className="h-8 w-8 text-rose-600 hover:text-rose-600"
+						size="sm"
+						className="h-7 px-2 text-rose-600 text-xs hover:text-rose-600"
 						onClick={() => setConfirmRemove(row.original)}
 					>
-						<Trash2 className="h-4 w-4" />
+						<Trash2 className="mr-1 h-3 w-3" />
+						{t("sysadmin.institution_detail.remove", "Remove")}
 					</Button>
 				</div>
 			),

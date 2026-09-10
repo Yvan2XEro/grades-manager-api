@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -321,9 +321,12 @@ export function ClassCouncilsList() {
 			enableSorting: true,
 			header: t("class_councils.col_class", "Class"),
 			cell: ({ row }) => (
-				<span className="font-medium text-foreground text-sm">
+				<Link
+					to={`/class-councils/${row.original.id}`}
+					className="font-medium text-primary text-sm hover:underline"
+				>
 					{classMap.get(row.original.classId) ?? row.original.classId}
-				</span>
+				</Link>
 			),
 		},
 		{

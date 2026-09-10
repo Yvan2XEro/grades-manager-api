@@ -63,6 +63,12 @@ export async function bulkCreate(
 	return repo.bulkInsert(values);
 }
 
+export async function deleteSubject(id: string, institutionId: string) {
+	const existing = await repo.findById(id, institutionId);
+	if (!existing) throw notFound("Subject not found");
+	return repo.remove(id, institutionId);
+}
+
 export async function updateSubject(
 	id: string,
 	institutionId: string,

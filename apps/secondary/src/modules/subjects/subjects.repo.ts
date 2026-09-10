@@ -101,3 +101,11 @@ export async function bulkInsert(rows: (typeof subjects.$inferInsert)[]) {
 	if (rows.length === 0) return [];
 	return db.insert(subjects).values(rows).onConflictDoNothing().returning();
 }
+
+export async function remove(id: string, institutionId: string) {
+	const [row] = await db
+		.delete(subjects)
+		.where(and(eq(subjects.id, id), eq(subjects.institutionId, institutionId)))
+		.returning();
+	return row ?? null;
+}
