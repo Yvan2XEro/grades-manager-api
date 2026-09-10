@@ -17,7 +17,7 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
 		institution = rows[0] ?? null;
 	}
 
-	return { session, institution, db };
+	return { session, institution, db, headers: opts.req.headers };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

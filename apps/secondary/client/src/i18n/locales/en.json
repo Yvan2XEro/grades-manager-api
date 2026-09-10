@@ -1160,6 +1160,14 @@
     "conflict": "Already exists.",
     "forbidden": "You don't have permission.",
     "not_found": "Not found.",
-    "unknown": "An unexpected error occurred."
+    "unknown": "An unexpected error occurred.",
+    "USER_ALREADY_EXISTS": "This email address is already in use.",
+    "USER_CREATION_FAILED": "Failed to create the user account. Please try again.",
+    "INSTITUTION_NOT_FOUND": "Institution not found.",
+    "MEMBER_NOT_FOUND": "Member not found.",
+    "SUBJECT_ALREADY_ASSIGNED": "This subject is already assigned to this class.",
+    "STUDENT_ALREADY_ENROLLED": "This student is already enrolled in this class.",
+    "ASSESSMENT_LOCKED": "Grades are locked and can no longer be edited.",
+    "DUPLICATE_ENTRY": "A record with this information already exists."
   }
 }

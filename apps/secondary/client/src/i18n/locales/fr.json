@@ -1160,6 +1160,14 @@
     "conflict": "Existe déjà.",
     "forbidden": "Permission insuffisante.",
     "not_found": "Introuvable.",
-    "unknown": "Une erreur inattendue s'est produite."
+    "unknown": "Une erreur inattendue s'est produite.",
+    "USER_ALREADY_EXISTS": "Cette adresse email est déjà utilisée.",
+    "USER_CREATION_FAILED": "Impossible de créer le compte. Veuillez réessayer.",
+    "INSTITUTION_NOT_FOUND": "Établissement introuvable.",
+    "MEMBER_NOT_FOUND": "Membre introuvable.",
+    "SUBJECT_ALREADY_ASSIGNED": "Cette matière est déjà attribuée à cette classe.",
+    "STUDENT_ALREADY_ENROLLED": "Cet élève est déjà inscrit dans cette classe.",
+    "ASSESSMENT_LOCKED": "Les notes sont verrouillées et ne peuvent plus être modifiées.",
+    "DUPLICATE_ENTRY": "Un enregistrement avec ces informations existe déjà."
   }
 }

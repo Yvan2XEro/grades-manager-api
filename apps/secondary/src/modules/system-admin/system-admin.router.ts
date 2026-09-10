@@ -630,7 +630,7 @@ export const router = trpcRouter({
 				role: z.enum(["user", "admin"]).default("user"),
 			}),
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			try {
 				const result = await auth.api.createUser({
 					body: {
@@ -639,19 +639,23 @@ export const router = trpcRouter({
 						password: input.password,
 						role: input.role,
 					},
-					headers: new Headers(),
+					headers: ctx.headers,
 				});
 				return result;
 			} catch (err) {
 				if (err instanceof APIError) {
-					const msg = err.body?.message ?? err.message;
-					if (err.statusCode === 409 || err.status === "CONFLICT") {
-						throw new TRPCError({ code: "CONFLICT", message: msg });
+					// BAD_REQUEST (400) = user already exists (Better Auth admin plugin)
+					if (err.statusCode === 400 || err.status === "BAD_REQUEST") {
+						throw new TRPCError({
+							code: "CONFLICT",
+							message: "USER_ALREADY_EXISTS",
+						});
 					}
-					if (err.statusCode === 422) {
-						throw new TRPCError({ code: "PRECONDITION_FAILED", message: msg });
-					}
-					throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: msg });
+					// INTERNAL_SERVER_ERROR from Better Auth = DB creation failed
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "USER_CREATION_FAILED",
+					});
 				}
 				throw err;
 			}
@@ -665,34 +669,34 @@ export const router = trpcRouter({
 				expiresIn: z.number().optional(), // seconds
 			}),
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			await auth.api.banUser({
 				body: {
 					userId: input.userId,
 					banReason: input.reason,
 					banExpiresIn: input.expiresIn,
 				},
-				headers: new Headers(),
+				headers: ctx.headers,
 			});
 			return { ok: true };
 		}),
 
 	unbanUser: systemAdminProcedure
 		.input(z.object({ userId: z.string() }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			await auth.api.unbanUser({
 				body: { userId: input.userId },
-				headers: new Headers(),
+				headers: ctx.headers,
 			});
 			return { ok: true };
 		}),
 
 	setUserRole: systemAdminProcedure
 		.input(z.object({ userId: z.string(), role: z.enum(["user", "admin"]) }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			await auth.api.setRole({
 				body: { userId: input.userId, role: input.role },
-				headers: new Headers(),
+				headers: ctx.headers,
 			});
 			return { ok: true };
 		}),
@@ -724,13 +728,13 @@ export const router = trpcRouter({
 				email: z.string().email().optional(),
 			}),
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			const data: Record<string, string> = {};
 			if (input.name) data.name = input.name;
 			if (input.email) data.email = input.email;
 			const result = await auth.api.adminUpdateUser({
 				body: { userId: input.userId, data },
-				headers: new Headers(),
+				headers: ctx.headers,
 			});
 			return result;
 		}),
@@ -742,10 +746,10 @@ export const router = trpcRouter({
 				newPassword: z.string().min(8),
 			}),
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			const result = await auth.api.setUserPassword({
 				body: { userId: input.userId, newPassword: input.newPassword },
-				headers: new Headers(),
+				headers: ctx.headers,
 			});
 			return result;
 		}),
@@ -765,17 +769,17 @@ export const router = trpcRouter({
 					email: user.email,
 					redirectTo: `${process.env.BETTER_AUTH_URL ?? "http://localhost:3001"}/reset-password`,
 				},
-				headers: new Headers(),
+				headers: ctx.headers,
 			});
 			return { ok: true };
 		}),
 
 	impersonateUser: systemAdminProcedure
 		.input(z.object({ userId: z.string() }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			const result = await auth.api.impersonateUser({
 				body: { userId: input.userId },
-				headers: new Headers(),
+				headers: ctx.headers,
 			});
 			return result;
 		}),
