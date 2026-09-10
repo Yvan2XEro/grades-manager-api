@@ -22,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Term create form ────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ function CreateTermDialog({
 			onOpenChange(false);
 			reset();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -154,12 +156,6 @@ function CreateTermDialog({
 						/>
 					</FormField>
 
-					{create.error && (
-						<p className="text-destructive text-sm">
-							{create.error.message ?? t("common.error", "An error occurred")}
-						</p>
-					)}
-
 					<div className="flex justify-end gap-2">
 						<Button
 							type="button"
@@ -235,10 +231,12 @@ export function TermsContent() {
 
 	const openTerm = trpc.terms.open.useMutation({
 		onSuccess: () => utils.terms.list.invalidate(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const closeTerm = trpc.terms.close.useMutation({
 		onSuccess: () => utils.terms.list.invalidate(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const existingTermNumbers = terms.map((t) => t.termNumber);

@@ -6,6 +6,7 @@ import { Link, useParams } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 type ReportCardStatus =
@@ -128,22 +129,26 @@ export function ClassReportCards() {
 		onSuccess: () => {
 			utils.reportCards.list.invalidate();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const batchGenerate = trpc.reportCards.batchGenerate.useMutation({
 		onSuccess: () => utils.reportCards.list.invalidate(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const batchPdf = trpc.reportCards.batchPdf.useMutation({
 		onSuccess: (result) => {
 			downloadBase64Pdf(result.pdfBase64, result.filename);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const downloadPdf = trpc.reportCards.generatePdf.useMutation({
 		onSuccess: (result) => {
 			downloadBase64Pdf(result.pdfBase64, result.filename);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleGenerateAll = () => {

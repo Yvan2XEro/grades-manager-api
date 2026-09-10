@@ -22,6 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -76,6 +77,7 @@ function EnrollDialog({
 			reset();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const onSubmit = (values: EnrollFormValues) => {

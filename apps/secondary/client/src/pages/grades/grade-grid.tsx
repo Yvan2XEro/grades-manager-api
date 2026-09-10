@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -247,6 +248,7 @@ export function GradeGrid() {
 			setIsDirty(false);
 			setTimeout(() => setSaved(false), 2000);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleSave = () => {

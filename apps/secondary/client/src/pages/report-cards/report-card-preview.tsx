@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 type ReportCardStatus =
@@ -98,12 +99,14 @@ export function ReportCardPreview() {
 		onSuccess: () => {
 			utils.reportCards.get.invalidate({ id: id! });
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const updateStatus = trpc.reportCards.updateStatus.useMutation({
 		onSuccess: () => {
 			utils.reportCards.get.invalidate({ id: id! });
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const generatePdf = trpc.reportCards.generatePdf.useMutation({
@@ -119,6 +122,7 @@ export function ReportCardPreview() {
 			a.click();
 			URL.revokeObjectURL(url);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	if (isLoading) return <PreviewSkeleton />;

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authClient, useSession } from "@/lib/auth-client";
+import { errorToast } from "@/lib/error-toast";
 import { TermsContent } from "@/pages/terms/terms-list";
 import { trpc } from "@/utils/trpc";
 
@@ -347,6 +348,7 @@ function SchoolProfileForm() {
 	const { data: institution } = trpc.institutions.get.useQuery();
 	const update = trpc.institutions.update.useMutation({
 		onSuccess: () => utils.institutions.get.invalidate(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	// Logo upload
@@ -586,6 +588,7 @@ function AcademicConfigForm() {
 	const { data: institution } = trpc.institutions.get.useQuery();
 	const update = trpc.institutions.update.useMutation({
 		onSuccess: () => utils.institutions.get.invalidate(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {

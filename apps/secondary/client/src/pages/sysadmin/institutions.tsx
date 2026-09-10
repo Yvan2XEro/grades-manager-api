@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
@@ -169,6 +170,7 @@ function CreateInstitutionDialog({
 			// defer refetch so Radix scroll-lock cleanup runs before re-render
 			setTimeout(() => onCreated(), 0);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	return (
@@ -300,10 +302,6 @@ function CreateInstitutionDialog({
 
 					<UserSearchField value={owner} onSelect={setOwner} />
 
-					{create.error && (
-						<p className="text-destructive text-sm">{create.error.message}</p>
-					)}
-
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="ghost" onClick={onClose}>
 							{t("common.cancel")}
@@ -421,12 +419,15 @@ export function SysAdminInstitutions() {
 
 	const suspend = trpc.systemAdmin.suspendInstitution.useMutation({
 		onSuccess: () => setTimeout(() => refetch(), 0),
+		onError: (err) => errorToast(err, t),
 	});
 	const activate = trpc.systemAdmin.activateInstitution.useMutation({
 		onSuccess: () => refetch(),
+		onError: (err) => errorToast(err, t),
 	});
 	const deleteInst = trpc.systemAdmin.deleteInstitution.useMutation({
 		onSuccess: () => setTimeout(() => refetch(), 0),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const rows = data?.rows ?? [];

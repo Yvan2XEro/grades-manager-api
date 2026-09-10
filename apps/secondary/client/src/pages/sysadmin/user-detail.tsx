@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -39,6 +40,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { authClient } from "@/lib/auth-client";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
@@ -453,6 +455,7 @@ function AddToInstitutionDialog({
 			setInstitution(null);
 			setRole("member");
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	return (
@@ -497,9 +500,6 @@ function AddToInstitutionDialog({
 							)}
 						/>
 					</div>
-					{add.error && (
-						<p className="text-destructive text-sm">{add.error.message}</p>
-					)}
 				</div>
 				<div className="flex justify-end gap-2 pt-2">
 					<Button variant="ghost" onClick={onClose}>
@@ -667,9 +667,11 @@ export function UserMembershipsTab() {
 
 	const removeMember = trpc.systemAdmin.removeMember.useMutation({
 		onSuccess: () => refetch(),
+		onError: (err) => errorToast(err, t),
 	});
 	const updateRole = trpc.systemAdmin.updateMemberRole.useMutation({
 		onSuccess: () => refetch(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const rows = data?.memberships ?? [];
@@ -863,13 +865,11 @@ export function SysAdminUserDetail() {
 	const [showBan, setShowBan] = useState(false);
 	const [showSetPassword, setShowSetPassword] = useState(false);
 	const [showUpdateUser, setShowUpdateUser] = useState(false);
-	const [actionError, setActionError] = useState<string | null>(null);
-
 	const [unbanPending, setUnbanPending] = useState(false);
 	const [rolePending, setRolePending] = useState(false);
 
 	const sendPasswordReset = trpc.systemAdmin.sendPasswordReset.useMutation({
-		onError: (err) => setActionError(err.message),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleUnban = async () => {
@@ -878,8 +878,9 @@ export function SysAdminUserDetail() {
 		const res = await authClient.admin.unbanUser({ userId: id });
 		setUnbanPending(false);
 		if (res.error) {
-			setActionError(
-				res.error.message ?? t("common.error", "An error occurred"),
+			toast.error(
+				res.error.message ??
+					t("error.unknown", "An unexpected error occurred."),
 			);
 		} else {
 			refetch();
@@ -893,8 +894,9 @@ export function SysAdminUserDetail() {
 		const res = await authClient.admin.setRole({ userId: id, role: newRole });
 		setRolePending(false);
 		if (res.error) {
-			setActionError(
-				res.error.message ?? t("common.error", "An error occurred"),
+			toast.error(
+				res.error.message ??
+					t("error.unknown", "An unexpected error occurred."),
 			);
 		} else {
 			refetch();
@@ -905,8 +907,9 @@ export function SysAdminUserDetail() {
 		if (!id) return;
 		const res = await authClient.admin.revokeUserSessions({ userId: id });
 		if (res.error) {
-			setActionError(
-				res.error.message ?? t("common.error", "An error occurred"),
+			toast.error(
+				res.error.message ??
+					t("error.unknown", "An unexpected error occurred."),
 			);
 		} else {
 			refetch();
@@ -917,8 +920,9 @@ export function SysAdminUserDetail() {
 		if (!id) return;
 		const res = await authClient.admin.removeUser({ userId: id });
 		if (res.error) {
-			setActionError(
-				res.error.message ?? t("common.error", "An error occurred"),
+			toast.error(
+				res.error.message ??
+					t("error.unknown", "An unexpected error occurred."),
 			);
 		} else {
 			navigate("/sysadmin/users");
@@ -1012,7 +1016,6 @@ export function SysAdminUserDetail() {
 								<DropdownMenuItem
 									disabled={sendPasswordReset.isPending}
 									onSelect={() => {
-										setActionError(null);
 										sendPasswordReset.mutate({ userId: data.id });
 									}}
 								>
@@ -1022,7 +1025,6 @@ export function SysAdminUserDetail() {
 								<DropdownMenuItem
 									disabled={rolePending}
 									onSelect={() => {
-										setActionError(null);
 										handleToggleRole();
 									}}
 								>
@@ -1045,7 +1047,6 @@ export function SysAdminUserDetail() {
 									<DropdownMenuItem
 										disabled={unbanPending}
 										onSelect={() => {
-											setActionError(null);
 											handleUnban();
 										}}
 									>
@@ -1056,7 +1057,6 @@ export function SysAdminUserDetail() {
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									onSelect={async () => {
-										setActionError(null);
 										const ok = await Confirm.call({
 											title: t(
 												"sysadmin.users.detail.revoke_sessions_title",
@@ -1092,7 +1092,6 @@ export function SysAdminUserDetail() {
 								<DropdownMenuItem
 									className="text-rose-600 focus:text-rose-600"
 									onSelect={async () => {
-										setActionError(null);
 										const ok = await Confirm.call({
 											title: t(
 												"sysadmin.users.detail.delete_title",
@@ -1121,9 +1120,6 @@ export function SysAdminUserDetail() {
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
-						{actionError && (
-							<p className="w-full text-destructive text-xs">{actionError}</p>
-						)}
 					</div>
 				)}
 			</div>

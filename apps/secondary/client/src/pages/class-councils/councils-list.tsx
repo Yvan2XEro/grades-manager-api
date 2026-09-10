@@ -26,6 +26,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -106,7 +107,9 @@ function CreateCouncilDialog({
 	);
 	const termItems = termsData ?? [];
 
-	const createCouncil = trpc.classCouncils.create.useMutation();
+	const createCouncil = trpc.classCouncils.create.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const onSubmit = handleSubmit(async (values) => {
 		await createCouncil.mutateAsync({

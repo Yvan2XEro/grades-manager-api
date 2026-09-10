@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 type UserRow = RouterOutputs["systemAdmin"]["listUsers"]["rows"][number];
@@ -55,8 +56,6 @@ function CreateUserDialog({
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [role, setRole] = useState<"user" | "admin">("user");
-	const [error, setError] = useState<string | null>(null);
-
 	const create = trpc.systemAdmin.createUser.useMutation({
 		onSuccess: () => {
 			onDone();
@@ -65,20 +64,8 @@ function CreateUserDialog({
 			setEmail("");
 			setPassword("");
 			setRole("user");
-			setError(null);
 		},
-		onError: (err) => {
-			if (
-				err.message.toLowerCase().includes("already") ||
-				err.message.toLowerCase().includes("email")
-			) {
-				setError(
-					t("sysadmin.users.email_taken", "This email is already in use."),
-				);
-			} else {
-				setError(err.message);
-			}
-		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleClose = () => {
@@ -86,7 +73,6 @@ function CreateUserDialog({
 		setEmail("");
 		setPassword("");
 		setRole("user");
-		setError(null);
 		onClose();
 	};
 
@@ -125,10 +111,7 @@ function CreateUserDialog({
 							id="cu-email"
 							type="email"
 							value={email}
-							onChange={(e) => {
-								setEmail(e.target.value);
-								setError(null);
-							}}
+							onChange={(e) => setEmail(e.target.value)}
 							placeholder="jean@exemple.com"
 							autoComplete="off"
 						/>
@@ -163,7 +146,6 @@ function CreateUserDialog({
 							placeholder={t("sysadmin.users.role_user", "User")}
 						/>
 					</div>
-					{error && <p className="text-destructive text-sm">{error}</p>}
 					<div className="flex justify-end gap-2 pt-1">
 						<Button variant="ghost" onClick={handleClose}>
 							{t("common.cancel")}
@@ -214,6 +196,7 @@ function BanDialog({
 			onClose();
 			setReason("");
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	return (
@@ -285,6 +268,7 @@ function RoleDialog({
 			onDone();
 			onClose();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	return (
@@ -458,6 +442,7 @@ export function SysAdminUsers() {
 
 	const unban = trpc.systemAdmin.unbanUser.useMutation({
 		onSuccess: () => refetch(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const rows = data?.rows ?? [];

@@ -22,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const FEE_TYPE_KEYS: Record<string, string> = {
@@ -85,6 +86,7 @@ function QuickRecordPaymentDialog({
 			onClose();
 			reset();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -190,10 +192,6 @@ function QuickRecordPaymentDialog({
 						/>
 					</div>
 
-					{record.error && (
-						<p className="text-destructive text-sm">{record.error.message}</p>
-					)}
-
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={onClose}>
 							{t("common.cancel", "Cancel")}
@@ -245,6 +243,7 @@ function FeeScheduleDialog({
 			onClose();
 			reset();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -366,12 +365,6 @@ function FeeScheduleDialog({
 							</div>
 						))}
 					</div>
-
-					{createSchedule.error && (
-						<p className="text-destructive text-sm">
-							{createSchedule.error.message}
-						</p>
-					)}
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={onClose}>

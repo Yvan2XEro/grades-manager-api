@@ -15,6 +15,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Assign dialog ────────────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ function AssignDialog({
 			onOpenChange(false);
 			reset();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -139,12 +141,6 @@ function AssignDialog({
 						/>
 					</FormField>
 
-					{assign.error && (
-						<p className="text-destructive text-sm">
-							{assign.error.message ?? t("common.error", "An error occurred")}
-						</p>
-					)}
-
 					<div className="flex justify-end gap-2">
 						<Button
 							type="button"
@@ -214,6 +210,7 @@ export function SubjectAssignments() {
 
 	const remove = trpc.subjectAssignments.delete.useMutation({
 		onSuccess: () => utils.subjectAssignments.list.invalidate(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const existingSubjectIds = (assignments as Assignment[]).map(

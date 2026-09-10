@@ -23,6 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 type StudentData = { id: string; firstName: string; lastName: string };
@@ -60,6 +61,7 @@ function RecordPaymentDialog({
 			onClose();
 			reset();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {

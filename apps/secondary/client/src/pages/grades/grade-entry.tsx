@@ -38,6 +38,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -224,6 +225,7 @@ export function GradeEntry() {
 			setSavedAgoText(timeAgo(now));
 			setOriginalGrades({ ...grades });
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	// Update "saved ago" display every 30s

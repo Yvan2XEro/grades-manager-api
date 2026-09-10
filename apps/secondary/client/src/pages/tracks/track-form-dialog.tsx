@@ -18,6 +18,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
@@ -45,6 +46,7 @@ export function TrackFormDialog({ open, onOpenChange, onSuccess }: Props) {
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {

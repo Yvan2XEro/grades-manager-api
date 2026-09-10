@@ -42,6 +42,7 @@ import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
@@ -204,6 +205,7 @@ function AddMemberDialog({
 			setUser(null);
 			setRole("member");
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	return (
@@ -237,9 +239,6 @@ function AddMemberDialog({
 							placeholder={t("sysadmin.institution_detail.select_role")}
 						/>
 					</div>
-					{add.error && (
-						<p className="text-destructive text-sm">{add.error.message}</p>
-					)}
 				</div>
 				<div className="flex justify-end gap-2 pt-2">
 					<Button variant="ghost" onClick={onClose}>
@@ -318,6 +317,7 @@ function EditInstitutionDialog({
 			onDone();
 			onClose();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -502,10 +502,6 @@ function EditInstitutionDialog({
 							placeholder="Quartier, Rue…"
 						/>
 					</div>
-
-					{update.error && (
-						<p className="text-destructive text-sm">{update.error.message}</p>
-					)}
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="ghost" onClick={onClose}>
@@ -699,9 +695,11 @@ export function InstitutionMembersTab() {
 
 	const updateRole = trpc.systemAdmin.updateMemberRole.useMutation({
 		onSuccess: () => refetch(),
+		onError: (err) => errorToast(err, t),
 	});
 	const remove = trpc.systemAdmin.removeMember.useMutation({
 		onSuccess: () => refetch(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const rows = data?.rows ?? [];
@@ -966,25 +964,23 @@ export function SysAdminInstitutionDetail() {
 	]);
 
 	const [showEditDialog, setShowEditDialog] = useState(false);
-	const [actionError, setActionError] = useState<string | null>(null);
-
 	const suspend = trpc.systemAdmin.suspendInstitution.useMutation({
 		onSuccess: () => {
 			refetch();
 			utils.systemAdmin.listInstitutions.invalidate();
 		},
-		onError: (err) => setActionError(err.message),
+		onError: (err) => errorToast(err, t),
 	});
 	const activate = trpc.systemAdmin.activateInstitution.useMutation({
 		onSuccess: () => {
 			refetch();
 			utils.systemAdmin.listInstitutions.invalidate();
 		},
-		onError: (err) => setActionError(err.message),
+		onError: (err) => errorToast(err, t),
 	});
 	const deleteInstitution = trpc.systemAdmin.deleteInstitution.useMutation({
 		onSuccess: () => navigate("/sysadmin/institutions"),
-		onError: (err) => setActionError(err.message),
+		onError: (err) => errorToast(err, t),
 	});
 
 	const TABS = [
@@ -1077,7 +1073,6 @@ export function SysAdminInstitutionDetail() {
 										<DropdownMenuItem
 											disabled={activate.isPending}
 											onSelect={() => {
-												setActionError(null);
 												activate.mutate({ id: data.id });
 											}}
 										>
@@ -1088,7 +1083,6 @@ export function SysAdminInstitutionDetail() {
 										<DropdownMenuItem
 											disabled={suspend.isPending}
 											onSelect={() => {
-												setActionError(null);
 												suspend.mutate({ id: data.id });
 											}}
 										>
@@ -1100,7 +1094,6 @@ export function SysAdminInstitutionDetail() {
 									<DropdownMenuItem
 										className="text-rose-600 focus:text-rose-600"
 										onSelect={async () => {
-											setActionError(null);
 											const ok = await Confirm.call({
 												title: t("sysadmin.institution_detail.delete_title"),
 												description: t(
@@ -1125,9 +1118,6 @@ export function SysAdminInstitutionDetail() {
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
-						{actionError && (
-							<p className="text-destructive text-xs">{actionError}</p>
-						)}
 					</div>
 				)}
 			</div>

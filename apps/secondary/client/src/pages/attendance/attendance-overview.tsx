@@ -25,6 +25,7 @@ import {
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -140,6 +141,7 @@ function CreateSessionDialog({
 			reset();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const onSubmit = handleSubmit(async (data) => {
@@ -270,13 +272,6 @@ function CreateSessionDialog({
 						</FormField>
 					</div>
 
-					{createSession.error && (
-						<p className="text-destructive text-sm">
-							{createSession.error.message ??
-								t("common.error", "An error occurred")}
-						</p>
-					)}
-
 					<div className="flex justify-end gap-2 pt-2">
 						<Button
 							type="button"
@@ -349,6 +344,7 @@ function AttendanceSheet({
 			setSaved(true);
 			setTimeout(() => setSaved(false), 2500);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleSave = () => {

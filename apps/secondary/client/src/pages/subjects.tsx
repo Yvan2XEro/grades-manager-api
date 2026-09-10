@@ -22,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 import { SubjectFormDialog } from "./subject-form-dialog";
 
@@ -68,6 +69,7 @@ export function Subjects() {
 			utils.subjects.list.invalidate();
 			setDeletingSubject(undefined);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const { data: groups } = trpc.subjects.groups.useQuery();

@@ -2,6 +2,7 @@ import { CheckCircle, GraduationCap, MessageSquare, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -72,6 +73,7 @@ export function CommentsGrid() {
 			setSaved(true);
 			setTimeout(() => setSaved(false), 2000);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleSave = () => {

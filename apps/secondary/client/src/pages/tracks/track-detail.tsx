@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
@@ -71,7 +72,9 @@ export function TrackDetail() {
 			{ enabled: !!id },
 		);
 
-	const upsertCoefficient = trpc.tracks.upsertCoefficient.useMutation();
+	const upsertCoefficient = trpc.tracks.upsertCoefficient.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	// ── Form ─────────────────────────────────────────────────────────────────
 

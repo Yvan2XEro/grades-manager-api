@@ -12,6 +12,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 type Candidate = {
@@ -62,6 +63,7 @@ function CandidateResultRow({
 			setTimeout(() => setSaved(false), 2000);
 			onUpdate();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleSave = () => {

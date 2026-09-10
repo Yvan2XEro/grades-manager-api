@@ -33,6 +33,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -115,6 +116,7 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 			utils.institutions.get.invalidate();
 			onNext();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -423,9 +425,15 @@ type AcademicYearFormValues = z.infer<typeof academicYearSchema>;
 function Step2AcademicYear({ onNext }: { onNext: () => void }) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
-	const createYear = trpc.academicYears.create.useMutation();
-	const createTerm = trpc.terms.create.useMutation();
-	const activateYear = trpc.academicYears.setActive.useMutation();
+	const createYear = trpc.academicYears.create.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
+	const createTerm = trpc.terms.create.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
+	const activateYear = trpc.academicYears.setActive.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const hasYear = years.length > 0;
@@ -702,7 +710,9 @@ type TrackRow = {
 function Step3Tracks({ onNext }: { onNext: () => void }) {
 	const { t } = useTranslation();
 	const { data: existingTracks } = trpc.tracks.list.useQuery({});
-	const bulkCreate = trpc.tracks.bulkCreate.useMutation();
+	const bulkCreate = trpc.tracks.bulkCreate.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 	const utils = trpc.useUtils();
 
 	const [rows, setRows] = useState<TrackRow[]>(MINESEC_TRACKS);
@@ -1083,7 +1093,9 @@ function Step4Subjects({ onNext }: { onNext: () => void }) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 	const { data: existingData } = trpc.subjects.list.useQuery({ pageSize: 200 });
-	const bulkCreate = trpc.subjects.bulkCreate.useMutation();
+	const bulkCreate = trpc.subjects.bulkCreate.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const hasExisting = (existingData?.items?.length ?? 0) > 0;
 
@@ -1404,7 +1416,9 @@ function Step5Coefficients({ onNext }: { onNext: () => void }) {
 	const { t } = useTranslation();
 	const { data: tracksData } = trpc.tracks.list.useQuery({ pageSize: 100 });
 	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 200 });
-	const bulkUpsert = trpc.tracks.bulkUpsertCoefficients.useMutation();
+	const bulkUpsert = trpc.tracks.bulkUpsertCoefficients.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const tracks = tracksData && "items" in tracksData ? tracksData.items : [];
 	const subjects = subjectsData?.items ?? [];
@@ -1711,7 +1725,9 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 		{ academicYearId: activeYear?.id, pageSize: 200 },
 		{ enabled: !!activeYear?.id },
 	);
-	const bulkCreate = trpc.classes.bulkCreate.useMutation();
+	const bulkCreate = trpc.classes.bulkCreate.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const tracks = tracksData && "items" in tracksData ? tracksData.items : [];
 	const hasExisting = (existingClasses?.items?.length ?? 0) > 0;
@@ -2077,7 +2093,9 @@ type StaffRow = {
 function Step7Staff({ onDone }: { onDone: () => void }) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
-	const bulkCreate = trpc.staff.bulkCreate.useMutation();
+	const bulkCreate = trpc.staff.bulkCreate.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 	const { data: existingStaff } = trpc.staff.list.useQuery({ pageSize: 5 });
 
 	const [rows, setRows] = useState<StaffRow[]>([]);

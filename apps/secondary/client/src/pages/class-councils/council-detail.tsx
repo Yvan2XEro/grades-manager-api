@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -101,8 +102,12 @@ function DecisionRowForm({
 		defaultValues: { decision: defaultDecision, note: defaultNote },
 	});
 
-	const addDecision = trpc.classCouncils.addDecision.useMutation();
-	const updateDecision = trpc.classCouncils.updateDecision.useMutation();
+	const addDecision = trpc.classCouncils.addDecision.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
+	const updateDecision = trpc.classCouncils.updateDecision.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const onSubmit = async (values: DecisionFormValues) => {
 		if (existingId) {
@@ -259,6 +264,7 @@ export function CouncilDetail() {
 
 	const updateCouncil = trpc.classCouncils.update.useMutation({
 		onSuccess: () => utils.classCouncils.get.invalidate({ id: id! }),
+		onError: (err) => errorToast(err, t),
 	});
 
 	// ── Global note form ──────────────────────────────────────────────────────

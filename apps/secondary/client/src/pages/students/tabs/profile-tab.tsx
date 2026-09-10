@@ -18,6 +18,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 type StudentData = {
@@ -126,6 +127,7 @@ export function StudentProfileTab() {
 			utils.students.list.invalidate();
 			setIsEditing(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const handleEdit = () => {
@@ -371,10 +373,6 @@ export function StudentProfileTab() {
 						</FormField>
 					</div>
 				</div>
-
-				{update.error && (
-					<p className="text-destructive text-sm">{update.error.message}</p>
-				)}
 			</form>
 		);
 	}

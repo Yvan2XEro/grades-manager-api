@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { APIError } from "better-auth";
 import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import * as authSchema from "../../db/auth";
@@ -630,16 +631,30 @@ export const router = trpcRouter({
 			}),
 		)
 		.mutation(async ({ input }) => {
-			const result = await auth.api.createUser({
-				body: {
-					name: input.name,
-					email: input.email,
-					password: input.password,
-					role: input.role,
-				},
-				headers: new Headers(),
-			});
-			return result;
+			try {
+				const result = await auth.api.createUser({
+					body: {
+						name: input.name,
+						email: input.email,
+						password: input.password,
+						role: input.role,
+					},
+					headers: new Headers(),
+				});
+				return result;
+			} catch (err) {
+				if (err instanceof APIError) {
+					const msg = err.body?.message ?? err.message;
+					if (err.statusCode === 409 || err.status === "CONFLICT") {
+						throw new TRPCError({ code: "CONFLICT", message: msg });
+					}
+					if (err.statusCode === 422) {
+						throw new TRPCError({ code: "PRECONDITION_FAILED", message: msg });
+					}
+					throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: msg });
+				}
+				throw err;
+			}
 		}),
 
 	banUser: systemAdminProcedure

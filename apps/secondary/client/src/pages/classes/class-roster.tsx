@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 function StatusBadge({ status }: { status: string | null | undefined }) {
@@ -68,6 +69,7 @@ export function ClassRoster() {
 			link.click();
 			document.body.removeChild(link);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	if (isLoading) {

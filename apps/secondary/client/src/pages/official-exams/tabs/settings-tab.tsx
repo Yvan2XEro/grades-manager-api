@@ -17,6 +17,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const BAC_SERIES = ["A4", "C", "D", "TI", "F3", "F4", "A5"] as const;
@@ -82,6 +83,7 @@ export function ExamSettingsTab() {
 			setSaved(true);
 			setTimeout(() => setSaved(false), 2500);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -257,9 +259,6 @@ export function ExamSettingsTab() {
 								{t("common.cancel", "Cancel")}
 							</Button>
 						</div>
-						{update.error && (
-							<p className="text-destructive text-sm">{update.error.message}</p>
-						)}
 					</form>
 				) : (
 					<dl className="space-y-3">

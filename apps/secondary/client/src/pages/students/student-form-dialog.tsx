@@ -21,6 +21,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
@@ -84,7 +85,9 @@ export function StudentFormDialog({
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 
-	const enroll = trpc.enrollments.create.useMutation();
+	const enroll = trpc.enrollments.create.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const create = trpc.students.create.useMutation({
 		onSuccess: async (newStudent, variables) => {
@@ -103,6 +106,7 @@ export function StudentFormDialog({
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const update = trpc.students.update.useMutation({
@@ -111,6 +115,7 @@ export function StudentFormDialog({
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -176,7 +181,7 @@ export function StudentFormDialog({
 		onOpenChange(open);
 	};
 
-	const mutationError = create.error ?? update.error ?? enroll.error;
+	const _mutationError = create.error ?? update.error ?? enroll.error;
 	const isNew = !student;
 
 	return (
@@ -395,12 +400,6 @@ export function StudentFormDialog({
 							)}
 						/>
 					</FormField>
-
-					{mutationError && (
-						<p className="text-destructive text-sm">
-							{mutationError.message ?? t("common.error", "An error occurred")}
-						</p>
-					)}
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button

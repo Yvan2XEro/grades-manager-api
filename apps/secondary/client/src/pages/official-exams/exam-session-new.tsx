@@ -17,6 +17,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const BAC_SERIES = ["A4", "C", "D", "TI", "F3", "F4", "A5"] as const;
@@ -117,8 +118,12 @@ export function ExamSessionNew() {
 		);
 	}, [allClasses, classSearch]);
 
-	const create = trpc.officialExams.createSession.useMutation();
-	const bulkRegister = trpc.officialExams.bulkRegisterCandidates.useMutation();
+	const create = trpc.officialExams.createSession.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
+	const bulkRegister = trpc.officialExams.bulkRegisterCandidates.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const selectedCount = selectedClassIds.size;
 

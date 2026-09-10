@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
@@ -49,6 +50,7 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -170,12 +172,6 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 							<Input type="number" min={1} {...register("maxCapacity")} />
 						</FormField>
 					</div>
-
-					{create.error && (
-						<p className="text-destructive text-sm">
-							{create.error.message ?? t("common.error", "An error occurred")}
-						</p>
-					)}
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button

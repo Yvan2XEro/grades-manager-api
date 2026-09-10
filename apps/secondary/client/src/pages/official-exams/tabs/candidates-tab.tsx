@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -105,7 +106,9 @@ function RegisterCandidateDialog({
 		},
 	});
 
-	const registerCandidate = trpc.officialExams.registerCandidate.useMutation();
+	const registerCandidate = trpc.officialExams.registerCandidate.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const onSubmit = handleSubmit(async (values) => {
 		await registerCandidate.mutateAsync({
@@ -250,7 +253,9 @@ function BulkImportDialog({
 		name: string;
 	}>;
 
-	const bulkRegister = trpc.officialExams.bulkRegisterCandidates.useMutation();
+	const bulkRegister = trpc.officialExams.bulkRegisterCandidates.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
 
 	const handleOpen = (v: boolean) => {
 		if (!v) {
@@ -412,6 +417,7 @@ function RecordFeeDialog({
 			setOpen(false);
 			onSaved();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 	const {
 		register,
@@ -501,9 +507,6 @@ function RecordFeeDialog({
 						</Label>
 						<Input placeholder="TXN-001" {...register("feeTransactionRef")} />
 					</div>
-					{update.error && (
-						<p className="text-destructive text-xs">{update.error.message}</p>
-					)}
 					<div className="flex justify-end gap-2 pt-1">
 						<Button
 							type="button"
@@ -538,10 +541,12 @@ function CandidateRow({
 
 	const update = trpc.officialExams.updateCandidate.useMutation({
 		onSuccess: onUpdate,
+		onError: (err) => errorToast(err, t),
 	});
 
 	const checkElig = trpc.officialExams.checkEligibility.useMutation({
 		onSuccess: onUpdate,
+		onError: (err) => errorToast(err, t),
 	});
 
 	const toggle = (
@@ -744,6 +749,7 @@ export function ExamCandidatesTab() {
 				link.click();
 				document.body.removeChild(link);
 			},
+			onError: (err) => errorToast(err, t),
 		});
 
 	const printCandidateList = trpc.officialExams.printCandidateList.useMutation({
@@ -755,6 +761,7 @@ export function ExamCandidatesTab() {
 			link.click();
 			document.body.removeChild(link);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const exportCsv = () => {

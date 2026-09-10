@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
@@ -55,6 +56,7 @@ export function SubjectFormDialog({
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const update = trpc.subjects.update.useMutation({
@@ -63,6 +65,7 @@ export function SubjectFormDialog({
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -120,7 +123,7 @@ export function SubjectFormDialog({
 		onOpenChange(open);
 	};
 
-	const mutationError = create.error ?? update.error;
+	const _mutationError = create.error ?? update.error;
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
@@ -171,12 +174,6 @@ export function SubjectFormDialog({
 					>
 						<Input {...register("subjectGroup")} />
 					</FormField>
-
-					{mutationError && (
-						<p className="text-destructive text-sm">
-							{mutationError.message ?? t("common.error", "An error occurred")}
-						</p>
-					)}
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button

@@ -8,6 +8,7 @@ import { CodeEditor } from "@/components/ui/code-editor";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorToast } from "@/lib/error-toast";
 import type { TemplateData } from "@/lib/template-renderer";
 import { renderTemplate } from "@/lib/template-renderer";
 import { cn } from "@/lib/utils";
@@ -803,6 +804,7 @@ function TemplateEditor({
 			setSavedMsg(true);
 			setTimeout(() => setSavedMsg(false), 2500);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const del = trpc.systemAdmin.deleteInstitutionTemplate.useMutation({
@@ -819,6 +821,7 @@ function TemplateEditor({
 			);
 			setInitialized(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const activeHtml = lang === "fr" ? htmlFr : htmlEn;

@@ -17,6 +17,7 @@ import {
 import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const assignSchema = z.object({
@@ -51,6 +52,7 @@ function AssignDialog({
 			onOpenChange(false);
 			reset();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -117,9 +119,6 @@ function AssignDialog({
 							)}
 						/>
 					</FormField>
-					{assign.error && (
-						<p className="text-destructive text-sm">{assign.error.message}</p>
-					)}
 					<div className="flex justify-end gap-2">
 						<Button
 							type="button"
@@ -166,6 +165,7 @@ export function ClassAssignments() {
 
 	const remove = trpc.subjectAssignments.delete.useMutation({
 		onSuccess: () => utils.subjectAssignments.list.invalidate(),
+		onError: (err) => errorToast(err, t),
 	});
 
 	type Assignment = (typeof assignments)[number];

@@ -33,6 +33,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -144,11 +145,13 @@ function ContractDialog({
 			onDone();
 			reset();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 	const update = trpc.systemAdmin.updateBillingContract.useMutation({
 		onSuccess: () => {
 			onDone();
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const isPending = create.isPending || update.isPending;
@@ -325,16 +328,19 @@ export function InstitutionBillingTab() {
 
 	const updateStatus = trpc.systemAdmin.updateBillingContract.useMutation({
 		onSuccess: invalidate,
+		onError: (err) => errorToast(err, t),
 	});
 
 	const deleteContract = trpc.systemAdmin.deleteBillingContract.useMutation({
 		onSuccess: invalidate,
+		onError: (err) => errorToast(err, t),
 	});
 
 	const suspendInstitution =
 		trpc.systemAdmin.setInstitutionSuspended.useMutation({
 			onSuccess: () =>
 				utils.systemAdmin.getInstitution.invalidate({ id: institutionId! }),
+			onError: (err) => errorToast(err, t),
 		});
 
 	function formatContractSummary(contract: Contract): string {

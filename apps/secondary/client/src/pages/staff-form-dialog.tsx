@@ -19,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const ROLES = [
@@ -78,6 +79,7 @@ export function StaffFormDialog({
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const update = trpc.staff.update.useMutation({
@@ -86,6 +88,7 @@ export function StaffFormDialog({
 			onSuccess();
 			onOpenChange(false);
 		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const {
@@ -127,7 +130,7 @@ export function StaffFormDialog({
 		onOpenChange(open);
 	};
 
-	const mutationError = create.error ?? update.error;
+	const _mutationError = create.error ?? update.error;
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
@@ -211,12 +214,6 @@ export function StaffFormDialog({
 							/>
 						</FormField>
 					</div>
-
-					{mutationError && (
-						<p className="text-destructive text-sm">
-							{mutationError.message ?? t("common.error", "An error occurred")}
-						</p>
-					)}
 
 					<div className="flex justify-end gap-2 pt-2">
 						<Button
