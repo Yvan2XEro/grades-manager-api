@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -81,6 +82,22 @@ export function SubjectFormDialog({
 				}
 			: {},
 	});
+
+	// Dialog keeps its content mounted when closed, so defaultValues (evaluated once at mount)
+	// won't update when the `subject` prop changes. Reset explicitly on each prop change.
+	useEffect(() => {
+		if (subject) {
+			reset({
+				name: subject.name,
+				nameFr: subject.nameFr ?? "",
+				code: subject.code ?? "",
+				minesecCode: subject.minesecCode ?? "",
+				subjectGroup: subject.subjectGroup ?? "",
+			});
+		} else {
+			reset({});
+		}
+	}, [subject, reset]);
 
 	const onSubmit = handleSubmit(async (data) => {
 		const payload = {
