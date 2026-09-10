@@ -6,6 +6,7 @@ import {
 	GraduationCap,
 	ImagePlus,
 	Loader2,
+	MoreHorizontal,
 	PauseCircle,
 	Pencil,
 	PlayCircle,
@@ -28,6 +29,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -985,21 +993,25 @@ export function SysAdminInstitutionDetail() {
 
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
+	const [actionError, setActionError] = useState<string | null>(null);
 
 	const suspend = trpc.systemAdmin.suspendInstitution.useMutation({
 		onSuccess: () => {
 			refetch();
 			utils.systemAdmin.listInstitutions.invalidate();
 		},
+		onError: (err) => setActionError(err.message),
 	});
 	const activate = trpc.systemAdmin.activateInstitution.useMutation({
 		onSuccess: () => {
 			refetch();
 			utils.systemAdmin.listInstitutions.invalidate();
 		},
+		onError: (err) => setActionError(err.message),
 	});
 	const deleteInstitution = trpc.systemAdmin.deleteInstitution.useMutation({
 		onSuccess: () => navigate("/sysadmin/institutions"),
+		onError: (err) => setActionError(err.message),
 	});
 
 	const TABS = [
@@ -1071,48 +1083,66 @@ export function SysAdminInstitutionDetail() {
 				</div>
 
 				{!isLoading && data && (
-					<div className="flex items-center gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setShowEditDialog(true)}
-						>
-							<Pencil className="mr-1.5 h-4 w-4" />
-							{t("sysadmin.institution_detail.edit")}
-						</Button>
-						{data.suspended ? (
+					<div className="flex flex-col items-end gap-1">
+						<div className="flex items-center gap-2">
 							<Button
 								variant="outline"
 								size="sm"
-								disabled={activate.isPending}
-								onClick={() => activate.mutate({ id: data.id })}
+								onClick={() => setShowEditDialog(true)}
 							>
-								<PlayCircle className="mr-1.5 h-4 w-4" />
-								{activate.isPending
-									? t("sysadmin.institution_detail.reactivating")
-									: t("sysadmin.institution_detail.reactivate")}
+								<Pencil className="mr-1.5 h-4 w-4" />
+								{t("sysadmin.institution_detail.edit")}
 							</Button>
-						) : (
-							<Button
-								variant="outline"
-								size="sm"
-								disabled={suspend.isPending}
-								onClick={() => suspend.mutate({ id: data.id })}
-							>
-								<PauseCircle className="mr-1.5 h-4 w-4" />
-								{suspend.isPending
-									? t("sysadmin.institution_detail.suspending")
-									: t("sysadmin.institution_detail.suspend")}
-							</Button>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="outline" size="sm">
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									{data.suspended ? (
+										<DropdownMenuItem
+											disabled={activate.isPending}
+											onSelect={() => {
+												setActionError(null);
+												activate.mutate({ id: data.id });
+											}}
+										>
+											<PlayCircle className="mr-1.5 h-4 w-4" />
+											{t("sysadmin.institution_detail.reactivate")}
+										</DropdownMenuItem>
+									) : (
+										<DropdownMenuItem
+											disabled={suspend.isPending}
+											onSelect={() => {
+												setActionError(null);
+												suspend.mutate({ id: data.id });
+											}}
+										>
+											<PauseCircle className="mr-1.5 h-4 w-4" />
+											{t("sysadmin.institution_detail.suspend")}
+										</DropdownMenuItem>
+									)}
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="text-rose-600 focus:text-rose-600"
+										onSelect={() => {
+											setActionError(null);
+											setShowDeleteDialog(true);
+										}}
+									>
+										<Trash2 className="mr-1.5 h-4 w-4" />
+										{t(
+											"sysadmin.institution_detail.delete_btn",
+											"Delete institution",
+										)}
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+						{actionError && (
+							<p className="text-destructive text-xs">{actionError}</p>
 						)}
-						<Button
-							variant="outline"
-							size="icon"
-							className="h-9 w-9 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-							onClick={() => setShowDeleteDialog(true)}
-						>
-							<Trash2 className="h-4 w-4" />
-						</Button>
 					</div>
 				)}
 			</div>

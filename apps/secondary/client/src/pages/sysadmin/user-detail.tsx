@@ -4,6 +4,7 @@ import {
 	KeyRound,
 	LogOut,
 	Mail,
+	MoreHorizontal,
 	Pencil,
 	Plus,
 	Shield,
@@ -25,6 +26,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -883,20 +891,29 @@ export function SysAdminUserDetail() {
 	const [showUpdateUser, setShowUpdateUser] = useState(false);
 	const [confirmRevokeSessions, setConfirmRevokeSessions] = useState(false);
 	const [confirmDelete, setConfirmDelete] = useState(false);
+	const [actionError, setActionError] = useState<string | null>(null);
 
 	const [unbanPending, setUnbanPending] = useState(false);
 	const [rolePending, setRolePending] = useState(false);
 	const [revokePending, setRevokePending] = useState(false);
 	const [deletePending, setDeletePending] = useState(false);
 
-	const sendPasswordReset = trpc.systemAdmin.sendPasswordReset.useMutation();
+	const sendPasswordReset = trpc.systemAdmin.sendPasswordReset.useMutation({
+		onError: (err) => setActionError(err.message),
+	});
 
 	const handleUnban = async () => {
 		if (!id) return;
 		setUnbanPending(true);
 		const res = await authClient.admin.unbanUser({ userId: id });
 		setUnbanPending(false);
-		if (!res.error) refetch();
+		if (res.error) {
+			setActionError(
+				res.error.message ?? t("common.error", "An error occurred"),
+			);
+		} else {
+			refetch();
+		}
 	};
 
 	const handleToggleRole = async () => {
@@ -905,7 +922,13 @@ export function SysAdminUserDetail() {
 		const newRole = data.role === "admin" ? "user" : "admin";
 		const res = await authClient.admin.setRole({ userId: id, role: newRole });
 		setRolePending(false);
-		if (!res.error) refetch();
+		if (res.error) {
+			setActionError(
+				res.error.message ?? t("common.error", "An error occurred"),
+			);
+		} else {
+			refetch();
+		}
 	};
 
 	const handleRevokeSessions = async () => {
@@ -913,7 +936,11 @@ export function SysAdminUserDetail() {
 		setRevokePending(true);
 		const res = await authClient.admin.revokeUserSessions({ userId: id });
 		setRevokePending(false);
-		if (!res.error) {
+		if (res.error) {
+			setActionError(
+				res.error.message ?? t("common.error", "An error occurred"),
+			);
+		} else {
 			refetch();
 			setConfirmRevokeSessions(false);
 		}
@@ -924,7 +951,13 @@ export function SysAdminUserDetail() {
 		setDeletePending(true);
 		const res = await authClient.admin.removeUser({ userId: id });
 		setDeletePending(false);
-		if (!res.error) navigate("/sysadmin/users");
+		if (res.error) {
+			setActionError(
+				res.error.message ?? t("common.error", "An error occurred"),
+			);
+		} else {
+			navigate("/sysadmin/users");
+		}
 	};
 
 	const TABS = [
@@ -994,51 +1027,7 @@ export function SysAdminUserDetail() {
 							<KeyRound className="mr-1.5 h-4 w-4" />
 							{t("sysadmin.users.detail.set_password_title", "Password")}
 						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={sendPasswordReset.isPending}
-							onClick={() => sendPasswordReset.mutate({ userId: data.id })}
-						>
-							<Mail className="mr-1.5 h-4 w-4" />
-							{t("sysadmin.users.detail.send_reset_email", "Reset email")}
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={rolePending}
-							onClick={handleToggleRole}
-						>
-							{data.role === "admin" ? (
-								<ShieldOff className="mr-1.5 h-4 w-4" />
-							) : (
-								<Shield className="mr-1.5 h-4 w-4" />
-							)}
-							{rolePending
-								? t("sysadmin.users.saving", "Saving…")
-								: data.role === "admin"
-									? t(
-											"sysadmin.users.detail.revoke_admin_action",
-											"Revoke admin",
-										)
-									: t(
-											"sysadmin.users.detail.grant_admin_action",
-											"Grant admin",
-										)}
-						</Button>
-						{data.banned ? (
-							<Button
-								variant="outline"
-								size="sm"
-								disabled={unbanPending}
-								onClick={handleUnban}
-							>
-								<UserCheck className="mr-1.5 h-4 w-4" />
-								{unbanPending
-									? t("sysadmin.users.detail.unbanning", "Unbanning…")
-									: t("sysadmin.users.unban_user", "Unban")}
-							</Button>
-						) : (
+						{!data.banned && (
 							<Button
 								variant="outline"
 								size="sm"
@@ -1048,28 +1037,94 @@ export function SysAdminUserDetail() {
 								{t("sysadmin.users.detail.ban_action", "Ban")}
 							</Button>
 						)}
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setConfirmRevokeSessions(true)}
-						>
-							<LogOut className="mr-1.5 h-4 w-4" />
-							{t("sysadmin.users.detail.revoke_sessions", "Revoke sessions")}
-							{(data.sessionCount ?? 0) > 0 && (
-								<span className="ml-1 rounded-full bg-muted px-1.5 text-xs">
-									{data.sessionCount}
-								</span>
-							)}
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							className="text-rose-600 hover:text-rose-600"
-							onClick={() => setConfirmDelete(true)}
-						>
-							<Trash2 className="mr-1.5 h-4 w-4" />
-							{t("sysadmin.users.detail.delete_permanently_action", "Delete")}
-						</Button>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" size="sm">
+									<MoreHorizontal className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem
+									disabled={sendPasswordReset.isPending}
+									onSelect={() => {
+										setActionError(null);
+										sendPasswordReset.mutate({ userId: data.id });
+									}}
+								>
+									<Mail className="mr-1.5 h-4 w-4" />
+									{t("sysadmin.users.detail.send_reset_email", "Reset email")}
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									disabled={rolePending}
+									onSelect={() => {
+										setActionError(null);
+										handleToggleRole();
+									}}
+								>
+									{data.role === "admin" ? (
+										<ShieldOff className="mr-1.5 h-4 w-4" />
+									) : (
+										<Shield className="mr-1.5 h-4 w-4" />
+									)}
+									{data.role === "admin"
+										? t(
+												"sysadmin.users.detail.revoke_admin_action",
+												"Revoke admin",
+											)
+										: t(
+												"sysadmin.users.detail.grant_admin_action",
+												"Grant admin",
+											)}
+								</DropdownMenuItem>
+								{data.banned && (
+									<DropdownMenuItem
+										disabled={unbanPending}
+										onSelect={() => {
+											setActionError(null);
+											handleUnban();
+										}}
+									>
+										<UserCheck className="mr-1.5 h-4 w-4" />
+										{t("sysadmin.users.unban_user", "Unban")}
+									</DropdownMenuItem>
+								)}
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									onSelect={() => {
+										setActionError(null);
+										setConfirmRevokeSessions(true);
+									}}
+								>
+									<LogOut className="mr-1.5 h-4 w-4" />
+									{t(
+										"sysadmin.users.detail.revoke_sessions",
+										"Revoke sessions",
+									)}
+									{(data.sessionCount ?? 0) > 0 && (
+										<span className="ml-auto rounded-full bg-muted px-1.5 text-xs">
+											{data.sessionCount}
+										</span>
+									)}
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									className="text-rose-600 focus:text-rose-600"
+									onSelect={() => {
+										setActionError(null);
+										setConfirmDelete(true);
+									}}
+								>
+									<Trash2 className="mr-1.5 h-4 w-4" />
+									{t(
+										"sysadmin.users.detail.delete_permanently_action",
+										"Delete",
+									)}
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						{actionError && (
+							<p className="w-full text-destructive text-xs">{actionError}</p>
+						)}
 					</div>
 				)}
 			</div>
