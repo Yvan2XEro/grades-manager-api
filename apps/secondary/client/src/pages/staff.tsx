@@ -180,11 +180,31 @@ export function Staff() {
 						title={t("staff.import_title", "Import staff from CSV")}
 						templateFilename="staff-template.csv"
 						columns={[
-							{ key: "firstName", label: "First name", required: true },
-							{ key: "lastName", label: "Last name", required: true },
-							{ key: "email", label: "Email", required: true },
-							{ key: "phone", label: "Phone" },
-							{ key: "role", label: "Role (teacher/admin/staff)" },
+							{
+								key: "firstName",
+								label: "First name",
+								header: "first_name",
+								required: true,
+							},
+							{
+								key: "lastName",
+								label: "Last name",
+								header: "last_name",
+								required: true,
+							},
+							{ key: "email", label: "Email", header: "email", required: true },
+							{ key: "phone", label: "Phone", header: "phone" },
+							{ key: "role", label: "Role", header: "role" },
+						]}
+						exampleRows={[
+							[
+								"Jean",
+								"Dupont",
+								"jean.dupont@school.cm",
+								"+237600000001",
+								"teacher",
+							],
+							["Marie", "Foe", "marie.foe@school.cm", "+237600000002", "admin"],
 						]}
 						onImport={(rows) =>
 							bulkCreateStaff

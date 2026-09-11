@@ -143,9 +143,23 @@ export function ClassesList() {
 						templateFilename="classes-template.csv"
 						disabled={!academicYearId}
 						columns={[
-							{ key: "name", label: "Class name", required: true },
-							{ key: "code", label: "Code", required: true },
-							{ key: "level", label: "Level (e.g. Tle)", required: true },
+							{
+								key: "name",
+								label: "Class name",
+								header: "name",
+								required: true,
+							},
+							{ key: "code", label: "Code", header: "code", required: true },
+							{
+								key: "level",
+								label: "Level (e.g. Tle)",
+								header: "level",
+								required: true,
+							},
+						]}
+						exampleRows={[
+							["Terminale A1", "TleA1", "Terminale"],
+							["Première C", "1C", "1ère"],
 						]}
 						onImport={(rows) =>
 							bulkCreateClasses

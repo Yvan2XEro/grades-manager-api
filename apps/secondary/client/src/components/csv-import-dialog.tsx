@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 export interface CsvColumn {
 	key: string;
 	label: string;
+	/** CSV column header written to the template and expected when parsing. Defaults to `label` if omitted. */
+	header?: string;
 	required?: boolean;
 }
 
@@ -21,7 +23,13 @@ export interface CsvImportDialogProps {
 	columns: CsvColumn[];
 	onImport: (rows: Record<string, string>[]) => Promise<{ created: number }>;
 	templateFilename: string;
+	/** Example data rows included in the downloadable template, one string per column. */
+	exampleRows?: string[][];
 	disabled?: boolean;
+}
+
+function colHeader(col: CsvColumn) {
+	return col.header ?? col.label;
 }
 
 function parseCsv(text: string): Record<string, string>[] {
@@ -36,7 +44,8 @@ function parseCsv(text: string): Record<string, string>[] {
 		.map((line) => {
 			const values = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
 			return Object.fromEntries(headers.map((h, i) => [h, values[i] ?? ""]));
-		});
+		})
+		.filter((row) => Object.values(row).some((v) => v.trim()));
 }
 
 export function CsvImportDialog({
@@ -44,6 +53,7 @@ export function CsvImportDialog({
 	columns,
 	onImport,
 	templateFilename,
+	exampleRows,
 	disabled,
 }: CsvImportDialogProps) {
 	const { t } = useTranslation();
@@ -57,7 +67,12 @@ export function CsvImportDialog({
 
 	const templateCsv =
 		"data:text/csv;charset=utf-8," +
-		encodeURIComponent(`${columns.map((c) => c.label).join(",")}\n`);
+		encodeURIComponent(
+			`${[
+				columns.map(colHeader).join(","),
+				...(exampleRows ?? []).map((r) => r.join(",")),
+			].join("\n")}\n`,
+		);
 
 	function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
 		setValidationError(null);
@@ -89,7 +104,7 @@ export function CsvImportDialog({
 	function validate() {
 		for (const col of columns) {
 			if (!col.required) continue;
-			const missing = rows.some((r) => !r[col.label]?.trim());
+			const missing = rows.some((r) => !r[colHeader(col)]?.trim());
 			if (missing) {
 				setValidationError(
 					t("csv_import.error_missing", 'Column "{{col}}" is required', {
@@ -106,14 +121,14 @@ export function CsvImportDialog({
 		if (!validate()) return;
 		setImporting(true);
 		try {
-			// Map from label-keyed rows to key-keyed rows
-			const labelToKey = Object.fromEntries(
-				columns.map((c) => [c.label, c.key]),
+			// Map from header-keyed rows to key-keyed rows
+			const headerToKey = Object.fromEntries(
+				columns.map((c) => [colHeader(c), c.key]),
 			);
 			const keyedRows = rows.map((row) => {
 				const out: Record<string, string> = {};
-				for (const [label, key] of Object.entries(labelToKey)) {
-					out[key] = row[label] ?? "";
+				for (const [header, key] of Object.entries(headerToKey)) {
+					out[key] = row[header] ?? "";
 				}
 				return out;
 			});
@@ -220,7 +235,7 @@ export function CsvImportDialog({
 												<tr key={i} className="border-t">
 													{columns.map((col) => (
 														<td key={col.key} className="px-3 py-2 text-xs">
-															{row[col.label] ?? ""}
+															{row[colHeader(col)] ?? ""}
 														</td>
 													))}
 												</tr>

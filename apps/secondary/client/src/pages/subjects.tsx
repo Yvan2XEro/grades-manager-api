@@ -185,11 +185,19 @@ export function Subjects() {
 						title={t("subjects.import_title", "Import subjects from CSV")}
 						templateFilename="subjects-template.csv"
 						columns={[
-							{ key: "name", label: "Name", required: true },
-							{ key: "code", label: "Code", required: true },
-							{ key: "nameFr", label: "Name (FR)" },
-							{ key: "minesecCode", label: "MINESEC Code" },
-							{ key: "subjectGroup", label: "Group" },
+							{ key: "name", label: "Name", header: "name", required: true },
+							{ key: "code", label: "Code", header: "code", required: true },
+							{ key: "nameFr", label: "Name (FR)", header: "name_fr" },
+							{
+								key: "minesecCode",
+								label: "MINESEC Code",
+								header: "minesec_code",
+							},
+							{ key: "subjectGroup", label: "Group", header: "subject_group" },
+						]}
+						exampleRows={[
+							["Mathematics", "MATH", "Mathématiques", "MAT001", "Sciences"],
+							["English Language", "ENG", "Anglais", "ENG001", "Languages"],
 						]}
 						onImport={(rows) =>
 							bulkCreateSubjects

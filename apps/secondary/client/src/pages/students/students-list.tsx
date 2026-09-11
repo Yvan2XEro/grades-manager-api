@@ -139,12 +139,34 @@ export function StudentsList() {
 						title={t("students.import_title", "Import students from CSV")}
 						templateFilename="students-template.csv"
 						columns={[
-							{ key: "firstName", label: "First name", required: true },
-							{ key: "lastName", label: "Last name", required: true },
-							{ key: "gender", label: "Gender (M/F)" },
-							{ key: "mnu", label: "MNU" },
-							{ key: "dateOfBirth", label: "Date of birth (YYYY-MM-DD)" },
-							{ key: "placeOfBirth", label: "Place of birth" },
+							{
+								key: "firstName",
+								label: "First name",
+								header: "first_name",
+								required: true,
+							},
+							{
+								key: "lastName",
+								label: "Last name",
+								header: "last_name",
+								required: true,
+							},
+							{ key: "gender", label: "Gender (M/F)", header: "gender" },
+							{ key: "mnu", label: "MNU", header: "mnu" },
+							{
+								key: "dateOfBirth",
+								label: "Date of birth (YYYY-MM-DD)",
+								header: "date_of_birth",
+							},
+							{
+								key: "placeOfBirth",
+								label: "Place of birth",
+								header: "place_of_birth",
+							},
+						]}
+						exampleRows={[
+							["Jean", "Dupont", "M", "CM-001", "2008-05-14", "Yaoundé"],
+							["Marie", "Foe", "F", "CM-002", "2009-03-22", "Douala"],
 						]}
 						onImport={(rows) =>
 							bulkCreateStudents

@@ -631,7 +631,7 @@ export async function batchPdf(
 .bulletin-page { page-break-after: always; }
 .bulletin-page:last-child { page-break-after: avoid; }</style>
 </head><body>
-${pages.map((h) => `<div class="bulletin-page">${h.replace(/<!DOCTYPE html>[\s\S]*?<body>/, "").replace(/<\/body>[\s\S]*$/, "")}</div>`).join("\n")}
+${pages.map((h) => `<div class="bulletin-page">${h.replace(/<!DOCTYPE html>[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*$/i, "")}</div>`).join("\n")}
 </body></html>`;
 
 	const pdf = await htmlToPdf(mergedHtml);
