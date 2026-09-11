@@ -494,7 +494,17 @@
     "download_all_pdfs": "Télécharger tous les PDF",
     "generating": "Génération…",
     "generating_pdf": "Génération PDF…",
-    "batch_result": "Générés : {{generated}}, Erreurs : {{errors}}"
+    "batch_result": "Générés : {{generated}}, Erreurs : {{errors}}",
+    "no_terms": "Aucun trimestre configuré",
+    "empty_classes": "Aucune classe trouvée",
+    "empty_enrollments": "Aucun élève inscrit dans cette classe",
+    "action_validate_admin": "Valider (Admin)",
+    "action_validate_vp": "Valider (Censeur)",
+    "action_sign": "Signer",
+    "action_publish": "Publier",
+    "print": "Imprimer / PDF",
+    "rank": "Rang",
+    "absences": "Absences"
   },
   "finance": {
     "title": "Scolarité",

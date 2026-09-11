@@ -1942,11 +1942,13 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 										</SelectTrigger>
 										<SelectContent>
 											<SelectItem value="_">—</SelectItem>
-											{tracks.map((tr) => (
-												<SelectItem key={tr.id} value={tr.code}>
-													{tr.code}
-												</SelectItem>
-											))}
+											{tracks
+												.filter((tr) => tr.code?.trim())
+												.map((tr) => (
+													<SelectItem key={tr.id} value={tr.code}>
+														{tr.code}
+													</SelectItem>
+												))}
 										</SelectContent>
 									</Select>
 								</td>

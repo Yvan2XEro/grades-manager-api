@@ -34,7 +34,7 @@ export const router = trpcRouter({
 		.mutation(({ ctx, input }) =>
 			service.generate(input.studentId, input.termId, ctx.institution.id),
 		),
-	generatePdf: adminProcedure
+	generatePdf: tenantProcedure
 		.input(generatePdfSchema)
 		.mutation(({ ctx, input }) =>
 			service.generatePdf(input.id, ctx.institution.id),

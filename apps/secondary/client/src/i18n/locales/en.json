@@ -494,7 +494,17 @@
     "download_all_pdfs": "Download all PDFs",
     "generating": "Generating…",
     "generating_pdf": "Generating PDF…",
-    "batch_result": "Generated: {{generated}}, Errors: {{errors}}"
+    "batch_result": "Generated: {{generated}}, Errors: {{errors}}",
+    "no_terms": "No terms configured",
+    "empty_classes": "No classes found",
+    "empty_enrollments": "No students enrolled in this class",
+    "action_validate_admin": "Validate (Admin)",
+    "action_validate_vp": "Validate (VP)",
+    "action_sign": "Sign",
+    "action_publish": "Publish",
+    "print": "Print / PDF",
+    "rank": "Rank",
+    "absences": "Absences"
   },
   "finance": {
     "title": "Finances",
