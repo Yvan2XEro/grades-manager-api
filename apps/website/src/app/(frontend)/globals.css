@@ -46,34 +46,85 @@
   --font-mono: var(--font-geist-mono);
   --font-sans: var(--font-geist-sans);
 
-  /* TKAMS fonts */
+  /*
+   * TKAMS fonts
+   *
+   * Display is a serif: it carries the institutional register that a geometric
+   * sans cannot, and it reads as academic rather than as a software startup.
+   * Source Serif 4 is used for headings and figures only.
+   *
+   * Body and interface stay on a humanist sans. Mono is reserved for proof —
+   * identifiers, marks, amounts, dates — never for running text.
+   */
   --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-code: var(--font-jetbrains-mono), ui-monospace, monospace;
 
-  /* TKAMS brand colors */
-  --color-tk-bg: oklch(0.955 0.006 80);
-  --color-tk-bg-deep: oklch(0.93 0.008 80);
-  --color-tk-surface: oklch(0.978 0.008 80);
-  --color-tk-ink: oklch(0.13 0.03 264);
-  --color-tk-ink-soft: oklch(0.3 0.02 264);
-  --color-tk-ink-2: oklch(0.42 0.02 264);
-  --color-tk-muted: oklch(0.52 0.014 264);
-  --color-tk-border: oklch(0.88 0.006 80);
-  --color-tk-border-strong: oklch(0.78 0.008 80);
+  /*
+   * TKAMS palette — international register, West-African warmth.
+   *
+   * Neutrals are built on hue 65-70 (clay/sand) instead of the previous blue
+   * 264, so every surface and every grey carries a trace of terracotta. The
+   * primary stays on hue 277: it is sampled from logo-tkams.png, whose dominant
+   * chroma measures oklch(0.584 0.230 276.6). The warm accent on hue 48 is the
+   * African anchor and the only colour allowed to compete with the primary.
+   *
+   * Every foreground/background pair below was verified against WCAG AA
+   * (lowest measured ratio: ink-muted on bg-alt, 5.01). Chroma is capped so
+   * that all tokens stay inside the sRGB gamut — do not raise it blindly.
+   */
+
+  /* Surfaces — warm neutrals, hue 65-70 */
+  --color-tk-bg: oklch(0.97 0.006 70);
+  --color-tk-bg-deep: oklch(0.945 0.012 68);
+  --color-tk-surface: oklch(0.995 0.003 70);
+  --color-tk-sand: oklch(0.925 0.018 66);
+
+  /* Ink — warm greys, never pure black */
+  --color-tk-ink: oklch(0.205 0.02 65);
+  --color-tk-ink-soft: oklch(0.32 0.019 65);
+  --color-tk-ink-2: oklch(0.395 0.018 65);
+  --color-tk-muted: oklch(0.505 0.016 65);
+
+  /* Rules */
+  --color-tk-border: oklch(0.9 0.008 68);
+  --color-tk-border-strong: oklch(0.82 0.012 68);
+
+  /* Primary — sampled from the logo */
   --color-tk-primary: oklch(0.48 0.2 277);
-  --color-tk-primary-soft: oklch(0.95 0.04 277);
-  --color-tk-primary-deep: oklch(0.32 0.18 277);
+  --color-tk-primary-soft: oklch(0.955 0.032 277);
+  --color-tk-primary-deep: oklch(0.35 0.17 277);
   --color-tk-primary-bright: oklch(0.65 0.22 277);
   --color-tk-on-primary: oklch(0.99 0 0);
-  --color-tk-dark: oklch(0.13 0.03 264);
-  --color-tk-dark-2: oklch(0.18 0.04 264);
-  --color-tk-on-dark: oklch(0.98 0.008 264);
-  --color-tk-on-dark-soft: oklch(0.78 0.015 264);
-  --color-tk-on-dark-muted: oklch(0.6 0.018 264);
-  --color-tk-accent-emerald: oklch(0.58 0.17 149);
-  --color-tk-accent-gold: oklch(0.72 0.16 86);
-  --color-tk-accent-blue: oklch(0.57 0.12 221);
+
+  /* Accent — terracotta. The African anchor. One per viewport. */
+  --color-tk-accent: oklch(0.5 0.13 48);
+  --color-tk-accent-deep: oklch(0.43 0.115 48);
+  --color-tk-accent-soft: oklch(0.945 0.035 52);
+
+  /* Dark chapters */
+  --color-tk-dark: oklch(0.19 0.03 268);
+  --color-tk-dark-2: oklch(0.25 0.035 268);
+  --color-tk-on-dark: oklch(0.97 0.008 70);
+  --color-tk-on-dark-soft: oklch(0.79 0.014 70);
+  --color-tk-on-dark-muted: oklch(0.63 0.016 70);
+
+  /*
+   * Semantic — these belong to data readouts (demos, tables), not decoration.
+   *
+   * `-wash` variants are the tinted backgrounds behind a status chip. They exist
+   * as tokens so the demos stop hardcoding `oklch(... / 0.12)` literals that
+   * silently drift out of step with the palette whenever it is retuned.
+   */
+  --color-tk-pass: oklch(0.48 0.11 150);
+  --color-tk-pass-wash: oklch(0.94 0.035 150);
+  --color-tk-warn: oklch(0.55 0.12 75);
+  --color-tk-warn-wash: oklch(0.945 0.04 80);
+  --color-tk-block: oklch(0.49 0.15 28);
+  --color-tk-block-wash: oklch(0.945 0.032 28);
+  --color-tk-accent-emerald: oklch(0.48 0.11 150);
+  --color-tk-accent-gold: oklch(0.55 0.12 75);
+  --color-tk-accent-blue: oklch(0.5 0.11 245);
 }
 
 @layer utilities {
@@ -116,28 +167,46 @@
 }
 
 :root {
-  /* TKAMS Design System */
-  --tk-bg: oklch(0.955 0.006 80);
-  --tk-bg-deep: oklch(0.93 0.008 80);
-  --tk-surface: oklch(0.978 0.008 80);
-  --tk-ink: oklch(0.13 0.03 264);
-  --tk-ink-soft: oklch(0.3 0.02 264);
-  --tk-ink-2: oklch(0.42 0.02 264);
-  --tk-muted: oklch(0.52 0.014 264);
-  --tk-border: oklch(0.88 0.006 80);
-  --tk-border-strong: oklch(0.78 0.008 80);
+  /* TKAMS Design System — mirrors the @theme block above. Keep in sync. */
+  --tk-bg: oklch(0.97 0.006 70);
+  --tk-bg-deep: oklch(0.945 0.012 68);
+  --tk-surface: oklch(0.995 0.003 70);
+  --tk-sand: oklch(0.925 0.018 66);
+  --tk-ink: oklch(0.205 0.02 65);
+  --tk-ink-soft: oklch(0.32 0.019 65);
+  --tk-ink-2: oklch(0.395 0.018 65);
+  --tk-muted: oklch(0.505 0.016 65);
+  --tk-border: oklch(0.9 0.008 68);
+  --tk-border-strong: oklch(0.82 0.012 68);
   --tk-primary: oklch(0.48 0.2 277);
-  --tk-primary-soft: oklch(0.95 0.04 277);
-  --tk-primary-deep: oklch(0.32 0.18 277);
+  --tk-primary-soft: oklch(0.955 0.032 277);
+  --tk-primary-deep: oklch(0.35 0.17 277);
   --tk-primary-bright: oklch(0.65 0.22 277);
   --tk-on-primary: oklch(0.99 0 0);
-  --tk-dark: oklch(0.13 0.03 264);
-  --tk-dark-2: oklch(0.18 0.04 264);
-  --tk-on-dark: oklch(0.98 0.008 264);
-  --tk-on-dark-soft: oklch(0.78 0.015 264);
-  --tk-accent-emerald: oklch(0.58 0.17 149);
-  --tk-accent-gold: oklch(0.72 0.16 86);
-  --tk-accent-blue: oklch(0.57 0.12 221);
+  --tk-accent: oklch(0.5 0.13 48);
+  --tk-accent-deep: oklch(0.43 0.115 48);
+  --tk-accent-soft: oklch(0.945 0.035 52);
+  --tk-dark: oklch(0.19 0.03 268);
+  --tk-dark-2: oklch(0.25 0.035 268);
+  --tk-on-dark: oklch(0.97 0.008 70);
+  --tk-on-dark-soft: oklch(0.79 0.014 70);
+  --tk-pass: oklch(0.48 0.11 150);
+  --tk-pass-wash: oklch(0.94 0.035 150);
+  --tk-warn: oklch(0.55 0.12 75);
+  --tk-warn-wash: oklch(0.945 0.04 80);
+  --tk-block: oklch(0.49 0.15 28);
+  --tk-block-wash: oklch(0.945 0.032 28);
+  --tk-accent-emerald: oklch(0.48 0.11 150);
+  --tk-accent-gold: oklch(0.55 0.12 75);
+  --tk-accent-blue: oklch(0.5 0.11 245);
+
+  /* Motion — one entrance curve, a closed list of durations */
+  --tk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --tk-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --tk-d-fast: 180ms;
+  --tk-d-base: 320ms;
+  --tk-d-slow: 600ms;
+  --tk-reveal-y: 24px;
 
   --background: oklch(100% 0 0deg);
   --foreground: oklch(14.5% 0 0deg);
@@ -266,45 +335,136 @@
   }
 }
 
-html {
-  opacity: 0;
+/*
+ * The document used to be hidden (`html { opacity: 0 }`) until the theme script
+ * stamped a data-theme attribute, which meant the whole marketing site rendered
+ * blank for anyone whose JS was slow, blocked or broken — and blank to any
+ * crawler that does not execute scripts. The theme is applied by an inline
+ * script before paint, so the reveal gate is not needed.
+ */
+
+/*
+ * TKAMS Marketing Animations
+ *
+ * Two safety rules, both learned the hard way:
+ *
+ *  1. Reveals are gated on `.js` (set on <html> by the theme script before
+ *     paint). Without JavaScript the hidden state never applies at all, so the
+ *     page renders fully visible rather than blank.
+ *
+ *  2. The hidden state is time-limited. `tk-reveal` runs backwards from hidden
+ *     to visible and then HOLDS visible via `forwards`, so if the
+ *     IntersectionObserver never fires for an element — off-screen during a
+ *     full-page capture, a missed effect, a torn-down observer — the content
+ *     still appears. An animation that has to succeed for text to be readable
+ *     is a single point of failure; this removes it.
+ *
+ * `data-visible` short-circuits the delay and reveals immediately.
+ */
+.js [data-animate] {
+  animation: tk-reveal-slide var(--tk-d-slow) var(--tk-ease) 1.2s both;
 }
 
-html[data-theme='dark'],
-html[data-theme='light'] {
-  opacity: initial;
-}
-
-/* TKAMS Marketing Animations */
-[data-animate] {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-[data-animate][data-visible='true'] {
+.js [data-animate][data-visible='true'] {
+  animation: none;
   opacity: 1;
   transform: none;
+  transition:
+    opacity var(--tk-d-slow) var(--tk-ease),
+    transform var(--tk-d-slow) var(--tk-ease);
 }
 
-[data-animate-fade] {
-  opacity: 0;
-  transition: opacity 0.7s ease;
+.js [data-animate-fade] {
+  animation: tk-reveal-fade var(--tk-d-slow) var(--tk-ease) 1.2s both;
 }
 
-[data-animate-fade][data-visible='true'] {
+.js [data-animate-fade][data-visible='true'] {
+  animation: none;
   opacity: 1;
+  transition: opacity var(--tk-d-slow) var(--tk-ease);
 }
 
-[data-animate-scale] {
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+@keyframes tk-reveal-slide {
+  from {
+    opacity: 0;
+    transform: translateY(var(--tk-reveal-y));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-[data-animate-scale][data-visible='true'] {
+@keyframes tk-reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tk-reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.js [data-animate-scale] {
+  animation: tk-reveal-scale var(--tk-d-slow) var(--tk-ease) 1.2s both;
+}
+
+.js [data-animate-scale][data-visible='true'] {
+  animation: none;
   opacity: 1;
   transform: scale(1);
+  transition:
+    opacity var(--tk-d-slow) var(--tk-ease),
+    transform var(--tk-d-slow) var(--tk-ease);
+}
+
+/*
+ * Reduced motion. Content must still be VISIBLE — reveals collapse to their
+ * final state rather than being animated. Looping decorations stop entirely.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --tk-d-fast: 0ms;
+    --tk-d-base: 0ms;
+    --tk-d-slow: 0ms;
+    --tk-reveal-y: 0px;
+  }
+
+  .js [data-animate],
+  .js [data-animate-fade],
+  .js [data-animate-scale] {
+    /* `animation: none` is essential, not cosmetic: the reveal keyframes use
+     * `both`, so leaving them running would pin content at opacity 0. */
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .tk-float,
+  .tk-pulse-glow,
+  .tk-weave--drift {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @keyframes tk-float {
@@ -343,7 +503,7 @@ html[data-theme='light'] {
 
 /* TKAMS Marketing fonts */
 .tk-font-display {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-font-body {
@@ -360,6 +520,79 @@ html[data-theme='light'] {
     linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+/*
+ * ── Trame (the weave) ────────────────────────────────────────────────────
+ *
+ * The African anchor of the design, built from a woven lozenge motif in the
+ * register of strip-weaving (kente, bogolan) rather than a literal quotation
+ * of any one textile.
+ *
+ * Rules of use, in order of importance:
+ *   1. It is ALWAYS a watermark. Opacity never exceeds 0.05 on light surfaces
+ *      or 0.07 on dark ones. If you can read it as a pattern before you read
+ *      the text in front of it, it is too strong.
+ *   2. It is decorative: every element carrying it must be aria-hidden, and it
+ *      must never be the only thing conveying meaning.
+ *   3. It never sits behind body copy — only behind headings, in section
+ *      margins, or as a band between chapters.
+ *
+ * Pure CSS gradients, no image request.
+ */
+.tk-weave {
+  --weave-size: 44px;
+  --weave-color: var(--tk-accent);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--weave-color) 0 1px,
+      transparent 1px calc(var(--weave-size) / 2)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--weave-color) 0 1px,
+      transparent 1px calc(var(--weave-size) / 2)
+    );
+  background-size: var(--weave-size) var(--weave-size);
+  opacity: 0.05;
+}
+
+/* Denser variant: the lozenge reads as a filled diamond chain. */
+.tk-weave--dense {
+  --weave-size: 26px;
+}
+
+/* For dark chapters: the thread is light, not terracotta. */
+.tk-weave--on-dark {
+  --weave-color: oklch(1 0 0);
+  opacity: 0.07;
+}
+
+/*
+ * Horizontal band used to separate two chapters. Fades out at both ends so it
+ * reads as woven selvedge rather than a ruled line.
+ */
+.tk-weave-band {
+  height: 56px;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 18%,
+    #000 82%,
+    transparent
+  );
+}
+
+/* Paper grain. Static, very fine, multiply-blended. */
+.tk-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
 /* Marketing nav styles */
@@ -395,8 +628,13 @@ html[data-theme='light'] {
 
 .tk-btn-primary:hover {
   background: var(--tk-primary-deep);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px oklch(0.48 0.2 277 / 0.3);
+}
+
+.tk-btn-primary:focus-visible,
+.tk-btn-outline:focus-visible,
+.tk-btn-ghost:focus-visible {
+  outline: 2px solid var(--tk-ink);
+  outline-offset: 2px;
 }
 
 .tk-btn-ghost {
@@ -407,7 +645,7 @@ html[data-theme='light'] {
   background: transparent;
   color: var(--tk-on-dark);
   border: 1px solid oklch(1 0 0 / 0.2);
-  border-radius: 0.625rem;
+  border-radius: 6px;
   font-weight: 500;
   font-size: 0.9375rem;
   transition: background 0.2s, border-color 0.2s;
@@ -429,10 +667,10 @@ html[data-theme='light'] {
   background: transparent;
   color: var(--tk-primary);
   border: 1.5px solid var(--tk-primary);
-  border-radius: 0.625rem;
+  border-radius: 6px;
   font-weight: 600;
   font-size: 0.9375rem;
-  transition: background 0.2s, transform 0.15s;
+  transition: background var(--tk-d-fast) var(--tk-ease);
   cursor: pointer;
   text-decoration: none;
   font-family: var(--font-inter), system-ui, sans-serif;
@@ -440,5 +678,4 @@ html[data-theme='light'] {
 
 .tk-btn-outline:hover {
   background: var(--tk-primary-soft);
-  transform: translateY(-1px);
 }

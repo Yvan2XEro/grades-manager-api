@@ -18,6 +18,7 @@ import { Nav } from "@/marketing/Nav";
 import { NavigationProgress } from "@/marketing/NavigationProgress";
 import { getServerSideURL } from "@/utilities/getURL";
 
+/** Headings and figures. */
 const sora = Sora({
 	subsets: ["latin"],
 	weight: ["400", "500", "600", "700", "800"],
@@ -26,7 +27,7 @@ const sora = Sora({
 });
 
 const inter = Inter({
-	subsets: ["latin"],
+	subsets: ["latin", "latin-ext"],
 	weight: ["400", "500", "600"],
 	variable: "--font-inter",
 	display: "swap",
@@ -90,5 +91,9 @@ export const metadata: Metadata = {
 	twitter: {
 		card: "summary_large_image",
 		creator: "@tkams_app",
+		title: "TKAMS — Tefoye and Kana Academic Management System",
+		description:
+			"La plateforme SIS LMD-first pour les universités et IPES d'Afrique francophone. Délibérations en heures, non en semaines.",
+		images: ["/logo-tkams.png"],
 	},
 };

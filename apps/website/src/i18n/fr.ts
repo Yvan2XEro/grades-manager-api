@@ -15,7 +15,7 @@ export const fr = {
 	},
 	hero: {
 		kicker:
-			"★ Système d'Information Étudiant · LMD · admissions · finances · portails",
+			"Système d'Information Étudiant · LMD · admissions · finances · portails",
 		headline_1: "Le SIS qui transforme vos semaines de délibérations en",
 		headline_2: "heures.",
 		sub: "TKAMS couvre l'intégralité du cycle académique — admissions, quitus, emplois du temps, assiduité, examens, délibérations, documents officiels et promotion — en une seule plateforme conçue pour les institutions LMD d'Afrique francophone.",
@@ -24,6 +24,7 @@ export const fr = {
 		badge_lmd: "LMD natif",
 		badge_bi: "Portails multi-rôles",
 		badge_live: "En production",
+		cities: "Douala · Yaoundé",
 	},
 	stats: {
 		title: "Une plateforme complète, en production",
@@ -258,25 +259,21 @@ export const fr = {
 		sub: "Choisissez le niveau de contrôle qui convient à votre DSI.",
 		modes: [
 			{
-				icon: "☁",
 				title: "SaaS mutualisé",
 				desc: "Infrastructure partagée, mise en service en 48h, zéro maintenance côté client.",
 				tag: "Le plus rapide",
 			},
 			{
-				icon: "⚡",
 				title: "SaaS dédié",
 				desc: "Votre propre instance cloud, isolation complète des données, mêmes mises à jour automatiques.",
 				tag: "Isolation maximale",
 			},
 			{
-				icon: "⚙",
 				title: "Hybride",
 				desc: "Données sensibles on-premise, services applicatifs dans le cloud OverBrand.",
 				tag: "Équilibre optimal",
 			},
 			{
-				icon: "🏛",
 				title: "On-premise",
 				desc: "Installation complète sur vos serveurs. Contrôle total. Fee d'installation unique.",
 				tag: "Contrôle total",
@@ -305,6 +302,11 @@ export const fr = {
 		pioneer_tag: "Programme pionniers",
 	},
 	demos: {
+		caption_grade:
+			"Démo en direct · modifiez une note, la moyenne et la décision se recalculent",
+		caption_rules:
+			"Démo en direct · réglez les paramètres, la cohorte est réévaluée instantanément",
+		caption_delib: "Démo en direct · lancez la délibération et générez le PV",
 		grade: {
 			course: "Licence 3 · Informatique",
 			unit: "UE Algorithmique · CC 40% + Examen 60%",

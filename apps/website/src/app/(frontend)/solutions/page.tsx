@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import type { Metadata } from "next";
+import type React from "react";
 import { getDict, getLocale } from "@/i18n";
 import { BeforeAfter } from "@/marketing/blocks/BeforeAfter";
 import { Testimonials } from "@/marketing/blocks/Testimonials";
@@ -20,7 +21,18 @@ export default async function SolutionsPage() {
 	const dict = getDict(locale);
 	const s = dict.solutions;
 
-	const demos = [
+	/**
+	 * Demo shown beside each role, keyed by the role's position in
+	 * `dict.solutions.roles`: Enseignants, Doyens & Direction des études,
+	 * Administration & Scolarité, DSI.
+	 *
+	 * This used to be `demos[i % demos.length]` over a 3-entry array. With four
+	 * roles that wrapped around, so the attendance screen was rendered twice —
+	 * once under Enseignants and again under DSI, whose copy is about access
+	 * provisioning and RBAC. The pairing is now explicit, and a role with no
+	 * demo of its own renders copy only rather than borrowing someone else's.
+	 */
+	const demosByRole: Array<{ url: string; node: React.ReactNode } | null> = [
 		{
 			url: "app.tkams.com/presences",
 			node: <AttendanceDemo t={dict.demos.attendance} />,
@@ -33,6 +45,10 @@ export default async function SolutionsPage() {
 			url: "app.tkams.com/documents",
 			node: <DocExportDemo t={dict.demos.docexport} />,
 		},
+		// DSI: no dedicated demo exists yet (an "Accès & Sécurité" screen would be
+		// the right one). Left empty pending that screen rather than reusing the
+		// attendance demo, which does not illustrate this role's copy.
+		null,
 	];
 
 	return (
@@ -57,7 +73,7 @@ export default async function SolutionsPage() {
 			{s.roles.map((role, i) => {
 				const flipped = i % 2 === 1;
 				const num = String(i + 2).padStart(2, "0");
-				const demo = demos[i % demos.length];
+				const demo = demosByRole[i] ?? null;
 				return (
 					<section
 						key={role.role}
@@ -67,7 +83,11 @@ export default async function SolutionsPage() {
 							<Rule />
 							<div className="grid grid-cols-1 gap-x-12 gap-y-10 py-16 lg:grid-cols-12 lg:py-24">
 								{/* Copy */}
-								<div className={`lg:col-span-5 ${flipped ? "lg:order-2" : ""}`}>
+								<div
+									className={`${demo ? "lg:col-span-5" : "lg:col-span-8"} ${
+										flipped ? "lg:order-2" : ""
+									}`}
+								>
 									<SectionLabel number={num}>{role.role}</SectionLabel>
 									<p className="mt-6 font-body text-[0.9rem] text-tk-muted italic">
 										{role.pain}
@@ -92,21 +112,30 @@ export default async function SolutionsPage() {
 								</div>
 
 								{/* Interactive screen */}
-								<div className={`lg:col-span-7 ${flipped ? "lg:order-1" : ""}`}>
-									<DemoFrame url={demo.url}>{demo.node}</DemoFrame>
-								</div>
+								{demo ? (
+									<div
+										className={`lg:col-span-7 ${flipped ? "lg:order-1" : ""}`}
+									>
+										<DemoFrame url={demo.url}>{demo.node}</DemoFrame>
+									</div>
+								) : null}
 							</div>
 						</div>
 					</section>
 				);
 			})}
 
+			{/*
+			 * The four roles above render chapters 02→05, so these continue at 06
+			 * and 07. Testimonials was hardcoded "05" and collided with the DSI
+			 * role, printing chapter 05 twice in a row.
+			 */}
 			<Testimonials
 				data={dict.blocks.testimonials}
-				number="05"
+				number="06"
 				bg="bg-tk-surface"
 			/>
-			<Cta dict={dict} number="06" />
+			<Cta dict={dict} number="07" />
 		</main>
 	);
 }

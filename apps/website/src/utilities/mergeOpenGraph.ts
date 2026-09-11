@@ -3,14 +3,15 @@ import { getServerSideURL } from "./getURL";
 
 const defaultOpenGraph: Metadata["openGraph"] = {
 	type: "website",
-	description: "An open-source website built with Payload and Next.js.",
+	description:
+		"La plateforme SIS LMD-first pour les universités et IPES d'Afrique francophone. Délibérations en heures, non en semaines.",
 	images: [
 		{
-			url: `${getServerSideURL()}/website-template-OG.webp`,
+			url: `${getServerSideURL()}/logo-tkams.png`,
 		},
 	],
-	siteName: "Payload Website Template",
-	title: "Payload Website Template",
+	siteName: "TKAMS",
+	title: "TKAMS — Tefoye and Kana Academic Management System",
 };
 
 export const mergeOpenGraph = (

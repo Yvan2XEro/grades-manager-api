@@ -22,15 +22,50 @@ export default defineConfig({
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		/* Base URL to use in actions like `await page.goto('/')`. */
-		// baseURL: 'http://localhost:3000',
+		baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
+
+		/**
+		 * The marketing demos drive themselves: `src/marketing/demos/ghost.tsx`
+		 * runs a scripted "ghost cursor" walkthrough 500ms after a demo scrolls
+		 * into view, mutating the demo's own state without any user action. That
+		 * bail-out is keyed on `prefers-reduced-motion`, so forcing it here is what
+		 * makes demo screenshots deterministic. Do not remove.
+		 *
+		 * Set via `contextOptions` because this Playwright version does not expose
+		 * `reducedMotion` as a top-level `use` option.
+		 */
+		contextOptions: {
+			reducedMotion: "reduce",
+		},
 
 		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: "on-first-retry",
 	},
+	/**
+	 * Demo non-regression tolerance (refonte brief §6.3): a demo is "identical"
+	 * if at most 0.1% of its pixels differ.
+	 */
+	expect: {
+		toHaveScreenshot: {
+			maxDiffPixelRatio: 0.001,
+		},
+	},
 	projects: [
 		{
 			name: "chromium",
+			testDir: "./tests/e2e",
 			use: { ...devices["Desktop Chrome"], channel: "chromium" },
+		},
+		{
+			name: "demos",
+			testDir: "./tests/demos",
+			use: {
+				...devices["Desktop Chrome"],
+				channel: "chromium",
+				// Pinned so baselines stay comparable across machines.
+				viewport: { width: 1280, height: 900 },
+				deviceScaleFactor: 1,
+			},
 		},
 	],
 	webServer: {

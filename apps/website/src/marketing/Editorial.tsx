@@ -31,7 +31,9 @@ export function Rule({
 
 /**
  * Numbered section label, e.g. `01 — LA PLATEFORME`.
- * The number is the accent; the label is tracked monospace.
+ *
+ * The chapter number carries the terracotta accent; the label stays in tracked
+ * mono. Together they read as a chapter mark in a report rather than a badge.
  */
 export function SectionLabel({
 	number,
@@ -46,10 +48,18 @@ export function SectionLabel({
 }) {
 	return (
 		<div className={`flex items-center gap-3 ${className}`}>
-			<span className="font-code font-semibold text-[0.8125rem] text-tk-primary tabular-nums tracking-[0.1em]">
+			<span
+				className={`font-code font-semibold text-[0.8125rem] tabular-nums tracking-[0.1em] ${
+					theme === "dark" ? "text-tk-on-dark" : "text-tk-accent"
+				}`}
+			>
 				{number}
 			</span>
-			<span className={`h-px w-8 ${ruleColor(theme)}`} />
+			<span
+				className={`h-px w-8 ${
+					theme === "dark" ? "bg-white/25" : "bg-tk-accent/35"
+				}`}
+			/>
 			<span
 				className={`font-code font-medium text-[0.75rem] uppercase tracking-[0.18em] ${inkSoft(
 					theme,
@@ -62,7 +72,12 @@ export function SectionLabel({
 }
 
 /**
- * Big editorial heading. Optional `lead` shows an italic accent fragment.
+ * Big editorial heading.
+ *
+ * Sora at 700 with slightly relaxed tracking: the previous extrabold/-0.04em
+ * setting was tight enough to read as a consumer product page. Backing both off
+ * a step is what moves the register towards an institution without changing
+ * the typeface.
  */
 export function SectionHeading({
 	children,
@@ -77,7 +92,7 @@ export function SectionHeading({
 }) {
 	return (
 		<Tag
-			className={`font-display font-extrabold text-[clamp(1.875rem,4vw,3rem)] leading-[1.08] tracking-[-0.04em] ${ink(
+			className={`font-bold font-display text-[clamp(1.9rem,1.3rem+1.8vw,3rem)] leading-[1.12] tracking-[-0.028em] ${ink(
 				theme,
 			)} ${className}`}
 		>
@@ -85,6 +100,11 @@ export function SectionHeading({
 		</Tag>
 	);
 }
+
+/*
+ * The woven motifs that carry the design's African anchor live in ./Motifs.tsx
+ * as inline SVG (MotifWeave, MotifChevron, MotifComb, MotifBand, MotifCorner).
+ */
 
 /** Supporting paragraph on a deliberately narrow measure. */
 export function Lede({

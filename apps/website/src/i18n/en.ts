@@ -14,8 +14,7 @@ export const en = {
 		login: "Sign in",
 	},
 	hero: {
-		kicker:
-			"★ Student Information System · LMD · admissions · finance · portals",
+		kicker: "Student Information System · LMD · admissions · finance · portals",
 		headline_1: "The SIS that turns your weeks of deliberations into",
 		headline_2: "hours.",
 		sub: "TKAMS covers the full academic cycle — admissions, tuition fees, schedules, attendance, exams, deliberations, official documents and graduation — in one platform built for LMD institutions in francophone Africa.",
@@ -24,6 +23,7 @@ export const en = {
 		badge_lmd: "LMD native",
 		badge_bi: "Multi-role portals",
 		badge_live: "In production",
+		cities: "Douala · Yaoundé",
 	},
 	stats: {
 		title: "A complete platform, in production",
@@ -258,25 +258,21 @@ export const en = {
 		sub: "Choose the level of control that fits your IT department.",
 		modes: [
 			{
-				icon: "☁",
 				title: "Shared SaaS",
 				desc: "Shared infrastructure, deployed in 48h, zero maintenance on the client side.",
 				tag: "Fastest",
 			},
 			{
-				icon: "⚡",
 				title: "Dedicated SaaS",
 				desc: "Your own cloud instance, complete data isolation, same automatic updates.",
 				tag: "Maximum isolation",
 			},
 			{
-				icon: "⚙",
 				title: "Hybrid",
 				desc: "Sensitive data on-premise, application services in the OverBrand cloud.",
 				tag: "Optimal balance",
 			},
 			{
-				icon: "🏛",
 				title: "On-premise",
 				desc: "Complete installation on your servers. Total control. One-time installation fee.",
 				tag: "Total control",
@@ -305,6 +301,11 @@ export const en = {
 		pioneer_tag: "Pioneer program",
 	},
 	demos: {
+		caption_grade:
+			"Live demo · edit a grade, the average and the decision recompute",
+		caption_rules:
+			"Live demo · adjust the parameters, the cohort is re-evaluated instantly",
+		caption_delib: "Live demo · run the deliberation and generate the minutes",
 		grade: {
 			course: "Year 3 · Computer Science",
 			unit: "Algorithms unit · CW 40% + Exam 60%",

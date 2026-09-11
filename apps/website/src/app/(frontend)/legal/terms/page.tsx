@@ -33,7 +33,8 @@ export default async function TermsPage() {
 					</p>
 					<h1
 						style={{
-							fontFamily: "var(--font-sora), system-ui, sans-serif",
+							fontFamily:
+								"var(--font-sora), ui-sans-serif, system-ui, sans-serif",
 							fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
 							fontWeight: 800,
 							letterSpacing: "-0.04em",
@@ -290,7 +291,7 @@ function LegalSection({
 		<div style={{ marginBottom: "2.5rem" }}>
 			<h2
 				style={{
-					fontFamily: "var(--font-sora), system-ui, sans-serif",
+					fontFamily: "var(--font-sora), ui-sans-serif, system-ui, sans-serif",
 					fontSize: "1.1875rem",
 					fontWeight: 700,
 					color: "var(--tk-ink)",
