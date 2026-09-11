@@ -12,8 +12,6 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  SERVER_IMAGE: ghcr.io/yvan2xero/tkams-server
-  WEB_IMAGE: ghcr.io/yvan2xero/tkams-web
   FULL_IMAGE: ghcr.io/yvan2xero/tkams
 
 jobs:
@@ -45,15 +43,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - app: server
-            image: ghcr.io/yvan2xero/tkams-server
-            dockerfile: apps/server/Dockerfile
-          - app: web
-            image: ghcr.io/yvan2xero/tkams-web
-            dockerfile: apps/web/Dockerfile
           - app: full
             image: ghcr.io/yvan2xero/tkams
             dockerfile: Dockerfile.full
+          - app: secondary
+            image: ghcr.io/yvan2xero/tkams-secondary
+            dockerfile: apps/secondary/Dockerfile
 
     steps:
       - uses: actions/checkout@v4
