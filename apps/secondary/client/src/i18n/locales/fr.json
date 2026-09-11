@@ -303,7 +303,13 @@
     "role_admin": "Administrateur",
     "role_principal": "Directeur",
     "role_vice_principal": "Directeur adjoint",
-    "role_staff": "Personnel"
+    "role_staff": "Personnel",
+    "email_readonly_hint": "L'email ne peut pas être modifié — géré par le membre lui-même",
+    "count_members": "membres",
+    "all_roles": "Tous les rôles",
+    "search_placeholder": "Rechercher par nom ou email…",
+    "empty_filtered": "Aucun personnel ne correspond aux filtres",
+    "import_title": "Importer le personnel depuis un CSV"
   },
   "enrollments": {
     "title": "Inscriptions",

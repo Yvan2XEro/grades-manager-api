@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface FormFieldProps {
 	label: string;
 	error?: string;
+	hint?: string;
 	required?: boolean;
 	children: React.ReactNode;
 	className?: string;
@@ -14,6 +15,7 @@ interface FormFieldProps {
 export function FormField({
 	label,
 	error,
+	hint,
 	required,
 	children,
 	className,
@@ -34,6 +36,9 @@ export function FormField({
 				{required && <span className="ml-0.5 text-destructive">*</span>}
 			</Label>
 			{enhanced}
+			{hint && !error && (
+				<p className="text-muted-foreground text-xs">{hint}</p>
+			)}
 			{error && <p className="text-destructive text-xs">{error}</p>}
 		</div>
 	);

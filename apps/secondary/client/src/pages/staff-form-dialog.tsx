@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -99,16 +100,25 @@ export function StaffFormDialog({
 		formState: { errors, isSubmitting },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
-		defaultValues: staff
-			? {
-					firstName: staff.firstName,
-					lastName: staff.lastName,
-					email: staff.email,
-					phone: staff.phone ?? "",
-					role: (staff.role as (typeof ROLES)[number] | undefined) ?? undefined,
-				}
-			: { role: "teacher" },
+		defaultValues: { role: "teacher" },
 	});
+
+	useEffect(() => {
+		if (open) {
+			reset(
+				staff
+					? {
+							firstName: staff.firstName,
+							lastName: staff.lastName,
+							email: staff.email,
+							phone: staff.phone ?? "",
+							role:
+								(staff.role as (typeof ROLES)[number] | undefined) ?? undefined,
+						}
+					: { role: "teacher" },
+			);
+		}
+	}, [open, staff?.id]);
 
 	const onSubmit = handleSubmit(async (data) => {
 		const payload = {
@@ -163,9 +173,26 @@ export function StaffFormDialog({
 					<FormField
 						label={t("staff.email", "Email")}
 						error={errors.email?.message}
-						required
+						required={!staff}
+						hint={
+							staff
+								? t(
+										"staff.email_readonly_hint",
+										"Email cannot be changed — managed by the staff member",
+									)
+								: undefined
+						}
 					>
-						<Input type="email" {...register("email")} />
+						<Input
+							type="email"
+							{...register("email")}
+							readOnly={!!staff}
+							className={
+								staff
+									? "cursor-default bg-muted text-muted-foreground"
+									: undefined
+							}
+						/>
 					</FormField>
 
 					<div className="grid grid-cols-2 gap-3">

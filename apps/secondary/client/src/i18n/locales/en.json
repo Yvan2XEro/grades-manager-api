@@ -303,7 +303,13 @@
     "role_admin": "Administrator",
     "role_principal": "Principal",
     "role_vice_principal": "Vice Principal",
-    "role_staff": "Staff"
+    "role_staff": "Staff",
+    "email_readonly_hint": "Email cannot be changed — managed by the staff member",
+    "count_members": "members",
+    "all_roles": "All roles",
+    "search_placeholder": "Search by name or email…",
+    "empty_filtered": "No staff match your filters",
+    "import_title": "Import staff from CSV"
   },
   "enrollments": {
     "title": "Enrollments",
