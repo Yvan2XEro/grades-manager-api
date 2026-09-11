@@ -1,6 +1,6 @@
-import { and, count, eq, ilike, or } from "drizzle-orm";
+import { and, asc, count, eq, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
-import { enrollments, students } from "../../db/schema";
+import { academicYears, classes, enrollments, students } from "../../db/schema";
 
 export async function findAll(
 	institutionId: string,
@@ -87,6 +87,34 @@ export async function findByStudentAndYear(
 		)
 		.limit(1);
 	return rows[0] ?? null;
+}
+
+export async function listByStudent(studentId: string, institutionId: string) {
+	return db
+		.select({
+			enrollment: {
+				id: enrollments.id,
+				admissionType: enrollments.admissionType,
+				status: enrollments.status,
+				createdAt: enrollments.createdAt,
+			},
+			class: { id: classes.id, name: classes.name, level: classes.level },
+			year: {
+				id: academicYears.id,
+				name: academicYears.name,
+				status: academicYears.status,
+			},
+		})
+		.from(enrollments)
+		.innerJoin(classes, eq(enrollments.classId, classes.id))
+		.innerJoin(academicYears, eq(enrollments.academicYearId, academicYears.id))
+		.where(
+			and(
+				eq(enrollments.studentId, studentId),
+				eq(enrollments.institutionId, institutionId),
+			),
+		)
+		.orderBy(asc(academicYears.startDate));
 }
 
 export async function insert(data: typeof enrollments.$inferInsert) {

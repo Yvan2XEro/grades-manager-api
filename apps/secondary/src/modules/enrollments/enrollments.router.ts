@@ -46,6 +46,11 @@ export const router = trpcRouter({
 				ctx.institution.id,
 			),
 		),
+	listByStudent: tenantProcedure
+		.input(z.object({ studentId: z.string().uuid() }))
+		.query(({ ctx, input }) =>
+			repo.listByStudent(input.studentId, ctx.institution.id),
+		),
 	printClassRoster: adminProcedure
 		.input(printClassRosterSchema)
 		.mutation(({ ctx, input }) =>

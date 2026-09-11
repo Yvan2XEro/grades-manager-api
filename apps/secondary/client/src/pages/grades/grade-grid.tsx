@@ -3,6 +3,7 @@ import {
 	ArrowLeft,
 	CheckCircle,
 	GraduationCap,
+	Loader2,
 	MessageSquare,
 	Save,
 } from "lucide-react";
@@ -16,25 +17,65 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
-const ASSESSMENT_TYPE_KEYS: Record<string, string> = {
-	sequence_1: "grades.assessment_sequence_1",
-	sequence_2: "grades.assessment_sequence_2",
-	sequence_3: "grades.assessment_sequence_3",
-	sequence_4: "grades.assessment_sequence_4",
-	sequence_5: "grades.assessment_sequence_5",
-	sequence_6: "grades.assessment_sequence_6",
-	end_of_term_exam: "grades.assessment_end_of_term_exam",
-	class_test: "grades.assessment_class_test",
-	quiz: "grades.assessment_quiz",
-};
+// ─── Design helpers (mirrors grade-entry) ─────────────────────────────────────
 
-const ASSESSMENT_TYPE_FALLBACKS: Record<string, string> = {
+const AVATAR_PALETTE = [
+	"bg-blue-500",
+	"bg-emerald-500",
+	"bg-violet-500",
+	"bg-orange-500",
+	"bg-pink-500",
+	"bg-teal-500",
+	"bg-indigo-500",
+	"bg-rose-500",
+	"bg-amber-600",
+	"bg-cyan-500",
+];
+
+function avatarBg(seed: string): string {
+	let h = 0;
+	for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+	return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length];
+}
+
+function getInitials(first: string, last: string): string {
+	return ((first[0] ?? "") + (last[0] ?? "")).toUpperCase();
+}
+
+function gradeColor(v: number): string {
+	return v >= 10
+		? "text-emerald-600 dark:text-emerald-400"
+		: "text-rose-600 dark:text-rose-400";
+}
+
+function gradeBadgeCls(v: number): string {
+	return v >= 10
+		? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+		: "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400";
+}
+
+function gradeInputCls(v: number): string {
+	return v >= 10
+		? "border-emerald-200 bg-emerald-50/50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400"
+		: "border-rose-200 bg-rose-50/50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/20 dark:text-rose-400";
+}
+
+function timeAgo(date: Date): string {
+	const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+	if (secs < 60) return "just now";
+	if (secs < 3600) return `${Math.floor(secs / 60)} min ago`;
+	return `${Math.floor(secs / 3600)} h ago`;
+}
+
+// ─── Assessment type labels ────────────────────────────────────────────────────
+
+const ASSESSMENT_LABELS: Record<string, string> = {
 	sequence_1: "Seq. 1",
 	sequence_2: "Seq. 2",
 	sequence_3: "Seq. 3",
@@ -42,35 +83,17 @@ const ASSESSMENT_TYPE_FALLBACKS: Record<string, string> = {
 	sequence_5: "Seq. 5",
 	sequence_6: "Seq. 6",
 	end_of_term_exam: "Exam",
-	class_test: "Class test",
+	class_test: "Class Test",
 	quiz: "Quiz",
 };
 
-// ─── Column stats ─────────────────────────────────────────────────────────────
-
-function computeColStats(
-	grades: Record<string, Record<string, string>>,
-	type: string,
-): { avg: number | null; max: number | null; min: number | null } {
-	const vals: number[] = [];
-	for (const studentGrades of Object.values(grades)) {
-		const raw = studentGrades[type];
-		if (raw === undefined || raw === "") continue;
-		const v = Number.parseFloat(raw);
-		if (!Number.isNaN(v)) vals.push(v);
-	}
-	if (vals.length === 0) return { avg: null, max: null, min: null };
-	const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-	return {
-		avg: Math.round(avg * 100) / 100,
-		max: Math.max(...vals),
-		min: Math.min(...vals),
-	};
+function aLabel(type: string) {
+	return ASSESSMENT_LABELS[type] ?? type;
 }
 
 // ─── Unsaved warning dialog ────────────────────────────────────────────────────
 
-function UnsavedWarningDialog({
+function UnsavedDialog({
 	open,
 	onLeave,
 	onStay,
@@ -124,41 +147,17 @@ export function GradeGrid() {
 		{ label: t("grades.grid_title", "Grade Sheet") },
 	]);
 
-	const [saved, setSaved] = useState(false);
-	const [isDirty, setIsDirty] = useState(false);
-	const [pendingNavTo, setPendingNavTo] = useState<string | null>(null);
 	// grades[studentId][assessmentType] = value string
 	const [grades, setGrades] = useState<Record<string, Record<string, string>>>(
 		{},
 	);
-	// Track the last-saved snapshot to compute dirty state
 	const savedSnapshot = useRef<string>("{}");
+	const [isDirty, setIsDirty] = useState(false);
+	const [savedAt, setSavedAt] = useState<Date | null>(null);
+	const [savedAgoText, setSavedAgoText] = useState("");
+	const [pendingNavTo, setPendingNavTo] = useState<string | null>(null);
 
-	// Warn browser tab close/refresh when dirty
-	useEffect(() => {
-		const handler = (e: BeforeUnloadEvent) => {
-			if (isDirty) {
-				e.preventDefault();
-				e.returnValue = "";
-			}
-		};
-		window.addEventListener("beforeunload", handler);
-		return () => window.removeEventListener("beforeunload", handler);
-	}, [isDirty]);
-
-	// Ctrl+S shortcut
-	useEffect(() => {
-		const onKeyDown = (e: KeyboardEvent) => {
-			if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-				e.preventDefault();
-				handleSave();
-			}
-		};
-		window.addEventListener("keydown", onKeyDown);
-		return () => window.removeEventListener("keydown", onKeyDown);
-	});
-
-	// ── Queries ──────────────────────────────────────────────────────────────
+	// ── Queries ────────────────────────────────────────────────────────────────
 
 	const { data: classData, isLoading: classLoading } =
 		trpc.classes.get.useQuery({ id: classId! }, { enabled: !!classId });
@@ -191,11 +190,7 @@ export function GradeGrid() {
 
 	const { data: existingAssessments = [], isLoading: assessmentsLoading } =
 		trpc.assessments.listForClass.useQuery(
-			{
-				classId: classId!,
-				subjectId: subjectId!,
-				termId: termId!,
-			},
+			{ classId: classId!, subjectId: subjectId!, termId: termId! },
 			{ enabled: !!classId && !!subjectId && !!termId },
 		);
 
@@ -207,14 +202,15 @@ export function GradeGrid() {
 		enrollmentsLoading ||
 		assessmentsLoading;
 
-	// Determine which assessment types are present (default: sequence_1, sequence_2)
-	const presentTypes = Array.from(
-		new Set(existingAssessments.map((a) => a.assessmentType)),
+	// Determine which columns to show
+	const presentTypes = useMemo(
+		() => Array.from(new Set(existingAssessments.map((a) => a.assessmentType))),
+		[existingAssessments],
 	);
 	const activeTypes =
 		presentTypes.length > 0 ? presentTypes : ["sequence_1", "sequence_2"];
 
-	// Pre-fill grades from existing assessments
+	// Pre-fill grades
 	useEffect(() => {
 		if (existingAssessments.length === 0) return;
 		const prefill: Record<string, Record<string, string>> = {};
@@ -228,9 +224,7 @@ export function GradeGrid() {
 			for (const [sid, types] of Object.entries(prefill)) {
 				if (!merged[sid]) merged[sid] = {};
 				for (const [type, val] of Object.entries(types)) {
-					if (merged[sid][type] === undefined) {
-						merged[sid][type] = val;
-					}
+					if (merged[sid][type] === undefined) merged[sid][type] = val;
 				}
 			}
 			return merged;
@@ -239,14 +233,15 @@ export function GradeGrid() {
 		setIsDirty(false);
 	}, [existingAssessments]);
 
-	// ── Mutation ─────────────────────────────────────────────────────────────
+	// ── Mutation ───────────────────────────────────────────────────────────────
 
 	const batchUpsert = trpc.assessments.batchUpsert.useMutation({
 		onSuccess: () => {
-			setSaved(true);
+			const now = new Date();
+			setSavedAt(now);
+			setSavedAgoText(timeAgo(now));
 			savedSnapshot.current = JSON.stringify(grades);
 			setIsDirty(false);
-			setTimeout(() => setSaved(false), 2000);
 		},
 		onError: (err) => errorToast(err, t),
 	});
@@ -293,34 +288,133 @@ export function GradeGrid() {
 		});
 	};
 
-	// ── Navigation guard (for in-app links when dirty) ────────────────────────
-	const handleGuardedNavigation = (to: string) => {
-		if (isDirty) {
-			setPendingNavTo(to);
-		} else {
-			navigate(to);
-		}
+	// ── Effects ────────────────────────────────────────────────────────────────
+
+	useEffect(() => {
+		if (!savedAt) return;
+		const id = setInterval(() => setSavedAgoText(timeAgo(savedAt)), 30_000);
+		return () => clearInterval(id);
+	}, [savedAt]);
+
+	useEffect(() => {
+		const handler = (e: BeforeUnloadEvent) => {
+			if (isDirty) {
+				e.preventDefault();
+				e.returnValue = "";
+			}
+		};
+		window.addEventListener("beforeunload", handler);
+		return () => window.removeEventListener("beforeunload", handler);
+	}, [isDirty]);
+
+	useEffect(() => {
+		const onKeyDown = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+				e.preventDefault();
+				if (isDirty) handleSave();
+			}
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	});
+
+	// ── Navigation guard ───────────────────────────────────────────────────────
+
+	const guardedNavigate = (to: string) => {
+		if (isDirty) setPendingNavTo(to);
+		else navigate(to);
 	};
 
 	const handleBack = () => {
-		if (isDirty) {
-			setPendingNavTo("__back__");
-		} else {
-			navigate(-1);
-		}
+		if (isDirty) setPendingNavTo("__back__");
+		else navigate(-1);
 	};
 
-	// ── Class stats ───────────────────────────────────────────────────────────
-	const colStats = useMemo(
-		() =>
-			Object.fromEntries(
-				activeTypes.map((type) => [type, computeColStats(grades, type)]),
-			),
-		[grades, activeTypes],
-	);
-	const hasAnyStats = activeTypes.some((tp) => colStats[tp]?.avg !== null);
+	// ── Stats ──────────────────────────────────────────────────────────────────
 
-	// ── Keyboard navigation ───────────────────────────────────────────────────
+	// Per-column class averages
+	const colStats = useMemo(() => {
+		return Object.fromEntries(
+			activeTypes.map((type) => {
+				const vals: number[] = [];
+				for (const e of enrollments) {
+					const sid = e.student?.id;
+					if (!sid) continue;
+					const raw = grades[sid]?.[type];
+					if (raw === undefined || raw === "") continue;
+					const v = Number.parseFloat(raw);
+					if (!Number.isNaN(v)) vals.push(v);
+				}
+				const avg =
+					vals.length > 0
+						? vals.reduce((a, b) => a + b, 0) / vals.length
+						: null;
+				return [
+					type,
+					{
+						avg: avg !== null ? Math.round(avg * 100) / 100 : null,
+						max: vals.length > 0 ? Math.max(...vals) : null,
+						min: vals.length > 0 ? Math.min(...vals) : null,
+						count: vals.length,
+					},
+				];
+			}),
+		);
+	}, [grades, activeTypes, enrollments]);
+
+	// Per-student term averages
+	const studentTermAvg = useMemo(() => {
+		const result: Record<string, number | null> = {};
+		for (const e of enrollments) {
+			const sid = e.student?.id;
+			if (!sid) continue;
+			const vals = activeTypes
+				.map((type) => {
+					const raw = grades[sid]?.[type];
+					if (raw === undefined || raw === "") return null;
+					const v = Number.parseFloat(raw);
+					return Number.isNaN(v) ? null : v;
+				})
+				.filter((v): v is number => v !== null);
+			result[sid] =
+				vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+		}
+		return result;
+	}, [grades, activeTypes, enrollments]);
+
+	// Global stats for footer bar
+	const allGradeVals = useMemo(() => {
+		const vals: number[] = [];
+		for (const e of enrollments) {
+			const sid = e.student?.id;
+			if (!sid) continue;
+			for (const type of activeTypes) {
+				const raw = grades[sid]?.[type];
+				if (raw === undefined || raw === "") continue;
+				const v = Number.parseFloat(raw);
+				if (!Number.isNaN(v)) vals.push(v);
+			}
+		}
+		return vals;
+	}, [grades, activeTypes, enrollments]);
+
+	const globalAvg =
+		allGradeVals.length > 0
+			? allGradeVals.reduce((a, b) => a + b, 0) / allGradeVals.length
+			: null;
+	const globalMin = allGradeVals.length > 0 ? Math.min(...allGradeVals) : null;
+	const globalMax = allGradeVals.length > 0 ? Math.max(...allGradeVals) : null;
+	const totalMissing = enrollments.reduce((acc, e) => {
+		const sid = e.student?.id;
+		if (!sid) return acc;
+		return (
+			acc + activeTypes.filter((type) => !(grades[sid]?.[type] ?? "")).length
+		);
+	}, 0);
+	const totalGraded = allGradeVals.length;
+
+	// ── Keyboard navigation ────────────────────────────────────────────────────
+
 	const handleKeyDown = (
 		e: React.KeyboardEvent<HTMLInputElement>,
 		rowIdx: number,
@@ -328,64 +422,83 @@ export function GradeGrid() {
 	) => {
 		let nextRow = rowIdx;
 		let nextCol = colIdx;
-
 		if (e.key === "ArrowDown" || e.key === "Enter") {
 			e.preventDefault();
 			nextRow = rowIdx + 1;
 		} else if (e.key === "ArrowUp") {
 			e.preventDefault();
 			nextRow = rowIdx - 1;
-		} else if (e.key === "ArrowRight") {
+		} else if (e.key === "ArrowRight" || (e.key === "Tab" && !e.shiftKey)) {
 			e.preventDefault();
 			nextCol = colIdx + 1;
-		} else if (e.key === "ArrowLeft") {
+		} else if (e.key === "ArrowLeft" || (e.key === "Tab" && e.shiftKey)) {
 			e.preventDefault();
 			nextCol = colIdx - 1;
-		} else {
-			return;
-		}
+		} else return;
 
-		const target = document.querySelector<HTMLInputElement>(
+		// Try same row next col first; wrap to next row if col out of range
+		let target = document.querySelector<HTMLInputElement>(
 			`input[data-row="${nextRow}"][data-col="${nextCol}"]`,
 		);
+		if (!target && e.key === "Tab" && !e.shiftKey) {
+			target = document.querySelector<HTMLInputElement>(
+				`input[data-row="${rowIdx + 1}"][data-col="0"]`,
+			);
+		}
 		if (target) {
 			target.focus();
 			target.select();
 		}
 	};
 
-	// ── Render ────────────────────────────────────────────────────────────────
+	// ── Loading skeleton ───────────────────────────────────────────────────────
 
 	if (isLoading) {
 		return (
-			<div className="space-y-5">
-				<div className="space-y-2">
-					<Skeleton className="h-8 w-48" />
-					<Skeleton className="h-4 w-72" />
+			<div className="flex flex-col gap-4">
+				<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+					<div className="h-4 w-48 animate-pulse rounded bg-muted" />
+					<div className="flex gap-2">
+						<div className="h-8 w-28 animate-pulse rounded-lg bg-muted" />
+						<div className="h-8 w-20 animate-pulse rounded-lg bg-muted" />
+					</div>
 				</div>
 				<div className="overflow-hidden rounded-xl border border-border">
-					<div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 px-4 py-3">
-						<Skeleton className="h-4 w-24" />
-						<Skeleton className="h-8 w-20" />
-					</div>
-					<div className="divide-y divide-border">
-						{Array.from({ length: 8 }, (_, i) => (
-							<div key={i} className="flex items-center gap-4 px-4 py-3">
-								<Skeleton className="h-4 w-36" />
-								<Skeleton className="h-8 w-16" />
-								<Skeleton className="h-8 w-16" />
+					{Array.from({ length: 8 }, (_, i) => (
+						<div
+							key={i}
+							className={cn(
+								"flex items-center gap-4 px-4 py-3",
+								i % 2 === 1 && "bg-muted/10",
+							)}
+						>
+							<div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+							<div className="h-3 w-36 animate-pulse rounded bg-muted" />
+							<div className="h-3 w-20 animate-pulse rounded bg-muted" />
+							<div className="ml-auto flex gap-3">
+								<div className="h-8 w-16 animate-pulse rounded bg-muted" />
+								<div className="h-8 w-16 animate-pulse rounded bg-muted" />
 							</div>
-						))}
-					</div>
+						</div>
+					))}
 				</div>
 			</div>
 		);
 	}
 
+	// ── Render ─────────────────────────────────────────────────────────────────
+
+	const contextLabel = [
+		classData?.name,
+		subject?.name,
+		term ? t(`terms.term_${term.termNumber}`, `Term ${term.termNumber}`) : null,
+	]
+		.filter(Boolean)
+		.join(" · ");
+
 	return (
-		<div className="space-y-5">
-			{/* Unsaved navigation warning */}
-			<UnsavedWarningDialog
+		<div className="flex flex-col gap-4">
+			<UnsavedDialog
 				open={pendingNavTo !== null}
 				onLeave={() => {
 					const dest = pendingNavTo!;
@@ -397,220 +510,350 @@ export function GradeGrid() {
 				onStay={() => setPendingNavTo(null)}
 			/>
 
-			<div>
+			{/* ─── Toolbar ─────────────────────────────────────────────────────── */}
+			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3">
+				{/* Back */}
 				<button
 					type="button"
 					onClick={handleBack}
-					className="mb-2 inline-flex items-center gap-1.5 text-muted-foreground text-sm transition-colors hover:text-foreground"
+					className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-medium text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
 				>
 					<ArrowLeft className="h-3.5 w-3.5" />
 					{t("common.back", "Back")}
 				</button>
-				<h1 className="font-bold text-2xl text-foreground">
-					{t("grades.grid_title", "Grade Sheet")}
-				</h1>
-				<p className="text-muted-foreground text-sm">
-					{[
-						classData?.name,
-						subject?.name,
-						term
-							? t(`terms.term_${term.termNumber}`, `Term ${term.termNumber}`)
-							: null,
-					]
-						.filter(Boolean)
-						.join(" · ")}
-				</p>
+
+				<div className="h-5 w-px bg-border" />
+
+				{/* Context breadcrumb */}
+				<span className="font-medium text-foreground text-sm">
+					{contextLabel}
+				</span>
+
+				<div className="flex-1" />
+
+				{/* Unsaved banner inline */}
+				{isDirty && (
+					<span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 font-semibold text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400">
+						<AlertTriangle className="h-3.5 w-3.5" />
+						{t("grades.unsaved_changes", "Unsaved changes")}
+					</span>
+				)}
+
+				{/* Missing badge */}
+				{totalMissing > 0 && (
+					<span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-semibold text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400">
+						{totalMissing} {t("grades.missing", "missing")}
+					</span>
+				)}
+
+				{/* Comments */}
+				<Button
+					variant="outline"
+					size="sm"
+					className="h-8 gap-1.5 rounded-full"
+					onClick={() =>
+						guardedNavigate(
+							`/grades/${classId}/${subjectId}/${termId}/comments`,
+						)
+					}
+				>
+					<MessageSquare className="h-3.5 w-3.5" />
+					{t("comments.link", "Comments")}
+				</Button>
+
+				{/* Save */}
+				<Button
+					size="sm"
+					onClick={handleSave}
+					disabled={batchUpsert.isPending || !isDirty}
+					className={cn(
+						"gap-1.5",
+						savedAt && !isDirty && !batchUpsert.isPending
+							? "bg-emerald-600 text-white hover:bg-emerald-700"
+							: "",
+					)}
+				>
+					{batchUpsert.isPending ? (
+						<Loader2 className="h-3.5 w-3.5 animate-spin" />
+					) : savedAt && !isDirty ? (
+						<CheckCircle className="h-3.5 w-3.5" />
+					) : (
+						<Save className="h-3.5 w-3.5" />
+					)}
+					{savedAt && !isDirty
+						? t("grades.saved", "Saved!")
+						: t("grades.save", "Save")}
+				</Button>
 			</div>
 
-			{/* Unsaved banner */}
-			{isDirty && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-amber-800 text-sm dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
-					<AlertTriangle className="h-4 w-4 shrink-0" />
-					{t(
-						"grades.unsaved_banner",
-						"You have unsaved changes — press Ctrl+S or click Save.",
-					)}
+			{/* ─── Table ───────────────────────────────────────────────────────── */}
+			{enrollments.length === 0 ? (
+				<div className="flex flex-col items-center gap-3 py-20 text-muted-foreground">
+					<GraduationCap className="h-12 w-12 opacity-20" />
+					<p className="font-medium">
+						{t("grades.no_students", "No students in this class")}
+					</p>
 				</div>
-			)}
-
-			<div className="overflow-hidden rounded-xl border border-border">
-				<div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 px-4 py-3">
-					<span className="font-medium text-foreground text-sm">
-						{enrollments.length} {t("grades.students", "students")}
-					</span>
-					<div className="flex items-center gap-2">
-						{/* Guard Comments navigation when dirty */}
-						<button
-							type="button"
-							onClick={() =>
-								handleGuardedNavigation(
-									`/grades/${classId}/${subjectId}/${termId}/comments`,
-								)
-							}
-							className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-1.5 font-medium text-foreground text-sm transition-colors hover:bg-muted/50"
-						>
-							<MessageSquare className="h-4 w-4" />
-							{t("comments.link", "Comments")}
-						</button>
-						<button
-							type="button"
-							onClick={handleSave}
-							disabled={batchUpsert.isPending}
-							className={cn(
-								"inline-flex items-center gap-2 rounded-lg px-4 py-1.5 font-medium text-sm transition-colors",
-								saved
-									? "bg-green-500 text-white"
-									: isDirty
-										? "bg-amber-500 text-white hover:bg-amber-600"
-										: "bg-primary text-primary-foreground hover:bg-primary/90",
-							)}
-						>
-							{saved ? (
-								<CheckCircle className="h-4 w-4" />
-							) : (
-								<Save className="h-4 w-4" />
-							)}
-							{saved ? t("grades.saved", "Saved!") : t("grades.save", "Save")}
-						</button>
-					</div>
-				</div>
-
-				{enrollments.length === 0 ? (
-					<div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
-						<GraduationCap className="h-10 w-10 opacity-20" />
-						<p className="font-medium">
-							{t("grades.no_students", "No students in this class")}
-						</p>
-					</div>
-				) : (
+			) : (
+				<div className="overflow-hidden rounded-xl border border-border">
 					<div className="overflow-x-auto">
 						<table className="w-full text-sm">
 							<thead className="border-border border-b bg-muted/60 text-muted-foreground">
 								<tr>
-									<th className="px-4 py-2 text-left font-medium">
+									<th className="w-10 px-3 py-2.5 text-center font-medium text-xs">
+										#
+									</th>
+									<th className="px-4 py-2.5 text-left font-medium text-xs uppercase tracking-wide">
 										{t("grades.col_student", "Student")}
+									</th>
+									<th className="px-4 py-2.5 text-left font-medium text-xs uppercase tracking-wide">
+										{t("grades.col_reg", "Reg. #")}
 									</th>
 									{activeTypes.map((type) => (
 										<th
 											key={type}
-											className="px-3 py-2 text-center font-medium"
+											className="min-w-[110px] px-4 py-2.5 text-center font-medium text-xs uppercase tracking-wide"
 										>
-											{t(
-												ASSESSMENT_TYPE_KEYS[type] ?? type,
-												ASSESSMENT_TYPE_FALLBACKS[type] ?? type,
-											)}
+											{aLabel(type)}
 										</th>
 									))}
+									{activeTypes.length > 1 && (
+										<th className="px-4 py-2.5 text-center font-medium text-xs uppercase tracking-wide">
+											{t("grades.col_avg", "AVG")}
+										</th>
+									)}
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-border">
 								{enrollments.map((e, rowIdx) => {
 									const student = e.student;
 									if (!student) return null;
+									const termAvg = studentTermAvg[student.id] ?? null;
+									const snap = JSON.parse(savedSnapshot.current) as Record<
+										string,
+										Record<string, string>
+									>;
+
 									return (
 										<tr
 											key={student.id}
-											className="transition-colors hover:bg-muted/20"
+											className={cn(
+												"transition-colors hover:bg-muted/20",
+												rowIdx % 2 === 1 &&
+													"bg-black/[0.04] dark:bg-white/[0.05]",
+											)}
 										>
-											<td className="px-4 py-2 font-medium text-foreground">
-												{student.lastName} {student.firstName}
+											{/* Row number */}
+											<td className="px-3 py-2.5 text-center text-muted-foreground text-xs tabular-nums">
+												{rowIdx + 1}
 											</td>
-											{activeTypes.map((type, colIdx) => (
-												<td key={type} className="px-3 py-2 text-center">
-													<input
-														type="number"
-														min="0"
-														max="20"
-														step="0.25"
-														placeholder="—"
-														data-row={rowIdx}
-														data-col={colIdx}
-														value={grades[student.id]?.[type] ?? ""}
-														onChange={(ev) =>
-															setGrade(student.id, type, ev.target.value)
-														}
-														onKeyDown={(ev) =>
-															handleKeyDown(ev, rowIdx, colIdx)
-														}
-														className="w-16 rounded border border-input bg-background px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-													/>
+
+											{/* Avatar + Name */}
+											<td className="px-4 py-2.5">
+												<div className="flex items-center gap-2.5">
+													<div
+														className={cn(
+															"flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white text-xs",
+															avatarBg(
+																`${student.firstName}${student.lastName}`,
+															),
+														)}
+													>
+														{getInitials(student.firstName, student.lastName)}
+													</div>
+													<span className="font-medium text-foreground">
+														{student.lastName} {student.firstName}
+													</span>
+												</div>
+											</td>
+
+											{/* Registration number */}
+											<td className="px-4 py-2.5">
+												<span className="font-mono text-muted-foreground text-xs">
+													{(student as { registrationNumber?: string | null })
+														.registrationNumber ?? "—"}
+												</span>
+											</td>
+
+											{/* Grade inputs */}
+											{activeTypes.map((type, colIdx) => {
+												const currentVal = grades[student.id]?.[type] ?? "";
+												const savedVal = snap[student.id]?.[type] ?? "";
+												const isCellDirty = currentVal !== savedVal;
+												const numVal =
+													currentVal !== ""
+														? Number.parseFloat(currentVal)
+														: null;
+												const isMissing = currentVal === "";
+
+												return (
+													<td key={type} className="px-4 py-2.5">
+														<div className="flex justify-center">
+															<Input
+																type="number"
+																min="0"
+																max="20"
+																step="any"
+																placeholder="—"
+																data-row={rowIdx}
+																data-col={colIdx}
+																value={currentVal}
+																onChange={(ev) =>
+																	setGrade(student.id, type, ev.target.value)
+																}
+																onKeyDown={(ev) =>
+																	handleKeyDown(ev, rowIdx, colIdx)
+																}
+																className={cn(
+																	"w-24 text-center font-mono font-semibold text-base",
+																	isMissing
+																		? "border-destructive/40 border-dashed text-muted-foreground/40 placeholder:text-destructive/30"
+																		: numVal !== null
+																			? gradeInputCls(numVal)
+																			: "",
+																	isCellDirty && "ring-2 ring-amber-400/60",
+																)}
+															/>
+														</div>
+													</td>
+												);
+											})}
+
+											{/* Term average */}
+											{activeTypes.length > 1 && (
+												<td className="px-4 py-2.5 text-center">
+													{termAvg !== null ? (
+														<span
+															className={cn(
+																"inline-flex items-center rounded-md px-2 py-0.5 font-semibold text-sm tabular-nums",
+																gradeBadgeCls(termAvg),
+															)}
+														>
+															{termAvg.toFixed(2)}
+														</span>
+													) : (
+														<span className="text-muted-foreground/40 text-sm">
+															—
+														</span>
+													)}
 												</td>
-											))}
+											)}
 										</tr>
 									);
 								})}
-							</tbody>
 
-							{/* Class stats footer */}
-							{hasAnyStats && (
-								<tfoot className="border-border border-t bg-muted/30 text-muted-foreground text-xs">
-									<tr>
-										<td className="px-4 py-1.5 font-semibold text-foreground">
-											{t("grades.stats_avg", "Avg")}
-										</td>
-										{activeTypes.map((type) => {
-											const s = colStats[type];
-											return (
-												<td
-													key={type}
-													className="px-3 py-1.5 text-center font-mono"
-												>
-													{s?.avg !== null ? (
-														<span
-															className={cn(
-																"font-semibold",
-																(s?.avg ?? 0) >= 10
-																	? "text-green-600 dark:text-green-400"
-																	: "text-red-500",
-															)}
-														>
-															{s?.avg?.toFixed(2)}
-														</span>
-													) : (
-														"—"
-													)}
-												</td>
-											);
-										})}
-									</tr>
-									<tr>
-										<td className="px-4 pb-1 font-medium">
-											{t("grades.stats_max", "Max")}
-										</td>
-										{activeTypes.map((type) => {
-											const s = colStats[type];
-											return (
-												<td
-													key={type}
-													className="px-3 pb-1 text-center font-mono"
-												>
-													{s?.max !== null ? s?.max?.toFixed(2) : "—"}
-												</td>
-											);
-										})}
-									</tr>
-									<tr>
-										<td className="px-4 pb-2 font-medium">
-											{t("grades.stats_min", "Min")}
-										</td>
-										{activeTypes.map((type) => {
-											const s = colStats[type];
-											return (
-												<td
-													key={type}
-													className="px-3 pb-2 text-center font-mono"
-												>
-													{s?.min !== null ? s?.min?.toFixed(2) : "—"}
-												</td>
-											);
-										})}
-									</tr>
-								</tfoot>
-							)}
+								{/* Class averages footer */}
+								<tr className="border-border border-t-2 bg-muted/40 font-semibold">
+									<td />
+									<td
+										colSpan={2}
+										className="px-4 py-2.5 text-muted-foreground text-xs uppercase tracking-wide"
+									>
+										{t("grades.class_average", "Class average")}
+									</td>
+									{activeTypes.map((type) => {
+										const s = colStats[type];
+										return (
+											<td key={type} className="px-4 py-2.5 text-center">
+												{s?.avg !== null && s?.avg !== undefined ? (
+													<span
+														className={cn(
+															"text-sm tabular-nums",
+															gradeColor(s.avg),
+														)}
+													>
+														{s.avg.toFixed(2)}
+													</span>
+												) : (
+													<span className="text-muted-foreground/40">—</span>
+												)}
+											</td>
+										);
+									})}
+									{activeTypes.length > 1 && <td />}
+								</tr>
+							</tbody>
 						</table>
 					</div>
-				)}
-			</div>
+
+					{/* ─── Bottom status bar ──────────────────────────────────────── */}
+					<div className="flex flex-wrap items-center justify-between gap-3 border-border border-t bg-muted/20 px-4 py-2 text-muted-foreground text-xs">
+						<span className="flex flex-wrap items-center gap-2">
+							<span>
+								<span className="font-semibold text-foreground tabular-nums">
+									{enrollments.length}
+								</span>{" "}
+								{t("grades.students", "students")}
+							</span>
+							<span className="text-border">·</span>
+							<span>
+								<span className="font-semibold text-foreground tabular-nums">
+									{totalGraded}
+								</span>{" "}
+								{t("grades.graded", "graded")}
+							</span>
+							<span className="text-border">·</span>
+							<span
+								className={
+									totalMissing > 0
+										? "font-semibold text-amber-600 dark:text-amber-400"
+										: ""
+								}
+							>
+								<span className="tabular-nums">{totalMissing}</span>{" "}
+								{t("grades.missing", "missing")}
+							</span>
+							{globalAvg !== null && (
+								<>
+									<span className="text-border">·</span>
+									<span>
+										{t("grades.class_avg_label", "Avg:")}{" "}
+										<span
+											className={cn(
+												"font-semibold tabular-nums",
+												gradeColor(globalAvg),
+											)}
+										>
+											{globalAvg.toFixed(2)}
+										</span>
+									</span>
+									<span className="text-border">·</span>
+									<span>
+										{t("grades.class_min_label", "Min:")}{" "}
+										<span
+											className={cn(
+												"font-semibold tabular-nums",
+												gradeColor(globalMin!),
+											)}
+										>
+											{globalMin?.toFixed(2)}
+										</span>
+									</span>
+									<span className="text-border">·</span>
+									<span>
+										{t("grades.class_max_label", "Max:")}{" "}
+										<span
+											className={cn(
+												"font-semibold tabular-nums",
+												gradeColor(globalMax!),
+											)}
+										>
+											{globalMax?.toFixed(2)}
+										</span>
+									</span>
+								</>
+							)}
+						</span>
+						<span>
+							{savedAt
+								? `${t("grades.last_saved", "Last saved")} · ${savedAgoText}`
+								: isDirty
+									? t("grades.unsaved_changes", "Unsaved changes")
+									: ""}
+						</span>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
