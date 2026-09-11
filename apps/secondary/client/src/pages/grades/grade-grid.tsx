@@ -382,6 +382,30 @@ export function GradeGrid() {
 		return result;
 	}, [grades, activeTypes, enrollments]);
 
+	// Change count vs saved snapshot
+	const changeCount = useMemo(() => {
+		if (!isDirty) return 0;
+		try {
+			const snap = JSON.parse(savedSnapshot.current) as Record<
+				string,
+				Record<string, string>
+			>;
+			let count = 0;
+			for (const e of enrollments) {
+				const sid = e.student?.id;
+				if (!sid) continue;
+				for (const type of activeTypes) {
+					const current = grades[sid]?.[type] ?? "";
+					const saved = snap[sid]?.[type] ?? "";
+					if (current !== saved) count++;
+				}
+			}
+			return count;
+		} catch {
+			return 0;
+		}
+	}, [isDirty, grades, enrollments, activeTypes]);
+
 	// Global stats for footer bar
 	const allGradeVals = useMemo(() => {
 		const vals: number[] = [];
@@ -582,7 +606,9 @@ export function GradeGrid() {
 					)}
 					{savedAt && !isDirty
 						? t("grades.saved", "Saved!")
-						: t("grades.save", "Save")}
+						: changeCount > 0
+							? `${t("grades.save", "Save")} (${changeCount})`
+							: t("grades.save", "Save")}
 				</Button>
 			</div>
 
