@@ -48,6 +48,7 @@ const quickPaySchema = z.object({
 		"bank_transfer",
 		"campost",
 	]),
+	reference: z.string().max(100).optional(),
 	note: z.string().max(500).optional(),
 });
 
@@ -181,6 +182,17 @@ function QuickRecordPaymentDialog({
 									</SelectContent>
 								</Select>
 							)}
+						/>
+					</div>
+
+					<div className="space-y-1.5">
+						<Label>{t("fees.reference", "Reference / Transaction ID")}</Label>
+						<Input
+							placeholder={t(
+								"fees.reference_placeholder",
+								"e.g. MTN-TXN-123456",
+							)}
+							{...register("reference")}
 						/>
 					</div>
 

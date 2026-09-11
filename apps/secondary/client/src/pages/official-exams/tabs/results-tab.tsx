@@ -53,7 +53,7 @@ function CandidateResultRow({
 		candidate.registration.isAdmitted,
 	);
 	const [mention, setMention] = useState<string>(
-		candidate.registration.mention ?? "",
+		candidate.registration.mention ?? "__none__",
 	);
 	const [saved, setSaved] = useState(false);
 
@@ -70,7 +70,7 @@ function CandidateResultRow({
 		update.mutate({
 			id: candidate.registration.id,
 			isAdmitted: isAdmitted ?? false,
-			mention: mention || undefined,
+			mention: mention === "__none__" ? undefined : mention || undefined,
 		});
 	};
 
@@ -140,7 +140,7 @@ function CandidateResultRow({
 						/>
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">
+						<SelectItem value="__none__">
 							{t("official_exams.mention_none", "— None —")}
 						</SelectItem>
 						{MENTION_OPTIONS.map((opt) => (

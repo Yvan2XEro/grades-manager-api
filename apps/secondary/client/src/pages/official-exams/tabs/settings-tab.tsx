@@ -102,7 +102,7 @@ export function ExamSettingsTab() {
 						.slice(0, 16)
 				: "";
 			reset({
-				series: typed.series ?? "",
+				series: typed.series ?? "__none__",
 				centerCode: typed.centerCode ?? "",
 				sessionYear: typed.sessionYear,
 				registrationDeadline: dl,
@@ -129,7 +129,7 @@ export function ExamSettingsTab() {
 	const onSubmit = (values: EditValues) => {
 		update.mutate({
 			id: id!,
-			series: values.series || null,
+			series: values.series === "__none__" ? null : values.series || null,
 			centerCode: values.centerCode || null,
 			sessionYear: values.sessionYear,
 			registrationDeadline: values.registrationDeadline
@@ -194,7 +194,7 @@ export function ExamSettingsTab() {
 												<SelectValue placeholder="—" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="">
+												<SelectItem value="__none__">
 													{t("common.none", "—")}
 												</SelectItem>
 												{BAC_SERIES.map((ser) => (

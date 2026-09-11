@@ -113,3 +113,11 @@ export async function countAll(institutionId: string) {
 		.where(eq(students.institutionId, institutionId));
 	return rows.length;
 }
+
+export async function bulkInsert(rows: (typeof students.$inferInsert)[]) {
+	return db
+		.insert(students)
+		.values(rows)
+		.onConflictDoNothing()
+		.returning({ id: students.id });
+}

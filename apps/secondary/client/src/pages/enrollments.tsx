@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { GraduationCap, Search } from "lucide-react";
+import { GraduationCap, Search, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -8,6 +8,7 @@ import { PillCombobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
+import { EnrollExistingStudentDialog } from "./enrollments/enroll-existing-student-dialog";
 
 type EnrollmentRow = RouterOutputs["enrollments"]["list"]["items"][number];
 
@@ -82,7 +83,9 @@ export function Enrollments() {
 	const [pageSize, setPageSize] = useState(25);
 	const [search, setSearch] = useState("");
 	const [filterClassId, setFilterClassId] = useState("all");
+	const [showEnrollDialog, setShowEnrollDialog] = useState(false);
 
+	const utils = trpc.useUtils();
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = years.find((y) => y.status === "active") ?? years[0];
 	const yearId = activeYear?.id ?? "";
@@ -188,9 +191,19 @@ export function Enrollments() {
 								)}
 					</p>
 				</div>
-				<Button asChild>
-					<Link to="/students/new">{t("students.add", "Add student")}</Link>
-				</Button>
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						onClick={() => setShowEnrollDialog(true)}
+						disabled={!yearId}
+					>
+						<UserPlus className="mr-2 h-4 w-4" />
+						{t("enrollments.enroll_existing_btn", "Enroll existing student")}
+					</Button>
+					<Button asChild>
+						<Link to="/students/new">{t("students.add", "Add student")}</Link>
+					</Button>
+				</div>
 			</div>
 
 			<div className="flex flex-wrap items-center gap-3">
@@ -255,6 +268,18 @@ export function Enrollments() {
 					onPageSizeChange={(s) => {
 						setPageSize(s);
 						setPage(1);
+					}}
+				/>
+			)}
+
+			{yearId && (
+				<EnrollExistingStudentDialog
+					open={showEnrollDialog}
+					onOpenChange={setShowEnrollDialog}
+					academicYearId={yearId}
+					classes={classes}
+					onSuccess={() => {
+						utils.enrollments.list.invalidate();
 					}}
 				/>
 			)}

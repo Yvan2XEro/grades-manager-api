@@ -3,6 +3,7 @@ import { Search, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { CsvImportDialog } from "@/components/csv-import-dialog";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
@@ -28,6 +29,12 @@ export function StudentsList() {
 		{ id: "lastName", desc: false },
 	]);
 	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const utils = trpc.useUtils();
+
+	const bulkCreateStudents = trpc.students.bulkCreate.useMutation({
+		onSuccess: () => utils.students.list.invalidate(),
+	});
 
 	// Get active academic year to scope class list and student filter
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
@@ -127,10 +134,38 @@ export function StudentsList() {
 							: t("students.subtitle", "Student records management")}
 					</p>
 				</div>
-				<Button onClick={() => setDialogOpen(true)}>
-					<UserPlus className="mr-2 h-4 w-4" />
-					{t("students.add", "Add student")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<CsvImportDialog
+						title={t("students.import_title", "Import students from CSV")}
+						templateFilename="students-template.csv"
+						columns={[
+							{ key: "firstName", label: "First name", required: true },
+							{ key: "lastName", label: "Last name", required: true },
+							{ key: "gender", label: "Gender (M/F)" },
+							{ key: "mnu", label: "MNU" },
+							{ key: "dateOfBirth", label: "Date of birth (YYYY-MM-DD)" },
+							{ key: "placeOfBirth", label: "Place of birth" },
+						]}
+						onImport={(rows) =>
+							bulkCreateStudents
+								.mutateAsync({
+									items: rows.map((r) => ({
+										firstName: r.firstName,
+										lastName: r.lastName,
+										gender: (r.gender as any) || undefined,
+										mnu: r.mnu || undefined,
+										dateOfBirth: r.dateOfBirth || undefined,
+										placeOfBirth: r.placeOfBirth || undefined,
+									})),
+								})
+								.then((res) => ({ created: res.length }))
+						}
+					/>
+					<Button onClick={() => setDialogOpen(true)}>
+						<UserPlus className="mr-2 h-4 w-4" />
+						{t("students.add", "Add student")}
+					</Button>
+				</div>
 			</div>
 
 			{/* Filters */}

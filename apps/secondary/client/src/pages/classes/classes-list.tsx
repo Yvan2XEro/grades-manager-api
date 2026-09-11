@@ -3,6 +3,7 @@ import { Plus, Search, Users } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
+import { CsvImportDialog } from "@/components/csv-import-dialog";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,12 @@ export function ClassesList() {
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const utils = trpc.useUtils();
+
+	const bulkCreateClasses = trpc.classes.bulkCreate.useMutation({
+		onSuccess: () => utils.classes.list.invalidate(),
+	});
 
 	const { data, isLoading } = trpc.classes.list.useQuery(
 		{
@@ -130,10 +137,34 @@ export function ClassesList() {
 							: t("classes.subtitle", "Class management")}
 					</p>
 				</div>
-				<Button onClick={() => setDialogOpen(true)}>
-					<Plus className="mr-2 h-4 w-4" />
-					{t("classes.add", "Add class")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<CsvImportDialog
+						title={t("classes.import_title", "Import classes from CSV")}
+						templateFilename="classes-template.csv"
+						disabled={!academicYearId}
+						columns={[
+							{ key: "name", label: "Class name", required: true },
+							{ key: "code", label: "Code", required: true },
+							{ key: "level", label: "Level (e.g. Tle)", required: true },
+						]}
+						onImport={(rows) =>
+							bulkCreateClasses
+								.mutateAsync({
+									items: rows.map((r) => ({
+										name: r.name,
+										code: r.code,
+										level: r.level,
+										academicYearId: academicYearId!,
+									})),
+								})
+								.then((res) => ({ created: res.length }))
+						}
+					/>
+					<Button onClick={() => setDialogOpen(true)}>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("classes.add", "Add class")}
+					</Button>
+				</div>
 			</div>
 
 			{/* Filters */}

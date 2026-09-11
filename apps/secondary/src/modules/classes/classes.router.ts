@@ -49,6 +49,24 @@ export const router = trpcRouter({
 	get: tenantProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) => service.get(input.id, ctx.institution.id)),
+	update: adminProcedure
+		.input(
+			z.object({
+				id: z.string().uuid(),
+				name: z.string().min(1).max(50).optional(),
+				code: z.string().min(1).max(20).optional(),
+				level: z.string().min(1).max(30).optional(),
+				room: z.string().max(50).optional().nullable(),
+				maxCapacity: z.number().int().positive().optional().nullable(),
+				trackId: z.string().uuid().optional().nullable(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			service.update(input.id, input, ctx.institution.id),
+		),
+	delete: adminProcedure
+		.input(z.object({ id: z.string().uuid() }))
+		.mutation(({ ctx, input }) => service.remove(input.id, ctx.institution.id)),
 	getRoster: tenantProcedure
 		.input(rosterSchema)
 		.query(({ ctx, input }) =>

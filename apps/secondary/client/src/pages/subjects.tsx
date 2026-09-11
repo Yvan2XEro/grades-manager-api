@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CsvImportDialog } from "@/components/csv-import-dialog";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -63,6 +64,10 @@ export function Subjects() {
 	const orderDir = (sortCol?.desc ? "desc" : "asc") as "asc" | "desc";
 
 	const utils = trpc.useUtils();
+
+	const bulkCreateSubjects = trpc.subjects.bulkCreate.useMutation({
+		onSuccess: () => utils.subjects.list.invalidate(),
+	});
 
 	const deleteSubject = trpc.subjects.delete.useMutation({
 		onSuccess: () => {
@@ -175,15 +180,41 @@ export function Subjects() {
 							: t("subjects.subtitle", "Subject catalogue")}
 					</p>
 				</div>
-				<Button
-					onClick={() => {
-						setEditingSubject(undefined);
-						setDialogOpen(true);
-					}}
-				>
-					<Plus className="mr-2 h-4 w-4" />
-					{t("subjects.add", "Add subject")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<CsvImportDialog
+						title={t("subjects.import_title", "Import subjects from CSV")}
+						templateFilename="subjects-template.csv"
+						columns={[
+							{ key: "name", label: "Name", required: true },
+							{ key: "code", label: "Code", required: true },
+							{ key: "nameFr", label: "Name (FR)" },
+							{ key: "minesecCode", label: "MINESEC Code" },
+							{ key: "subjectGroup", label: "Group" },
+						]}
+						onImport={(rows) =>
+							bulkCreateSubjects
+								.mutateAsync({
+									items: rows.map((r) => ({
+										name: r.name,
+										code: r.code,
+										nameFr: r.nameFr || undefined,
+										minesecCode: r.minesecCode || undefined,
+										subjectGroup: r.subjectGroup || undefined,
+									})),
+								})
+								.then((res) => ({ created: res.length }))
+						}
+					/>
+					<Button
+						onClick={() => {
+							setEditingSubject(undefined);
+							setDialogOpen(true);
+						}}
+					>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("subjects.add", "Add subject")}
+					</Button>
+				</div>
 			</div>
 
 			{/* Filters */}

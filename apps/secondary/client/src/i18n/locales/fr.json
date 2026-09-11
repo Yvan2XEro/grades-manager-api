@@ -224,7 +224,10 @@
     "empty_filtered": "Aucun élève ne correspond à vos filtres",
     "enroll_class": "Inscrire dans une classe",
     "select_class": "Sélectionner une classe…",
-    "no_class_yet": "— Pas de classe (inscrire plus tard) —"
+    "no_class_yet": "— Pas de classe (inscrire plus tard) —",
+    "journey_title": "Parcours scolaire",
+    "current_enrollment": "Inscription en cours",
+    "not_enrolled_this_year": "Non inscrit cette année"
   },
   "classes": {
     "title": "Classes",
@@ -249,7 +252,11 @@
     "all_levels": "Tous les niveaux",
     "col_students": "Élèves",
     "empty_filtered": "Aucune classe ne correspond à vos filtres",
-    "print_roster": "Imprimer la liste"
+    "print_roster": "Imprimer la liste",
+    "edit": "Modifier la classe",
+    "delete": "Supprimer la classe",
+    "delete_confirm": "Cela supprimera définitivement cette classe. Cette action est irréversible.",
+    "delete_blocked": "Impossible de supprimer : {{count}} élève(s) inscrit(s) dans cette classe."
   },
   "subjects": {
     "title": "Matières",
@@ -327,7 +334,14 @@
     "type_repeat": "Redoublant",
     "type_promoted": "Promu",
     "all_classes": "Toutes les classes",
-    "empty_filtered": "Aucune inscription ne correspond à vos filtres"
+    "empty_filtered": "Aucune inscription ne correspond à vos filtres",
+    "enroll_existing_btn": "Inscrire un élève existant",
+    "enroll_existing_title": "Inscrire un élève existant",
+    "enroll_existing_desc": "Recherchez un élève déjà enregistré et affectez-le à une classe pour l'année en cours.",
+    "field_student": "Élève",
+    "student_search_placeholder": "Rechercher par nom ou MNU…",
+    "no_student_selected": "— Sélectionner un élève —",
+    "enrolling": "Inscription en cours…"
   },
   "grades": {
     "title": "Saisie des notes",
@@ -523,6 +537,8 @@
     "payment_history": "Historique des paiements",
     "payment_method": "Mode de paiement",
     "total_paid": "Total payé",
+    "reference": "Référence / ID de transaction",
+    "reference_placeholder": "ex. MTN-TXN-123456",
     "note": "Note",
     "note_placeholder": "Note optionnelle…",
     "no_payments": "Aucun paiement",
@@ -699,7 +715,10 @@
     "field_cycle": "Cycle",
     "cycle_first": "1er cycle (Collège)",
     "cycle_second": "2ème cycle (Lycée)",
-    "cycle_technical": "Technique"
+    "cycle_technical": "Technique",
+    "edit": "Modifier la filière",
+    "delete": "Supprimer la filière",
+    "delete_confirm": "Cela supprimera définitivement cette filière et tous ses coefficients de matières. Cette action est irréversible."
   },
   "subject_assignments": {
     "title": "Affectations",
@@ -1170,5 +1189,16 @@
     "STUDENT_ALREADY_ENROLLED": "Cet élève est déjà inscrit dans cette classe.",
     "ASSESSMENT_LOCKED": "Les notes sont verrouillées et ne peuvent plus être modifiées.",
     "DUPLICATE_ENTRY": "Un enregistrement avec ces informations existe déjà."
+  },
+  "csv_import": {
+    "btn": "Importer CSV",
+    "download_template": "Télécharger le modèle",
+    "upload_label": "Chargez votre fichier CSV",
+    "preview_title": "Aperçu (5 premières lignes)",
+    "error_missing": "La colonne \"{{col}}\" est requise",
+    "import_btn": "Importer {{count}} lignes",
+    "success": "{{count}} lignes créées avec succès",
+    "no_data": "Aucune donnée trouvée dans le fichier",
+    "error_invalid": "Fichier invalide — vérifiez le format"
   }
 }

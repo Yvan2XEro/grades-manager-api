@@ -3,6 +3,7 @@ import { Pencil, Search, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { CsvImportDialog } from "@/components/csv-import-dialog";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
@@ -69,6 +70,12 @@ export function Staff() {
 				: "lastName"
 	) as "lastName" | "firstName" | "email";
 	const orderDir = (sortCol?.desc ? "desc" : "asc") as "asc" | "desc";
+
+	const utils = trpc.useUtils();
+
+	const bulkCreateStaff = trpc.staff.bulkCreate.useMutation({
+		onSuccess: () => utils.staff.list.invalidate(),
+	});
 
 	const { data, isLoading } = trpc.staff.list.useQuery({
 		page,
@@ -168,15 +175,41 @@ export function Staff() {
 							: t("staff.subtitle", "Staff management")}
 					</p>
 				</div>
-				<Button
-					onClick={() => {
-						setEditingStaff(undefined);
-						setDialogOpen(true);
-					}}
-				>
-					<UserPlus className="mr-2 h-4 w-4" />
-					{t("staff.add", "Add staff member")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<CsvImportDialog
+						title={t("staff.import_title", "Import staff from CSV")}
+						templateFilename="staff-template.csv"
+						columns={[
+							{ key: "firstName", label: "First name", required: true },
+							{ key: "lastName", label: "Last name", required: true },
+							{ key: "email", label: "Email", required: true },
+							{ key: "phone", label: "Phone" },
+							{ key: "role", label: "Role (teacher/admin/staff)" },
+						]}
+						onImport={(rows) =>
+							bulkCreateStaff
+								.mutateAsync({
+									items: rows.map((r) => ({
+										firstName: r.firstName,
+										lastName: r.lastName,
+										email: r.email,
+										phone: r.phone || undefined,
+										role: (r.role || undefined) as any,
+									})),
+								})
+								.then((res) => ({ created: res.length }))
+						}
+					/>
+					<Button
+						onClick={() => {
+							setEditingStaff(undefined);
+							setDialogOpen(true);
+						}}
+					>
+						<UserPlus className="mr-2 h-4 w-4" />
+						{t("staff.add", "Add staff member")}
+					</Button>
+				</div>
 			</div>
 
 			{/* Filters */}

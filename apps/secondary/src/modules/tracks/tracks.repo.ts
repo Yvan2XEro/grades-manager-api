@@ -80,6 +80,32 @@ export async function upsertCoefficient(data: {
 	return row!;
 }
 
+export async function updateTrack(
+	id: string,
+	institutionId: string,
+	data: {
+		name?: string;
+		code?: string;
+		cycleLevel?: "first_cycle" | "second_cycle" | "technical";
+		isOfficial?: boolean;
+	},
+) {
+	const [row] = await db
+		.update(tracks)
+		.set({ ...data, updatedAt: new Date() })
+		.where(and(eq(tracks.id, id), eq(tracks.institutionId, institutionId)))
+		.returning();
+	return row ?? null;
+}
+
+export async function deleteTrack(id: string, institutionId: string) {
+	const [row] = await db
+		.delete(tracks)
+		.where(and(eq(tracks.id, id), eq(tracks.institutionId, institutionId)))
+		.returning();
+	return row ?? null;
+}
+
 export async function bulkInsert(rows: (typeof tracks.$inferInsert)[]) {
 	if (rows.length === 0) return [];
 	return db.insert(tracks).values(rows).onConflictDoNothing().returning();

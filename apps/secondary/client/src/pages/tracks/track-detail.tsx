@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Save } from "lucide-react";
+import { Pencil, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useLocation, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { z } from "zod";
+import { Confirm } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
+import { TrackFormDialog } from "./track-form-dialog";
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 
@@ -50,7 +52,9 @@ export function TrackDetail() {
 	const location = useLocation();
 	const trackState = (location.state as TrackLocationState | null) ?? {};
 
+	const navigate = useNavigate();
 	const [saved, setSaved] = useState(false);
+	const [showEdit, setShowEdit] = useState(false);
 
 	// ── Queries ──────────────────────────────────────────────────────────────
 
@@ -73,6 +77,15 @@ export function TrackDetail() {
 		);
 
 	const upsertCoefficient = trpc.tracks.upsertCoefficient.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
+
+	const utils = trpc.useUtils();
+	const deleteTrack = trpc.tracks.delete.useMutation({
+		onSuccess: () => {
+			utils.tracks.list.invalidate();
+			navigate("/tracks");
+		},
 		onError: (err) => errorToast(err, t),
 	});
 
@@ -142,7 +155,7 @@ export function TrackDetail() {
 	return (
 		<div className="space-y-6">
 			{/* Header */}
-			<div className="flex items-center gap-3">
+			<div className="flex flex-wrap items-start justify-between gap-3">
 				<div className="flex-1">
 					<div className="flex items-center gap-2">
 						<h1 className="font-bold text-2xl text-foreground">{trackName}</h1>
@@ -166,7 +179,57 @@ export function TrackDetail() {
 						</p>
 					)}
 				</div>
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setShowEdit(true)}
+						disabled={!track}
+					>
+						<Pencil className="mr-1.5 h-3.5 w-3.5" />
+						{t("tracks.edit", "Edit")}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={async () => {
+							const ok = await Confirm.call({
+								title: t("tracks.delete", "Delete track"),
+								description: t(
+									"tracks.delete_confirm",
+									"This will permanently delete this track and all its subject coefficients. This action cannot be undone.",
+								),
+								confirmLabel: t("common.delete", "Delete"),
+								destructive: true,
+							});
+							if (ok) deleteTrack.mutate({ id: id! });
+						}}
+						disabled={!track || deleteTrack.isPending}
+						className="text-destructive hover:bg-destructive/10"
+					>
+						<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+						{t("tracks.delete", "Delete")}
+					</Button>
+				</div>
 			</div>
+
+			{track && (
+				<TrackFormDialog
+					open={showEdit}
+					onOpenChange={setShowEdit}
+					onSuccess={() => {}}
+					editTrack={{
+						id: track.id,
+						name: track.name,
+						code: track.code,
+						cycleLevel: track.cycleLevel as
+							| "first_cycle"
+							| "second_cycle"
+							| "technical",
+						isOfficial: track.isOfficial ?? false,
+					}}
+				/>
+			)}
 
 			{/* Coefficient matrix */}
 			{isLoading ? (

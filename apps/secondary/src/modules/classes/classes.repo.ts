@@ -84,6 +84,42 @@ export async function insert(data: typeof classes.$inferInsert) {
 	return row!;
 }
 
+export async function updateClass(
+	id: string,
+	institutionId: string,
+	data: {
+		name?: string;
+		code?: string;
+		level?: string;
+		room?: string | null;
+		maxCapacity?: number | null;
+		trackId?: string | null;
+	},
+) {
+	const [row] = await db
+		.update(classes)
+		.set({ ...data, updatedAt: new Date() })
+		.where(and(eq(classes.id, id), eq(classes.institutionId, institutionId)))
+		.returning();
+	return row ?? null;
+}
+
+export async function deleteClass(id: string, institutionId: string) {
+	const [row] = await db
+		.delete(classes)
+		.where(and(eq(classes.id, id), eq(classes.institutionId, institutionId)))
+		.returning();
+	return row ?? null;
+}
+
+export async function countEnrollments(classId: string) {
+	const rows = await db
+		.select({ count: count() })
+		.from(enrollments)
+		.where(eq(enrollments.classId, classId));
+	return Number(rows[0]?.count ?? 0);
+}
+
 export async function bulkInsert(rows: (typeof classes.$inferInsert)[]) {
 	if (rows.length === 0) return [];
 	return db.insert(classes).values(rows).onConflictDoNothing().returning();

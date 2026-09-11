@@ -31,11 +31,27 @@ interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSuccess: () => void;
+	editClass?: {
+		id: string;
+		name: string;
+		code: string;
+		level: string;
+		academicYearId: string;
+		trackId?: string | null;
+		room?: string | null;
+		maxCapacity?: number | null;
+	};
 }
 
-export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
+export function ClassFormDialog({
+	open,
+	onOpenChange,
+	onSuccess,
+	editClass,
+}: Props) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
+	const isEditing = !!editClass;
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const { data: tracksData } = trpc.tracks.list.useQuery({
@@ -53,6 +69,16 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 		onError: (err) => errorToast(err, t),
 	});
 
+	const update = trpc.classes.update.useMutation({
+		onSuccess: () => {
+			utils.classes.list.invalidate();
+			utils.classes.get.invalidate({ id: editClass?.id });
+			onSuccess();
+			onOpenChange(false);
+		},
+		onError: (err) => errorToast(err, t),
+	});
+
 	const {
 		register,
 		handleSubmit,
@@ -61,23 +87,46 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 		formState: { errors, isSubmitting },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
-		defaultValues: {},
+		defaultValues: editClass
+			? {
+					name: editClass.name,
+					code: editClass.code,
+					level: editClass.level,
+					academicYearId: editClass.academicYearId,
+					trackId: editClass.trackId ?? undefined,
+					room: editClass.room ?? undefined,
+					maxCapacity: editClass.maxCapacity?.toString() ?? undefined,
+				}
+			: {},
 	});
 
 	const onSubmit = handleSubmit(async (data) => {
 		const capacityNum = data.maxCapacity
 			? Number.parseInt(data.maxCapacity, 10)
 			: undefined;
-		await create.mutateAsync({
-			name: data.name,
-			code: data.code,
-			level: data.level,
-			academicYearId: data.academicYearId,
-			trackId: data.trackId || undefined,
-			room: data.room || undefined,
-			maxCapacity:
-				capacityNum && !Number.isNaN(capacityNum) ? capacityNum : undefined,
-		});
+		if (isEditing && editClass) {
+			await update.mutateAsync({
+				id: editClass.id,
+				name: data.name,
+				code: data.code,
+				level: data.level,
+				trackId: data.trackId || null,
+				room: data.room || null,
+				maxCapacity:
+					capacityNum && !Number.isNaN(capacityNum) ? capacityNum : null,
+			});
+		} else {
+			await create.mutateAsync({
+				name: data.name,
+				code: data.code,
+				level: data.level,
+				academicYearId: data.academicYearId,
+				trackId: data.trackId || undefined,
+				room: data.room || undefined,
+				maxCapacity:
+					capacityNum && !Number.isNaN(capacityNum) ? capacityNum : undefined,
+			});
+		}
 	});
 
 	const handleOpenChange = (open: boolean) => {
@@ -89,7 +138,11 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
-					<DialogTitle>{t("classes.add", "Add class")}</DialogTitle>
+					<DialogTitle>
+						{isEditing
+							? t("classes.edit", "Edit class")
+							: t("classes.add", "Add class")}
+					</DialogTitle>
 				</DialogHeader>
 				<form onSubmit={onSubmit} className="flex flex-col gap-4">
 					<div className="grid grid-cols-2 gap-3">
@@ -182,7 +235,9 @@ export function ClassFormDialog({ open, onOpenChange, onSuccess }: Props) {
 							{t("common.cancel", "Cancel")}
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
-							{t("classes.add", "Add class")}
+							{isEditing
+								? t("common.save", "Save")
+								: t("classes.add", "Add class")}
 						</Button>
 					</div>
 				</form>

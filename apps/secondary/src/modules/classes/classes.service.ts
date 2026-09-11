@@ -66,6 +66,34 @@ export async function getRoster(classId: string, institutionId: string) {
 	return repo.getRoster(classId, institutionId);
 }
 
+export async function update(
+	id: string,
+	data: {
+		name?: string;
+		code?: string;
+		level?: string;
+		room?: string | null;
+		maxCapacity?: number | null;
+		trackId?: string | null;
+	},
+	institutionId: string,
+) {
+	const cls = await repo.updateClass(id, institutionId, data);
+	if (!cls) throw notFound("Class not found");
+	return cls;
+}
+
+export async function remove(id: string, institutionId: string) {
+	const count = await repo.countEnrollments(id);
+	if (count > 0)
+		throw conflict(
+			`Cannot delete class with ${count} enrolled student${count === 1 ? "" : "s"}`,
+		);
+	const cls = await repo.deleteClass(id, institutionId);
+	if (!cls) throw notFound("Class not found");
+	return cls;
+}
+
 export async function bulkCreate(
 	rows: {
 		name: string;

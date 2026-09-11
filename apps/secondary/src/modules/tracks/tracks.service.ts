@@ -95,6 +95,32 @@ export async function bulkUpsertCoefficients(
 	return repo.bulkUpsertCoefficients(values);
 }
 
+export async function update(
+	id: string,
+	data: {
+		name?: string;
+		code?: string;
+		cycleLevel?: "first_cycle" | "second_cycle" | "technical";
+		isOfficial?: boolean;
+	},
+	institutionId: string,
+) {
+	if (data.code) {
+		const existing = await repo.findByCode(data.code, institutionId);
+		if (existing && existing.id !== id)
+			throw conflict(`Track code "${data.code}" already exists`);
+	}
+	const track = await repo.updateTrack(id, institutionId, data);
+	if (!track) throw notFound("Track not found");
+	return track;
+}
+
+export async function remove(id: string, institutionId: string) {
+	const track = await repo.deleteTrack(id, institutionId);
+	if (!track) throw notFound("Track not found");
+	return track;
+}
+
 export async function getCoefficientsGrid(
 	trackId: string,
 	institutionId: string,

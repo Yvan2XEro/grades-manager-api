@@ -1,6 +1,5 @@
 import {
 	CheckCircle,
-	Download,
 	Printer,
 	RefreshCw,
 	Send,
@@ -85,6 +84,9 @@ export function ReportCardPreview() {
 	const { id } = useParams<{ id: string }>();
 
 	const utils = trpc.useUtils();
+	const { data: myRole } = trpc.institutions.myRole.useQuery();
+	const isAdmin = myRole?.isAdmin ?? false;
+
 	const { data: card, isLoading } = trpc.reportCards.get.useQuery(
 		{ id: id! },
 		{ enabled: !!id },
@@ -205,10 +207,17 @@ export function ReportCardPreview() {
 					<Badge variant={STATUS_VARIANTS[status] ?? "secondary"}>
 						{t(`report_cards.status_${status}`, status ?? "draft")}
 					</Badge>
-					<Button variant="outline" size="sm" onClick={() => window.print()}>
-						<Printer className="mr-2 h-4 w-4" />
-						{t("report_cards.print", "Print")}
-					</Button>
+					{card.status !== "draft" && (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => generatePdf.mutate({ id: card.id })}
+							disabled={generatePdf.isPending}
+						>
+							<Printer className="mr-2 h-4 w-4" />
+							{t("report_cards.print", "Print / PDF")}
+						</Button>
+					)}
 					<Button
 						variant={card.status === "draft" ? "default" : "outline"}
 						size="sm"
@@ -220,18 +229,7 @@ export function ReportCardPreview() {
 							? t("report_cards.generate", "Generate")
 							: t("report_cards.regenerate", "Regenerate")}
 					</Button>
-					{card.status !== "draft" && (
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => generatePdf.mutate({ id: card.id })}
-							disabled={generatePdf.isPending}
-						>
-							<Download className="mr-2 h-4 w-4" />
-							{t("report_cards.download_pdf", "Download PDF")}
-						</Button>
-					)}
-					{nextAction && (
+					{nextAction && isAdmin && (
 						<Button
 							size="sm"
 							onClick={() =>

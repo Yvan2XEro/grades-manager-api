@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, BookOpen, Plus, User } from "lucide-react";
+import { BookOpen, Plus, User } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -291,56 +291,6 @@ export function StudentDetail() {
 					{t("enrollments.enroll_btn", "Enroll")}
 				</Button>
 			</div>
-
-			{/* ─── School journey timeline ─── */}
-			{enrollmentHistory.length > 0 && (
-				<div className="rounded-xl border border-border bg-card px-4 py-3">
-					<p className="mb-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">
-						{t("students.journey_title", "School journey")}
-					</p>
-					<div className="flex flex-wrap items-center gap-1.5">
-						{enrollmentHistory.map((e, i) => {
-							const isActive = e.year.status === "active";
-							const isLast = i === enrollmentHistory.length - 1;
-							return (
-								<div
-									key={e.enrollment.id}
-									className="flex items-center gap-1.5"
-								>
-									<div
-										className={cn(
-											"flex flex-col rounded-lg border px-3 py-2 text-xs",
-											isActive
-												? "border-primary/40 bg-primary/5 text-primary"
-												: "border-border bg-muted/30 text-muted-foreground",
-										)}
-									>
-										<span className="font-semibold leading-tight">
-											{e.class.name}
-										</span>
-										<span className="text-[11px] opacity-70">
-											{e.year.name}
-										</span>
-										{e.enrollment.admissionType === "repeat" && (
-											<span className="mt-0.5 text-[10px] text-amber-600 dark:text-amber-400">
-												↩ {t("enrollments.type_repeat", "Repeating")}
-											</span>
-										)}
-										{e.enrollment.admissionType === "transfer" && (
-											<span className="mt-0.5 text-[10px] text-blue-600 dark:text-blue-400">
-												⇄ {t("enrollments.type_transfer", "Transfer")}
-											</span>
-										)}
-									</div>
-									{!isLast && (
-										<ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40" />
-									)}
-								</div>
-							);
-						})}
-					</div>
-				</div>
-			)}
 
 			<div className="flex border-border border-b" role="tablist">
 				{TAB_NAV.map(({ to, label, fallback }) => (

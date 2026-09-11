@@ -1,10 +1,22 @@
-import { BookOpen, BookUser, School, Users } from "lucide-react";
+import {
+	BookOpen,
+	BookUser,
+	Pencil,
+	School,
+	Trash2,
+	Users,
+} from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink, Outlet, useParams } from "react-router";
+import { NavLink, Outlet, useNavigate, useParams } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
+import { ClassFormDialog } from "./class-form-dialog";
 
 function HeaderSkeleton() {
 	return (
@@ -29,6 +41,8 @@ function HeaderSkeleton() {
 export function ClassDetail() {
 	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
+	const navigate = useNavigate();
+	const [showEdit, setShowEdit] = useState(false);
 
 	const TABS = [
 		{
@@ -51,10 +65,20 @@ export function ClassDetail() {
 		},
 	];
 
+	const utils = trpc.useUtils();
+
 	const { data: klass, isLoading } = trpc.classes.get.useQuery(
 		{ id: id! },
 		{ enabled: !!id },
 	);
+
+	const deleteClass = trpc.classes.delete.useMutation({
+		onSuccess: () => {
+			utils.classes.list.invalidate();
+			navigate("/classes");
+		},
+		onError: (err) => errorToast(err, t),
+	});
 
 	if (isLoading) return <HeaderSkeleton />;
 
@@ -69,13 +93,58 @@ export function ClassDetail() {
 
 	return (
 		<div className="space-y-6">
-			<div className="space-y-2">
-				<h1 className="font-bold text-2xl text-foreground">{klass.name}</h1>
-				<div className="flex flex-wrap gap-2">
-					{klass.code && <Badge variant="outline">{klass.code}</Badge>}
-					{klass.level && <Badge variant="secondary">{klass.level}</Badge>}
+			<div className="flex flex-wrap items-start justify-between gap-3">
+				<div className="space-y-2">
+					<h1 className="font-bold text-2xl text-foreground">{klass.name}</h1>
+					<div className="flex flex-wrap gap-2">
+						{klass.code && <Badge variant="outline">{klass.code}</Badge>}
+						{klass.level && <Badge variant="secondary">{klass.level}</Badge>}
+					</div>
+				</div>
+				<div className="flex gap-2">
+					<Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>
+						<Pencil className="mr-1.5 h-3.5 w-3.5" />
+						{t("classes.edit", "Edit")}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={async () => {
+							const ok = await Confirm.call({
+								title: t("classes.delete", "Delete class"),
+								description: t(
+									"classes.delete_confirm",
+									"This will permanently delete this class. This action cannot be undone.",
+								),
+								confirmLabel: t("common.delete", "Delete"),
+								destructive: true,
+							});
+							if (ok) deleteClass.mutate({ id: id! });
+						}}
+						disabled={deleteClass.isPending}
+						className="text-destructive hover:bg-destructive/10"
+					>
+						<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+						{t("classes.delete", "Delete")}
+					</Button>
 				</div>
 			</div>
+
+			<ClassFormDialog
+				open={showEdit}
+				onOpenChange={setShowEdit}
+				onSuccess={() => {}}
+				editClass={{
+					id: klass.id,
+					name: klass.name,
+					code: klass.code ?? "",
+					level: klass.level,
+					academicYearId: klass.academicYearId,
+					trackId: klass.trackId,
+					room: klass.room,
+					maxCapacity: klass.maxCapacity,
+				}}
+			/>
 
 			<div className="flex border-border border-b" role="tablist">
 				{TABS.map(({ to, label, fallback, icon: Icon }) => (

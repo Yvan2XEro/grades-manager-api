@@ -64,6 +64,24 @@ export const router = trpcRouter({
 	bulkUpsertCoefficients: adminProcedure
 		.input(bulkUpsertCoefficientsSchema)
 		.mutation(({ input }) => service.bulkUpsertCoefficients(input.items)),
+	update: adminProcedure
+		.input(
+			z.object({
+				id: z.string().uuid(),
+				name: z.string().min(1).max(100).optional(),
+				code: z.string().min(1).max(20).optional(),
+				cycleLevel: z
+					.enum(["first_cycle", "second_cycle", "technical"])
+					.optional(),
+				isOfficial: z.boolean().optional(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			service.update(input.id, input, ctx.institution.id),
+		),
+	delete: adminProcedure
+		.input(z.object({ id: z.string().uuid() }))
+		.mutation(({ ctx, input }) => service.remove(input.id, ctx.institution.id)),
 	getCoefficientsGrid: tenantProcedure
 		.input(getGridSchema)
 		.query(({ ctx, input }) =>

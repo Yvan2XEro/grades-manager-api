@@ -34,15 +34,38 @@ interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSuccess: () => void;
+	editTrack?: {
+		id: string;
+		name: string;
+		code: string;
+		cycleLevel: "first_cycle" | "second_cycle" | "technical";
+		isOfficial?: boolean;
+	};
 }
 
-export function TrackFormDialog({ open, onOpenChange, onSuccess }: Props) {
+export function TrackFormDialog({
+	open,
+	onOpenChange,
+	onSuccess,
+	editTrack,
+}: Props) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
+	const isEditing = !!editTrack;
 
 	const create = trpc.tracks.create.useMutation({
 		onSuccess: () => {
 			utils.tracks.list.invalidate();
+			onSuccess();
+			onOpenChange(false);
+		},
+		onError: (err) => errorToast(err, t),
+	});
+
+	const update = trpc.tracks.update.useMutation({
+		onSuccess: () => {
+			utils.tracks.list.invalidate();
+			utils.tracks.get.invalidate({ id: editTrack?.id });
 			onSuccess();
 			onOpenChange(false);
 		},
@@ -58,13 +81,20 @@ export function TrackFormDialog({ open, onOpenChange, onSuccess }: Props) {
 		formState: { errors },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
-		defaultValues: { cycleLevel: "second_cycle", isOfficial: false },
+		defaultValues: editTrack ?? {
+			cycleLevel: "second_cycle",
+			isOfficial: false,
+		},
 	});
 
 	const cycleLevel = watch("cycleLevel");
 
 	const onSubmit = (values: FormValues) => {
-		create.mutate(values);
+		if (isEditing && editTrack) {
+			update.mutate({ id: editTrack.id, ...values });
+		} else {
+			create.mutate(values);
+		}
 	};
 
 	const handleClose = () => {
@@ -76,7 +106,11 @@ export function TrackFormDialog({ open, onOpenChange, onSuccess }: Props) {
 		<Dialog open={open} onOpenChange={handleClose}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{t("tracks.create_title", "Create Track")}</DialogTitle>
+					<DialogTitle>
+						{isEditing
+							? t("tracks.edit", "Edit track")
+							: t("tracks.create_title", "Create Track")}
+					</DialogTitle>
 				</DialogHeader>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<FormField
@@ -124,10 +158,15 @@ export function TrackFormDialog({ open, onOpenChange, onSuccess }: Props) {
 						<Button type="button" variant="outline" onClick={handleClose}>
 							{t("common.cancel", "Cancel")}
 						</Button>
-						<Button type="submit" disabled={create.isPending}>
-							{create.isPending
+						<Button
+							type="submit"
+							disabled={create.isPending || update.isPending}
+						>
+							{create.isPending || update.isPending
 								? t("common.saving", "Saving…")
-								: t("common.create", "Create")}
+								: isEditing
+									? t("common.save", "Save")
+									: t("common.create", "Create")}
 						</Button>
 					</div>
 				</form>

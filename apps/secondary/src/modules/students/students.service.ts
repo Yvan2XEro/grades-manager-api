@@ -45,3 +45,20 @@ export async function updateStudent(
 export async function count(institutionId: string) {
 	return repo.countAll(institutionId);
 }
+
+export async function bulkCreate(
+	rows: {
+		firstName: string;
+		lastName: string;
+		gender?: "M" | "F";
+		mnu?: string;
+		dateOfBirth?: Date;
+		placeOfBirth?: string;
+		contactName?: string;
+		contactPhone?: string;
+	}[],
+	institutionId: string,
+) {
+	const values = rows.map((r) => ({ institutionId, ...r }));
+	return repo.bulkInsert(values);
+}

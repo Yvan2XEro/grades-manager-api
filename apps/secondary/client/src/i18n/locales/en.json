@@ -224,7 +224,10 @@
     "empty_filtered": "No students match your filters",
     "enroll_class": "Enroll in class",
     "select_class": "Select a class…",
-    "no_class_yet": "— No class (enroll later) —"
+    "no_class_yet": "— No class (enroll later) —",
+    "journey_title": "School journey",
+    "current_enrollment": "Current enrollment",
+    "not_enrolled_this_year": "Not enrolled this year"
   },
   "classes": {
     "title": "Classes",
@@ -249,7 +252,11 @@
     "all_levels": "All levels",
     "col_students": "Students",
     "empty_filtered": "No classes match your filters",
-    "print_roster": "Print roster"
+    "print_roster": "Print roster",
+    "edit": "Edit class",
+    "delete": "Delete class",
+    "delete_confirm": "This will permanently delete this class. This action cannot be undone.",
+    "delete_blocked": "Cannot delete: {{count}} student(s) enrolled in this class."
   },
   "subjects": {
     "title": "Subjects",
@@ -327,7 +334,14 @@
     "type_repeat": "Repeating",
     "type_promoted": "Promoted",
     "all_classes": "All classes",
-    "empty_filtered": "No enrollments match your filters"
+    "empty_filtered": "No enrollments match your filters",
+    "enroll_existing_btn": "Enroll existing student",
+    "enroll_existing_title": "Enroll existing student",
+    "enroll_existing_desc": "Search for an existing student and assign them to a class for the active year.",
+    "field_student": "Student",
+    "student_search_placeholder": "Search by name or MNU…",
+    "no_student_selected": "— Select a student —",
+    "enrolling": "Enrolling…"
   },
   "grades": {
     "title": "Grade entry",
@@ -523,6 +537,8 @@
     "payment_history": "Payment history",
     "payment_method": "Payment method",
     "total_paid": "Total paid",
+    "reference": "Reference / Transaction ID",
+    "reference_placeholder": "e.g. MTN-TXN-123456",
     "note": "Note",
     "note_placeholder": "Optional note…",
     "no_payments": "No payments yet",
@@ -699,7 +715,10 @@
     "field_cycle": "Cycle",
     "cycle_first": "1st cycle (Collège)",
     "cycle_second": "2nd cycle (Lycée)",
-    "cycle_technical": "Technical"
+    "cycle_technical": "Technical",
+    "edit": "Edit track",
+    "delete": "Delete track",
+    "delete_confirm": "This will permanently delete this track and all its subject coefficients. This action cannot be undone."
   },
   "subject_assignments": {
     "title": "Subject Assignments",
@@ -1170,5 +1189,16 @@
     "STUDENT_ALREADY_ENROLLED": "This student is already enrolled in this class.",
     "ASSESSMENT_LOCKED": "Grades are locked and can no longer be edited.",
     "DUPLICATE_ENTRY": "A record with this information already exists."
+  },
+  "csv_import": {
+    "btn": "Import CSV",
+    "download_template": "Download template",
+    "upload_label": "Upload your CSV file",
+    "preview_title": "Preview (first 5 rows)",
+    "error_missing": "Column \"{{col}}\" is required",
+    "import_btn": "Import {{count}} rows",
+    "success": "{{count}} rows created successfully",
+    "no_data": "No data found in file",
+    "error_invalid": "Invalid file — check the format"
   }
 }
