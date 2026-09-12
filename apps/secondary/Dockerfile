@@ -53,31 +53,20 @@ WORKDIR /repo/apps/secondary
 RUN bun run build:client && \
     bun build ./index.ts --outdir ./out --target bun && \
     cp -r ./src/db/migrations ./out/migrations && \
-    cp /repo/node_modules/@electric-sql/pglite/dist/postgres.data ./out/ && \
-    cp /repo/node_modules/@electric-sql/pglite/dist/postgres.wasm ./out/
+    cp /repo/node_modules/@electric-sql/pglite/dist/pglite.data ./out/ && \
+    cp /repo/node_modules/@electric-sql/pglite/dist/pglite.wasm ./out/
 
 # ─── Stage 3: Production runner ───────────────────────────────────────────────
 FROM oven/bun:1.3.10 AS runner
 
-# Install system Chromium for Puppeteer (report-card PDF generation)
+# Install system Chromium for Puppeteer (report-card PDF generation).
+# On Debian Bookworm (bun 1.3+ base), some legacy package names were
+# removed (e.g. libasound2 → libasound2t64). Installing chromium without
+# --no-install-recommends lets apt resolve the correct transitive deps.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y \
       chromium \
       fonts-liberation \
-      libasound2 \
-      libatk-bridge2.0-0 \
-      libatk1.0-0 \
-      libcups2 \
-      libdbus-1-3 \
-      libgdk-pixbuf2.0-0 \
-      libgtk-3-0 \
-      libnspr4 \
-      libnss3 \
-      libxcomposite1 \
-      libxdamage1 \
-      libxrandr2 \
-      libx11-xcb1 \
-      xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
