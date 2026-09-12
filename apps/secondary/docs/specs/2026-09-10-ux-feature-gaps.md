@@ -19,7 +19,7 @@ The spec is ordered to fix the foundation first (error display), then CRUD compl
 
 ---
 
-## 0 · Dropdown Menu Rule (sysadmin pages)
+## 0 · Dropdown Menu Rule (sysadmin pages) ✅ IMPLEMENTED
 
 **Rule:** In every detail page action area, classify each action before placing it:
 
@@ -41,42 +41,39 @@ A real form means: a dialog or sheet with one or more `<input>`, `<textarea>`, o
 
 ---
 
-## 1 · Global Error Display (ERR-01, CC-01, EXM-01-silent, RC-01-403)
+## 1 · Global Error Display (ERR-01, CC-01, EXM-01-silent, RC-01-403) ✅ IMPLEMENTED
 
 ### Problem
 Every silent failure in the app has the same root cause: mutations have no `onError` handler. Backend errors (CONFLICT, FORBIDDEN, PRECONDITION_FAILED, etc.) are swallowed and never shown.
 
-### Solution — `useMutationToast` hook
+### Solution — standalone `errorToast` function
 
-Create `apps/secondary/client/src/hooks/use-mutation-toast.ts`:
+Implemented in `apps/secondary/client/src/lib/error-toast.ts` (standalone function, not a hook wrapper):
 
 ```ts
-// Thin wrapper: adds onSuccess toast + maps TRPCClientError codes to i18n keys.
-// Usage: const { mutate } = useMutationToast(trpc.councils.create, {
-//   successKey: 'councils.created',
-// });
+export function errorToast(err: unknown, t: TFunction): void
 ```
 
-**Error code → i18n key mapping** (add to both `en.json` and `fr.json`):
+**Error code → i18n key mapping** (both `en.json` and `fr.json` updated):
 
-| TRPC code | i18n key | EN | FR |
-|---|---|---|---|
-| `CONFLICT` | `error.conflict` | Already exists. | Existe déjà. |
-| `FORBIDDEN` | `error.forbidden` | You don't have permission. | Permission insuffisante. |
-| `NOT_FOUND` | `error.not_found` | Not found. | Introuvable. |
-| `PRECONDITION_FAILED` | `error.precondition` | *(use `error.message` from server)* | *(same)* |
-| `UNAUTHORIZED` | — | redirect to `/login` | — |
-| anything else | `error.unknown` | An unexpected error occurred. | Une erreur inattendue s'est produite. |
+| TRPC code | Behavior |
+|---|---|
+| `CONFLICT` | looks up `error.<err.message>` (semantic code), falls back to `error.conflict` |
+| `FORBIDDEN` | looks up `error.<err.message>`, falls back to `error.forbidden` |
+| `NOT_FOUND` | looks up `error.<err.message>`, falls back to `error.not_found` |
+| `PRECONDITION_FAILED` | shows `err.message` verbatim (server sends pre-translated string) |
+| `UNAUTHORIZED` | silently suppressed (handled elsewhere) |
+| `ACCOUNT_SUSPENDED` | silently suppressed |
+| anything else | shows `err.message` if Error instance, else `error.unknown` |
 
-For `PRECONDITION_FAILED`, the server always sends a human-readable `message` — display it directly (already translated by the backend). No key lookup needed.
+**Semantic codes** added to both `en.json` and `fr.json`:
+`USER_ALREADY_EXISTS`, `USER_CREATION_FAILED`, `INSTITUTION_NOT_FOUND`, `MEMBER_NOT_FOUND`, `SUBJECT_ALREADY_ASSIGNED`, `STUDENT_ALREADY_ENROLLED`, `ASSESSMENT_LOCKED`, `DUPLICATE_ENTRY`
 
-**Adoption:** Retrofit all existing mutations across all pages. Each mutation gets:
-```ts
-onError: (err) => errorToast(err, t),
-```
-where `errorToast` is a standalone function exported from the hook file (so it can also be called in `onError` callbacks that aren't using the wrapper).
+**Adoption:** All mutations across all 35 page files retrofitted with `onError: (err) => errorToast(err, t)`.
 
-**Toast style:** Use `sonner`'s `toast.error()`. Duration: 5 s. No duplicate toasts for rapid retries (debounce by error code + 500 ms).
+**Toast:** Sonner `<Toaster richColors closeButton duration={5000}>` mounted in `main.tsx`.
+
+**Backend:** All `auth.api.*` calls in `system-admin.router.ts` now use `ctx.headers` (instead of `new Headers()`) so session cookie is forwarded correctly. `createUser` maps Better-Auth `APIError(BAD_REQUEST)` to `TRPCError({ code: "CONFLICT", message: "USER_ALREADY_EXISTS" })`.
 
 ---
 

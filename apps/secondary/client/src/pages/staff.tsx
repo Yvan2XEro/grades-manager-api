@@ -240,7 +240,7 @@ export function Staff() {
 
 				const copyLink = () => {
 					if (member.invitationId) {
-						const url = `${window.location.origin}/accept-invitation/${member.invitationId}`;
+						const url = `${window.location.origin}/#/accept-invitation/${member.invitationId}?email=${encodeURIComponent(member.email)}`;
 						navigator.clipboard.writeText(url);
 						toast.success(t("staff.link_copied", "Link copied to clipboard"));
 					} else {

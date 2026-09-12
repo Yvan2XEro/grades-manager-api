@@ -322,11 +322,21 @@
   "invite": {
     "invalid_link": "Lien d'invitation invalide.",
     "expired": "Cette invitation a expiré ou est invalide.",
+    "accept_failed": "Impossible d'accepter l'invitation.",
     "processing": "Activation de votre compte…",
     "success_title": "Compte activé",
-    "success_hint": "Votre compte est prêt. Redirection vers la connexion…",
+    "success_hint": "Redirection en cours…",
     "error_title": "Erreur d'invitation",
-    "go_to_login": "Aller à la connexion"
+    "go_to_login": "Aller à la connexion",
+    "page_subtitle": "Vous avez été invité à rejoindre la plateforme.",
+    "tab_create": "Créer un compte",
+    "tab_signin": "Se connecter",
+    "email_hint": "Utilisez l'adresse email à laquelle cette invitation a été envoyée.",
+    "create_and_accept": "Créer un compte & accepter l'invitation",
+    "sign_in_and_accept": "Se connecter & accepter l'invitation",
+    "accept_btn": "Accepter l'invitation",
+    "logged_in_as": "Connecté en tant que",
+    "wrong_account": "Mauvais compte ?"
   },
   "enrollments": {
     "title": "Inscriptions",

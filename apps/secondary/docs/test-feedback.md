@@ -167,11 +167,13 @@ But there was no explicit instruction to switch organization after completing on
 
 ---
 
-## CC-01 · Class council conflict — silent failure on duplicate
+## CC-01 · Class council conflict — silent failure on duplicate ✅ RESOLVED
 
 **Observed:** When trying to create a class council session that conflicts with an existing one (same class, same term), the action fails silently. No error message, no toast, nothing. The user doesn't know whether their action was ignored or succeeded.
 
 **Root cause:** Backend error not surfaced to the UI. See also ERR-01 (global error display pattern).
+
+**Resolution:** Resolved by ERR-01 full adoption. The `createCouncil` mutation now has `onError: (err) => errorToast(err, t)`. A CONFLICT from the backend (duplicate council) surfaces as a translated toast: `error.DUPLICATE_ENTRY` → "A record with this information already exists." / "Un enregistrement avec ces informations existe déjà."
 
 ---
 
@@ -201,7 +203,7 @@ But there was no explicit instruction to switch organization after completing on
 
 ---
 
-## ERR-01 · Backend errors never displayed to the user — global issue
+## ERR-01 · Backend errors never displayed to the user — global issue ✅ RESOLVED
 
 **Observed:** Across many features (exam result entry, council conflict, PDF generation, etc.), backend errors fail silently. No toast, no inline message, nothing. When errors do appear somewhere they are likely in English with no i18n.
 
@@ -212,6 +214,8 @@ But there was no explicit instruction to switch organization after completing on
 4. Fall back to a generic "An error occurred. Please try again." for unknown errors
 
 **Decision needed:** Implement a shared error handling utility (e.g. `useMutationWithErrorToast`) used consistently across all mutations.
+
+**Resolution:** Implemented as a standalone `errorToast(err, t)` function in `client/src/lib/error-toast.ts`. Wired via `onError: (err) => errorToast(err, t)` across all 35 page files. Sonner `<Toaster richColors closeButton duration={5000}>` mounted in `main.tsx`. Semantic error codes (SCREAMING_SNAKE_CASE) sent from backend; frontend maps them via `error.<CODE>` i18n keys in both `en.json` and `fr.json`. Specific keys: `USER_ALREADY_EXISTS`, `USER_CREATION_FAILED`, `INSTITUTION_NOT_FOUND`, `MEMBER_NOT_FOUND`, `SUBJECT_ALREADY_ASSIGNED`, `STUDENT_ALREADY_ENROLLED`, `ASSESSMENT_LOCKED`, `DUPLICATE_ENTRY`. `PRECONDITION_FAILED` still shows the server message verbatim (already translated server-side). `UNAUTHORIZED` is silently swallowed (triggers redirect elsewhere). `ACCOUNT_SUSPENDED` also silently suppressed.
 
 ---
 

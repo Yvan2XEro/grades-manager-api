@@ -32,12 +32,17 @@ async function createInvitation(opts: {
 	return id;
 }
 
-function buildInviteUrl(origin: string, invitationId: string): string {
+function buildInviteUrl(
+	origin: string,
+	invitationId: string,
+	email: string,
+): string {
 	const base =
 		origin ||
 		process.env.CORS_ORIGINS?.split(",")[0]?.trim() ||
 		"http://localhost:5173";
-	return `${base}/accept-invitation/${invitationId}`;
+	// HashRouter: frontend routes are prefixed with /#/
+	return `${base}/#/accept-invitation/${invitationId}?email=${encodeURIComponent(email)}`;
 }
 
 export async function list(
@@ -89,7 +94,7 @@ export async function create(
 			inviterId,
 		});
 		await repo.updateInvitationId(staffRow.id, institutionId, invId);
-		inviteUrl = buildInviteUrl(origin, invId);
+		inviteUrl = buildInviteUrl(origin, invId, data.email);
 		return { ...staffRow, invitationId: invId, inviteUrl };
 	} catch {
 		// Invitation creation failed (e.g. email already invited) — staff is created, no link
@@ -144,7 +149,7 @@ export async function resendInvite(
 		inviterId,
 	});
 	await repo.updateInvitationId(id, institutionId, invId);
-	const inviteUrl = buildInviteUrl(origin, invId);
+	const inviteUrl = buildInviteUrl(origin, invId, staffRow.email);
 	return { invitationId: invId, inviteUrl };
 }
 
