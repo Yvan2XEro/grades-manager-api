@@ -33,7 +33,7 @@ const secret = (bytes = 32) => randomBytes(bytes).toString("hex");
 export type SeedMode = "empty" | "demo" | "custom";
 
 export type ProvisionInput = {
-	requestId: string;
+	requestId: number;
 	orgName: string;
 	subdomain: string;
 	institutionType: string;
@@ -53,7 +53,7 @@ function fileToParseResult(file: FileData): ParseResult {
 	};
 }
 
-async function step(payload: Payload, requestId: string, progressStep: number) {
+async function step(payload: Payload, requestId: number, progressStep: number) {
 	await payload.update({
 		collection: "instance-requests",
 		id: requestId,
@@ -61,7 +61,7 @@ async function step(payload: Payload, requestId: string, progressStep: number) {
 	});
 }
 
-async function fail(payload: Payload, requestId: string, errorMessage: string) {
+async function fail(payload: Payload, requestId: number, errorMessage: string) {
 	await payload.update({
 		collection: "instance-requests",
 		id: requestId,
@@ -145,7 +145,7 @@ export async function prepareSeedData(
  * Reads all required data from the Payload record.
  */
 export async function deployToDokploy(
-	requestId: string,
+	requestId: number,
 	payload: Payload,
 ): Promise<void> {
 	const record = await payload.findByID({

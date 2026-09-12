@@ -49,65 +49,134 @@
   /*
    * TKAMS fonts
    *
-   * Display is a serif: it carries the institutional register that a geometric
-   * sans cannot, and it reads as academic rather than as a software startup.
-   * Source Serif 4 is used for headings and figures only.
+   * Display is Funnel Display (bound in layout.tsx as --font-display-family):
+   * narrow and sharply cut, so the long French headlines fit without dropping a
+   * size step. Headings and figures only.
    *
-   * Body and interface stay on a humanist sans. Mono is reserved for proof —
-   * identifiers, marks, amounts, dates — never for running text.
+   * Body and interface are Montserrat: geometric like the headings rather than
+   * neutral, so running text belongs to the same family instead of reading as
+   * default UI. Mono is reserved for proof — identifiers, marks, amounts,
+   * dates — never for running text.
    */
-  --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-family), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
   --font-code: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   /*
-   * TKAMS palette — international register, West-African warmth.
+   * TKAMS palette — white ground, logo violet, saturated African accent.
    *
-   * Neutrals are built on hue 65-70 (clay/sand) instead of the previous blue
-   * 264, so every surface and every grey carries a trace of terracotta. The
-   * primary stays on hue 277: it is sampled from logo-tkams.png, whose dominant
-   * chroma measures oklch(0.584 0.230 276.6). The warm accent on hue 48 is the
-   * African anchor and the only colour allowed to compete with the primary.
+   * The brand colour is the logo's own violet, measured off logo-tkams.png:
+   * #6160FF = oklch(0.585 0.229 277). The previous palette carried it at
+   * L 0.48 / C 0.20, which is the same hue read as a duller, darker ink — the
+   * reason the site looked washed out next to its own logo.
    *
-   * Every foreground/background pair below was verified against WCAG AA
-   * (lowest measured ratio: ink-muted on bg-alt, 5.01). Chroma is capped so
-   * that all tokens stay inside the sRGB gamut — do not raise it blindly.
+   * Two rules follow from that measurement:
+   *
+   *   1. Surfaces are WHITE, not cream. A warm cream ground fights a violet
+   *      this saturated (the two pull in opposite directions on the a-axis);
+   *      white lets it sit at full strength. The greys are biased a trace
+   *      toward 277 rather than being neutral, so they read as belonging to
+   *      the violet rather than sitting beside it.
+   *
+   *   2. The accent had to gain chroma. Terracotta at C 0.115 could not hold a
+   *      viewport against a violet at C 0.229 — it simply disappeared. The
+   *      accent is now a saturated African orange at C 0.19, close enough in
+   *      chroma to answer the violet instead of being swallowed by it.
+   *
+   * Contrast, measured (WCAG, white text unless stated):
+   *   tk-primary  #6160FF  4.54  — large text and display only
+   *   tk-primary-deep      6.29  — buttons, small text, links on white
+   *   tk-accent   #FA6E1D  2.87  — FILLS AND MOTIFS ONLY, never text on white
+   *   tk-accent-deep on white 5.18 — the accent when it must carry words
+   *   tk-ink on white     15.8+
    */
 
-  /* Surfaces — warm neutrals, hue 65-70 */
-  --color-tk-bg: oklch(0.97 0.006 70);
-  --color-tk-bg-deep: oklch(0.945 0.012 68);
-  --color-tk-surface: oklch(0.995 0.003 70);
-  --color-tk-sand: oklch(0.925 0.018 66);
+  /* Surfaces — white, with greys biased toward the brand hue */
+  --color-tk-bg: oklch(1 0 0);
+  --color-tk-bg-deep: oklch(0.975 0.004 277);
+  --color-tk-surface: oklch(1 0 0);
+  --color-tk-sand: oklch(0.955 0.008 277);
 
-  /* Ink — warm greys, never pure black */
-  --color-tk-ink: oklch(0.205 0.02 65);
-  --color-tk-ink-soft: oklch(0.32 0.019 65);
-  --color-tk-ink-2: oklch(0.395 0.018 65);
-  --color-tk-muted: oklch(0.505 0.016 65);
+  /* Ink — cool greys on hue 277, so text belongs to the violet */
+  --color-tk-ink: oklch(0.19 0.026 277);
+  --color-tk-ink-soft: oklch(0.31 0.022 277);
+  --color-tk-ink-2: oklch(0.40 0.019 277);
+  --color-tk-muted: oklch(0.53 0.015 277);
+
+  /*
+   * Large headings.
+   *
+   * Display type at 2.5rem+ in weight 700-800 lays down far more ink per glyph
+   * than body copy, so `--color-tk-ink` at that size reads as a near-black slab
+   * and hardens the whole page. This is two steps lighter, with a touch more
+   * chroma so the softening reads as brand violet rather than as grey.
+   *
+   * Measured 13.72:1 on white — far above AA. Reserve it for display-size
+   * headings; UI text stays on `--color-tk-ink`.
+   */
+  --color-tk-title: oklch(0.30 0.038 277);
 
   /* Rules */
-  --color-tk-border: oklch(0.9 0.008 68);
-  --color-tk-border-strong: oklch(0.82 0.012 68);
+  --color-tk-border: oklch(0.915 0.006 277);
+  --color-tk-border-strong: oklch(0.845 0.011 277);
 
-  /* Primary — sampled from the logo */
-  --color-tk-primary: oklch(0.48 0.2 277);
-  --color-tk-primary-soft: oklch(0.955 0.032 277);
-  --color-tk-primary-deep: oklch(0.35 0.17 277);
-  --color-tk-primary-bright: oklch(0.65 0.22 277);
-  --color-tk-on-primary: oklch(0.99 0 0);
+  /* Primary — the logo violet, unmodified */
+  --color-tk-primary: oklch(0.585 0.229 277);
+  --color-tk-primary-soft: oklch(0.965 0.028 277);
+  --color-tk-primary-deep: oklch(0.505 0.223 277);
+  --color-tk-primary-bright: oklch(0.70 0.185 277);
+  --color-tk-on-primary: oklch(1 0 0);
 
-  /* Accent — terracotta. The African anchor. One per viewport. */
-  --color-tk-accent: oklch(0.5 0.13 48);
-  --color-tk-accent-deep: oklch(0.43 0.115 48);
-  --color-tk-accent-soft: oklch(0.945 0.035 52);
+  /*
+   * Accent — saturated African orange.
+   *
+   * FILLS AND MOTIFS ONLY. Warm type on a white ground reads as a warning or as
+   * a discount sticker, neither of which this product wants to say, so no
+   * running text, label or figure on the site is set in the accent.
+   *
+   * Where an eyebrow or a figure needs to stand away from the body text, it
+   * takes `--color-tk-eyebrow` below: the brand violet, deepened until it holds
+   * at small sizes (7.4:1 on white). One hue carries the type; the orange
+   * carries the surfaces.
+   */
+  --color-tk-accent: oklch(0.685 0.19 45);
+  --color-tk-accent-deep: oklch(0.545 0.175 42);
+  --color-tk-accent-soft: oklch(0.965 0.035 52);
 
-  /* Dark chapters */
-  --color-tk-dark: oklch(0.19 0.03 268);
-  --color-tk-dark-2: oklch(0.25 0.035 268);
-  --color-tk-on-dark: oklch(0.97 0.008 70);
-  --color-tk-on-dark-soft: oklch(0.79 0.014 70);
-  --color-tk-on-dark-muted: oklch(0.63 0.016 70);
+  /*
+   * Gold — motifs and fills only, never type (2.4:1 on white).
+   *
+   * Exists so woven motifs can carry a second warm colour and read as cloth
+   * rather than as a single-colour hatch.
+   */
+  --color-tk-gold: oklch(0.78 0.13 80);
+  --color-tk-gold-soft: oklch(0.955 0.045 82);
+
+  /* The only colour allowed on small type besides the inks. */
+  --color-tk-eyebrow: oklch(0.455 0.21 277);
+
+  /*
+   * Dark chapters.
+   *
+   * Foregrounds sit on hue 277 like every other neutral on the site. They used
+   * to carry a warm hue-70 tint, which read as cream against the violet ground
+   * and made dark sections look yellowed.
+   *
+   * The ground itself was a near-black (L 0.185, C 0.032) that read as a slab
+   * dropped into a light page — the jump from white to almost-black broke the
+   * theme rather than punctuating it. It is now a deep brand violet-navy:
+   * lightness raised and chroma roughly doubled, so a dark chapter reads as the
+   * darkest step of this palette instead of as an absence of colour.
+   *
+   * L 0.26 is the ceiling. Every foreground above still clears WCAG AA on it
+   * (on-dark 14.6:1, soft 8.4:1, muted 4.75:1); lifting it further would push
+   * `on-dark-muted` under 4.5:1 and make the small print non-compliant.
+   */
+  --color-tk-dark: oklch(0.26 0.062 277);
+  --color-tk-dark-2: oklch(0.325 0.072 277);
+  --color-tk-on-dark: oklch(0.975 0.005 277);
+  --color-tk-on-dark-soft: oklch(0.80 0.012 277);
+  --color-tk-on-dark-muted: oklch(0.645 0.014 277);
 
   /*
    * Semantic — these belong to data readouts (demos, tables), not decoration.
@@ -168,28 +237,33 @@
 
 :root {
   /* TKAMS Design System — mirrors the @theme block above. Keep in sync. */
-  --tk-bg: oklch(0.97 0.006 70);
-  --tk-bg-deep: oklch(0.945 0.012 68);
-  --tk-surface: oklch(0.995 0.003 70);
-  --tk-sand: oklch(0.925 0.018 66);
-  --tk-ink: oklch(0.205 0.02 65);
-  --tk-ink-soft: oklch(0.32 0.019 65);
-  --tk-ink-2: oklch(0.395 0.018 65);
-  --tk-muted: oklch(0.505 0.016 65);
-  --tk-border: oklch(0.9 0.008 68);
-  --tk-border-strong: oklch(0.82 0.012 68);
-  --tk-primary: oklch(0.48 0.2 277);
-  --tk-primary-soft: oklch(0.955 0.032 277);
-  --tk-primary-deep: oklch(0.35 0.17 277);
-  --tk-primary-bright: oklch(0.65 0.22 277);
-  --tk-on-primary: oklch(0.99 0 0);
-  --tk-accent: oklch(0.5 0.13 48);
-  --tk-accent-deep: oklch(0.43 0.115 48);
-  --tk-accent-soft: oklch(0.945 0.035 52);
-  --tk-dark: oklch(0.19 0.03 268);
-  --tk-dark-2: oklch(0.25 0.035 268);
-  --tk-on-dark: oklch(0.97 0.008 70);
-  --tk-on-dark-soft: oklch(0.79 0.014 70);
+  --tk-bg: oklch(1 0 0);
+  --tk-bg-deep: oklch(0.975 0.004 277);
+  --tk-surface: oklch(1 0 0);
+  --tk-sand: oklch(0.955 0.008 277);
+  --tk-ink: oklch(0.19 0.026 277);
+  --tk-ink-soft: oklch(0.31 0.022 277);
+  --tk-ink-2: oklch(0.40 0.019 277);
+  --tk-title: oklch(0.30 0.038 277);
+  --tk-muted: oklch(0.53 0.015 277);
+  --tk-border: oklch(0.915 0.006 277);
+  --tk-border-strong: oklch(0.845 0.011 277);
+  --tk-primary: oklch(0.585 0.229 277);
+  --tk-primary-soft: oklch(0.965 0.028 277);
+  --tk-primary-deep: oklch(0.505 0.223 277);
+  --tk-primary-bright: oklch(0.70 0.185 277);
+  --tk-on-primary: oklch(1 0 0);
+  --tk-accent: oklch(0.685 0.19 45);
+  --tk-accent-deep: oklch(0.545 0.175 42);
+  --tk-accent-soft: oklch(0.965 0.035 52);
+  --tk-gold: oklch(0.78 0.13 80);
+  --tk-gold-soft: oklch(0.955 0.045 82);
+  --tk-eyebrow: oklch(0.455 0.21 277);
+  --tk-dark: oklch(0.26 0.062 277);
+  --tk-dark-2: oklch(0.325 0.072 277);
+  --tk-on-dark: oklch(0.975 0.005 277);
+  --tk-on-dark-soft: oklch(0.80 0.012 277);
+  --tk-on-dark-muted: oklch(0.645 0.014 277);
   --tk-pass: oklch(0.48 0.11 150);
   --tk-pass-wash: oklch(0.94 0.035 150);
   --tk-warn: oklch(0.55 0.12 75);
@@ -429,6 +503,80 @@
 }
 
 /*
+ * ── Reveal ──────────────────────────────────────────────────────────────────
+ *
+ * Used by `marketing/Reveal.tsx`. One direction (content rises), one curve, one
+ * duration. Children of a staggered group carry their own `--tk-reveal-delay`,
+ * set in JS, so a nine-card grid leads the eye along the row instead of landing
+ * all at once.
+ *
+ * Guarded on `.js`: without scripting the content is simply visible, never
+ * pinned at opacity 0 by an animation that will not run.
+ */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(var(--tk-reveal-y));
+  transition:
+    opacity var(--tk-d-slow) var(--tk-ease) var(--tk-reveal-delay, 0ms),
+    transform var(--tk-d-slow) var(--tk-ease) var(--tk-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.js [data-reveal][data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+  /* Released once the entrance is done so the compositor drops the layer. */
+  will-change: auto;
+}
+
+/*
+ * ── Card lift ───────────────────────────────────────────────────────────────
+ *
+ * The one hover affordance on the marketing pages. 2px and a softened shadow:
+ * enough to say "this is one object" on a grid of bordered cards, not enough to
+ * make a page of nine of them feel like a trampoline.
+ *
+ * Deliberately not applied to anything clickable — links and buttons already
+ * carry their own colour change, and two affordances on one target read as a
+ * bug rather than as polish.
+ */
+.tk-lift {
+  transition:
+    transform var(--tk-d-base) var(--tk-ease),
+    box-shadow var(--tk-d-base) var(--tk-ease);
+}
+
+.tk-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px oklch(0.19 0.026 277 / 0.08);
+}
+
+/*
+ * ── Hero load sequence ──────────────────────────────────────────────────────
+ *
+ * The one orchestrated moment on the site. Four beats, 90ms apart, in the order
+ * a reader takes the page in: eyebrow, headline, supporting line and buttons,
+ * then the estimator. Total 270ms of offset — brisk enough that it reads as the
+ * page assembling itself rather than as a performance.
+ *
+ * No fade on the photograph above: an image that fades in reads as a slow
+ * connection, not as design.
+ */
+.js [data-hero-step] {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: tk-hero-in var(--tk-d-slow) var(--tk-ease) forwards;
+  animation-delay: calc(var(--tk-hero-step, 0) * 90ms);
+}
+
+@keyframes tk-hero-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
  * Reduced motion. Content must still be VISIBLE — reveals collapse to their
  * final state rather than being animated. Looping decorations stop entirely.
  */
@@ -448,6 +596,21 @@
     animation: none;
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+
+  .js [data-reveal],
+  .js [data-hero-step] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .tk-lift,
+  .tk-lift:hover {
+    transform: none;
+    box-shadow: none;
     transition: none;
   }
 
@@ -503,22 +666,162 @@
 
 /* TKAMS Marketing fonts */
 .tk-font-display {
-  font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-display-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-font-body {
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-font-mono {
   font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
 }
 
-/* TKAMS grid pattern for dark sections */
-.tk-grid-pattern {
+/* Range slider — the homepage estimator. */
+.tk-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tk-sand);
+  cursor: pointer;
+}
+
+.tk-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--tk-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px oklch(0.585 0.229 277 / 0.45);
+  cursor: pointer;
+}
+
+.tk-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--tk-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px oklch(0.585 0.229 277 / 0.45);
+  cursor: pointer;
+}
+
+.tk-range:focus-visible {
+  outline: 2px solid var(--tk-primary);
+  outline-offset: 4px;
+}
+
+/*
+ * Slider inside a product frame. The demos reproduce the application's own
+ * palette, so their controls take the product violet rather than the brand one
+ * and shrink to the product's denser control scale.
+ */
+.tk-range--app {
+  height: 5px;
+  background: var(--ap-border, oklch(0.88 0.006 80));
+}
+
+.tk-range--app::-webkit-slider-thumb {
+  width: 17px;
+  height: 17px;
+  border-width: 2px;
+  background: var(--ap-primary, oklch(0.48 0.2 277));
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.25);
+}
+
+.tk-range--app::-moz-range-thumb {
+  width: 17px;
+  height: 17px;
+  border-width: 2px;
+  background: var(--ap-primary, oklch(0.48 0.2 277));
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.25);
+}
+
+.tk-range--app:focus-visible {
+  outline-color: var(--ap-primary, oklch(0.48 0.2 277));
+}
+
+/*
+ * ── Bandes tissées (woven bands) ────────────────────────────────────────────
+ *
+ * The `.tk-weave` family below is a WATERMARK, capped at 5% opacity. These are
+ * its opposite: motifs meant to be SEEN, used as structure — a selvedge closing
+ * a section, a band under a heading, a field behind a figure.
+ *
+ * The vocabulary is strip-weaving geometry (kente, bogolan, adinkra-adjacent
+ * lozenges and chevrons) drawn in CSS gradients rather than quoted from any one
+ * cloth, so nothing carries a meaning that would be misused by decorating a
+ * software page with it.
+ *
+ * Each band takes its colour from `currentColor` via the `--tk-motif` custom
+ * property, so one class serves the violet, the orange, and the on-dark case
+ * without three copies.
+ */
+
+/* Chevron selvedge — a narrow horizontal strip that closes a chapter. */
+.tk-band-chevron {
+  --tk-motif: var(--tk-primary);
+  height: 14px;
   background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    linear-gradient(135deg, var(--tk-motif) 25%, transparent 25%),
+    linear-gradient(225deg, var(--tk-motif) 25%, transparent 25%);
+  background-size: 14px 14px;
+  background-position: 0 0;
+}
+
+/* Lozenge band — denser, reads as woven cloth at a glance. */
+.tk-band-lozenge {
+  --tk-motif: var(--tk-primary);
+  height: 20px;
+  background-image:
+    linear-gradient(45deg, var(--tk-motif) 25%, transparent 25%, transparent 75%, var(--tk-motif) 75%),
+    linear-gradient(45deg, var(--tk-motif) 25%, transparent 25%, transparent 75%, var(--tk-motif) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+/* Comb / ladder — vertical teeth, used as a left-edge rule on a block. */
+.tk-band-comb {
+  --tk-motif: var(--tk-accent);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--tk-motif) 0 3px,
+    transparent 3px 9px
+  );
+}
+
+/*
+ * Field — a full lozenge lattice sitting BEHIND content rather than under it.
+ * Kept at low alpha because text lands on top of this one; pair it with a mask
+ * so it fades out before it reaches body copy.
+ */
+.tk-field-weave {
+  background-image:
+    repeating-linear-gradient(45deg, oklch(0.585 0.229 277 / 0.10) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, oklch(0.585 0.229 277 / 0.10) 0 1px, transparent 1px 14px);
+  background-size: 28px 28px;
+}
+
+.tk-field-weave--accent {
+  background-image:
+    repeating-linear-gradient(45deg, oklch(0.685 0.19 45 / 0.13) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, oklch(0.685 0.19 45 / 0.13) 0 1px, transparent 1px 14px);
+  background-size: 28px 28px;
+}
+
+/*
+ * On dark grounds the lattice is drawn in light rather than in hue, and much
+ * fainter: white lines on a dark field read far stronger than violet lines on
+ * white at the same alpha, and at 0.07 the weave competed with the text sitting
+ * on top of it. 0.035 keeps it as texture you notice only when you look for it.
+ */
+.tk-field-weave--on-dark {
+  background-image:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 16px),
+    repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 16px);
   background-size: 32px 32px;
 }
 
@@ -602,7 +905,7 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background: oklch(0.955 0.006 80 / 0.85);
+  background: oklch(1 0 0 / 0.88);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--tk-border);
 }
@@ -623,7 +926,7 @@
   cursor: pointer;
   border: none;
   text-decoration: none;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-btn-primary:hover {
@@ -651,7 +954,7 @@
   transition: background 0.2s, border-color 0.2s;
   cursor: pointer;
   text-decoration: none;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-btn-ghost:hover {
@@ -673,7 +976,7 @@
   transition: background var(--tk-d-fast) var(--tk-ease);
   cursor: pointer;
   text-decoration: none;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-btn-outline:hover {

@@ -34,7 +34,7 @@ export default async function PrivacyPage() {
 					<h1
 						style={{
 							fontFamily:
-								"var(--font-sora), ui-sans-serif, system-ui, sans-serif",
+								"var(--font-display-family), ui-sans-serif, system-ui, sans-serif",
 							fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
 							fontWeight: 800,
 							letterSpacing: "-0.04em",
@@ -66,7 +66,8 @@ export default async function PrivacyPage() {
 						maxWidth: "48rem",
 						margin: "0 auto",
 						color: "var(--tk-ink)",
-						fontFamily: "var(--font-inter), system-ui, sans-serif",
+						fontFamily:
+							"var(--font-body-family), ui-sans-serif, system-ui, sans-serif",
 						lineHeight: 1.75,
 					}}
 				>
@@ -337,7 +338,8 @@ function LegalSection({
 		<div style={{ marginBottom: "2.5rem" }}>
 			<h2
 				style={{
-					fontFamily: "var(--font-sora), ui-sans-serif, system-ui, sans-serif",
+					fontFamily:
+						"var(--font-display-family), ui-sans-serif, system-ui, sans-serif",
 					fontSize: "1.1875rem",
 					fontWeight: 700,
 					color: "var(--tk-ink)",

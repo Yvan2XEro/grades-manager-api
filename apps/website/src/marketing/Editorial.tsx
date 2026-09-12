@@ -5,14 +5,17 @@ import type React from "react";
  * marketing site a consistent "academic report / institutional" rhythm:
  * numbered sections, hairline rules, restrained typographic eyebrows.
  *
- * Fonts (Sora display / Inter body / JetBrains mono) and the TKAMS color
+ * Fonts (Funnel Display headings / Montserrat body / JetBrains mono) and the TKAMS color
  * tokens are intentionally reused — only the layout language changes.
  */
 
 type Theme = "light" | "dark";
 
-const ink = (theme: Theme) =>
+const _ink = (theme: Theme) =>
 	theme === "dark" ? "text-tk-on-dark" : "text-tk-ink";
+/** Display-size headings take the softened title ink, not the full-strength one. */
+const titleInk = (theme: Theme) =>
+	theme === "dark" ? "text-tk-on-dark" : "text-tk-title";
 const inkSoft = (theme: Theme) =>
 	theme === "dark" ? "text-tk-on-dark-soft" : "text-tk-ink-2";
 const ruleColor = (theme: Theme) =>
@@ -74,7 +77,7 @@ export function SectionLabel({
 /**
  * Big editorial heading.
  *
- * Sora at 700 with slightly relaxed tracking: the previous extrabold/-0.04em
+ * Funnel Display at 700 with slightly relaxed tracking: the previous extrabold/-0.04em
  * setting was tight enough to read as a consumer product page. Backing both off
  * a step is what moves the register towards an institution without changing
  * the typeface.
@@ -92,7 +95,7 @@ export function SectionHeading({
 }) {
 	return (
 		<Tag
-			className={`font-bold font-display text-[clamp(1.9rem,1.3rem+1.8vw,3rem)] leading-[1.12] tracking-[-0.028em] ${ink(
+			className={`font-bold font-display text-[clamp(1.9rem,1.3rem+1.8vw,3rem)] leading-[1.12] tracking-[-0.028em] ${titleInk(
 				theme,
 			)} ${className}`}
 		>
@@ -100,11 +103,6 @@ export function SectionHeading({
 		</Tag>
 	);
 }
-
-/*
- * The woven motifs that carry the design's African anchor live in ./Motifs.tsx
- * as inline SVG (MotifWeave, MotifChevron, MotifComb, MotifBand, MotifCorner).
- */
 
 /** Supporting paragraph on a deliberately narrow measure. */
 export function Lede({
@@ -158,7 +156,12 @@ export function EditorialSection({
 	return (
 		<section id={id} className={`${bg} ${className}`}>
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
-				<Rule theme={theme} />
+				{/*
+				 * No opening rule. Sections alternate between the light ground and
+				 * the primary, so the change of tone already separates them; adding a
+				 * hairline on top of a colour change draws the seam twice and is what
+				 * made the page read as ruled paper.
+				 */}
 				<div className="grid grid-cols-1 gap-x-12 gap-y-10 py-16 lg:grid-cols-12 lg:py-24">
 					<div className="lg:col-span-4">
 						<div className="lg:sticky lg:top-28">

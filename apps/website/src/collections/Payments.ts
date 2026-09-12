@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { relationId } from "../lib/relation";
 
 export const Payments: CollectionConfig = {
 	slug: "payments",
@@ -38,10 +39,11 @@ export const Payments: CollectionConfig = {
 					(operation === "create" ||
 						(operation === "update" && previousDoc?.status !== "completed"))
 				) {
-					const invoiceId =
-						typeof doc.invoice === "object"
-							? (doc.invoice as { id: string }).id
-							: String(doc.invoice);
+					const invoiceId = relationId(doc.invoice);
+					if (invoiceId === null) {
+						console.error("Paiement sans facture liee", doc.id);
+						return;
+					}
 
 					await req.payload
 						.update({

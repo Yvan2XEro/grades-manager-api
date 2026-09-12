@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { getPayload } from "payload";
 import { getRequestUser } from "@/lib/get-request-user";
 import { getNotchPayProvider } from "@/lib/payments/notchpay";
+import { relationId } from "@/lib/relation";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -26,10 +27,7 @@ export async function POST(request: NextRequest) {
 			return Response.json({ error: "Invoice not found" }, { status: 404 });
 		}
 
-		const clientId =
-			typeof invoice.client === "object"
-				? (invoice.client as { id: string }).id
-				: invoice.client;
+		const clientId = relationId(invoice.client);
 
 		if (String(clientId) !== String(user.id)) {
 			return Response.json({ error: "Forbidden" }, { status: 403 });
@@ -46,7 +44,6 @@ export async function POST(request: NextRequest) {
 
 		const payment = await payload.create({
 			collection: "payments",
-			// biome-ignore lint/suspicious/noExplicitAny: Payload draft type inference
 			data: {
 				reference: "pending",
 				invoice: body.invoiceId,

@@ -2,6 +2,7 @@ import configPromise from "@payload-config";
 import { redirect } from "next/navigation";
 import { getPayload } from "payload";
 import { getNotchPayProvider } from "@/lib/payments/notchpay";
+import { relationId } from "@/lib/relation";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
@@ -41,10 +42,11 @@ export async function GET(request: Request) {
 				data: { status: "completed" },
 			});
 
-			const invoiceId =
-				typeof payment.invoice === "object"
-					? (payment.invoice as { id: string }).id
-					: String(payment.invoice);
+			const invoiceId = relationId(payment.invoice);
+			if (invoiceId === null) {
+				console.error("Paiement sans facture liee", payment.id);
+				return;
+			}
 
 			await payload.update({
 				collection: "invoices",

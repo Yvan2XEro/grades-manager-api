@@ -123,7 +123,8 @@ export async function POST(
 			.create({
 				collection: "instance-events",
 				data: {
-					instance: id,
+					// `id` vient du segment d'URL, donc toujours une chaine.
+					instance: Number(id),
 					eventType: ACTION_TO_EVENT[action],
 					actorEmail: user.email ?? undefined,
 				},

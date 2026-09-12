@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { mongooseAdapter } from "@payloadcms/db-mongodb";
+import { postgresAdapter } from "@payloadcms/db-postgres";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import { resendAdapter } from "@payloadcms/email-resend";
 import { buildConfig, type PayloadRequest } from "payload";
@@ -96,8 +96,21 @@ export default buildConfig({
 			}),
 	// This config helps us configure global or default features that the other editors can inherit
 	editor: defaultLexical,
-	db: mongooseAdapter({
-		url: process.env.DATABASE_URL || "",
+	// La base du site est PostgreSQL (tkams-website-db). L adaptateur Mongo
+	// venait du template Payload et n avait jamais ete adapte : le build
+	// echouait sur « Invalid scheme, expected mongodb:// » a chaque page
+	// adossee au CMS.
+	db: postgresAdapter({
+		pool: {
+			connectionString: process.env.DATABASE_URL || "",
+		},
+		// Le schema Postgres existe deja (30 tables Payload). Le push automatique
+		// de developpement tentait de le reconcilier et echouait sur
+		// « ALTER TABLE pages_blocks_archive DROP CONSTRAINT ... id_not_null »
+		// (la colonne est dans une cle primaire), ce qui cassait toutes les pages
+		// adossees au CMS. On ne laisse pas Payload muter un schema en place :
+		// les evolutions passent par des migrations versionnees.
+		push: false,
 	}),
 	collections: [
 		Pages,

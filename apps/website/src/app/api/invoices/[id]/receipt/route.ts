@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
 import { getPayload } from "payload";
 import { createElement } from "react";
 import { getRequestUser } from "@/lib/get-request-user";
+import { relationId } from "@/lib/relation";
 
 const styles = StyleSheet.create({
 	page: {
@@ -269,10 +270,7 @@ export async function GET(
 		return Response.json({ error: "Not found" }, { status: 404 });
 	}
 
-	const clientId =
-		typeof invoice.client === "object"
-			? (invoice.client as { id: string }).id
-			: invoice.client;
+	const clientId = relationId(invoice.client);
 
 	const isAdmin = (user as { role?: string }).role === "super_admin";
 	if (!isAdmin && String(clientId) !== String(user.id)) {

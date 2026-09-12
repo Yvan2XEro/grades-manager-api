@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import configPromise from "@payload-config";
 import { getPayload } from "payload";
 import { getNotchPayProvider } from "@/lib/payments/notchpay";
+import { relationId } from "@/lib/relation";
 
 interface NotchPayWebhookEvent {
 	id: string;
@@ -117,10 +118,11 @@ async function markCompleted(merchantRef: string): Promise<void> {
 		data: { status: "completed" },
 	});
 
-	const invoiceId =
-		typeof payment.invoice === "object"
-			? (payment.invoice as { id: string }).id
-			: String(payment.invoice);
+	const invoiceId = relationId(payment.invoice);
+	if (invoiceId === null) {
+		console.error("Paiement sans facture liee", payment.id);
+		return;
+	}
 
 	await payload.update({
 		collection: "invoices",

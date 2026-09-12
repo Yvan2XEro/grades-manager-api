@@ -658,7 +658,7 @@ export function RegisterPage({ dict: d }: { dict: Dict }) {
 					<span className="inline-block font-code font-semibold text-[0.7rem] text-tk-primary uppercase tracking-[0.14em]">
 						{d.register.badge}
 					</span>
-					<h1 className="mt-4 font-display font-extrabold text-[clamp(1.875rem,4vw,2.75rem)] text-tk-ink tracking-[-0.04em]">
+					<h1 className="mt-4 font-display font-extrabold text-[clamp(1.875rem,4vw,2.75rem)] text-tk-title tracking-[-0.04em]">
 						{d.register.title}
 					</h1>
 					<p className="mx-auto mt-4 max-w-xl font-body text-[1rem] text-tk-ink-2 leading-[1.7]">

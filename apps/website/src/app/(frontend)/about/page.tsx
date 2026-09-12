@@ -31,7 +31,7 @@ export default async function AboutPage() {
 					<div className="lg:col-span-4">
 						<div className="lg:sticky lg:top-28">
 							<SectionLabel number="01">{a.mission_title}</SectionLabel>
-							<p className="mt-6 font-bold font-display text-[clamp(1.25rem,2vw,1.625rem)] text-tk-ink leading-[1.3] tracking-[-0.02em]">
+							<p className="mt-6 font-bold font-display text-[clamp(1.25rem,2vw,1.625rem)] text-tk-title leading-[1.3] tracking-[-0.02em]">
 								{a.mission}
 							</p>
 						</div>

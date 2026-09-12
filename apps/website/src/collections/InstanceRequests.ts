@@ -22,7 +22,12 @@ export const InstanceRequests: CollectionConfig = {
 	hooks: {
 		afterChange: [
 			async ({ doc, previousDoc, operation, req }) => {
-				const id = String(doc.id);
+				// Identifiant numerique (PostgreSQL, sequence). `ref` en conserve une
+				// forme lisible a largeur fixe pour les numeros de facture : sous
+				// MongoDB, `id.slice(0, 6)` decoupait un ObjectId hexadecimal, ce qui
+				// n'a plus de sens sur un entier.
+				const id = Number(doc.id);
+				const ref = String(doc.id).padStart(6, "0");
 
 				// Create "submitted" event on first creation
 				if (operation === "create") {
@@ -96,8 +101,8 @@ export const InstanceRequests: CollectionConfig = {
 							.create({
 								collection: "invoices",
 								data: {
-									invoiceNumber: `INV-${year}-${id.slice(0, 6).toUpperCase()}`,
-									client: String(clientId),
+									invoiceNumber: `INV-${year}-${ref}`,
+									client: clientId,
 									instance: id,
 									amount: 0,
 									currency: "XAF",

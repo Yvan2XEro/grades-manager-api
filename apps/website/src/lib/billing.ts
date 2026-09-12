@@ -1,4 +1,5 @@
 import type { Payload } from "payload";
+import { relationId } from "./relation";
 
 /**
  * Finds or creates the subscription linked to an invoice and marks it active.
@@ -6,7 +7,7 @@ import type { Payload } from "payload";
  * when the subscription transitions to active, not on subsequent calls.
  */
 export async function activateSubscriptionForInvoice(
-	invoiceId: string,
+	invoiceId: number,
 	payload: Payload,
 ): Promise<void> {
 	const invoice = await payload
@@ -14,16 +15,10 @@ export async function activateSubscriptionForInvoice(
 		.catch(() => null);
 	if (!invoice) return;
 
-	const instanceId =
-		typeof invoice.instance === "object"
-			? (invoice.instance as { id: string }).id
-			: (invoice.instance as string | null | undefined);
-	const clientId =
-		typeof invoice.client === "object"
-			? (invoice.client as { id: string }).id
-			: (invoice.client as string);
+	const instanceId = relationId(invoice.instance);
+	const clientId = relationId(invoice.client);
 
-	if (!instanceId || !clientId) return;
+	if (instanceId === null || clientId === null) return;
 
 	const existing = await payload.find({
 		collection: "subscriptions",

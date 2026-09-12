@@ -2,29 +2,89 @@ import type { Metadata } from "next";
 import { getDict, getLocale } from "@/i18n";
 import { Cta } from "@/marketing/sections/Cta";
 import { Deployment } from "@/marketing/sections/Deployment";
+import { Domains } from "@/marketing/sections/Domains";
 import { Faq } from "@/marketing/sections/Faq";
-import { Features } from "@/marketing/sections/Features";
-import { Hero } from "@/marketing/sections/Hero";
-import { Modules } from "@/marketing/sections/Modules";
-import { Pain } from "@/marketing/sections/Pain";
-import { Pricing } from "@/marketing/sections/Pricing";
-import { Stats } from "@/marketing/sections/Stats";
+import { HomeHero } from "@/marketing/sections/HomeHero";
+import { PhotoBand } from "@/marketing/sections/PhotoBand";
+import { ProductProof } from "@/marketing/sections/ProductProof";
+import { TheCost } from "@/marketing/sections/TheCost";
+import { Transparency } from "@/marketing/sections/Transparency";
 import { Trust } from "@/marketing/sections/Trust";
+import { TwoSolutions } from "@/marketing/sections/TwoSolutions";
 import { Workflow } from "@/marketing/sections/Workflow";
 
+/**
+ * Home.
+ *
+ * The order follows the commercial proposal's own argument, because that
+ * document is a far better sales narrative than the site ever had:
+ *
+ *   1. Hero + estimator   — what will this cost me? (answered on first drag)
+ *   2. The cost           — what does doing nothing already cost me?
+ *   3. Two solutions      — urgent answer vs structural investment
+ *   4. Domains            — what the platform covers
+ *   5. Product proof      — the software, operable, right here
+ *   6. Workflow           — how a year runs through it
+ *   7. Transparency       — what is NOT included, and what we guarantee
+ *   8. Deployment / Trust / FAQ / CTA
+ *
+ * `Stats`, `Features` and `Pricing` were dropped from this page: the figures
+ * they carried are now inside the estimator and the cost section, the four
+ * "differentiators" are stated by the domain grid and the live demos, and the
+ * pricing table belongs on /tarifs where every line can be explained properly.
+ */
 export default async function HomePage() {
 	const locale = await getLocale();
 	const dict = getDict(locale);
 
 	return (
-		<main style={{ paddingTop: 0 }}>
-			<Hero dict={dict} />
-			<Stats dict={dict} />
-			<Pain dict={dict} />
-			<Features dict={dict} />
-			<Modules dict={dict} />
-			<Workflow dict={dict} />
-			<Pricing dict={dict} />
+		<main>
+			<HomeHero dict={dict} locale={locale} />
+
+			<TheCost locale={locale} />
+			<TwoSolutions locale={locale} />
+
+			{/*
+			 * First interlude — closes the "what it costs you" argument and opens
+			 * the product itself. Without it the page runs from the hero to the
+			 * demos through four sections of type and flat colour.
+			 */}
+			<PhotoBand
+				src="/onreceipt/photo-classe.jpg"
+				alt={locale === "en" ? "A class in session" : "Une classe en cours"}
+				caption={
+					locale === "en"
+						? "The rules the platform applies are the ones your own regulations already set."
+						: "Les règles que la plateforme applique sont celles que votre règlement fixe déjà."
+				}
+			/>
+
+			<Domains dict={dict} />
+
+			<ProductProof locale={locale} />
+			<Workflow dict={dict} locale={locale} />
+
+			{/*
+			 * Second interlude — between how a year runs and what we refuse to
+			 * promise, which is the page's most demanding passage of reading.
+			 */}
+			<PhotoBand
+				src="/onreceipt/photo-poste.jpg"
+				alt={
+					locale === "en"
+						? "A registrar's workstation"
+						: "Un poste de travail au service de la scolarité"
+				}
+				caption={
+					locale === "en"
+						? "The people who run the academic year are the people we build for."
+						: "Ceux qui font tourner l'année académique sont ceux pour qui nous construisons."
+				}
+				align="right"
+			/>
+
+			<Transparency locale={locale} />
+
 			<Deployment dict={dict} />
 			<Trust dict={dict} locale={locale} />
 			<Faq dict={dict} />
@@ -34,9 +94,9 @@ export default async function HomePage() {
 }
 
 export const metadata: Metadata = {
-	title: "TKAMS — Le SIS qui transforme vos délibérations",
+	title: "TKAMS — Gestion académique LMD pour l'enseignement supérieur",
 	description:
-		"TKAMS est une plateforme intégrée de gestion académique LMD pour les institutions africaines. Délibérations automatiques, exports officiels, RBAC, DIPLOMATION native.",
+		"Plateforme intégrée de gestion académique LMD : admissions, scolarité, frais, notes, délibérations et documents officiels. Tarification publique, engagements écrits.",
 	openGraph: {
 		title: "TKAMS — Tefoye and Kana Academic Management System",
 		description:

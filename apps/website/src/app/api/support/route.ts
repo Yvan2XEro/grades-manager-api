@@ -7,7 +7,7 @@ import { getRequestUser } from "@/lib/get-request-user";
 const schema = z.object({
 	subject: z.string().min(2).max(200),
 	message: z.string().min(10).max(5000),
-	instanceId: z.string().optional(),
+	instanceId: z.coerce.number().int().positive().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 		data: {
 			subject,
 			message,
-			from: user.id as string,
+			from: user.id,
 			instance: instanceId ?? undefined,
 			status: "open",
 		},

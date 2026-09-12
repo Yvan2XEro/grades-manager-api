@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 			adminName: data.adminName,
 			adminEmail: data.adminEmail,
 			adminPasswordTemp: data.adminPassword,
-			client: user.id as string,
+			client: user.id,
 			status: "pending_approval",
 			progressStep: 0,
 			seedMode: data.seedMode as "empty" | "demo" | "custom",
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 	// Fire-and-forget — fast (string building + one DB write).
 	prepareSeedData(
 		{
-			requestId: String(record.id),
+			requestId: record.id,
 			orgName: data.orgName,
 			subdomain: data.subdomain,
 			institutionType: data.institutionType,

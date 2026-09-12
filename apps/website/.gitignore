@@ -20,3 +20,18 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# TypeScript incremental build cache (machine-local, 1 MB of churn)
+*.tsbuildinfo
+
+# Raw stock photography — unoptimised sources, not referenced by the site.
+# Optimised assets that pages actually use live in public/onreceipt/ and are committed.
+public/images/
+
+# Source photography - multi-megabyte originals. Only the optimised
+# WebP files in public/images/web/ are served; re-generate them with sharp
+# if a source is replaced.
+public/images/*.jpg
+public/images/*.jpeg
+public/images/*.png
+!public/images/web/

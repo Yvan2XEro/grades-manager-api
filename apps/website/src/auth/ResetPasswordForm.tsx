@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import type { Dict } from "@/i18n";
-import { DeliberationDemo } from "@/marketing/demos/DeliberationDemo";
+import type { Dict, Locale } from "@/i18n";
+import { DeliberationDemo } from "@/marketing/app-demo/DeliberationDemo";
 import { AuthShell } from "./AuthShell";
 
 type FormData = { password: string; confirm: string };
@@ -57,7 +57,10 @@ export function ResetPasswordForm({ dict: d }: { dict: Dict }) {
 
 	if (!token) {
 		return (
-			<AuthShell dict={d} demo={<DeliberationDemo t={d.demos.delib} />}>
+			<AuthShell
+				dict={d}
+				demo={<DeliberationDemo locale={d.locale as Locale} />}
+			>
 				<div className="flex flex-col items-center gap-4 py-8 text-center">
 					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-3xl">
 						✗
@@ -81,7 +84,10 @@ export function ResetPasswordForm({ dict: d }: { dict: Dict }) {
 
 	if (success) {
 		return (
-			<AuthShell dict={d} demo={<DeliberationDemo t={d.demos.delib} />}>
+			<AuthShell
+				dict={d}
+				demo={<DeliberationDemo locale={d.locale as Locale} />}
+			>
 				<div className="flex flex-col items-center gap-4 py-8 text-center">
 					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-3xl">
 						✓
@@ -98,7 +104,7 @@ export function ResetPasswordForm({ dict: d }: { dict: Dict }) {
 	}
 
 	return (
-		<AuthShell dict={d} demo={<DeliberationDemo t={d.demos.delib} />}>
+		<AuthShell dict={d} demo={<DeliberationDemo locale={d.locale as Locale} />}>
 			<div>
 				<h1 className="mb-1 font-bold font-display text-[1.625rem] text-tk-ink tracking-[-0.03em]">
 					{rp.title}

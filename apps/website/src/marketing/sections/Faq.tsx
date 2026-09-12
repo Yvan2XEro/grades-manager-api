@@ -29,7 +29,7 @@ export function Faq({ dict: d, number = "09" }: FaqProps) {
 					{d.nav.contact} →
 				</a>
 			}
-			bg="bg-tk-surface"
+			bg="bg-tk-bg-deep"
 		>
 			<div>
 				{d.faq.items.map((item, i) => {
