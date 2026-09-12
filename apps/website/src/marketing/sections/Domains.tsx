@@ -50,7 +50,7 @@ export function Domains({ dict: d, locale }: { dict: Dict; locale: Locale }) {
 		<section id="modules">
 			<div className="tk-section mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="flex flex-wrap items-end justify-between gap-6">
-					<h2 className="tk-headline max-w-[20ch] text-tk-title">
+					<h2 className="tk-headline tk-gradient-text max-w-[20ch]">
 						{copy.title}
 					</h2>
 					{/*
@@ -87,17 +87,20 @@ export function Domains({ dict: d, locale }: { dict: Dict; locale: Locale }) {
 								{
 									token: "tk-primary",
 									label: en ? "Enrolment" : "Inscriptions",
+									scene: "enrolment",
 								},
 								{
 									token: "tk-primary",
 									label: en ? "Marks" : "Notes",
 									tint: 0.72,
+									scene: "marks",
 								},
 								{
 									token: "tk-accent",
 									label: en ? "Deliberation" : "Délibération",
+									scene: "deliberation",
 								},
-								{ token: "tk-dark", label: "Documents" },
+								{ token: "tk-dark", label: "Documents", scene: "documents" },
 							]}
 						/>
 					</Reveal>
