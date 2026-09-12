@@ -80,17 +80,23 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 # Default port (override with PORT env var)
 EXPOSE 3001
 
+# Non-root user for container security — created BEFORE COPY so --chown works.
+# Pre-create writable dirs so Docker volume mounts inherit the right ownership.
+RUN groupadd -r app && useradd -r -g app -s /sbin/nologin app -m -d /home/app && \
+    mkdir -p /home/app/data/pglite /home/app/storage/uploads && \
+    chown -R app:app /home/app
+
 # Bundled Hono server + PGlite WASM blobs
-COPY --from=builder /repo/apps/secondary/out/ ./out/
+COPY --from=builder --chown=app:app /repo/apps/secondary/out/ ./out/
 
 # Built React SPA (served by Hono serveStatic from ./dist)
-COPY --from=builder /repo/apps/secondary/dist/ ./dist/
+COPY --from=builder --chown=app:app /repo/apps/secondary/dist/ ./dist/
 
 # Drizzle SQL migration files — applied at startup by pushSchema()
-COPY --from=builder /repo/apps/secondary/src/db/migrations/ ./migrations/
+COPY --from=builder --chown=app:app /repo/apps/secondary/src/db/migrations/ ./migrations/
 
-# Non-root user for container security
-RUN groupadd -r app && useradd -r -g app -s /sbin/nologin app
+# bun 1.3+ writes cache to $HOME/.bun; give it a real home dir
+ENV HOME=/home/app
 USER app
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
