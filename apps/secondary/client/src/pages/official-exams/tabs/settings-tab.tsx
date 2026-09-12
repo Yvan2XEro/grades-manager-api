@@ -65,6 +65,7 @@ export function ExamSettingsTab() {
 
 	const typed = session as SessionShape | undefined;
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{
 			label: t("official_exams.title", "Official exams"),
 			href: "/official-exams",

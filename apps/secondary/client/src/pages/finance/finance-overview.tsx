@@ -22,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
@@ -396,6 +397,10 @@ function FeeScheduleDialog({
 
 export function FinanceOverview() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.finance", "Finance") },
+	]);
 	const [feeTypeFilter, setFeeTypeFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
 	const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);

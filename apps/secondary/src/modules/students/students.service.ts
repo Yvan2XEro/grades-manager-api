@@ -27,7 +27,7 @@ export async function create(
 
 export async function get(id: string, institutionId: string) {
 	const student = await repo.findById(id, institutionId);
-	if (!student) throw notFound("Student not found");
+	if (!student) throw notFound("STUDENT_NOT_FOUND");
 	return student;
 }
 
@@ -37,7 +37,7 @@ export async function updateStudent(
 	data: Partial<typeof import("../../db/schema").students.$inferInsert>,
 ) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Student not found");
+	if (!existing) throw notFound("STUDENT_NOT_FOUND");
 	const updated = await repo.update(id, institutionId, data);
 	return updated!;
 }

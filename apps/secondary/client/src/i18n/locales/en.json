@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "TKAMS Secondaire",
-    "tagline": "MINESEC School Management"
+    "tagline": "School Management"
   },
   "setup": {
     "create_institution_title": "Create your institution",
@@ -1241,7 +1241,40 @@
     "SUBJECT_ALREADY_ASSIGNED": "This subject is already assigned to this class.",
     "STUDENT_ALREADY_ENROLLED": "This student is already enrolled in this class.",
     "ASSESSMENT_LOCKED": "Grades are locked and can no longer be edited.",
-    "DUPLICATE_ENTRY": "A record with this information already exists."
+    "DUPLICATE_ENTRY": "A record with this information already exists.",
+    "ACADEMIC_YEAR_NOT_FOUND": "Academic year not found.",
+    "ASSIGNMENT_ALREADY_EXISTS": "This subject assignment already exists.",
+    "ASSIGNMENT_NOT_FOUND": "Assignment not found.",
+    "ATTENDANCE_RECORD_NOT_FOUND": "Attendance record not found.",
+    "ATTENDANCE_SESSION_NOT_FOUND": "Attendance session not found.",
+    "CANDIDATE_ALREADY_REGISTERED": "This student is already registered for this exam session.",
+    "CANDIDATE_NOT_FOUND": "Candidate registration not found.",
+    "CLASS_CODE_EXISTS": "A class with this code already exists.",
+    "CLASS_HAS_ENROLLMENTS": "Cannot delete a class that has enrolled students.",
+    "CLASS_NOT_FOUND": "Class not found.",
+    "COUNCIL_ALREADY_EXISTS": "A council already exists for this class and term.",
+    "COUNCIL_DECISION_EXISTS": "A decision already exists for this student in this council.",
+    "COUNCIL_DECISION_NOT_FOUND": "Council decision not found.",
+    "COUNCIL_NOT_FOUND": "Class council not found.",
+    "ENROLLMENT_NOT_FOUND": "Enrollment not found.",
+    "EXAM_SESSION_NOT_FOUND": "Exam session not found.",
+    "FEE_SCHEDULE_NOT_FOUND": "Fee schedule not found.",
+    "NO_REPORT_CARDS_FOUND": "No report cards found for this class and term.",
+    "NO_STAFF_PROFILE": "No staff profile found for your account.",
+    "NOT_ASSIGNED_TO_CLASS": "You are not assigned to teach this subject in this class.",
+    "REPORT_CARD_NOT_FOUND": "Report card not found.",
+    "REPORT_CARD_NO_SNAPSHOT": "This report card has no data.",
+    "STAFF_ACCOUNT_EXISTS": "This staff member already has an active account.",
+    "STAFF_EMAIL_EXISTS": "A staff member with this email already exists.",
+    "STAFF_NOT_FOUND": "Staff member not found.",
+    "STUDENT_NO_MNU": "This student has no MNU (Matricule National Unique). Set their MNU before registering for exams.",
+    "SUBJECT_CODE_EXISTS": "A subject with this code already exists.",
+    "SUBJECT_NOT_FOUND": "Subject not found.",
+    "TERM_ALREADY_EXISTS": "A term with this number already exists for this academic year.",
+    "TERM_NOT_FOUND": "Term not found.",
+    "TRACK_CODE_EXISTS": "A track with this code already exists.",
+    "TRACK_NOT_FOUND": "Track not found.",
+    "USER_NOT_FOUND": "User not found."
   },
   "csv_import": {
     "btn": "Import CSV",

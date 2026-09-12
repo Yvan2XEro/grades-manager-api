@@ -26,12 +26,12 @@ export async function create(
 		data.academicYearId,
 		institutionId,
 	);
-	if (existing) throw conflict("This assignment already exists");
+	if (existing) throw conflict("ASSIGNMENT_ALREADY_EXISTS");
 	return repo.insert({ institutionId, ...data });
 }
 
 export async function remove(id: string, institutionId: string) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Assignment not found");
+	if (!existing) throw notFound("ASSIGNMENT_NOT_FOUND");
 	await repo.remove(id, institutionId);
 }

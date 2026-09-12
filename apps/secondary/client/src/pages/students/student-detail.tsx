@@ -22,6 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
@@ -247,6 +248,14 @@ export function StudentDetail() {
 		{ id: id! },
 		{ enabled: !!id },
 	);
+
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.students", "Students"), href: "/students" },
+		{
+			label: student ? `${student.lastName} ${student.firstName}` : "...",
+		},
+	]);
 
 	const { data: enrollmentHistory = [] } =
 		trpc.enrollments.listByStudent.useQuery(

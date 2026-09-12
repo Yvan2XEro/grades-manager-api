@@ -37,6 +37,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { authClient } from "@/lib/auth-client";
@@ -446,14 +453,16 @@ function AddToInstitutionDialog({
 		id: string;
 		name: string;
 	} | null>(null);
-	const [role, setRole] = useState<"admin" | "member">("member");
+	const [role, setRole] = useState<"admin" | "principal" | "teacher">(
+		"teacher",
+	);
 
 	const add = trpc.systemAdmin.addMember.useMutation({
 		onSuccess: () => {
 			onDone();
 			onClose();
 			setInstitution(null);
-			setRole("member");
+			setRole("teacher");
 		},
 		onError: (err) => errorToast(err, t),
 	});
@@ -484,16 +493,22 @@ function AddToInstitutionDialog({
 						<Combobox
 							options={[
 								{
-									value: "member",
-									label: t("sysadmin.users.detail.role_member", "Member"),
+									value: "teacher",
+									label: t("roles.teacher", "Teacher"),
+								},
+								{
+									value: "principal",
+									label: t("roles.principal", "Principal"),
 								},
 								{
 									value: "admin",
-									label: t("sysadmin.users.role_admin", "Admin"),
+									label: t("roles.admin", "Admin"),
 								},
 							]}
 							value={role}
-							onValueChange={(v) => setRole(v as "admin" | "member")}
+							onValueChange={(v) =>
+								setRole(v as "admin" | "principal" | "teacher")
+							}
 							placeholder={t(
 								"sysadmin.users.detail.select_role",
 								"Select role",
@@ -743,24 +758,33 @@ export function UserMembershipsTab() {
 				if (!m.institutionId) return null;
 				return (
 					<div className="flex items-center gap-1">
-						<Button
-							variant="ghost"
-							size="sm"
-							className="h-7 text-xs"
+						<Select
+							value={m.orgRole ?? "teacher"}
 							disabled={updateRole.isPending}
-							onClick={() =>
+							onValueChange={(val) =>
 								id &&
 								updateRole.mutate({
 									institutionId: m.institutionId!,
 									userId: id,
-									role: m.orgRole === "admin" ? "member" : "admin",
+									role: val as "admin" | "principal" | "teacher",
 								})
 							}
 						>
-							{m.orgRole === "admin"
-								? t("sysadmin.users.detail.set_as_member", "Set as Member")
-								: t("sysadmin.users.detail.set_as_admin", "Set as Admin")}
-						</Button>
+							<SelectTrigger className="h-7 w-32 text-xs">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="teacher">
+									{t("roles.teacher", "Teacher")}
+								</SelectItem>
+								<SelectItem value="principal">
+									{t("roles.principal", "Principal")}
+								</SelectItem>
+								<SelectItem value="admin">
+									{t("roles.admin", "Admin")}
+								</SelectItem>
+							</SelectContent>
+						</Select>
 						<Button
 							variant="ghost"
 							size="icon"

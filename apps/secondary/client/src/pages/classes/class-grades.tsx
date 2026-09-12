@@ -25,6 +25,7 @@ export function ClassGrades() {
 		{ enabled: !!classId },
 	);
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("nav.classes", "Classes"), href: "/classes" },
 		{ label: klass?.name ?? "…", href: `/classes/${classId}` },
 		{ label: t("classes.tab_grades", "Grades") },

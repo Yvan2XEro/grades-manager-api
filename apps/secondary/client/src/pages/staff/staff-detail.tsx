@@ -69,6 +69,7 @@ export function StaffProfileTab() {
 	const { t } = useTranslation();
 	const staff = useOutletContext<StaffData>();
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("nav.staff", "Staff"), href: "/staff" },
 		{
 			label: `${staff.firstName} ${staff.lastName}`,

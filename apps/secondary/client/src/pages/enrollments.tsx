@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PillCombobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 import { EnrollExistingStudentDialog } from "./enrollments/enroll-existing-student-dialog";
 
@@ -79,6 +80,10 @@ function StatusBadge({ status }: { status: string | null }) {
 
 export function Enrollments() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.enrollments", "Enrollments") },
+	]);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 	const [search, setSearch] = useState("");

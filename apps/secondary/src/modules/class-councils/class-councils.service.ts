@@ -23,7 +23,7 @@ export async function list(
 
 export async function getCouncil(id: string, institutionId: string) {
 	const council = await repo.findById(id, institutionId);
-	if (!council) throw notFound("Class council not found");
+	if (!council) throw notFound("COUNCIL_NOT_FOUND");
 	return council;
 }
 
@@ -45,7 +45,7 @@ export async function createCouncil(
 		institutionId,
 	);
 	if (existing) {
-		throw conflict("A council already exists for this class and term");
+		throw conflict("COUNCIL_ALREADY_EXISTS");
 	}
 
 	return repo.insert({
@@ -73,7 +73,7 @@ export async function updateCouncil(
 	},
 ) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Class council not found");
+	if (!existing) throw notFound("COUNCIL_NOT_FOUND");
 
 	const updateData: Record<string, unknown> = {};
 	if (data.status !== undefined) updateData.status = data.status;
@@ -99,7 +99,7 @@ export async function updateCouncil(
 export async function listDecisions(councilId: string, institutionId: string) {
 	// Verify council exists
 	const council = await repo.findById(councilId, institutionId);
-	if (!council) throw notFound("Class council not found");
+	if (!council) throw notFound("COUNCIL_NOT_FOUND");
 
 	return repo.findAllDecisions(councilId, institutionId);
 }
@@ -115,7 +115,7 @@ export async function addDecision(
 ) {
 	// Verify council exists
 	const council = await repo.findById(data.councilId, institutionId);
-	if (!council) throw notFound("Class council not found");
+	if (!council) throw notFound("COUNCIL_NOT_FOUND");
 
 	// Check if decision already exists for this enrollment
 	const existing = await repo.findDecisionByCouncilAndEnrollment(
@@ -124,9 +124,7 @@ export async function addDecision(
 		institutionId,
 	);
 	if (existing) {
-		throw conflict(
-			"A decision already exists for this student in this council",
-		);
+		throw conflict("COUNCIL_DECISION_EXISTS");
 	}
 
 	return repo.insertDecision({
@@ -147,7 +145,7 @@ export async function updateDecision(
 	},
 ) {
 	const existing = await repo.findDecisionById(id, institutionId);
-	if (!existing) throw notFound("Council decision not found");
+	if (!existing) throw notFound("COUNCIL_DECISION_NOT_FOUND");
 
 	const updateData: Record<string, unknown> = {};
 	if (data.decision !== undefined) updateData.decision = data.decision;
@@ -168,7 +166,7 @@ export async function autoAssignDecisions(
 	overwrite: boolean,
 ) {
 	const council = await repo.findById(councilId, institutionId);
-	if (!council) throw notFound("Class council not found");
+	if (!council) throw notFound("COUNCIL_NOT_FOUND");
 
 	const avgs = await db
 		.select({

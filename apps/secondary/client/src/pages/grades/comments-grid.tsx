@@ -47,25 +47,21 @@ function timeAgo(date: Date): string {
 	return `${Math.floor(secs / 3600)} h ago`;
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Shared content component (used both as a page and inside a Sheet) ────────
 
-export function CommentsGrid() {
+export function CommentsGridContent({
+	classId,
+	subjectId,
+	termId,
+	onClose,
+}: {
+	classId: string;
+	subjectId: string;
+	termId: string;
+	onClose?: () => void;
+}) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { classId, subjectId, termId } = useParams<{
-		classId: string;
-		subjectId: string;
-		termId: string;
-	}>();
-
-	useBreadcrumbs([
-		{ label: t("grades.title", "Grade entry"), href: "/grades" },
-		{
-			label: t("grades.grid_title", "Grade Sheet"),
-			href: `/grades/${classId}/${subjectId}/${termId}`,
-		},
-		{ label: t("comments.grid_title", "Teacher Comments") },
-	]);
 
 	const [comments, setComments] = useState<Record<string, string>>({});
 	const [savedAt, setSavedAt] = useState<Date | null>(null);
@@ -74,7 +70,7 @@ export function CommentsGrid() {
 	// ── Queries ────────────────────────────────────────────────────────────────
 
 	const { data: classData } = trpc.classes.get.useQuery(
-		{ id: classId! },
+		{ id: classId },
 		{ enabled: !!classId },
 	);
 	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 200 });
@@ -100,7 +96,7 @@ export function CommentsGrid() {
 	const enrollments = enrollmentsData?.items ?? [];
 
 	const { data: existingComments = [] } = trpc.comments.list.useQuery(
-		{ classId: classId!, subjectId: subjectId!, termId: termId! },
+		{ classId, subjectId, termId },
 		{ enabled: !!classId && !!subjectId && !!termId },
 	);
 
@@ -215,10 +211,10 @@ export function CommentsGrid() {
 		<div className="flex flex-col gap-4">
 			{/* ─── Toolbar ─────────────────────────────────────────────────────── */}
 			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3">
-				{/* Back */}
+				{/* Back / Close */}
 				<button
 					type="button"
-					onClick={() => navigate(-1)}
+					onClick={() => (onClose ? onClose() : navigate(-1))}
 					className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-medium text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
 				>
 					<ArrowLeft className="h-3.5 w-3.5" />
@@ -408,5 +404,34 @@ export function CommentsGrid() {
 				</div>
 			)}
 		</div>
+	);
+}
+
+// ─── Page wrapper (standalone route) ─────────────────────────────────────────
+
+export function CommentsGrid() {
+	const { t } = useTranslation();
+	const { classId, subjectId, termId } = useParams<{
+		classId: string;
+		subjectId: string;
+		termId: string;
+	}>();
+
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("grades.title", "Grade entry"), href: "/grades" },
+		{
+			label: t("grades.grid_title", "Grade Sheet"),
+			href: `/grades/${classId}/${subjectId}/${termId}`,
+		},
+		{ label: t("comments.grid_title", "Teacher Comments") },
+	]);
+
+	return (
+		<CommentsGridContent
+			classId={classId!}
+			subjectId={subjectId!}
+			termId={termId!}
+		/>
 	);
 }

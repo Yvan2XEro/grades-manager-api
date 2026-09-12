@@ -6,6 +6,7 @@ import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 import { TrackFormDialog } from "./track-form-dialog";
 
@@ -27,6 +28,10 @@ const CYCLE_LEVEL_VARIANTS: Record<
 
 export function TracksList() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.tracks", "Tracks") },
+	]);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 	const [showCreate, setShowCreate] = useState(false);

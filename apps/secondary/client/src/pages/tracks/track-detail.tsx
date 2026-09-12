@@ -63,6 +63,7 @@ export function TrackDetail() {
 		{ enabled: !!id },
 	);
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("nav.tracks", "Tracks"), href: "/tracks" },
 		{ label: track?.name ?? trackState.name ?? "…" },
 	]);

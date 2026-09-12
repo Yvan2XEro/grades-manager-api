@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "TKAMS Secondaire",
-    "tagline": "Gestion scolaire MINESEC"
+    "tagline": "Gestion scolaire"
   },
   "setup": {
     "create_institution_title": "Créer votre établissement",
@@ -1241,7 +1241,40 @@
     "SUBJECT_ALREADY_ASSIGNED": "Cette matière est déjà attribuée à cette classe.",
     "STUDENT_ALREADY_ENROLLED": "Cet élève est déjà inscrit dans cette classe.",
     "ASSESSMENT_LOCKED": "Les notes sont verrouillées et ne peuvent plus être modifiées.",
-    "DUPLICATE_ENTRY": "Un enregistrement avec ces informations existe déjà."
+    "DUPLICATE_ENTRY": "Un enregistrement avec ces informations existe déjà.",
+    "ACADEMIC_YEAR_NOT_FOUND": "Année scolaire introuvable.",
+    "ASSIGNMENT_ALREADY_EXISTS": "Cette affectation de matière existe déjà.",
+    "ASSIGNMENT_NOT_FOUND": "Affectation introuvable.",
+    "ATTENDANCE_RECORD_NOT_FOUND": "Enregistrement de présence introuvable.",
+    "ATTENDANCE_SESSION_NOT_FOUND": "Session de présence introuvable.",
+    "CANDIDATE_ALREADY_REGISTERED": "Cet élève est déjà inscrit à cette session d'examen.",
+    "CANDIDATE_NOT_FOUND": "Inscription de candidat introuvable.",
+    "CLASS_CODE_EXISTS": "Une classe avec ce code existe déjà.",
+    "CLASS_HAS_ENROLLMENTS": "Impossible de supprimer une classe avec des élèves inscrits.",
+    "CLASS_NOT_FOUND": "Classe introuvable.",
+    "COUNCIL_ALREADY_EXISTS": "Un conseil de classe existe déjà pour cette classe et ce trimestre.",
+    "COUNCIL_DECISION_EXISTS": "Une décision existe déjà pour cet élève dans ce conseil.",
+    "COUNCIL_DECISION_NOT_FOUND": "Décision du conseil introuvable.",
+    "COUNCIL_NOT_FOUND": "Conseil de classe introuvable.",
+    "ENROLLMENT_NOT_FOUND": "Inscription introuvable.",
+    "EXAM_SESSION_NOT_FOUND": "Session d'examen introuvable.",
+    "FEE_SCHEDULE_NOT_FOUND": "Barème de frais introuvable.",
+    "NO_REPORT_CARDS_FOUND": "Aucun bulletin trouvé pour cette classe et ce trimestre.",
+    "NO_STAFF_PROFILE": "Aucun profil personnel trouvé pour votre compte.",
+    "NOT_ASSIGNED_TO_CLASS": "Vous n'êtes pas affecté à enseigner cette matière dans cette classe.",
+    "REPORT_CARD_NOT_FOUND": "Bulletin introuvable.",
+    "REPORT_CARD_NO_SNAPSHOT": "Ce bulletin ne contient aucune donnée.",
+    "STAFF_ACCOUNT_EXISTS": "Ce membre du personnel a déjà un compte actif.",
+    "STAFF_EMAIL_EXISTS": "Un membre du personnel avec cet email existe déjà.",
+    "STAFF_NOT_FOUND": "Membre du personnel introuvable.",
+    "STUDENT_NO_MNU": "Cet élève n'a pas de MNU (Matricule National Unique). Veuillez le renseigner avant l'inscription aux examens.",
+    "SUBJECT_CODE_EXISTS": "Une matière avec ce code existe déjà.",
+    "SUBJECT_NOT_FOUND": "Matière introuvable.",
+    "TERM_ALREADY_EXISTS": "Un trimestre avec ce numéro existe déjà pour cette année scolaire.",
+    "TERM_NOT_FOUND": "Trimestre introuvable.",
+    "TRACK_CODE_EXISTS": "Une filière avec ce code existe déjà.",
+    "TRACK_NOT_FOUND": "Filière introuvable.",
+    "USER_NOT_FOUND": "Utilisateur introuvable."
   },
   "csv_import": {
     "btn": "Importer CSV",

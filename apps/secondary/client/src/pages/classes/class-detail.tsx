@@ -13,6 +13,7 @@ import { Confirm } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
@@ -71,6 +72,12 @@ export function ClassDetail() {
 		{ id: id! },
 		{ enabled: !!id },
 	);
+
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.classes", "Classes"), href: "/classes" },
+		{ label: klass?.name ?? "..." },
+	]);
 
 	const deleteClass = trpc.classes.delete.useMutation({
 		onSuccess: () => {

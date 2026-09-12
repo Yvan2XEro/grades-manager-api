@@ -717,6 +717,7 @@ export function ExamCandidatesTab() {
 	);
 	const s = session as { examType?: string; sessionYear?: number } | undefined;
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{
 			label: t("official_exams.title", "Official exams"),
 			href: "/official-exams",

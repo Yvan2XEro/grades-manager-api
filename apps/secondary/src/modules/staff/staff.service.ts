@@ -74,7 +74,7 @@ export async function create(
 	origin: string,
 ) {
 	const existing = await repo.findByEmail(data.email, institutionId);
-	if (existing) throw conflict(`Staff email "${data.email}" already exists`);
+	if (existing) throw conflict("STAFF_EMAIL_EXISTS");
 
 	const staffRow = await repo.insert({
 		institutionId,
@@ -104,7 +104,7 @@ export async function create(
 
 export async function get(id: string, institutionId: string) {
 	const member = await repo.findById(id, institutionId);
-	if (!member) throw notFound("Staff member not found");
+	if (!member) throw notFound("STAFF_NOT_FOUND");
 	return member;
 }
 
@@ -120,10 +120,10 @@ export async function updateStaff(
 	},
 ) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Staff member not found");
+	if (!existing) throw notFound("STAFF_NOT_FOUND");
 	if (data.email && data.email !== existing.email) {
 		const duplicate = await repo.findByEmail(data.email, institutionId);
-		if (duplicate) throw conflict(`Email "${data.email}" already taken`);
+		if (duplicate) throw conflict("STAFF_EMAIL_EXISTS");
 	}
 	const updated = await repo.update(id, institutionId, data);
 	return updated!;
@@ -137,9 +137,9 @@ export async function resendInvite(
 	origin: string,
 ) {
 	const staffRow = await repo.findById(id, institutionId);
-	if (!staffRow) throw notFound("Staff member not found");
+	if (!staffRow) throw notFound("STAFF_NOT_FOUND");
 	if (staffRow.authUserId) {
-		throw conflict("Staff member already has an active account");
+		throw conflict("STAFF_ACCOUNT_EXISTS");
 	}
 
 	const invId = await createInvitation({

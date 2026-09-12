@@ -15,6 +15,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
@@ -186,6 +187,10 @@ type Assignment = {
 
 export function SubjectAssignments() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.subject_assignments", "Subject Assignments") },
+	]);
 	const [selectedClassId, setSelectedClassId] = useState<string>("");
 	const [assignDialogOpen, setAssignDialogOpen] = useState(false);
 	const utils = trpc.useUtils();

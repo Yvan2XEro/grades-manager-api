@@ -22,7 +22,7 @@ export async function createSchedule(
 
 export async function getSchedule(id: string, institutionId: string) {
 	const schedule = await repo.findScheduleById(id, institutionId);
-	if (!schedule) throw notFound("Fee schedule not found");
+	if (!schedule) throw notFound("FEE_SCHEDULE_NOT_FOUND");
 	return schedule;
 }
 

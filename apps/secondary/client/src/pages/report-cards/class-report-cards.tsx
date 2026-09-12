@@ -6,6 +6,7 @@ import { Link, useParams } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
@@ -66,6 +67,12 @@ export function ClassReportCards() {
 		{ id: classId! },
 		{ enabled: !!classId },
 	);
+
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.report_cards", "Report Cards"), href: "/report-cards" },
+		{ label: classData?.name ?? "..." },
+	]);
 
 	const { data: terms = [] } = trpc.terms.list.useQuery(
 		{ academicYearId: activeYear?.id ?? "" },

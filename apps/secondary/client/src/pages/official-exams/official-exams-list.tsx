@@ -13,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -48,6 +49,10 @@ const EXAM_TYPES = ["BEPC", "PROBATOIRE", "BAC"] as const;
 
 export function OfficialExamsList() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.official_exams", "Official Exams") },
+	]);
 	const navigate = useNavigate();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);

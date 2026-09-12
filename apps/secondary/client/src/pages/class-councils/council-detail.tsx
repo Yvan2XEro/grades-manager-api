@@ -359,8 +359,9 @@ export function CouncilDetail() {
 		? `${(council as { className?: string }).className ?? t("class_councils.council", "Council")}`
 		: "…";
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{
-			label: t("nav.class_councils", "Class councils"),
+			label: t("nav.class_councils", "Class Councils"),
 			href: "/class-councils",
 		},
 		{ label: councilLabel },

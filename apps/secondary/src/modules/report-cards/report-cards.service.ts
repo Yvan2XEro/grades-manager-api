@@ -44,7 +44,7 @@ export async function list(
 
 export async function get(id: string, institutionId: string) {
 	const card = await repo.findById(id, institutionId);
-	if (!card) throw notFound("Report card not found");
+	if (!card) throw notFound("REPORT_CARD_NOT_FOUND");
 	return card;
 }
 
@@ -54,9 +54,9 @@ export async function updateStatus(
 	institutionId: string,
 ) {
 	const card = await repo.findById(id, institutionId);
-	if (!card) throw notFound("Report card not found");
+	if (!card) throw notFound("REPORT_CARD_NOT_FOUND");
 	const updated = await repo.updateStatus(id, status, institutionId);
-	if (!updated) throw notFound("Report card not found");
+	if (!updated) throw notFound("REPORT_CARD_NOT_FOUND");
 	return updated;
 }
 
@@ -92,7 +92,7 @@ export async function generate(
 		.limit(1);
 
 	const enrollmentRow = enrollmentResult[0];
-	if (!enrollmentRow) throw notFound("Student enrollment not found");
+	if (!enrollmentRow) throw notFound("ENROLLMENT_NOT_FOUND");
 
 	const enrollment = enrollmentRow.enrollments;
 	const classRow = enrollmentRow.classes;
@@ -428,11 +428,11 @@ export async function generatePdf(
 	institutionId: string,
 ): Promise<{ pdfBase64: string; filename: string }> {
 	const card = await repo.findById(id, institutionId);
-	if (!card) throw notFound("Report card not found");
+	if (!card) throw notFound("REPORT_CARD_NOT_FOUND");
 
 	const snapshot = (card.snapshotData ?? {}) as SnapshotData;
 	const studentId = snapshot.studentId;
-	if (!studentId) throw notFound("Report card has no snapshot data");
+	if (!studentId) throw notFound("REPORT_CARD_NO_SNAPSHOT");
 
 	const [enrollmentRows, termRows, institutionRows] = await Promise.all([
 		db
@@ -466,13 +466,13 @@ export async function generatePdf(
 	]);
 
 	const row = enrollmentRows[0];
-	if (!row) throw notFound("Enrollment not found");
+	if (!row) throw notFound("ENROLLMENT_NOT_FOUND");
 
 	const term = termRows[0];
-	if (!term) throw notFound("Term not found");
+	if (!term) throw notFound("TERM_NOT_FOUND");
 
 	const institution = institutionRows[0];
-	if (!institution) throw notFound("Institution not found");
+	if (!institution) throw notFound("INSTITUTION_NOT_FOUND");
 
 	const lang = (card.language ?? "fr") as "fr" | "en";
 	const templateData = await buildReportCardTemplateData({
@@ -585,15 +585,15 @@ export async function batchPdf(
 		]);
 
 	const term = termRows[0];
-	if (!term) throw notFound("Term not found");
+	if (!term) throw notFound("TERM_NOT_FOUND");
 	const institution = institutionRows[0];
-	if (!institution) throw notFound("Institution not found");
+	if (!institution) throw notFound("INSTITUTION_NOT_FOUND");
 	const classRow = classRows[0];
-	if (!classRow) throw notFound("Class not found");
+	if (!classRow) throw notFound("CLASS_NOT_FOUND");
 	const yearRow = yearRows[0];
 
 	if (cards.length === 0) {
-		throw notFound("No report cards found for this class and term");
+		throw notFound("NO_REPORT_CARDS_FOUND");
 	}
 
 	const pages = await Promise.all(

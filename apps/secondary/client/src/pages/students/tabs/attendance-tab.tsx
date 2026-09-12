@@ -40,6 +40,7 @@ export function StudentAttendanceTab() {
 	const { id: studentId } = useParams<{ id: string }>();
 	const student = useOutletContext<StudentCtx | null>();
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("nav.students", "Students"), href: "/students" },
 		{
 			label: student ? `${student.firstName} ${student.lastName}` : "…",

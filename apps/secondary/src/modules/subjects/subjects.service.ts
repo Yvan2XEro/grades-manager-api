@@ -31,7 +31,7 @@ export async function create(
 	institutionId: string,
 ) {
 	const existing = await repo.findByCode(data.code, institutionId);
-	if (existing) throw conflict(`Subject code "${data.code}" already exists`);
+	if (existing) throw conflict("SUBJECT_CODE_EXISTS");
 	return repo.insert({
 		institutionId,
 		name: data.name,
@@ -65,7 +65,7 @@ export async function bulkCreate(
 
 export async function deleteSubject(id: string, institutionId: string) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Subject not found");
+	if (!existing) throw notFound("SUBJECT_NOT_FOUND");
 	return repo.remove(id, institutionId);
 }
 
@@ -81,10 +81,10 @@ export async function updateSubject(
 	},
 ) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Subject not found");
+	if (!existing) throw notFound("SUBJECT_NOT_FOUND");
 	if (data.code && data.code !== existing.code) {
 		const duplicate = await repo.findByCode(data.code, institutionId);
-		if (duplicate) throw conflict(`Subject code "${data.code}" already taken`);
+		if (duplicate) throw conflict("SUBJECT_CODE_EXISTS");
 	}
 	const updated = await repo.update(id, institutionId, data);
 	return updated!;

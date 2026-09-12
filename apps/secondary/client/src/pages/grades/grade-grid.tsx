@@ -18,10 +18,17 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
+import { CommentsGridContent } from "./comments-grid";
 
 // ─── Design helpers (mirrors grade-entry) ─────────────────────────────────────
 
@@ -143,6 +150,7 @@ export function GradeGrid() {
 	}>();
 
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("grades.title", "Grade entry"), href: "/grades" },
 		{ label: t("grades.grid_title", "Grade Sheet") },
 	]);
@@ -156,6 +164,7 @@ export function GradeGrid() {
 	const [savedAt, setSavedAt] = useState<Date | null>(null);
 	const [savedAgoText, setSavedAgoText] = useState("");
 	const [pendingNavTo, setPendingNavTo] = useState<string | null>(null);
+	const [showComments, setShowComments] = useState(false);
 
 	// ── Queries ────────────────────────────────────────────────────────────────
 
@@ -320,7 +329,7 @@ export function GradeGrid() {
 
 	// ── Navigation guard ───────────────────────────────────────────────────────
 
-	const guardedNavigate = (to: string) => {
+	const _guardedNavigate = (to: string) => {
 		if (isDirty) setPendingNavTo(to);
 		else navigate(to);
 	};
@@ -575,11 +584,7 @@ export function GradeGrid() {
 					variant="outline"
 					size="sm"
 					className="h-8 gap-1.5 rounded-full"
-					onClick={() =>
-						guardedNavigate(
-							`/grades/${classId}/${subjectId}/${termId}/comments`,
-						)
-					}
+					onClick={() => setShowComments(true)}
 				>
 					<MessageSquare className="h-3.5 w-3.5" />
 					{t("comments.link", "Comments")}
@@ -880,6 +885,28 @@ export function GradeGrid() {
 					</div>
 				</div>
 			)}
+
+			{/* ─── Comments slide-over ─────────────────────────────────────────── */}
+			<Sheet open={showComments} onOpenChange={setShowComments}>
+				<SheetContent
+					side="right"
+					className="w-full max-w-3xl overflow-y-auto sm:max-w-3xl"
+				>
+					<SheetHeader>
+						<SheetTitle>
+							{t("comments.grid_title", "Teacher Comments")}
+						</SheetTitle>
+					</SheetHeader>
+					<div className="pt-4">
+						<CommentsGridContent
+							classId={classId!}
+							subjectId={subjectId!}
+							termId={termId!}
+							onClose={() => setShowComments(false)}
+						/>
+					</div>
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 }

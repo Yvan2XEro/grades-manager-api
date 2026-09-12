@@ -109,7 +109,10 @@ function timeAgo(date: Date): string {
 export function GradeEntry() {
 	const { t } = useTranslation();
 	const [searchParams, setSearchParams] = useSearchParams();
-	useBreadcrumbs([{ label: t("grades.title", "Grade entry") }]);
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("grades.title", "Grade entry") },
+	]);
 
 	const [subjectOpen, setSubjectOpen] = useState(false);
 	const [savedAt, setSavedAt] = useState<Date | null>(null);

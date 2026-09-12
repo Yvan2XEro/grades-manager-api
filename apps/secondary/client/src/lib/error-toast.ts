@@ -20,8 +20,7 @@ export function errorToast(err: unknown, t: TFunction): void {
 
 		switch (err.data?.code) {
 			case "PRECONDITION_FAILED":
-				// Server sends a human-readable, already-translated message
-				toast.error(err.message);
+				toast.error(translateCode(err.message, t, err.message));
 				return;
 			case "CONFLICT":
 				// err.message is a semantic code like "USER_ALREADY_EXISTS"

@@ -37,10 +37,7 @@ export async function create(
 		data.academicYearId,
 		institutionId,
 	);
-	if (existing)
-		throw conflict(
-			`Class code "${data.code}" already exists in this academic year`,
-		);
+	if (existing) throw conflict("CLASS_CODE_EXISTS");
 	return repo.insert({
 		institutionId,
 		academicYearId: data.academicYearId,
@@ -56,13 +53,13 @@ export async function create(
 
 export async function get(id: string, institutionId: string) {
 	const cls = await repo.findById(id, institutionId);
-	if (!cls) throw notFound("Class not found");
+	if (!cls) throw notFound("CLASS_NOT_FOUND");
 	return cls;
 }
 
 export async function getRoster(classId: string, institutionId: string) {
 	const cls = await repo.findById(classId, institutionId);
-	if (!cls) throw notFound("Class not found");
+	if (!cls) throw notFound("CLASS_NOT_FOUND");
 	return repo.getRoster(classId, institutionId);
 }
 
@@ -79,18 +76,15 @@ export async function update(
 	institutionId: string,
 ) {
 	const cls = await repo.updateClass(id, institutionId, data);
-	if (!cls) throw notFound("Class not found");
+	if (!cls) throw notFound("CLASS_NOT_FOUND");
 	return cls;
 }
 
 export async function remove(id: string, institutionId: string) {
 	const count = await repo.countEnrollments(id);
-	if (count > 0)
-		throw conflict(
-			`Cannot delete class with ${count} enrolled student${count === 1 ? "" : "s"}`,
-		);
+	if (count > 0) throw conflict("CLASS_HAS_ENROLLMENTS");
 	const cls = await repo.deleteClass(id, institutionId);
-	if (!cls) throw notFound("Class not found");
+	if (!cls) throw notFound("CLASS_NOT_FOUND");
 	return cls;
 }
 

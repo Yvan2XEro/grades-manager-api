@@ -66,6 +66,7 @@ export function ExamSessionNew() {
 	const navigate = useNavigate();
 	const currentYear = new Date().getFullYear();
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{
 			label: t("official_exams.title", "Official exams"),
 			href: "/official-exams",

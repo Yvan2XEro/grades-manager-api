@@ -1,8 +1,12 @@
 import {
 	FileText,
+	GraduationCap,
 	LayoutDashboard,
 	LogOut,
 	type LucideIcon,
+	School,
+	Settings,
+	Users,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router";
@@ -29,7 +33,11 @@ function getInitials(name?: string | null): string {
 const items: { to: string; label: string; Icon: LucideIcon; end?: boolean }[] =
 	[
 		{ to: "/", label: "nav.dashboard", Icon: LayoutDashboard, end: true },
+		{ to: "/students", label: "nav.students", Icon: Users },
+		{ to: "/classes", label: "nav.classes", Icon: School },
+		{ to: "/grades", label: "nav.grades", Icon: GraduationCap },
 		{ to: "/report-cards", label: "nav.report_cards", Icon: FileText },
+		{ to: "/settings", label: "nav.settings", Icon: Settings },
 	];
 
 export function PrincipalSidebar() {

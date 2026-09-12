@@ -3,7 +3,7 @@ import * as repo from "./tracks.repo";
 
 export async function get(id: string, institutionId: string) {
 	const track = await repo.findById(id, institutionId);
-	if (!track) throw notFound("Track not found");
+	if (!track) throw notFound("TRACK_NOT_FOUND");
 	return track;
 }
 
@@ -30,7 +30,7 @@ export async function create(
 	institutionId: string,
 ) {
 	const existing = await repo.findByCode(data.code, institutionId);
-	if (existing) throw conflict(`Track code "${data.code}" already exists`);
+	if (existing) throw conflict("TRACK_CODE_EXISTS");
 	return repo.insert({
 		institutionId,
 		name: data.name,
@@ -50,7 +50,7 @@ export async function upsertCoefficient(
 	institutionId: string,
 ) {
 	const track = await repo.findById(data.trackId, institutionId);
-	if (!track) throw notFound("Track not found in this institution");
+	if (!track) throw notFound("TRACK_NOT_FOUND");
 	return repo.upsertCoefficient({
 		trackId: data.trackId,
 		subjectId: data.subjectId,
@@ -107,17 +107,16 @@ export async function update(
 ) {
 	if (data.code) {
 		const existing = await repo.findByCode(data.code, institutionId);
-		if (existing && existing.id !== id)
-			throw conflict(`Track code "${data.code}" already exists`);
+		if (existing && existing.id !== id) throw conflict("TRACK_CODE_EXISTS");
 	}
 	const track = await repo.updateTrack(id, institutionId, data);
-	if (!track) throw notFound("Track not found");
+	if (!track) throw notFound("TRACK_NOT_FOUND");
 	return track;
 }
 
 export async function remove(id: string, institutionId: string) {
 	const track = await repo.deleteTrack(id, institutionId);
-	if (!track) throw notFound("Track not found");
+	if (!track) throw notFound("TRACK_NOT_FOUND");
 	return track;
 }
 
@@ -126,6 +125,6 @@ export async function getCoefficientsGrid(
 	institutionId: string,
 ) {
 	const track = await repo.findById(trackId, institutionId);
-	if (!track) throw notFound("Track not found in this institution");
+	if (!track) throw notFound("TRACK_NOT_FOUND");
 	return repo.getCoefficientsGrid(trackId);
 }

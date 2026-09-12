@@ -26,14 +26,14 @@ export async function create(
 
 export async function setActive(id: string, institutionId: string) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Academic year not found");
+	if (!existing) throw notFound("ACADEMIC_YEAR_NOT_FOUND");
 	const updated = await repo.setStatus(id, institutionId, "active");
 	return updated!;
 }
 
 export async function close(id: string, institutionId: string) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Academic year not found");
+	if (!existing) throw notFound("ACADEMIC_YEAR_NOT_FOUND");
 	const updated = await repo.setStatus(id, institutionId, "closed");
 	return updated!;
 }

@@ -19,10 +19,7 @@ export async function create(
 		data.termNumber,
 		institutionId,
 	);
-	if (existing)
-		throw conflict(
-			`Term ${data.termNumber} already exists for this academic year`,
-		);
+	if (existing) throw conflict("TERM_ALREADY_EXISTS");
 	return repo.insert({
 		institutionId,
 		academicYearId: data.academicYearId,
@@ -35,14 +32,14 @@ export async function create(
 
 export async function open(id: string, institutionId: string) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Term not found");
+	if (!existing) throw notFound("TERM_NOT_FOUND");
 	const updated = await repo.setStatus(id, institutionId, "open");
 	return updated!;
 }
 
 export async function close(id: string, institutionId: string) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Term not found");
+	if (!existing) throw notFound("TERM_NOT_FOUND");
 	const updated = await repo.setStatus(id, institutionId, "closed");
 	return updated!;
 }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useParams } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -33,6 +34,19 @@ export function ExamSessionDetail() {
 		{ id: id! },
 		{ enabled: !!id },
 	);
+
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{
+			label: t("nav.official_exams", "Official Exams"),
+			href: "/official-exams",
+		},
+		{
+			label: session
+				? `${session.examType}${session.series ? ` ${session.series}` : ""} ${session.sessionYear}`
+				: "...",
+		},
+	]);
 
 	const TABS = [
 		{

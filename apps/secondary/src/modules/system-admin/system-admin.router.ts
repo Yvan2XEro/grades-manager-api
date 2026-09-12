@@ -406,7 +406,7 @@ export const router = trpcRouter({
 			z.object({
 				institutionId: z.string(),
 				userId: z.string(),
-				role: z.enum(["admin", "member"]).default("member"),
+				role: z.enum(["admin", "principal", "teacher"]).default("teacher"),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -452,7 +452,7 @@ export const router = trpcRouter({
 			z.object({
 				institutionId: z.string(),
 				userId: z.string(),
-				role: z.enum(["admin", "member"]),
+				role: z.enum(["admin", "principal", "teacher"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -763,7 +763,7 @@ export const router = trpcRouter({
 				.where(eq(authSchema.user.id, input.userId))
 				.limit(1);
 			if (!user)
-				throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+				throw new TRPCError({ code: "NOT_FOUND", message: "USER_NOT_FOUND" });
 			await auth.api.requestPasswordReset({
 				body: {
 					email: user.email,

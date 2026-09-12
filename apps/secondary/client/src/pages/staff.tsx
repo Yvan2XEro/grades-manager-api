@@ -30,6 +30,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 import { StaffFormDialog } from "./staff-form-dialog";
@@ -116,6 +117,10 @@ function InviteLinkModal({
 
 export function Staff() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.staff", "Staff") },
+	]);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 	const [search, setSearch] = useState("");

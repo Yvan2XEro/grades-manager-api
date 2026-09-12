@@ -18,7 +18,7 @@ export async function listSessions(
 
 export async function getSession(sessionId: string, institutionId: string) {
 	const session = await repo.findSessionById(sessionId, institutionId);
-	if (!session) throw notFound("Attendance session not found");
+	if (!session) throw notFound("ATTENDANCE_SESSION_NOT_FOUND");
 	return session;
 }
 
@@ -59,7 +59,7 @@ export async function updateSession(
 	},
 ) {
 	const existing = await repo.findSessionById(sessionId, institutionId);
-	if (!existing) throw notFound("Attendance session not found");
+	if (!existing) throw notFound("ATTENDANCE_SESSION_NOT_FOUND");
 
 	return repo.updateSession(sessionId, institutionId, {
 		...(data.subjectId !== undefined && { subjectId: data.subjectId }),
@@ -74,7 +74,7 @@ export async function updateSession(
 
 export async function deleteSession(sessionId: string, institutionId: string) {
 	const existing = await repo.findSessionById(sessionId, institutionId);
-	if (!existing) throw notFound("Attendance session not found");
+	if (!existing) throw notFound("ATTENDANCE_SESSION_NOT_FOUND");
 
 	// Delete all records for this session
 	await repo.deleteRecordsBySession(sessionId, institutionId);
@@ -211,7 +211,7 @@ export async function updateAttendanceRecord(
 	},
 ) {
 	const existing = await repo.findRecordById(recordId, institutionId);
-	if (!existing) throw notFound("Attendance record not found");
+	if (!existing) throw notFound("ATTENDANCE_RECORD_NOT_FOUND");
 
 	return repo.updateRecord(recordId, institutionId, {
 		...(data.status && { status: data.status }),
@@ -226,7 +226,7 @@ export async function deleteAttendanceRecord(
 	institutionId: string,
 ) {
 	const existing = await repo.findRecordById(recordId, institutionId);
-	if (!existing) throw notFound("Attendance record not found");
+	if (!existing) throw notFound("ATTENDANCE_RECORD_NOT_FOUND");
 
 	return repo.deleteRecord(recordId, institutionId);
 }

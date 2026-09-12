@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 
 type ClassRow = {
@@ -15,6 +16,10 @@ type ClassRow = {
 
 export function ReportCardsList() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.report_cards", "Report Cards") },
+	]);
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = years.find((y) => y.status === "active") ?? years[0];

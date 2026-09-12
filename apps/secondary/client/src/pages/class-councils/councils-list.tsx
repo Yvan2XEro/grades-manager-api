@@ -26,6 +26,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
@@ -263,6 +264,10 @@ function CreateCouncilDialog({
 
 export function ClassCouncilsList() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.class_councils", "Class Councils") },
+	]);
 	const navigate = useNavigate();
 
 	const [filterClassId, setFilterClassId] = useState("");

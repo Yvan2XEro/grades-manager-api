@@ -23,6 +23,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 import { SubjectFormDialog } from "./subject-form-dialog";
@@ -38,6 +39,10 @@ type Subject = {
 
 export function Subjects() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.subjects", "Subjects") },
+	]);
 	const [search, setSearch] = useState("");
 	const [groupFilter, setGroupFilter] = useState<string>("all");
 	const [page, setPage] = useState(1);

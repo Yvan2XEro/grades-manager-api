@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 import { StudentFormDialog } from "./student-form-dialog";
 
@@ -20,6 +21,10 @@ const GENDER_COLORS: Record<string, string> = {
 
 export function StudentsList() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.students", "Students") },
+	]);
 	const [search, setSearch] = useState("");
 	const [genderFilter, setGenderFilter] = useState<string>("all");
 	const [classFilter, setClassFilter] = useState<string>("all");

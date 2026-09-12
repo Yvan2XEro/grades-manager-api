@@ -25,6 +25,7 @@ import {
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
@@ -546,6 +547,10 @@ function AttendanceSheet({
 
 export function AttendanceOverview() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.attendance", "Attendance") },
+	]);
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [createOpen, setCreateOpen] = useState(false);
 

@@ -27,6 +27,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { authClient, useSession } from "@/lib/auth-client";
 import { errorToast } from "@/lib/error-toast";
 import { uploadFile } from "@/lib/upload";
@@ -999,6 +1000,10 @@ function TwoFactorSection() {
 
 export function Settings() {
 	const { t, i18n } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.settings", "Settings") },
+	]);
 
 	const { data: academicYears = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = academicYears.find((y) => y.status === "active");

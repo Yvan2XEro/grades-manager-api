@@ -160,6 +160,7 @@ export function StudentFeesTab() {
 	const { t } = useTranslation();
 	const student = useOutletContext<StudentData>();
 	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("nav.students", "Students"), href: "/students" },
 		{
 			label: `${student.firstName} ${student.lastName}`,

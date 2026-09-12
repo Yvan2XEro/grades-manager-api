@@ -36,8 +36,7 @@ export async function create(
 		data.academicYearId,
 		institutionId,
 	);
-	if (existing)
-		throw conflict("Student already enrolled in this academic year");
+	if (existing) throw conflict("STUDENT_ALREADY_ENROLLED");
 	return repo.insert({
 		institutionId,
 		studentId: data.studentId,
@@ -54,7 +53,7 @@ export async function updateStatus(
 	status: string,
 ) {
 	const existing = await repo.findById(id, institutionId);
-	if (!existing) throw notFound("Enrollment not found");
+	if (!existing) throw notFound("ENROLLMENT_NOT_FOUND");
 	const updated = await repo.updateStatus(id, institutionId, status);
 	return updated!;
 }
@@ -98,9 +97,9 @@ export async function printClassRoster(
 	]);
 
 	const institution = institutionRows[0];
-	if (!institution) throw notFound("Institution not found");
+	if (!institution) throw notFound("INSTITUTION_NOT_FOUND");
 	const classRow = classRows[0];
-	if (!classRow) throw notFound("Class not found");
+	if (!classRow) throw notFound("CLASS_NOT_FOUND");
 
 	const lang = "fr" as "fr" | "en";
 	const data = buildClassRosterTemplateData({

@@ -27,7 +27,7 @@ export async function listSessions(
 
 export async function getSession(id: string, institutionId: string) {
 	const session = await repo.findSessionById(id, institutionId);
-	if (!session) throw notFound("Official exam session not found");
+	if (!session) throw notFound("EXAM_SESSION_NOT_FOUND");
 	return session;
 }
 
@@ -66,7 +66,7 @@ export async function updateSession(
 	},
 ) {
 	const existing = await repo.findSessionById(id, institutionId);
-	if (!existing) throw notFound("Official exam session not found");
+	if (!existing) throw notFound("EXAM_SESSION_NOT_FOUND");
 
 	const updateData: Record<string, unknown> = {};
 	if (data.series !== undefined) updateData.series = data.series;
@@ -96,7 +96,7 @@ export async function listRegistrations(
 ) {
 	// Verify session exists
 	const session = await repo.findSessionById(examSessionId, institutionId);
-	if (!session) throw notFound("Official exam session not found");
+	if (!session) throw notFound("EXAM_SESSION_NOT_FOUND");
 
 	return repo.findAllRegistrations(
 		examSessionId,
@@ -108,7 +108,7 @@ export async function listRegistrations(
 
 export async function getRegistration(id: string, institutionId: string) {
 	const registration = await repo.findRegistrationById(id, institutionId);
-	if (!registration) throw notFound("Candidate registration not found");
+	if (!registration) throw notFound("CANDIDATE_NOT_FOUND");
 	return registration;
 }
 
@@ -124,7 +124,7 @@ export async function registerCandidate(
 ) {
 	// Verify session exists
 	const session = await repo.findSessionById(data.examSessionId, institutionId);
-	if (!session) throw notFound("Official exam session not found");
+	if (!session) throw notFound("EXAM_SESSION_NOT_FOUND");
 
 	// MNU gate — block registration if student has no MNU
 	const studentInfo = await repo.findStudentByEnrollment(
@@ -132,9 +132,7 @@ export async function registerCandidate(
 		institutionId,
 	);
 	if (!studentInfo?.mnu) {
-		throw conflict(
-			`Student ${studentInfo ? `${studentInfo.lastName} ${studentInfo.firstName}` : ""} has no MNU (Matricule National Unique). Set their MNU before registering for official exams.`,
-		);
+		throw conflict("STUDENT_NO_MNU");
 	}
 
 	// Check if candidate already registered
@@ -144,9 +142,7 @@ export async function registerCandidate(
 		institutionId,
 	);
 	if (existing) {
-		throw conflict(
-			"This candidate is already registered for this exam session",
-		);
+		throw conflict("CANDIDATE_ALREADY_REGISTERED");
 	}
 
 	return repo.insertRegistration({
@@ -165,11 +161,11 @@ export async function bulkRegisterCandidates(
 ) {
 	// Verify session exists and belongs to this institution
 	const session = await repo.findSessionById(data.examSessionId, institutionId);
-	if (!session) throw notFound("Official exam session not found");
+	if (!session) throw notFound("EXAM_SESSION_NOT_FOUND");
 
 	// Validate class level and track against exam type and series
 	const classInfo = await repo.findClassWithTrack(data.classId, institutionId);
-	if (!classInfo) throw notFound("Class not found");
+	if (!classInfo) throw notFound("CLASS_NOT_FOUND");
 
 	const EXAM_LEVEL: Record<string, string> = {
 		BAC: "Tle",
@@ -268,7 +264,7 @@ export async function updateRegistration(
 	},
 ) {
 	const existing = await repo.findRegistrationById(id, institutionId);
-	if (!existing) throw notFound("Candidate registration not found");
+	if (!existing) throw notFound("CANDIDATE_NOT_FOUND");
 
 	const updateData: Record<string, unknown> = {};
 	if (data.candidateNumber !== undefined) {
@@ -308,14 +304,14 @@ export async function checkEligibility(
 		registrationId,
 		institutionId,
 	);
-	if (!registration) throw notFound("Candidate registration not found");
+	if (!registration) throw notFound("CANDIDATE_NOT_FOUND");
 
 	// Get the academic year via the exam session
 	const session = await repo.findSessionById(
 		registration.examSessionId,
 		institutionId,
 	);
-	if (!session) throw notFound("Exam session not found");
+	if (!session) throw notFound("EXAM_SESSION_NOT_FOUND");
 
 	// Get all terms for that academic year
 	const yearTerms = await db
@@ -389,9 +385,9 @@ export async function printEligibilityList(
 			.where(eq(institutions.id, institutionId))
 			.limit(1),
 	]);
-	if (!session) throw notFound("Exam session not found");
+	if (!session) throw notFound("EXAM_SESSION_NOT_FOUND");
 	const institution = institutionRows[0];
-	if (!institution) throw notFound("Institution not found");
+	if (!institution) throw notFound("INSTITUTION_NOT_FOUND");
 
 	const data = buildCandidateListTemplateData({
 		institution: {
@@ -438,9 +434,9 @@ export async function printCandidateList(
 			.where(eq(institutions.id, institutionId))
 			.limit(1),
 	]);
-	if (!session) throw notFound("Exam session not found");
+	if (!session) throw notFound("EXAM_SESSION_NOT_FOUND");
 	const institution = institutionRows[0];
-	if (!institution) throw notFound("Institution not found");
+	if (!institution) throw notFound("INSTITUTION_NOT_FOUND");
 
 	const data = buildCandidateListTemplateData({
 		institution: {

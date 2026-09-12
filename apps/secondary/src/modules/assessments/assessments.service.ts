@@ -13,7 +13,7 @@ async function assertCanGrade(
 	if (!staffRecord) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "No staff profile found",
+			message: "NO_STAFF_PROFILE",
 		});
 	}
 	const assignment = await repo.findAssignment(
@@ -25,7 +25,7 @@ async function assertCanGrade(
 	if (!assignment) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "You are not assigned to this subject in this class",
+			message: "NOT_ASSIGNED_TO_CLASS",
 		});
 	}
 	return staffRecord.id;

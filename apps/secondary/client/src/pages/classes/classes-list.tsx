@@ -14,6 +14,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { trpc } from "@/utils/trpc";
 import { ClassFormDialog } from "./class-form-dialog";
 
@@ -29,6 +30,10 @@ type SchoolClass = {
 
 export function ClassesList() {
 	const { t } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.classes", "Classes") },
+	]);
 	const { academicYearId } = useParams<{ academicYearId: string }>();
 	const [search, setSearch] = useState("");
 	const [levelFilter, setLevelFilter] = useState<string>("all");

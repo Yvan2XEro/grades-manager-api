@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
@@ -82,6 +83,11 @@ function PreviewSkeleton() {
 export function ReportCardPreview() {
 	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.report_cards", "Report Cards"), href: "/report-cards" },
+		{ label: t("report_cards.preview", "Preview") },
+	]);
 
 	const utils = trpc.useUtils();
 	const { data: myRole } = trpc.institutions.myRole.useQuery();
