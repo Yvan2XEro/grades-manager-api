@@ -764,7 +764,7 @@ export const router = trpcRouter({
 				.limit(1);
 			if (!user)
 				throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-			await auth.api.forgetPassword({
+			await auth.api.requestPasswordReset({
 				body: {
 					email: user.email,
 					redirectTo: `${process.env.BETTER_AUTH_URL ?? "http://localhost:3001"}/reset-password`,

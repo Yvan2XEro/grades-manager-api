@@ -38,6 +38,7 @@
 	],
 	"dependencies": {
 		"@remotion/noise": "^4.0.446",
+		"better-auth": "^1.7.4",
 		"react-image-crop": "^11.0.10",
 		"react-international-phone": "^4.8.0",
 		"web": "^0.0.2"

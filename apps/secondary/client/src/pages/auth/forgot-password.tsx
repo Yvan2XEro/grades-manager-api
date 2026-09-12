@@ -30,7 +30,7 @@ export function ForgotPasswordPage() {
 	});
 
 	const onSubmit = handleSubmit(async (values) => {
-		await authClient.forgetPassword({
+		await authClient.requestPasswordReset({
 			email: values.email,
 			redirectTo: `${window.location.origin}/#/reset-password`,
 		});

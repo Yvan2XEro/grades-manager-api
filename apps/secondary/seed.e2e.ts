@@ -65,14 +65,14 @@ async function upsertAccountPassword(
 				password: hashed,
 				providerId: "credential",
 				issuer: "credential",
-				accountId: email,
+				accountId: userId,
 			})
 			.where(eq(account.userId, userId));
 	} else {
 		await db.insert(account).values({
 			id: randomUUID(),
 			userId,
-			accountId: email,
+			accountId: userId,
 			providerId: "credential",
 			issuer: "credential",
 			password: hashed,

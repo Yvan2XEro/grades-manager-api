@@ -73,7 +73,7 @@ async function ensureAdminUser(): Promise<string> {
 	await db.insert(account).values({
 		id: randomUUID(),
 		userId,
-		accountId: ADMIN_EMAIL,
+		accountId: userId,
 		providerId: "credential",
 		issuer: "credential",
 		password: hashedPassword,

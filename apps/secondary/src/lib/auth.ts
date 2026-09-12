@@ -5,8 +5,10 @@ import {
 	organization,
 	twoFactor,
 } from "better-auth/plugins";
+import { and, eq, isNull } from "drizzle-orm";
 import * as authSchema from "../db/auth";
 import { db } from "../db/index";
+import { staff } from "../db/schema";
 import { ac, admin, principal, teacher } from "./permissions";
 
 export const auth = betterAuth({
@@ -19,6 +21,16 @@ export const auth = betterAuth({
 			ac,
 			roles: { admin, principal, teacher },
 			allowUserToCreateOrganization: true,
+			organizationHooks: {
+				afterAcceptInvitation: async (data) => {
+					await db
+						.update(staff)
+						.set({ authUserId: data.member.userId, updatedAt: new Date() })
+						.where(
+							and(eq(staff.email, data.user.email), isNull(staff.authUserId)),
+						);
+				},
+			},
 		}),
 		twoFactor(),
 		adminPlugin({

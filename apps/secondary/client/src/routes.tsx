@@ -82,7 +82,7 @@ function Dashboard() {
 		return <Navigate to="/sysadmin" replace />;
 	}
 	const myMember = org?.members?.find((m) => m.userId === session?.user?.id);
-	const role = myMember?.role ?? "teacher";
+	const role = (myMember?.role ?? "teacher") as string;
 	if (role === "admin") return <AdminDashboard />;
 	if (role === "principal") return <PrincipalDashboard />;
 	return <TeacherDashboard />;
