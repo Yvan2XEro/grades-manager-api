@@ -54,6 +54,10 @@ export function Footer({ locale }: FooterProps) {
 							{[
 								{ href: "/produit", label: d.footer.links.produit },
 								{ href: "/solutions", label: d.footer.links.solutions },
+								{
+									href: "/solutions/secondaire",
+									label: d.secondary.secondary_title,
+								},
 								{ href: "/tarifs", label: d.footer.links.tarifs },
 								{ href: "/about", label: d.footer.links.about },
 								{ href: "/posts", label: d.footer.links.blog },

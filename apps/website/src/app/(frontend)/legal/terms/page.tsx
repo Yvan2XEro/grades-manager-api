@@ -83,9 +83,9 @@ export default async function TermsPage() {
 							<LegalSection title="2. Accès au service">
 								<p>
 									L&apos;accès à TKAMS est réservé aux établissements
-									d&apos;enseignement supérieur ayant souscrit un contrat avec
-									OverBrand. Chaque établissement est responsable de la gestion
-									de ses accès utilisateurs.
+									d&apos;enseignement supérieur et secondaire ayant souscrit un
+									contrat avec OverBrand. Chaque établissement est responsable
+									de la gestion de ses accès utilisateurs.
 								</p>
 							</LegalSection>
 
@@ -188,9 +188,9 @@ export default async function TermsPage() {
 
 							<LegalSection title="2. Access to the Service">
 								<p>
-									Access to TKAMS is reserved for higher education institutions
-									that have signed a contract with OverBrand. Each institution
-									is responsible for managing its user access.
+									Access to TKAMS is reserved for higher and secondary education
+									institutions that have signed a contract with OverBrand. Each
+									institution is responsible for managing its user access.
 								</p>
 							</LegalSection>
 

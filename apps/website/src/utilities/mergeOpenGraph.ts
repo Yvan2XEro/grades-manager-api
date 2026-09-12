@@ -3,14 +3,14 @@ import { getServerSideURL } from "./getURL";
 
 const defaultOpenGraph: Metadata["openGraph"] = {
 	type: "website",
-	description: "An open-source website built with Payload and Next.js.",
+	description: "TKAMS — Gestion académique pour le supérieur et le secondaire.",
 	images: [
 		{
-			url: `${getServerSideURL()}/website-template-OG.webp`,
+			url: `${getServerSideURL()}/logo-tkams.png`,
 		},
 	],
-	siteName: "Payload Website Template",
-	title: "Payload Website Template",
+	siteName: "TKAMS",
+	title: "TKAMS",
 };
 
 export const mergeOpenGraph = (

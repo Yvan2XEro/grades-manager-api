@@ -14,6 +14,10 @@ import {
 	SectionLabel,
 } from "@/marketing/Editorial";
 import { Cta } from "@/marketing/sections/Cta";
+import {
+	EducationPaths,
+	HigherEducationScope,
+} from "@/marketing/sections/EducationPaths";
 
 export default async function SolutionsPage() {
 	const locale = await getLocale();
@@ -48,6 +52,8 @@ export default async function SolutionsPage() {
 				</div>
 			</div>
 
+			<EducationPaths dict={dict} />
+			<HigherEducationScope dict={dict} />
 			<BeforeAfter
 				data={dict.blocks.beforeAfter}
 				number="01"

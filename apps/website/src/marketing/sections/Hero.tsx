@@ -11,6 +11,13 @@ interface HeroProps {
 export function Hero({ dict: d }: HeroProps) {
 	return (
 		<section className="relative overflow-hidden bg-tk-bg pt-[68px]">
+			<Link
+				href="/solutions/secondaire"
+				className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-tk-dark px-6 py-3 text-center text-sm text-tk-on-dark no-underline hover:underline"
+			>
+				<span>{d.secondary.announcement}</span>
+				<span className="font-semibold">{d.secondary.discover}</span>
+			</Link>
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
 				{/* Masthead line */}
 				<div className="flex items-center justify-between gap-4 py-5">
@@ -51,10 +58,7 @@ export function Hero({ dict: d }: HeroProps) {
 
 			{/* Live interactive product demo */}
 			<div className="mx-auto max-w-[64rem] px-6 lg:px-10">
-				<DemoFrame
-					url="app.tkams.com/saisie"
-					caption="Démo en direct · modifie une note, la moyenne et la décision se recalculent"
-				>
+				<DemoFrame url="app.tkams.com/saisie" caption={d.hero.demo_caption}>
 					<GradeEntryDemo t={d.demos.grade} />
 				</DemoFrame>
 			</div>

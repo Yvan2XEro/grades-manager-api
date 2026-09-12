@@ -25,6 +25,10 @@ export function Nav({ locale, dict }: NavProps) {
 		? [
 				{ href: "/produit", label: dict.nav.produit },
 				{ href: "/solutions", label: dict.nav.solutions },
+				{
+					href: "/solutions/secondaire",
+					label: dict.secondary.secondary_title,
+				},
 				{ href: "/tarifs", label: dict.nav.tarifs },
 				{ href: "/posts", label: dict.nav.blog },
 				{ href: "/contact", label: dict.nav.contact },
@@ -32,6 +36,10 @@ export function Nav({ locale, dict }: NavProps) {
 		: [
 				{ href: "/produit", label: locale === "en" ? "Product" : "Produit" },
 				{ href: "/solutions", label: "Solutions" },
+				{
+					href: "/solutions/secondaire",
+					label: locale === "en" ? "Secondary" : "Secondaire",
+				},
 				{ href: "/tarifs", label: locale === "en" ? "Pricing" : "Tarifs" },
 				{ href: "/posts", label: "Blog" },
 				{ href: "/contact", label: "Contact" },
@@ -39,7 +47,7 @@ export function Nav({ locale, dict }: NavProps) {
 
 	const demoLabel =
 		dict?.nav.demo ??
-		(locale === "en" ? "Get started" : "Démarrer gratuitement");
+		(locale === "en" ? "Request a demo" : "Demander une démo");
 
 	const loginLabel =
 		dict?.nav.login ?? (locale === "en" ? "Sign in" : "Connexion");
@@ -61,7 +69,7 @@ export function Nav({ locale, dict }: NavProps) {
 					/>
 				</Link>
 
-				<div className="hidden flex-1 items-center justify-center gap-1 md:flex">
+				<div className="hidden flex-1 items-center justify-center gap-1 xl:flex">
 					{navLinks.map((link) => (
 						<Link
 							key={link.href}
@@ -73,17 +81,17 @@ export function Nav({ locale, dict }: NavProps) {
 					))}
 				</div>
 
-				<div className="flex items-center gap-2 md:gap-3">
+				<div className="flex items-center gap-2 xl:gap-3">
 					<LanguageSwitcher locale={locale} />
 					<Link
 						href="/login"
-						className="hidden items-center rounded-lg px-3.5 py-2 font-body font-medium text-[0.875rem] text-tk-ink-soft no-underline transition-colors duration-150 hover:bg-tk-bg-deep hover:text-tk-ink md:inline-flex"
+						className="hidden items-center rounded-lg px-3.5 py-2 font-body font-medium text-[0.875rem] text-tk-ink-soft no-underline transition-colors duration-150 hover:bg-tk-bg-deep hover:text-tk-ink xl:inline-flex"
 					>
 						{loginLabel}
 					</Link>
-					<span className="hidden md:inline-flex">
+					<span className="hidden xl:inline-flex">
 						<Link
-							href="/signup"
+							href="/contact"
 							className="tk-btn-primary"
 							style={{ padding: "0.5625rem 1.25rem", fontSize: "0.875rem" }}
 						>
@@ -93,7 +101,7 @@ export function Nav({ locale, dict }: NavProps) {
 					<button
 						onClick={() => setMenuOpen(!menuOpen)}
 						aria-label="Toggle menu"
-						className="flex cursor-pointer border-none bg-transparent p-2 text-tk-ink md:hidden"
+						className="flex cursor-pointer border-none bg-transparent p-2 text-tk-ink xl:hidden"
 					>
 						<svg width="22" height="22" viewBox="0 0 22 22" fill="none">
 							{menuOpen ? (
@@ -117,7 +125,7 @@ export function Nav({ locale, dict }: NavProps) {
 			</div>
 
 			{menuOpen && (
-				<div className="flex flex-col gap-1 border-tk-border border-t bg-tk-surface px-6 py-4 md:hidden">
+				<div className="flex flex-col gap-1 border-tk-border border-t bg-tk-surface px-6 py-4 xl:hidden">
 					{navLinks.map((link) => (
 						<Link
 							key={link.href}
@@ -137,7 +145,7 @@ export function Nav({ locale, dict }: NavProps) {
 							{loginLabel}
 						</Link>
 						<Link
-							href="/signup"
+							href="/contact"
 							onClick={() => setMenuOpen(false)}
 							className="tk-btn-primary justify-center"
 						>

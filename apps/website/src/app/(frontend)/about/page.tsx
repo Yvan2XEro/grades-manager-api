@@ -84,8 +84,7 @@ export default async function AboutPage() {
 	);
 }
 
-export const metadata: Metadata = {
-	title: "À propos — TKAMS",
-	description:
-		"TKAMS, plateforme de gestion académique LMD éditée par OverBrand pour les institutions d'Afrique francophone.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+	const t = getDict(await getLocale()).about;
+	return { title: `${t.label} — TKAMS`, description: t.intro };
+}

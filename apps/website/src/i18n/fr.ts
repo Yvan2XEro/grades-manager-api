@@ -1,4 +1,82 @@
 export const fr = {
+	secondary: {
+		setup_notice:
+			"Votre collège ou lycée bénéficie d’un accompagnement dédié. Contactez notre équipe pour préparer votre espace TKAMS Secondaire.",
+		announcement:
+			"Nouveau · TKAMS accompagne désormais aussi l’enseignement secondaire.",
+		discover: "Découvrir le secondaire →",
+		label: "Une marque, deux parcours",
+		title: "À chaque établissement, son parcours TKAMS.",
+		intro:
+			"Notre expertise est née dans l’enseignement supérieur. Elle s’étend aujourd’hui au secondaire, avec des outils adaptés à chaque niveau d’enseignement.",
+		higher_title: "Enseignement supérieur",
+		higher_desc:
+			"Universités, grandes écoles et instituts : une gestion académique ancrée dans le LMD, des admissions aux délibérations et à la diplomation.",
+		higher_cta: "Explorer le supérieur →",
+		secondary_title: "Enseignement secondaire",
+		secondary_desc:
+			"Collèges et lycées : élèves, classes, notes, bulletins, conseils de classe, assiduité et frais scolaires.",
+		available: "Disponible dès maintenant",
+		scope: "TKAMS pour l’enseignement supérieur",
+		scope_desc:
+			"Découvrez ci-dessous notre offre historique pour les universités, grandes écoles et instituts LMD.",
+		page_title:
+			"TKAMS Secondaire : votre établissement, au fil de l’année scolaire.",
+		page_intro:
+			"De l’inscription des élèves aux bulletins trimestriels, réunissez le travail de la direction et des enseignants dans un espace adapté aux collèges et lycées.",
+		features_title: "Les outils du quotidien scolaire",
+		features: [
+			{
+				title: "Élèves et inscriptions",
+				desc: "Conservez les dossiers élèves, inscrivez-les dans une classe et retrouvez les effectifs de l’année scolaire.",
+			},
+			{
+				title: "Classes, séries et matières",
+				desc: "Organisez les classes et les séries, définissez les coefficients des matières et affectez les enseignants à leurs classes et matières.",
+			},
+			{
+				title: "Notes et appréciations",
+				desc: "Les enseignants saisissent les notes et appréciations pour les classes et matières qui leur sont affectées.",
+			},
+			{
+				title: "Bulletins et conseils de classe",
+				desc: "Générez les bulletins trimestriels avec moyennes pondérées et rangs. Consignez les décisions et observations du conseil de classe.",
+			},
+			{
+				title: "Assiduité et frais scolaires",
+				desc: "Suivez les présences et les absences, enregistrez les règlements et consultez les soldes des frais scolaires.",
+			},
+			{
+				title: "Suivi des examens officiels",
+				desc: "Organisez les sessions et les inscriptions des candidats, puis préparez leurs listes depuis votre établissement.",
+			},
+		],
+		journey_title: "Un démarrage guidé, une équipe bien organisée",
+		journey_desc:
+			"Renseignez votre établissement et l’année scolaire, puis préparez les séries, matières, coefficients, classes et membres de l’équipe. Des modèles CSV accompagnent l’import des données de configuration. L’interface est disponible en français et en anglais.",
+		cta: "Demander une démo du secondaire →",
+		contact_subject: "Démo TKAMS Secondaire",
+		pricing: "Parlons de votre collège ou lycée",
+		pricing_desc:
+			"Présentez-nous vos effectifs et vos besoins pour obtenir une proposition adaptée à votre établissement secondaire.",
+		articles_title: "Comprendre TKAMS Secondaire",
+		articles_cta: "Lire les articles du blog →",
+		faq_title: "Vos questions sur le secondaire",
+		faq: [
+			{
+				q: "TKAMS Secondaire est-il déjà disponible ?",
+				a: "Oui. TKAMS Secondaire est disponible pour les collèges et lycées. Contactez notre équipe pour une démonstration et la mise en place de votre établissement.",
+			},
+			{
+				q: "TKAMS continue-t-il d’accompagner le supérieur ?",
+				a: "Oui. L’enseignement supérieur reste notre domaine d’origine. Ses outils LMD restent dédiés aux universités, grandes écoles et instituts ; le secondaire dispose d’un parcours adapté à l’année scolaire.",
+			},
+			{
+				q: "Les paiements sont-ils encaissés en ligne ?",
+				a: "Le parcours présenté permet d’enregistrer les règlements et de suivre les soldes des frais scolaires. L’enregistrement d’un mode de paiement ne constitue pas un encaissement en ligne.",
+			},
+		],
+	},
 	locale: "fr",
 	nav: {
 		features: "Fonctionnalités",
@@ -14,16 +92,16 @@ export const fr = {
 		login: "Connexion",
 	},
 	hero: {
-		kicker:
-			"★ Système d'Information Étudiant · LMD · admissions · finances · portails",
-		headline_1: "Le SIS qui transforme vos semaines de délibérations en",
-		headline_2: "heures.",
-		sub: "TKAMS couvre l'intégralité du cycle académique — admissions, quitus, emplois du temps, assiduité, examens, délibérations, documents officiels et promotion — en une seule plateforme conçue pour les institutions LMD d'Afrique francophone.",
+		kicker: "Gestion académique · supérieur et secondaire",
+		headline_1: "La gestion académique,",
+		headline_2: "du supérieur au secondaire.",
+		sub: "Conçu à l’origine pour les universités, grandes écoles et instituts, TKAMS accompagne désormais aussi les établissements secondaires, avec une offre adaptée à leurs besoins.",
+		demo_caption: "Aperçu du supérieur · saisie des notes et délibérations LMD",
 		cta_primary: "Demander une démo →",
 		cta_secondary: "Voir la brochure",
-		badge_lmd: "LMD natif",
-		badge_bi: "Portails multi-rôles",
-		badge_live: "En production",
+		badge_lmd: "Supérieur : LMD natif",
+		badge_bi: "Secondaire : disponible",
+		badge_live: "Français · English",
 	},
 	stats: {
 		title: "Une plateforme complète, en production",
@@ -411,6 +489,10 @@ export const fr = {
 		sub: "Et si votre question n'y est pas, écrivez-nous.",
 		items: [
 			{
+				q: "TKAMS Secondaire est-il déjà disponible ?",
+				a: "Oui. TKAMS Secondaire est disponible pour les collèges et lycées. Contactez notre équipe pour une démonstration et la mise en place de votre établissement.",
+			},
+			{
 				q: "TKAMS est-il vraiment adapté au système LMD ?",
 				a: "Oui. UE, EC, ECTS, coefficients, sessions de rattrapage et délibérations sont natifs — pensés pour le LMD, pas ajoutés en surcouche.",
 			},
@@ -420,7 +502,7 @@ export const fr = {
 			},
 			{
 				q: "Peut-on importer nos données existantes ?",
-				a: "Oui — import par fichiers (Excel / YAML) dès la création de l'instance, ou accompagnement à la migration pour les volumes importants.",
+				a: "Pour le supérieur, import par fichiers Excel / YAML. Pour le secondaire, des modèles CSV accompagnent la configuration des séries, matières, coefficients, classes et équipe. Contactez-nous pour préparer votre reprise de données.",
 			},
 			{
 				q: "La plateforme est-elle bilingue ?",
@@ -447,10 +529,10 @@ export const fr = {
 		label: "À propos",
 		title: "Une plateforme née sur le terrain académique africain",
 		intro:
-			"TKAMS — Tefoye and Kana Academic Management System — est éditée par OverBrand, au contact direct des établissements LMD d'Afrique francophone.",
+			"TKAMS — Tefoye and Kana Academic Management System — est édité par OverBrand. Né au contact des établissements LMD d’Afrique francophone, TKAMS accompagne désormais aussi les collèges et lycées.",
 		mission_title: "Notre conviction",
 		mission:
-			"La gestion académique LMD mérite mieux que des tableurs dispersés et des délibérations manuscrites. TKAMS réunit tout le cycle — du catalogue académique à la diplomation — dans une plateforme unique, traçable et bilingue.",
+			"Donner aux équipes les outils adaptés à leur établissement : une gestion académique ancrée dans le LMD pour le supérieur, et un parcours de vie scolaire pour le secondaire. Une même exigence de clarté, avec des usages propres à chaque niveau.",
 		values: [
 			{
 				title: "LMD d'abord",
@@ -473,7 +555,7 @@ export const fr = {
 	blog: {
 		label: "Le blog",
 		title: "Actualités & ressources",
-		sub: "Annonces produit, bonnes pratiques LMD et retours du terrain.",
+		sub: "Annonces produit, gestion académique et vie scolaire : les nouvelles du supérieur et du secondaire.",
 		empty: "Aucun article pour le moment.",
 		no_image: "Sans visuel",
 		author: "Auteur",
@@ -494,7 +576,7 @@ export const fr = {
 		},
 	},
 	produit: {
-		label: "Le produit",
+		label: "Enseignement supérieur",
 		title: "Voyez TKAMS en action",
 		sub: "Saisie des notes, moteur de règles, délibération, suivi des présences et validations — démonstrations interactives de bout en bout. Tout fonctionne en direct, sans inscription.",
 		demos: {
@@ -514,8 +596,8 @@ export const fr = {
 	},
 	solutions: {
 		label: "Solutions",
-		title: "Une réponse pour chaque acteur de l'établissement",
-		sub: "Du corps enseignant à la direction informatique, TKAMS s'adapte à chaque rôle.",
+		title: "Un parcours adapté à votre établissement",
+		sub: "Enseignement supérieur ou secondaire : découvrez le parcours qui correspond à votre équipe.",
 		roles: [
 			{
 				role: "Enseignants",
@@ -582,7 +664,7 @@ export const fr = {
 	},
 	tarifs: {
 		label: "Tarification",
-		title: "Un tarif simple, au nombre d'étudiants",
+		title: "Les tarifs de TKAMS pour le supérieur",
 		sub: "Sans frais cachés. Migration des données et accompagnement inclus dès le démarrage.",
 		included_title: "Tout est compris",
 		included_sub: "Un seul tarif, aucune surprise sur la facture.",
@@ -728,7 +810,7 @@ export const fr = {
 		},
 	},
 	footer: {
-		tagline: "Le SIS qui transforme vos délibérations.",
+		tagline: "La gestion académique, du supérieur au secondaire.",
 		developed_by: "Développé par OverBrand",
 		cities: "Douala · Yaoundé",
 		copyright: "© 2026 OverBrand · TKAMS",
@@ -795,7 +877,7 @@ export const fr = {
 				university: "Université",
 				school: "Grande École",
 				institute: "Institut",
-				secondary: "Lycée / Secondaire",
+				secondary: "Collège / Lycée",
 				other: "Autre",
 			},
 			country: "Pays",

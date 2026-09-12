@@ -1,4 +1,80 @@
 export const en = {
+	secondary: {
+		setup_notice:
+			"Your secondary school has a dedicated setup path. Contact our team to prepare your TKAMS Secondary workspace.",
+		announcement: "New · TKAMS now supports secondary education too.",
+		discover: "Explore secondary education →",
+		label: "One brand, two paths",
+		title: "A TKAMS path for every institution.",
+		intro:
+			"Our expertise began in higher education. It now extends to secondary schools, with tools suited to each level of education.",
+		higher_title: "Higher education",
+		higher_desc:
+			"Universities, colleges and institutes: LMD academic management, from admissions to deliberations and graduation.",
+		higher_cta: "Explore higher education →",
+		secondary_title: "Secondary education",
+		secondary_desc:
+			"Secondary schools: students, classes, grades, report cards, class councils, attendance and school fees.",
+		available: "Available now",
+		scope: "TKAMS for higher education",
+		scope_desc:
+			"Explore our established offering for universities, colleges and LMD institutes below.",
+		page_title: "TKAMS Secondary: your school, throughout the school year.",
+		page_intro:
+			"From student enrolment to term report cards, bring school leaders and teachers together in a workspace built for secondary education.",
+		features_title: "Tools for everyday school management",
+		features: [
+			{
+				title: "Students and enrolment",
+				desc: "Maintain student records, enrol students in classes and review enrolment for the school year.",
+			},
+			{
+				title: "Classes, tracks and subjects",
+				desc: "Organise classes and tracks, set subject coefficients and assign teachers to their classes and subjects.",
+			},
+			{
+				title: "Grades and comments",
+				desc: "Teachers enter grades and comments for the classes and subjects assigned to them.",
+			},
+			{
+				title: "Report cards and class councils",
+				desc: "Generate term report cards with weighted averages and rankings. Record class council decisions and observations.",
+			},
+			{
+				title: "Attendance and school fees",
+				desc: "Track attendance and absences, record payments and review outstanding school fee balances.",
+			},
+			{
+				title: "Official exam administration",
+				desc: "Organise sessions and candidate registrations, then prepare candidate lists within your school.",
+			},
+		],
+		journey_title: "Guided setup for an organised team",
+		journey_desc:
+			"Enter your school details and academic year, then prepare tracks, subjects, coefficients, classes and staff. CSV templates help import configuration data. The interface is available in French and English.",
+		cta: "Request a secondary school demo →",
+		contact_subject: "TKAMS Secondary demo",
+		pricing: "Tell us about your secondary school",
+		pricing_desc:
+			"Share your enrolment numbers and requirements to receive a proposal tailored to your secondary school.",
+		articles_title: "Discover TKAMS Secondary",
+		articles_cta: "Read the blog articles →",
+		faq_title: "Your questions about secondary education",
+		faq: [
+			{
+				q: "Is TKAMS Secondary available now?",
+				a: "Yes. TKAMS Secondary is available for secondary schools. Contact our team for a demonstration and help setting up your school.",
+			},
+			{
+				q: "Does TKAMS still support higher education?",
+				a: "Yes. Higher education remains our original focus. Its LMD tools serve universities, colleges and institutes, while secondary schools have a path suited to the school year.",
+			},
+			{
+				q: "Are payments collected online?",
+				a: "The workflow presented records payments and tracks school fee balances. Recording a payment method does not itself collect money online.",
+			},
+		],
+	},
 	locale: "en",
 	nav: {
 		features: "Features",
@@ -14,16 +90,17 @@ export const en = {
 		login: "Sign in",
 	},
 	hero: {
-		kicker:
-			"★ Student Information System · LMD · admissions · finance · portals",
-		headline_1: "The SIS that turns your weeks of deliberations into",
-		headline_2: "hours.",
-		sub: "TKAMS covers the full academic cycle — admissions, tuition fees, schedules, attendance, exams, deliberations, official documents and graduation — in one platform built for LMD institutions in francophone Africa.",
+		kicker: "Academic management · higher and secondary education",
+		headline_1: "Academic management,",
+		headline_2: "from higher to secondary education.",
+		sub: "Originally built for universities, colleges and institutes, TKAMS now supports secondary schools too, with an offering tailored to their needs.",
+		demo_caption:
+			"Higher education preview · grade entry and LMD deliberations",
 		cta_primary: "Request a demo →",
 		cta_secondary: "View brochure",
-		badge_lmd: "LMD native",
-		badge_bi: "Multi-role portals",
-		badge_live: "In production",
+		badge_lmd: "Higher education: native LMD",
+		badge_bi: "Secondary education: available",
+		badge_live: "Français · English",
 	},
 	stats: {
 		title: "A complete platform, in production",
@@ -411,6 +488,10 @@ export const en = {
 		sub: "And if your question isn't here, just write to us.",
 		items: [
 			{
+				q: "Is TKAMS Secondary available now?",
+				a: "Yes. TKAMS Secondary is available for secondary schools. Contact our team for a demonstration and help setting up your school.",
+			},
+			{
 				q: "Is TKAMS really built for the LMD system?",
 				a: "Yes. Teaching units, course units, ECTS, coefficients, retake sessions and deliberations are native — designed for LMD, not bolted on.",
 			},
@@ -420,7 +501,7 @@ export const en = {
 			},
 			{
 				q: "Can we import our existing data?",
-				a: "Yes — file import (Excel / YAML) right when the instance is created, or assisted migration for larger volumes.",
+				a: "Higher education supports Excel / YAML imports. For secondary education, CSV templates support the setup of tracks, subjects, coefficients, classes and staff. Contact us to prepare your data migration.",
 			},
 			{
 				q: "Is the platform bilingual?",
@@ -447,10 +528,10 @@ export const en = {
 		label: "About",
 		title: "A platform born in the field of African academia",
 		intro:
-			"TKAMS — Tefoye and Kana Academic Management System — is published by OverBrand, in direct contact with LMD institutions across francophone Africa.",
+			"TKAMS — Tefoye and Kana Academic Management System — is published by OverBrand. Born alongside LMD institutions in francophone Africa, TKAMS now also serves secondary schools.",
 		mission_title: "What we believe",
 		mission:
-			"LMD academic management deserves better than scattered spreadsheets and handwritten deliberations. TKAMS brings the whole cycle — from the academic catalog to graduation — into a single, auditable and bilingual platform.",
+			"Give teams tools suited to their institutions: LMD academic management for higher education and school management for secondary education. The same commitment to clarity, with workflows suited to each level.",
 		values: [
 			{
 				title: "LMD first",
@@ -473,7 +554,7 @@ export const en = {
 	blog: {
 		label: "The blog",
 		title: "News & resources",
-		sub: "Product announcements, LMD best practices and field feedback.",
+		sub: "Product news, academic management and school life across higher and secondary education.",
 		empty: "No articles yet.",
 		no_image: "No image",
 		author: "Author",
@@ -494,7 +575,7 @@ export const en = {
 		},
 	},
 	produit: {
-		label: "The product",
+		label: "Higher education",
 		title: "See TKAMS in action",
 		sub: "Grade entry, rules engine, deliberation, attendance tracking and validations — interactive end-to-end demos. Everything runs live, no sign-up needed.",
 		demos: {
@@ -514,8 +595,8 @@ export const en = {
 	},
 	solutions: {
 		label: "Solutions",
-		title: "An answer for every role in the institution",
-		sub: "From teaching staff to IT management, TKAMS adapts to each role.",
+		title: "A path suited to your institution",
+		sub: "Higher or secondary education: discover the path that fits your team.",
 		roles: [
 			{
 				role: "Teachers",
@@ -582,7 +663,7 @@ export const en = {
 	},
 	tarifs: {
 		label: "Pricing",
-		title: "Simple pricing, per student",
+		title: "TKAMS pricing for higher education",
 		sub: "No hidden fees. Data migration and onboarding included from the start.",
 		included_title: "Everything is included",
 		included_sub: "One price, no surprises on the invoice.",
@@ -728,7 +809,7 @@ export const en = {
 		},
 	},
 	footer: {
-		tagline: "The SIS that transforms your deliberations.",
+		tagline: "Academic management, from higher to secondary education.",
 		developed_by: "Developed by OverBrand",
 		cities: "Douala · Yaoundé",
 		copyright: "© 2026 OverBrand · TKAMS",

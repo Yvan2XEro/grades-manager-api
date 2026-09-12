@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getDict, getLocale } from "@/i18n";
 import { HowItWorks } from "@/marketing/blocks/HowItWorks";
 import { DeliberationDemo } from "@/marketing/demos/DeliberationDemo";
@@ -51,6 +52,12 @@ export default async function ProduitPage() {
 						{p.title}
 					</SectionHeading>
 					<Lede className="mt-5 max-w-[52ch]">{p.sub}</Lede>
+					<Link
+						href="/solutions/secondaire"
+						className="mt-5 inline-block font-semibold text-tk-primary"
+					>
+						{dict.secondary.discover}
+					</Link>
 				</div>
 			</div>
 

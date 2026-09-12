@@ -16,9 +16,17 @@ export function Pricing({ dict: d, number = "06" }: PricingProps) {
 				<Rule />
 				<div className="py-16 lg:py-24">
 					<div className="max-w-2xl">
-						<SectionLabel number={number}>Tarification</SectionLabel>
+						<SectionLabel number={number}>
+							{d.secondary.higher_title} · {d.nav.pricing}
+						</SectionLabel>
 						<SectionHeading className="mt-6">{d.pricing.title}</SectionHeading>
 						<Lede className="mt-5">{d.pricing.sub}</Lede>
+						<Link
+							href="/solutions/secondaire"
+							className="mt-4 inline-block font-semibold text-tk-primary"
+						>
+							{d.secondary.pricing} →
+						</Link>
 					</div>
 
 					<div className="mt-14 grid grid-cols-1 items-stretch gap-px overflow-hidden rounded-2xl border border-tk-border bg-tk-border md:grid-cols-2 lg:grid-cols-3">
