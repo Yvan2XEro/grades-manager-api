@@ -85,22 +85,25 @@ export function Domains({ dict: d, locale }: { dict: Dict; locale: Locale }) {
 							locale={locale}
 							slabs={[
 								{
-									token: "tk-primary",
 									label: en ? "Enrolment" : "Inscriptions",
 									scene: "enrolment",
+									accent: "var(--tk-primary)",
 								},
 								{
-									token: "tk-primary",
 									label: en ? "Marks" : "Notes",
-									tint: 0.72,
 									scene: "marks",
+									accent: "var(--tk-primary)",
 								},
 								{
-									token: "tk-accent",
 									label: en ? "Deliberation" : "Délibération",
 									scene: "deliberation",
+									accent: "var(--tk-accent-deep)",
 								},
-								{ token: "tk-dark", label: "Documents", scene: "documents" },
+								{
+									label: "Documents",
+									scene: "documents",
+									accent: "var(--tk-primary-deep)",
+								},
 							]}
 						/>
 					</Reveal>

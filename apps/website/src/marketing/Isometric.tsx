@@ -14,9 +14,12 @@ import type { Locale } from "@/i18n";
  *
  * Two properties follow from staying in SVG, and both matter more than realism:
  *
- *   - Every face takes its colour from a `--tk-*` token, so the whole
- *     illustration re-tints itself when the theme flips. A rendered image would
- *     need a second file.
+ *   - Every face takes its colour from a `--tk-*` token, so a change to the
+ *     palette re-tints the whole illustration and a future dark theme would
+ *     carry it for free. (The marketing tokens have no dark variant today —
+ *     `[data-theme='dark']` in globals.css redefines the shadcn palette used by
+ *     the app, not `--tk-*`.) A rendered image would need a second file either
+ *     way.
  *   - The labels are real text: readable by a screen reader, translatable, and
  *     searchable.
  *
@@ -40,43 +43,33 @@ function project(
 	return [cx + (x - y) * COS30 * s, cy + (x + y) * SIN30 * s - z] as const;
 }
 
-/** Which domain scene is drawn on a slab's surface. */
+/** Which domain screen is drawn on a slab's surface. */
 type Scene = "enrolment" | "marks" | "deliberation" | "documents";
 
 type Slab = {
-	/** Token name without the `--` prefix, e.g. "tk-primary". */
-	token: string;
 	label: string;
-	/** Multiplies the top-face opacity, to separate two slabs on one token. */
-	tint?: number;
-	/** The picture drawn on the slab. Omit for a plain surface. */
-	scene?: Scene;
+	/** The screen drawn on this slab. */
+	scene: Scene;
+	/** Accent used for the data marks on this screen. */
+	accent: string;
 };
 
 /**
- * The furniture drawn on each slab's top face.
+ * The screen drawn on each slab's top face.
  *
- * A coloured rectangle with a label floating beside it is a diagram of nothing:
- * the reader has to be told what the layer is, which defeats the point of
- * drawing it. Each layer therefore carries a small scene of its own domain,
- * laid out in the same isometric grid as the slab it sits on — so the stack
- * reads as four floors of one building, each visibly doing different work.
+ * The first attempt drew abstract furniture — translucent blocks and ghost
+ * tiles floating on coloured slabs. It read as a generic tech illustration
+ * rather than as this product, for three reasons worth recording so the mistake
+ * is not repeated: shapes at 20–60% opacity look unfinished rather than light;
+ * translucent layers crossing each other turn muddy; and an abstract block says
+ * nothing a label was not already saying.
  *
- * Every scene is built from the same two primitives (a filled tile and an
- * upright bar) placed on slab-local coordinates in the range -1..1, so a scene
- * is a short list of positions rather than hand-authored path data.
- *
- * What each one shows, and why that shape:
- *
- *   enrolment    a queue of student rows arriving at a register — the domain is
- *                people entering the system, so it is drawn as a line of them.
- *   marks        a grid of cells, some filled: a mark sheet mid-entry, which is
- *                exactly what `GradeEntryDemo` shows elsewhere on the page.
- *   deliberation bars of differing height crossing a threshold line — the jury
- *                rule applied to a cohort, the one picture the rules engine
- *                deserves.
- *   documents    stacked sheets with a corner fold and a QR square, the objects
- *                the platform actually emits.
+ * The site earns its credibility everywhere else by showing real interface —
+ * `app-demo/shell.tsx` reproduces the product's actual chrome down to the
+ * measurements. These slabs now follow that: each one is a white card carrying
+ * a legible fragment of a real screen — a table with rows, a mark sheet with
+ * figures, a decision list, a document with its QR. Opaque, high-contrast, and
+ * recognisable at the size it is actually displayed.
  */
 function SlabScene({
 	scene,
@@ -85,7 +78,7 @@ function SlabScene({
 	cy,
 	s,
 	offset,
-	on,
+	accent,
 }: {
 	scene: Scene;
 	z: number;
@@ -94,136 +87,186 @@ function SlabScene({
 	s: number;
 	/** Ground-plane shift of the slab this scene sits on. */
 	offset: number;
-	/** Ink colour for marks drawn on this surface. */
-	on: string;
+	/** Accent for the data marks on this screen. */
+	accent: string;
 }) {
 	/** Slab-local point → screen point, carrying the slab's own offset. */
 	const P = (x: number, y: number, lift = 0) =>
-		project(x + offset, y + offset, z + lift, cx, cy, s).join(",");
+		project(x + offset, y + offset, z + lift, cx, cy, s).join(" ");
 
-	/** A flat tile lying on the surface. */
-	const tile = (
+	/** A rectangle lying flat on the card. */
+	const rect = (
 		x: number,
 		y: number,
 		w: number,
 		h: number,
-		opacity: number,
+		fill: string,
 		key: string,
+		opacity = 1,
 	) => (
 		<polygon
 			key={key}
-			points={`${P(x, y)} ${P(x + w, y)} ${P(x + w, y + h)} ${P(x, y + h)}`}
-			fill={on}
+			points={`${P(x, y)}, ${P(x + w, y)}, ${P(x + w, y + h)}, ${P(x, y + h)}`}
+			fill={fill}
 			fillOpacity={opacity}
 		/>
 	);
 
-	/** A box standing up from the surface — used for the deliberation bars. */
-	const bar = (x: number, y: number, w: number, hgt: number, key: string) => {
-		const top = `${P(x, y, hgt)} ${P(x + w, y, hgt)} ${P(x + w, y + w, hgt)} ${P(x, y + w, hgt)}`;
-		const left = `${P(x, y + w, hgt)} ${P(x + w, y + w, hgt)} ${P(x + w, y + w)} ${P(x, y + w)}`;
-		const right = `${P(x + w, y, hgt)} ${P(x + w, y + w, hgt)} ${P(x + w, y + w)} ${P(x + w, y)}`;
-		return (
-			<g key={key}>
-				<polygon points={left} fill={on} fillOpacity={0.62} />
-				<polygon points={right} fill={on} fillOpacity={0.8} />
-				<polygon points={top} fill={on} fillOpacity={1} />
-			</g>
-		);
-	};
+	/** A column standing up from the card — deliberation only. */
+	const column = (
+		x: number,
+		y: number,
+		w: number,
+		hgt: number,
+		key: string,
+	) => (
+		<g key={key}>
+			<polygon
+				points={`${P(x, y + w, hgt)}, ${P(x + w, y + w, hgt)}, ${P(x + w, y + w)}, ${P(x, y + w)}`}
+				fill={accent}
+				fillOpacity={0.72}
+			/>
+			<polygon
+				points={`${P(x + w, y, hgt)}, ${P(x + w, y + w, hgt)}, ${P(x + w, y + w)}, ${P(x + w, y)}`}
+				fill={accent}
+				fillOpacity={0.86}
+			/>
+			<polygon
+				points={`${P(x, y, hgt)}, ${P(x + w, y, hgt)}, ${P(x + w, y + w, hgt)}, ${P(x, y + w, hgt)}`}
+				fill={accent}
+			/>
+		</g>
+	);
+
+	const INK = "var(--tk-ink)";
+	const LINE = "var(--tk-border)";
+
+	/* A title bar every card shares, so the four read as one product. */
+	const header = (
+		<>
+			{rect(-0.86, -0.86, 1.72, 0.16, "var(--tk-bg-deep)", "hdr")}
+			{rect(-0.8, -0.81, 0.44, 0.06, accent, "hdr-t")}
+		</>
+	);
 
 	if (scene === "enrolment") {
-		/*
-		 * Four application files queueing toward the register.
-		 *
-		 * Each row is a marker block (the applicant) followed by a bar whose
-		 * length is how complete their file is — the shortest one is still
-		 * being assembled. The tall block on the right is the register they
-		 * are being admitted into.
-		 */
-		const rows = [-0.38, -0.06, 0.26, 0.58];
-		const fill = [0.78, 0.62, 0.9, 0.4];
+		/* A student list: rows of name + status pill. */
+		const rows = [0, 1, 2, 3, 4];
 		return (
 			<g>
-				{rows.map((y, i) => (
-					<g key={y}>
-						{bar(-0.72, y, 0.22, 11, `p${y}`)}
-						{tile(-0.42, y + 0.03, 0.82 * fill[i], 0.14, 0.72, `r${y}`)}
-					</g>
-				))}
-				{bar(0.5, -0.34, 0.3, 22, "reg")}
+				{header}
+				{rows.map((i) => {
+					const y = -0.6 + i * 0.28;
+					return (
+						<g key={i}>
+							{i % 2 === 1
+								? rect(-0.86, y - 0.05, 1.72, 0.26, LINE, `z${i}`, 0.4)
+								: null}
+							{/* avatar, name and status share one baseline */}
+							{rect(-0.78, y + 0.02, 0.12, 0.12, accent, `a${i}`, 0.9)}
+							{rect(-0.6, y + 0.04, 0.56 - i * 0.05, 0.08, INK, `n${i}`, 0.7)}
+							{rect(
+								0.34,
+								y + 0.02,
+								0.44,
+								0.12,
+								accent,
+								`s${i}`,
+								i < 3 ? 0.85 : 0.22,
+							)}
+						</g>
+					);
+				})}
 			</g>
 		);
 	}
 
 	if (scene === "marks") {
-		/* A 6x4 mark sheet, two thirds filled — entry in progress. */
-		const cells = [];
-		for (let r = 0; r < 4; r++) {
-			for (let c = 0; c < 6; c++) {
-				const filled = r * 6 + c < 16;
-				cells.push(
-					tile(
-						-0.7 + c * 0.26,
-						-0.3 + r * 0.3,
-						0.22,
-						0.24,
-						filled ? 0.95 : 0.28,
-						`c${r}-${c}`,
-					),
-				);
-			}
-		}
-		return <g>{cells}</g>;
-	}
-
-	if (scene === "deliberation") {
-		/* Seven bars against a threshold rule: the cohort, re-decided. */
-		const heights = [8, 26, 15, 34, 5, 29, 19];
+		/* A mark sheet: a column of names, a grid of scores, some blank. */
+		const rows = [0, 1, 2, 3, 4];
+		const cols = [0, 1, 2, 3];
+		const entered = [4, 4, 3, 2, 0];
 		return (
 			<g>
-				{/* threshold line running across the plane */}
-				<line
-					x1={project(-0.74 + offset, 0.44 + offset, z + 20, cx, cy, s)[0]}
-					y1={project(-0.74 + offset, 0.44 + offset, z + 20, cx, cy, s)[1]}
-					x2={project(0.74 + offset, 0.44 + offset, z + 20, cx, cy, s)[0]}
-					y2={project(0.74 + offset, 0.44 + offset, z + 20, cx, cy, s)[1]}
-					stroke={on}
-					strokeOpacity="0.5"
-					strokeWidth="1.5"
-					strokeDasharray="5 4"
-				/>
-				{heights.map((h, i) => bar(-0.7 + i * 0.23, 0.16, 0.18, h, `b${i}`))}
+				{header}
+				{rows.map((r) => {
+					const y = -0.6 + r * 0.28;
+					return (
+						<g key={r}>
+							{r % 2 === 1
+								? rect(-0.86, y - 0.05, 1.72, 0.26, LINE, `z${r}`, 0.4)
+								: null}
+							{rect(-0.78, y + 0.03, 0.5, 0.08, INK, `n${r}`, 0.7)}
+							{cols.map((c) =>
+								rect(
+									-0.16 + c * 0.24,
+									y,
+									0.17,
+									0.14,
+									c < entered[r] ? accent : LINE,
+									`c${r}-${c}`,
+									c < entered[r] ? 0.9 : 0.75,
+								),
+							)}
+						</g>
+					);
+				})}
 			</g>
 		);
 	}
 
-	/* documents — three sheets, the top one with a QR square. */
+	if (scene === "deliberation") {
+		/* A cohort as columns, cut by the jury threshold. */
+		const h = [14, 30, 20, 38, 9, 33, 24, 17];
+		const RULE = 22;
+		return (
+			<g>
+				{header}
+				{/* threshold plane, drawn before the columns so they stand in front */}
+				<polygon
+					points={`${P(-0.84, 0.62, RULE)}, ${P(0.84, 0.62, RULE)}, ${P(0.84, 0.66, RULE)}, ${P(-0.84, 0.66, RULE)}`}
+					fill={INK}
+					fillOpacity={0.28}
+				/>
+				{h.map((v, i) => column(-0.8 + i * 0.2, 0.12, 0.13, v, `b${i}`))}
+			</g>
+		);
+	}
+
+	/* documents — a sheet with a header block, text lines and a QR square. */
 	return (
 		<g>
-			{[0, 1, 2].map((i) => (
-				<polygon
-					key={i}
-					points={`${P(-0.44 + i * 0.1, -0.24 + i * 0.1, i * 5)} ${P(0.34 + i * 0.1, -0.24 + i * 0.1, i * 5)} ${P(0.34 + i * 0.1, 0.7 + i * 0.1, i * 5)} ${P(-0.44 + i * 0.1, 0.7 + i * 0.1, i * 5)}`}
-					fill={on}
-					fillOpacity={0.18 + i * 0.14}
-				/>
+			{header}
+			{rect(-0.62, -0.5, 1.24, 1.3, "var(--tk-surface)", "sheet")}
+			{rect(-0.54, -0.42, 0.5, 0.1, accent, "doc-title", 0.9)}
+			{[0, 1, 2, 3, 4].map((i) =>
+				rect(
+					-0.54,
+					-0.22 + i * 0.14,
+					i === 4 ? 0.5 : 1.06,
+					0.06,
+					INK,
+					`l${i}`,
+					0.5,
+				),
+			)}
+			{/*
+			 * The QR, drawn as a filled block with three corner finders rather than
+			 * a checkerboard: a scatter of alternating squares reads as noise at
+			 * this size, while the finder pattern is what the eye recognises as a
+			 * QR code even when the modules are illegible.
+			 */}
+			{rect(0.14, 0.34, 0.4, 0.4, INK, "qr", 0.9)}
+			{[
+				[0.17, 0.37],
+				[0.43, 0.37],
+				[0.17, 0.63],
+			].map(([qx, qy]) => (
+				<g key={`f${qx}-${qy}`}>
+					{rect(qx, qy, 0.11, 0.11, "var(--tk-surface)", `fo${qx}${qy}`)}
+					{rect(qx + 0.03, qy + 0.03, 0.05, 0.05, INK, `fi${qx}${qy}`, 0.9)}
+				</g>
 			))}
-			{/* text lines on the top sheet */}
-			{[0, 1, 2].map((i) => (
-				<polygon
-					key={`l${i}`}
-					points={`${P(-0.16, 0.0 + i * 0.18, 10)} ${P(0.4, 0.0 + i * 0.18, 10)} ${P(0.4, 0.04 + i * 0.18, 10)} ${P(-0.16, 0.04 + i * 0.18, 10)}`}
-					fill={on}
-					fillOpacity={0.5}
-				/>
-			))}
-			{/* the QR square */}
-			<polygon
-				points={`${P(-0.16, 0.56, 10)} ${P(0.08, 0.56, 10)} ${P(0.08, 0.8, 10)} ${P(-0.16, 0.8, 10)}`}
-				fill={on}
-				fillOpacity="0.85"
-			/>
 		</g>
 	);
 }
@@ -315,8 +358,6 @@ export function IsoStack({
 						const left = `${p(-1, 1, z + TH)} ${p(1, 1, z + TH)} ${p(1, 1, z)} ${p(-1, 1, z)}`;
 						const right = `${p(1, -1, z + TH)} ${p(1, 1, z + TH)} ${p(1, 1, z)} ${p(1, -1, z)}`;
 						const [lx, ly] = project(1 + off, -1 + off, z + TH, CX, CY, S);
-						const fill = `var(--${slab.token})`;
-						const t = slab.tint ?? 1;
 
 						return (
 							<g
@@ -326,28 +367,37 @@ export function IsoStack({
 									transition: "transform 700ms var(--tk-ease)",
 								}}
 							>
-								{/* Sides are the same token at lower opacity, so one colour
-								    change re-lights the whole solid. */}
-								<polygon points={left} fill={fill} fillOpacity={0.5 * t} />
-								<polygon points={right} fill={fill} fillOpacity={0.74 * t} />
-								<polygon points={top} fill={fill} fillOpacity={t} />
-
 								{/*
-								 * The domain's own picture, drawn on the slab's surface in the
-								 * same projection. Ink is the on-primary token so it reads on
-								 * every slab colour, including the dark one.
+								 * A white card, not a coloured slab.
+								 *
+								 * Colour is carried by the data on the screen, the way it is in
+								 * the product itself: the surfaces there are white and the
+								 * violet marks the values that matter. Four saturated slabs read
+								 * as a chart legend and left no contrast for the screen drawn on
+								 * top of them.
+								 *
+								 * The edges use the same two neutrals as every card on the site,
+								 * so the solid reads as lit rather than as three flat greys.
 								 */}
-								{slab.scene ? (
-									<SlabScene
-										scene={slab.scene}
-										z={z + TH}
-										cx={CX}
-										cy={CY}
-										s={S}
-										offset={off}
-										on="var(--tk-on-primary)"
-									/>
-								) : null}
+								<polygon points={left} fill="var(--tk-sand)" />
+								<polygon points={right} fill="var(--tk-bg-deep)" />
+								<polygon points={top} fill="var(--tk-surface)" />
+								<polygon
+									points={top}
+									fill="none"
+									stroke="var(--tk-border)"
+									strokeWidth="1"
+								/>
+
+								<SlabScene
+									scene={slab.scene}
+									z={z + TH}
+									cx={CX}
+									cy={CY}
+									s={S}
+									offset={off}
+									accent={slab.accent}
+								/>
 
 								<g
 									style={{
