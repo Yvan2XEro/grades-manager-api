@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { authClient, useSession } from "@/lib/auth-client";
+import { uploadFile } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -27,19 +28,6 @@ function getInitials(name?: string | null) {
 	const parts = name.trim().split(/\s+/);
 	if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-async function uploadFile(file: File): Promise<string> {
-	const fd = new FormData();
-	fd.append("file", file);
-	const res = await fetch("/api/upload", {
-		method: "POST",
-		body: fd,
-		credentials: "include",
-	});
-	if (!res.ok) throw new Error("Upload failed");
-	const json = await res.json();
-	return json.url as string;
 }
 
 // ─── Profile tab ──────────────────────────────────────────────────────────────

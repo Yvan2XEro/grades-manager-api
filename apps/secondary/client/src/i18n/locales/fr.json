@@ -309,7 +309,24 @@
     "all_roles": "Tous les rôles",
     "search_placeholder": "Rechercher par nom ou email…",
     "empty_filtered": "Aucun personnel ne correspond aux filtres",
-    "import_title": "Importer le personnel depuis un CSV"
+    "import_title": "Importer le personnel depuis un CSV",
+    "col_status": "Statut",
+    "status_active": "Actif",
+    "status_pending": "Invitation en attente",
+    "invite_link_title": "Partager le lien d'invitation",
+    "invite_link_hint": "Le membre du personnel utilisera ce lien pour définir son mot de passe et activer son compte.",
+    "copy_invite_link": "Copier le lien d'invitation",
+    "resend_invite": "Renvoyer l'invitation",
+    "link_copied": "Lien copié dans le presse-papiers"
+  },
+  "invite": {
+    "invalid_link": "Lien d'invitation invalide.",
+    "expired": "Cette invitation a expiré ou est invalide.",
+    "processing": "Activation de votre compte…",
+    "success_title": "Compte activé",
+    "success_hint": "Votre compte est prêt. Redirection vers la connexion…",
+    "error_title": "Erreur d'invitation",
+    "go_to_login": "Aller à la connexion"
   },
   "enrollments": {
     "title": "Inscriptions",
@@ -600,7 +617,17 @@
     "select_term": "Sélectionner un trimestre…",
     "advance_scheduled": "Marquer comme planifié",
     "advance_held": "Marquer comme tenu",
-    "advance_signed": "Marquer comme signé"
+    "advance_signed": "Marquer comme signé",
+    "col_rank": "Rang",
+    "col_avg": "Moy. /20",
+    "export_pv": "Exporter PV",
+    "auto_assign_btn": "Attribuer automatiquement",
+    "auto_assign_title": "Attribution automatique des décisions",
+    "auto_assign_overwrite": "Écraser les décisions existantes",
+    "auto_assign_apply": "Appliquer",
+    "auto_assign_success": "{{count}} décisions attribuées",
+    "threshold_min": "Moyenne min",
+    "threshold_decision": "Décision"
   },
   "academic_years": {
     "title": "Années scolaires",

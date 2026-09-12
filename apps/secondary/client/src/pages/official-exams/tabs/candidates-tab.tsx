@@ -225,13 +225,21 @@ function RegisterCandidateDialog({
 
 // ─── Bulk import dialog ───────────────────────────────────────────────────────
 
+const EXAM_LEVEL: Record<string, string> = {
+	BAC: "Tle",
+	PROBATOIRE: "1re",
+	BEPC: "3e",
+};
+
 function BulkImportDialog({
 	examSessionId,
 	academicYearId,
+	examType,
 	onImported,
 }: {
 	examSessionId: string;
 	academicYearId: string;
+	examType?: string;
 	onImported: () => void;
 }) {
 	const { t } = useTranslation();
@@ -244,8 +252,9 @@ function BulkImportDialog({
 		skippedNoMnu: number;
 	} | null>(null);
 
+	const eligibleLevel = examType ? EXAM_LEVEL[examType] : undefined;
 	const { data: classesData } = trpc.classes.list.useQuery(
-		{ academicYearId, pageSize: 200 },
+		{ academicYearId, level: eligibleLevel, pageSize: 200 },
 		{ enabled: !!academicYearId && open },
 	);
 	const classes = (classesData?.items ?? []) as Array<{

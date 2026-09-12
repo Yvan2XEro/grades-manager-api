@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronRight, Download, Pencil, Save } from "lucide-react";
+import { ChevronRight, Download, Pencil, Save, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,12 @@ import { useParams } from "react-router";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -185,6 +191,152 @@ const globalNoteSchema = z.object({
 
 type GlobalNoteFormValues = z.infer<typeof globalNoteSchema>;
 
+// ─── Auto-assign dialog ─────────────────────────────────────────────────────
+
+const DEFAULT_THRESHOLDS = [
+	{ min: 16, decision: "félicitations" },
+	{ min: 14, decision: "encouragements" },
+	{ min: 12, decision: "tableau_honneur" },
+	{ min: 8, decision: "avertissement_travail" },
+	{ min: 6, decision: "blame" },
+];
+
+interface AutoAssignDialogProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	councilId: string;
+	onSuccess: () => void;
+}
+
+function AutoAssignDialog({
+	open,
+	onOpenChange,
+	councilId,
+	onSuccess,
+}: AutoAssignDialogProps) {
+	const { t } = useTranslation();
+	const [thresholds, setThresholds] = useState(DEFAULT_THRESHOLDS);
+	const [overwrite, setOverwrite] = useState(false);
+
+	const autoAssign = trpc.classCouncils.autoAssignDecisions.useMutation({
+		onError: (err) => errorToast(err, t),
+	});
+
+	const handleApply = async () => {
+		const result = await autoAssign.mutateAsync({
+			councilId,
+			thresholds,
+			overwrite,
+		});
+		onSuccess();
+		onOpenChange(false);
+		// Show success message inline; parent invalidates the query
+		alert(t("class_councils.auto_assign_success", { count: result.assigned }));
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="max-w-md">
+				<DialogHeader>
+					<DialogTitle>
+						{t(
+							"class_councils.auto_assign_title",
+							"Auto-assign council decisions",
+						)}
+					</DialogTitle>
+				</DialogHeader>
+
+				<div className="space-y-3">
+					<div className="overflow-hidden rounded-lg border border-border">
+						<table className="w-full text-sm">
+							<thead className="bg-muted/60">
+								<tr>
+									<th className="px-3 py-2 text-left font-medium text-muted-foreground">
+										{t("class_councils.threshold_min", "Min average")}
+									</th>
+									<th className="px-3 py-2 text-left font-medium text-muted-foreground">
+										{t("class_councils.threshold_decision", "Decision")}
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{thresholds.map((row, i) => (
+									<tr key={i} className="border-border border-t">
+										<td className="px-3 py-1.5">
+											<Input
+												type="number"
+												min={0}
+												max={20}
+												step={0.01}
+												className="h-7 w-20 text-sm"
+												value={row.min}
+												onChange={(e) => {
+													const val = Number.parseFloat(e.target.value);
+													setThresholds((prev) =>
+														prev.map((t, idx) =>
+															idx === i
+																? { ...t, min: Number.isNaN(val) ? 0 : val }
+																: t,
+														),
+													);
+												}}
+											/>
+										</td>
+										<td className="px-3 py-1.5">
+											<Input
+												className="h-7 text-sm"
+												value={row.decision}
+												onChange={(e) => {
+													const val = e.target.value;
+													setThresholds((prev) =>
+														prev.map((t, idx) =>
+															idx === i ? { ...t, decision: val } : t,
+														),
+													);
+												}}
+											/>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+
+					<label className="flex cursor-pointer items-center gap-2">
+						<input
+							type="checkbox"
+							className="size-4 accent-primary"
+							checked={overwrite}
+							onChange={(e) => setOverwrite(e.target.checked)}
+						/>
+						<span className="text-sm">
+							{t(
+								"class_councils.auto_assign_overwrite",
+								"Overwrite existing decisions",
+							)}
+						</span>
+					</label>
+				</div>
+
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						variant="outline"
+						onClick={() => onOpenChange(false)}
+						disabled={autoAssign.isPending}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button onClick={handleApply} disabled={autoAssign.isPending}>
+						{autoAssign.isPending
+							? t("common.saving", "Saving…")
+							: t("class_councils.auto_assign_apply", "Apply")}
+					</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 // ─── Main component ─────────────────────────────────────────────────────────
 
 export function CouncilDetail() {
@@ -194,6 +346,7 @@ export function CouncilDetail() {
 	const [editingDecisionId, setEditingDecisionId] = useState<string | null>(
 		null,
 	);
+	const [autoAssignOpen, setAutoAssignOpen] = useState(false);
 
 	const utils = trpc.useUtils();
 
@@ -379,6 +532,17 @@ export function CouncilDetail() {
 
 	return (
 		<div className="space-y-6">
+			{autoAssignOpen && (
+				<AutoAssignDialog
+					open={autoAssignOpen}
+					onOpenChange={setAutoAssignOpen}
+					councilId={id!}
+					onSuccess={() =>
+						utils.classCouncils.listDecisions.invalidate({ id: id! })
+					}
+				/>
+			)}
+
 			{/* Header */}
 			<div className="flex flex-wrap items-start gap-4">
 				<div className="min-w-0 flex-1">
@@ -407,6 +571,14 @@ export function CouncilDetail() {
 							{t("class_councils.export_pv", "Export PV")}
 						</Button>
 					)}
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setAutoAssignOpen(true)}
+					>
+						<Wand2 className="mr-1.5 h-4 w-4" />
+						{t("class_councils.auto_assign_btn", "Auto-assign decisions")}
+					</Button>
 					{/* Advance status */}
 					{nextStatus && (
 						<Button onClick={advanceStatus} disabled={updateCouncil.isPending}>

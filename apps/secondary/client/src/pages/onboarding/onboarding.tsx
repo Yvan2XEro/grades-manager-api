@@ -34,6 +34,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { errorToast } from "@/lib/error-toast";
+import { uploadFile } from "@/lib/upload";
 import { trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -153,15 +154,8 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 	const handleLogoUpload = async (file: File) => {
 		setUploading(true);
 		try {
-			const fd = new FormData();
-			fd.append("file", file);
-			const res = await fetch("/api/upload", {
-				method: "POST",
-				body: fd,
-				credentials: "include",
-			});
-			const data = await res.json();
-			if (data.url) setLogoUrl(data.url);
+			const url = await uploadFile(file);
+			setLogoUrl(url);
 		} catch {
 			// ignore upload error
 		} finally {

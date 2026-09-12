@@ -1,13 +1,36 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Search, UserPlus } from "lucide-react";
+import {
+	ClipboardCopy,
+	MoreHorizontal,
+	Pencil,
+	RefreshCw,
+	Search,
+	UserPlus,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { toast } from "sonner";
 import { CsvImportDialog } from "@/components/csv-import-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 import { StaffFormDialog } from "./staff-form-dialog";
 
@@ -18,6 +41,8 @@ type StaffMember = {
 	email: string;
 	role: string | null;
 	phone?: string | null;
+	authUserId?: string | null;
+	invitationId?: string | null;
 };
 
 const ROLES = [
@@ -47,6 +72,48 @@ const ROLE_COLORS: Record<string, string> = {
 	staff: "bg-muted text-muted-foreground",
 };
 
+function InviteLinkModal({
+	open,
+	onClose,
+	link,
+}: {
+	open: boolean;
+	onClose: () => void;
+	link: string;
+}) {
+	const { t } = useTranslation();
+	return (
+		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+			<DialogContent className="max-w-md">
+				<DialogHeader>
+					<DialogTitle>
+						{t("staff.invite_link_title", "Share invite link")}
+					</DialogTitle>
+				</DialogHeader>
+				<p className="text-muted-foreground text-sm">
+					{t(
+						"staff.invite_link_hint",
+						"The staff member will use this link to set their password and activate their account.",
+					)}
+				</p>
+				<div className="flex gap-2">
+					<Input readOnly value={link} className="font-mono text-xs" />
+					<Button
+						size="sm"
+						variant="outline"
+						onClick={() => navigator.clipboard.writeText(link)}
+					>
+						<ClipboardCopy className="h-4 w-4" />
+					</Button>
+				</div>
+				<div className="flex justify-end pt-2">
+					<Button onClick={onClose}>{t("common.close", "Close")}</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 export function Staff() {
 	const { t } = useTranslation();
 	const [page, setPage] = useState(1);
@@ -60,6 +127,7 @@ export function Staff() {
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "lastName", desc: false },
 	]);
+	const [resendLink, setResendLink] = useState<string | null>(null);
 
 	const sortCol = sorting[0];
 	const orderBy = (
@@ -75,6 +143,14 @@ export function Staff() {
 
 	const bulkCreateStaff = trpc.staff.bulkCreate.useMutation({
 		onSuccess: () => utils.staff.list.invalidate(),
+	});
+
+	const resendInvite = trpc.staff.resendInvite.useMutation({
+		onSuccess: (data) => {
+			utils.staff.list.invalidate();
+			setResendLink(data.inviteUrl);
+		},
+		onError: (err) => errorToast(err, t),
 	});
 
 	const { data, isLoading } = trpc.staff.list.useQuery({
@@ -142,23 +218,73 @@ export function Staff() {
 			},
 		},
 		{
+			id: "status",
+			header: t("staff.col_status", "Status"),
+			enableSorting: false,
+			cell: ({ row }) =>
+				row.original.authUserId ? (
+					<Badge variant="success">{t("staff.status_active", "Active")}</Badge>
+				) : (
+					<Badge variant="secondary">
+						{t("staff.status_pending", "Pending invitation")}
+					</Badge>
+				),
+		},
+		{
 			id: "actions",
 			header: "",
 			enableSorting: false,
-			cell: ({ row }) => (
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-7 px-2 text-xs"
-					onClick={() => {
-						setEditingStaff(row.original);
-						setDialogOpen(true);
-					}}
-				>
-					<Pencil className="mr-1 h-3 w-3" />
-					{t("common.edit", "Edit")}
-				</Button>
-			),
+			cell: ({ row }) => {
+				const member = row.original;
+				const isPending = !member.authUserId;
+
+				const copyLink = () => {
+					if (member.invitationId) {
+						const url = `${window.location.origin}/accept-invitation/${member.invitationId}`;
+						navigator.clipboard.writeText(url);
+						toast.success(t("staff.link_copied", "Link copied to clipboard"));
+					} else {
+						resendInvite.mutate({ id: member.id });
+					}
+				};
+
+				return (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+								<MoreHorizontal className="h-4 w-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem
+								onClick={() => {
+									setEditingStaff(member);
+									setDialogOpen(true);
+								}}
+							>
+								<Pencil className="mr-2 h-4 w-4" />
+								{t("common.edit", "Edit")}
+							</DropdownMenuItem>
+
+							{isPending && (
+								<>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem onClick={copyLink}>
+										<ClipboardCopy className="mr-2 h-4 w-4" />
+										{t("staff.copy_invite_link", "Copy invite link")}
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={() => resendInvite.mutate({ id: member.id })}
+									>
+										<RefreshCw className="mr-2 h-4 w-4" />
+										{t("staff.resend_invite", "Resend invite")}
+									</DropdownMenuItem>
+								</>
+							)}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				);
+			},
 		},
 	];
 
@@ -298,6 +424,14 @@ export function Staff() {
 				onSuccess={() => {}}
 				staff={editingStaff}
 			/>
+
+			{resendLink && (
+				<InviteLinkModal
+					open={!!resendLink}
+					onClose={() => setResendLink(null)}
+					link={resendLink}
+				/>
+			)}
 		</div>
 	);
 }

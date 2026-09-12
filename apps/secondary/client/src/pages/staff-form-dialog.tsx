@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { Copy } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -73,12 +74,18 @@ export function StaffFormDialog({
 }: Props) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
+	const [inviteLink, setInviteLink] = useState<string | null>(null);
+	const [inviteLinkOpen, setInviteLinkOpen] = useState(false);
 
 	const create = trpc.staff.create.useMutation({
-		onSuccess: () => {
+		onSuccess: (result) => {
 			utils.staff.list.invalidate();
 			onSuccess();
 			onOpenChange(false);
+			if (result.inviteUrl) {
+				setInviteLink(result.inviteUrl);
+				setInviteLinkOpen(true);
+			}
 		},
 		onError: (err) => errorToast(err, t),
 	});
@@ -140,124 +147,161 @@ export function StaffFormDialog({
 		onOpenChange(open);
 	};
 
-	const _mutationError = create.error ?? update.error;
-
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="max-w-lg">
-				<DialogHeader>
-					<DialogTitle>
-						{staff
-							? t("staff.edit", "Edit staff member")
-							: t("staff.add", "Add staff member")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="flex flex-col gap-4">
-					<div className="grid grid-cols-2 gap-3">
-						<FormField
-							label={t("staff.first_name", "First name")}
-							error={errors.firstName?.message}
-							required
-						>
-							<Input {...register("firstName")} />
-						</FormField>
-						<FormField
-							label={t("staff.last_name", "Last name")}
-							error={errors.lastName?.message}
-							required
-						>
-							<Input {...register("lastName")} />
-						</FormField>
-					</div>
+		<>
+			<Dialog open={open} onOpenChange={handleOpenChange}>
+				<DialogContent className="max-w-lg">
+					<DialogHeader>
+						<DialogTitle>
+							{staff
+								? t("staff.edit", "Edit staff member")
+								: t("staff.add", "Add staff member")}
+						</DialogTitle>
+					</DialogHeader>
+					<form onSubmit={onSubmit} className="flex flex-col gap-4">
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								label={t("staff.first_name", "First name")}
+								error={errors.firstName?.message}
+								required
+							>
+								<Input {...register("firstName")} />
+							</FormField>
+							<FormField
+								label={t("staff.last_name", "Last name")}
+								error={errors.lastName?.message}
+								required
+							>
+								<Input {...register("lastName")} />
+							</FormField>
+						</div>
 
-					<FormField
-						label={t("staff.email", "Email")}
-						error={errors.email?.message}
-						required={!staff}
-						hint={
-							staff
-								? t(
-										"staff.email_readonly_hint",
-										"Email cannot be changed — managed by the staff member",
-									)
-								: undefined
-						}
-					>
-						<Input
-							type="email"
-							{...register("email")}
-							readOnly={!!staff}
-							className={
+						<FormField
+							label={t("staff.email", "Email")}
+							error={errors.email?.message}
+							required={!staff}
+							hint={
 								staff
-									? "cursor-default bg-muted text-muted-foreground"
+									? t(
+											"staff.email_readonly_hint",
+											"Email cannot be changed — managed by the staff member",
+										)
 									: undefined
 							}
+						>
+							<Input
+								type="email"
+								{...register("email")}
+								readOnly={!!staff}
+								className={
+									staff
+										? "cursor-default bg-muted text-muted-foreground"
+										: undefined
+								}
+							/>
+						</FormField>
+
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								label={t("staff.phone", "Phone")}
+								error={errors.phone?.message}
+							>
+								<Controller
+									name="phone"
+									control={control}
+									render={({ field }) => (
+										<PhoneInput
+											defaultCountry="CM"
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
+									)}
+								/>
+							</FormField>
+							<FormField
+								label={t("staff.role", "Role")}
+								error={errors.role?.message}
+							>
+								<Controller
+									name="role"
+									control={control}
+									render={({ field }) => (
+										<Select
+											value={field.value ?? ""}
+											onValueChange={field.onChange}
+										>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t("common.select", "Select…")}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												{ROLES.map((r) => (
+													<SelectItem key={r} value={r}>
+														{ROLE_LABELS[r] ?? r}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								/>
+							</FormField>
+						</div>
+
+						<div className="flex justify-end gap-2 pt-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => onOpenChange(false)}
+							>
+								{t("common.cancel", "Cancel")}
+							</Button>
+							<Button type="submit" disabled={isSubmitting}>
+								{isSubmitting
+									? t("common.saving", "Saving…")
+									: t("common.save", "Save")}
+							</Button>
+						</div>
+					</form>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={inviteLinkOpen} onOpenChange={setInviteLinkOpen}>
+				<DialogContent className="max-w-md">
+					<DialogHeader>
+						<DialogTitle>
+							{t("staff.invite_link_title", "Share invite link")}
+						</DialogTitle>
+					</DialogHeader>
+					<p className="text-muted-foreground text-sm">
+						{t(
+							"staff.invite_link_hint",
+							"The staff member will use this link to set their password and activate their account.",
+						)}
+					</p>
+					<div className="flex gap-2">
+						<Input
+							readOnly
+							value={inviteLink ?? ""}
+							className="font-mono text-xs"
 						/>
-					</FormField>
-
-					<div className="grid grid-cols-2 gap-3">
-						<FormField
-							label={t("staff.phone", "Phone")}
-							error={errors.phone?.message}
-						>
-							<Controller
-								name="phone"
-								control={control}
-								render={({ field }) => (
-									<PhoneInput
-										defaultCountry="CM"
-										value={field.value ?? ""}
-										onChange={field.onChange}
-									/>
-								)}
-							/>
-						</FormField>
-						<FormField
-							label={t("staff.role", "Role")}
-							error={errors.role?.message}
-						>
-							<Controller
-								name="role"
-								control={control}
-								render={({ field }) => (
-									<Select
-										value={field.value ?? ""}
-										onValueChange={field.onChange}
-									>
-										<SelectTrigger>
-											<SelectValue
-												placeholder={t("common.select", "Select…")}
-											/>
-										</SelectTrigger>
-										<SelectContent>
-											{ROLES.map((r) => (
-												<SelectItem key={r} value={r}>
-													{ROLE_LABELS[r] ?? r}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								)}
-							/>
-						</FormField>
-					</div>
-
-					<div className="flex justify-end gap-2 pt-2">
 						<Button
-							type="button"
+							size="sm"
 							variant="outline"
-							onClick={() => onOpenChange(false)}
+							onClick={() => {
+								if (inviteLink) navigator.clipboard.writeText(inviteLink);
+							}}
 						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting
-								? t("common.saving", "Saving…")
-								: t("common.save", "Save")}
+							<Copy className="h-4 w-4" />
 						</Button>
 					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+					<div className="flex justify-end pt-2">
+						<Button onClick={() => setInviteLinkOpen(false)}>
+							{t("common.close", "Close")}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }

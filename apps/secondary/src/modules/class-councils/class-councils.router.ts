@@ -6,6 +6,7 @@ import {
 import * as service from "./class-councils.service";
 import {
 	addDecisionSchema,
+	autoAssignDecisionsSchema,
 	createSchema,
 	idSchema,
 	listSchema,
@@ -63,4 +64,15 @@ export const router = trpcRouter({
 			const { id, ...fields } = input;
 			return service.updateDecision(id, ctx.institution.id, fields);
 		}),
+
+	autoAssignDecisions: adminProcedure
+		.input(autoAssignDecisionsSchema)
+		.mutation(({ ctx, input }) =>
+			service.autoAssignDecisions(
+				input.councilId,
+				ctx.institution.id,
+				input.thresholds,
+				input.overwrite,
+			),
+		),
 });

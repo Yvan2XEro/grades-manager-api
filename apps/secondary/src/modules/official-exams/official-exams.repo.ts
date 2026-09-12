@@ -1,10 +1,12 @@
 import { and, count, eq, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import {
+	classes,
 	enrollments,
 	officialExamRegistrations,
 	officialExamSessions,
 	students,
+	tracks,
 } from "../../db/schema";
 
 // ─── Official Exam Sessions ──────────────────────────────────────────
@@ -213,6 +215,25 @@ export async function updateRegistration(
 		)
 		.returning();
 	return row ?? null;
+}
+
+export async function findClassWithTrack(
+	classId: string,
+	institutionId: string,
+) {
+	const rows = await db
+		.select({
+			id: classes.id,
+			level: classes.level,
+			trackCode: tracks.code,
+		})
+		.from(classes)
+		.leftJoin(tracks, eq(classes.trackId, tracks.id))
+		.where(
+			and(eq(classes.id, classId), eq(classes.institutionId, institutionId)),
+		)
+		.limit(1);
+	return rows[0] ?? null;
 }
 
 export async function findEnrollmentIdsByClass(

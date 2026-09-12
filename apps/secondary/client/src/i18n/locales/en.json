@@ -309,7 +309,24 @@
     "all_roles": "All roles",
     "search_placeholder": "Search by name or email…",
     "empty_filtered": "No staff match your filters",
-    "import_title": "Import staff from CSV"
+    "import_title": "Import staff from CSV",
+    "col_status": "Status",
+    "status_active": "Active",
+    "status_pending": "Pending invitation",
+    "invite_link_title": "Share invite link",
+    "invite_link_hint": "The staff member will use this link to set their password and activate their account.",
+    "copy_invite_link": "Copy invite link",
+    "resend_invite": "Resend invite",
+    "link_copied": "Link copied to clipboard"
+  },
+  "invite": {
+    "invalid_link": "Invalid invitation link.",
+    "expired": "This invitation has expired or is invalid.",
+    "processing": "Activating your account…",
+    "success_title": "Account activated",
+    "success_hint": "Your account is ready. Redirecting to login…",
+    "error_title": "Invitation error",
+    "go_to_login": "Go to login"
   },
   "enrollments": {
     "title": "Enrollments",
@@ -600,7 +617,17 @@
     "select_term": "Select term…",
     "advance_scheduled": "Mark as Scheduled",
     "advance_held": "Mark as Held",
-    "advance_signed": "Mark as Signed"
+    "advance_signed": "Mark as Signed",
+    "col_rank": "Rank",
+    "col_avg": "Avg /20",
+    "export_pv": "Export PV",
+    "auto_assign_btn": "Auto-assign decisions",
+    "auto_assign_title": "Auto-assign council decisions",
+    "auto_assign_overwrite": "Overwrite existing decisions",
+    "auto_assign_apply": "Apply",
+    "auto_assign_success": "{{count}} decisions assigned",
+    "threshold_min": "Min average",
+    "threshold_decision": "Decision"
   },
   "academic_years": {
     "title": "Academic years",

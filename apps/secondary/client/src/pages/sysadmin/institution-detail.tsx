@@ -43,6 +43,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
+import { uploadFile } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
@@ -258,21 +259,6 @@ function AddMemberDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
-
-// ─── Upload helper ─────────────────────────────────────────────────────────────
-
-async function uploadFile(file: File): Promise<string> {
-	const fd = new FormData();
-	fd.append("file", file);
-	const res = await fetch("/api/upload", {
-		method: "POST",
-		body: fd,
-		credentials: "include",
-	});
-	if (!res.ok) throw new Error("Upload failed");
-	const json = await res.json();
-	return json.url as string;
 }
 
 // ─── Edit institution dialog ──────────────────────────────────────────────────

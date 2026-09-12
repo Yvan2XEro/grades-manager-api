@@ -155,6 +155,7 @@ export const staff = pgTable(
 			.notNull()
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		authUserId: varchar("auth_user_id", { length: 36 }), // Better-Auth user.id (null until account linked)
+		invitationId: varchar("invitation_id", { length: 36 }), // Better-Auth invitation.id (null after acceptance or if imported via CSV)
 		firstName: varchar("first_name", { length: 100 }).notNull(),
 		lastName: varchar("last_name", { length: 100 }).notNull(),
 		email: varchar("email", { length: 255 }).notNull(),

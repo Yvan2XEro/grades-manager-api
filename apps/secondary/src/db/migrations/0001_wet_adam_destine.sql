@@ -1,0 +1,1 @@
+ALTER TABLE "staff" ADD COLUMN "invitation_id" varchar(36);

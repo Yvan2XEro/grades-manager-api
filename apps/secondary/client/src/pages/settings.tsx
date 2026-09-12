@@ -29,6 +29,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authClient, useSession } from "@/lib/auth-client";
 import { errorToast } from "@/lib/error-toast";
+import { uploadFile } from "@/lib/upload";
 import { TermsContent } from "@/pages/terms/terms-list";
 import { trpc } from "@/utils/trpc";
 
@@ -77,18 +78,6 @@ function getInitials(name?: string | null) {
 	const parts = name.trim().split(/\s+/);
 	if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
 	return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-async function uploadFile(file: File): Promise<string> {
-	const fd = new FormData();
-	fd.append("file", file);
-	const res = await fetch(
-		`${import.meta.env.VITE_SERVER_URL ?? "http://localhost:3001"}/api/upload`,
-		{ method: "POST", body: fd, credentials: "include" },
-	);
-	if (!res.ok) throw new Error("Upload failed");
-	const json = (await res.json()) as { url: string };
-	return json.url;
 }
 
 // ─── Profile tab ──────────────────────────────────────────────────────────────

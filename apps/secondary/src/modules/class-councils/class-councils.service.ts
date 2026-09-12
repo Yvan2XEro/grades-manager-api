@@ -1,3 +1,6 @@
+import { and, eq } from "drizzle-orm";
+import { db } from "../../db";
+import { enrollments as enrollmentsTable, termAverages } from "../../db/schema";
 import { conflict, notFound } from "../../lib/errors";
 import * as repo from "./class-councils.repo";
 
@@ -156,4 +159,71 @@ export async function updateDecision(
 		updateData as any,
 	);
 	return updated!;
+}
+
+export async function autoAssignDecisions(
+	councilId: string,
+	institutionId: string,
+	thresholds: { min: number; decision: string }[],
+	overwrite: boolean,
+) {
+	const council = await repo.findById(councilId, institutionId);
+	if (!council) throw notFound("Class council not found");
+
+	const avgs = await db
+		.select({
+			enrollmentId: termAverages.enrollmentId,
+			weightedAverage: termAverages.weightedAverage,
+		})
+		.from(termAverages)
+		.innerJoin(
+			enrollmentsTable,
+			eq(termAverages.enrollmentId, enrollmentsTable.id),
+		)
+		.where(
+			and(
+				eq(enrollmentsTable.classId, council.classId),
+				eq(termAverages.termId, council.termId),
+			),
+		);
+
+	const existingDecisions = await repo.findAllDecisions(
+		councilId,
+		institutionId,
+	);
+
+	type DecisionRow = Awaited<typeof existingDecisions>[number];
+	const decidedMap = new Map<string, DecisionRow>(
+		existingDecisions.map((d) => [d.decision.enrollmentId, d]),
+	);
+
+	const sorted = [...thresholds].sort((a, b) => b.min - a.min);
+
+	let assigned = 0;
+	for (const row of avgs) {
+		if (!overwrite && decidedMap.has(row.enrollmentId)) continue;
+		const avg = row.weightedAverage
+			? Number.parseFloat(row.weightedAverage)
+			: null;
+		if (avg === null) continue;
+
+		const match = sorted.find((t) => avg >= t.min);
+		if (!match) continue;
+
+		const existing = decidedMap.get(row.enrollmentId);
+		if (existing) {
+			await repo.updateDecision(existing.decision.id, institutionId, {
+				decision: match.decision,
+			});
+		} else {
+			await repo.insertDecision({
+				institutionId,
+				councilId,
+				enrollmentId: row.enrollmentId,
+				decision: match.decision,
+			});
+		}
+		assigned++;
+	}
+	return { assigned };
 }

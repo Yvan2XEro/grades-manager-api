@@ -24,24 +24,63 @@ const bulkCreateSchema = z.object({
 		.max(500),
 });
 
+function extractOrigin(headers: Headers): string {
+	const origin = headers.get("origin");
+	if (origin) return origin;
+	const referer = headers.get("referer");
+	if (referer) {
+		try {
+			return new URL(referer).origin;
+		} catch {
+			/* ignore */
+		}
+	}
+	return process.env.CORS_ORIGINS?.split(",")[0]?.trim() ?? "";
+}
+
 export const router = trpcRouter({
 	list: tenantProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) => service.list(ctx.institution.id, input)),
+
 	create: adminProcedure
 		.input(createSchema)
-		.mutation(({ ctx, input }) => service.create(input, ctx.institution.id)),
+		.mutation(({ ctx, input }) =>
+			service.create(
+				input,
+				ctx.institution.id,
+				ctx.institution.orgId ?? "",
+				ctx.session.user.id,
+				extractOrigin(ctx.headers),
+			),
+		),
+
+	resendInvite: adminProcedure
+		.input(idSchema)
+		.mutation(({ ctx, input }) =>
+			service.resendInvite(
+				input.id,
+				ctx.institution.id,
+				ctx.institution.orgId ?? "",
+				ctx.session.user.id,
+				extractOrigin(ctx.headers),
+			),
+		),
+
 	bulkCreate: adminProcedure
 		.input(bulkCreateSchema)
 		.mutation(({ ctx, input }) =>
 			service.bulkCreate(input.items, ctx.institution.id),
 		),
+
 	get: tenantProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) => service.get(input.id, ctx.institution.id)),
+
 	update: adminProcedure.input(updateSchema).mutation(({ ctx, input }) => {
 		const { id, ...fields } = input;
 		return service.updateStaff(id, ctx.institution.id, fields);
 	}),
+
 	count: tenantProcedure.query(({ ctx }) => service.count(ctx.institution.id)),
 });

@@ -94,6 +94,17 @@ export async function update(
 	return row ?? null;
 }
 
+export async function updateInvitationId(
+	id: string,
+	institutionId: string,
+	invitationId: string | null,
+) {
+	await db
+		.update(staff)
+		.set({ invitationId, updatedAt: new Date() })
+		.where(and(eq(staff.id, id), eq(staff.institutionId, institutionId)));
+}
+
 export async function countAll(institutionId: string) {
 	const rows = await db
 		.select({ id: staff.id })

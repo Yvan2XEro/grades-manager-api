@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import { institutions, termAverages, terms } from "../../db/schema";
@@ -165,6 +166,34 @@ export async function bulkRegisterCandidates(
 	// Verify session exists and belongs to this institution
 	const session = await repo.findSessionById(data.examSessionId, institutionId);
 	if (!session) throw notFound("Official exam session not found");
+
+	// Validate class level and track against exam type and series
+	const classInfo = await repo.findClassWithTrack(data.classId, institutionId);
+	if (!classInfo) throw notFound("Class not found");
+
+	const EXAM_LEVEL: Record<string, string> = {
+		BAC: "Tle",
+		PROBATOIRE: "1re",
+		BEPC: "3e",
+	};
+	const requiredLevel = EXAM_LEVEL[session.examType];
+	if (requiredLevel && classInfo.level !== requiredLevel) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `${session.examType}${session.series ? ` Série ${session.series}` : ""} only accepts ${requiredLevel} students. Class level "${classInfo.level}" is not eligible.`,
+		});
+	}
+	if (
+		session.series &&
+		(session.examType === "BAC" || session.examType === "PROBATOIRE") &&
+		classInfo.trackCode &&
+		classInfo.trackCode.toUpperCase() !== session.series.toUpperCase()
+	) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `${session.examType} Série ${session.series} only accepts ${requiredLevel} ${session.series} students. Class track "${classInfo.trackCode}" does not match.`,
+		});
+	}
 
 	// Get all active enrollments for the class
 	const enrollmentIds = await repo.findEnrollmentIdsByClass(

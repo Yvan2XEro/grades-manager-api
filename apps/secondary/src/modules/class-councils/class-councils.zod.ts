@@ -45,3 +45,16 @@ export const updateCouncilSchema = z.object({
 });
 
 export const idSchema = z.object({ id: z.string().uuid() });
+
+export const autoAssignDecisionsSchema = z.object({
+	councilId: z.string().uuid(),
+	thresholds: z
+		.array(
+			z.object({
+				min: z.number().min(0).max(20),
+				decision: z.string().min(1).max(50),
+			}),
+		)
+		.min(1),
+	overwrite: z.boolean().default(false),
+});

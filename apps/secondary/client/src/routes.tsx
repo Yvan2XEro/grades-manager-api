@@ -7,6 +7,7 @@ import { SysAdminShell } from "@/components/layout/sysadmin-shell";
 import { SuspendedScreen } from "@/components/suspended-screen";
 import { authClient, useSession } from "@/lib/auth-client";
 import { AttendanceOverview } from "@/pages/attendance/attendance-overview";
+import { AcceptInvitation } from "@/pages/auth/accept-invitation";
 import { ForgotPasswordPage } from "@/pages/auth/forgot-password";
 import { LoginPage } from "@/pages/auth/login";
 import { ResetPasswordPage } from "@/pages/auth/reset-password";
@@ -121,6 +122,7 @@ export function AppRoutes() {
 			<Route path="/login" element={<LoginPage />} />
 			<Route path="/forgot-password" element={<ForgotPasswordPage />} />
 			<Route path="/reset-password" element={<ResetPasswordPage />} />
+			<Route path="/accept-invitation/:id" element={<AcceptInvitation />} />
 
 			<Route
 				path="/onboarding"
