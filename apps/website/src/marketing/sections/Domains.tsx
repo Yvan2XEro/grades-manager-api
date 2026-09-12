@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { Dict } from "@/i18n";
+import type { Dict, Locale } from "@/i18n";
+import { IsoStack } from "../Isometric";
 import { Reveal } from "../Reveal";
 
 /**
@@ -41,14 +42,15 @@ const DOMAINS = [
 	},
 ] as const;
 
-export function Domains({ dict: d }: { dict: Dict }) {
+export function Domains({ dict: d, locale }: { dict: Dict; locale: Locale }) {
 	const copy = d.domains;
+	const en = locale === "en";
 
 	return (
-		<section id="modules" className="bg-tk-bg">
-			<div className="mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
+		<section id="modules">
+			<div className="tk-section mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="flex flex-wrap items-end justify-between gap-6">
-					<h2 className="max-w-[20ch] font-display font-extrabold text-[clamp(1.75rem,1.1rem+2.2vw,2.75rem)] text-tk-title leading-[1.06] tracking-[-0.032em]">
+					<h2 className="tk-headline max-w-[20ch] text-tk-title">
 						{copy.title}
 					</h2>
 					{/*
@@ -61,15 +63,60 @@ export function Domains({ dict: d }: { dict: Dict }) {
 					 */}
 					<Link
 						href="/fonctionnalites"
-						className="font-body font-semibold text-[0.9375rem] text-tk-primary-deep underline underline-offset-4 hover:text-tk-primary"
+						className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-deep underline underline-offset-4 hover:text-tk-primary"
 					>
 						{copy.link}
 					</Link>
 				</div>
 
+				{/*
+				 * The stack states the claim; the grid below details it.
+				 *
+				 * "Une seule base de données, aucune ressaisie entre les modules" is
+				 * the sentence the commercial proposal leads this section with, and it
+				 * was carried by type alone. Four slabs that pull apart on hover say
+				 * it before a word is read: the domains are distinct, and they are one
+				 * object. Vector rather than a render, so it re-tints with the theme
+				 * and costs about 4 KB — see `Isometric.tsx`.
+				 */}
+				<div className="mt-12 grid items-center gap-x-12 gap-y-8 lg:grid-cols-12">
+					<Reveal className="lg:col-span-5">
+						<IsoStack
+							locale={locale}
+							slabs={[
+								{
+									token: "tk-primary",
+									label: en ? "Enrolment" : "Inscriptions",
+								},
+								{
+									token: "tk-primary",
+									label: en ? "Marks" : "Notes",
+									tint: 0.72,
+								},
+								{
+									token: "tk-accent",
+									label: en ? "Deliberation" : "Délibération",
+								},
+								{ token: "tk-dark", label: "Documents" },
+							]}
+						/>
+					</Reveal>
+
+					<Reveal className="lg:col-span-6 lg:col-start-7 lg:pb-10">
+						<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+							{en ? "One database" : "Une seule base"}
+						</p>
+						<p className="mt-4 max-w-[44ch] font-body text-[1.05rem] text-tk-ink-2 leading-relaxed">
+							{en
+								? "A mark entered by a teacher is the same mark the jury deliberates on and the same mark printed on the transcript. Nothing is re-keyed between modules, because there is nothing to re-key into."
+								: "Une note saisie par un enseignant est la même note que le jury délibère et la même note qu'imprime le relevé. Rien n'est ressaisi d'un module à l'autre, parce qu'il n'y a nulle part où ressaisir."}
+						</p>
+					</Reveal>
+				</div>
+
 				<Reveal
 					stagger={60}
-					className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+					className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
 				>
 					{DOMAINS.map((dom, i) => {
 						const c = copy.items[i];
@@ -90,7 +137,7 @@ export function Domains({ dict: d }: { dict: Dict }) {
 										<h3 className="font-bold font-display text-[1.25rem] tracking-[-0.02em]">
 											{c?.name}
 										</h3>
-										<p className="mt-2 font-body text-[0.85rem] leading-snug opacity-90">
+										<p className="mt-2 font-body text-[length:var(--tk-text-sm)] leading-snug opacity-90">
 											{c?.desc}
 										</p>
 									</div>
@@ -99,7 +146,7 @@ export function Domains({ dict: d }: { dict: Dict }) {
 									{dom.items.map((item) => (
 										<li
 											key={item}
-											className="px-5 py-2.5 font-body text-[0.85rem] text-tk-ink-2"
+											className="px-5 py-2.5 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2"
 										>
 											{item}
 										</li>

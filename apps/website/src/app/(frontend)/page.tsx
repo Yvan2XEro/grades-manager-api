@@ -38,7 +38,13 @@ export default async function HomePage() {
 	const dict = getDict(locale);
 
 	return (
-		<main>
+		/*
+		 * The dot grid runs continuously behind the whole page rather than being
+		 * applied per section. That is what lets every section share one white
+		 * ground without the page reading as empty — the texture does the work the
+		 * background alternation and the section borders were failing to do.
+		 */
+		<main className="tk-dotgrid bg-tk-bg">
 			<HomeHero dict={dict} locale={locale} />
 
 			<TheCost locale={locale} />
@@ -63,7 +69,7 @@ export default async function HomePage() {
 				}
 			/>
 
-			<Domains dict={dict} />
+			<Domains dict={dict} locale={locale} />
 
 			<ProductProof locale={locale} />
 			<Workflow dict={dict} locale={locale} />

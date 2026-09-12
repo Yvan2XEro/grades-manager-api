@@ -1,5 +1,7 @@
 import Image from "next/image";
 import type { Locale } from "@/i18n";
+import { IsoField } from "../Isometric";
+import { Reveal } from "../Reveal";
 
 /**
  * « Le calcul que personne ne fait » — the proposal's opening argument (p. 03),
@@ -75,19 +77,19 @@ export function TheCost({ locale }: { locale: Locale }) {
 			];
 
 	return (
-		<section className="bg-tk-bg">
-			<div className="mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
+		<section>
+			<div className="tk-section mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
 					<div>
-						<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+						<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 							{en ? "The situation" : "Le constat"}
 						</p>
-						<h2 className="mt-4 max-w-[20ch] font-display font-extrabold text-[clamp(1.75rem,1.1rem+2.2vw,2.75rem)] text-tk-title leading-[1.06] tracking-[-0.032em]">
+						<h2 className="tk-headline mt-4 max-w-[20ch] text-tk-title">
 							{en
 								? "What manual management really costs you."
 								: "Ce que la gestion manuelle vous coûte vraiment."}
 						</h2>
-						<p className="mt-4 max-w-[52ch] font-body text-[1rem] text-tk-ink-2 leading-relaxed">
+						<p className="mt-4 max-w-[52ch] font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-relaxed">
 							{en
 								? "Universities, private institutes and affiliated establishments carry an administrative load that is foreign to their teaching mission. Five difficulties come up, institution after institution."
 								: "Universités, instituts privés et établissements affiliés à une tutelle portent une charge administrative étrangère à leur mission d'enseignement. Cinq difficultés reviennent, établissement après établissement."}
@@ -99,10 +101,10 @@ export function TheCost({ locale }: { locale: Locale }) {
 									key={p.t}
 									className="grid gap-1 py-4 sm:grid-cols-[13rem_1fr] sm:gap-6"
 								>
-									<h3 className="font-body font-semibold text-[0.95rem] text-tk-ink">
+									<h3 className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 										{p.t}
 									</h3>
-									<p className="font-body text-[0.9rem] text-tk-ink-2 leading-relaxed">
+									<p className="font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 										{p.d}
 									</p>
 								</li>
@@ -113,12 +115,12 @@ export function TheCost({ locale }: { locale: Locale }) {
 					<div>
 						{/* The calculation nobody does */}
 						<div className="rounded-xl border border-tk-border bg-tk-primary-soft p-6 lg:p-7">
-							<p className="font-body font-semibold text-[0.9rem] text-tk-primary-deep">
+							<p className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-deep">
 								{en
 									? "The calculation nobody does"
 									: "Le calcul que personne ne fait"}
 							</p>
-							<p className="mt-3 font-body text-[0.9rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-3 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 								{en
 									? "An institution of 400 students, two documents per student per year, produced by hand:"
 									: "Établissement de 400 étudiants, deux documents par étudiant et par an, à la main :"}
@@ -132,25 +134,47 @@ export function TheCost({ locale }: { locale: Locale }) {
 											i > 0 ? "border-tk-border border-t" : ""
 										}`}
 									>
-										<dt className="font-body text-[0.875rem] text-tk-ink-2">
+										<dt className="font-body text-[length:var(--tk-text-body)] text-tk-ink-2">
 											{k}
 										</dt>
-										<dd className="font-bold font-display text-[1.1rem] text-tk-ink tabular-nums">
+										<dd className="font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink tabular-nums">
 											{v}
 										</dd>
 									</div>
 								))}
 								<div className="mt-2 flex items-baseline justify-between gap-4 border-tk-border-strong border-t pt-3">
-									<dt className="font-body font-semibold text-[0.9rem] text-tk-ink">
+									<dt className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 										{en ? "Plus deliberations" : "Plus les délibérations"}
 									</dt>
-									<dd className="font-bold font-display text-[1.1rem] text-tk-eyebrow">
+									<dd className="font-bold font-display text-[length:var(--tk-text-lead)] text-tk-eyebrow">
 										{en ? "+ 3 weeks / session" : "+ 3 sem. / session"}
 									</dd>
 								</div>
 							</dl>
 
-							<p className="mt-5 font-body text-[0.8125rem] text-tk-muted leading-relaxed">
+							{/*
+							 * The 400 hours, drawn.
+							 *
+							 * The figure sits in the table above as a number, and a number
+							 * of that size stops being felt — 400 reads the same as 40 to
+							 * a reader skimming. Fifty-seven filled tiles against a hundred
+							 * make the working days visible as an area before the caption
+							 * is read. One tile is one seven-hour day.
+							 */}
+							<Reveal className="mt-6">
+								<IsoField
+									cols={10}
+									rows={10}
+									filled={57}
+									caption={
+										en
+											? "57 working days out of a 100-day grid — the time a 400-student institution hands to paperwork each year."
+											: "57 journées de travail sur une grille de 100 — le temps qu'un établissement de 400 étudiants confie à la paperasse chaque année."
+									}
+								/>
+							</Reveal>
+
+							<p className="mt-5 font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-relaxed">
 								{en
 									? "This time appears on no invoice. It is paid every year by your payroll."
 									: "Ce temps n'apparaît sur aucune facture. Il est payé chaque année par votre masse salariale."}
@@ -170,7 +194,7 @@ export function TheCost({ locale }: { locale: Locale }) {
 								aria-hidden="true"
 								width={1800}
 								height={1200}
-								className="h-44 w-full object-cover"
+								className="aspect-[16/9] w-full object-cover"
 							/>
 							<div
 								aria-hidden="true"
@@ -182,7 +206,7 @@ export function TheCost({ locale }: { locale: Locale }) {
 										? "What we do not claim"
 										: "Ce que nous ne prétendons pas"}
 								</p>
-								<p className="mt-1.5 font-body text-[0.875rem] text-tk-on-dark leading-relaxed">
+								<p className="mt-1.5 font-body text-[length:var(--tk-text-body)] text-tk-on-dark leading-relaxed">
 									{en
 										? "No software will remove your staff. It moves 400 hours of re-keying towards student support and quality control."
 										: "Aucun logiciel ne supprimera votre personnel. Il déplace 400 heures de recopie vers l'accompagnement des étudiants et le contrôle qualité."}
