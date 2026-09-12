@@ -140,7 +140,15 @@ export const auth = betterAuth({
 	user: {
 		changeEmail: {
 			enabled: true,
-			sendChangeEmailVerification: async ({ user, newEmail, url }) => {
+			sendChangeEmailVerification: async ({
+				user,
+				newEmail,
+				url,
+			}: {
+				user: { email: string };
+				newEmail: string;
+				url: string;
+			}) => {
 				console.log(url);
 				if (!resend) {
 					console.warn(
