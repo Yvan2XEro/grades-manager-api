@@ -41,8 +41,17 @@ type Args = {
 	}>;
 };
 
+async function getDraft(): Promise<boolean> {
+	try {
+		const { isEnabled } = await draftMode();
+		return isEnabled;
+	} catch {
+		return false;
+	}
+}
+
 export default async function Page({ params: paramsPromise }: Args) {
-	const { isEnabled: draft } = await draftMode();
+	const draft = await getDraft();
 	const { slug = "home" } = await paramsPromise;
 	// Decode to support slugs with special characters
 	const decodedSlug = decodeURIComponent(slug);
@@ -51,6 +60,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 
 	page = await queryPageBySlug({
 		slug: decodedSlug,
+		draft,
 	});
 
 	// Remove this code once your website is seeded
@@ -86,28 +96,29 @@ export async function generateMetadata({
 	const decodedSlug = decodeURIComponent(slug);
 	const page = await queryPageBySlug({
 		slug: decodedSlug,
+		draft: await getDraft(),
 	});
 
 	return generateMeta({ doc: page });
 }
 
-const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
-	const { isEnabled: draft } = await draftMode();
+const queryPageBySlug = cache(
+	async ({ slug, draft }: { slug: string; draft: boolean }) => {
+		const payload = await getPayload({ config: configPromise });
 
-	const payload = await getPayload({ config: configPromise });
-
-	const result = await payload.find({
-		collection: "pages",
-		draft,
-		limit: 1,
-		pagination: false,
-		overrideAccess: draft,
-		where: {
-			slug: {
-				equals: slug,
+		const result = await payload.find({
+			collection: "pages",
+			draft,
+			limit: 1,
+			pagination: false,
+			overrideAccess: draft,
+			where: {
+				slug: {
+					equals: slug,
+				},
 			},
-		},
-	});
+		});
 
-	return result.docs?.[0] || null;
-});
+		return result.docs?.[0] || null;
+	},
+);

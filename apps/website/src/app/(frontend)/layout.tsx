@@ -39,12 +39,21 @@ const jetbrainsMono = JetBrains_Mono({
 	display: "swap",
 });
 
+async function getDraft(): Promise<boolean> {
+	try {
+		const { isEnabled } = await draftMode();
+		return isEnabled;
+	} catch {
+		return false;
+	}
+}
+
 export default async function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const { isEnabled } = await draftMode();
+	const isEnabled = await getDraft();
 	const locale = await getLocale();
 	const _localeChosen = await hasChosenLocale();
 

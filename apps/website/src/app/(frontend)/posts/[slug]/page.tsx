@@ -38,13 +38,24 @@ type Args = {
 	}>;
 };
 
+async function getDraft(): Promise<boolean> {
+	try {
+		const { isEnabled } = await draftMode();
+		return isEnabled;
+	} catch {
+		// draftMode() throws DYNAMIC_SERVER_USAGE during ISR background revalidation
+		// (no request context available). Default to non-draft so ISR works correctly.
+		return false;
+	}
+}
+
 export default async function Post({ params: paramsPromise }: Args) {
-	const { isEnabled: draft } = await draftMode();
+	const draft = await getDraft();
 	const { slug = "" } = await paramsPromise;
 	// Decode to support slugs with special characters
 	const decodedSlug = decodeURIComponent(slug);
 	const url = `/posts/${decodedSlug}`;
-	const post = await queryPostBySlug({ slug: decodedSlug });
+	const post = await queryPostBySlug({ slug: decodedSlug, draft });
 
 	if (!post) return <PayloadRedirects url={url} />;
 
@@ -86,28 +97,31 @@ export async function generateMetadata({
 	const { slug = "" } = await paramsPromise;
 	// Decode to support slugs with special characters
 	const decodedSlug = decodeURIComponent(slug);
-	const post = await queryPostBySlug({ slug: decodedSlug });
+	const post = await queryPostBySlug({
+		slug: decodedSlug,
+		draft: await getDraft(),
+	});
 
 	return generateMeta({ doc: post });
 }
 
-const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
-	const { isEnabled: draft } = await draftMode();
+const queryPostBySlug = cache(
+	async ({ slug, draft }: { slug: string; draft: boolean }) => {
+		const payload = await getPayload({ config: configPromise });
 
-	const payload = await getPayload({ config: configPromise });
-
-	const result = await payload.find({
-		collection: "posts",
-		draft,
-		limit: 1,
-		overrideAccess: draft,
-		pagination: false,
-		where: {
-			slug: {
-				equals: slug,
+		const result = await payload.find({
+			collection: "posts",
+			draft,
+			limit: 1,
+			overrideAccess: draft,
+			pagination: false,
+			where: {
+				slug: {
+					equals: slug,
+				},
 			},
-		},
-	});
+		});
 
-	return result.docs?.[0] || null;
-});
+		return result.docs?.[0] || null;
+	},
+);
