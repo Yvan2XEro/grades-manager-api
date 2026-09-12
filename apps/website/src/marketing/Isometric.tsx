@@ -83,7 +83,6 @@ export function IsoStack({
 
 	return (
 		<figure className={`m-0 ${className}`}>
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: pointer affordance only — the same state is reachable by keyboard through the button below. */}
 			<div
 				className="group relative"
 				onMouseEnter={() => setOpen(true)}
