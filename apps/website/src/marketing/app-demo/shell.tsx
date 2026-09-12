@@ -313,206 +313,230 @@ export function AppWindow({
 	useEffect(() => setSoundOn(isSoundOn()), []);
 
 	return (
-		<div
-			style={appTokens}
-			className="@container overflow-hidden rounded-xl border border-tk-border-strong bg-[var(--ap-bg)] shadow-[0_20px_50px_oklch(0.19_0.026_277/0.16)]"
-		>
-			{/*
-			 * Window title bar.
-			 *
-			 * Drawn as the desktop window the product actually runs in, with the
-			 * Windows control trio on the right — minimise, maximise, close — rather
-			 * than the three inert grey dots that stood here before and read as a
-			 * macOS pastiche.
-			 */}
-			<div className="flex items-center gap-2 border-[var(--ap-border)] border-b bg-[var(--ap-muted)] py-1.5 pr-0 pl-3">
-				<span className="truncate font-body text-[0.72rem] text-[var(--ap-muted-fg)]">
-					{url}
-				</span>
-
-				<span className="ml-auto flex items-stretch" aria-hidden="true">
-					<span className="flex h-7 w-10 items-center justify-center text-[var(--ap-muted-fg)]">
-						<Minus className="size-3.5" />
-					</span>
-					<span className="flex h-7 w-10 items-center justify-center text-[var(--ap-muted-fg)]">
-						<Square className="size-3" />
-					</span>
-					<span className="flex h-7 w-10 items-center justify-center rounded-tr-xl text-[var(--ap-muted-fg)]">
-						<X className="size-3.5" />
-					</span>
-				</span>
-			</div>
-
-			<div className="flex">
-				{/* Sidebar */}
-				<aside className="flex @2xl:w-64 w-14 shrink-0 flex-col border-[var(--ap-border)] border-r bg-[var(--ap-card)]">
+		<div className="tk-frame">
+			<div className="tk-frame-inner">
+				<div
+					style={appTokens}
+					// A constant 16:9 at a fixed 1120px design width, scaled to fit.
+					//
+					// The frame is always laid out as if it had 1120px — the width the app
+					// is actually designed for — and the wrapper scales the whole thing down
+					// on narrower screens. That is how the reference site shows its console
+					// on a phone: the screenshot gets smaller, it does not get re-flowed into
+					// a cramped mobile version of itself, and the reader sees the entire
+					// interface without scrolling sideways.
+					//
+					// `min-h` is deliberately absent: a minimum height would fight the
+					// scale-to-fit and reintroduce the overflow it exists to prevent.
+					//
+					// `tk-demo-cursor` swaps the pointer for the product's own cursor set
+					// inside this box and nowhere else — see the block of the same name
+					// in globals.css. The frame reproduces the software down to the title
+					// bar; the pointer was the last thing in it still belonging to the OS.
+					className="tk-demo-cursor tk-frame-chrome @container flex aspect-[16/9] w-[1120px] flex-col overflow-hidden rounded-xl bg-[var(--ap-bg)]"
+				>
 					{/*
-					 * Logo block — the real wordmark, as the product shows it (h-7 in
-					 * Sidebar.tsx), with the favicon standing in on the collapsed rail.
+					 * Window title bar.
+					 *
+					 * Drawn as the desktop window the product actually runs in, with the
+					 * Windows control trio on the right — minimise, maximise, close — rather
+					 * than the three inert grey dots that stood here before and read as a
+					 * macOS pastiche.
 					 */}
-					<div className="flex h-14 shrink-0 items-center @2xl:justify-start justify-center border-[var(--ap-border)] border-b @2xl:px-5">
-						<Image
-							src="/favicon.svg"
-							alt=""
-							aria-hidden="true"
-							width={32}
-							height={32}
-							className="@2xl:hidden size-6 object-contain"
-						/>
-						<span className="@2xl:block hidden min-w-0">
-							<Image
-								src="/logo-tkams.png"
-								alt="TKAMS"
-								width={775}
-								height={200}
-								className="h-[18px] w-auto object-contain"
-							/>
-							<span className="mt-0.5 block truncate font-body text-[0.7rem] text-[var(--ap-muted-fg)]">
-								{institution ?? t.chrome.institution}
+					<div className="flex items-center gap-2 border-[var(--ap-border)] border-b bg-[var(--ap-muted)] py-1.5 pr-0 pl-3">
+						<span className="truncate font-body text-[0.72rem] text-[var(--ap-muted-fg)]">
+							{url}
+						</span>
+
+						<span className="ml-auto flex items-stretch" aria-hidden="true">
+							<span className="flex h-7 w-10 items-center justify-center text-[var(--ap-muted-fg)]">
+								<Minus className="size-3.5" />
+							</span>
+							<span className="flex h-7 w-10 items-center justify-center text-[var(--ap-muted-fg)]">
+								<Square className="size-3" />
+							</span>
+							<span className="flex h-7 w-10 items-center justify-center rounded-tr-xl text-[var(--ap-muted-fg)]">
+								<X className="size-3.5" />
 							</span>
 						</span>
 					</div>
 
-					<nav className="flex-1 py-2">
-						{/* Collapsed rail */}
-						<div className="flex @2xl:hidden flex-col items-center gap-1.5">
-							{nav.slice(0, 6).map((item) => {
-								const Icon = item.icon;
-								return (
-									<span
-										key={item.label}
-										className={`flex size-8 items-center justify-center rounded-lg ${
-											item.active
-												? "bg-[var(--ap-primary)] text-white"
+					<div className="flex min-h-0 flex-1">
+						{/* Sidebar */}
+						<aside className="flex @2xl:w-64 w-14 shrink-0 flex-col border-[var(--ap-border)] border-r bg-[var(--ap-card)]">
+							{/*
+							 * Logo block — the real wordmark, as the product shows it (h-7 in
+							 * Sidebar.tsx), with the favicon standing in on the collapsed rail.
+							 */}
+							<div className="flex h-14 shrink-0 items-center @2xl:justify-start justify-center border-[var(--ap-border)] border-b @2xl:px-5">
+								<Image
+									src="/favicon.svg"
+									alt=""
+									aria-hidden="true"
+									width={32}
+									height={32}
+									className="@2xl:hidden size-6 object-contain"
+								/>
+								<span className="@2xl:block hidden min-w-0">
+									<Image
+										src="/logo-tkams.png"
+										alt="TKAMS"
+										width={775}
+										height={200}
+										className="h-[18px] w-auto object-contain"
+									/>
+									<span className="mt-0.5 block truncate font-body text-[0.7rem] text-[var(--ap-muted-fg)]">
+										{institution ?? t.chrome.institution}
+									</span>
+								</span>
+							</div>
+
+							<nav className="flex-1 py-2">
+								{/* Collapsed rail */}
+								<div className="flex @2xl:hidden flex-col items-center gap-1.5">
+									{nav.slice(0, 6).map((item) => {
+										const Icon = item.icon;
+										return (
+											<span
+												key={item.label}
+												className={`flex size-8 items-center justify-center rounded-lg ${
+													item.active
+														? "bg-[var(--ap-primary)] text-white"
+														: "text-[var(--ap-muted-fg)]"
+												}`}
+											>
+												<Icon className={IC} aria-hidden="true" />
+											</span>
+										);
+									})}
+								</div>
+
+								{/* Expanded */}
+								<div className="@2xl:block hidden space-y-0.5 px-2">
+									{Object.entries(groups).map(([group, items], gi) => (
+										<div key={group}>
+											{gi > 0 ? (
+												<div className="my-2 border-[var(--ap-border)] border-t" />
+											) : null}
+											<p className="px-1.5 py-1 font-body font-semibold text-[10px] text-[var(--ap-muted-fg)] uppercase tracking-widest">
+												{group}
+											</p>
+											<div className="mt-0.5 space-y-0.5">
+												{items.map((item) => {
+													const Icon = item.icon;
+													return (
+														<span
+															key={item.label}
+															className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 font-body text-[12.5px] ${
+																item.active
+																	? "bg-[var(--ap-primary)]/10 font-semibold text-[var(--ap-primary)]"
+																	: "text-[var(--ap-muted-fg)]"
+															}`}
+														>
+															<Icon className={IC} aria-hidden="true" />
+															{item.label}
+														</span>
+													);
+												})}
+											</div>
+										</div>
+									))}
+								</div>
+							</nav>
+						</aside>
+
+						<div className="flex min-h-0 min-w-0 flex-1 flex-col">
+							{/*
+							 * Header — h-14, sticky in the product.
+							 *
+							 * The control cluster on the right mirrors Header.tsx: the ⌘K search
+							 * trigger (h-8 w-52, rounded-lg, bg-input, with a kbd hint), then
+							 * ghost icon buttons at h-8 w-8 — theme, sound, notifications with
+							 * their unread dot, settings — and finally the user's initials in a
+							 * primary/10 circle.
+							 */}
+							<div className="flex h-14 items-center gap-2 border-[var(--ap-border)] border-b bg-[var(--ap-card)] @md:px-4 px-3">
+								{/* Sidebar toggle, first control in the product's header */}
+								<span className="flex size-8 flex-none items-center justify-center rounded text-[var(--ap-muted-fg)]">
+									<PanelLeftClose className="size-4" aria-hidden="true" />
+								</span>
+								<span className="truncate font-body text-[0.8rem] text-[var(--ap-muted-fg)]">
+									{breadcrumb} /{" "}
+									<span className="font-semibold text-[var(--ap-fg)]">
+										{title}
+									</span>
+								</span>
+
+								<span className="ml-auto flex items-center gap-1.5">
+									{action}
+
+									{/* Search trigger */}
+									<span className="@4xl:flex hidden h-8 w-44 items-center gap-2 rounded-lg border border-[var(--ap-border)] bg-[var(--ap-input)] px-3 text-[var(--ap-muted-fg)] shadow-sm">
+										<Search className="size-3.5 shrink-0" aria-hidden="true" />
+										<span className="flex-1 text-left font-body text-xs">
+											{t.chrome.search}
+										</span>
+										<span className="flex items-center rounded-md border border-[var(--ap-border)] bg-[var(--ap-card)] px-1.5 py-0.5 font-code text-[10px] text-[var(--ap-muted-fg)]">
+											Ctrl+K
+										</span>
+									</span>
+
+									{/*
+									 * The speaker is the one live control in this header: it mutes
+									 * and un-mutes the demo's micro-interaction sounds. Sound is on
+									 * by default, as in the product; muting is remembered.
+									 */}
+									<button
+										type="button"
+										onClick={() => setSoundOn(toggleSound())}
+										aria-pressed={soundOn}
+										title={soundOn ? t.chrome.muteSound : t.chrome.unmuteSound}
+										className={`flex size-8 cursor-pointer items-center justify-center rounded border-none bg-transparent transition-colors hover:bg-[var(--ap-muted)] ${
+											soundOn
+												? "text-[var(--ap-primary)]"
 												: "text-[var(--ap-muted-fg)]"
 										}`}
 									>
-										<Icon className={IC} aria-hidden="true" />
+										{soundOn ? (
+											<Volume2 className="size-4" aria-hidden="true" />
+										) : (
+											<VolumeX className="size-4" aria-hidden="true" />
+										)}
+										<span className="sr-only">
+											{soundOn ? t.chrome.muteSound : t.chrome.unmuteSound}
+										</span>
+									</button>
+
+									{/* Decorative chrome, matching the product's header */}
+									{[Moon, Settings].map((Icon, i) => (
+										<span
+											key={Icon.displayName ?? String(i)}
+											className="@md:flex hidden size-8 items-center justify-center rounded text-[var(--ap-muted-fg)]"
+										>
+											<Icon className="size-4" aria-hidden="true" />
+										</span>
+									))}
+
+									{/* Notifications, with the unread badge the product shows */}
+									<span className="relative @md:flex hidden size-8 items-center justify-center rounded text-[var(--ap-muted-fg)]">
+										<Bell className="size-4" aria-hidden="true" />
+										<span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full bg-[var(--ap-destructive)] font-body font-semibold text-[9px] text-white">
+											3
+										</span>
 									</span>
-								);
-							})}
+
+									<span className="flex size-8 items-center justify-center rounded-full bg-[var(--ap-primary)]/10 font-body font-semibold text-[0.68rem] text-[var(--ap-primary)]">
+										AN
+									</span>
+								</span>
+							</div>
+
+							{/* Content — px-4 py-6 md:px-8 in the product, tightened for the page */}
+							<div className="min-h-0 flex-1 overflow-y-auto @md:px-4 px-3 @md:py-5 py-4">
+								{children}
+							</div>
 						</div>
-
-						{/* Expanded */}
-						<div className="@2xl:block hidden space-y-0.5 px-2">
-							{Object.entries(groups).map(([group, items], gi) => (
-								<div key={group}>
-									{gi > 0 ? (
-										<div className="my-2 border-[var(--ap-border)] border-t" />
-									) : null}
-									<p className="px-1.5 py-1 font-body font-semibold text-[10px] text-[var(--ap-muted-fg)] uppercase tracking-widest">
-										{group}
-									</p>
-									<div className="mt-0.5 space-y-0.5">
-										{items.map((item) => {
-											const Icon = item.icon;
-											return (
-												<span
-													key={item.label}
-													className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 font-body text-[12.5px] ${
-														item.active
-															? "bg-[var(--ap-primary)]/10 font-semibold text-[var(--ap-primary)]"
-															: "text-[var(--ap-muted-fg)]"
-													}`}
-												>
-													<Icon className={IC} aria-hidden="true" />
-													{item.label}
-												</span>
-											);
-										})}
-									</div>
-								</div>
-							))}
-						</div>
-					</nav>
-				</aside>
-
-				<div className="min-w-0 flex-1">
-					{/*
-					 * Header — h-14, sticky in the product.
-					 *
-					 * The control cluster on the right mirrors Header.tsx: the ⌘K search
-					 * trigger (h-8 w-52, rounded-lg, bg-input, with a kbd hint), then
-					 * ghost icon buttons at h-8 w-8 — theme, sound, notifications with
-					 * their unread dot, settings — and finally the user's initials in a
-					 * primary/10 circle.
-					 */}
-					<div className="flex h-14 items-center gap-2 border-[var(--ap-border)] border-b bg-[var(--ap-card)] @md:px-4 px-3">
-						{/* Sidebar toggle, first control in the product's header */}
-						<span className="flex size-8 flex-none items-center justify-center rounded text-[var(--ap-muted-fg)]">
-							<PanelLeftClose className="size-4" aria-hidden="true" />
-						</span>
-						<span className="truncate font-body text-[0.8rem] text-[var(--ap-muted-fg)]">
-							{breadcrumb} /{" "}
-							<span className="font-semibold text-[var(--ap-fg)]">{title}</span>
-						</span>
-
-						<span className="ml-auto flex items-center gap-1.5">
-							{action}
-
-							{/* Search trigger */}
-							<span className="@4xl:flex hidden h-8 w-44 items-center gap-2 rounded-lg border border-[var(--ap-border)] bg-[var(--ap-input)] px-3 text-[var(--ap-muted-fg)] shadow-sm">
-								<Search className="size-3.5 shrink-0" aria-hidden="true" />
-								<span className="flex-1 text-left font-body text-xs">
-									{t.chrome.search}
-								</span>
-								<span className="flex items-center rounded-md border border-[var(--ap-border)] bg-[var(--ap-card)] px-1.5 py-0.5 font-code text-[10px] text-[var(--ap-muted-fg)]">
-									Ctrl+K
-								</span>
-							</span>
-
-							{/*
-							 * The speaker is the one live control in this header: it mutes
-							 * and un-mutes the demo's micro-interaction sounds. Sound is on
-							 * by default, as in the product; muting is remembered.
-							 */}
-							<button
-								type="button"
-								onClick={() => setSoundOn(toggleSound())}
-								aria-pressed={soundOn}
-								title={soundOn ? t.chrome.muteSound : t.chrome.unmuteSound}
-								className={`flex size-8 cursor-pointer items-center justify-center rounded border-none bg-transparent transition-colors hover:bg-[var(--ap-muted)] ${
-									soundOn
-										? "text-[var(--ap-primary)]"
-										: "text-[var(--ap-muted-fg)]"
-								}`}
-							>
-								{soundOn ? (
-									<Volume2 className="size-4" aria-hidden="true" />
-								) : (
-									<VolumeX className="size-4" aria-hidden="true" />
-								)}
-								<span className="sr-only">
-									{soundOn ? t.chrome.muteSound : t.chrome.unmuteSound}
-								</span>
-							</button>
-
-							{/* Decorative chrome, matching the product's header */}
-							{[Moon, Settings].map((Icon, i) => (
-								<span
-									key={Icon.displayName ?? String(i)}
-									className="@md:flex hidden size-8 items-center justify-center rounded text-[var(--ap-muted-fg)]"
-								>
-									<Icon className="size-4" aria-hidden="true" />
-								</span>
-							))}
-
-							{/* Notifications, with the unread badge the product shows */}
-							<span className="relative @md:flex hidden size-8 items-center justify-center rounded text-[var(--ap-muted-fg)]">
-								<Bell className="size-4" aria-hidden="true" />
-								<span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full bg-[var(--ap-destructive)] font-body font-semibold text-[9px] text-white">
-									3
-								</span>
-							</span>
-
-							<span className="flex size-8 items-center justify-center rounded-full bg-[var(--ap-primary)]/10 font-body font-semibold text-[0.68rem] text-[var(--ap-primary)]">
-								AN
-							</span>
-						</span>
 					</div>
-
-					{/* Content — px-4 py-6 md:px-8 in the product, tightened for the page */}
-					<div className="@md:px-4 px-3 @md:py-5 py-4">{children}</div>
 				</div>
 			</div>
 		</div>

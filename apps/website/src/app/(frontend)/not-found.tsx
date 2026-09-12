@@ -6,7 +6,7 @@ export default async function NotFound() {
 	const d = getDict(locale);
 
 	return (
-		<main className="bg-tk-bg pt-[68px]">
+		<main className="bg-tk-bg pt-[var(--tk-header-h)]">
 			<div className="mx-auto flex min-h-[72vh] max-w-[86rem] flex-col justify-center px-6 py-20 lg:px-10">
 				<p className="font-display font-extrabold text-[clamp(4rem,16vw,11rem)] text-tk-title leading-none tracking-[-0.05em]">
 					{d.notFound.code}

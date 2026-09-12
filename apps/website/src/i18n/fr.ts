@@ -297,6 +297,8 @@ export const fr = {
 		],
 	},
 	deployment: {
+		axis_low: "Nous hébergeons",
+		axis_high: "Vous hébergez",
 		title: "Quatre modes de déploiement",
 		sub: "Choisissez le niveau de contrôle qui convient à votre DSI.",
 		modes: [

@@ -71,6 +71,22 @@ type Student = {
 	lowest: number;
 };
 
+/**
+ * Five students, not eight.
+ *
+ * The cohort was trimmed so the whole frame is visible at once on a phone — a
+ * demonstration the reader has to scroll inside is a demonstration they do not
+ * watch. Five is the smallest set that still exercises every decision path the
+ * rules can produce, which is the only thing the count has to guarantee:
+ *
+ *   FOTSO     13.10 / 8.50   passes on its average alone
+ *   BEKONO    11.80 / 5.50   passes only because compensation is on — the row
+ *                            that changes when the toggle moves
+ *   DJOMO      9.45 / 7.00   below the pass threshold: resit
+ *   MBALLA     7.20 / 4.00   under the eliminating mark: deferred, and the row
+ *                            that changes when that slider moves
+ *   TCHOUTA   10.05 / 5.75   sits just on the threshold, so it flips first
+ */
 const COHORT: Student[] = [
 	{
 		matricule: "IS-25-0112",
@@ -79,18 +95,6 @@ const COHORT: Student[] = [
 		lowest: 8.5,
 	},
 	{ matricule: "IS-25-0198", name: "BEKONO Serge", average: 11.8, lowest: 5.5 },
-	{
-		matricule: "IS-25-0275",
-		name: "NGANDO Christelle",
-		average: 15.6,
-		lowest: 12.0,
-	},
-	{
-		matricule: "IS-25-0341",
-		name: "ABANDA Marie-Claire",
-		average: 14.25,
-		lowest: 9.0,
-	},
 	{ matricule: "IS-25-0407", name: "DJOMO Aline", average: 9.45, lowest: 7.0 },
 	{ matricule: "IS-25-0522", name: "MBALLA Ivan", average: 7.2, lowest: 4.0 },
 	{
@@ -98,12 +102,6 @@ const COHORT: Student[] = [
 		name: "TCHOUTA Bernard",
 		average: 10.05,
 		lowest: 5.75,
-	},
-	{
-		matricule: "IS-25-0634",
-		name: "ESSOMBA Nadège",
-		average: 12.4,
-		lowest: 10.5,
 	},
 ];
 

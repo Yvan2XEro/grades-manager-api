@@ -296,6 +296,8 @@ export const en = {
 		],
 	},
 	deployment: {
+		axis_low: "We host",
+		axis_high: "You host",
 		title: "Four deployment modes",
 		sub: "Choose the level of control that fits your IT department.",
 		modes: [

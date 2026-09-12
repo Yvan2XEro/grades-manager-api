@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale } from "@/i18n";
+import { PageHero } from "@/marketing/PageHero";
 import { GUARANTEES, TIMELINE } from "@/marketing/pricing-2026";
+import { PhotoBand } from "@/marketing/sections/PhotoBand";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 
 /**
  * Commitments — guarantees, timeline, payment terms and general conditions.
@@ -218,38 +221,37 @@ export default async function Page() {
 			];
 
 	return (
-		<main className="bg-tk-bg pt-[68px]">
-			{/* Masthead */}
-			<section className="border-tk-border border-b">
-				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
-						{en ? "Commitments" : "Engagements"}
-					</p>
-					<h1 className="mt-4 max-w-[22ch] font-display font-extrabold text-[clamp(2rem,1.3rem+2.6vw,3.25rem)] text-tk-title leading-[1.04] tracking-[-0.035em]">
-						{en
-							? "What we guarantee, and how long it takes."
-							: "Ce que nous garantissons, et en combien de temps."}
-					</h1>
-					<p className="mt-5 max-w-[58ch] font-body text-[1.05rem] text-tk-ink-2 leading-relaxed">
-						{en
-							? "Six weeks at most, forty-eight hours at least. Every guarantee below is written into the quote, not promised verbally."
-							: "Six semaines au maximum, quarante-huit heures au minimum. Chaque garantie ci-dessous est écrite dans le devis, pas promise à l'oral."}
-					</p>
-				</div>
-			</section>
+		<main className="tk-dotgrid bg-tk-bg pt-[var(--tk-header-h)]">
+			<PageHero
+				eyebrow={en ? "Commitments" : "Engagements"}
+				image="/images/web/diplomation-band.webp"
+				imageAlt={
+					en ? "A graduation ceremony" : "Une cérémonie de remise de diplômes"
+				}
+				title={
+					en
+						? "What we guarantee, and how long it takes."
+						: "Ce que nous garantissons, et en combien de temps."
+				}
+				lede={
+					en
+						? "Six weeks at most, forty-eight hours at least. Every guarantee below is written into the quote, not promised verbally."
+						: "Six semaines au maximum, quarante-huit heures au minimum. Chaque garantie ci-dessous est écrite dans le devis, pas promise à l'oral."
+				}
+			/>
 
 			{/* Guarantees */}
 			<section className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-				<h2 className="font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+				<h2 className="tk-headline tk-gradient-text">
 					{en ? "Six guarantees" : "Six garanties"}
 				</h2>
 				<dl className="mt-9 grid gap-px overflow-hidden rounded-xl border border-tk-border bg-tk-border sm:grid-cols-2 lg:grid-cols-3">
 					{guarantees.map((g) => (
 						<div key={g.name} className="bg-tk-surface p-6">
-							<dt className="font-body font-semibold text-[0.95rem] text-tk-ink">
+							<dt className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 								{g.name}
 							</dt>
-							<dd className="mt-2 font-body text-[0.875rem] text-tk-ink-2 leading-relaxed">
+							<dd className="mt-2 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 								{g.detail}
 							</dd>
 						</div>
@@ -260,12 +262,12 @@ export default async function Page() {
 			{/* Timeline */}
 			<section className="border-tk-border border-y bg-tk-bg-deep">
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<h2 className="max-w-[26ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+					<h2 className="tk-headline tk-gradient-text max-w-[26ch]">
 						{en
 							? "Six weeks at most, forty-eight hours at least"
 							: "Six semaines au maximum, quarante-huit heures au minimum"}
 					</h2>
-					<p className="mt-4 max-w-[56ch] font-body text-[0.95rem] text-tk-ink-2 leading-relaxed">
+					<p className="mt-4 max-w-[56ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 						{en
 							? "The schedule we normally keep, contractualised in the quote with the validation milestones that belong to you."
 							: "Le calendrier que nous tenons habituellement, contractualisé dans le devis avec les jalons de validation qui vous appartiennent."}
@@ -275,13 +277,13 @@ export default async function Page() {
 						<table className="w-full border-collapse">
 							<thead>
 								<tr className="bg-tk-dark">
-									<th className="px-4 py-3.5 text-left font-body font-semibold text-[0.78rem] text-tk-on-dark sm:px-5">
+									<th className="px-4 py-3.5 text-left font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-on-dark sm:px-5">
 										{en ? "Stage" : "Étape"}
 									</th>
-									<th className="px-4 py-3.5 text-left font-body font-semibold text-[0.78rem] text-tk-on-dark sm:px-5">
+									<th className="px-4 py-3.5 text-left font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-on-dark sm:px-5">
 										QR Code OnReceipt
 									</th>
-									<th className="px-4 py-3.5 text-left font-body font-semibold text-[0.78rem] text-tk-on-dark sm:px-5">
+									<th className="px-4 py-3.5 text-left font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-on-dark sm:px-5">
 										TKAMS
 									</th>
 								</tr>
@@ -294,14 +296,14 @@ export default async function Page() {
 									>
 										<th
 											scope="row"
-											className="whitespace-nowrap px-4 py-3.5 text-left align-top font-body font-semibold text-[0.85rem] text-tk-ink sm:px-5"
+											className="whitespace-nowrap px-4 py-3.5 text-left align-top font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-ink sm:px-5"
 										>
 											{row.step}
 										</th>
-										<td className="px-4 py-3.5 align-top font-body text-[0.85rem] text-tk-ink-2 leading-relaxed sm:px-5">
+										<td className="px-4 py-3.5 align-top font-body text-[length:var(--tk-text-sm)] text-tk-ink-2 leading-relaxed sm:px-5">
 											{row.onreceipt}
 										</td>
-										<td className="px-4 py-3.5 align-top font-body text-[0.85rem] text-tk-ink-2 leading-relaxed sm:px-5">
+										<td className="px-4 py-3.5 align-top font-body text-[length:var(--tk-text-sm)] text-tk-ink-2 leading-relaxed sm:px-5">
 											{row.tkams}
 										</td>
 									</tr>
@@ -345,7 +347,7 @@ export default async function Page() {
 								key={t}
 								className="rounded-xl border border-tk-border bg-tk-surface p-5"
 							>
-								<p className="font-body font-semibold text-[0.875rem] text-tk-ink">
+								<p className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 									{t}
 								</p>
 								<p className="mt-2 font-body text-[0.84rem] text-tk-ink-2 leading-relaxed">
@@ -355,7 +357,7 @@ export default async function Page() {
 						))}
 					</div>
 
-					<p className="mt-5 max-w-[72ch] font-body text-[0.85rem] text-tk-muted leading-relaxed">
+					<p className="mt-5 max-w-[72ch] font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-relaxed">
 						{en
 							? "An OnReceipt deployment can be compressed to 48 hours when a deadline is imminent. A TKAMS deployment cannot be, without risk: we would rather say so than promise it."
 							: "Un déploiement OnReceipt peut être compressé à 48 heures en cas d'échéance imminente. Un déploiement TKAMS ne peut pas l'être sans risque : nous préférons le dire que de vous le promettre."}
@@ -365,13 +367,13 @@ export default async function Page() {
 
 			{/* Payment */}
 			<section className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-				<h2 className="font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+				<h2 className="tk-headline tk-gradient-text">
 					{en ? "How you pay" : "Comment on paie"}
 				</h2>
 
 				<div className="mt-9 grid gap-5 lg:grid-cols-2">
 					<div className="rounded-xl border border-tk-border bg-tk-surface p-6">
-						<h3 className="font-body font-semibold text-[0.9rem] text-tk-ink">
+						<h3 className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 							{en ? "Accepted means" : "Moyens acceptés"}
 						</h3>
 						<ul className="mt-4 space-y-2.5">
@@ -381,7 +383,7 @@ export default async function Page() {
 										aria-hidden="true"
 										className="mt-[0.55rem] h-1.5 w-1.5 flex-none rounded-full bg-tk-primary"
 									/>
-									<span className="font-body text-[0.9rem] text-tk-ink-2">
+									<span className="font-body text-[length:var(--tk-text-body)] text-tk-ink-2">
 										{m}
 									</span>
 								</li>
@@ -390,7 +392,7 @@ export default async function Page() {
 					</div>
 
 					<div className="rounded-xl border border-tk-border bg-tk-surface p-6">
-						<h3 className="font-body font-semibold text-[0.9rem] text-tk-ink">
+						<h3 className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 							{en
 								? "Proposed rhythm — negotiable"
 								: "Rythme proposé — négociable"}
@@ -398,10 +400,10 @@ export default async function Page() {
 						<dl className="mt-4 divide-y divide-tk-border">
 							{payment.rhythm.map(([k, v]) => (
 								<div key={k} className="py-2.5 first:pt-0 last:pb-0">
-									<dt className="font-body font-semibold text-[0.85rem] text-tk-ink">
+									<dt className="font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-ink">
 										{k}
 									</dt>
-									<dd className="mt-0.5 font-body text-[0.85rem] text-tk-ink-2">
+									<dd className="mt-0.5 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2">
 										{v}
 									</dd>
 								</div>
@@ -411,12 +413,12 @@ export default async function Page() {
 				</div>
 
 				<div className="mt-5 rounded-xl border border-tk-primary/35 bg-tk-primary-soft p-6">
-					<p className="font-body font-semibold text-[0.9rem] text-tk-eyebrow">
+					<p className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-eyebrow">
 						{en
 							? "Pricing is negotiable, and we write it down"
 							: "Tarification négociable, et nous l'écrivons"}
 					</p>
-					<p className="mt-2.5 max-w-[74ch] font-body text-[0.9rem] text-tk-ink-2 leading-relaxed">
+					<p className="mt-2.5 max-w-[74ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 						{en
 							? "An adapted quote, a longer payment schedule, a multi-year institutional discount, a public preferential rate, a hybrid formula: everything is open before signature. No discount reduces the scope without that being written into the quote."
 							: "Devis adapté, échelonnement plus long, remise institutionnelle pluriannuelle, tarif préférentiel public, formule hybride : tout est ouvert avant signature. Aucune remise ne réduit le périmètre sans que ce soit écrit dans le devis."}
@@ -427,7 +429,7 @@ export default async function Page() {
 			{/* Clauses */}
 			<section className="border-tk-border border-y bg-tk-bg-deep">
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<h2 className="max-w-[26ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+					<h2 className="tk-headline tk-gradient-text max-w-[26ch]">
 						{en
 							? "Twelve clauses, in plain language"
 							: "Douze clauses, en français clair"}
@@ -436,18 +438,18 @@ export default async function Page() {
 					<ol className="mt-9 grid gap-x-10 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
 						{clauses.map(([title, body], i) => (
 							<li key={title} className="border-tk-border border-t pt-4">
-								<h3 className="font-body font-semibold text-[0.9rem] text-tk-ink">
+								<h3 className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 									<span className="text-tk-eyebrow tabular-nums">{i + 1}.</span>{" "}
 									{title}
 								</h3>
-								<p className="mt-2 font-body text-[0.85rem] text-tk-ink-2 leading-relaxed">
+								<p className="mt-2 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2 leading-relaxed">
 									{body}
 								</p>
 							</li>
 						))}
 					</ol>
 
-					<p className="mt-8 max-w-[74rem] rounded-xl border border-tk-border bg-tk-surface p-5 font-body text-[0.875rem] text-tk-ink-2 leading-relaxed">
+					<p className="mt-8 max-w-[74rem] rounded-xl border border-tk-border bg-tk-surface p-5 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 						{en
 							? "This page reproduces the conditions of the 2026 commercial proposal for information. The signed quote and order form prevail. "
 							: "Cette page reproduit à titre d'information les conditions de la proposition commerciale 2026. Le devis signé et le bon de commande font foi. "}
@@ -463,9 +465,27 @@ export default async function Page() {
 				</div>
 			</section>
 
+			{/*
+			 * Between the legal clauses and the closing questions. Twelve clauses is
+			 * the densest reading on the site; this is the beat that reminds the
+			 * reader what the contract is for.
+			 */}
+			<PhotoBand
+				src="/images/web/promotion-band.webp"
+				alt={
+					en
+						? "A graduate on campus after the ceremony"
+						: "Une diplômée sur le campus après la cérémonie"
+				}
+				caption={
+					en
+						? "Everything above exists so this document can be issued without doubt."
+						: "Tout ce qui précède existe pour qu'un diplôme soit délivré sans contestation."
+				}
+			/>
 			{/* The three questions */}
 			<section className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-				<h2 className="max-w-[30ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+				<h2 className="tk-headline tk-gradient-text max-w-[30ch]">
 					{en
 						? "The three questions we are always asked at this point"
 						: "Les trois questions qu'on nous pose toujours à ce stade"}
@@ -476,10 +496,10 @@ export default async function Page() {
 							key={q}
 							className="rounded-xl border border-tk-border bg-tk-surface p-6"
 						>
-							<h3 className="font-bold font-display text-[1rem] text-tk-ink tracking-[-0.02em]">
+							<h3 className="font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink tracking-[-0.02em]">
 								{q}
 							</h3>
-							<p className="mt-3 font-body text-[0.875rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-3 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 								{a}
 							</p>
 						</div>
@@ -489,13 +509,13 @@ export default async function Page() {
 				<div className="mt-10 flex flex-wrap gap-3">
 					<Link
 						href="/contact"
-						className="rounded-md bg-tk-primary px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-on-primary transition-colors hover:bg-tk-primary-deep"
+						className="rounded-md bg-tk-primary px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-on-primary transition-colors hover:bg-tk-primary-deep"
 					>
 						{en ? "Request a demo" : "Demander une démo"}
 					</Link>
 					<Link
 						href="/tarifs"
-						className="rounded-md border border-tk-border-strong px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-ink transition-colors hover:bg-tk-bg-deep"
+						className="rounded-md border border-tk-border-strong px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink transition-colors hover:bg-tk-bg-deep"
 					>
 						{en ? "See all prices" : "Voir tous les tarifs"}
 					</Link>
@@ -513,5 +533,14 @@ export async function generateMetadata(): Promise<Metadata> {
 		description: en
 			? "Guarantees, deployment timeline, payment terms and the twelve general conditions — written down, before signature."
 			: "Garanties, planning de déploiement, modalités de paiement et douze conditions générales — écrites, avant signature.",
+		// Mirrors this page's own title and description. Without it every
+		// page inherited the site-wide default, so sharing /tarifs showed
+		// the home page's text and image.
+		openGraph: mergeOpenGraph({
+			title: en ? "Commitments — TKAMS" : "Engagements — TKAMS",
+			description: en
+				? "Guarantees, deployment timeline, payment terms and the twelve general conditions — written down, before signature."
+				: "Garanties, planning de déploiement, modalités de paiement et douze conditions générales — écrites, avant signature.",
+		}),
 	};
 }

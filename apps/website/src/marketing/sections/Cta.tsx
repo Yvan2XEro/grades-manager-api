@@ -37,7 +37,7 @@ export function Cta({ dict: d, number = "10" }: CtaProps) {
 						</div>
 						<div className="flex flex-col justify-end gap-7 lg:col-span-4">
 							<AnimateIn delay={100}>
-								<p className="max-w-[44ch] font-body text-[1.0625rem] text-tk-on-primary/85 leading-[1.7]">
+								<p className="max-w-[44ch] font-body text-[length:var(--tk-text-lead)] text-tk-on-primary/85 leading-[1.7]">
 									{d.cta.sub}
 								</p>
 							</AnimateIn>
@@ -59,7 +59,7 @@ export function Cta({ dict: d, number = "10" }: CtaProps) {
 
 					<div className="mt-16">
 						<Rule theme="dark" />
-						<p className="mt-5 font-code text-[0.8125rem] text-tk-on-primary/85">
+						<p className="mt-5 font-code text-[length:var(--tk-text-sm)] text-tk-on-primary/85">
 							<a
 								href="https://www.overbrand.net/"
 								target="_blank"

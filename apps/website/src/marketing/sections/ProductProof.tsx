@@ -15,28 +15,37 @@ import { GradeEntryDemo } from "../app-demo/GradeEntryDemo";
  * students and no deliberation, the product chrome is still in English, and
  * unresolved i18n placeholders are visible on screen. A PNG would advertise an
  * unfinished product; this shows a working one.
+ *
+ * Two classes on the section carry its surface:
+ *
+ *   `tk-glow`    a wide, very diffuse wash of the brand violet behind the top
+ *                of the section. It gives the product screen something to sit
+ *                on without a border, a gradient bar or a pattern — none of
+ *                which survive being looked at twice.
+ *   `tk-dotgrid` repeated here rather than inherited. The page paints the grid
+ *                once on <main>, but this section fills its own opaque ground
+ *                and then draws the glow over it, so both hid the texture
+ *                underneath.
  */
 export function ProductProof({ locale }: { locale: Locale }) {
 	const en = locale === "en";
 
 	return (
-		<section id="produit" className="relative overflow-hidden bg-tk-bg-deep">
-			<div
-				aria-hidden="true"
-				className="tk-field-weave pointer-events-none absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_at_top,#000,transparent_70%)]"
-			/>
-
-			<div className="relative mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
+		<section
+			id="produit"
+			className="tk-dotgrid tk-glow relative overflow-hidden bg-tk-bg-deep"
+		>
+			<div className="tk-section relative mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="max-w-[48rem]">
-					<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+					<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 						{en ? "Live demonstration" : "Démonstration en direct"}
 					</p>
-					<h2 className="mt-4 font-display font-extrabold text-[clamp(1.75rem,1.1rem+2.2vw,2.75rem)] text-tk-title leading-[1.06] tracking-[-0.032em]">
+					<h2 className="tk-headline tk-gradient-text mt-4">
 						{en
 							? "Move the jury's rules. Watch the cohort follow."
 							: "Déplacez les règles du jury. La cohorte suit."}
 					</h2>
-					<p className="mt-4 font-body text-[1rem] text-tk-ink-2 leading-relaxed">
+					<p className="mt-4 font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-relaxed">
 						{en
 							? "This is the real interface, with demonstration data. Change a threshold and every file is re-decided instantly — no reload, no recalculation by hand."
 							: "C'est l'interface réelle, avec des données de démonstration. Changez un seuil et chaque dossier est réévalué instantanément — sans rechargement, sans recalcul à la main."}

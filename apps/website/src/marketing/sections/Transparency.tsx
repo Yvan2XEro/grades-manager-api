@@ -68,20 +68,20 @@ export function Transparency({ locale }: { locale: Locale }) {
 				className="tk-field-weave--on-dark pointer-events-none absolute inset-0"
 			/>
 
-			<div className="relative mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
+			<div className="tk-section relative mx-auto max-w-[86rem] px-6 lg:px-10">
 				{/* Masthead */}
 				<div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-end lg:gap-14">
 					<div>
-						<p className="font-code text-[0.7rem] text-tk-on-primary/75 uppercase tracking-[0.16em]">
+						<p className="font-code text-[length:var(--tk-text-xs)] text-tk-on-primary/75 uppercase tracking-[0.16em]">
 							{en ? "Commitment" : "Engagement"}
 						</p>
-						<h2 className="mt-4 max-w-[20ch] font-display font-extrabold text-[clamp(1.75rem,1.1rem+2.2vw,2.75rem)] leading-[1.06] tracking-[-0.032em]">
+						<h2 className="tk-headline mt-4 max-w-[20ch]">
 							{en
 								? "What we will not do, said before you sign."
 								: "Ce que nous ne ferons pas, dit avant que vous signiez."}
 						</h2>
 					</div>
-					<p className="font-body text-[0.95rem] text-tk-on-primary/85 leading-relaxed lg:pb-1">
+					<p className="font-body text-[length:var(--tk-text-body)] text-tk-on-primary/85 leading-relaxed lg:pb-1">
 						{en
 							? "Our commercial proposal devotes its most important page to what is not included, and to who carries it instead. It belongs here too — an institution that discovers an exclusion after signature costs far more than one that walks away before."
 							: "Notre proposition commerciale consacre sa page la plus importante à ce qui n'est pas inclus, et à qui le porte à la place. Elle a aussi sa place ici — un établissement qui découvre une exclusion après signature coûte bien plus cher qu'un établissement qui renonce avant."}
@@ -102,7 +102,7 @@ export function Transparency({ locale }: { locale: Locale }) {
 								className="bg-tk-primary-deep p-5 transition-colors hover:bg-white/[0.07] lg:p-6"
 							>
 								<div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5">
-									<h3 className="font-body font-semibold text-[0.95rem] text-tk-on-primary leading-snug">
+									<h3 className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-on-primary leading-snug">
 										{c.item}
 									</h3>
 									{/*
@@ -111,11 +111,11 @@ export function Transparency({ locale }: { locale: Locale }) {
 									 * 2.11:1 and is unreadable. Filling the chip keeps the
 									 * accent visible while the label stays legible.
 									 */}
-									<span className="whitespace-nowrap rounded-full bg-tk-accent-deep px-2.5 py-0.5 font-body font-medium text-[0.68rem] text-tk-on-primary">
+									<span className="whitespace-nowrap rounded-full bg-tk-accent-deep px-2.5 py-0.5 font-body font-medium text-[length:var(--tk-text-xs)] text-tk-on-primary">
 										{c.owner}
 									</span>
 								</div>
-								<p className="mt-2.5 max-w-[52ch] font-body text-[0.85rem] text-tk-on-primary/85 leading-relaxed">
+								<p className="mt-2.5 max-w-[52ch] font-body text-[length:var(--tk-text-sm)] text-tk-on-primary/85 leading-relaxed">
 									{c.note}
 								</p>
 							</li>
@@ -130,7 +130,7 @@ export function Transparency({ locale }: { locale: Locale }) {
 							? "Any amount not written on this page cannot be billed to you without a written amendment, signed by you."
 							: "Tout montant qui ne figure pas sur cette page ne pourra pas vous être facturé sans un avenant écrit et signé par vous."}
 					</p>
-					<p className="mt-3 max-w-[62ch] font-body text-[0.875rem] text-tk-on-primary/85 leading-relaxed">
+					<p className="mt-3 max-w-[62ch] font-body text-[length:var(--tk-text-body)] text-tk-on-primary/85 leading-relaxed">
 						{en
 							? "We also refuse to promise that any software will make your supervising body accept wrong marks or unvalidated course structures."
 							: "Nous refusons également de promettre qu'un logiciel fera accepter par votre tutelle des notes erronées ou des maquettes non validées."}
@@ -145,7 +145,7 @@ export function Transparency({ locale }: { locale: Locale }) {
 								? "What we guarantee in return"
 								: "Ce que nous garantissons en retour"}
 						</h3>
-						<span className="font-code text-[0.7rem] text-tk-on-primary/85 uppercase tracking-[0.14em]">
+						<span className="font-code text-[length:var(--tk-text-xs)] text-tk-on-primary/85 uppercase tracking-[0.14em]">
 							{en ? "Written into the quote" : "Écrit dans le devis"}
 						</span>
 					</div>
@@ -160,14 +160,14 @@ export function Transparency({ locale }: { locale: Locale }) {
 								key={g.name}
 								className="flex gap-4 border-white/10 border-b py-5"
 							>
-								<span className="font-display font-extrabold text-[1.1rem] text-tk-on-primary/75 tabular-nums leading-none">
+								<span className="font-display font-extrabold text-[length:var(--tk-text-lead)] text-tk-on-primary/75 tabular-nums leading-none">
 									{String(i + 1).padStart(2, "0")}
 								</span>
 								<div className="min-w-0">
-									<dt className="font-body font-semibold text-[0.95rem] text-tk-on-primary">
+									<dt className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-on-primary">
 										{g.name}
 									</dt>
-									<dd className="mt-1.5 font-body text-[0.85rem] text-tk-on-primary/85 leading-relaxed">
+									<dd className="mt-1.5 font-body text-[length:var(--tk-text-sm)] text-tk-on-primary/85 leading-relaxed">
 										{g.detail}
 									</dd>
 								</div>
@@ -179,19 +179,19 @@ export function Transparency({ locale }: { locale: Locale }) {
 				<div className="mt-10 flex flex-wrap items-center gap-4">
 					<Link
 						href="/tarifs"
-						className="rounded-md bg-tk-surface px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-primary-deep transition-colors hover:bg-tk-primary-soft"
+						className="rounded-md bg-tk-surface px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-deep transition-colors hover:bg-tk-primary-soft"
 					>
 						{en ? "See every price" : "Voir tous les tarifs"}
 					</Link>
 					<Link
 						href="/engagements"
-						className="rounded-md border border-white/25 px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-on-primary transition-colors hover:bg-white/10"
+						className="rounded-md border border-white/25 px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-on-primary transition-colors hover:bg-white/10"
 					>
 						{en ? "Guarantees and terms" : "Garanties et conditions"}
 					</Link>
 					<Link
 						href="/documents/Proposition commerciale TKAMS et QRCode 2026.pdf"
-						className="font-body font-medium text-[0.9375rem] text-tk-on-primary/85 underline-offset-4 hover:text-tk-on-primary hover:underline"
+						className="font-body font-medium text-[length:var(--tk-text-body)] text-tk-on-primary/85 underline-offset-4 hover:text-tk-on-primary hover:underline"
 					>
 						{en
 							? "Download the full proposal (PDF, 19 pages)"

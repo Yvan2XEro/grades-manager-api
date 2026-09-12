@@ -20,18 +20,18 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 	const en = locale === "en";
 
 	return (
-		<section className="bg-tk-bg-deep">
-			<div className="mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
+		<section>
+			<div className="tk-section mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="max-w-[46rem]">
-					<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+					<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 						{en ? "Two solutions" : "Les deux solutions"}
 					</p>
-					<h2 className="mt-4 font-display font-extrabold text-[clamp(1.75rem,1.1rem+2.2vw,2.75rem)] text-tk-title leading-[1.06] tracking-[-0.032em]">
+					<h2 className="tk-headline tk-gradient-text mt-4">
 						{en
 							? "An urgent answer, and a structural investment."
 							: "Une réponse d'urgence, un investissement structurel."}
 					</h2>
-					<p className="mt-4 font-body text-[1rem] text-tk-ink-2 leading-relaxed">
+					<p className="mt-4 font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-relaxed">
 						{en
 							? "Choose according to your deadline and your budget. They are sold separately; neither obliges you to take the other."
 							: "Vous choisissez selon votre échéance et votre budget. Les deux se vendent séparément ; aucune n'oblige à souscrire l'autre."}
@@ -50,14 +50,14 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 									height={256}
 									className="size-11 object-contain"
 								/>
-								<span className="rounded-full border border-tk-border-strong bg-tk-surface px-3 py-1 font-body font-medium text-[0.72rem] text-tk-ink-2">
+								<span className="rounded-full border border-tk-border-strong bg-tk-surface px-3 py-1 font-body font-medium text-[length:var(--tk-text-xs)] text-tk-ink-2">
 									{en ? "Urgent answer" : "Réponse d'urgence"}
 								</span>
 							</div>
 							<h3 className="mt-5 font-bold font-display text-[1.4rem] text-tk-ink tracking-[-0.025em]">
 								QR Code OnReceipt
 							</h3>
-							<p className="mt-3 max-w-[44ch] font-body text-[0.9375rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-3 max-w-[44ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 								{en
 									? "Desktop software that produces compliant transcripts and certificates in batches, from an Excel file. Built to the document standards of state universities."
 									: "Application de bureau qui produit en lot des relevés et attestations conformes aux standards des universités d'État, à partir d'un fichier Excel."}
@@ -65,18 +65,18 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 
 							<dl className="mt-7 grid grid-cols-2 gap-5">
 								<div>
-									<dt className="font-code text-[0.62rem] text-tk-muted uppercase tracking-[0.12em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.12em]">
 										{en ? "Go-live" : "Mise en service"}
 									</dt>
-									<dd className="mt-1 font-bold font-display text-[1.05rem] text-tk-ink">
+									<dd className="mt-1 font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink">
 										{en ? "Same day to 48 h" : "Le jour même à 48 h"}
 									</dd>
 								</div>
 								<div>
-									<dt className="font-code text-[0.62rem] text-tk-muted uppercase tracking-[0.12em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.12em]">
 										{en ? "Entry ticket" : "Ticket d'entrée"}
 									</dt>
-									<dd className="mt-1 font-bold font-display text-[1.05rem] text-tk-ink tabular-nums">
+									<dd className="mt-1 font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink tabular-nums">
 										{fcfa.format(130_000)} FCFA
 									</dd>
 								</div>
@@ -85,7 +85,7 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 						<div className="border-tk-border border-t px-6 py-4 lg:px-8">
 							<Link
 								href="/onreceipt"
-								className="font-body font-semibold text-[0.9rem] text-tk-eyebrow underline-offset-4 hover:underline"
+								className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-eyebrow underline-offset-4 hover:underline"
 							>
 								{en ? "Discover OnReceipt →" : "Découvrir OnReceipt →"}
 							</Link>
@@ -109,14 +109,14 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 										className="h-5 w-auto object-contain"
 									/>
 								</span>
-								<span className="rounded-full bg-tk-primary px-3 py-1 font-body font-medium text-[0.72rem] text-tk-on-primary">
+								<span className="rounded-full bg-tk-primary px-3 py-1 font-body font-medium text-[length:var(--tk-text-xs)] text-tk-on-primary">
 									{en ? "Recommended — structural" : "Recommandé — structurel"}
 								</span>
 							</div>
 							<h3 className="mt-5 font-bold font-display text-[1.4rem] tracking-[-0.025em]">
 								TKAMS
 							</h3>
-							<p className="mt-3 max-w-[44ch] font-body text-[0.9375rem] text-tk-on-primary/85 leading-relaxed">
+							<p className="mt-3 max-w-[44ch] font-body text-[length:var(--tk-text-body)] text-tk-on-primary/85 leading-relaxed">
 								{en
 									? "Integrated LMD academic management platform: admissions, student records, fees, marks, deliberations, official documents. Managed cloud or your own servers."
 									: "Plateforme intégrée de gestion académique LMD : admissions, scolarité, frais, notes, délibérations, documents officiels. Cloud managé ou vos serveurs."}
@@ -124,18 +124,18 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 
 							<dl className="mt-7 grid grid-cols-2 gap-5">
 								<div>
-									<dt className="font-code text-[0.62rem] text-tk-on-primary/75 uppercase tracking-[0.12em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-on-primary/75 uppercase tracking-[0.12em]">
 										{en ? "Go-live" : "Mise en service"}
 									</dt>
-									<dd className="mt-1 font-bold font-display text-[1.05rem]">
+									<dd className="mt-1 font-bold font-display text-[length:var(--tk-text-lead)]">
 										{en ? "2 to 6 weeks" : "2 à 6 semaines"}
 									</dd>
 								</div>
 								<div>
-									<dt className="font-code text-[0.62rem] text-tk-on-primary/75 uppercase tracking-[0.12em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-on-primary/75 uppercase tracking-[0.12em]">
 										{en ? "Price" : "Prix"}
 									</dt>
-									<dd className="mt-1 font-bold font-display text-[1.05rem] tabular-nums">
+									<dd className="mt-1 font-bold font-display text-[length:var(--tk-text-lead)] tabular-nums">
 										{fcfa.format(2_800)} F{" "}
 										<span className="font-body font-normal text-[0.8rem] text-tk-on-primary/85">
 											{en ? "/ student / year" : "/ étudiant / an"}
@@ -147,7 +147,7 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 						<div className="relative border-white/15 border-t px-6 py-4 lg:px-8">
 							<Link
 								href="/produit"
-								className="font-body font-semibold text-[0.9rem] text-tk-primary-bright underline-offset-4 hover:underline"
+								className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-bright underline-offset-4 hover:underline"
 							>
 								{en ? "Explore TKAMS →" : "Explorer TKAMS →"}
 							</Link>
@@ -158,12 +158,12 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 				{/* The recommendation, said plainly */}
 				<div className="mt-6 grid gap-5 rounded-xl border border-tk-border bg-tk-primary-soft p-6 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:p-8">
 					<div>
-						<p className="font-body font-semibold text-[0.9rem] text-tk-primary-deep">
+						<p className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-deep">
 							{en
 								? "Our recommendation, said plainly"
 								: "Notre recommandation, dite franchement"}
 						</p>
-						<p className="mt-3 max-w-[62ch] font-body text-[0.9375rem] text-tk-ink-2 leading-relaxed">
+						<p className="mt-3 max-w-[62ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 							{en
 								? "We recommend TKAMS, because it removes the cause and not only the symptom. OnReceipt is the right entry door if a compliance deadline is pressing — and the right permanent choice if your only need is producing compliant documents."
 								: "Nous recommandons TKAMS, parce qu'il supprime la cause et pas seulement le symptôme. OnReceipt est la bonne porte d'entrée si une échéance de tutelle vous presse — et le bon choix définitif si votre seul besoin est de produire des documents conformes."}
@@ -171,7 +171,7 @@ export function TwoSolutions({ locale }: { locale: Locale }) {
 					</div>
 					<Link
 						href="/comparatif"
-						className="inline-flex w-fit items-center rounded-md border border-tk-primary px-5 py-3 font-body font-semibold text-[0.9rem] text-tk-primary-deep transition-colors hover:bg-tk-primary hover:text-tk-on-primary"
+						className="inline-flex w-fit items-center rounded-md border border-tk-primary px-5 py-3 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-deep transition-colors hover:bg-tk-primary hover:text-tk-on-primary"
 					>
 						{en
 							? "Compare the twelve differences"

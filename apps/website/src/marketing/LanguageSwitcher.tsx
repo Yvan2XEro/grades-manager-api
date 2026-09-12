@@ -136,7 +136,7 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
 				aria-label={`${current.label} — ${
 					locale === "en" ? "change language" : "changer de langue"
 				}`}
-				className="inline-flex cursor-pointer select-none items-center gap-1.5 rounded-md border border-tk-border-strong bg-transparent py-1.5 pr-2 pl-2 font-body font-semibold text-[0.8rem] text-tk-ink-soft transition-colors duration-150 hover:border-tk-primary hover:bg-tk-primary-soft hover:text-tk-primary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-tk-ink focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60"
+				className="inline-flex cursor-pointer select-none items-center gap-1.5 rounded-md border border-tk-border-strong bg-transparent py-1.5 pr-2 pl-2 font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-ink-soft transition-colors duration-150 hover:border-tk-primary hover:bg-tk-primary-soft hover:text-tk-primary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-tk-ink focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60"
 			>
 				<current.Flag size={18} />
 				<span className="font-code tracking-wide">
@@ -170,7 +170,7 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
 								onClick={() => select(l.code)}
 								onKeyDown={(e) => onOptionKeyDown(e, i)}
 								onMouseEnter={() => setActiveIndex(i)}
-								className={`focus-visible:-outline-offset-2 flex w-full cursor-pointer items-center gap-2.5 border-none px-3 py-2.5 text-left font-body text-[0.875rem] transition-colors duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-tk-ink ${
+								className={`focus-visible:-outline-offset-2 flex w-full cursor-pointer items-center gap-2.5 border-none px-3 py-2.5 text-left font-body text-[length:var(--tk-text-body)] transition-colors duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-tk-ink ${
 									isCurrent
 										? "bg-tk-primary-soft font-semibold text-tk-primary-deep"
 										: "bg-transparent text-tk-ink-2 hover:bg-tk-bg-deep hover:text-tk-ink"
@@ -178,7 +178,7 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
 							>
 								<l.Flag size={20} />
 								<span className="flex-1">{l.label}</span>
-								<span className="font-code text-[0.7rem] text-tk-muted tracking-wide">
+								<span className="font-code text-[length:var(--tk-text-xs)] text-tk-muted tracking-wide">
 									{l.code.toUpperCase()}
 								</span>
 								{isCurrent ? <CheckIcon /> : null}

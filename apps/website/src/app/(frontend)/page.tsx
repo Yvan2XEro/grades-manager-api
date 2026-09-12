@@ -56,7 +56,7 @@ export default async function HomePage() {
 			 * demos through four sections of type and flat colour.
 			 */}
 			<PhotoBand
-				src="/images/web/amphitheatre.webp"
+				src="/images/web/amphitheatre-band.webp"
 				alt={
 					locale === "en"
 						? "A student studying in a lecture hall"
@@ -79,7 +79,7 @@ export default async function HomePage() {
 			 * promise, which is the page's most demanding passage of reading.
 			 */}
 			<PhotoBand
-				src="/images/web/diplomation.webp"
+				src="/images/web/diplomation-band.webp"
 				alt={
 					locale === "en"
 						? "Graduates celebrating at a degree ceremony"
@@ -94,6 +94,28 @@ export default async function HomePage() {
 			/>
 
 			<Transparency locale={locale} />
+
+			{/*
+			 * Third interlude — after the exclusions, before the practical chapters.
+			 * The page has just spent a long dark section saying what it will not
+			 * do; this is the beat that returns it to the people it is for.
+			 */}
+			<PhotoBand
+				src="/images/web/campus-groupe-band.webp"
+				alt={
+					locale === "en"
+						? "Students working together in a university yard"
+						: "Des étudiants travaillant ensemble dans une cour d'université"
+				}
+				caption={
+					locale === "en"
+						? "Built with the institutions that use it, on their own rules."
+						: "Construit avec les établissements qui l'utilisent, sur leurs propres règles."
+				}
+				attribution={
+					locale === "en" ? "Douala · Cameroon" : "Douala · Cameroun"
+				}
+			/>
 
 			<Deployment dict={dict} />
 			<Trust dict={dict} locale={locale} />
@@ -113,6 +135,6 @@ export const metadata: Metadata = {
 			"La plateforme SIS LMD-first pour les universités et IPES d'Afrique francophone. Délibérations en heures, non en semaines.",
 		type: "website",
 		siteName: "TKAMS",
-		images: [{ url: "/logo-tkams.png" }],
+		images: [{ url: "/og-tkams.png", width: 1200, height: 630 }],
 	},
 };

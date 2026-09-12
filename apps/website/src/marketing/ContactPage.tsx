@@ -2,6 +2,7 @@ import type { Form as FormType } from "@payloadcms/plugin-form-builder/types";
 import Link from "next/link";
 import type { Dict, Locale } from "@/i18n";
 import { ContactFormDynamic } from "./ContactFormDynamic";
+import { WHATSAPP_DISPLAY, WHATSAPP_NUMBER } from "./FloatingActions";
 import { StaticContactForm } from "./StaticContactForm";
 
 interface ContactPageProps {
@@ -118,55 +119,76 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 	const en = locale === "en";
 
 	return (
-		<main className="bg-tk-bg pt-[68px]">
-			{/* Masthead + form, side by side — the form is the point of the page */}
-			<section className="border-tk-border border-b">
-				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
+		<main className="tk-dotgrid bg-tk-bg pt-[var(--tk-header-h)]">
+			{/*
+			 * Masthead + form, side by side — the form is the point of the page, so
+			 * this one keeps its two columns instead of taking the `PageHero` band:
+			 * pushing the form below a photograph would bury the thing a visitor
+			 * came here to use.
+			 *
+			 * It does take the rest of the language — the washes, the dot grid, the
+			 * display scale — so it belongs to the same site.
+			 */}
+			<section className="relative overflow-hidden">
+				<div
+					aria-hidden="true"
+					className="tk-wash tk-wash--primary -top-32 -left-24 h-[420px] w-[420px]"
+				/>
+				<div
+					aria-hidden="true"
+					className="tk-wash tk-wash--accent -right-28 top-4 h-[360px] w-[360px]"
+				/>
+				{/* `relative` lifts the content above the absolutely-placed washes. */}
+				<div className="relative mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 					<div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12">
 						<div className="lg:col-span-5">
-							<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+							<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 								Contact
 							</p>
-							<h1 className="mt-4 max-w-[16ch] font-display font-extrabold text-[clamp(2rem,1.3rem+2.6vw,3.25rem)] text-tk-title leading-[1.04] tracking-[-0.035em]">
+							<h1 className="tk-display tk-gradient-text mt-4 max-w-[16ch]">
 								{d.contact.title}
 							</h1>
-							<p className="mt-5 max-w-[46ch] font-body text-[1.05rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-5 max-w-[46ch] font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-relaxed">
 								{d.contact.sub}
 							</p>
 
 							{/* Direct coordinates — for the visitor who will not fill a form */}
 							<dl className="m-0 mt-10">
 								<div className="border-tk-border border-t py-4">
-									<dt className="font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.14em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.14em]">
 										{d.contact.info.email_label}
 									</dt>
 									<dd className="m-0 mt-1.5">
 										<a
 											href="mailto:contact@tkams.com"
-											className="font-body font-semibold text-[0.9375rem] text-tk-primary-deep no-underline underline-offset-4 hover:underline"
+											className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-deep no-underline underline-offset-4 hover:underline"
 										>
 											contact@tkams.com
 										</a>
 									</dd>
 								</div>
 								<div className="border-tk-border border-t py-4">
-									<dt className="font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.14em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.14em]">
 										{en ? "Phone & WhatsApp" : "Téléphone & WhatsApp"}
 									</dt>
 									<dd className="m-0 mt-1.5">
+										{/*
+										 * Same line the floating WhatsApp button dials — read from
+										 * one constant so the two cannot drift apart.
+										 */}
 										<a
-											href="tel:+237652761931"
-											className="font-body font-semibold text-[0.9375rem] text-tk-ink no-underline"
+											href={`tel:+${WHATSAPP_NUMBER}`}
+											className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink no-underline"
 										>
-											+237 652 761 931
+											{WHATSAPP_DISPLAY}
 										</a>
 									</dd>
 								</div>
 								<div className="border-tk-border border-t border-b py-4">
-									<dt className="font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.14em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.14em]">
 										{d.contact.info.location_label}
 									</dt>
-									<dd className="m-0 mt-1.5 font-body text-[0.9375rem] text-tk-ink">
+									<dd className="m-0 mt-1.5 font-body text-[length:var(--tk-text-body)] text-tk-ink">
 										{d.contact.info.location}
 									</dd>
 								</div>
@@ -186,7 +208,7 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 							) : (
 								<StaticContactForm dict={d} />
 							)}
-							<p className="mt-4 max-w-[52ch] font-body text-[0.8125rem] text-tk-muted leading-[1.6]">
+							<p className="mt-4 max-w-[52ch] font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-[1.6]">
 								{en
 									? "Your details are used to answer you and for nothing else. They are never resold, and you can ask for them to be deleted at any time."
 									: "Vos coordonnées servent à vous répondre, à rien d'autre. Elles ne sont jamais revendues, et vous pouvez en demander la suppression à tout moment."}
@@ -197,12 +219,12 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 			</section>
 
 			{/* Routes — the right desk, first time */}
-			<section className="border-tk-border border-b bg-tk-bg-deep">
+			<section className="bg-tk-bg-deep">
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<h2 className="max-w-[22ch] font-display font-extrabold text-[clamp(1.5rem,1.1rem+1.5vw,2.1rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+					<h2 className="tk-headline tk-gradient-text max-w-[22ch]">
 						{en ? "Who you will reach." : "Qui va vous répondre."}
 					</h2>
-					<p className="mt-4 max-w-[54ch] font-body text-[0.95rem] text-tk-ink-2 leading-[1.7]">
+					<p className="mt-4 max-w-[54ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.7]">
 						{en
 							? "Four reasons to write, so a support request does not queue behind a sales enquiry."
 							: "Quatre raisons d'écrire, pour qu'une demande de support ne fasse pas la queue derrière une question commerciale."}
@@ -216,15 +238,15 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 									key={r.key}
 									className="flex flex-col rounded-xl border border-tk-border bg-tk-surface p-6"
 								>
-									<h3 className="font-bold font-display text-[1rem] text-tk-ink leading-snug tracking-[-0.02em]">
+									<h3 className="font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink leading-snug tracking-[-0.02em]">
 										{c.title}
 									</h3>
-									<p className="mt-3 flex-1 font-body text-[0.875rem] text-tk-ink-2 leading-[1.65]">
+									<p className="mt-3 flex-1 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.65]">
 										{c.desc}
 									</p>
 									<a
 										href={`mailto:${r.mail}`}
-										className="mt-4 break-all font-code text-[0.75rem] text-tk-primary-deep no-underline underline-offset-4 hover:underline"
+										className="mt-4 break-all font-code text-[length:var(--tk-text-xs)] text-tk-primary-deep no-underline underline-offset-4 hover:underline"
 									>
 										{r.mail}
 									</a>
@@ -236,17 +258,17 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 			</section>
 
 			{/* What happens next */}
-			<section className="border-tk-border border-b bg-tk-bg">
+			<section>
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 					<div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12">
 						<div className="lg:col-span-4">
 							<div className="lg:sticky lg:top-28">
-								<h2 className="max-w-[16ch] font-display font-extrabold text-[clamp(1.5rem,1.1rem+1.5vw,2.1rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+								<h2 className="tk-headline tk-gradient-text max-w-[16ch]">
 									{en
 										? "What happens after you press send."
 										: "Ce qui se passe après l'envoi."}
 								</h2>
-								<p className="mt-4 max-w-[38ch] font-body text-[0.95rem] text-tk-ink-2 leading-[1.7]">
+								<p className="mt-4 max-w-[38ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.7]">
 									{en
 										? "The same three steps we commit to in writing in every proposal."
 										: "Les trois mêmes étapes que nous engageons par écrit dans chaque proposition."}
@@ -260,12 +282,12 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 								 * its keep instead of being padded out.
 								 */}
 								<div className="mt-8 border-tk-primary border-l-2 pl-5">
-									<p className="font-bold font-display text-[0.9375rem] text-tk-ink tracking-[-0.02em]">
+									<p className="font-bold font-display text-[length:var(--tk-text-body)] text-tk-ink tracking-[-0.02em]">
 										{en
 											? "Nothing here commits you."
 											: "Rien de tout cela ne vous engage."}
 									</p>
-									<p className="mt-2 max-w-[36ch] font-body text-[0.875rem] text-tk-ink-2 leading-[1.65]">
+									<p className="mt-2 max-w-[36ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.65]">
 										{en
 											? "The demonstration is free and unlimited. The quote is written before any work starts. No amount that is not on the pricing page can ever be invoiced to you without a signed amendment."
 											: "La démonstration est gratuite et illimitée. Le devis est écrit avant tout travail. Aucun montant absent de la page tarifs ne pourra vous être facturé sans avenant signé."}
@@ -281,14 +303,14 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 										key={s.when.en}
 										className="flex items-start gap-5 border-tk-border border-t py-5 last:border-b"
 									>
-										<span className="w-6 shrink-0 pt-0.5 font-code text-[0.7rem] text-tk-muted tabular-nums">
+										<span className="w-6 shrink-0 pt-0.5 font-code text-[length:var(--tk-text-xs)] text-tk-muted tabular-nums">
 											{String(i + 1).padStart(2, "0")}
 										</span>
 										<div className="min-w-0">
-											<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.14em]">
+											<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.14em]">
 												{en ? s.when.en : s.when.fr}
 											</p>
-											<p className="mt-2 max-w-[58ch] font-body text-[0.9375rem] text-tk-ink-2 leading-[1.65]">
+											<p className="mt-2 max-w-[58ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.65]">
 												{en ? s.what.en : s.what.fr}
 											</p>
 										</div>
@@ -296,7 +318,7 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 								))}
 							</ol>
 
-							<p className="mt-8 font-body text-[0.9375rem] text-tk-ink-2">
+							<p className="mt-8 font-body text-[length:var(--tk-text-body)] text-tk-ink-2">
 								{en
 									? "Every amount and every commitment above is published: "
 									: "Chaque montant et chaque engagement ci-dessus est publié : "}
@@ -329,18 +351,18 @@ export function ContactPage({ dict: d, locale, form }: ContactPageProps) {
 				<div className="relative mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
 					<div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-12">
 						<div className="lg:col-span-5">
-							<p className="font-code text-[0.7rem] text-tk-on-dark-muted uppercase tracking-[0.16em]">
+							<p className="font-code text-[length:var(--tk-text-xs)] text-tk-on-dark-muted uppercase tracking-[0.16em]">
 								{en ? "Pioneer programme" : "Programme pionniers"}
 							</p>
-							<h2 className="mt-4 max-w-[18ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] leading-[1.08] tracking-[-0.03em]">
+							<h2 className="tk-headline mt-4 max-w-[18ch]">
 								{d.contact.info.charter_title}
 							</h2>
 						</div>
 						<div className="lg:col-span-7">
-							<p className="max-w-[60ch] font-body text-[1rem] text-tk-on-dark-soft leading-[1.75]">
+							<p className="max-w-[60ch] font-body text-[length:var(--tk-text-lead)] text-tk-on-dark-soft leading-[1.75]">
 								{d.contact.info.charter_desc}
 							</p>
-							<p className="mt-5 max-w-[60ch] font-body text-[0.9375rem] text-tk-on-dark-muted leading-[1.7]">
+							<p className="mt-5 max-w-[60ch] font-body text-[length:var(--tk-text-body)] text-tk-on-dark-muted leading-[1.7]">
 								{en
 									? "A 10% discount on every amount in the proposal, held for the whole of the first commitment. Written into the quote, not promised out loud."
 									: "Une remise de 10 % sur l'ensemble des montants de la proposition, acquise pour toute la durée du premier engagement. Écrite dans le devis, pas promise à l'oral."}

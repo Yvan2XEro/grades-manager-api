@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getDict, getLocale } from "@/i18n";
+import { PageHero } from "@/marketing/PageHero";
 import {
 	EDITIONS,
 	SEC_DOMAINS,
 	SEC_NOT_INCLUDED,
 } from "@/marketing/secondaire-2026";
 import { Cta } from "@/marketing/sections/Cta";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 
 /**
  * TKAMS Secondaire — the second edition of the platform.
@@ -41,49 +43,51 @@ export default async function SecondairePage() {
 	const _total = SEC_DOMAINS.reduce((n, d) => n + d.features.length, 0);
 
 	return (
-		<main className="bg-tk-bg pt-[68px]">
-			{/* Masthead */}
-			<section className="border-tk-border border-b">
-				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<div className="flex flex-wrap items-center gap-3">
-						<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
-							{en ? "TKAMS · Secondary edition" : "TKAMS · Édition Secondaire"}
-						</p>
-						<span className="rounded-full border border-tk-accent-deep/30 bg-tk-accent-soft px-2.5 py-1 font-code font-medium text-[0.65rem] text-tk-accent-deep uppercase tracking-[0.12em]">
+		<main className="tk-dotgrid bg-tk-bg pt-[var(--tk-header-h)]">
+			<PageHero
+				eyebrow={
+					<>
+						{en ? "TKAMS · Secondary edition" : "TKAMS · Édition Secondaire"}
+						<span className="rounded-full border border-tk-accent-deep/30 bg-tk-accent-soft px-2.5 py-1 font-code font-medium text-[length:var(--tk-text-xs)] text-tk-accent-deep uppercase tracking-[0.12em]">
 							{en ? "New" : "Nouveau"}
 						</span>
-					</div>
-
-					<h1 className="mt-4 max-w-[20ch] font-display font-extrabold text-[clamp(2rem,1.3rem+2.6vw,3.25rem)] text-tk-title leading-[1.04] tracking-[-0.035em]">
-						{en
-							? "The Cameroonian secondary school, as it actually runs."
-							: "Le lycée camerounais, tel qu'il fonctionne vraiment."}
-					</h1>
-					<p className="mt-5 max-w-[58ch] font-body text-[1.05rem] text-tk-ink-2 leading-relaxed">
-						{en
-							? "Terms, sequences, marks out of 20, coefficients by track, class councils, BEPC and Baccalauréat. Not a university system bent into shape — a second edition built on the secondary model from the database up."
-							: "Trimestres, séquences, notes sur 20, coefficients par filière, conseils de classe, BEPC et Baccalauréat. Pas un logiciel du supérieur qu'on plie — une seconde édition bâtie sur le modèle du secondaire, depuis la base de données."}
-					</p>
-
-					<nav
-						aria-label={en ? "Sections" : "Sections"}
-						className="mt-8 flex flex-wrap gap-2"
-					>
-						{SEC_DOMAINS.map((d) => (
-							<a
-								key={d.key}
-								href={`#${d.key}`}
-								className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[0.8rem] text-tk-ink-2 no-underline transition-colors hover:border-tk-primary hover:text-tk-primary-deep"
-							>
-								{en ? d.en.name : d.fr.name}
-							</a>
-						))}
-					</nav>
-				</div>
-			</section>
+					</>
+				}
+				image="/images/web/campus-groupe-2-band.webp"
+				imageAlt={
+					en
+						? "Secondary school students on their campus"
+						: "Des élèves du secondaire sur leur campus"
+				}
+				title={
+					en
+						? "The Cameroonian secondary school, as it actually runs."
+						: "Le lycée camerounais, tel qu'il fonctionne vraiment."
+				}
+				lede={
+					en
+						? "Terms, sequences, marks out of 20, coefficients by track, class councils, BEPC and Baccalauréat. Not a university system bent into shape — a second edition built on the secondary model from the database up."
+						: "Trimestres, séquences, notes sur 20, coefficients par filière, conseils de classe, BEPC et Baccalauréat. Pas un logiciel du supérieur qu'on plie — une seconde édition bâtie sur le modèle du secondaire, depuis la base de données."
+				}
+			>
+				<nav
+					aria-label={en ? "Sections" : "Sections"}
+					className="mt-8 flex flex-wrap gap-2"
+				>
+					{SEC_DOMAINS.map((d) => (
+						<a
+							key={d.key}
+							href={`#${d.key}`}
+							className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[length:var(--tk-text-sm)] text-tk-ink-2 no-underline transition-colors hover:border-tk-primary hover:text-tk-primary-deep"
+						>
+							{en ? d.en.name : d.fr.name}
+						</a>
+					))}
+				</nav>
+			</PageHero>
 
 			{/* Two editions, one family */}
-			<section className="border-tk-border border-b bg-tk-bg-deep">
+			<section className="bg-tk-bg-deep">
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 					<div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12">
 						<div className="lg:col-span-4">
@@ -92,7 +96,7 @@ export default async function SecondairePage() {
 									? "One family, two editions."
 									: "Une famille, deux éditions."}
 							</h2>
-							<p className="mt-4 max-w-[38ch] font-body text-[0.95rem] text-tk-ink-2 leading-[1.7]">
+							<p className="mt-4 max-w-[38ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.7]">
 								{en
 									? "The two share their foundations and nothing above them. A secondary school does not compute credits, and a university does not hold class councils — so they are two products, not one with a switch."
 									: "Les deux partagent leurs fondations et rien au-dessus. Un lycée ne calcule pas de crédits, une université ne tient pas de conseils de classe — ce sont donc deux produits, pas un seul avec une option."}
@@ -104,13 +108,13 @@ export default async function SecondairePage() {
 								<table className="w-full min-w-[36rem] border-collapse text-left">
 									<thead>
 										<tr className="border-tk-border-strong border-b">
-											<th className="py-3 pr-4 font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.14em]">
+											<th className="py-3 pr-4 font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.14em]">
 												{en ? "Criterion" : "Critère"}
 											</th>
-											<th className="py-3 pr-4 font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.14em]">
+											<th className="py-3 pr-4 font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.14em]">
 												{en ? "Secondary" : "Secondaire"}
 											</th>
-											<th className="py-3 font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.14em]">
+											<th className="py-3 font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.14em]">
 												{en ? "Higher education" : "Supérieur"}
 											</th>
 										</tr>
@@ -123,13 +127,13 @@ export default async function SecondairePage() {
 													key={c.criterion}
 													className="border-tk-border border-b"
 												>
-													<td className="py-3.5 pr-4 align-top font-body font-medium text-[0.875rem] text-tk-ink">
+													<td className="py-3.5 pr-4 align-top font-body font-medium text-[length:var(--tk-text-body)] text-tk-ink">
 														{c.criterion}
 													</td>
-													<td className="py-3.5 pr-4 align-top font-body text-[0.875rem] text-tk-ink-2 leading-[1.6]">
+													<td className="py-3.5 pr-4 align-top font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.6]">
 														{c.sec}
 													</td>
-													<td className="py-3.5 align-top font-body text-[0.875rem] text-tk-muted leading-[1.6]">
+													<td className="py-3.5 align-top font-body text-[length:var(--tk-text-body)] text-tk-muted leading-[1.6]">
 														{c.sup}
 													</td>
 												</tr>
@@ -139,7 +143,7 @@ export default async function SecondairePage() {
 								</table>
 							</div>
 
-							<p className="mt-6 font-body text-[0.9375rem] text-tk-ink-2">
+							<p className="mt-6 font-body text-[length:var(--tk-text-body)] text-tk-ink-2">
 								{en
 									? "Running a university or an IPES? "
 									: "Vous dirigez une université ou un IPES ? "}
@@ -167,7 +171,7 @@ export default async function SecondairePage() {
 					<section
 						key={domain.key}
 						id={domain.key}
-						className={`scroll-mt-[84px] border-tk-border border-b ${
+						className={`scroll-mt-[calc(var(--tk-header-h)+1rem)] border-tk-border border-b ${
 							shaded ? "bg-tk-bg-deep" : "bg-tk-bg"
 						}`}
 					>
@@ -175,13 +179,13 @@ export default async function SecondairePage() {
 							<div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12">
 								<div className="lg:col-span-4">
 									<div className="lg:sticky lg:top-28">
-										<span className="font-code text-[0.7rem] text-tk-muted tabular-nums">
+										<span className="font-code text-[length:var(--tk-text-xs)] text-tk-muted tabular-nums">
 											{String(i + 1).padStart(2, "0")}
 										</span>
 										<h2 className="mt-3 max-w-[16ch] font-display font-extrabold text-[clamp(1.5rem,1.1rem+1.5vw,2.1rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
 											{copy.name}
 										</h2>
-										<p className="mt-4 max-w-[38ch] font-body text-[0.95rem] text-tk-ink-2 leading-[1.7]">
+										<p className="mt-4 max-w-[38ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.7]">
 											{copy.lede}
 										</p>
 									</div>
@@ -199,11 +203,11 @@ export default async function SecondairePage() {
 													className="mt-[0.55rem] h-1.5 w-1.5 flex-none rounded-full bg-tk-primary"
 												/>
 												<div className="min-w-0">
-													<p className="font-body text-[0.9375rem] text-tk-ink leading-[1.6]">
+													<p className="font-body text-[length:var(--tk-text-body)] text-tk-ink leading-[1.6]">
 														{en ? f.en : f.fr}
 													</p>
 													{f.note && (
-														<p className="mt-1.5 max-w-[62ch] font-body text-[0.8125rem] text-tk-muted leading-[1.6]">
+														<p className="mt-1.5 max-w-[62ch] font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-[1.6]">
 															{en ? f.note.en : f.note.fr}
 														</p>
 													)}
@@ -224,18 +228,18 @@ export default async function SecondairePage() {
 					aria-hidden="true"
 					className="tk-field-weave--on-dark pointer-events-none absolute inset-0 opacity-60"
 				/>
-				<div className="relative mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
+				<div className="tk-section relative mx-auto max-w-[86rem] px-6 lg:px-10">
 					<div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-12">
 						<div className="lg:col-span-5">
-							<p className="font-code text-[0.7rem] text-tk-on-dark-muted uppercase tracking-[0.16em]">
+							<p className="font-code text-[length:var(--tk-text-xs)] text-tk-on-dark-muted uppercase tracking-[0.16em]">
 								{en ? "Read this before signing" : "À lire avant de signer"}
 							</p>
-							<h2 className="mt-4 max-w-[18ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] leading-[1.08] tracking-[-0.03em]">
+							<h2 className="tk-headline mt-4 max-w-[18ch]">
 								{en
 									? "What this edition does not do yet."
 									: "Ce que cette édition ne fait pas encore."}
 							</h2>
-							<p className="mt-4 max-w-[42ch] font-body text-[0.95rem] text-tk-on-dark-soft leading-[1.7]">
+							<p className="mt-4 max-w-[42ch] font-body text-[length:var(--tk-text-body)] text-tk-on-dark-soft leading-[1.7]">
 								{en
 									? "The Secondary edition is younger than the platform it belongs to. Its core — setup, marks, report cards, councils, state exams — is complete and tested. Its peripheries are deliberately thin, and here they are."
 									: "L'édition Secondaire est plus jeune que la plateforme dont elle fait partie. Son cœur — mise en route, notes, bulletins, conseils, examens d'État — est complet et testé. Ses périphéries sont volontairement minces, et les voici."}
@@ -254,7 +258,7 @@ export default async function SecondairePage() {
 												aria-hidden="true"
 												className="mt-[0.5rem] h-px w-3.5 flex-none bg-tk-on-dark-muted"
 											/>
-											<p className="max-w-[58ch] font-body text-[0.9375rem] text-tk-on-dark-soft leading-[1.65]">
+											<p className="max-w-[58ch] font-body text-[length:var(--tk-text-body)] text-tk-on-dark-soft leading-[1.65]">
 												{line}
 											</p>
 										</li>
@@ -262,7 +266,7 @@ export default async function SecondairePage() {
 								)}
 							</ul>
 
-							<p className="mt-8 max-w-[58ch] font-body text-[0.9375rem] text-tk-on-dark-soft">
+							<p className="mt-8 max-w-[58ch] font-body text-[length:var(--tk-text-body)] text-tk-on-dark-soft">
 								{en
 									? "Several of these are on the roadmap. If one of them decides your choice, say so when you write — a pilot school's needs steer what gets built next."
 									: "Plusieurs sont à la feuille de route. Si l'une d'elles conditionne votre décision, dites-le en nous écrivant — les besoins d'un établissement pilote orientent ce qui sera construit ensuite."}
@@ -273,7 +277,7 @@ export default async function SecondairePage() {
 			</section>
 
 			{/* Pricing — stated as not yet published */}
-			<section className="border-tk-border border-b bg-tk-bg">
+			<section className="bg-tk-bg">
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 					<div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-12">
 						<div className="lg:col-span-5">
@@ -282,12 +286,12 @@ export default async function SecondairePage() {
 							</h2>
 						</div>
 						<div className="lg:col-span-7">
-							<p className="max-w-[60ch] font-body text-[1rem] text-tk-ink-2 leading-[1.75]">
+							<p className="max-w-[60ch] font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-[1.75]">
 								{en
 									? "There is no published scale for the Secondary edition yet. The higher-education edition publishes every franc on its pricing page, and we are not going to invent a secondary scale to fill the gap — you would be the one paying for the guess."
 									: "Il n'existe pas encore de barème publié pour l'édition Secondaire. L'édition Supérieur publie chaque franc sur sa page tarifs, et nous n'allons pas inventer un barème secondaire pour combler le vide — c'est vous qui paieriez l'approximation."}
 							</p>
-							<p className="mt-4 max-w-[60ch] font-body text-[1rem] text-tk-ink-2 leading-[1.75]">
+							<p className="mt-4 max-w-[60ch] font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-[1.75]">
 								{en
 									? "Tell us your enrolment and your tracks: you get a named quote, and the same written commitment that binds every other proposal — no amount that is not in the quote can be invoiced without a signed amendment."
 									: "Communiquez votre effectif et vos filières : vous recevez un devis nominatif, et le même engagement écrit que toute autre proposition — aucun montant absent du devis ne pourra être facturé sans avenant signé."}
@@ -321,5 +325,16 @@ export async function generateMetadata(): Promise<Metadata> {
 		description: en
 			? "Terms, sequences, marks out of 20, coefficients by track, PDF report cards, class councils, BEPC and Baccalauréat. The secondary edition of the TKAMS platform."
 			: "Trimestres, séquences, notes sur 20, coefficients par filière, bulletins PDF, conseils de classe, BEPC et Baccalauréat. L'édition Secondaire de la plateforme TKAMS.",
+		// Mirrors this page's own title and description. Without it every
+		// page inherited the site-wide default, so sharing /tarifs showed
+		// the home page's text and image.
+		openGraph: mergeOpenGraph({
+			title: en
+				? "TKAMS Secondary — school management for lycées and collèges"
+				: "TKAMS Secondaire — gestion scolaire pour lycées et collèges",
+			description: en
+				? "Terms, sequences, marks out of 20, coefficients by track, PDF report cards, class councils, BEPC and Baccalauréat. The secondary edition of the TKAMS platform."
+				: "Trimestres, séquences, notes sur 20, coefficients par filière, bulletins PDF, conseils de classe, BEPC et Baccalauréat. L'édition Secondaire de la plateforme TKAMS.",
+		}),
 	};
 }

@@ -7,7 +7,9 @@ const defaultOpenGraph: Metadata["openGraph"] = {
 		"La plateforme SIS LMD-first pour les universités et IPES d'Afrique francophone. Délibérations en heures, non en semaines.",
 	images: [
 		{
-			url: `${getServerSideURL()}/logo-tkams.png`,
+			url: `${getServerSideURL()}/og-tkams.png`,
+			width: 1200,
+			height: 630,
 		},
 	],
 	siteName: "TKAMS",

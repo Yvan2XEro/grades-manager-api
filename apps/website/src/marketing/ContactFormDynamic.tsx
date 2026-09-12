@@ -27,15 +27,15 @@ import { getClientSideURL } from "@/utilities/getURL";
  *     `red-500`, which is a different hue from everything else on the site.
  */
 const inputBase =
-	"w-full box-border rounded-lg border px-4 py-3 font-body text-[0.9375rem] text-tk-ink outline-none transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-tk-muted focus:bg-tk-surface focus:ring-[3px]";
+	"w-full box-border rounded-lg border px-4 py-3 font-body text-[length:var(--tk-text-body)] text-tk-ink outline-none transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-tk-muted focus:bg-tk-surface focus:ring-[3px]";
 const inputRest =
 	"border-tk-border bg-tk-bg-deep focus:border-tk-primary focus:ring-tk-primary/18";
 const inputError =
 	"border-tk-block bg-tk-block-wash focus:border-tk-block focus:ring-tk-block/18";
 const labelClass =
-	"mb-1.5 flex items-baseline gap-2 font-body font-medium text-[0.875rem] text-tk-ink";
+	"mb-1.5 flex items-baseline gap-2 font-body font-medium text-[length:var(--tk-text-body)] text-tk-ink";
 const errorClass =
-	"mt-1.5 flex items-center gap-1.5 font-body text-[0.8125rem] text-tk-block";
+	"mt-1.5 flex items-center gap-1.5 font-body text-[length:var(--tk-text-sm)] text-tk-block";
 
 type FormField = NonNullable<FormType["fields"]>[number];
 
@@ -295,7 +295,7 @@ export function ContactFormDynamic({
 				<p className="mt-5 font-bold font-display text-[1.125rem] text-tk-ink tracking-[-0.02em]">
 					{d.contact.form.success_title}
 				</p>
-				<p className="mx-auto mt-2 max-w-[38ch] font-body text-[0.9375rem] text-tk-ink-2 leading-[1.65]">
+				<p className="mx-auto mt-2 max-w-[38ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.65]">
 					{d.contact.form.success}
 				</p>
 			</div>
@@ -316,10 +316,10 @@ export function ContactFormDynamic({
 			 * fields without adding another box.
 			 */}
 			<div className="-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 mb-1 border-tk-border border-b bg-tk-bg-deep px-6 py-4 lg:px-8">
-				<p className="font-bold font-display text-[0.9375rem] text-tk-ink tracking-[-0.02em]">
+				<p className="font-bold font-display text-[length:var(--tk-text-body)] text-tk-ink tracking-[-0.02em]">
 					{d.contact.form.card_title}
 				</p>
-				<p className="mt-1 font-body text-[0.8125rem] text-tk-muted">
+				<p className="mt-1 font-body text-[length:var(--tk-text-sm)] text-tk-muted">
 					{d.contact.form.card_sub}
 				</p>
 			</div>
@@ -327,7 +327,7 @@ export function ContactFormDynamic({
 			{serverError && (
 				<div
 					role="alert"
-					className="flex items-start gap-2.5 rounded-lg border border-tk-block/30 bg-tk-block-wash px-4 py-3 font-body text-[0.875rem] text-tk-block"
+					className="flex items-start gap-2.5 rounded-lg border border-tk-block/30 bg-tk-block-wash px-4 py-3 font-body text-[length:var(--tk-text-body)] text-tk-block"
 				>
 					<span className="mt-0.5">
 						<ErrorIcon />

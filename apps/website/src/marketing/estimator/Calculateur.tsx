@@ -45,7 +45,7 @@ export function Calculateur({ locale = "fr" }: { locale?: "fr" | "en" }) {
 				</label>
 
 				<div className="mt-4 flex items-baseline gap-2.5">
-					<span className="font-display font-extrabold text-[2.5rem] text-tk-ink tabular-nums leading-none tracking-[-0.04em]">
+					<span className="font-bold font-display text-[2rem] text-tk-ink tabular-nums leading-none tracking-[-0.03em]">
 						{fcfa.format(students)}
 					</span>
 					<span className="font-body text-[0.9rem] text-tk-muted">
@@ -81,7 +81,7 @@ export function Calculateur({ locale = "fr" }: { locale?: "fr" | "en" }) {
 					</p>
 					<p
 						aria-live="polite"
-						className="mt-2 font-display font-extrabold text-[clamp(1.8rem,1.2rem+2vw,2.5rem)] text-tk-on-primary tabular-nums leading-none tracking-[-0.04em]"
+						className="mt-2 font-bold font-display text-[clamp(1.6rem,1.1rem+1.6vw,2.1rem)] text-tk-on-primary tabular-nums leading-none tracking-[-0.03em]"
 					>
 						{fcfa.format(total)}{" "}
 						<span className="font-body font-medium text-[0.95rem] tracking-normal">

@@ -10,6 +10,7 @@ import {
 	ONRECEIPT_PERPETUAL,
 	ONRECEIPT_TERM,
 } from "@/marketing/pricing-2026";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 
 /**
  * QR Code OnReceipt — the second product.
@@ -263,9 +264,23 @@ export default async function Page() {
 		: [...NOT_INCLUDED_ONRECEIPT];
 
 	return (
-		<main className="bg-tk-bg pt-[68px]">
+		<main className="tk-dotgrid bg-tk-bg pt-[var(--tk-header-h)]">
 			{/* Hero */}
-			<section className="relative overflow-hidden border-tk-border border-b bg-tk-surface">
+			<section className="relative overflow-hidden">
+				{/*
+				 * The same two washes every other page carries, so OnReceipt reads as
+				 * part of the site rather than a separate product page. The accent
+				 * weave stays: this is the one page whose brand is warm rather than
+				 * violet, and it is what distinguishes the two products at a glance.
+				 */}
+				<div
+					aria-hidden="true"
+					className="tk-wash tk-wash--accent -top-32 -right-24 h-[420px] w-[420px]"
+				/>
+				<div
+					aria-hidden="true"
+					className="tk-wash tk-wash--primary -left-28 top-8 h-[320px] w-[320px]"
+				/>
 				<div
 					aria-hidden="true"
 					className="tk-field-weave--accent pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_at_top_right,#000,transparent_68%)]"
@@ -282,17 +297,17 @@ export default async function Page() {
 									className="size-12 object-contain"
 									priority
 								/>
-								<span className="rounded-full border border-tk-border-strong px-3 py-1 font-body font-medium text-[0.72rem] text-tk-ink-2">
+								<span className="rounded-full border border-tk-border-strong px-3 py-1 font-body font-medium text-[length:var(--tk-text-xs)] text-tk-ink-2">
 									{en ? "Urgent answer" : "Réponse d'urgence"}
 								</span>
 							</div>
 
-							<h1 className="mt-6 max-w-[18ch] font-display font-extrabold text-[clamp(2rem,1.3rem+2.6vw,3.25rem)] text-tk-title leading-[1.04] tracking-[-0.035em]">
+							<h1 className="tk-display tk-gradient-text mt-6 max-w-[18ch]">
 								{en
 									? "Compliant documents, in batches, today."
 									: "Des documents conformes, en lot, dès aujourd'hui."}
 							</h1>
-							<p className="mt-5 max-w-[52ch] font-body text-[1.05rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-5 max-w-[52ch] font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-relaxed">
 								{en
 									? "Desktop software that generates transcripts and certificates compliant with state university standards from an Excel file. Works offline. Windows 10+, macOS 10.15+, Linux."
 									: "Un logiciel installé sur poste qui produit relevés et attestations conformes aux standards des universités d'État à partir d'un fichier Excel. Fonctionne hors ligne. Windows 10+, macOS 10.15+, Linux."}
@@ -300,26 +315,26 @@ export default async function Page() {
 
 							<dl className="mt-9 grid grid-cols-2 gap-6 border-tk-border border-t pt-6 sm:grid-cols-3">
 								<div>
-									<dt className="font-code text-[0.62rem] text-tk-muted uppercase tracking-[0.12em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.12em]">
 										{en ? "Go-live" : "Mise en service"}
 									</dt>
-									<dd className="mt-1 font-bold font-display text-[1.1rem] text-tk-ink">
+									<dd className="mt-1 font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink">
 										{en ? "Same day to 48 h" : "Le jour même à 48 h"}
 									</dd>
 								</div>
 								<div>
-									<dt className="font-code text-[0.62rem] text-tk-muted uppercase tracking-[0.12em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.12em]">
 										{en ? "Entry ticket" : "Ticket d'entrée"}
 									</dt>
-									<dd className="mt-1 font-bold font-display text-[1.1rem] text-tk-ink tabular-nums">
+									<dd className="mt-1 font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink tabular-nums">
 										{fcfa.format(130_000)} F
 									</dd>
 								</div>
 								<div>
-									<dt className="font-code text-[0.62rem] text-tk-muted uppercase tracking-[0.12em]">
+									<dt className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.12em]">
 										{en ? "Trial" : "Essai"}
 									</dt>
-									<dd className="mt-1 font-bold font-display text-[1.1rem] text-tk-eyebrow">
+									<dd className="mt-1 font-bold font-display text-[length:var(--tk-text-lead)] text-tk-eyebrow">
 										{en ? "Free, unlimited" : "Gratuit, illimité"}
 									</dd>
 								</div>
@@ -328,13 +343,13 @@ export default async function Page() {
 							<div className="mt-8 flex flex-wrap gap-3">
 								<Link
 									href="/contact"
-									className="rounded-md bg-tk-primary px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-on-primary transition-colors hover:bg-tk-primary-deep"
+									className="rounded-md bg-tk-primary px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-on-primary transition-colors hover:bg-tk-primary-deep"
 								>
 									{en ? "Request the demo version" : "Demander la version démo"}
 								</Link>
 								<Link
 									href="/comparatif"
-									className="rounded-md border border-tk-border-strong px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-ink transition-colors hover:bg-tk-bg-deep"
+									className="rounded-md border border-tk-border-strong px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink transition-colors hover:bg-tk-bg-deep"
 								>
 									{en ? "Compare with TKAMS" : "Comparer avec TKAMS"}
 								</Link>
@@ -361,25 +376,25 @@ export default async function Page() {
 			</section>
 
 			{/* Gallery */}
-			<section className="border-tk-border border-b bg-tk-bg-deep">
+			<section className="bg-tk-bg-deep">
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 					<div className="flex flex-wrap items-end justify-between gap-4">
 						<div className="max-w-[44rem]">
-							<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+							<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 								{en ? "Screen by screen" : "Écran par écran"}
 							</p>
-							<h2 className="mt-4 font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+							<h2 className="tk-headline tk-gradient-text mt-4">
 								{en
 									? "The real software, not a mockup."
 									: "Le logiciel réel, pas une maquette."}
 							</h2>
-							<p className="mt-4 font-body text-[0.95rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-4 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 								{en
 									? "Captures of version 2.0.1. These are the screens your registry office will use."
 									: "Captures de la version 2.0.1. Ce sont les écrans que votre service de scolarité utilisera."}
 							</p>
 						</div>
-						<span className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[0.78rem] text-tk-ink-2">
+						<span className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[length:var(--tk-text-sm)] text-tk-ink-2">
 							Windows · macOS · Linux
 						</span>
 					</div>
@@ -392,16 +407,16 @@ export default async function Page() {
 
 			{/* Features */}
 			<section className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-				<h2 className="max-w-[24ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+				<h2 className="tk-headline tk-gradient-text max-w-[24ch]">
 					{en ? "Everything the software does" : "Tout ce que fait le logiciel"}
 				</h2>
 				<div className="mt-9 grid gap-px overflow-hidden rounded-xl border border-tk-border bg-tk-border sm:grid-cols-2">
 					{features.map((f) => (
 						<div key={f.t} className="bg-tk-surface p-5 lg:p-6">
-							<h3 className="font-body font-semibold text-[0.95rem] text-tk-ink">
+							<h3 className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 								{f.t}
 							</h3>
-							<p className="mt-2 font-body text-[0.875rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-2 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 								{f.d}
 							</p>
 						</div>
@@ -412,13 +427,13 @@ export default async function Page() {
 			{/* Pricing */}
 			<section className="border-tk-border border-y bg-tk-bg-deep">
 				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<h2 className="max-w-[26ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+					<h2 className="tk-headline tk-gradient-text max-w-[26ch]">
 						{en
 							? "Same software. What changes: duration, seats, updates."
 							: "Le même logiciel. Ce qui change : la durée, les postes, les mises à jour."}
 					</h2>
 
-					<h3 className="mt-10 font-body font-semibold text-[0.9rem] text-tk-eyebrow">
+					<h3 className="mt-10 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-eyebrow">
 						{en ? "Fixed-term licences" : "Licences à durée limitée"}
 					</h3>
 					<div className="mt-3 overflow-x-auto rounded-xl border border-tk-border bg-tk-surface">
@@ -435,7 +450,7 @@ export default async function Page() {
 									].map((h) => (
 										<th
 											key={h}
-											className="px-4 py-3 text-left font-body font-semibold text-[0.75rem] text-tk-on-dark"
+											className="px-4 py-3 text-left font-body font-semibold text-[length:var(--tk-text-xs)] text-tk-on-dark"
 										>
 											{h}
 										</th>
@@ -450,27 +465,27 @@ export default async function Page() {
 									>
 										<th
 											scope="row"
-											className="px-4 py-3 text-left font-body font-semibold text-[0.85rem] text-tk-ink"
+											className="px-4 py-3 text-left font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-ink"
 										>
 											{p.name}
 										</th>
-										<td className="px-4 py-3 font-body font-semibold text-[0.85rem] text-tk-eyebrow tabular-nums">
+										<td className="px-4 py-3 font-body font-semibold text-[length:var(--tk-text-sm)] text-tk-eyebrow tabular-nums">
 											{p.price === 0
 												? en
 													? "Free"
 													: "Gratuit"
 												: fcfa.format(p.price)}
 										</td>
-										<td className="px-4 py-3 font-body text-[0.85rem] text-tk-ink-2">
+										<td className="px-4 py-3 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2">
 											{p.duration}
 										</td>
-										<td className="px-4 py-3 font-body text-[0.85rem] text-tk-ink-2 tabular-nums">
+										<td className="px-4 py-3 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2 tabular-nums">
 											{p.seats}
 										</td>
-										<td className="px-4 py-3 font-body text-[0.85rem] text-tk-ink-2">
+										<td className="px-4 py-3 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2">
 											{p.support}
 										</td>
-										<td className="px-4 py-3 font-body text-[0.8rem] text-tk-muted leading-relaxed">
+										<td className="px-4 py-3 font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-relaxed">
 											{p.limits}
 										</td>
 									</tr>
@@ -479,7 +494,7 @@ export default async function Page() {
 						</table>
 					</div>
 
-					<h3 className="mt-10 font-body font-semibold text-[0.9rem] text-tk-eyebrow">
+					<h3 className="mt-10 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-eyebrow">
 						{en
 							? "Perpetual licences — single payment"
 							: "Licences perpétuelles — paiement unique"}
@@ -498,39 +513,39 @@ export default async function Page() {
 									<h4 className="font-bold font-display text-[1.15rem] text-tk-ink tracking-[-0.02em]">
 										{p.name}
 									</h4>
-									<span className="rounded-full border border-tk-border-strong px-2.5 py-0.5 font-body font-medium text-[0.7rem] text-tk-ink-2">
+									<span className="rounded-full border border-tk-border-strong px-2.5 py-0.5 font-body font-medium text-[length:var(--tk-text-xs)] text-tk-ink-2">
 										{p.seats} {en ? "seats" : p.seats > 1 ? "postes" : "poste"}
 									</span>
 								</div>
 								<p className="mt-4 font-display font-extrabold text-[1.85rem] text-tk-ink tabular-nums leading-none tracking-[-0.03em]">
 									{fcfa.format(p.price)}{" "}
-									<span className="font-body font-medium text-[0.8rem] tracking-normal">
+									<span className="font-body font-medium text-[length:var(--tk-text-sm)] tracking-normal">
 										FCFA
 									</span>
 								</p>
-								<p className="mt-2 font-body text-[0.8rem] text-tk-eyebrow">
+								<p className="mt-2 font-body text-[length:var(--tk-text-sm)] text-tk-eyebrow">
 									{en ? "Updates and support" : "MAJ et support"} · {p.updates}
 								</p>
-								<p className="mt-4 border-tk-border border-t pt-4 font-body text-[0.85rem] text-tk-ink-2 leading-relaxed">
+								<p className="mt-4 border-tk-border border-t pt-4 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2 leading-relaxed">
 									{p.adds}
 								</p>
 							</div>
 						))}
 					</div>
 
-					<p className="mt-5 font-body text-[0.85rem] text-tk-muted leading-relaxed">
+					<p className="mt-5 font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-relaxed">
 						{en
 							? `Update extension: ${fcfa.format(ONRECEIPT_MAJ_EXTENSION)} FCFA per year, or 250 000 for three years at once. Optional, and can be taken out later — even after an interruption.`
 							: `Extension des mises à jour : ${fcfa.format(ONRECEIPT_MAJ_EXTENSION)} FCFA par an, ou 250 000 pour trois ans d'un coup. Facultative, souscrite quand vous le décidez — même après interruption.`}
 					</p>
 
 					<div className="mt-8 rounded-xl bg-tk-dark p-6 text-tk-on-dark lg:p-7">
-						<p className="font-body font-semibold text-[0.9rem] text-tk-primary-bright">
+						<p className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-primary-bright">
 							{en
 								? "The switch-over calculation, without dressing"
 								: "Le calcul du basculement, sans habillage"}
 						</p>
-						<p className="mt-3 max-w-[70ch] font-body text-[0.9rem] text-tk-on-dark-soft leading-relaxed">
+						<p className="mt-3 max-w-[70ch] font-body text-[length:var(--tk-text-body)] text-tk-on-dark-soft leading-relaxed">
 							{en
 								? "Standard renewed: 250 000 FCFA a year — 750 000 over three years, 1 000 000 over four. Perpetual Essentielle: 770 000 once. It becomes the cheaper purchase from the fourth year, not before. Over two or three years the Standard is better for you, and we say so."
 								: "Standard renouvelée : 250 000 FCFA par an, soit 750 000 sur trois ans, 1 000 000 sur quatre. Perpétuelle Essentielle : 770 000 une seule fois — l'achat le plus économique à partir de la quatrième année, pas avant. Sur deux ou trois ans, la Standard est meilleure pour vous, et nous vous le disons."}
@@ -543,19 +558,19 @@ export default async function Page() {
 			<section className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 				<div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
 					<div>
-						<h2 className="max-w-[22ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+						<h2 className="tk-headline tk-gradient-text max-w-[22ch]">
 							{en
 								? "What OnReceipt does not do"
 								: "Ce qu'OnReceipt ne fait pas"}
 						</h2>
-						<p className="mt-4 max-w-[48ch] font-body text-[0.95rem] text-tk-ink-2 leading-relaxed">
+						<p className="mt-4 max-w-[48ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 							{en
 								? "If any line below is part of your need, OnReceipt is the wrong purchase and TKAMS is the right one. Better said now than after signature."
 								: "Si l'une des lignes ci-dessous fait partie de votre besoin, OnReceipt est le mauvais achat et TKAMS le bon. Mieux vaut le dire maintenant qu'après signature."}
 						</p>
 						<Link
 							href="/produit"
-							className="mt-6 inline-block font-body font-semibold text-[0.9rem] text-tk-eyebrow underline-offset-4 hover:underline"
+							className="mt-6 inline-block font-body font-semibold text-[length:var(--tk-text-body)] text-tk-eyebrow underline-offset-4 hover:underline"
 						>
 							{en ? "See TKAMS instead →" : "Voir TKAMS à la place →"}
 						</Link>
@@ -571,7 +586,7 @@ export default async function Page() {
 									aria-hidden="true"
 									className="mt-2.5 h-px w-3 flex-none bg-tk-accent"
 								/>
-								<span className="font-body text-[0.9rem] text-tk-ink-2 leading-relaxed">
+								<span className="font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 									{item}
 								</span>
 							</li>
@@ -587,4 +602,9 @@ export const metadata: Metadata = {
 	title: "QR Code OnReceipt — relevés et attestations conformes",
 	description:
 		"Logiciel de bureau qui produit en lot des relevés de notes et attestations conformes aux standards des universités d'État, avec QR chiffré AES-128. Hors ligne, mise en service en 48 h.",
+	openGraph: mergeOpenGraph({
+		title: "QR Code OnReceipt — relevés et attestations conformes",
+		description:
+			"Logiciel de bureau qui produit en lot des relevés de notes et attestations conformes aux standards des universités d'État, avec QR chiffré AES-128. Hors ligne, mise en service en 48 h.",
+	}),
 };

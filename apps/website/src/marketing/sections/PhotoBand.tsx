@@ -8,11 +8,16 @@ import Image from "next/image";
  * flat: not a shortage of decoration, but a shortage of *places* — nothing after
  * the hero showed the institutions the product is for.
  *
- * These bands are punctuation, not content. They carry one sentence, they are
- * short (a third of a viewport, never half), and they do not compete with the
- * live demos, which remain the page's proof. Their job is to let the reader
- * breathe between two arguments and to keep real classrooms in view while the
- * page talks about deliberation rules.
+ * These bands are punctuation, not content. They carry one sentence and they do
+ * not compete with the live demos, which remain the page's proof. Their job is
+ * to let the reader breathe between two arguments and to keep real classrooms
+ * in view while the page talks about deliberation rules.
+ *
+ * Height was the first thing to get wrong: capped at 320px, a band is tall
+ * enough to interrupt the reading but too short to rest it, and it reads as a
+ * stray banner. `clamp(24rem, 34vw, 34rem)` gives it enough room to become a
+ * place — still well under half a viewport on a laptop, so it punctuates the
+ * page rather than taking it over.
  *
  * Constraints, in order:
  *   1. Every photograph is self-hosted. No third-party CDN on a site that sells
@@ -23,6 +28,21 @@ import Image from "next/image";
  *      reason to pay for it.
  *   3. `loading="lazy"` — these sit far below the fold and must not compete
  *      with the hero for bandwidth.
+ *
+ * On `object-[center_38%]` rather than `object-center`.
+ *
+ * Every band file is cut from a 3:2 source, so ~36 % of the original height is
+ * already gone before the browser sees it. Those crops are no longer chosen by
+ * entropy — entropy picks the busiest region, which on these photographs is
+ * clothing and masonry, and it repeatedly sliced faces in half or dropped the
+ * one element that identified the setting. Each is now cut around a measured
+ * subject position, placing the face at ~38 % of the band.
+ *
+ * `object-cover` then crops a second time whenever the container is taller than
+ * 21:9 — which is every viewport under roughly 1500px. Centring that second
+ * crop eats the frame symmetrically and takes the faces with it. Holding 38 %
+ * keeps the browser's crop aligned with the one already baked into the file.
+ * The two must agree; if the crop anchors change, this changes with them.
  */
 export function PhotoBand({
 	src,
@@ -42,7 +62,7 @@ export function PhotoBand({
 	priority?: boolean;
 }) {
 	return (
-		<section className="relative h-[220px] overflow-hidden sm:h-[260px] lg:h-[300px]">
+		<section className="relative h-[clamp(24rem,34vw,34rem)] w-full overflow-hidden">
 			<Image
 				src={src}
 				alt={alt}
@@ -50,20 +70,26 @@ export function PhotoBand({
 				sizes="100vw"
 				priority={priority}
 				loading={priority ? undefined : "lazy"}
-				className="object-cover object-center"
+				className="object-cover object-[center_38%]"
 			/>
 
 			{/*
 			 * Directional scrim: dense behind the words, clearing toward the far
 			 * edge so the photograph stays visible rather than being flattened to
 			 * a coloured rectangle.
+			 *
+			 * Lightened from 85/55/15 to 68/34/6, and the dense end now stops at
+			 * 42 % instead of running to the middle. At 85 % the left half of every
+			 * band was effectively a violet rectangle — the photograph was paid for,
+			 * shipped, and then hidden. The caption still clears AA at 68 % (see the
+			 * measured ratios in globals.css), so nothing is traded for this.
 			 */}
 			<div
 				aria-hidden="true"
 				className={`absolute inset-0 ${
 					align === "left"
-						? "bg-gradient-to-r from-tk-dark/85 via-tk-dark/55 to-tk-dark/15"
-						: "bg-gradient-to-l from-tk-dark/85 via-tk-dark/55 to-tk-dark/15"
+						? "bg-gradient-to-r from-0% from-tk-dark/68 via-42% via-tk-dark/34 to-tk-dark/6"
+						: "bg-gradient-to-l from-0% from-tk-dark/68 via-42% via-tk-dark/34 to-tk-dark/6"
 				}`}
 			/>
 
@@ -75,7 +101,16 @@ export function PhotoBand({
 						{caption}
 					</p>
 					{attribution ? (
-						<p className="mt-2.5 font-code text-[0.68rem] text-tk-on-dark-soft uppercase tracking-[0.14em]">
+						/*
+						 * Full-strength ink, not `on-dark-soft`.
+						 *
+						 * Measured over the lightened scrim against a blown highlight in
+						 * the photograph, the soft grey lands at 2.94:1 — below AA. The
+						 * caption survives at 5.12 because it is large; this line is
+						 * 10px, so it needs the brighter ink and leans on opacity for
+						 * the hierarchy instead of on a darker grey.
+						 */
+						<p className="mt-2.5 font-code text-[length:var(--tk-text-xs)] text-tk-on-dark/85 uppercase tracking-[0.14em]">
 							{attribution}
 						</p>
 					) : null}

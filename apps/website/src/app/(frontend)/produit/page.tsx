@@ -4,7 +4,10 @@ import { getDict, getLocale } from "@/i18n";
 import { DeliberationDemo } from "@/marketing/app-demo/DeliberationDemo";
 import { GradeEntryDemo } from "@/marketing/app-demo/GradeEntryDemo";
 import { BENEFITS, DEPLOYMENT_MODES, DOMAINS } from "@/marketing/domains-2026";
+import { PageHero } from "@/marketing/PageHero";
 import { Cta } from "@/marketing/sections/Cta";
+import { PhotoBand } from "@/marketing/sections/PhotoBand";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 
 /**
  * TKAMS product page.
@@ -23,40 +26,40 @@ export default async function ProduitPage() {
 	const en = locale === "en";
 
 	return (
-		<main className="bg-tk-bg pt-[68px]">
-			{/* Masthead */}
-			<section className="border-tk-border border-b">
-				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
-						{en ? "TKAMS · the platform" : "TKAMS · la plateforme"}
-					</p>
-					<h1 className="mt-4 max-w-[22ch] font-display font-extrabold text-[clamp(2rem,1.3rem+2.6vw,3.25rem)] text-tk-title leading-[1.04] tracking-[-0.035em]">
-						{en
-							? "The whole academic year, from application to diploma."
-							: "Toute l'année académique, de la candidature au diplôme."}
-					</h1>
-					<p className="mt-5 max-w-[58ch] font-body text-[1.05rem] text-tk-ink-2 leading-relaxed">
-						{en
-							? "Nine functional domains, one database, no re-keying between modules. French and English interface, natively."
-							: "Neuf domaines fonctionnels, une seule base de données, aucune ressaisie entre les modules. Interface FR/EN nativement."}
-					</p>
-
-					<div className="mt-8 flex flex-wrap items-center gap-2.5">
-						{DEPLOYMENT_MODES.map((m) => (
-							<span
-								key={m.en}
-								className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[0.8rem] text-tk-ink-2"
-							>
-								{en ? m.en : m.fr}
-							</span>
-						))}
-					</div>
+		<main className="tk-dotgrid bg-tk-bg pt-[var(--tk-header-h)]">
+			<PageHero
+				eyebrow={en ? "TKAMS · the platform" : "TKAMS · la plateforme"}
+				image="/images/web/campus-groupe-band.webp"
+				imageAlt={
+					en
+						? "Students together on a university campus"
+						: "Des étudiants réunis sur le campus d'une université"
+				}
+				title={
+					en
+						? "The whole academic year, from application to diploma."
+						: "Toute l'année académique, de la candidature au diplôme."
+				}
+				lede={
+					en
+						? "Nine functional domains, one database, no re-keying between modules. French and English interface, natively."
+						: "Neuf domaines fonctionnels, une seule base de données, aucune ressaisie entre les modules. Interface FR/EN nativement."
+				}
+			>
+				<div className="flex flex-wrap items-center gap-2.5">
+					{DEPLOYMENT_MODES.map((m) => (
+						<span
+							key={m.en}
+							className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[length:var(--tk-text-sm)] text-tk-ink-2"
+						>
+							{en ? m.en : m.fr}
+						</span>
+					))}
 				</div>
-			</section>
-
+			</PageHero>
 			{/* Nine domains */}
 			<section className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-				<h2 className="max-w-[24ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+				<h2 className="tk-headline tk-gradient-text max-w-[24ch]">
 					{en ? "Nine functional domains" : "Neuf domaines fonctionnels"}
 				</h2>
 
@@ -80,14 +83,14 @@ export default async function ProduitPage() {
 								) : null}
 								<div className="relative">
 									<h3
-										className={`font-bold font-display text-[1.05rem] tracking-[-0.02em] ${
+										className={`font-bold font-display text-[length:var(--tk-text-lead)] tracking-[-0.02em] ${
 											d.featured ? "" : "text-tk-ink"
 										}`}
 									>
 										{copy.name}
 									</h3>
 									<p
-										className={`mt-2.5 font-body text-[0.875rem] leading-relaxed ${
+										className={`mt-2.5 font-body text-[length:var(--tk-text-body)] leading-relaxed ${
 											d.featured ? "text-tk-on-primary/85" : "text-tk-ink-2"
 										}`}
 									>
@@ -99,8 +102,24 @@ export default async function ProduitPage() {
 					})}
 				</div>
 			</section>
-
-			{/* Live demos */}
+			{/*
+			 * A breath between the nine domains and the live demos. The page runs
+			 * long and entirely on type and interface up to this point.
+			 */}
+			<PhotoBand
+				src="/images/web/etudiant-lecture-band.webp"
+				alt={
+					en
+						? "A student reading on the university lawn"
+						: "Un étudiant lisant sur la pelouse de l'université"
+				}
+				caption={
+					en
+						? "Nine domains, one database. Nothing is entered twice."
+						: "Neuf domaines, une seule base. Rien n'est saisi deux fois."
+				}
+			/>
+			{/* Live demos */}{" "}
 			<section className="relative overflow-hidden border-tk-border border-y bg-tk-bg-deep">
 				<div
 					aria-hidden="true"
@@ -108,15 +127,15 @@ export default async function ProduitPage() {
 				/>
 				<div className="relative mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 					<div className="max-w-[48rem]">
-						<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+						<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 							{en ? "Live demonstration" : "Démonstration en direct"}
 						</p>
-						<h2 className="mt-4 font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+						<h2 className="tk-headline tk-gradient-text mt-4">
 							{en
 								? "Move the jury's rules. Watch the cohort follow."
 								: "Déplacez les règles du jury. La cohorte suit."}
 						</h2>
-						<p className="mt-4 font-body text-[0.95rem] text-tk-ink-2 leading-relaxed">
+						<p className="mt-4 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 							{en
 								? "The real interface, with demonstration data. Change a threshold and every file is re-decided instantly."
 								: "L'interface réelle, avec des données de démonstration. Changez un seuil et chaque dossier est réévalué instantanément."}
@@ -146,10 +165,9 @@ export default async function ProduitPage() {
 					</div>
 				</div>
 			</section>
-
 			{/* Who benefits */}
 			<section className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-				<h2 className="max-w-[24ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] text-tk-title leading-[1.08] tracking-[-0.03em]">
+				<h2 className="tk-headline tk-gradient-text max-w-[24ch]">
 					{en ? "Who gains what" : "Qui gagne quoi"}
 				</h2>
 
@@ -165,7 +183,7 @@ export default async function ProduitPage() {
 								key={copy.title}
 								className="rounded-xl border border-tk-border bg-tk-surface p-6"
 							>
-								<h3 className="font-bold font-display text-[1.05rem] text-tk-ink tracking-[-0.02em]">
+								<h3 className="font-bold font-display text-[length:var(--tk-text-lead)] text-tk-ink tracking-[-0.02em]">
 									{copy.title}
 								</h3>
 								<ul className="mt-4 space-y-2.5">
@@ -175,7 +193,7 @@ export default async function ProduitPage() {
 												aria-hidden="true"
 												className="mt-[0.55rem] h-1.5 w-1.5 flex-none rounded-full bg-tk-primary"
 											/>
-											<span className="font-body text-[0.875rem] text-tk-ink-2 leading-relaxed">
+											<span className="font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 												{item}
 											</span>
 										</li>
@@ -186,7 +204,6 @@ export default async function ProduitPage() {
 					})}
 				</div>
 			</section>
-
 			{/* Boundary to OnReceipt */}
 			<section className="border-tk-border border-y bg-tk-surface">
 				<div className="mx-auto max-w-[86rem] px-6 py-12 lg:px-10 lg:py-16">
@@ -197,7 +214,7 @@ export default async function ProduitPage() {
 									? "Below roughly 350 students, TKAMS costs 1 000 000 FCFA a year whatever your real headcount."
 									: "En dessous d'environ 350 étudiants, TKAMS coûte 1 000 000 FCFA par an quel que soit votre effectif réel."}
 							</h2>
-							<p className="mt-3 max-w-[62ch] font-body text-[0.9375rem] text-tk-ink-2 leading-relaxed">
+							<p className="mt-3 max-w-[62ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 								{en
 									? "If that is your case and your need is limited to official documents, OnReceipt is the economically rational choice. We would rather sell you the right solution than the more expensive one."
 									: "Si vous êtes dans ce cas et que votre besoin se limite aux documents officiels, OnReceipt est le choix économiquement rationnel. Nous préférons vous vendre la bonne solution que la plus chère."}
@@ -206,13 +223,13 @@ export default async function ProduitPage() {
 						<div className="flex flex-wrap gap-3">
 							<Link
 								href="/onreceipt"
-								className="rounded-md border border-tk-border-strong px-5 py-3 font-body font-semibold text-[0.9rem] text-tk-ink transition-colors hover:bg-tk-bg-deep"
+								className="rounded-md border border-tk-border-strong px-5 py-3 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink transition-colors hover:bg-tk-bg-deep"
 							>
 								{en ? "See OnReceipt" : "Voir OnReceipt"}
 							</Link>
 							<Link
 								href="/comparatif"
-								className="rounded-md border border-tk-primary px-5 py-3 font-body font-semibold text-[0.9rem] text-tk-eyebrow transition-colors hover:bg-tk-primary hover:text-tk-on-primary"
+								className="rounded-md border border-tk-primary px-5 py-3 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-eyebrow transition-colors hover:bg-tk-primary hover:text-tk-on-primary"
 							>
 								{en ? "Compare the two" : "Comparer les deux"}
 							</Link>
@@ -220,7 +237,6 @@ export default async function ProduitPage() {
 					</div>
 				</div>
 			</section>
-
 			<Cta dict={dict} />
 		</main>
 	);
@@ -236,5 +252,16 @@ export async function generateMetadata(): Promise<Metadata> {
 		description: en
 			? "Nine functional domains, one database, no re-keying: enrolment, catalogue, fees, attendance, marks, deliberation, documents, security, multi-supervision."
 			: "Neuf domaines fonctionnels, une seule base de données, aucune ressaisie : inscriptions, maquettes, frais, assiduité, notes, délibération, documents, sécurité, multi-tutelle.",
+		// Mirrors this page's own title and description. Without it every
+		// page inherited the site-wide default, so sharing /tarifs showed
+		// the home page's text and image.
+		openGraph: mergeOpenGraph({
+			title: en
+				? "TKAMS — LMD academic management platform"
+				: "TKAMS — plateforme de gestion académique LMD",
+			description: en
+				? "Nine functional domains, one database, no re-keying: enrolment, catalogue, fees, attendance, marks, deliberation, documents, security, multi-supervision."
+				: "Neuf domaines fonctionnels, une seule base de données, aucune ressaisie : inscriptions, maquettes, frais, assiduité, notes, délibération, documents, sécurité, multi-tutelle.",
+		}),
 	};
 }

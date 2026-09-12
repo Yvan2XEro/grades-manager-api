@@ -53,18 +53,23 @@ export function Workflow({ dict: d, locale }: { dict: Dict; locale?: Locale }) {
 	const en = locale === "en";
 
 	return (
-		<section className="bg-tk-bg">
-			<div className="mx-auto max-w-[86rem] px-6 py-16 lg:px-10 lg:py-24">
+		/*
+		 * The glow sits under the deliberation screen at the foot of this section,
+		 * the same device `ProductProof` uses. Without it the frame's own violet
+		 * halo has nothing to sit on and reads as a stray shadow.
+		 */
+		<section className="tk-glow tk-glow--bottom relative overflow-hidden">
+			<div className="tk-section mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-end lg:gap-14">
 					<div>
-						<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+						<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 							{en ? "The flow" : "Le flux"}
 						</p>
-						<h2 className="mt-4 font-display font-extrabold text-[clamp(1.75rem,1.1rem+2.2vw,2.75rem)] text-tk-title leading-[1.06] tracking-[-0.032em]">
+						<h2 className="tk-headline tk-gradient-text mt-4">
 							{d.workflow.title}
 						</h2>
 					</div>
-					<p className="font-body text-[0.95rem] text-tk-ink-2 leading-relaxed lg:pb-1">
+					<p className="font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed lg:pb-1">
 						{d.workflow.sub}{" "}
 						{en
 							? "Each stage consumes what the previous one produced: nothing is re-entered between them."
@@ -89,10 +94,10 @@ export function Workflow({ dict: d, locale }: { dict: Dict; locale?: Locale }) {
 									{String(phaseIndex + 1).padStart(2, "0")}
 								</span>
 								<div className="min-w-0">
-									<p className="font-body font-semibold text-[0.9rem] text-tk-ink leading-tight">
+									<p className="font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink leading-tight">
 										{en ? phase.en : phase.fr}
 									</p>
-									<p className="mt-0.5 font-code text-[0.62rem] text-tk-muted uppercase tracking-[0.1em]">
+									<p className="mt-0.5 font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.1em]">
 										{en ? phase.enNote : phase.frNote}
 									</p>
 								</div>
@@ -117,7 +122,7 @@ export function Workflow({ dict: d, locale }: { dict: Dict; locale?: Locale }) {
 											}`}
 										>
 											<span
-												className={`shrink-0 font-display font-extrabold text-[0.9rem] tabular-nums leading-[1.5] ${
+												className={`shrink-0 font-display font-extrabold text-[length:var(--tk-text-body)] tabular-nums leading-[1.5] ${
 													isDemoStage ? "text-tk-primary" : "text-tk-primary/35"
 												}`}
 											>
@@ -126,17 +131,17 @@ export function Workflow({ dict: d, locale }: { dict: Dict; locale?: Locale }) {
 
 											<div className="min-w-0">
 												<div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-													<h3 className="font-bold font-display text-[0.975rem] text-tk-ink tracking-[-0.015em]">
+													<h3 className="font-bold font-display text-[length:var(--tk-text-body)] text-tk-ink tracking-[-0.015em]">
 														{step.title}
 													</h3>
-													<span className="font-code text-[0.6rem] text-tk-muted uppercase tracking-[0.08em]">
+													<span className="font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.08em]">
 														{when}
 													</span>
 												</div>
-												<p className="mt-1 font-body text-[0.8125rem] text-tk-ink-2 leading-[1.5]">
+												<p className="mt-1 font-body text-[length:var(--tk-text-sm)] text-tk-ink-2 leading-[1.5]">
 													{step.desc}
 												</p>
-												<p className="mt-1 font-body text-[0.72rem] text-tk-muted">
+												<p className="mt-1 font-body text-[length:var(--tk-text-xs)] text-tk-muted">
 													{who}
 													{isDemoStage ? (
 														<span className="text-tk-primary">

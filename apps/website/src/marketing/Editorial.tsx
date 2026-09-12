@@ -52,7 +52,7 @@ export function SectionLabel({
 	return (
 		<div className={`flex items-center gap-3 ${className}`}>
 			<span
-				className={`font-code font-semibold text-[0.8125rem] tabular-nums tracking-[0.1em] ${
+				className={`font-code font-semibold text-[length:var(--tk-text-sm)] tabular-nums tracking-[0.1em] ${
 					theme === "dark" ? "text-tk-on-dark" : "text-tk-accent"
 				}`}
 			>
@@ -64,7 +64,7 @@ export function SectionLabel({
 				}`}
 			/>
 			<span
-				className={`font-code font-medium text-[0.75rem] uppercase tracking-[0.18em] ${inkSoft(
+				className={`font-code font-medium text-[length:var(--tk-text-xs)] uppercase tracking-[0.18em] ${inkSoft(
 					theme,
 				)}`}
 			>
@@ -86,21 +86,27 @@ export function SectionHeading({
 	children,
 	theme = "light",
 	as: Tag = "h2",
+	level = "headline",
 	className = "",
 }: {
 	children: React.ReactNode;
 	theme?: Theme;
 	as?: "h1" | "h2" | "h3";
+	/**
+	 * Which rank this chapter holds in the page.
+	 *
+	 * `headline` is for the chapters that carry the argument; `supporting` is
+	 * two-thirds the size, for the ones a reader consults rather than reads
+	 * (deployment modes, trust badges, FAQ). Everything used to be `headline`,
+	 * which is why ten chapters all shouted at the same size and none of them
+	 * led.
+	 */
+	level?: "headline" | "supporting";
 	className?: string;
 }) {
+	const size = level === "supporting" ? "tk-subhead" : "tk-headline";
 	return (
-		<Tag
-			className={`font-bold font-display text-[clamp(1.9rem,1.3rem+1.8vw,3rem)] leading-[1.12] tracking-[-0.028em] ${titleInk(
-				theme,
-			)} ${className}`}
-		>
-			{children}
-		</Tag>
+		<Tag className={`${size} ${titleInk(theme)} ${className}`}>{children}</Tag>
 	);
 }
 
@@ -116,7 +122,7 @@ export function Lede({
 }) {
 	return (
 		<p
-			className={`max-w-[42ch] font-body text-[1.0625rem] leading-[1.7] ${inkSoft(
+			className={`max-w-[42ch] font-body text-[length:var(--tk-text-lead)] leading-[1.7] ${inkSoft(
 				theme,
 			)} ${className}`}
 		>
@@ -137,7 +143,8 @@ export function EditorialSection({
 	heading,
 	lede,
 	theme = "light",
-	bg = "bg-tk-bg",
+	level = "headline",
+	bg = "",
 	children,
 	aside,
 	className = "",
@@ -148,6 +155,8 @@ export function EditorialSection({
 	heading: React.ReactNode;
 	lede?: React.ReactNode;
 	theme?: Theme;
+	/** Passed through to the heading — see SectionHeading. */
+	level?: "headline" | "supporting";
 	bg?: string;
 	children: React.ReactNode;
 	aside?: React.ReactNode;
@@ -162,13 +171,13 @@ export function EditorialSection({
 				 * hairline on top of a colour change draws the seam twice and is what
 				 * made the page read as ruled paper.
 				 */}
-				<div className="grid grid-cols-1 gap-x-12 gap-y-10 py-16 lg:grid-cols-12 lg:py-24">
+				<div className="tk-section grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12">
 					<div className="lg:col-span-4">
 						<div className="lg:sticky lg:top-28">
 							<SectionLabel number={number} theme={theme}>
 								{label}
 							</SectionLabel>
-							<SectionHeading theme={theme} className="mt-6">
+							<SectionHeading theme={theme} level={level} className="mt-6">
 								{heading}
 							</SectionHeading>
 							{lede ? <div className="mt-5">{lede}</div> : null}

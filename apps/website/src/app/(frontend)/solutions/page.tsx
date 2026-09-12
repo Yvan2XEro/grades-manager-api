@@ -3,7 +3,10 @@ import Link from "next/link";
 import { getDict, getLocale } from "@/i18n";
 import { DeliberationDemo } from "@/marketing/app-demo/DeliberationDemo";
 import { GradeEntryDemo } from "@/marketing/app-demo/GradeEntryDemo";
+import { PageHero } from "@/marketing/PageHero";
 import { Cta } from "@/marketing/sections/Cta";
+import { PhotoBand } from "@/marketing/sections/PhotoBand";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 
 /**
  * Solutions — the product seen from each role's desk.
@@ -56,37 +59,34 @@ export default async function SolutionsPage() {
 	};
 
 	return (
-		<main className="bg-tk-bg pt-[68px]">
-			{/* Masthead */}
-			<section className="border-tk-border border-b">
-				<div className="mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
-					<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
-						{s.label}
-					</p>
-					<h1 className="mt-4 max-w-[24ch] font-display font-extrabold text-[clamp(2rem,1.3rem+2.6vw,3.25rem)] text-tk-title leading-[1.04] tracking-[-0.035em]">
-						{s.title}
-					</h1>
-					<p className="mt-5 max-w-[58ch] font-body text-[1.05rem] text-tk-ink-2 leading-relaxed">
-						{s.sub}
-					</p>
-
-					{/* Jump links — the page is long and role-indexed. */}
-					<nav
-						className="mt-8 flex flex-wrap gap-2.5"
-						aria-label={en ? "Roles" : "Rôles"}
-					>
-						{s.roles.map((role) => (
-							<a
-								key={role.role}
-								href={`#${slug(role.role)}`}
-								className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[0.8rem] text-tk-ink-2 no-underline transition-colors hover:border-tk-primary hover:text-tk-eyebrow"
-							>
-								{role.role}
-							</a>
-						))}
-					</nav>
-				</div>
-			</section>
+		<main className="tk-dotgrid bg-tk-bg pt-[var(--tk-header-h)]">
+			<PageHero
+				eyebrow={s.label}
+				image="/images/web/etudiante-livres-band.webp"
+				imageAlt={
+					en
+						? "A student carrying her books"
+						: "Une étudiante, ses livres à la main"
+				}
+				title={s.title}
+				lede={s.sub}
+			>
+				{/* Jump links — the page is long and role-indexed. */}
+				<nav
+					className="mt-8 flex flex-wrap gap-2.5"
+					aria-label={en ? "Roles" : "Rôles"}
+				>
+					{s.roles.map((role) => (
+						<a
+							key={role.role}
+							href={`#${slug(role.role)}`}
+							className="rounded-full border border-tk-border-strong bg-tk-surface px-3.5 py-1.5 font-body font-medium text-[length:var(--tk-text-sm)] text-tk-ink-2 no-underline transition-colors hover:border-tk-primary hover:text-tk-eyebrow"
+						>
+							{role.role}
+						</a>
+					))}
+				</nav>
+			</PageHero>
 
 			{/* One chapter per role */}
 			{s.roles.map((role, i) => {
@@ -96,7 +96,7 @@ export default async function SolutionsPage() {
 					<section
 						key={role.role}
 						id={slug(role.role)}
-						className={`scroll-mt-[84px] border-tk-border border-b ${
+						className={`scroll-mt-[calc(var(--tk-header-h)+1rem)] border-tk-border border-b ${
 							alt ? "bg-tk-bg-deep" : "bg-tk-bg"
 						}`}
 					>
@@ -117,7 +117,7 @@ export default async function SolutionsPage() {
 							 */}
 							<div className="grid gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:items-start">
 								<div className="min-w-0">
-									<p className="font-code text-[0.7rem] text-tk-eyebrow uppercase tracking-[0.16em]">
+									<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 										{role.role}
 									</p>
 									<h2 className="mt-4 max-w-[20ch] font-display font-extrabold text-[clamp(1.5rem,1.1rem+1.6vw,2.2rem)] text-tk-title leading-[1.1] tracking-[-0.03em]">
@@ -125,11 +125,11 @@ export default async function SolutionsPage() {
 									</h2>
 
 									{/* The pain, set as the quotation it is. */}
-									<p className="mt-5 border-tk-primary border-l-[3px] pl-4 font-body text-[0.95rem] text-tk-ink-2 italic leading-relaxed">
+									<p className="mt-5 border-tk-primary border-l-[3px] pl-4 font-body text-[length:var(--tk-text-body)] text-tk-ink-2 italic leading-relaxed">
 										{role.pain}
 									</p>
 
-									<p className="mt-5 max-w-[50ch] font-body text-[0.95rem] text-tk-ink-2 leading-relaxed">
+									<p className="mt-5 max-w-[50ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 										{role.desc}
 									</p>
 								</div>
@@ -142,7 +142,7 @@ export default async function SolutionsPage() {
 												aria-hidden="true"
 												className="mt-[0.55rem] h-1.5 w-1.5 flex-none rounded-full bg-tk-primary"
 											/>
-											<span className="font-body text-[0.875rem] text-tk-ink-2 leading-relaxed">
+											<span className="font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-relaxed">
 												{point}
 											</span>
 										</li>
@@ -157,6 +157,24 @@ export default async function SolutionsPage() {
 				);
 			})}
 
+			{/*
+			 * Closes the four role chapters before the pioneer section. Each role
+			 * above is a desk; this is what all four of them are working towards.
+			 */}
+			<PhotoBand
+				src="/images/web/diplomees-band.webp"
+				alt={
+					en
+						? "Two graduates embracing after the ceremony"
+						: "Deux diplômées s'étreignant après la cérémonie"
+				}
+				caption={
+					en
+						? "Four desks, one year, one outcome."
+						: "Quatre bureaux, une année, un même aboutissement."
+				}
+				align="right"
+			/>
 			{/* Pioneer programme — honest proof in place of invented testimonials */}
 			<section className="relative overflow-hidden bg-tk-dark text-tk-on-dark">
 				<div
@@ -166,20 +184,20 @@ export default async function SolutionsPage() {
 				<div className="relative mx-auto max-w-[86rem] px-6 py-14 lg:px-10 lg:py-20">
 					<div className="grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center lg:gap-14">
 						<div>
-							<p className="font-code text-[0.7rem] text-tk-primary-bright uppercase tracking-[0.16em]">
+							<p className="font-code text-[length:var(--tk-text-xs)] text-tk-primary-bright uppercase tracking-[0.16em]">
 								{en ? "Pioneer programme" : "Programme pionniers"}
 							</p>
-							<h2 className="mt-4 max-w-[22ch] font-display font-extrabold text-[clamp(1.6rem,1.1rem+1.9vw,2.4rem)] leading-[1.08] tracking-[-0.03em]">
+							<h2 className="tk-headline mt-4 max-w-[22ch]">
 								{en
 									? "Built with institutions, not for them."
 									: "Construit avec les établissements, pas pour eux."}
 							</h2>
-							<p className="mt-4 max-w-[56ch] font-body text-[0.95rem] text-tk-on-dark-soft leading-relaxed">
+							<p className="mt-4 max-w-[56ch] font-body text-[length:var(--tk-text-body)] text-tk-on-dark-soft leading-relaxed">
 								{en
 									? "TKAMS is developed in direct contact with LMD institutions in francophone Africa, on their real deliberation rules. Early signatories get a 10 % discount, priority handling, and their field requests go to the head of the roadmap."
 									: "TKAMS est développé au contact direct des institutions LMD d'Afrique francophone, sur leurs règles de délibération réelles. Les premiers signataires bénéficient de 10 % de remise, d'un traitement prioritaire, et leurs demandes d'évolution passent en tête de feuille de route."}
 							</p>
-							<p className="mt-4 max-w-[56ch] font-body text-[0.85rem] text-tk-on-dark-muted leading-relaxed">
+							<p className="mt-4 max-w-[56ch] font-body text-[length:var(--tk-text-sm)] text-tk-on-dark-muted leading-relaxed">
 								{en
 									? "We publish no client testimonials for now, because we would rather name no one than invent someone."
 									: "Nous ne publions pas encore de témoignages clients : nous préférons ne citer personne plutôt que d'inventer quelqu'un."}
@@ -189,13 +207,13 @@ export default async function SolutionsPage() {
 						<div className="flex flex-wrap gap-3">
 							<Link
 								href="/contact"
-								className="rounded-md bg-tk-primary px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-on-primary transition-colors hover:bg-tk-primary-bright hover:text-tk-dark"
+								className="rounded-md bg-tk-primary px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-on-primary transition-colors hover:bg-tk-primary-bright hover:text-tk-dark"
 							>
 								{en ? "Join the programme" : "Rejoindre le programme"}
 							</Link>
 							<Link
 								href="/engagements"
-								className="rounded-md border border-white/30 px-6 py-3.5 font-body font-semibold text-[0.9375rem] text-tk-on-dark transition-colors hover:bg-white/10"
+								className="rounded-md border border-white/30 px-6 py-3.5 font-body font-semibold text-[length:var(--tk-text-body)] text-tk-on-dark transition-colors hover:bg-white/10"
 							>
 								{en ? "Our commitments" : "Nos engagements"}
 							</Link>
@@ -228,5 +246,14 @@ function slug(value: string): string {
 export async function generateMetadata(): Promise<Metadata> {
 	const locale = await getLocale();
 	const s = getDict(locale).solutions;
-	return { title: `${s.title} — TKAMS`, description: s.sub };
+	return {
+		title: `${s.title} — TKAMS`,
+		description: s.sub,
+		// Mirrors this page's own title and description, so sharing /solutions
+		// does not show the home page's text and image.
+		openGraph: mergeOpenGraph({
+			title: `${s.title} — TKAMS`,
+			description: s.sub,
+		}),
+	};
 }

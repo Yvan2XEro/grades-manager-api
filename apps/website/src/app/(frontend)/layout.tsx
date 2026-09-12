@@ -13,6 +13,8 @@ import { cn } from "@/utilities/ui";
 
 import "./globals.css";
 import { getLocale, hasChosenLocale } from "@/i18n";
+import { CookieNotice } from "@/marketing/CookieNotice";
+import { FloatingActions } from "@/marketing/FloatingActions";
 import { Footer } from "@/marketing/Footer";
 import { Nav } from "@/marketing/Nav";
 import { NavigationProgress } from "@/marketing/NavigationProgress";
@@ -64,6 +66,8 @@ export default async function RootLayout({
 }) {
 	const { isEnabled } = await draftMode();
 	const locale = await getLocale();
+	// Read by the disabled LanguagePrompt below; kept so re-enabling it is a
+	// one-line change rather than a re-derivation.
 	const _localeChosen = await hasChosenLocale();
 
 	return (
@@ -76,6 +80,10 @@ export default async function RootLayout({
 				jetbrainsMono.variable,
 			)}
 			lang={locale}
+			// Marks this tree as the public site: globals.css steps the root type
+			// scale to 80 % behind this attribute, while the customer dashboard —
+			// which imports the same stylesheet — keeps the browser default.
+			data-site="marketing"
 			suppressHydrationWarning
 		>
 			<head>
@@ -94,7 +102,35 @@ export default async function RootLayout({
 					<Nav locale={locale} />
 					{children}
 					<Footer locale={locale} />
-					{/* Language prompt disabled — locale defaults to French */}
+					{/*
+					 * WhatsApp and back-to-top, above the page on every route.
+					 *
+					 * In the layout rather than per page: the published WhatsApp line was
+					 * reachable only from /contact, one page out of seventeen, and a
+					 * back-to-top control is needed on precisely the long pages nobody
+					 * remembers to add it to.
+					 */}
+					<FloatingActions locale={locale} />
+					{/*
+					 * Cookie notice — information, not a consent gate.
+					 *
+					 * The site loads no tracker: only a language cookie, the session
+					 * cookie once signed in, and two localStorage preferences. Those need
+					 * disclosure, not permission, so this states what is set and links to
+					 * the detail rather than offering an Accept/Reject choice that would
+					 * be fictional. See `CookieNotice.tsx` — and read its note before
+					 * adding any analytics, which would change the legal requirement.
+					 */}
+					<CookieNotice locale={locale} />
+					{/*
+					 * Language prompt intentionally disabled.
+					 *
+					 * The locale is inferred from `accept-language` with a French
+					 * fallback (see `i18n/index.ts`), and the header carries an FR/EN
+					 * switcher on every page, so nothing is unreachable. `LanguagePrompt`
+					 * is kept and still works — re-enable it by restoring the line below
+					 * along with `hasChosenLocale()`.
+					 */}
 					{/* {localeChosen ? null : <LanguagePrompt suggested={locale} />} */}
 				</Providers>
 			</body>
@@ -111,6 +147,6 @@ export const metadata: Metadata = {
 		title: "TKAMS — Tefoye and Kana Academic Management System",
 		description:
 			"La plateforme SIS LMD-first pour les universités et IPES d'Afrique francophone. Délibérations en heures, non en semaines.",
-		images: ["/logo-tkams.png"],
+		images: ["/og-tkams.png"],
 	},
 };
