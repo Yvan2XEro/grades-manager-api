@@ -165,11 +165,11 @@ export function TheCost({ locale }: { locale: Locale }) {
 							 * themselves on the page.
 							 */}
 							<Image
-								src="/onreceipt/photo-classe.jpg"
+								src="/images/web/etudiante-livres.webp"
 								alt=""
 								aria-hidden="true"
-								width={1280}
-								height={848}
+								width={1800}
+								height={1200}
 								className="h-44 w-full object-cover"
 							/>
 							<div

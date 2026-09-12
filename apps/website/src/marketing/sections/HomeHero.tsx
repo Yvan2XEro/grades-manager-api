@@ -41,16 +41,16 @@ export function HomeHero({ dict: d, locale }: { dict: Dict; locale: Locale }) {
 				 * Douala connection should download a hero image measured in megabytes.
 				 */}
 				<Image
-					src="/images/web/campus-groupe.webp"
+					src="/images/web/etudiante-drapeaux.webp"
 					alt={
 						en
-							? "Students working together in a university yard"
-							: "Des étudiants travaillant ensemble dans une cour d'université"
+							? "A student carrying her books across a university campus"
+							: "Une étudiante traversant le campus, ses livres à la main"
 					}
 					fill
 					priority
 					sizes="100vw"
-					className="object-cover object-[center_38%]"
+					className="object-cover object-[center_42%]"
 				/>
 				<div
 					aria-hidden="true"

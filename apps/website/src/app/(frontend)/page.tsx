@@ -50,8 +50,12 @@ export default async function HomePage() {
 			 * demos through four sections of type and flat colour.
 			 */}
 			<PhotoBand
-				src="/onreceipt/photo-classe.jpg"
-				alt={locale === "en" ? "A class in session" : "Une classe en cours"}
+				src="/images/web/amphitheatre.webp"
+				alt={
+					locale === "en"
+						? "A student studying in a lecture hall"
+						: "Une étudiante en train de travailler dans un amphithéâtre"
+				}
 				caption={
 					locale === "en"
 						? "The rules the platform applies are the ones your own regulations already set."
@@ -69,16 +73,16 @@ export default async function HomePage() {
 			 * promise, which is the page's most demanding passage of reading.
 			 */}
 			<PhotoBand
-				src="/onreceipt/photo-poste.jpg"
+				src="/images/web/diplomation.webp"
 				alt={
 					locale === "en"
-						? "A registrar's workstation"
-						: "Un poste de travail au service de la scolarité"
+						? "Graduates celebrating at a degree ceremony"
+						: "Des diplômés lors d'une cérémonie de remise"
 				}
 				caption={
 					locale === "en"
-						? "The people who run the academic year are the people we build for."
-						: "Ceux qui font tourner l'année académique sont ceux pour qui nous construisons."
+						? "Every rule, every mark and every signature leads here."
+						: "Chaque règle, chaque note et chaque signature mènent ici."
 				}
 				align="right"
 			/>
