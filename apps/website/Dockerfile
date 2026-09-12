@@ -1,7 +1,7 @@
 # Build context: monorepo root
 # docker build -f apps/website/Dockerfile -t ghcr.io/yvan2xero/tkams-website .
 
-FROM oven/bun:1.2-alpine AS base
+FROM oven/bun:1.3-alpine AS base
 ENV PUPPETEER_SKIP_DOWNLOAD=true CYPRESS_INSTALL_BINARY=0
 
 # ── Deps ──────────────────────────────────────────────────────────────────────
@@ -12,7 +12,8 @@ COPY bun.lock bunfig.toml package.json ./
 COPY apps/website/package.json  apps/website/package.json
 COPY apps/server/package.json   apps/server/package.json
 COPY apps/web/package.json      apps/web/package.json
-COPY apps/remotion/package.json apps/remotion/package.json
+COPY apps/remotion/package.json  apps/remotion/package.json
+COPY apps/secondary/package.json apps/secondary/package.json
 RUN bun install --frozen-lockfile
 
 # ── Builder ───────────────────────────────────────────────────────────────────

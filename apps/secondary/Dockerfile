@@ -19,7 +19,7 @@
 #   PUPPETEER_EXECUTABLE_PATH — override Chromium binary (default: /usr/bin/chromium)
 
 # ─── Stage 1: Install monorepo dependencies ──────────────────────────────────
-FROM oven/bun:1.2.21 AS deps
+FROM oven/bun:1.3.10 AS deps
 
 WORKDIR /repo
 
@@ -57,7 +57,7 @@ RUN bun run build:client && \
     cp /repo/node_modules/@electric-sql/pglite/dist/postgres.wasm ./out/
 
 # ─── Stage 3: Production runner ───────────────────────────────────────────────
-FROM oven/bun:1.2.21 AS runner
+FROM oven/bun:1.3.10 AS runner
 
 # Install system Chromium for Puppeteer (report-card PDF generation)
 RUN apt-get update && \
