@@ -463,59 +463,100 @@ export function IsoStack({
  * accent; the rest stay as faint outlines.
  */
 export function IsoField({
-	cols = 10,
-	rows = 8,
+	cols = 5,
+	rows = 4,
 	filled,
 	caption,
+	locale,
 	className = "",
 }: {
 	cols?: number;
 	rows?: number;
-	/** How many tiles are "spent" — filled in the accent. */
+	/** How many days are spent on paperwork. */
 	filled: number;
 	caption?: string;
+	locale: Locale;
 	className?: string;
 }) {
+	const en = locale === "en";
 	const id = useId();
+
 	/*
-	 * The viewBox is derived from the grid, not fixed: an isometric plane of
-	 * cols x rows is (cols+rows) half-widths across and half that tall, so a
-	 * hardcoded height left a band of empty space above the tiles.
+	 * A calendar, not a field of squares.
+	 *
+	 * The first version drew a bare 10x10 grid with 57 tiles filled orange. It
+	 * had the same weakness as the abstract slabs: nothing on it says "day", so
+	 * the reader has to be told by the caption what they are looking at, and an
+	 * unlabelled orange mass reads as decoration.
+	 *
+	 * Drawn as months on a wall — a header strip, week columns, weekend gutters
+	 * — the same figure is legible without the caption: these are working days,
+	 * and this many of them go to paperwork. The count is derived from the
+	 * geometry rather than passed in twice, so the picture and the number can
+	 * never disagree.
 	 */
-	const S = 30;
-	const W = (cols + rows) * S * COS30 + 24;
-	const H = (cols + rows) * S * SIN30 + 24;
-	/* Origin sits where tile (0,0) must land: the leftmost point is x=0,y=rows. */
-	const CX = rows * S * COS30 + 12;
-	const CY = 12;
+	const S = 26;
+	const MONTHS = 11;
+	/** Days drawn per month block: 5 columns (Mon–Fri) x 4 rows. */
+	const PER_MONTH = cols * rows;
+	/** Gap between month blocks, in tile units. */
+	const GAP_Y = 1.5;
 
-	const tiles: React.ReactNode[] = [];
-	for (let y = 0; y < rows; y++) {
-		for (let x = 0; x < cols; x++) {
-			const n = y * cols + x;
-			const on = n < filled;
-			const pts = [
-				project(x, y, 0, CX, CY, S),
-				project(x + 0.92, y, 0, CX, CY, S),
-				project(x + 0.92, y + 0.92, 0, CX, CY, S),
-				project(x, y + 0.92, 0, CX, CY, S),
-			]
-				.map((p) => p.join(","))
-				.join(" ");
+	const bandRows = Math.ceil(MONTHS / 4);
+	const spanY = bandRows * rows + (bandRows - 1) * GAP_Y + 1.4;
+	const spanX = 4 * cols + 3 * 1.2;
+	const W = (spanX + spanY) * S * COS30 + 28;
+	const H = (spanX + spanY) * S * SIN30 + 28;
+	const CX = spanY * S * COS30 + 14;
+	const CY = 22;
 
-			tiles.push(
-				<polygon
-					key={n}
-					points={pts}
-					fill={on ? "var(--tk-accent)" : "var(--tk-surface)"}
-					fillOpacity={on ? 0.9 : 1}
-					stroke="var(--tk-border)"
-					strokeWidth="1"
-					style={{
-						transition: `opacity 400ms var(--tk-ease) ${Math.min(n * 8, 900)}ms`,
-					}}
-				/>,
-			);
+	const P = (x: number, y: number, z = 0) =>
+		project(x, y, z, CX, CY, S).join(",");
+
+	const quad = (x: number, y: number, w: number, h: number) =>
+		`${P(x, y)} ${P(x + w, y)} ${P(x + w, y + h)} ${P(x, y + h)}`;
+
+	const parts: React.ReactNode[] = [];
+	let drawn = 0;
+
+	const PER_ROW = 4;
+	for (let m = 0; m < MONTHS; m++) {
+		const y0 = Math.floor(m / PER_ROW) * (rows + GAP_Y);
+		const x0 = (m % PER_ROW) * (cols + 1.2);
+
+		/* Month header strip, the way a calendar names its page. */
+		parts.push(
+			<polygon
+				key={`h${m}`}
+				points={quad(x0, y0 - 0.9, cols * 0.94, 0.62)}
+				fill="var(--tk-ink)"
+				fillOpacity={0.82}
+			/>,
+		);
+
+		for (let r = 0; r < rows; r++) {
+			for (let c = 0; c < cols; c++) {
+				/*
+				 * Months are drawn nearest-first, so the eye enters at the top of
+				 * the picture. Counting the spent days from that end keeps the
+				 * orange as one contiguous block instead of a run that starts in
+				 * the far corner and reads backwards.
+				 */
+				const n = m * PER_MONTH + r * cols + c;
+				const spent = n < filled;
+				if (spent) drawn++;
+				parts.push(
+					<polygon
+						key={`d${n}`}
+						points={quad(x0 + c * 0.94, y0 + r * 0.94, 0.86, 0.86)}
+						fill={spent ? "var(--tk-accent)" : "var(--tk-surface)"}
+						fillOpacity={spent ? 0.62 : 1}
+						stroke={spent ? "var(--tk-accent-deep)" : "var(--tk-border)"}
+						strokeOpacity={spent ? 0.55 : 1}
+						strokeWidth={spent ? 0.8 : 1}
+					/>,
+				);
+			}
 		}
 	}
 
@@ -528,9 +569,11 @@ export function IsoField({
 				aria-labelledby={`${id}-t`}
 			>
 				<title id={`${id}-t`}>
-					{caption ?? `${filled} unités sur ${cols * rows}`}
+					{en
+						? `Calendar: ${drawn} working days out of ${MONTHS * PER_MONTH} spent on paperwork`
+						: `Calendrier : ${drawn} journées de travail sur ${MONTHS * PER_MONTH} consacrées à la paperasse`}
 				</title>
-				{tiles}
+				{parts}
 			</svg>
 			{caption ? (
 				<figcaption className="mt-3 font-body text-[length:var(--tk-text-sm)] text-tk-muted italic">

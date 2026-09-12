@@ -84,7 +84,7 @@ export function TheCost({ locale }: { locale: Locale }) {
 						<p className="font-code text-[length:var(--tk-text-xs)] text-tk-eyebrow uppercase tracking-[0.16em]">
 							{en ? "The situation" : "Le constat"}
 						</p>
-						<h2 className="tk-headline mt-4 max-w-[20ch] text-tk-title">
+						<h2 className="tk-headline tk-gradient-text mt-4 max-w-[20ch]">
 							{en
 								? "What manual management really costs you."
 								: "Ce que la gestion manuelle vous coûte vraiment."}
@@ -163,13 +163,12 @@ export function TheCost({ locale }: { locale: Locale }) {
 							 */}
 							<Reveal className="mt-6">
 								<IsoField
-									cols={10}
-									rows={10}
+									locale={locale}
 									filled={57}
 									caption={
 										en
-											? "57 working days out of a 100-day grid — the time a 400-student institution hands to paperwork each year."
-											: "57 journées de travail sur une grille de 100 — le temps qu'un établissement de 400 étudiants confie à la paperasse chaque année."
+											? "One academic year of working days. The orange ones never reach a student."
+											: "Une année académique de journées ouvrées. Les oranges n'atteignent jamais un étudiant."
 									}
 								/>
 							</Reveal>
