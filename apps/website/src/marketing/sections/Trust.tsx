@@ -12,12 +12,13 @@ interface TrustProps {
 export function Trust({ dict: d, locale }: TrustProps) {
 	return (
 		<EditorialSection
+			level="supporting"
 			id="ressources"
 			number="08"
 			label={d.trust.label}
 			heading={d.trust.title}
 			lede={
-				<p className="max-w-[42ch] font-body text-[1.0625rem] text-tk-ink-2 leading-[1.7]">
+				<p className="max-w-[42ch] font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-[1.7]">
 					{d.trust.sub}
 				</p>
 			}
@@ -27,12 +28,11 @@ export function Trust({ dict: d, locale }: TrustProps) {
 					{d.trust.pioneer_tag}
 				</span>
 			}
-			bg="bg-tk-bg"
 		>
 			<div className="flex flex-col gap-10">
 				<AnimateIn>
 					<div>
-						<p className="mb-4 font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.14em]">
+						<p className="mb-4 font-code text-[length:var(--tk-text-xs)] text-tk-muted uppercase tracking-[0.14em]">
 							{d.trust.badges_title}
 						</p>
 						<TrustBadges items={d.trust.labels.map((name) => ({ name }))} />

@@ -46,34 +46,154 @@
   --font-mono: var(--font-geist-mono);
   --font-sans: var(--font-geist-sans);
 
-  /* TKAMS fonts */
-  --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /*
+   * TKAMS fonts
+   *
+   * Display is Funnel Display (bound in layout.tsx as --font-display-family):
+   * narrow and sharply cut, so the long French headlines fit without dropping a
+   * size step. Headings and figures only.
+   *
+   * Body and interface are Montserrat: geometric like the headings rather than
+   * neutral, so running text belongs to the same family instead of reading as
+   * default UI. Mono is reserved for proof — identifiers, marks, amounts,
+   * dates — never for running text.
+   */
+  --font-display: var(--font-display-family), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
   --font-code: var(--font-jetbrains-mono), ui-monospace, monospace;
 
-  /* TKAMS brand colors */
-  --color-tk-bg: oklch(0.955 0.006 80);
-  --color-tk-bg-deep: oklch(0.93 0.008 80);
-  --color-tk-surface: oklch(0.978 0.008 80);
-  --color-tk-ink: oklch(0.13 0.03 264);
-  --color-tk-ink-soft: oklch(0.3 0.02 264);
-  --color-tk-ink-2: oklch(0.42 0.02 264);
-  --color-tk-muted: oklch(0.52 0.014 264);
-  --color-tk-border: oklch(0.88 0.006 80);
-  --color-tk-border-strong: oklch(0.78 0.008 80);
-  --color-tk-primary: oklch(0.48 0.2 277);
-  --color-tk-primary-soft: oklch(0.95 0.04 277);
-  --color-tk-primary-deep: oklch(0.32 0.18 277);
-  --color-tk-primary-bright: oklch(0.65 0.22 277);
-  --color-tk-on-primary: oklch(0.99 0 0);
-  --color-tk-dark: oklch(0.13 0.03 264);
-  --color-tk-dark-2: oklch(0.18 0.04 264);
-  --color-tk-on-dark: oklch(0.98 0.008 264);
-  --color-tk-on-dark-soft: oklch(0.78 0.015 264);
-  --color-tk-on-dark-muted: oklch(0.6 0.018 264);
-  --color-tk-accent-emerald: oklch(0.58 0.17 149);
-  --color-tk-accent-gold: oklch(0.72 0.16 86);
-  --color-tk-accent-blue: oklch(0.57 0.12 221);
+  /*
+   * TKAMS palette — white ground, logo violet, saturated African accent.
+   *
+   * The brand colour is the logo's own violet, measured off logo-tkams.png:
+   * #6160FF = oklch(0.585 0.229 277). The previous palette carried it at
+   * L 0.48 / C 0.20, which is the same hue read as a duller, darker ink — the
+   * reason the site looked washed out next to its own logo.
+   *
+   * Two rules follow from that measurement:
+   *
+   *   1. Surfaces are WHITE, not cream. A warm cream ground fights a violet
+   *      this saturated (the two pull in opposite directions on the a-axis);
+   *      white lets it sit at full strength. The greys are biased a trace
+   *      toward 277 rather than being neutral, so they read as belonging to
+   *      the violet rather than sitting beside it.
+   *
+   *   2. The accent had to gain chroma. Terracotta at C 0.115 could not hold a
+   *      viewport against a violet at C 0.229 — it simply disappeared. The
+   *      accent is now a saturated African orange at C 0.19, close enough in
+   *      chroma to answer the violet instead of being swallowed by it.
+   *
+   * Contrast, measured (WCAG, white text unless stated):
+   *   tk-primary  #6160FF  4.54  — large text and display only
+   *   tk-primary-deep      6.29  — buttons, small text, links on white
+   *   tk-accent   #FA6E1D  2.87  — FILLS AND MOTIFS ONLY, never text on white
+   *   tk-accent-deep on white 5.18 — the accent when it must carry words
+   *   tk-ink on white     15.8+
+   */
+
+  /* Surfaces — white, with greys biased toward the brand hue */
+  --color-tk-bg: oklch(1 0 0);
+  --color-tk-bg-deep: oklch(0.975 0.004 277);
+  --color-tk-surface: oklch(1 0 0);
+  --color-tk-sand: oklch(0.955 0.008 277);
+
+  /* Ink — cool greys on hue 277, so text belongs to the violet */
+  --color-tk-ink: oklch(0.19 0.026 277);
+  --color-tk-ink-soft: oklch(0.31 0.022 277);
+  --color-tk-ink-2: oklch(0.40 0.019 277);
+  --color-tk-muted: oklch(0.53 0.015 277);
+
+  /*
+   * Large headings.
+   *
+   * Display type at 2.5rem+ in weight 700-800 lays down far more ink per glyph
+   * than body copy, so `--color-tk-ink` at that size reads as a near-black slab
+   * and hardens the whole page. This is two steps lighter, with a touch more
+   * chroma so the softening reads as brand violet rather than as grey.
+   *
+   * Measured 13.72:1 on white — far above AA. Reserve it for display-size
+   * headings; UI text stays on `--color-tk-ink`.
+   */
+  --color-tk-title: oklch(0.30 0.038 277);
+
+  /* Rules */
+  --color-tk-border: oklch(0.915 0.006 277);
+  --color-tk-border-strong: oklch(0.845 0.011 277);
+
+  /* Primary — the logo violet, unmodified */
+  --color-tk-primary: oklch(0.585 0.229 277);
+  --color-tk-primary-soft: oklch(0.965 0.028 277);
+  --color-tk-primary-deep: oklch(0.505 0.223 277);
+  --color-tk-primary-bright: oklch(0.70 0.185 277);
+  --color-tk-on-primary: oklch(1 0 0);
+
+  /*
+   * Accent — saturated African orange.
+   *
+   * FILLS AND MOTIFS ONLY. Warm type on a white ground reads as a warning or as
+   * a discount sticker, neither of which this product wants to say, so no
+   * running text, label or figure on the site is set in the accent.
+   *
+   * Where an eyebrow or a figure needs to stand away from the body text, it
+   * takes `--color-tk-eyebrow` below: the brand violet, deepened until it holds
+   * at small sizes (7.4:1 on white). One hue carries the type; the orange
+   * carries the surfaces.
+   */
+  --color-tk-accent: oklch(0.685 0.19 45);
+  --color-tk-accent-deep: oklch(0.545 0.175 42);
+  --color-tk-accent-soft: oklch(0.965 0.035 52);
+
+  /*
+   * Gold — motifs and fills only, never type (2.4:1 on white).
+   *
+   * Exists so woven motifs can carry a second warm colour and read as cloth
+   * rather than as a single-colour hatch.
+   */
+  --color-tk-gold: oklch(0.78 0.13 80);
+  --color-tk-gold-soft: oklch(0.955 0.045 82);
+
+  /* The only colour allowed on small type besides the inks. */
+  --color-tk-eyebrow: oklch(0.455 0.21 277);
+
+  /*
+   * Dark chapters.
+   *
+   * Foregrounds sit on hue 277 like every other neutral on the site. They used
+   * to carry a warm hue-70 tint, which read as cream against the violet ground
+   * and made dark sections look yellowed.
+   *
+   * The ground itself was a near-black (L 0.185, C 0.032) that read as a slab
+   * dropped into a light page — the jump from white to almost-black broke the
+   * theme rather than punctuating it. It is now a deep brand violet-navy:
+   * lightness raised and chroma roughly doubled, so a dark chapter reads as the
+   * darkest step of this palette instead of as an absence of colour.
+   *
+   * L 0.26 is the ceiling. Every foreground above still clears WCAG AA on it
+   * (on-dark 14.6:1, soft 8.4:1, muted 4.75:1); lifting it further would push
+   * `on-dark-muted` under 4.5:1 and make the small print non-compliant.
+   */
+  --color-tk-dark: oklch(0.26 0.062 277);
+  --color-tk-dark-2: oklch(0.325 0.072 277);
+  --color-tk-on-dark: oklch(0.975 0.005 277);
+  --color-tk-on-dark-soft: oklch(0.80 0.012 277);
+  --color-tk-on-dark-muted: oklch(0.645 0.014 277);
+
+  /*
+   * Semantic — these belong to data readouts (demos, tables), not decoration.
+   *
+   * `-wash` variants are the tinted backgrounds behind a status chip. They exist
+   * as tokens so the demos stop hardcoding `oklch(... / 0.12)` literals that
+   * silently drift out of step with the palette whenever it is retuned.
+   */
+  --color-tk-pass: oklch(0.48 0.11 150);
+  --color-tk-pass-wash: oklch(0.94 0.035 150);
+  --color-tk-warn: oklch(0.55 0.12 75);
+  --color-tk-warn-wash: oklch(0.945 0.04 80);
+  --color-tk-block: oklch(0.49 0.15 28);
+  --color-tk-block-wash: oklch(0.945 0.032 28);
+  --color-tk-accent-emerald: oklch(0.48 0.11 150);
+  --color-tk-accent-gold: oklch(0.55 0.12 75);
+  --color-tk-accent-blue: oklch(0.5 0.11 245);
 }
 
 @layer utilities {
@@ -116,28 +236,124 @@
 }
 
 :root {
-  /* TKAMS Design System */
-  --tk-bg: oklch(0.955 0.006 80);
-  --tk-bg-deep: oklch(0.93 0.008 80);
-  --tk-surface: oklch(0.978 0.008 80);
-  --tk-ink: oklch(0.13 0.03 264);
-  --tk-ink-soft: oklch(0.3 0.02 264);
-  --tk-ink-2: oklch(0.42 0.02 264);
-  --tk-muted: oklch(0.52 0.014 264);
-  --tk-border: oklch(0.88 0.006 80);
-  --tk-border-strong: oklch(0.78 0.008 80);
-  --tk-primary: oklch(0.48 0.2 277);
-  --tk-primary-soft: oklch(0.95 0.04 277);
-  --tk-primary-deep: oklch(0.32 0.18 277);
-  --tk-primary-bright: oklch(0.65 0.22 277);
-  --tk-on-primary: oklch(0.99 0 0);
-  --tk-dark: oklch(0.13 0.03 264);
-  --tk-dark-2: oklch(0.18 0.04 264);
-  --tk-on-dark: oklch(0.98 0.008 264);
-  --tk-on-dark-soft: oklch(0.78 0.015 264);
-  --tk-accent-emerald: oklch(0.58 0.17 149);
-  --tk-accent-gold: oklch(0.72 0.16 86);
-  --tk-accent-blue: oklch(0.57 0.12 221);
+  /* TKAMS Design System — mirrors the @theme block above. Keep in sync. */
+  --tk-bg: oklch(1 0 0);
+  --tk-bg-deep: oklch(0.975 0.004 277);
+  --tk-surface: oklch(1 0 0);
+  --tk-sand: oklch(0.955 0.008 277);
+  --tk-ink: oklch(0.19 0.026 277);
+  --tk-ink-soft: oklch(0.31 0.022 277);
+  --tk-ink-2: oklch(0.40 0.019 277);
+  --tk-title: oklch(0.30 0.038 277);
+  --tk-muted: oklch(0.53 0.015 277);
+  --tk-border: oklch(0.915 0.006 277);
+  --tk-border-strong: oklch(0.845 0.011 277);
+  --tk-primary: oklch(0.585 0.229 277);
+  --tk-primary-soft: oklch(0.965 0.028 277);
+  --tk-primary-deep: oklch(0.505 0.223 277);
+  --tk-primary-bright: oklch(0.70 0.185 277);
+  --tk-on-primary: oklch(1 0 0);
+  --tk-accent: oklch(0.685 0.19 45);
+  --tk-accent-deep: oklch(0.545 0.175 42);
+  --tk-accent-soft: oklch(0.965 0.035 52);
+  --tk-gold: oklch(0.78 0.13 80);
+  --tk-gold-soft: oklch(0.955 0.045 82);
+  --tk-eyebrow: oklch(0.455 0.21 277);
+  --tk-dark: oklch(0.26 0.062 277);
+  --tk-dark-2: oklch(0.325 0.072 277);
+  --tk-on-dark: oklch(0.975 0.005 277);
+  --tk-on-dark-soft: oklch(0.80 0.012 277);
+  --tk-on-dark-muted: oklch(0.645 0.014 277);
+  --tk-pass: oklch(0.48 0.11 150);
+  --tk-pass-wash: oklch(0.94 0.035 150);
+  --tk-warn: oklch(0.55 0.12 75);
+  --tk-warn-wash: oklch(0.945 0.04 80);
+  --tk-block: oklch(0.49 0.15 28);
+  --tk-block-wash: oklch(0.945 0.032 28);
+  --tk-accent-emerald: oklch(0.48 0.11 150);
+  --tk-accent-gold: oklch(0.55 0.12 75);
+  --tk-accent-blue: oklch(0.5 0.11 245);
+
+  /*
+   * ── Display scale ───────────────────────────────────────────────────────
+   *
+   * Section headings were capped at 2.75rem, which is a *card* heading blown
+   * up, not a display size — it is the main reason the page read as busy
+   * rather than confident. Modern product sites (Appwrite, Linear, Stripe)
+   * run their section heads at 3.5-4.5rem with tracking near -0.04em and let
+   * whitespace carry the rest.
+   *
+   * THREE sizes, because two was not enough.
+   *
+   * With one size for every section heading, ten chapters all shouted at 47px
+   * and none of them led: "Four deployment modes" carried exactly as much
+   * visual weight as "What manual management really costs you." A reader
+   * scanning the page had no way to tell which chapters matter.
+   *
+   *   --tk-display   the hero, once per page
+   *   --tk-headline  the three chapters that carry the argument
+   *                  (the cost, the live demos, what we will not do)
+   *   --tk-subhead   supporting chapters — deployment, trust, FAQ
+   */
+  /*
+   * Display sizes step rather than scale fluidly.
+   *
+   * Measured on the reference: its h1 is 76px from 1024px up and 48px below —
+   * two fixed steps, not a continuous clamp. A clamp that tracks the viewport
+   * makes the headline shrink in the 1024-1440 band exactly where most desktop
+   * traffic sits, which is what flattened the contrast against body copy here.
+   */
+  --tk-display: 3rem;
+  --tk-headline: 2.25rem;
+  --tk-subhead: 1.6rem;
+
+  /*
+   * Header height, as a token rather than a magic number.
+   *
+   * `pt-[68px]` was hard-coded in nineteen page files, so the fixed bar's height
+   * could not change without editing all of them — and the utility strip added
+   * above it (see `Nav.tsx`) would have silently overlapped the first heading on
+   * every page. The strip is `lg:` only and collapses on scroll, so the reserved
+   * space follows the same rule: 68px everywhere, 102px on large screens where
+   * the strip is actually painted.
+   *
+   * Use `pt-[var(--tk-header-h)]` on page <main> elements and
+   * `scroll-mt-[calc(var(--tk-header-h)+1rem)]` on anchor targets.
+   */
+  --tk-header-h: 68px;
+
+  /*
+   * Body scale — a CLOSED set.
+   *
+   * The sections carried twelve different sizes between 0.62rem and 1.1rem,
+   * invented locally, which is why the headings read as oversized: with body
+   * copy at 1rem+ the heading-to-body ratio sat near 4.5, against 5.85 on the
+   * reference, and the page lost its hierarchy.
+   *
+   * Four sizes, and the lead is the largest of them.
+   */
+  --tk-text-lead: 1rem;
+  --tk-text-body: 0.875rem;
+  --tk-text-sm: 0.8125rem;
+  --tk-text-xs: 0.6875rem;
+
+  /*
+   * ── Vertical rhythm ─────────────────────────────────────────────────────
+   *
+   * Sections ran a uniform py-16/lg:py-24 (64/96px). Appwrite's breathing is
+   * roughly 112-160px, and the extra space is what removes the need for rules
+   * between sections: whitespace separates, so a hairline does not have to.
+   */
+  --tk-section-y: 5rem;
+  --tk-section-y-lg: 7.5rem;
+
+  /* Motion — one entrance curve, a closed list of durations */
+  --tk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --tk-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --tk-d-fast: 180ms;
+  --tk-d-base: 320ms;
+  --tk-d-slow: 600ms;
+  --tk-reveal-y: 24px;
 
   --background: oklch(100% 0 0deg);
   --foreground: oklch(14.5% 0 0deg);
@@ -261,50 +477,597 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /*
+   * ── Type scale: 90 % ──────────────────────────────────────────────────────
+   *
+   * The whole marketing type scale is stepped down to 90 % of browser default:
+   * 16px → 14.4px at the root, and every `rem` value on the site follows from
+   * it. One declaration instead of editing 300 hard-coded sizes, and the
+   * relationships between them stay exactly as designed.
+   *
+   * 80 % was tried first and measured too far: body copy landed at 8.8px and
+   * the smallest eyebrows at 7.9px, well under what anyone can comfortably
+   * read. At 90 % the same labels sit near 9–10px and body copy near 14px,
+   * which is tight but legible.
+   *
+   * `%` rather than `px` on purpose: a percentage is relative to the reader's
+   * own browser setting, so someone who has raised their default text size
+   * still gets a proportionally larger page. `font-size: 14.4px` here would
+   * override that preference outright.
+   *
+   * Scoped with `[data-site='marketing']`, stamped on <html> by the frontend
+   * layout. This stylesheet is imported by the customer dashboard too
+   * (`(app)/layout.tsx` → billing, instances, settings), and that is an
+   * application people work in rather than a page they skim: shrinking its
+   * forms and tables would make it harder to use, not tighter.
+   */
+  html[data-site='marketing'] {
+    font-size: 90%;
+  }
+
   body {
     @apply bg-background text-foreground min-h-[100vh] flex flex-col;
   }
+
+  /*
+   * The marketing site is light-only, deliberately, and this is what enforces it.
+   *
+   * `InitTheme` stamps `data-theme="dark"` on <html> whenever the visitor's OS
+   * is set to dark — it reads `prefers-color-scheme` and has no notion of which
+   * part of the app it is running in. That was harmless for the ~150 `--tk-*`
+   * tokens, none of which the dark block redefines, and harmless for the
+   * components, which carry no `dark:` variants at all.
+   *
+   * It was NOT harmless for `body`: the rule above resolves `bg-background`,
+   * and `--background` IS redefined under `[data-theme='dark']`. So on a
+   * dark-set machine the body painted near-black while every section stayed
+   * light — visible below the fold on short pages, in the scroll bounce, and
+   * behind the page before hydration.
+   *
+   * Pinning the two tokens here fixes it at the root rather than papering over
+   * it with `bg-tk-bg` on each `<main>` (which is what was happening, and is why
+   * it went unnoticed). The dashboard under `(app)` keeps its theme switching:
+   * this is scoped to the marketing tree only.
+   *
+   * To give the marketing site a real dark mode later, remove this block and
+   * define the `--tk-*` palette under `[data-theme='dark']` instead — every
+   * component reads those tokens, so they are the single lever.
+   */
+  html[data-site='marketing'],
+  html[data-site='marketing'] body {
+    --background: var(--tk-bg);
+    --foreground: var(--tk-ink);
+    color-scheme: light;
+  }
 }
 
-html {
-  opacity: 0;
+/*
+ * The document used to be hidden (`html { opacity: 0 }`) until the theme script
+ * stamped a data-theme attribute, which meant the whole marketing site rendered
+ * blank for anyone whose JS was slow, blocked or broken — and blank to any
+ * crawler that does not execute scripts. The theme is applied by an inline
+ * script before paint, so the reveal gate is not needed.
+ */
+
+/*
+ * TKAMS Marketing Animations
+ *
+ * Two safety rules, both learned the hard way:
+ *
+ *  1. Reveals are gated on `.js` (set on <html> by the theme script before
+ *     paint). Without JavaScript the hidden state never applies at all, so the
+ *     page renders fully visible rather than blank.
+ *
+ *  2. The hidden state is time-limited. `tk-reveal` runs backwards from hidden
+ *     to visible and then HOLDS visible via `forwards`, so if the
+ *     IntersectionObserver never fires for an element — off-screen during a
+ *     full-page capture, a missed effect, a torn-down observer — the content
+ *     still appears. An animation that has to succeed for text to be readable
+ *     is a single point of failure; this removes it.
+ *
+ * `data-visible` short-circuits the delay and reveals immediately.
+ */
+.js [data-animate] {
+  animation: tk-reveal-slide var(--tk-d-slow) var(--tk-ease) 1.2s both;
 }
 
-html[data-theme='dark'],
-html[data-theme='light'] {
-  opacity: initial;
-}
-
-/* TKAMS Marketing Animations */
-[data-animate] {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-[data-animate][data-visible='true'] {
+.js [data-animate][data-visible='true'] {
+  animation: none;
   opacity: 1;
   transform: none;
+  transition:
+    opacity var(--tk-d-slow) var(--tk-ease),
+    transform var(--tk-d-slow) var(--tk-ease);
 }
 
-[data-animate-fade] {
-  opacity: 0;
-  transition: opacity 0.7s ease;
+.js [data-animate-fade] {
+  animation: tk-reveal-fade var(--tk-d-slow) var(--tk-ease) 1.2s both;
 }
 
-[data-animate-fade][data-visible='true'] {
+.js [data-animate-fade][data-visible='true'] {
+  animation: none;
   opacity: 1;
+  transition: opacity var(--tk-d-slow) var(--tk-ease);
 }
 
-[data-animate-scale] {
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+@keyframes tk-reveal-slide {
+  from {
+    opacity: 0;
+    transform: translateY(var(--tk-reveal-y));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-[data-animate-scale][data-visible='true'] {
+@keyframes tk-reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tk-reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.js [data-animate-scale] {
+  animation: tk-reveal-scale var(--tk-d-slow) var(--tk-ease) 1.2s both;
+}
+
+.js [data-animate-scale][data-visible='true'] {
+  animation: none;
   opacity: 1;
   transform: scale(1);
+  transition:
+    opacity var(--tk-d-slow) var(--tk-ease),
+    transform var(--tk-d-slow) var(--tk-ease);
+}
+
+/*
+ * ── Reveal ──────────────────────────────────────────────────────────────────
+ *
+ * Used by `marketing/Reveal.tsx`. One direction (content rises), one curve, one
+ * duration. Children of a staggered group carry their own `--tk-reveal-delay`,
+ * set in JS, so a nine-card grid leads the eye along the row instead of landing
+ * all at once.
+ *
+ * Guarded on `.js`: without scripting the content is simply visible, never
+ * pinned at opacity 0 by an animation that will not run.
+ */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(var(--tk-reveal-y));
+  transition:
+    opacity var(--tk-d-slow) var(--tk-ease) var(--tk-reveal-delay, 0ms),
+    transform var(--tk-d-slow) var(--tk-ease) var(--tk-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.js [data-reveal][data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+  /* Released once the entrance is done so the compositor drops the layer. */
+  will-change: auto;
+}
+
+/*
+ * ── Card lift ───────────────────────────────────────────────────────────────
+ *
+ * The one hover affordance on the marketing pages. 2px and a softened shadow:
+ * enough to say "this is one object" on a grid of bordered cards, not enough to
+ * make a page of nine of them feel like a trampoline.
+ *
+ * Deliberately not applied to anything clickable — links and buttons already
+ * carry their own colour change, and two affordances on one target read as a
+ * bug rather than as polish.
+ */
+/*
+ * ── Page furniture ──────────────────────────────────────────────────────────
+ *
+ * The three classes below replace per-section ad-hoc values so the whole site
+ * shares one rhythm — the single biggest difference between this page and the
+ * reference product sites was that every section invented its own spacing.
+ */
+
+/*
+ * ── Dot grid ────────────────────────────────────────────────────────────────
+ *
+ * A 1px dot on a 24px lattice, in a grey barely off the background. Measured
+ * off the reference: `radial-gradient(circle, <grey> 1px, transparent 1px)`.
+ *
+ * This is what stops a fully white page from reading as *empty* — it gives the
+ * ground a surface without adding a single line, which is exactly the problem
+ * the section borders were failing to solve. It runs continuously behind
+ * everything rather than being applied per section.
+ */
+.tk-dotgrid {
+  background-image: radial-gradient(
+    circle,
+    oklch(0.915 0.006 277) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+}
+
+/*
+ * A soft coloured wash, used to give a hero or a product shot something to sit
+ * on. Two or three per page, very diffuse, never a hard edge.
+ */
+.tk-wash {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(8px);
+}
+
+.tk-wash--primary {
+  background: radial-gradient(
+    oklch(0.585 0.229 277 / 0.17) 0%,
+    oklch(0.585 0.229 277 / 0.06) 40%,
+    transparent 74%
+  );
+}
+
+.tk-wash--accent {
+  background: radial-gradient(
+    oklch(0.685 0.19 45 / 0.14) 0%,
+    oklch(0.685 0.19 45 / 0.05) 38%,
+    transparent 72%
+  );
+}
+
+/*
+ * ── Product frame, scaled to fit ────────────────────────────────────────────
+ *
+ * The application frames are laid out at a fixed 1120px — the width the product
+ * is designed for — and then scaled down to whatever width is available. This
+ * is how a product screenshot behaves: it gets smaller on a phone, it does not
+ * reflow into a cramped mobile build of itself.
+ *
+ * `cqw` does the work: 100cqw is the wrapper's own width, so the ratio
+ * `100cqw / 1120px` is exactly the factor that makes the frame fit. It is
+ * capped at 1 so the frame never scales UP past its design size on a wide
+ * screen, which would blur it.
+ *
+ * The wrapper's height has to be reserved manually, because a scaled element
+ * still occupies its unscaled box in layout: 1120 × (9/16) = 630px of frame,
+ * multiplied by the same factor.
+ */
+.tk-frame {
+  /*
+   * The container. It only establishes the query context — nothing here may
+   * use `cqw`, because container units on the element that declares
+   * `container-type` resolve against its own ANCESTOR container, not itself.
+   * Everything that measures the frame lives on `.tk-frame-inner` below.
+   */
+  container-type: inline-size;
+  width: 100%;
+}
+
+.tk-frame-inner {
+  /*
+   * The frame is laid out at a fixed 1120px — the width the product is designed
+   * for — and scaled to fit whatever width is available, capped at 85%.
+   *
+   * The scale is computed as a ratio of two LENGTHS, then made unitless by
+   * dividing by 1px. The obvious spelling, `min(0.85, calc(100cqw / 1120))`, is
+   * invalid CSS: `100cqw / 1120` is still a length while `0.85` is a number,
+   * and `min()` refuses to mix types — the whole declaration is dropped, which
+   * is why an earlier version rendered at full size and was cut off on a phone.
+   * So the ceiling is expressed as a length too (952px = 85% of 1120).
+   */
+  --tk-frame-w: min(952px, 100cqw);
+  --tk-frame-scale: calc(var(--tk-frame-w) / 1120);
+
+  /*
+   * A scaled element still occupies its unscaled box, so the height is
+   * reserved by hand: 1120 × 9/16 = 630, scaled. The width is pinned to the
+   * rendered size and the box is centred, because `transform-origin: top left`
+   * anchors the frame to the left of a full-width parent otherwise.
+   */
+  width: var(--tk-frame-w);
+  height: calc(var(--tk-frame-w) * 0.5625);
+  margin-inline: auto;
+}
+
+/*
+ * The frame's chrome: a lit edge and a coloured glow instead of a drop shadow.
+ *
+ * A dark shadow makes an object look pressed onto paper. What a product shot
+ * wants is the opposite — a screen that is *emitting*. Three layers do that:
+ *
+ *   1. a violet glow below, so the light appears to come off the screen rather
+ *      than fall behind it;
+ *   2. a 1px inset highlight along the top edge, which is how a real display
+ *      catches ambient light;
+ *   3. a hairline ring in the brand violet rather than a grey border, so the
+ *      frame belongs to the palette instead of sitting in a neutral box.
+ *
+ * The outer shadow is kept but tinted violet and made much softer: removing it
+ * entirely leaves the frame floating with nothing under it.
+ */
+.tk-frame-chrome {
+  /*
+   * 1.5px, not 1px.
+   *
+   * The whole frame is scaled down — 0.85 on a desktop, 0.31 on a phone — and
+   * the border scales with it, so a 1px edge lands at 0.3px and disappears.
+   * Compensating with `calc(1px / scale)` does work, but browsers round the
+   * declared width to whole pixels, so it steps coarsely. 1.5px is the simpler
+   * answer: ~1.3px rendered on desktop, still visible at the smallest scale.
+   */
+  border: 1.5px solid oklch(0.585 0.229 277 / 0.22);
+  box-shadow:
+    /* inner top highlight — the lit edge */
+    inset 0 1px 0 oklch(1 0 0 / 0.9),
+    /* inner ring, keeps the violet edge from reading as a hard line */
+    inset 0 0 0 1px oklch(1 0 0 / 0.5),
+    /* close contact shadow */
+    0 2px 6px oklch(0.19 0.026 277 / 0.06),
+    /* the glow */
+    0 18px 50px -12px oklch(0.585 0.229 277 / 0.35),
+    0 40px 90px -30px oklch(0.585 0.229 277 / 0.25);
+}
+
+.tk-frame-inner > * {
+  /* `/ 1px` strips the unit: scale() takes a number, not a length. */
+  transform: scale(calc(var(--tk-frame-scale) / 1px));
+  transform-origin: top left;
+}
+
+/* The standard section shell: one container, one rhythm, no rules. */
+.tk-section {
+  padding-block: var(--tk-section-y);
+}
+
+@media (width >= 64rem) {
+  .tk-section {
+    padding-block: var(--tk-section-y-lg);
+  }
+}
+
+/* Hero display type. One per page. */
+@media (width >= 64rem) {
+  :root {
+    --tk-display: 4.75rem;
+    --tk-headline: 3.25rem;
+    /*
+     * Deliberately not a proportional step down. A supporting chapter should
+     * read as a different KIND of heading, not as the same heading slightly
+     * smaller — roughly 60 % of the headline is where the distinction becomes
+     * unambiguous at a glance.
+     */
+    --tk-subhead: 2rem;
+
+    /*
+     * The utility strip is `lg:grid` — it only exists from 64rem up, which is
+     * the same breakpoint. 68px bar + 34px strip.
+     */
+    --tk-header-h: 102px;
+  }
+}
+
+.tk-display {
+  font-family: var(--font-display);
+  /*
+   * Weight 500, not 800.
+   *
+   * This is the single biggest difference between this page and the product
+   * sites it is measured against. Appwrite sets its 76px headline at weight
+   * 400 with -0.022em tracking; the size carries the emphasis and the light
+   * weight is what makes it read as composed rather than as shouting. An
+   * extrabold display at the same size reads louder and cheaper.
+   *
+   * 500 rather than 400 because Funnel Display is narrower than Aeonik and
+   * thins out faster at display sizes.
+   */
+  font-weight: 500;
+  font-size: var(--tk-display);
+  line-height: 1.04;
+  letter-spacing: -0.024em;
+  overflow-wrap: break-word;
+}
+
+/* Section headline. The three chapters that carry the argument. */
+/*
+ * ── Gradient headings ───────────────────────────────────────────────────────
+ *
+ * A very shallow vertical gradient on display type: the title ink at the top,
+ * fading a step toward the brand violet at the baseline. It is deliberately
+ * subtle — at 2-4rem a strong gradient reads as a 2010s logo, while a shallow
+ * one just makes the type look lit from above.
+ *
+ * Two constraints:
+ *
+ *   1. `background-clip: text` removes the text from the accessibility tree in
+ *      no browser, but it DOES defeat forced-colours mode, so the fallback
+ *      `color` is set first and the gradient only applies where the property is
+ *      supported. In forced colours the gradient is dropped entirely.
+ *   2. It is applied with a class, never globally to h1/h2 — a gradient on a
+ *      heading that sits on the violet ground would be invisible.
+ */
+.tk-gradient-text {
+  color: var(--tk-title);
+  background-image: linear-gradient(
+    180deg,
+    var(--tk-title) 0%,
+    var(--tk-title) 35%,
+    oklch(0.46 0.19 277) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* The descenders get clipped without a little breathing room. */
+  padding-bottom: 0.06em;
+}
+
+@media (forced-colors: active) {
+  .tk-gradient-text {
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
+.tk-headline {
+  font-family: var(--font-display);
+  /* Same reasoning as .tk-display — size carries it, not weight. */
+  font-weight: 600;
+  font-size: var(--tk-headline);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  overflow-wrap: break-word;
+}
+
+/*
+ * Supporting chapter heading — deployment, trust, FAQ.
+ *
+ * Slightly heavier than `.tk-headline` on purpose: at two-thirds the size, 600
+ * would read as thin rather than as quiet, so the weight compensates for what
+ * the size gives up.
+ */
+.tk-subhead {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: var(--tk-subhead);
+  line-height: 1.14;
+  letter-spacing: -0.018em;
+  overflow-wrap: break-word;
+}
+
+/*
+ * A soft brand glow, used behind a hero or a product shot.
+ *
+ * This is the one decorative device worth borrowing wholesale: a large, very
+ * diffuse radial wash of the brand colour under the content. It gives depth
+ * without a border, a gradient bar or a pattern — none of which survive being
+ * looked at twice.
+ */
+.tk-glow::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 70%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 0%,
+    oklch(0.585 0.229 277 / 0.14),
+    transparent 70%
+  );
+}
+
+/*
+ * Same wash, anchored to the foot of the section — for a chapter whose product
+ * screen sits at the bottom rather than the top.
+ */
+.tk-glow--bottom::before {
+  inset: auto -10% -20% -10%;
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 100%,
+    oklch(0.585 0.229 277 / 0.14),
+    transparent 70%
+  );
+}
+
+.tk-lift {
+  transition:
+    transform var(--tk-d-base) var(--tk-ease),
+    box-shadow var(--tk-d-base) var(--tk-ease);
+}
+
+.tk-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px oklch(0.19 0.026 277 / 0.08);
+}
+
+/*
+ * ── Hero load sequence ──────────────────────────────────────────────────────
+ *
+ * The one orchestrated moment on the site. Four beats, 90ms apart, in the order
+ * a reader takes the page in: eyebrow, headline, supporting line and buttons,
+ * then the estimator. Total 270ms of offset — brisk enough that it reads as the
+ * page assembling itself rather than as a performance.
+ *
+ * No fade on the photograph above: an image that fades in reads as a slow
+ * connection, not as design.
+ */
+.js [data-hero-step] {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: tk-hero-in var(--tk-d-slow) var(--tk-ease) forwards;
+  animation-delay: calc(var(--tk-hero-step, 0) * 90ms);
+}
+
+@keyframes tk-hero-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Reduced motion. Content must still be VISIBLE — reveals collapse to their
+ * final state rather than being animated. Looping decorations stop entirely.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --tk-d-fast: 0ms;
+    --tk-d-base: 0ms;
+    --tk-d-slow: 0ms;
+    --tk-reveal-y: 0px;
+  }
+
+  .js [data-animate],
+  .js [data-animate-fade],
+  .js [data-animate-scale] {
+    /* `animation: none` is essential, not cosmetic: the reveal keyframes use
+     * `both`, so leaving them running would pin content at opacity 0. */
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .js [data-reveal],
+  .js [data-hero-step] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .tk-lift,
+  .tk-lift:hover {
+    transform: none;
+    box-shadow: none;
+    transition: none;
+  }
+
+  .tk-float,
+  .tk-pulse-glow,
+  .tk-weave--drift {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @keyframes tk-float {
@@ -343,23 +1106,236 @@ html[data-theme='light'] {
 
 /* TKAMS Marketing fonts */
 .tk-font-display {
-  font-family: var(--font-sora), system-ui, sans-serif;
+  font-family: var(--font-display-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-font-body {
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-font-mono {
   font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
 }
 
-/* TKAMS grid pattern for dark sections */
-.tk-grid-pattern {
+/* Range slider — the homepage estimator. */
+.tk-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tk-sand);
+  cursor: pointer;
+}
+
+.tk-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--tk-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px oklch(0.585 0.229 277 / 0.45);
+  cursor: pointer;
+}
+
+.tk-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--tk-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px oklch(0.585 0.229 277 / 0.45);
+  cursor: pointer;
+}
+
+.tk-range:focus-visible {
+  outline: 2px solid var(--tk-primary);
+  outline-offset: 4px;
+}
+
+/*
+ * Slider inside a product frame. The demos reproduce the application's own
+ * palette, so their controls take the product violet rather than the brand one
+ * and shrink to the product's denser control scale.
+ */
+.tk-range--app {
+  height: 5px;
+  background: var(--ap-border, oklch(0.88 0.006 80));
+}
+
+.tk-range--app::-webkit-slider-thumb {
+  width: 17px;
+  height: 17px;
+  border-width: 2px;
+  background: var(--ap-primary, oklch(0.48 0.2 277));
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.25);
+}
+
+.tk-range--app::-moz-range-thumb {
+  width: 17px;
+  height: 17px;
+  border-width: 2px;
+  background: var(--ap-primary, oklch(0.48 0.2 277));
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.25);
+}
+
+.tk-range--app:focus-visible {
+  outline-color: var(--ap-primary, oklch(0.48 0.2 277));
+}
+
+/*
+ * ── Bandes tissées (woven bands) ────────────────────────────────────────────
+ *
+ * The `.tk-weave` family below is a WATERMARK, capped at 5% opacity. These are
+ * its opposite: motifs meant to be SEEN, used as structure — a selvedge closing
+ * a section, a band under a heading, a field behind a figure.
+ *
+ * The vocabulary is strip-weaving geometry (kente, bogolan, adinkra-adjacent
+ * lozenges and chevrons) drawn in CSS gradients rather than quoted from any one
+ * cloth, so nothing carries a meaning that would be misused by decorating a
+ * software page with it.
+ *
+ * Each band takes its colour from `currentColor` via the `--tk-motif` custom
+ * property, so one class serves the violet, the orange, and the on-dark case
+ * without three copies.
+ */
+
+/* Chevron selvedge — a narrow horizontal strip that closes a chapter. */
+.tk-band-chevron {
+  --tk-motif: var(--tk-primary);
+  height: 14px;
   background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    linear-gradient(135deg, var(--tk-motif) 25%, transparent 25%),
+    linear-gradient(225deg, var(--tk-motif) 25%, transparent 25%);
+  background-size: 14px 14px;
+  background-position: 0 0;
+}
+
+/* Lozenge band — denser, reads as woven cloth at a glance. */
+.tk-band-lozenge {
+  --tk-motif: var(--tk-primary);
+  height: 20px;
+  background-image:
+    linear-gradient(45deg, var(--tk-motif) 25%, transparent 25%, transparent 75%, var(--tk-motif) 75%),
+    linear-gradient(45deg, var(--tk-motif) 25%, transparent 25%, transparent 75%, var(--tk-motif) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+/* Comb / ladder — vertical teeth, used as a left-edge rule on a block. */
+.tk-band-comb {
+  --tk-motif: var(--tk-accent);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--tk-motif) 0 3px,
+    transparent 3px 9px
+  );
+}
+
+/*
+ * Field — a full lozenge lattice sitting BEHIND content rather than under it.
+ * Kept at low alpha because text lands on top of this one; pair it with a mask
+ * so it fades out before it reaches body copy.
+ */
+.tk-field-weave {
+  background-image:
+    repeating-linear-gradient(45deg, oklch(0.585 0.229 277 / 0.10) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, oklch(0.585 0.229 277 / 0.10) 0 1px, transparent 1px 14px);
+  background-size: 28px 28px;
+}
+
+.tk-field-weave--accent {
+  background-image:
+    repeating-linear-gradient(45deg, oklch(0.685 0.19 45 / 0.13) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, oklch(0.685 0.19 45 / 0.13) 0 1px, transparent 1px 14px);
+  background-size: 28px 28px;
+}
+
+/*
+ * On dark grounds the lattice is drawn in light rather than in hue, and much
+ * fainter: white lines on a dark field read far stronger than violet lines on
+ * white at the same alpha, and at 0.07 the weave competed with the text sitting
+ * on top of it. 0.035 keeps it as texture you notice only when you look for it.
+ */
+.tk-field-weave--on-dark {
+  background-image:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 16px),
+    repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 16px);
   background-size: 32px 32px;
+}
+
+/*
+ * ── Trame (the weave) ────────────────────────────────────────────────────
+ *
+ * The African anchor of the design, built from a woven lozenge motif in the
+ * register of strip-weaving (kente, bogolan) rather than a literal quotation
+ * of any one textile.
+ *
+ * Rules of use, in order of importance:
+ *   1. It is ALWAYS a watermark. Opacity never exceeds 0.05 on light surfaces
+ *      or 0.07 on dark ones. If you can read it as a pattern before you read
+ *      the text in front of it, it is too strong.
+ *   2. It is decorative: every element carrying it must be aria-hidden, and it
+ *      must never be the only thing conveying meaning.
+ *   3. It never sits behind body copy — only behind headings, in section
+ *      margins, or as a band between chapters.
+ *
+ * Pure CSS gradients, no image request.
+ */
+.tk-weave {
+  --weave-size: 44px;
+  --weave-color: var(--tk-accent);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--weave-color) 0 1px,
+      transparent 1px calc(var(--weave-size) / 2)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--weave-color) 0 1px,
+      transparent 1px calc(var(--weave-size) / 2)
+    );
+  background-size: var(--weave-size) var(--weave-size);
+  opacity: 0.05;
+}
+
+/* Denser variant: the lozenge reads as a filled diamond chain. */
+.tk-weave--dense {
+  --weave-size: 26px;
+}
+
+/* For dark chapters: the thread is light, not terracotta. */
+.tk-weave--on-dark {
+  --weave-color: oklch(1 0 0);
+  opacity: 0.07;
+}
+
+/*
+ * Horizontal band used to separate two chapters. Fades out at both ends so it
+ * reads as woven selvedge rather than a ruled line.
+ */
+.tk-weave-band {
+  height: 56px;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 18%,
+    #000 82%,
+    transparent
+  );
+}
+
+/* Paper grain. Static, very fine, multiply-blended. */
+.tk-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
 /* Marketing nav styles */
@@ -369,7 +1345,7 @@ html[data-theme='light'] {
   left: 0;
   right: 0;
   z-index: 50;
-  background: oklch(0.955 0.006 80 / 0.85);
+  background: oklch(1 0 0 / 0.88);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--tk-border);
 }
@@ -390,13 +1366,18 @@ html[data-theme='light'] {
   cursor: pointer;
   border: none;
   text-decoration: none;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-btn-primary:hover {
   background: var(--tk-primary-deep);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px oklch(0.48 0.2 277 / 0.3);
+}
+
+.tk-btn-primary:focus-visible,
+.tk-btn-outline:focus-visible,
+.tk-btn-ghost:focus-visible {
+  outline: 2px solid var(--tk-ink);
+  outline-offset: 2px;
 }
 
 .tk-btn-ghost {
@@ -407,13 +1388,13 @@ html[data-theme='light'] {
   background: transparent;
   color: var(--tk-on-dark);
   border: 1px solid oklch(1 0 0 / 0.2);
-  border-radius: 0.625rem;
+  border-radius: 6px;
   font-weight: 500;
   font-size: 0.9375rem;
   transition: background 0.2s, border-color 0.2s;
   cursor: pointer;
   text-decoration: none;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-btn-ghost:hover {
@@ -429,16 +1410,101 @@ html[data-theme='light'] {
   background: transparent;
   color: var(--tk-primary);
   border: 1.5px solid var(--tk-primary);
-  border-radius: 0.625rem;
+  border-radius: 6px;
   font-weight: 600;
   font-size: 0.9375rem;
-  transition: background 0.2s, transform 0.15s;
+  transition: background var(--tk-d-fast) var(--tk-ease);
   cursor: pointer;
   text-decoration: none;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
 }
 
 .tk-btn-outline:hover {
   background: var(--tk-primary-soft);
-  transform: translateY(-1px);
 }
+
+/*
+ * Floating actions vs the cookie notice.
+ *
+ * Both live at the bottom of the viewport. `CookieNotice` stamps
+ * `data-cookie-notice="open"` on <html> while it is up, and the floating
+ * buttons step above it — a CSS-only handshake, so neither component has to
+ * import or know about the other.
+ *
+ * The offsets are the notice's own height plus a gap: it is taller on mobile,
+ * where its sentence wraps to three lines.
+ */
+:root[data-cookie-notice="open"] .tk-floating {
+  bottom: 8.5rem;
+}
+
+@media (width >= 64rem) {
+  :root[data-cookie-notice="open"] .tk-floating {
+    bottom: 6.5rem;
+  }
+}
+/*
+ * ── Demo cursors ─────────────────────────────────────────────────────────
+ *
+ * Lifted verbatim from `apps/web/src/index.css`, the product's own stylesheet,
+ * and scoped to `.tk-demo-cursor`.
+ *
+ * The demo windows reproduce the TKAMS interface down to the title bar and the
+ * sidebar widths, but the pointer stayed the operating system's — so the one
+ * thing the visitor moves themselves was the one thing that did not belong to
+ * the product. Inside a demo the arrow, the hand over a control, the I-beam
+ * over a field and the barred circle over a disabled row are now the same
+ * glyphs the software ships.
+ *
+ * Three notes for whoever touches this next:
+ *
+ *   1. It is SCOPED, deliberately. A custom cursor over a marketing page is an
+ *      affectation and costs legibility; inside a frame that claims to be the
+ *      software, it is accuracy. Every selector carries the `.tk-demo-cursor`
+ *      prefix — do not lift the prefix to make it "consistent".
+ *   2. The SVGs carry their colours literally (`#4f46e5`), so they are portable
+ *      between the two apps without sharing a token. They are not re-tinted by
+ *      the marketing palette and should not be.
+ *   3. The product's `.dark` variants and its `body.cursor-wait` rule are
+ *      omitted: the demos render on a light ground and have no body-level
+ *      loading state. If a dark demo ever ships, copy those too rather than
+ *      inventing new ones.
+ *
+ * Kept byte-identical to the source apart from the prefix, so a diff against
+ * `apps/web` stays meaningful. Regenerate rather than hand-edit.
+ */.tk-demo-cursor, .tk-demo-cursor * { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InNoIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMC44IiBkeT0iMS4yIiBzdGREZXZpYXRpb249IjAuOCIgZmxvb2QtY29sb3I9InJnYmEoMCwwLDAsMC40KSIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgogIDxnIGZpbHRlcj0idXJsKCNzaCkiPgogICAgPHBhdGggZD0iTTQgMiBMNCAxNS41IEw3LjIgMTIuMiBMOS41IDE3LjUgTDExLjIgMTYuOCBMOC45IDExLjUgTDEzLjUgMTEuNSBaIgogICAgICBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8L2c+Cjwvc3ZnPg==") 4 2, auto; }
+.tk-demo-cursor a,
+.tk-demo-cursor button,
+.tk-demo-cursor [role="button"],
+.tk-demo-cursor [role="tab"],
+.tk-demo-cursor [role="menuitem"],
+.tk-demo-cursor [role="option"],
+.tk-demo-cursor select,
+.tk-demo-cursor label[for],
+.tk-demo-cursor [data-slot="select-trigger"],
+.tk-demo-cursor [data-slot="checkbox"],
+.tk-demo-cursor [data-slot="switch"],
+.tk-demo-cursor [data-slot="radio-item"],
+.tk-demo-cursor [tabindex]:not([tabindex="-1"]) { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDIwIDIyIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InNoIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMC44IiBkeT0iMS4yIiBzdGREZXZpYXRpb249IjAuOCIgZmxvb2QtY29sb3I9InJnYmEoMCwwLDAsMC40KSIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgogIDxnIGZpbHRlcj0idXJsKCNzaCkiPgogICAgPHBhdGggZD0iTTcgMSBDNyAxIDYgMSA2IDIuNSBMNiAxMC41CiAgICAgICAgICAgICBDNS41IDEwLjIgNC44IDEwIDQuMiAxMC4yIEMzLjQgMTAuNCAzIDExLjEgMyAxMS44IEwzIDE0CiAgICAgICAgICAgICBDMyAxNy4zIDUuNyAyMCA5IDIwIEwxMSAyMAogICAgICAgICAgICAgQzE0LjMgMjAgMTcgMTcuMyAxNyAxNCBMMTcgMTAuNQogICAgICAgICAgICAgQzE3IDkuNyAxNi4zIDkgMTUuNSA5IEMxNS4xIDkgMTQuNyA5LjIgMTQuNSA5LjUKICAgICAgICAgICAgIEMxNC4yIDguOSAxMy42IDguNSAxMi44IDguNSBDMTIuNCA4LjUgMTIgOC43IDExLjggOQogICAgICAgICAgICAgQzExLjUgOC42IDExIDguMyAxMC41IDguMyBMMTAuNSAyLjUKICAgICAgICAgICAgIEMxMC41IDEuMSA5LjUgMSA5IDEgWiIKICAgICAgZmlsbD0id2hpdGUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPC9nPgo8L3N2Zz4=") 7 1, pointer; }
+.tk-demo-cursor input[type="text"],
+.tk-demo-cursor input[type="email"],
+.tk-demo-cursor input[type="password"],
+.tk-demo-cursor input[type="search"],
+.tk-demo-cursor input[type="number"],
+.tk-demo-cursor input[type="tel"],
+.tk-demo-cursor input[type="url"],
+.tk-demo-cursor textarea,
+.tk-demo-cursor [contenteditable] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDE2IDIwIj48bGluZSB4MT0iMyIgeTE9IjIiIHgyPSIxMyIgeTI9IjIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGxpbmUgeDE9IjgiIHkxPSIyIiB4Mj0iOCIgeTI9IjE4IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzIiB5MT0iMTgiIHgyPSIxMyIgeTI9IjE4IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIzIiB5MT0iMiIgeDI9IjEzIiB5Mj0iMiIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGxpbmUgeDE9IjgiIHkxPSIyIiB4Mj0iOCIgeTI9IjE4IiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMyIgeTE9IjE4IiB4Mj0iMTMiIHkyPSIxOCIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+") 8 10, text; }
+.tk-demo-cursor [disabled],
+.tk-demo-cursor [aria-disabled="true"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDIyIDIyIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxjaXJjbGUgY3g9IjExIiBjeT0iMTEiIHI9IjgiIGZpbGw9InJnYmEoMCwwLDAsMC4xNSkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwxKSIgZmlsdGVyPSJ1cmwoI3IpIi8+PGcgZmlsdGVyPSJ1cmwoI3IpIj48Y2lyY2xlIGN4PSIxMSIgY3k9IjExIiByPSI4IiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIvPjxsaW5lIHgxPSI1LjUiIHkxPSI1LjUiIHgyPSIxNi41IiB5Mj0iMTYuNSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9nPjwvc3ZnPg==") 10 10, not-allowed; }
+.tk-demo-cursor [data-cursor="move"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDIyIDIyIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxwYXRoIGQ9Ik0xMSAyTDEzLjUgNS41TDEyIDUuNUwxMiAxMEwxNi41IDEwTDE2LjUgOC41TDIwIDExTDE2LjUgMTMuNUwxNi41IDEyTDEyIDEyTDEyIDE2LjVMMTMuNSAxNi41TDExIDIwTDguNSAxNi41TDEwIDE2LjVMMTAgMTJMNS41IDEyTDUuNSAxMy41TDIgMTFMNS41IDguNUw1LjUgMTBMMTAgMTBMMTAgNS41TDguNSA1LjVaIiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTgpIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjUsMSkiIGZpbHRlcj0idXJsKCNyKSIvPjxnIGZpbHRlcj0idXJsKCNyKSI+PHBhdGggZD0iTTExIDJMMTMuNSA1LjVMMTIgNS41TDEyIDEwTDE2LjUgMTBMMTYuNSA4LjVMMjAgMTFMMTYuNSAxMy41TDE2LjUgMTJMMTIgMTJMMTIgMTYuNUwxMy41IDE2LjVMMTEgMjBMOC41IDE2LjVMMTAgMTYuNUwxMCAxMkw1LjUgMTJMNS41IDEzLjVMMiAxMUw1LjUgOC41TDUuNSAxMEwxMCAxMEwxMCA1LjVMOC41IDUuNVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPjwvc3ZnPg==") 11 11, move; }
+.tk-demo-cursor [data-cursor="grab"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDIyIDIyIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxwYXRoIGQ9Ik03IDEwIEw3IDUgUTcgMy41IDguNSAzLjUgUTEwIDMuNSAxMCA1IEwxMCA0IFExMCAyLjUgMTEuNSAyLjUgUTEzIDIuNSAxMyA0IEwxMyA1IFExMyAzLjUgMTQuNSAzLjUgUTE2IDMuNSAxNiA1IEwxNiA4IFExNiA2LjUgMTcuNSA2LjUgUTE5IDYuNSAxOSA4IEwxOSAxMyBRMTkgMTcuNSAxNSAxOSBMMTEgMTkgUTcgMTkgNyAxNSBaIiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTgpIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjUsMS41KSIgZmlsdGVyPSJ1cmwoI3IpIi8+PGcgZmlsdGVyPSJ1cmwoI3IpIj48cGF0aCBkPSJNNyAxMCBMNyA1IFE3IDMuNSA4LjUgMy41IFExMCAzLjUgMTAgNSBMMTAgNCBRMTAgMi41IDExLjUgMi41IFExMyAyLjUgMTMgNCBMMTMgNSBRMTMgMy41IDE0LjUgMy41IFExNiAzLjUgMTYgNSBMMTYgOCBRMTYgNi41IDE3LjUgNi41IFExOSA2LjUgMTkgOCBMMTkgMTMgUTE5IDE3LjUgMTUgMTkgTDExIDE5IFE3IDE5IDcgMTUgWiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L2c+PC9zdmc+") 10 6, grab; }
+.tk-demo-cursor [data-cursor="grabbing"],
+.tk-demo-cursor [data-cursor="grab"]:active { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDIyIDIyIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxwYXRoIGQ9Ik00IDkgUTQgNyA2IDcgTDkgNyBROSA2IDExIDYgTDE0IDYgUTE2IDYgMTYgOCBMMTYgOSBRMTcuNSA5IDE3LjUgMTAuNSBMMTcuNSAxMyBRMTcuNSAxNyAxMy41IDE4IEw5IDE4IFE1IDE4IDQgMTUgWiIgZmlsbD0icmdiYSgwLDAsMCwwLjE4KSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC41LDEuNSkiIGZpbHRlcj0idXJsKCNyKSIvPjxnIGZpbHRlcj0idXJsKCNyKSI+PHBhdGggZD0iTTQgOSBRNCA3IDYgNyBMOSA3IFE5IDYgMTEgNiBMMTQgNiBRMTYgNiAxNiA4IEwxNiA5IFExNy41IDkgMTcuNSAxMC41IEwxNy41IDEzIFExNy41IDE3IDEzLjUgMTggTDkgMTggUTUgMTggNCAxNSBaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvZz48L3N2Zz4=") 10 10, grabbing; }
+.tk-demo-cursor [data-cursor="crosshair"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48bGluZSB4MT0iMTAiIHkxPSIyIiB4Mj0iMTAiIHkyPSI4IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIxMCIgeTE9IjEyIiB4Mj0iMTAiIHkyPSIxOCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMiIgeTE9IjEwIiB4Mj0iOCIgeTI9IjEwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIxMiIgeTE9IjEwIiB4Mj0iMTgiIHkyPSIxMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMTAiIHkxPSIyIiB4Mj0iMTAiIHkyPSI4IiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMTAiIHkxPSIxMiIgeDI9IjEwIiB5Mj0iMTgiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIyIiB5MT0iMTAiIHgyPSI4IiB5Mj0iMTAiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIxMiIgeTE9IjEwIiB4Mj0iMTgiIHkyPSIxMCIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMS41IiBmaWxsPSIjNGY0NmU1Ii8+PC9zdmc+") 10 10, crosshair; }
+.tk-demo-cursor [data-cursor="col-resize"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48bGluZSB4MT0iMTAiIHkxPSIzIiB4Mj0iMTAiIHkyPSIxNyIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNyA1TDMgMTBMNyAxNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTMgNUwxNyAxMEwxMyAxNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMTAiIHkxPSIzIiB4Mj0iMTAiIHkyPSIxNyIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTcgNUwzIDEwTDcgMTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMyA1TDE3IDEwTDEzIDE1IiBmaWxsPSJub25lIiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=") 10 10, col-resize; }
+.tk-demo-cursor [data-cursor="row-resize"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48bGluZSB4MT0iMyIgeTE9IjEwIiB4Mj0iMTciIHkyPSIxMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNSA3TDEwIDNMMTUgNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNSAxM0wxMCAxN0wxNSAxMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMyIgeTE9IjEwIiB4Mj0iMTciIHkyPSIxMCIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUgN0wxMCAzTDE1IDciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01IDEzTDEwIDE3TDE1IDEzIiBmaWxsPSJub25lIiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=") 10 10, row-resize; }
+.tk-demo-cursor [data-cursor="zoom-in"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDIyIDIyIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxjaXJjbGUgY3g9IjkiIGN5PSI5IiByPSI2LjUiIGZpbGw9InJnYmEoMCwwLDAsMC4xOCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwxKSIgZmlsdGVyPSJ1cmwoI3IpIi8+PGcgZmlsdGVyPSJ1cmwoI3IpIj48Y2lyY2xlIGN4PSI5IiBjeT0iOSIgcj0iNi41IiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIvPjwvZz48bGluZSB4MT0iOSIgeTE9IjYiIHgyPSI5IiB5Mj0iMTIiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSI2IiB5MT0iOSIgeDI9IjEyIiB5Mj0iOSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGxpbmUgeDE9IjE0IiB5MT0iMTQiIHgyPSIxOSIgeTI9IjE5IiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+") 9 9, zoom-in; }
+.tk-demo-cursor [data-cursor="zoom-out"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDIyIDIyIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxjaXJjbGUgY3g9IjkiIGN5PSI5IiByPSI2LjUiIGZpbGw9InJnYmEoMCwwLDAsMC4xOCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwxKSIgZmlsdGVyPSJ1cmwoI3IpIi8+PGcgZmlsdGVyPSJ1cmwoI3IpIj48Y2lyY2xlIGN4PSI5IiBjeT0iOSIgcj0iNi41IiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIvPjwvZz48bGluZSB4MT0iNiIgeTE9IjkiIHgyPSIxMiIgeTI9IjkiIHN0cm9rZT0iIzRmNDZlNSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSIxNCIgeTE9IjE0IiB4Mj0iMTkiIHkyPSIxOSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==") 9 9, zoom-out; }
+.tk-demo-cursor [data-cursor="help"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgdmlld0JveD0iMCAwIDMwIDMwIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxwYXRoIGQ9Ik01IDNMNSAyMkwxMCAxNi41TDEzLjUgMjRMMTYgMjNMMTIuNSAxNS41TDIwIDE1LjVaIiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTgpIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxLjUsMikiIGZpbHRlcj0idXJsKCNyKSIvPjxnIGZpbHRlcj0idXJsKCNyKSI+PHBhdGggZD0iTTUgM0w1IDIyTDEwIDE2LjVMMTMuNSAyNEwxNiAyM0wxMi41IDE1LjVMMjAgMTUuNVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPjxjaXJjbGUgY3g9IjIyIiBjeT0iMjIiIHI9IjciIGZpbGw9InJnYmEoMCwwLDAsMC4xNSkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwxKSIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMjIiIHI9IjciIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44Ii8+PHRleHQgeD0iMjIiIHk9IjI2LjUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSI3MDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmaWxsPSIjNGY0NmU1Ij4/PC90ZXh0Pjwvc3ZnPg==") 5 3, help; }
+.tk-demo-cursor [data-cursor="copy"] { cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgdmlld0JveD0iMCAwIDMwIDMwIj48ZGVmcz48ZmlsdGVyIGlkPSJyIiB4PSItMjUlIiB5PSItMjUlIiB3aWR0aD0iMTUwJSIgaGVpZ2h0PSIxNTAlIj48ZmVHYXVzc2lhbkJsdXIgaW49IlNvdXJjZUdyYXBoaWMiIHN0ZERldmlhdGlvbj0iMS40IiByZXN1bHQ9ImIiLz48ZmVDb2xvck1hdHJpeCBpbj0iYiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDEgMCAwIDAgMCAwIDIyIC05Ii8+PC9maWx0ZXI+PC9kZWZzPjxwYXRoIGQ9Ik01IDNMNSAyMkwxMCAxNi41TDEzLjUgMjRMMTYgMjNMMTIuNSAxNS41TDIwIDE1LjVaIiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTgpIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxLjUsMikiIGZpbHRlcj0idXJsKCNyKSIvPjxnIGZpbHRlcj0idXJsKCNyKSI+PHBhdGggZD0iTTUgM0w1IDIyTDEwIDE2LjVMMTMuNSAyNEwxNiAyM0wxMi41IDE1LjVMMjAgMTUuNVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPjxjaXJjbGUgY3g9IjIyIiBjeT0iMjIiIHI9IjciIGZpbGw9InJnYmEoMCwwLDAsMC4xNSkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSwxKSIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMjIiIHI9IjciIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0ZjQ2ZTUiIHN0cm9rZS13aWR0aD0iMS44Ii8+PGxpbmUgeDE9IjIyIiB5MT0iMTguNSIgeDI9IjIyIiB5Mj0iMjUuNSIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGxpbmUgeDE9IjE4LjUiIHkxPSIyMiIgeDI9IjI1LjUiIHkyPSIyMiIgc3Ryb2tlPSIjNGY0NmU1IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+") 5 3, copy; }

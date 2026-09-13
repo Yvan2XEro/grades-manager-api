@@ -17,7 +17,7 @@ import { searchFields } from "@/search/fieldOverrides";
 import { getServerSideURL } from "@/utilities/getURL";
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-	return doc?.title ? `${doc.title} | TKAMS` : "TKAMS";
+	return doc?.title ? `${doc.title} — TKAMS` : "TKAMS";
 };
 
 const generateURL: GenerateURL<Post | Page> = ({ doc }) => {

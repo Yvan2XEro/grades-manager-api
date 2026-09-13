@@ -90,17 +90,58 @@ export const en = {
 		login: "Sign in",
 	},
 	hero: {
-		kicker: "Academic management · higher and secondary education",
-		headline_1: "Academic management,",
-		headline_2: "from higher to secondary education.",
-		sub: "Originally built for universities, colleges and institutes, TKAMS now supports secondary schools too, with an offering tailored to their needs.",
-		demo_caption:
-			"Higher education preview · grade entry and LMD deliberations",
+		kicker: "Student Information System · LMD · admissions · finance · portals",
+		headline_1: "The SIS that turns your weeks of deliberations into",
+		headline_2: "hours.",
+		sub: "TKAMS covers the full academic cycle — admissions, tuition fees, schedules, attendance, exams, deliberations, official documents and graduation — in one platform built for LMD institutions in francophone Africa.",
 		cta_primary: "Request a demo →",
 		cta_secondary: "View brochure",
-		badge_lmd: "Higher education: native LMD",
-		badge_bi: "Secondary education: available",
-		badge_live: "Français · English",
+		badge_lmd: "LMD native",
+		badge_bi: "Multi-role portals",
+		badge_live: "In production",
+		cities: "Douala · Yaoundé",
+	},
+	estimator: {
+		question: "How many students do you manage?",
+		students: "students",
+		result_label: "Your annual licence",
+		per_year: "FCFA excl. tax / year",
+		per_student_line: "2,000 FCFA per student",
+		at_floor: "Minimum tier applied",
+		admin_seats: "administrator accounts",
+		per_month: "FCFA per student per month",
+		weeks_value: "3 h",
+		weeks_label: "to deliberate, instead of three weeks",
+		setup_label: "go-live on shared SaaS",
+	},
+	domains: {
+		title: "One piece of software for the whole cycle",
+		link: "See the full functional coverage →",
+		items: [
+			{
+				name: "Student records",
+				desc: "From the application file to class enrolment.",
+			},
+			{
+				name: "Assessment",
+				desc: "Exams, grades, juries and progression.",
+			},
+			{
+				name: "Finance",
+				desc: "Payments, clearance, and access tied to settlement.",
+			},
+			{
+				name: "Documents",
+				desc: "Official papers generated, signed and verifiable.",
+			},
+		],
+	},
+	proof: {
+		title: "The software, as your teams use it",
+		sub: "These are not mockups — they are TKAMS screens.",
+		delib: "The jury decides, the engine applies your rules.",
+		grades: "Teachers enter marks, averages follow.",
+		doc: "The transcript comes out signed, verifiable by scan.",
 	},
 	stats: {
 		title: "A complete platform, in production",
@@ -275,10 +316,10 @@ export const en = {
 			{
 				name: "Standard",
 				badge: "",
-				price: "2,000",
+				price: "2,800",
 				unit: "FCFA / student / year",
-				admin_price: "+ 5,000 FCFA / admin / year",
-				min: "Minimum: 750,000 FCFA excl. tax",
+				admin_price: "+ 7,000 FCFA / admin / year",
+				min: "Minimum tier: 1,000,000 FCFA excl. tax",
 				desc: "Shared SaaS. Ideal for institutions getting started.",
 				features: [
 					"All modules included",
@@ -293,9 +334,9 @@ export const en = {
 			{
 				name: "Pro",
 				badge: "Recommended",
-				price: "2,000",
+				price: "2,800",
 				unit: "FCFA / student / year",
-				admin_price: "+ 5,000 FCFA / admin / year",
+				admin_price: "+ 7,000 FCFA / admin / year",
 				min: "Same pricing — dedicated infrastructure",
 				desc: "Dedicated SaaS or on-premise. For institutions that require isolation.",
 				features: [
@@ -315,7 +356,7 @@ export const en = {
 				price: "Custom",
 				unit: "",
 				admin_price: "",
-				min: "On-premise installation: 1,500,000 FCFA excl. tax",
+				min: "On-premise installation: 2,100,000 FCFA excl. tax",
 				desc: "Multi-entity, consolidated reporting, advanced customization.",
 				features: [
 					"Everything in Pro",
@@ -331,29 +372,27 @@ export const en = {
 		],
 	},
 	deployment: {
+		axis_low: "We host",
+		axis_high: "You host",
 		title: "Four deployment modes",
 		sub: "Choose the level of control that fits your IT department.",
 		modes: [
 			{
-				icon: "☁",
 				title: "Shared SaaS",
 				desc: "Shared infrastructure, deployed in 48h, zero maintenance on the client side.",
 				tag: "Fastest",
 			},
 			{
-				icon: "⚡",
 				title: "Dedicated SaaS",
 				desc: "Your own cloud instance, complete data isolation, same automatic updates.",
 				tag: "Maximum isolation",
 			},
 			{
-				icon: "⚙",
 				title: "Hybrid",
 				desc: "Sensitive data on-premise, application services in the OverBrand cloud.",
 				tag: "Optimal balance",
 			},
 			{
-				icon: "🏛",
 				title: "On-premise",
 				desc: "Complete installation on your servers. Total control. One-time installation fee.",
 				tag: "Total control",
@@ -382,6 +421,11 @@ export const en = {
 		pioneer_tag: "Pioneer program",
 	},
 	demos: {
+		caption_grade:
+			"Live demo · edit a grade, the average and the decision recompute",
+		caption_rules:
+			"Live demo · adjust the parameters, the cohort is re-evaluated instantly",
+		caption_delib: "Live demo · run the deliberation and generate the minutes",
 		grade: {
 			course: "Year 3 · Computer Science",
 			unit: "Algorithms unit · CW 40% + Exam 60%",
@@ -843,6 +887,12 @@ export const en = {
 			submit: "Send message",
 			sending: "Sending…",
 			success: "Message sent! We'll get back to you shortly.",
+			success_title: "Message sent",
+			card_title: "Write to us",
+			card_sub: "Every field but the phone number is needed for us to reply.",
+			required: "This field is required",
+			optional: "optional",
+			server_error: "An error occurred. Please try again.",
 		},
 		info: {
 			email_label: "Email",

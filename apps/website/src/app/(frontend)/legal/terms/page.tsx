@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type React from "react";
 import { getDict, getLocale } from "@/i18n";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 
 export default async function TermsPage() {
 	const locale = await getLocale();
@@ -11,7 +12,8 @@ export default async function TermsPage() {
 	return (
 		<main
 			style={{
-				paddingTop: "68px",
+				// Token, not a literal — see the note in legal/privacy/page.tsx.
+				paddingTop: "var(--tk-header-h)",
 				minHeight: "100vh",
 				background: "var(--tk-bg)",
 			}}
@@ -33,7 +35,8 @@ export default async function TermsPage() {
 					</p>
 					<h1
 						style={{
-							fontFamily: "var(--font-sora), system-ui, sans-serif",
+							fontFamily:
+								"var(--font-display-family), ui-sans-serif, system-ui, sans-serif",
 							fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
 							fontWeight: 800,
 							letterSpacing: "-0.04em",
@@ -65,7 +68,8 @@ export default async function TermsPage() {
 						maxWidth: "48rem",
 						margin: "0 auto",
 						color: "var(--tk-ink)",
-						fontFamily: "var(--font-inter), system-ui, sans-serif",
+						fontFamily:
+							"var(--font-body-family), ui-sans-serif, system-ui, sans-serif",
 						lineHeight: 1.75,
 					}}
 				>
@@ -290,7 +294,8 @@ function LegalSection({
 		<div style={{ marginBottom: "2.5rem" }}>
 			<h2
 				style={{
-					fontFamily: "var(--font-sora), system-ui, sans-serif",
+					fontFamily:
+						"var(--font-display-family), ui-sans-serif, system-ui, sans-serif",
 					fontSize: "1.1875rem",
 					fontWeight: 700,
 					color: "var(--tk-ink)",
@@ -312,4 +317,8 @@ function LegalSection({
 export const metadata: Metadata = {
 	title: "Conditions d'utilisation — TKAMS",
 	description: "Conditions générales d'utilisation de TKAMS par OverBrand.",
+	openGraph: mergeOpenGraph({
+		title: "Conditions d'utilisation — TKAMS",
+		description: "Conditions générales d'utilisation de TKAMS par OverBrand.",
+	}),
 };

@@ -10,8 +10,16 @@ interface CtaProps {
 
 export function Cta({ dict: d, number = "10" }: CtaProps) {
 	return (
-		<section className="relative overflow-hidden bg-tk-dark text-tk-on-dark">
-			<div className="tk-grid-pattern pointer-events-none absolute inset-0 opacity-60" />
+		<section className="relative overflow-hidden bg-tk-primary-deep text-tk-on-primary">
+			{/*
+			 * The woven lattice rather than the square grid this used to carry: a
+			 * technical graph-paper grid on the closing panel said "developer tool"
+			 * on a page whose last word should be institutional.
+			 */}
+			<div
+				aria-hidden="true"
+				className="tk-field-weave--on-dark pointer-events-none absolute inset-0"
+			/>
 			<div className="relative z-[1] mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="h-px w-full bg-white/12" />
 				<div className="py-20 lg:py-28">
@@ -22,14 +30,14 @@ export function Cta({ dict: d, number = "10" }: CtaProps) {
 					<div className="mt-8 grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12">
 						<div className="lg:col-span-8">
 							<AnimateIn>
-								<h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.75rem)] text-tk-on-dark leading-[1.05] tracking-[-0.04em]">
+								<h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.75rem)] text-tk-on-primary leading-[1.05] tracking-[-0.04em]">
 									{d.cta.title}
 								</h2>
 							</AnimateIn>
 						</div>
 						<div className="flex flex-col justify-end gap-7 lg:col-span-4">
 							<AnimateIn delay={100}>
-								<p className="max-w-[44ch] font-body text-[1.0625rem] text-tk-on-dark-soft leading-[1.7]">
+								<p className="max-w-[44ch] font-body text-[length:var(--tk-text-lead)] text-tk-on-primary/85 leading-[1.7]">
 									{d.cta.sub}
 								</p>
 							</AnimateIn>
@@ -51,12 +59,12 @@ export function Cta({ dict: d, number = "10" }: CtaProps) {
 
 					<div className="mt-16">
 						<Rule theme="dark" />
-						<p className="mt-5 font-code text-[0.8125rem] text-tk-on-dark-muted">
+						<p className="mt-5 font-code text-[length:var(--tk-text-sm)] text-tk-on-primary/85">
 							<a
 								href="https://www.overbrand.net/"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="no-underline transition-colors duration-150 hover:text-tk-on-dark"
+								className="no-underline transition-colors duration-150 hover:text-tk-on-primary"
 							>
 								OverBrand
 							</a>

@@ -85,21 +85,21 @@ export function BrochureDownload({
 				</span>
 				<div>
 					<span
-						className={`font-code font-semibold text-[0.7rem] uppercase tracking-[0.12em] ${
+						className={`font-code font-semibold text-[length:var(--tk-text-xs)] uppercase tracking-[0.12em] ${
 							isDark ? "text-tk-primary-bright" : "text-tk-primary"
 						}`}
 					>
 						{b.label}
 					</span>
 					<h3
-						className={`mt-1.5 font-bold font-display text-[1.0625rem] tracking-[-0.02em] ${
+						className={`mt-1.5 font-bold font-display text-[length:var(--tk-text-lead)] tracking-[-0.02em] ${
 							isDark ? "text-tk-on-dark" : "text-tk-ink"
 						}`}
 					>
 						{b.title}
 					</h3>
 					<p
-						className={`mt-1.5 font-body text-[0.9rem] leading-[1.6] ${
+						className={`mt-1.5 font-body text-[length:var(--tk-text-body)] leading-[1.6] ${
 							isDark ? "text-tk-on-dark-soft" : "text-tk-ink-2"
 						}`}
 					>
@@ -130,7 +130,7 @@ export function BrochureDownload({
 					</a>
 				) : (
 					<span
-						className={`inline-flex cursor-not-allowed items-center gap-2 rounded-[0.625rem] border px-5 py-3 font-body font-semibold text-[0.9375rem] ${
+						className={`inline-flex cursor-not-allowed items-center gap-2 rounded-[0.625rem] border px-5 py-3 font-body font-semibold text-[length:var(--tk-text-body)] ${
 							isDark
 								? "border-white/12 text-tk-on-dark-muted"
 								: "border-tk-border text-tk-muted"
@@ -140,7 +140,7 @@ export function BrochureDownload({
 					</span>
 				)}
 				<span
-					className={`font-code text-[0.75rem] tracking-[0.04em] ${
+					className={`font-code text-[length:var(--tk-text-xs)] tracking-[0.04em] ${
 						isDark ? "text-tk-on-dark-muted" : "text-tk-muted"
 					}`}
 				>

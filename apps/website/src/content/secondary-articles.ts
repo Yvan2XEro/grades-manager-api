@@ -179,7 +179,7 @@ export function toPayloadDraft(
 								direction: "ltr",
 								fields: {
 									linkType: "custom",
-									url: "/solutions/secondaire",
+									url: "/secondaire",
 									newTab: false,
 								},
 								children: block(

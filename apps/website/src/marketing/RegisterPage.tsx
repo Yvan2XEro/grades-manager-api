@@ -23,9 +23,10 @@ const BASE_DOMAIN = process.env.NEXT_PUBLIC_TKAMS_BASE_DOMAIN ?? "tkams.com";
 // ─── Shared field styles ──────────────────────────────────────────────────────
 
 const inputCls =
-	"w-full py-3 px-4 bg-tk-bg border border-tk-border rounded-[0.625rem] text-tk-ink text-[0.9375rem] font-body outline-none transition-colors duration-150 focus:border-tk-primary box-border";
+	"w-full py-3 px-4 bg-tk-bg border border-tk-border rounded-[0.625rem] text-tk-ink text-[length:var(--tk-text-body)] font-body outline-none transition-colors duration-150 focus:border-tk-primary box-border";
 const labelCls = "block text-tk-ink-soft text-sm font-medium mb-1.5 font-body";
-const errorCls = "mt-1 text-[0.8125rem] text-[oklch(0.55_0.2_25)] font-body";
+const errorCls =
+	"mt-1 text-[length:var(--tk-text-sm)] text-[oklch(0.55_0.2_25)] font-body";
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
@@ -176,9 +177,9 @@ function Step1({
 										message: d.register.errors.subdomain_min,
 									},
 								})}
-								className="flex-1 bg-transparent px-4 py-3 font-body text-[0.9375rem] text-tk-ink outline-none"
+								className="flex-1 bg-transparent px-4 py-3 font-body text-[length:var(--tk-text-body)] text-tk-ink outline-none"
 							/>
-							<span className="whitespace-nowrap border-tk-border border-l bg-tk-bg-deep px-4 py-3 font-code text-[0.875rem] text-tk-muted">
+							<span className="whitespace-nowrap border-tk-border border-l bg-tk-bg-deep px-4 py-3 font-code text-[length:var(--tk-text-sm)] text-tk-muted">
 								.{BASE_DOMAIN}
 							</span>
 						</div>
@@ -186,7 +187,7 @@ function Step1({
 							<p className={errorCls}>{errors.subdomain.message}</p>
 						) : (
 							subdomain && (
-								<p className="mt-1 font-body text-[0.8125rem] text-tk-muted">
+								<p className="mt-1 font-body text-[length:var(--tk-text-sm)] text-tk-muted">
 									{inst.subdomain_hint}{" "}
 									<span className="font-medium text-tk-primary">
 										https://{subdomain}.{BASE_DOMAIN}
@@ -371,14 +372,14 @@ function Step4({
 						<span className="flex-shrink-0 font-code text-[0.75rem] text-tk-muted uppercase tracking-[0.07em]">
 							{key}
 						</span>
-						<span className="truncate text-right font-body font-medium text-[0.875rem] text-tk-ink">
+						<span className="truncate text-right font-body font-medium text-[length:var(--tk-text-sm)] text-tk-ink">
 							{val}
 						</span>
 					</div>
 				))}
 			</div>
 
-			<p className="text-center font-body text-[0.8125rem] text-tk-muted leading-relaxed">
+			<p className="text-center font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-relaxed">
 				{rv.terms_1}{" "}
 				<Link href="/legal/terms" className="text-tk-primary no-underline">
 					{rv.terms_link}
@@ -496,7 +497,7 @@ function Step5({
 					<h3 className="mb-2 font-bold font-display text-[1.1875rem] text-tk-ink tracking-[-0.02em]">
 						{pg.ready_title}
 					</h3>
-					<p className="font-body text-[0.9375rem] text-tk-muted">
+					<p className="font-body text-[length:var(--tk-text-body)] text-tk-muted">
 						{pg.ready_sub}
 					</p>
 				</div>
@@ -561,7 +562,7 @@ function Step5({
 					<h3 className="mb-2 font-bold font-display text-[1.1875rem] text-tk-ink tracking-[-0.02em]">
 						{pg.pending_approval_title}
 					</h3>
-					<p className="max-w-xs font-body text-[0.9375rem] text-tk-muted">
+					<p className="max-w-xs font-body text-[length:var(--tk-text-body)] text-tk-muted">
 						{pg.pending_approval_sub}
 					</p>
 				</div>
@@ -571,7 +572,7 @@ function Step5({
 
 	return (
 		<div className="flex flex-col gap-3 py-2">
-			<p className="mb-1 text-center font-body text-[0.875rem] text-tk-ink-soft">
+			<p className="mb-1 text-center font-body text-[length:var(--tk-text-sm)] text-tk-ink-soft">
 				{pg.in_progress}
 			</p>
 			{pg.steps.map((label, i) => {
@@ -612,7 +613,7 @@ function Step5({
 							) : null}
 						</div>
 						<span
-							className={`font-body text-[0.875rem] ${
+							className={`font-body text-[length:var(--tk-text-sm)] ${
 								done
 									? "text-tk-ink"
 									: active
@@ -676,7 +677,7 @@ export function RegisterPage({ dict: d }: { dict: Dict }) {
 	const TOTAL_STEPS = 3; // step indicator shows steps 0–2 (institution, admin, seed)
 
 	return (
-		<main className="min-h-screen bg-tk-bg pt-[68px]">
+		<main className="min-h-screen bg-tk-bg pt-[var(--tk-header-h)]">
 			{/* Editorial masthead */}
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="pt-12 pb-10 text-center lg:pt-16">
@@ -771,7 +772,7 @@ export function RegisterPage({ dict: d }: { dict: Dict }) {
 					</div>
 
 					{currentStep < 4 && (
-						<p className="mt-6 text-center font-body text-[0.8125rem] text-tk-muted">
+						<p className="mt-6 text-center font-body text-[length:var(--tk-text-sm)] text-tk-muted">
 							{d.register.already_client}{" "}
 							<a
 								href="mailto:contact@tkams.com"

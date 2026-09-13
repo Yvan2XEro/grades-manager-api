@@ -2,12 +2,41 @@ import { en } from "./en";
 import { fr } from "./fr";
 
 export type Locale = "fr" | "en";
-export type Dict = typeof fr;
+
+/**
+ * Widen literal types to their base primitives, recursively.
+ *
+ * `typeof fr` infers every value as a *literal* ("Accueil", not string), so a
+ * dictionary typed directly against it would reject every translation — the
+ * English "Home" is not assignable to the literal type "Accueil". Widening
+ * keeps the structure (which keys exist, which are arrays, how objects nest)
+ * while letting any string of the right shape satisfy it.
+ */
+type Widen<T> = T extends string
+	? string
+	: T extends number
+		? number
+		: T extends boolean
+			? boolean
+			: T extends ReadonlyArray<infer U>
+				? readonly Widen<U>[]
+				: T extends object
+					? { readonly [K in keyof T]: Widen<T[K]> }
+					: T;
+
+export type Dict = Widen<typeof fr>;
 
 export { setLocale } from "./actions";
 
+/**
+ * FR is the source of truth for the shape; `en` is checked against it here.
+ * This assignment is deliberately NOT a cast — it is what makes a missing or
+ * misspelled English key a build error instead of `undefined` at runtime.
+ */
+const dictionaries: Record<Locale, Dict> = { fr, en };
+
 export function getDict(locale: Locale): Dict {
-	return locale === "en" ? (en as unknown as Dict) : fr;
+	return dictionaries[locale] ?? dictionaries.fr;
 }
 
 export async function getLocale(): Promise<Locale> {

@@ -16,7 +16,7 @@ export const PostHero = async ({ post }: { post: Post }) => {
 		formatAuthors(populatedAuthors) !== "";
 
 	return (
-		<header className="bg-tk-bg pt-[68px]">
+		<header className="bg-tk-bg pt-[var(--tk-header-h)]">
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="pt-10 pb-8">
 					<Link

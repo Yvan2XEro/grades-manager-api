@@ -92,16 +92,59 @@ export const fr = {
 		login: "Connexion",
 	},
 	hero: {
-		kicker: "Gestion académique · supérieur et secondaire",
-		headline_1: "La gestion académique,",
-		headline_2: "du supérieur au secondaire.",
-		sub: "Conçu à l’origine pour les universités, grandes écoles et instituts, TKAMS accompagne désormais aussi les établissements secondaires, avec une offre adaptée à leurs besoins.",
-		demo_caption: "Aperçu du supérieur · saisie des notes et délibérations LMD",
+		kicker:
+			"Système d'Information Étudiant · LMD · admissions · finances · portails",
+		headline_1: "Le SIS qui transforme vos semaines de délibérations en",
+		headline_2: "heures.",
+		sub: "TKAMS couvre l'intégralité du cycle académique — admissions, quitus, emplois du temps, assiduité, examens, délibérations, documents officiels et promotion — en une seule plateforme conçue pour les institutions LMD d'Afrique francophone.",
 		cta_primary: "Demander une démo →",
 		cta_secondary: "Voir la brochure",
-		badge_lmd: "Supérieur : LMD natif",
-		badge_bi: "Secondaire : disponible",
-		badge_live: "Français · English",
+		badge_lmd: "LMD natif",
+		badge_bi: "Portails multi-rôles",
+		badge_live: "En production",
+		cities: "Douala · Yaoundé",
+	},
+	estimator: {
+		question: "Combien d'étudiants gérez-vous ?",
+		students: "étudiants",
+		result_label: "Votre licence annuelle",
+		per_year: "FCFA HT / an",
+		per_student_line: "2 000 FCFA par étudiant",
+		at_floor: "Palier minimum appliqué",
+		admin_seats: "comptes administrateurs",
+		per_month: "FCFA par étudiant et par mois",
+		weeks_value: "3 h",
+		weeks_label: "pour délibérer, au lieu de trois semaines",
+		setup_label: "mise en service en SaaS mutualisé",
+	},
+	domains: {
+		title: "Un seul logiciel pour tout gérer",
+		link: "Voir toute la couverture fonctionnelle →",
+		items: [
+			{
+				name: "Scolarité",
+				desc: "Du dossier de candidature à l'inscription en classe.",
+			},
+			{
+				name: "Évaluation",
+				desc: "Examens, notes, jurys et passage en année supérieure.",
+			},
+			{
+				name: "Finances",
+				desc: "Paiements, quitus et accès conditionné au règlement.",
+			},
+			{
+				name: "Documents",
+				desc: "Pièces officielles générées, signées et vérifiables.",
+			},
+		],
+	},
+	proof: {
+		title: "Le logiciel, tel que vos équipes l'utilisent",
+		sub: "Ce ne sont pas des maquettes : ce sont les écrans de TKAMS.",
+		delib: "Le jury statue, le moteur applique vos règles.",
+		grades: "L'enseignant saisit, la moyenne suit.",
+		doc: "Le relevé sort signé, vérifiable au scan.",
 	},
 	stats: {
 		title: "Une plateforme complète, en production",
@@ -276,10 +319,10 @@ export const fr = {
 			{
 				name: "Standard",
 				badge: "",
-				price: "2 000",
+				price: "2 800",
 				unit: "FCFA / étudiant / an",
-				admin_price: "+ 5 000 FCFA / admin / an",
-				min: "Minimum : 750 000 FCFA HT",
+				admin_price: "+ 7 000 FCFA / admin / an",
+				min: "Palier minimum : 1 000 000 FCFA HT",
 				desc: "SaaS mutualisé. Idéal pour les établissements qui démarrent.",
 				features: [
 					"Tous les modules inclus",
@@ -294,9 +337,9 @@ export const fr = {
 			{
 				name: "Pro",
 				badge: "Recommandé",
-				price: "2 000",
+				price: "2 800",
 				unit: "FCFA / étudiant / an",
-				admin_price: "+ 5 000 FCFA / admin / an",
+				admin_price: "+ 7 000 FCFA / admin / an",
 				min: "Même tarif — infrastructure dédiée",
 				desc: "SaaS dédié ou on-premise. Pour les institutions qui exigent l'isolation.",
 				features: [
@@ -316,7 +359,7 @@ export const fr = {
 				price: "Sur devis",
 				unit: "",
 				admin_price: "",
-				min: "Installation on-premise : 1 500 000 FCFA HT",
+				min: "Installation on-premise : 2 100 000 FCFA HT",
 				desc: "Multi-entités, reporting consolidé, personnalisation avancée.",
 				features: [
 					"Tout de Pro",
@@ -332,29 +375,27 @@ export const fr = {
 		],
 	},
 	deployment: {
+		axis_low: "Nous hébergeons",
+		axis_high: "Vous hébergez",
 		title: "Quatre modes de déploiement",
 		sub: "Choisissez le niveau de contrôle qui convient à votre DSI.",
 		modes: [
 			{
-				icon: "☁",
 				title: "SaaS mutualisé",
 				desc: "Infrastructure partagée, mise en service en 48h, zéro maintenance côté client.",
 				tag: "Le plus rapide",
 			},
 			{
-				icon: "⚡",
 				title: "SaaS dédié",
 				desc: "Votre propre instance cloud, isolation complète des données, mêmes mises à jour automatiques.",
 				tag: "Isolation maximale",
 			},
 			{
-				icon: "⚙",
 				title: "Hybride",
 				desc: "Données sensibles on-premise, services applicatifs dans le cloud OverBrand.",
 				tag: "Équilibre optimal",
 			},
 			{
-				icon: "🏛",
 				title: "On-premise",
 				desc: "Installation complète sur vos serveurs. Contrôle total. Fee d'installation unique.",
 				tag: "Contrôle total",
@@ -383,6 +424,11 @@ export const fr = {
 		pioneer_tag: "Programme pionniers",
 	},
 	demos: {
+		caption_grade:
+			"Démo en direct · modifiez une note, la moyenne et la décision se recalculent",
+		caption_rules:
+			"Démo en direct · réglez les paramètres, la cohorte est réévaluée instantanément",
+		caption_delib: "Démo en direct · lancez la délibération et générez le PV",
 		grade: {
 			course: "Licence 3 · Informatique",
 			unit: "UE Algorithmique · CC 40% + Examen 60%",
@@ -844,6 +890,13 @@ export const fr = {
 			submit: "Envoyer le message",
 			sending: "Envoi en cours…",
 			success: "Message envoyé ! Nous vous répondrons rapidement.",
+			success_title: "Message envoyé",
+			card_title: "Écrivez-nous",
+			card_sub:
+				"Tous les champs sauf le téléphone sont nécessaires pour vous répondre.",
+			required: "Ce champ est requis",
+			optional: "facultatif",
+			server_error: "Une erreur est survenue. Veuillez réessayer.",
 		},
 		info: {
 			email_label: "Email",

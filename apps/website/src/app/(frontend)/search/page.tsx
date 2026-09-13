@@ -54,7 +54,7 @@ export default async function Page({
 	});
 
 	return (
-		<main className="min-h-screen bg-tk-bg pt-[68px]">
+		<main className="tk-dotgrid min-h-screen bg-tk-bg pt-[var(--tk-header-h)]">
 			<PageClient />
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="pt-12 pb-10 lg:pt-16">

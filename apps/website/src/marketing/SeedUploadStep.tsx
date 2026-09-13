@@ -244,10 +244,10 @@ function TemplateCard({
 				</div>
 
 				<div className="min-w-0 flex-1">
-					<p className="font-display font-semibold text-[0.9rem] text-tk-ink leading-tight">
+					<p className="font-display font-semibold text-[length:var(--tk-text-body)] text-tk-ink leading-tight">
 						{tpl.title}
 					</p>
-					<p className="mt-0.5 font-body text-[0.8125rem] text-tk-muted leading-tight">
+					<p className="mt-0.5 font-body text-[length:var(--tk-text-sm)] text-tk-muted leading-tight">
 						{isValid && status.kind === "valid"
 							? `${status.totalRows} ${status.totalRows > 1 ? sd.rows_many : sd.rows_one}`
 							: tpl.desc}
@@ -259,7 +259,7 @@ function TemplateCard({
 						<button
 							type="button"
 							onClick={handleRemove}
-							className="flex items-center gap-1.5 px-3 py-1.5 font-body text-[0.8125rem] text-tk-muted transition-colors duration-150 hover:text-[oklch(0.55_0.2_25)]"
+							className="flex items-center gap-1.5 px-3 py-1.5 font-body text-[length:var(--tk-text-sm)] text-tk-muted transition-colors duration-150 hover:text-[oklch(0.55_0.2_25)]"
 						>
 							<IconX />
 							{sd.remove}
@@ -268,7 +268,7 @@ function TemplateCard({
 						<a
 							href={`/api/seed-template/${type}`}
 							download
-							className="flex items-center gap-1.5 rounded-[0.5rem] border border-tk-primary/25 px-3 py-1.5 font-body font-medium text-[0.8125rem] text-tk-primary no-underline transition-colors duration-150 hover:bg-tk-primary/6"
+							className="flex items-center gap-1.5 rounded-[0.5rem] border border-tk-primary/25 px-3 py-1.5 font-body font-medium text-[length:var(--tk-text-sm)] text-tk-primary no-underline transition-colors duration-150 hover:bg-tk-primary/6"
 						>
 							<IconDownload />
 							{sd.download}
@@ -298,19 +298,19 @@ function TemplateCard({
 						}`}
 					>
 						{status.kind === "validating" ? (
-							<div className="flex items-center gap-2 font-body text-[0.875rem] text-tk-muted">
+							<div className="flex items-center gap-2 font-body text-[length:var(--tk-text-body)] text-tk-muted">
 								<div className="h-4 w-4 animate-spin rounded-full border-2 border-tk-primary border-t-transparent" />
 								{sd.validating}
 							</div>
 						) : (
 							<>
-								<p className="font-body font-medium text-[0.875rem] text-tk-ink">
+								<p className="font-body font-medium text-[length:var(--tk-text-body)] text-tk-ink">
 									{sd.drop_idle}
 								</p>
-								<p className="font-body text-[0.8125rem] text-tk-muted">
+								<p className="font-body text-[length:var(--tk-text-sm)] text-tk-muted">
 									{sd.drop_or}
 								</p>
-								<p className="mt-0.5 font-code text-[0.75rem] text-tk-muted/70">
+								<p className="mt-0.5 font-code text-[length:var(--tk-text-xs)] text-tk-muted/70">
 									{sd.accepted}
 								</p>
 							</>
@@ -334,14 +334,14 @@ function TemplateCard({
 								{status.messages.slice(0, 3).map((msg, i) => (
 									<li
 										key={i}
-										className="flex items-start gap-1.5 font-body text-[0.8125rem] text-[oklch(0.5_0.18_25)]"
+										className="flex items-start gap-1.5 font-body text-[length:var(--tk-text-sm)] text-[oklch(0.5_0.18_25)]"
 									>
 										<span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full bg-current" />
 										{msg}
 									</li>
 								))}
 								{status.messages.length > 3 && (
-									<li className="pl-3 font-body text-[0.75rem] text-tk-muted">
+									<li className="pl-3 font-body text-[length:var(--tk-text-xs)] text-tk-muted">
 										+{status.messages.length - 3} erreur
 										{status.messages.length - 3 > 1 ? "s" : ""}
 									</li>
@@ -406,7 +406,7 @@ export function SeedUploadStep({
 					<circle cx="8" cy="8" r="6" />
 					<path d="M8 7v4M8 5.5v.5" />
 				</svg>
-				<p className="font-body text-[0.8125rem] text-tk-primary leading-relaxed">
+				<p className="font-body text-[length:var(--tk-text-sm)] text-tk-primary leading-relaxed">
 					{sd.optional_notice}
 				</p>
 			</div>

@@ -36,3 +36,9 @@ scripts/
 datas/
 
 *.local.json
+
+# Playwright MCP browser profile (machine-local)
+.playwright-mcp/
+
+# Ad-hoc screenshots dropped at the repo root during UI work
+/*.png

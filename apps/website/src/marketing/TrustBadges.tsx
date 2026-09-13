@@ -91,7 +91,7 @@ export function TrustBadges({
 								}
 							/>
 						)}
-						<span className="font-body font-medium text-[0.8125rem]">
+						<span className="font-body font-medium text-[length:var(--tk-text-sm)]">
 							{b.name}
 						</span>
 					</div>
@@ -114,14 +114,14 @@ export function TrustBadges({
 					<Seal className={isDark ? "text-white/30" : "text-tk-muted"} />
 					<span className="flex flex-col leading-tight">
 						<span
-							className={`font-code text-[0.65rem] uppercase tracking-[0.12em] ${
+							className={`font-code text-[length:var(--tk-text-xs)] uppercase tracking-[0.12em] ${
 								isDark ? "text-white/40" : "text-tk-muted"
 							}`}
 						>
 							Label / certif.
 						</span>
 						<span
-							className={`font-body text-[0.75rem] ${
+							className={`font-body text-[length:var(--tk-text-xs)] ${
 								isDark ? "text-tk-on-dark-muted" : "text-tk-ink-2"
 							}`}
 						>

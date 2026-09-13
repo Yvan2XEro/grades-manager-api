@@ -4,7 +4,7 @@ Internal maintenance notes. This file is not served by the website.
 
 ## Positioning and scope
 
-TKAMS retains its higher education origins while introducing a dedicated secondary school offering at `/solutions/secondaire`. LMD features and existing pricing remain explicitly associated with higher education. Marketing copy is available in French and English through the website's existing dictionaries.
+TKAMS retains its higher education origins while introducing a dedicated secondary school offering at `/secondaire` (with a permanent redirect from `/solutions/secondaire`). LMD features and existing pricing remain explicitly associated with higher education. Marketing copy is available in French and English through the website's existing dictionaries.
 
 The registration forms direct secondary schools to assisted setup because the current provisioning workflow still uses the higher education image. These changes do not provision secondary instances.
 
@@ -49,3 +49,9 @@ Find the drafts under **Payload → Posts**, using these slugs:
 - Biome checks passed for the changed source files.
 - Browser checks returned HTTP 200 with no horizontal overflow for the homepage and secondary page in French and English at 375, 768, 1024 and 1440 pixels. Mobile secondary navigation was exercised in both languages.
 - The three CMS records were verified as drafts.
+
+## Redesign integration
+
+The redesign keeps the MongoDB adapter, package and string document IDs from `dev`. PostgreSQL-specific migrations from the design branch are excluded. The website must keep a MongoDB `DATABASE_URL`; this merge does not migrate or reset CMS data. The existing article importer remains adapter-independent through the Payload Local API.
+
+The redesigned homepage and `/secondaire` page include the availability announcement. Existing article links to `/solutions/secondaire` continue to work through the permanent redirect. The registration forms retain the assisted secondary setup path.

@@ -106,7 +106,7 @@ function PlaceholderBody({
 			</svg>
 			{label ? (
 				<p
-					className={`max-w-[36ch] font-body font-medium text-[0.9rem] ${
+					className={`max-w-[36ch] font-body font-medium text-[length:var(--tk-text-body)] ${
 						isDark ? "text-tk-on-dark-soft" : "text-tk-ink-2"
 					}`}
 				>
@@ -115,7 +115,7 @@ function PlaceholderBody({
 			) : null}
 			<div className="flex flex-col items-center gap-1">
 				<span
-					className={`rounded-full px-2.5 py-0.5 font-code text-[0.7rem] tracking-[0.05em] ${
+					className={`rounded-full px-2.5 py-0.5 font-code text-[length:var(--tk-text-xs)] tracking-[0.05em] ${
 						isDark
 							? "bg-white/8 text-tk-on-dark-soft"
 							: "bg-tk-primary-soft text-tk-primary"
@@ -125,7 +125,7 @@ function PlaceholderBody({
 				</span>
 				{caption ? (
 					<code
-						className={`font-code text-[0.7rem] ${
+						className={`font-code text-[length:var(--tk-text-xs)] ${
 							isDark ? "text-white/35" : "text-tk-muted"
 						}`}
 					>
@@ -225,7 +225,7 @@ export function Showcase({
 						))}
 					</div>
 					<div
-						className={`mx-auto flex items-center gap-1.5 rounded-md px-3 py-1 font-code text-[0.7rem] ${
+						className={`mx-auto flex items-center gap-1.5 rounded-md px-3 py-1 font-code text-[length:var(--tk-text-xs)] ${
 							isDark
 								? "bg-white/6 text-tk-on-dark-soft"
 								: "bg-tk-bg-deep text-tk-muted"
@@ -272,7 +272,7 @@ export function Showcase({
 			{frame}
 			{src && caption ? (
 				<figcaption
-					className={`mt-3 font-code text-[0.75rem] tracking-[0.02em] ${
+					className={`mt-3 font-code text-[length:var(--tk-text-xs)] tracking-[0.02em] ${
 						isDark ? "text-tk-on-dark-soft" : "text-tk-muted"
 					}`}
 				>
