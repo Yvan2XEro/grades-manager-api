@@ -78,9 +78,15 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 EXPOSE 3001
 
 # Non-root user for container security
+# /home/app/data/pglite  — default PGlite data dir (PGLITE_DATA_DIR)
+# /home/app/storage       — default file upload dir  (STORAGE_LOCAL_ROOT)
 RUN groupadd -r app && useradd -r -g app -s /sbin/nologin app -m -d /home/app && \
     mkdir -p /home/app/data/pglite /home/app/storage/uploads && \
     chown -R app:app /home/app
+
+# Sane defaults for persistent data dirs — override with env vars if needed
+ENV PGLITE_DATA_DIR=/home/app/data/pglite
+ENV STORAGE_LOCAL_ROOT=/home/app/storage/uploads
 
 # Monorepo root — bun needs package.json + bunfig.toml for workspace resolution
 COPY --from=deps --chown=app:app /repo/package.json  ./package.json
