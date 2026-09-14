@@ -105,8 +105,11 @@ COPY --from=builder --chown=app:app /repo/packages/emails ./packages/emails
 ENV HOME=/home/app
 USER app
 
+# Set CWD to the app dir so relative paths in index.ts (./dist, ./storage) resolve correctly.
+# Bun still finds workspace deps by traversing up to /app/node_modules/.
+WORKDIR /app/apps/secondary
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD wget -qO- http://localhost:${PORT:-3001}/api/auth/get-session 2>/dev/null || exit 1
 
-# Run TypeScript source directly — bun handles it natively, no bundling required
-CMD ["bun", "run", "/app/apps/secondary/index.ts"]
+CMD ["bun", "run", "index.ts"]
