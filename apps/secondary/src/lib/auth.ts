@@ -23,7 +23,19 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 		sendResetPassword: async ({ user, url }) => {
-			await sendResetPassword({ to: user.email, name: user.name, url });
+			// Better Auth places ?token= before the # when using URL.searchParams,
+			// resulting in /?token=xxx#/reset-password where getToken() misses it.
+			// Rebuild as /#/reset-password?token=xxx (hash-router compatible).
+			const token = new URL(url).searchParams.get("token");
+			const base =
+				process.env.CORS_ORIGINS?.split(",")[0]?.trim() ??
+				"http://localhost:5173";
+			const frontendUrl = `${base}/#/reset-password?token=${token}`;
+			await sendResetPassword({
+				to: user.email,
+				name: user.name,
+				url: frontendUrl,
+			});
 		},
 	},
 	plugins: [
