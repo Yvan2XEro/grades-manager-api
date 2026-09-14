@@ -671,6 +671,14 @@ const Sidebar: React.FC = () => {
 					<p className="text-center text-[10px] text-muted-foreground/40">
 						Cédric TEFOYE · Kana Yvan
 					</p>
+					<p className="mt-1 text-center text-[10px] text-muted-foreground/40">
+						<a
+							href="mailto:support@tkams.com"
+							className="transition-colors hover:text-muted-foreground/60"
+						>
+							support@tkams.com
+						</a>
+					</p>
 				</div>
 			)}
 		</>

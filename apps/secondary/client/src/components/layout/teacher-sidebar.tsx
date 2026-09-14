@@ -109,6 +109,14 @@ export function TeacherSidebar() {
 							<LogOut className="h-4 w-4" />
 						</button>
 					</div>
+					<p className="mt-2 text-center text-[10px] text-muted-foreground/50">
+						<a
+							href="mailto:support@tkams.com"
+							className="transition-colors hover:text-muted-foreground/70"
+						>
+							support@tkams.com
+						</a>
+					</p>
 				</div>
 			</SidebarFooter>
 		</Sidebar>
