@@ -495,7 +495,7 @@
     "generate": "Générer",
     "generate_all": "Tout générer",
     "publish": "Publier",
-    "print": "Imprimer",
+    "print": "Imprimer / PDF",
     "regenerate": "Regénérer",
     "download_pdf": "Télécharger PDF",
     "not_found": "Bulletin introuvable.",
@@ -529,7 +529,6 @@
     "action_validate_vp": "Valider (Censeur)",
     "action_sign": "Signer",
     "action_publish": "Publier",
-    "print": "Imprimer / PDF",
     "rank": "Rang",
     "absences": "Absences"
   },
@@ -1286,5 +1285,12 @@
     "success": "{{count}} lignes créées avec succès",
     "no_data": "Aucune donnée trouvée dans le fichier",
     "error_invalid": "Fichier invalide — vérifiez le format"
+  },
+  "roles": {
+    "owner": "Propriétaire",
+    "admin": "Administrateur",
+    "principal": "Directeur",
+    "teacher": "Enseignant",
+    "member": "Membre"
   }
 }

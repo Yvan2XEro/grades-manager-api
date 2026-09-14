@@ -2,6 +2,7 @@ import { createAccessControl } from "better-auth/plugins/access";
 import {
 	adminAc,
 	defaultStatements,
+	ownerAc,
 } from "better-auth/plugins/organization/access";
 
 const statement = {
@@ -45,6 +46,24 @@ export const principal = ac.newRole({
 	settings: ["read"],
 	notifications: ["create", "read"],
 	official_exams: ["read"],
+});
+
+// owner = admin + organization:delete (can delete the org itself)
+export const owner = ac.newRole({
+	...ownerAc.statements,
+	students: ["create", "read", "update", "delete"],
+	enrollments: ["create", "read", "update", "delete"],
+	subjects: ["create", "read", "update", "delete"],
+	assessments: ["create", "read", "update"],
+	report_cards: ["read", "publish", "print"],
+	class_councils: ["create", "read", "update"],
+	attendance: ["create", "read", "update"],
+	finance: ["create", "read", "update", "delete"],
+	timetable: ["create", "read", "update", "delete"],
+	staff: ["create", "read", "update", "delete"],
+	settings: ["read", "update"],
+	notifications: ["create", "read"],
+	official_exams: ["create", "read", "update"],
 });
 
 export const admin = ac.newRole({

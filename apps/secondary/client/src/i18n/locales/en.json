@@ -495,7 +495,7 @@
     "generate": "Generate",
     "generate_all": "Generate all",
     "publish": "Publish",
-    "print": "Print",
+    "print": "Print / PDF",
     "regenerate": "Regenerate",
     "download_pdf": "Download PDF",
     "not_found": "Report card not found.",
@@ -529,7 +529,6 @@
     "action_validate_vp": "Validate (VP)",
     "action_sign": "Sign",
     "action_publish": "Publish",
-    "print": "Print / PDF",
     "rank": "Rank",
     "absences": "Absences"
   },
@@ -1286,5 +1285,12 @@
     "success": "{{count}} rows created successfully",
     "no_data": "No data found in file",
     "error_invalid": "Invalid file — check the format"
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Admin",
+    "principal": "Principal",
+    "teacher": "Teacher",
+    "member": "Member"
   }
 }

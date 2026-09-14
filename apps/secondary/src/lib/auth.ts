@@ -14,7 +14,7 @@ import {
 	sendStaffInvitation,
 	sendWelcomeInstitution,
 } from "./email";
-import { ac, admin, principal, teacher } from "./permissions";
+import { ac, admin, owner, principal, teacher } from "./permissions";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
@@ -41,7 +41,7 @@ export const auth = betterAuth({
 	plugins: [
 		organization({
 			ac,
-			roles: { admin, principal, teacher },
+			roles: { owner, admin, principal, teacher },
 			allowUserToCreateOrganization: true,
 			sendInvitationEmail: async ({ invitation, organization, inviter }) => {
 				const base =

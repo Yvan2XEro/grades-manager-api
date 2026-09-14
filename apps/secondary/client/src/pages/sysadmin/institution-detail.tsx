@@ -204,7 +204,7 @@ function AddMemberDialog({
 }) {
 	const { t } = useTranslation();
 	const [user, setUser] = useState<{ id: string; name: string } | null>(null);
-	const [role, setRole] = useState<"admin" | "principal" | "teacher">(
+	const [role, setRole] = useState<"owner" | "admin" | "principal" | "teacher">(
 		"teacher",
 	);
 
@@ -236,6 +236,10 @@ function AddMemberDialog({
 						<Combobox
 							options={[
 								{
+									value: "owner",
+									label: t("roles.owner", "Owner"),
+								},
+								{
 									value: "teacher",
 									label: t("roles.teacher", "Teacher"),
 								},
@@ -250,7 +254,7 @@ function AddMemberDialog({
 							]}
 							value={role}
 							onValueChange={(v) =>
-								setRole(v as "admin" | "principal" | "teacher")
+								setRole(v as "owner" | "admin" | "principal" | "teacher")
 							}
 							placeholder={t("sysadmin.institution_detail.select_role")}
 						/>
@@ -734,7 +738,7 @@ export function InstitutionMembersTab() {
 			header: t("sysadmin.institution_detail.col_role"),
 			cell: ({ row }) => (
 				<span className="rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs capitalize">
-					{row.original.orgRole}
+					{t(`roles.${row.original.orgRole}`, row.original.orgRole)}
 				</span>
 			),
 		},
@@ -761,7 +765,7 @@ export function InstitutionMembersTab() {
 							updateRole.mutate({
 								institutionId: id!,
 								userId: row.original.userId,
-								role: val as "admin" | "principal" | "teacher",
+								role: val as "owner" | "admin" | "principal" | "teacher",
 							})
 						}
 					>
@@ -769,6 +773,7 @@ export function InstitutionMembersTab() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
+							<SelectItem value="owner">{t("roles.owner", "Owner")}</SelectItem>
 							<SelectItem value="teacher">
 								{t("roles.teacher", "Teacher")}
 							</SelectItem>

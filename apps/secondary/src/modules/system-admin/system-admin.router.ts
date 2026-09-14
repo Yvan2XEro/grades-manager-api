@@ -321,7 +321,7 @@ export const router = trpcRouter({
 						id: generateOrgId(),
 						organizationId: orgId,
 						userId: input.ownerUserId,
-						role: "admin",
+						role: "owner",
 						createdAt: new Date(),
 					});
 				}
@@ -406,7 +406,9 @@ export const router = trpcRouter({
 			z.object({
 				institutionId: z.string(),
 				userId: z.string(),
-				role: z.enum(["admin", "principal", "teacher"]).default("teacher"),
+				role: z
+					.enum(["owner", "admin", "principal", "teacher"])
+					.default("teacher"),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -452,7 +454,7 @@ export const router = trpcRouter({
 			z.object({
 				institutionId: z.string(),
 				userId: z.string(),
-				role: z.enum(["admin", "principal", "teacher"]),
+				role: z.enum(["owner", "admin", "principal", "teacher"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
