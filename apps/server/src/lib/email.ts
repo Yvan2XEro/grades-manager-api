@@ -1,3 +1,10 @@
+import {
+	type Locale,
+	ResetPassword,
+	render,
+	StaffInvitation,
+	WelcomeInstitution,
+} from "@tkams/emails";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
 
@@ -44,3 +51,66 @@ function buildSendFn(): EmailSendFn {
 }
 
 export const defaultEmailSend: EmailSendFn = buildSendFn();
+
+export async function sendResetPassword({
+	to,
+	name,
+	url,
+	locale = "fr",
+}: {
+	to: string;
+	name: string;
+	url: string;
+	locale?: Locale;
+}) {
+	const html = await render(ResetPassword({ name, url, locale }));
+	const subject =
+		locale === "en"
+			? "Reset your TKAMS password"
+			: "Réinitialisez votre mot de passe TKAMS";
+	await defaultEmailSend(to, subject, html);
+}
+
+export async function sendStaffInvitation({
+	to,
+	name,
+	role,
+	institution,
+	invitedBy,
+	url,
+	locale = "fr",
+}: {
+	to: string;
+	name: string;
+	role: string;
+	institution: string;
+	invitedBy: string;
+	url: string;
+	locale?: Locale;
+}) {
+	const html = await render(
+		StaffInvitation({ name, role, institution, invitedBy, url, locale }),
+	);
+	const subject =
+		locale === "en"
+			? `You're invited to join ${institution} on TKAMS`
+			: `Invitation à rejoindre ${institution} sur TKAMS`;
+	await defaultEmailSend(to, subject, html);
+}
+
+export async function sendWelcomeInstitution({
+	to,
+	name,
+	institution,
+	locale = "fr",
+}: {
+	to: string;
+	name: string;
+	institution: string;
+	locale?: Locale;
+}) {
+	const html = await render(WelcomeInstitution({ name, institution, locale }));
+	const subject =
+		locale === "en" ? "Welcome to TKAMS 🎓" : "Bienvenue sur TKAMS 🎓";
+	await defaultEmailSend(to, subject, html);
+}
