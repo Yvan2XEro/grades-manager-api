@@ -12,7 +12,7 @@ import {
 } from "@react-email/components";
 import type { Locale } from "../i18n";
 import { t } from "../i18n";
-import { APP_URL, colors, LOGO_URL, WEBSITE_URL } from "./brand";
+import { colors, LOGO_URL, WEBSITE_URL } from "./brand";
 
 interface LayoutProps {
 	preview: string;
@@ -58,7 +58,7 @@ export function Layout({ preview, locale = "fr", children }: LayoutProps) {
 								tkams.com
 							</Link>
 							{"  ·  "}
-							<Link href={`${APP_URL}/contact`} style={footerLink}>
+							<Link href={`${WEBSITE_URL}/contact`} style={footerLink}>
 								{tr.common.help_link}
 							</Link>
 						</Text>
@@ -83,7 +83,7 @@ const body: React.CSSProperties = {
 	fontFamily:
 		"-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 	margin: 0,
-	padding: "32px 0 48px",
+	padding: "12px 0 20px",
 };
 
 const accentBar: React.CSSProperties = {
@@ -94,24 +94,25 @@ const accentBar: React.CSSProperties = {
 const container: React.CSSProperties = {
 	backgroundColor: colors.white,
 	borderRadius: 12,
-	margin: "24px auto 0",
+	margin: "10px auto 0",
 	maxWidth: 560,
 	overflow: "hidden",
 	boxShadow: "0 2px 16px rgba(97, 96, 255, 0.08)",
 };
 
 const header: React.CSSProperties = {
-	backgroundColor: colors.dark,
-	padding: "28px 40px",
+	backgroundColor: colors.bgDeep,
+	borderBottom: `1px solid ${colors.border}`,
+	padding: "12px 24px",
 };
 
 const divider: React.CSSProperties = {
 	borderColor: colors.border,
-	margin: "0 40px",
+	margin: "0 24px",
 };
 
 const footer: React.CSSProperties = {
-	padding: "24px 40px 32px",
+	padding: "12px 24px 16px",
 };
 
 const footerTagline: React.CSSProperties = {

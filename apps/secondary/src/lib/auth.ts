@@ -9,7 +9,11 @@ import { and, eq, isNull } from "drizzle-orm";
 import * as authSchema from "../db/auth";
 import { db } from "../db/index";
 import { staff } from "../db/schema";
-import { sendResetPassword } from "./email";
+import {
+	sendResetPassword,
+	sendStaffInvitation,
+	sendWelcomeInstitution,
+} from "./email";
 import { ac, admin, principal, teacher } from "./permissions";
 
 export const auth = betterAuth({
@@ -27,7 +31,34 @@ export const auth = betterAuth({
 			ac,
 			roles: { admin, principal, teacher },
 			allowUserToCreateOrganization: true,
+			sendInvitationEmail: async ({ invitation, organization, inviter }) => {
+				const base =
+					process.env.CORS_ORIGINS?.split(",")[0]?.trim() ??
+					"http://localhost:5173";
+				const url = `${base}/#/accept-invitation/${invitation.id}?email=${encodeURIComponent(invitation.email)}`;
+				await sendStaffInvitation({
+					to: invitation.email,
+					name: invitation.email.split("@")[0],
+					role: invitation.role,
+					institution: organization.name,
+					invitedBy: inviter.user.name,
+					url,
+				}).catch((err) => console.error("[email] sendInvitationEmail", err));
+			},
 			organizationHooks: {
+				afterCreate: async ({
+					organization,
+					member,
+				}: {
+					organization: { name: string };
+					member: { user: { email: string; name: string } };
+				}) => {
+					await sendWelcomeInstitution({
+						to: member.user.email,
+						name: member.user.name,
+						institution: organization.name,
+					}).catch((err) => console.error("[email] welcome institution", err));
+				},
 				afterAcceptInvitation: async (data) => {
 					await db
 						.update(staff)

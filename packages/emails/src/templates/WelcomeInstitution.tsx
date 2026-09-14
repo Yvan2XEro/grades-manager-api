@@ -1,6 +1,6 @@
 import { Section, Text } from "@react-email/components";
 import { Button } from "../components/Button";
-import { APP_URL, colors } from "../components/brand";
+import { colors, WEBSITE_URL } from "../components/brand";
 import { Layout } from "../components/Layout";
 import type { Locale } from "../i18n";
 import { t } from "../i18n";
@@ -15,7 +15,7 @@ interface WelcomeInstitutionProps {
 export default function WelcomeInstitution({
 	name = "Dr. Mbarga",
 	institution = "Université de Yaoundé I",
-	appUrl = APP_URL,
+	appUrl = WEBSITE_URL,
 	locale = "fr",
 }: WelcomeInstitutionProps) {
 	const tr = t(locale);
@@ -54,7 +54,7 @@ export default function WelcomeInstitution({
 
 const hero: React.CSSProperties = {
 	background: `linear-gradient(135deg, ${colors.dark} 0%, ${colors.darkSecondary} 100%)`,
-	padding: "36px 40px",
+	padding: "20px 24px",
 	textAlign: "center",
 };
 
@@ -66,7 +66,7 @@ const heroTitle: React.CSSProperties = {
 	margin: 0,
 };
 
-const content: React.CSSProperties = { padding: "36px 40px 32px" };
+const content: React.CSSProperties = { padding: "20px 24px 16px" };
 
 const greeting: React.CSSProperties = {
 	color: colors.ink,

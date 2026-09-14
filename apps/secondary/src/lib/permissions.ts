@@ -1,6 +1,11 @@
 import { createAccessControl } from "better-auth/plugins/access";
+import {
+	adminAc,
+	defaultStatements,
+} from "better-auth/plugins/organization/access";
 
 const statement = {
+	...defaultStatements,
 	students: ["create", "read", "update", "delete"],
 	enrollments: ["create", "read", "update", "delete"],
 	subjects: ["create", "read", "update", "delete"],
@@ -43,6 +48,7 @@ export const principal = ac.newRole({
 });
 
 export const admin = ac.newRole({
+	...adminAc.statements,
 	students: ["create", "read", "update", "delete"],
 	enrollments: ["create", "read", "update", "delete"],
 	subjects: ["create", "read", "update", "delete"],

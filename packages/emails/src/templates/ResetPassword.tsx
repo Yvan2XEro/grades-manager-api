@@ -13,7 +13,7 @@ interface ResetPasswordProps {
 
 export default function ResetPassword({
 	name = "Marie",
-	url = "https://app.tkams.com/reset-password?token=example",
+	url = "https://tkams.com",
 	locale = "fr",
 }: ResetPasswordProps) {
 	const tr = t(locale);
@@ -47,7 +47,7 @@ export default function ResetPassword({
 }
 
 const content: React.CSSProperties = {
-	padding: "40px 40px 32px",
+	padding: "20px 24px 16px",
 };
 
 const greeting: React.CSSProperties = {

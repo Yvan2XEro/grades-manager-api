@@ -6,7 +6,6 @@
 #   docker build -f apps/secondary/Dockerfile -t tkams-secondary .
 #
 # Required env vars at runtime:
-#   DATABASE_URL      — PostgreSQL connection string (USE_PGLITE defaults to false)
 #   BETTER_AUTH_SECRET — min 32 chars
 #   BETTER_AUTH_URL   — public URL of this server, e.g. https://secondary.example.com
 #   CORS_ORIGINS      — comma-separated allowed origins, e.g. https://app.example.com
@@ -15,6 +14,7 @@
 #   PORT              — defaults to 3001
 #   NODE_ENV          — defaults to production
 #   USE_PGLITE        — set to "true" to use embedded PGlite instead of PostgreSQL
+#   DATABASE_URL      — PostgreSQL connection string (when USE_PGLITE=false)
 #   PGLITE_DATA_DIR   — persistent data dir when USE_PGLITE=true (e.g. /data/pglite)
 #   PUPPETEER_EXECUTABLE_PATH — override Chromium binary (default: /usr/bin/chromium)
 
@@ -31,38 +31,35 @@ COPY apps/web/package.json       ./apps/web/package.json
 COPY apps/website/package.json   ./apps/website/package.json
 COPY apps/remotion/package.json  ./apps/remotion/package.json
 COPY apps/secondary/package.json ./apps/secondary/package.json
+COPY packages/emails/package.json ./packages/emails/package.json
 
 # Skip Puppeteer Chromium download; system Chromium is installed in the runner
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 RUN bun install --frozen-lockfile
 
-# ─── Stage 2: Build client + server ──────────────────────────────────────────
+# ─── Stage 2: Build React SPA client ─────────────────────────────────────────
 FROM deps AS builder
 
 WORKDIR /repo
 
-# Copy the secondary app source (client + server)
+# Copy app source and shared packages
 COPY apps/secondary/ ./apps/secondary/
+COPY packages/emails/ ./packages/emails/
 
 WORKDIR /repo/apps/secondary
 
-# 1. Build React SPA → dist/
-# 2. Bundle Hono server → out/index.js  (bun --target bun bundles all JS deps)
-# 3. Copy PGlite WASM blobs so the server can fall back to embedded DB if needed
-RUN bun run build:client && \
-    bun build ./index.ts --outdir ./out --target bun && \
-    cp -r ./src/db/migrations ./out/migrations && \
-    cp /repo/node_modules/@electric-sql/pglite/dist/pglite.data ./out/ && \
-    cp /repo/node_modules/@electric-sql/pglite/dist/pglite.wasm ./out/
+# Build only the React SPA → dist/
+# The Hono server runs natively with bun (no bundling needed).
+# Bundling breaks @react-email/render because it uses bun-specific dynamic
+# imports (react-dom/server.bun) and requires prettier at runtime — both fail
+# when bundled. Bun handles TypeScript natively in production.
+RUN bun run build:client
 
 # ─── Stage 3: Production runner ───────────────────────────────────────────────
 FROM oven/bun:1.3.10 AS runner
 
 # Install system Chromium for Puppeteer (report-card PDF generation).
-# On Debian Bookworm (bun 1.3+ base), some legacy package names were
-# removed (e.g. libasound2 → libasound2t64). Installing chromium without
-# --no-install-recommends lets apt resolve the correct transitive deps.
 RUN apt-get update && \
     apt-get install -y \
       chromium \
@@ -72,34 +69,38 @@ RUN apt-get update && \
 WORKDIR /app
 
 ENV NODE_ENV=production
-# Tell the server bundle where Drizzle SQL migrations live at runtime
-ENV MIGRATIONS_DIR=/app/migrations
+# Drizzle migration files live in the source tree (no bundle means no copy needed)
+ENV MIGRATIONS_DIR=/app/apps/secondary/src/db/migrations
 # Point Puppeteer to the system Chromium
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 # Default port (override with PORT env var)
 EXPOSE 3001
 
-# Non-root user for container security — created BEFORE COPY so --chown works.
-# Pre-create writable dirs so Docker volume mounts inherit the right ownership.
+# Non-root user for container security
 RUN groupadd -r app && useradd -r -g app -s /sbin/nologin app -m -d /home/app && \
     mkdir -p /home/app/data/pglite /home/app/storage/uploads && \
     chown -R app:app /home/app
 
-# Bundled Hono server + PGlite WASM blobs
-COPY --from=builder --chown=app:app /repo/apps/secondary/out/ ./out/
+# Monorepo root — bun needs package.json + bunfig.toml for workspace resolution
+COPY --from=deps --chown=app:app /repo/package.json  ./package.json
+COPY --from=deps --chown=app:app /repo/bunfig.toml   ./bunfig.toml
 
-# Built React SPA (served by Hono serveStatic from ./dist)
-COPY --from=builder --chown=app:app /repo/apps/secondary/dist/ ./dist/
+# Full node_modules (all production + dev deps for workspace packages)
+COPY --from=deps --chown=app:app /repo/node_modules  ./node_modules
 
-# Drizzle SQL migration files — applied at startup by pushSchema()
-COPY --from=builder --chown=app:app /repo/apps/secondary/src/db/migrations/ ./migrations/
+# App source (index.ts, src/, and dist/ from build:client)
+COPY --from=builder --chown=app:app /repo/apps/secondary ./apps/secondary
 
-# bun 1.3+ writes cache to $HOME/.bun; give it a real home dir
+# Shared email package (workspace: @tkams/emails)
+COPY --from=builder --chown=app:app /repo/packages/emails ./packages/emails
+
+# bun 1.3+ writes cache to $HOME/.bun
 ENV HOME=/home/app
 USER app
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD wget -qO- http://localhost:${PORT:-3001}/api/auth/get-session 2>/dev/null || exit 1
 
-CMD ["bun", "./out/index.js"]
+# Run TypeScript source directly — bun handles it natively, no bundling required
+CMD ["bun", "run", "/app/apps/secondary/index.ts"]

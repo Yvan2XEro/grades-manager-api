@@ -19,7 +19,7 @@ export default function StaffInvitation({
 	role = "Enseignant",
 	institution = "Université de Yaoundé I",
 	invitedBy = "Dr. Mbarga",
-	url = "https://app.tkams.com/invite?token=example",
+	url = "https://tkams.com",
 	locale = "fr",
 }: StaffInvitationProps) {
 	const tr = t(locale);
@@ -58,13 +58,12 @@ export default function StaffInvitation({
 				</Section>
 
 				<Text style={expiry}>{r.expiry}</Text>
-				<Text style={about}>{r.about}</Text>
 			</Section>
 		</Layout>
 	);
 }
 
-const content: React.CSSProperties = { padding: "40px 40px 32px" };
+const content: React.CSSProperties = { padding: "20px 24px 16px" };
 
 const badge: React.CSSProperties = {
 	backgroundColor: colors.primarySoft,
@@ -129,11 +128,4 @@ const expiry: React.CSSProperties = {
 	fontSize: 13,
 	margin: "0 0 24px",
 	padding: "12px 16px",
-};
-
-const about: React.CSSProperties = {
-	color: colors.muted,
-	fontSize: 13,
-	lineHeight: "20px",
-	margin: 0,
 };

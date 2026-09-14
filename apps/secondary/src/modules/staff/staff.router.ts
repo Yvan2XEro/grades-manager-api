@@ -24,20 +24,6 @@ const bulkCreateSchema = z.object({
 		.max(500),
 });
 
-function extractOrigin(headers: Headers): string {
-	const origin = headers.get("origin");
-	if (origin) return origin;
-	const referer = headers.get("referer");
-	if (referer) {
-		try {
-			return new URL(referer).origin;
-		} catch {
-			/* ignore */
-		}
-	}
-	return process.env.CORS_ORIGINS?.split(",")[0]?.trim() ?? "";
-}
-
 export const router = trpcRouter({
 	list: tenantProcedure
 		.input(listSchema)
@@ -50,8 +36,7 @@ export const router = trpcRouter({
 				input,
 				ctx.institution.id,
 				ctx.institution.orgId ?? "",
-				ctx.session.user.id,
-				extractOrigin(ctx.headers),
+				ctx.headers,
 			),
 		),
 
@@ -62,8 +47,7 @@ export const router = trpcRouter({
 				input.id,
 				ctx.institution.id,
 				ctx.institution.orgId ?? "",
-				ctx.session.user.id,
-				extractOrigin(ctx.headers),
+				ctx.headers,
 			),
 		),
 

@@ -2,7 +2,7 @@ export const fr = {
 	common: {
 		greeting: (name: string) => `Bonjour ${name},`,
 		footer_tagline:
-			"La plateforme SIS LMD-first pour les universités et IPES d'Afrique francophone.",
+			"La plateforme SIS LMD-first pour les universités et IPES d'Afrique.",
 		footer_unsubscribe: "Vous recevez cet email car vous avez un compte TKAMS.",
 		footer_rights: "© 2026 TKAMS. Tous droits réservés.",
 		visit_platform: "Accéder à la plateforme",
@@ -28,8 +28,6 @@ export const fr = {
 			`Vous avez été invité(e) en tant que <strong>${role}</strong> pour rejoindre <strong>${institution}</strong> sur TKAMS.`,
 		cta: "Accepter l'invitation",
 		expiry: "Cette invitation expire dans 48 heures.",
-		about:
-			"TKAMS est la plateforme de gestion académique LMD conçue pour les universités francophones.",
 	},
 	welcomeInstitution: {
 		subject: "Bienvenue sur TKAMS 🎓",

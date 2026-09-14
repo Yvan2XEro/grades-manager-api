@@ -1,6 +1,4 @@
-import { generateId } from "better-auth";
-import { invitation } from "../../db/auth";
-import { db } from "../../db/index";
+import { auth } from "../../lib/auth";
 import { conflict, notFound } from "../../lib/errors";
 import * as repo from "./staff.repo";
 
@@ -11,39 +9,6 @@ const ROLE_TO_ORG_ROLE: Record<string, string> = {
 	vice_principal: "teacher",
 	staff: "teacher",
 };
-
-async function createInvitation(opts: {
-	email: string;
-	role: string;
-	organizationId: string;
-	inviterId: string;
-}): Promise<string> {
-	const id = generateId();
-	const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
-	await db.insert(invitation).values({
-		id,
-		organizationId: opts.organizationId,
-		email: opts.email,
-		role: ROLE_TO_ORG_ROLE[opts.role] ?? "teacher",
-		status: "pending",
-		expiresAt,
-		inviterId: opts.inviterId,
-	});
-	return id;
-}
-
-function buildInviteUrl(
-	origin: string,
-	invitationId: string,
-	email: string,
-): string {
-	const base =
-		origin ||
-		process.env.CORS_ORIGINS?.split(",")[0]?.trim() ||
-		"http://localhost:5173";
-	// HashRouter: frontend routes are prefixed with /#/
-	return `${base}/#/accept-invitation/${invitationId}?email=${encodeURIComponent(email)}`;
-}
 
 export async function list(
 	institutionId: string,
@@ -70,8 +35,7 @@ export async function create(
 	},
 	institutionId: string,
 	orgId: string,
-	inviterId: string,
-	origin: string,
+	headers: Headers,
 ) {
 	const existing = await repo.findByEmail(data.email, institutionId);
 	if (existing) throw conflict("STAFF_EMAIL_EXISTS");
@@ -85,20 +49,22 @@ export async function create(
 		role: data.role ?? "teacher",
 	});
 
-	let inviteUrl: string | null = null;
 	try {
-		const invId = await createInvitation({
-			email: data.email,
-			role: data.role ?? "teacher",
-			organizationId: orgId,
-			inviterId,
+		const inv = await auth.api.createInvitation({
+			body: {
+				email: data.email,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				role: (ROLE_TO_ORG_ROLE[data.role ?? "teacher"] ?? "teacher") as any,
+				organizationId: orgId,
+			},
+			headers,
 		});
+		const invId = (inv as { id: string }).id;
 		await repo.updateInvitationId(staffRow.id, institutionId, invId);
-		inviteUrl = buildInviteUrl(origin, invId, data.email);
-		return { ...staffRow, invitationId: invId, inviteUrl };
-	} catch {
-		// Invitation creation failed (e.g. email already invited) — staff is created, no link
-		return { ...staffRow, invitationId: null, inviteUrl: null };
+		return { ...staffRow, invitationId: invId };
+	} catch (err) {
+		console.error("[staff] invitation failed", err);
+		return { ...staffRow, invitationId: null };
 	}
 }
 
@@ -133,8 +99,7 @@ export async function resendInvite(
 	id: string,
 	institutionId: string,
 	orgId: string,
-	inviterId: string,
-	origin: string,
+	headers: Headers,
 ) {
 	const staffRow = await repo.findById(id, institutionId);
 	if (!staffRow) throw notFound("STAFF_NOT_FOUND");
@@ -142,15 +107,20 @@ export async function resendInvite(
 		throw conflict("STAFF_ACCOUNT_EXISTS");
 	}
 
-	const invId = await createInvitation({
-		email: staffRow.email,
-		role: staffRow.role ?? "teacher",
-		organizationId: orgId,
-		inviterId,
+	const inv = await auth.api.createInvitation({
+		body: {
+			email: staffRow.email,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			role: (ROLE_TO_ORG_ROLE[staffRow.role ?? "teacher"] ?? "teacher") as any,
+			organizationId: orgId,
+			resend: true,
+		},
+		headers,
 	});
+	const invId = (inv as { id: string }).id;
 	await repo.updateInvitationId(id, institutionId, invId);
-	const inviteUrl = buildInviteUrl(origin, invId, staffRow.email);
-	return { invitationId: invId, inviteUrl };
+
+	return { invitationId: invId };
 }
 
 export async function count(institutionId: string) {

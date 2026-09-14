@@ -17,12 +17,6 @@ import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -73,48 +67,6 @@ const ROLE_COLORS: Record<string, string> = {
 	staff: "bg-muted text-muted-foreground",
 };
 
-function InviteLinkModal({
-	open,
-	onClose,
-	link,
-}: {
-	open: boolean;
-	onClose: () => void;
-	link: string;
-}) {
-	const { t } = useTranslation();
-	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="max-w-md">
-				<DialogHeader>
-					<DialogTitle>
-						{t("staff.invite_link_title", "Share invite link")}
-					</DialogTitle>
-				</DialogHeader>
-				<p className="text-muted-foreground text-sm">
-					{t(
-						"staff.invite_link_hint",
-						"The staff member will use this link to set their password and activate their account.",
-					)}
-				</p>
-				<div className="flex gap-2">
-					<Input readOnly value={link} className="font-mono text-xs" />
-					<Button
-						size="sm"
-						variant="outline"
-						onClick={() => navigator.clipboard.writeText(link)}
-					>
-						<ClipboardCopy className="h-4 w-4" />
-					</Button>
-				</div>
-				<div className="flex justify-end pt-2">
-					<Button onClick={onClose}>{t("common.close", "Close")}</Button>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
 export function Staff() {
 	const { t } = useTranslation();
 	useBreadcrumbs([
@@ -132,7 +84,6 @@ export function Staff() {
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "lastName", desc: false },
 	]);
-	const [resendLink, setResendLink] = useState<string | null>(null);
 
 	const sortCol = sorting[0];
 	const orderBy = (
@@ -151,9 +102,9 @@ export function Staff() {
 	});
 
 	const resendInvite = trpc.staff.resendInvite.useMutation({
-		onSuccess: (data) => {
+		onSuccess: (_, vars) => {
 			utils.staff.list.invalidate();
-			setResendLink(data.inviteUrl);
+			toast.success(t("staff.invite_resent", "Invitation resent"));
 		},
 		onError: (err) => errorToast(err, t),
 	});
@@ -244,13 +195,10 @@ export function Staff() {
 				const isPending = !member.authUserId;
 
 				const copyLink = () => {
-					if (member.invitationId) {
-						const url = `${window.location.origin}/#/accept-invitation/${member.invitationId}?email=${encodeURIComponent(member.email)}`;
-						navigator.clipboard.writeText(url);
-						toast.success(t("staff.link_copied", "Link copied to clipboard"));
-					} else {
-						resendInvite.mutate({ id: member.id });
-					}
+					if (!member.invitationId) return;
+					const url = `${window.location.origin}/#/accept-invitation/${member.invitationId}?email=${encodeURIComponent(member.email)}`;
+					navigator.clipboard.writeText(url);
+					toast.success(t("staff.link_copied", "Link copied to clipboard"));
 				};
 
 				return (
@@ -429,14 +377,6 @@ export function Staff() {
 				onSuccess={() => {}}
 				staff={editingStaff}
 			/>
-
-			{resendLink && (
-				<InviteLinkModal
-					open={!!resendLink}
-					onClose={() => setResendLink(null)}
-					link={resendLink}
-				/>
-			)}
 		</div>
 	);
 }
