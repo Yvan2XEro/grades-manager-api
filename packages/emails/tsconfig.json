@@ -7,8 +7,7 @@
     "jsxImportSource": "react",
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "./out"
+    "declaration": false
   },
-  "include": ["index.ts", "src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "out", "client"]
+  "include": ["src"]
 }

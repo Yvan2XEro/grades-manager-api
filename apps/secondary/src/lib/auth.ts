@@ -9,13 +9,19 @@ import { and, eq, isNull } from "drizzle-orm";
 import * as authSchema from "../db/auth";
 import { db } from "../db/index";
 import { staff } from "../db/schema";
+import { sendResetPassword } from "./email";
 import { ac, admin, principal, teacher } from "./permissions";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
 	secret: process.env.BETTER_AUTH_SECRET!,
 	baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3001",
-	emailAndPassword: { enabled: true },
+	emailAndPassword: {
+		enabled: true,
+		sendResetPassword: async ({ user, url }) => {
+			await sendResetPassword({ to: user.email, name: user.name, url });
+		},
+	},
 	plugins: [
 		organization({
 			ac,
