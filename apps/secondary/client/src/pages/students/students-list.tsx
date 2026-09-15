@@ -188,7 +188,7 @@ export function StudentsList() {
 								.then((res) => ({ created: res.length }))
 						}
 					/>
-					<Button onClick={() => setDialogOpen(true)}>
+					<Button onClick={() => setDialogOpen(true)} data-tour="students-add">
 						<UserPlus className="mr-2 h-4 w-4" />
 						{t("students.add", "Add student")}
 					</Button>

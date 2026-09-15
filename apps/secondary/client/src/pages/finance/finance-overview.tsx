@@ -471,7 +471,10 @@ export function FinanceOverview() {
 						<Settings2 className="mr-2 h-4 w-4" />
 						{t("fees.setup_fees", "Fee schedule")}
 					</Button>
-					<Button onClick={() => setPaymentDialogOpen(true)}>
+					<Button
+						onClick={() => setPaymentDialogOpen(true)}
+						data-tour="finance-payment"
+					>
 						<Plus className="mr-2 h-4 w-4" />
 						{t("fees.record_payment", "Record payment")}
 					</Button>

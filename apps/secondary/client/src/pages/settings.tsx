@@ -1049,17 +1049,17 @@ export function Settings() {
 						{t("settings.tab_profile", "Profile")}
 					</TabsTrigger>
 					{isAdmin && (
-						<TabsTrigger value="school">
+						<TabsTrigger value="school" data-tour="settings-school-tab">
 							{t("settings.tab_school", "School")}
 						</TabsTrigger>
 					)}
 					{isAdmin && (
-						<TabsTrigger value="academic">
+						<TabsTrigger value="academic" data-tour="settings-academic-tab">
 							{t("settings.tab_academic", "Academic")}
 						</TabsTrigger>
 					)}
 					{isAdmin && (
-						<TabsTrigger value="terms">
+						<TabsTrigger value="terms" data-tour="settings-terms-tab">
 							{t("settings.tab_terms", "Terms")}
 						</TabsTrigger>
 					)}

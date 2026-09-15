@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router";
 import { authClient, useSession } from "@/lib/auth-client";
 
-type TourStep = { selector: string; title: string; body: string };
+type TourStep = {
+	selector: string;
+	route: string;
+	title: string;
+	body: string;
+	activate?: boolean;
+};
 
 const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 	{
-		selector: "[data-tour='dashboard']",
+		selector: "[data-tour='dashboard-overview']",
+		route: "/",
 		title: t("tour.dashboard_title", "Your dashboard"),
 		body: t(
 			"tour.dashboard_body",
@@ -14,7 +22,8 @@ const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 		),
 	},
 	{
-		selector: "[data-tour='students']",
+		selector: "[data-tour='students-add']",
+		route: "/students",
 		title: t("tour.students_title", "Manage students"),
 		body: t(
 			"tour.students_body",
@@ -22,7 +31,8 @@ const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 		),
 	},
 	{
-		selector: "[data-tour='classes']",
+		selector: "[data-tour='classes-add']",
+		route: "/classes",
 		title: t("tour.classes_title", "Organise classes"),
 		body: t(
 			"tour.classes_body",
@@ -30,7 +40,8 @@ const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 		),
 	},
 	{
-		selector: "[data-tour='grades']",
+		selector: "[data-tour='grades-workflow']",
+		route: "/grades",
 		title: t("tour.grades_title", "Enter grades"),
 		body: t(
 			"tour.grades_body",
@@ -38,7 +49,17 @@ const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 		),
 	},
 	{
-		selector: "[data-tour='report-cards']",
+		selector: "[data-tour='grades-save']",
+		route: "/grades",
+		title: t("tour.grades_save_title", "Save grades safely"),
+		body: t(
+			"tour.grades_save_body",
+			"After entering marks, use Save to validate and publish the changes for this assessment.",
+		),
+	},
+	{
+		selector: "[data-tour='report-cards-workflow']",
+		route: "/report-cards",
 		title: t("tour.report_cards_title", "Prepare report cards"),
 		body: t(
 			"tour.report_cards_body",
@@ -46,7 +67,8 @@ const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 		),
 	},
 	{
-		selector: "[data-tour='class-councils']",
+		selector: "[data-tour='class-councils-create']",
+		route: "/class-councils",
 		title: t("tour.councils_title", "Run class councils"),
 		body: t(
 			"tour.councils_body",
@@ -54,7 +76,8 @@ const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 		),
 	},
 	{
-		selector: "[data-tour='finance']",
+		selector: "[data-tour='finance-payment']",
+		route: "/finance",
 		title: t("tour.school_title", "Follow school life"),
 		body: t(
 			"tour.school_body",
@@ -62,17 +85,41 @@ const stepsFor = (t: (key: string, fallback: string) => string): TourStep[] => [
 		),
 	},
 	{
-		selector: "[data-tour='settings']",
+		selector: "[data-tour='settings-school-tab']",
+		route: "/settings",
+		activate: true,
 		title: t("tour.settings_title", "Configure your school"),
 		body: t(
 			"tour.settings_body",
 			"Update the school profile, academic configuration, terms, language and security settings.",
 		),
 	},
+	{
+		selector: "[data-tour='settings-academic-tab']",
+		route: "/settings",
+		activate: true,
+		title: t("tour.academic_title", "Set up the academic year"),
+		body: t(
+			"tour.academic_body",
+			"Manage academic years, classes and the rules that structure your school year.",
+		),
+	},
+	{
+		selector: "[data-tour='settings-terms-tab']",
+		route: "/settings",
+		activate: true,
+		title: t("tour.terms_title", "Define your terms"),
+		body: t(
+			"tour.terms_body",
+			"Create and publish terms so grades, reports and councils use the same calendar.",
+		),
+	},
 ];
 
 export function AdminProductTour() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const location = useLocation();
 	const { data: session } = useSession();
 	const { data: org } = authClient.useActiveOrganization();
 	const member = org?.members?.find(
@@ -105,17 +152,31 @@ export function AdminProductTour() {
 
 	useEffect(() => {
 		if (!open) return;
-		const target = document.querySelector(steps[index]?.selector);
-		target?.scrollIntoView({ behavior: "smooth", block: "center" });
-		const updateRect = () =>
+		const currentStep = steps[index];
+		if (!currentStep) return;
+		if (location.pathname !== currentStep.route) {
+			setTargetRect(null);
+			navigate(currentStep.route);
+			return;
+		}
+		let activated = false;
+		const updateRect = () => {
+			const target = document.querySelector(currentStep.selector);
+			if (currentStep.activate && !activated && target instanceof HTMLElement) {
+				activated = true;
+				target.click();
+			}
+			target?.scrollIntoView({ behavior: "smooth", block: "center" });
 			setTargetRect(target?.getBoundingClientRect() ?? null);
-		const timeout = window.setTimeout(updateRect, 250);
+		};
+		updateRect();
+		const interval = window.setInterval(updateRect, 250);
 		window.addEventListener("resize", updateRect);
 		return () => {
-			window.clearTimeout(timeout);
+			window.clearInterval(interval);
 			window.removeEventListener("resize", updateRect);
 		};
-	}, [open, index, steps]);
+	}, [open, index, steps, location.pathname, navigate]);
 
 	if (!isAdmin || !open) return null;
 	const step = steps[index];

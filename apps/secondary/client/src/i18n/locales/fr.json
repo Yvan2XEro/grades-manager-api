@@ -66,10 +66,13 @@
     "students_title": "Gérer les élèves", "students_body": "Créez les dossiers élèves et accédez à leurs notes, frais et présences.",
     "classes_title": "Organiser les classes", "classes_body": "Configurez les classes, effectifs, filières et affectations des enseignants.",
     "grades_title": "Saisir les notes", "grades_body": "Les enseignants saisissent les notes uniquement pour leurs classes et matières affectées.",
+    "grades_save_title": "Enregistrer les notes", "grades_save_body": "Après la saisie, utilisez Enregistrer pour valider et publier les changements de cette évaluation.",
     "report_cards_title": "Préparer les bulletins", "report_cards_body": "Générez les bulletins trimestriels avec moyennes, rangs et appréciations.",
     "councils_title": "Tenir les conseils de classe", "councils_body": "Examinez les résultats et consignez les décisions de l’équipe pédagogique.",
     "school_title": "Suivre la vie scolaire", "school_body": "Les présences et la scolarité restent accessibles dans le même espace.",
-    "settings_title": "Configurer l’établissement", "settings_body": "Modifiez le profil, les paramètres pédagogiques, la langue et la sécurité."
+    "settings_title": "Configurer l’établissement", "settings_body": "Modifiez le profil, les paramètres pédagogiques, la langue et la sécurité.",
+    "academic_title": "Configurer l’année scolaire", "academic_body": "Gérez les années scolaires, les classes et les règles qui structurent votre année.",
+    "terms_title": "Définir les trimestres", "terms_body": "Créez et publiez les trimestres pour harmoniser les notes, bulletins et conseils de classe."
   },
   "common": {
     "loading": "Chargement…",

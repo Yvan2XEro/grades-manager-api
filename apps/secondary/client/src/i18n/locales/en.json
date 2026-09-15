@@ -66,10 +66,13 @@
     "students_title": "Manage students", "students_body": "Create student records and access their grades, fees and attendance.",
     "classes_title": "Organise classes", "classes_body": "Set up classes, rosters, tracks and teacher assignments.",
     "grades_title": "Enter grades", "grades_body": "Teachers enter marks only for their assigned classes and subjects.",
+    "grades_save_title": "Save grades safely", "grades_save_body": "After entering marks, use Save to validate and publish the changes for this assessment.",
     "report_cards_title": "Prepare report cards", "report_cards_body": "Generate term report cards with averages, rankings and comments.",
     "councils_title": "Run class councils", "councils_body": "Review results and record the teaching team's decisions and observations.",
     "school_title": "Follow school life", "school_body": "Attendance and school fees stay available in the same workspace.",
-    "settings_title": "Configure your school", "settings_body": "Update the school profile, academic settings, language and security."
+    "settings_title": "Configure your school", "settings_body": "Update the school profile, academic settings, language and security.",
+    "academic_title": "Set up the academic year", "academic_body": "Manage academic years, classes and the rules that structure your school year.",
+    "terms_title": "Define your terms", "terms_body": "Create and publish terms so grades, reports and councils use the same calendar."
   },
   "common": {
     "loading": "Loading…",

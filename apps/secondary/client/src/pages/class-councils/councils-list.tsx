@@ -129,7 +129,7 @@ function CreateCouncilDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button>
+				<Button data-tour="class-councils-create">
 					<Plus />
 					{t("class_councils.new_council", "New Council")}
 				</Button>

@@ -463,7 +463,10 @@ export function GradeEntry() {
 			{/* ─── Toolbar ─────────────────────────────────────────────────────
 			     Workflow order (left → right): Class → Subject → Term → Sequence
 			     ────────────────────────────────────────────────────────────────── */}
-			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3">
+			<div
+				className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3"
+				data-tour="grades-workflow"
+			>
 				{/* 1. Class selector — must come first to enable subject list */}
 				<PillCombobox
 					options={classes.map((c) => ({ value: c.id, label: c.name }))}
@@ -620,6 +623,7 @@ export function GradeEntry() {
 				{/* Save */}
 				<Button
 					size="sm"
+					data-tour="grades-save"
 					onClick={handleSave}
 					disabled={batchUpsert.isPending || changeCount === 0 || !canSave}
 					className={cn(

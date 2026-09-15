@@ -115,7 +115,7 @@ export function AdminDashboard() {
 	});
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6" data-tour="dashboard-overview">
 			<div>
 				<h1 className="font-bold text-2xl text-foreground">
 					{t("dashboard.title", "Dashboard")}
