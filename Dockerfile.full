@@ -23,6 +23,7 @@ FROM base AS deps
 COPY bun.lock bunfig.toml package.json ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json    apps/web/package.json
+COPY packages/emails/package.json packages/emails/package.json
 RUN PUPPETEER_SKIP_DOWNLOAD=true CYPRESS_INSTALL_BINARY=0 \
     bun install --backend=hardlink
 
@@ -64,6 +65,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 COPY package.json bun.lock bunfig.toml ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json    apps/web/package.json
+COPY packages/emails/package.json packages/emails/package.json
 RUN PUPPETEER_SKIP_DOWNLOAD=true \
     bun install --filter server --backend=hardlink
 
@@ -73,6 +75,7 @@ COPY --from=server-builder /usr/src/app/apps/server/src/db/migrations           
 COPY --from=server-builder /usr/src/app/apps/server/src/modules/exports/templates  ./apps/server/dist/templates
 COPY --from=server-builder /usr/src/app/apps/server/src/db                         ./apps/server/src/db
 COPY --from=server-builder /usr/src/app/apps/server/drizzle.config.ts              ./apps/server/drizzle.config.ts
+COPY --from=server-builder /usr/src/app/packages/emails                         ./packages/emails
 
 # Frontend static files — served by Hono at runtime.
 # Placed under apps/server/ because bun runs the start script with CWD=/usr/src/app/apps/server,
