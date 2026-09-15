@@ -14,6 +14,7 @@ import {
 } from "@/contexts/breadcrumbs-context";
 import { authClient, signOut, useSession } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
+import { AdminProductTour } from "../onboarding/admin-product-tour";
 import { AdminSidebar } from "./admin-sidebar";
 import { PrincipalSidebar } from "./principal-sidebar";
 import { TeacherSidebar } from "./teacher-sidebar";
@@ -96,7 +97,7 @@ export function AppShell({ children }: Props) {
 	const role = (myMember?.role ?? "teacher") as string;
 
 	const RoleSidebar =
-		role === "admin"
+		role === "admin" || role === "owner"
 			? AdminSidebar
 			: role === "principal"
 				? PrincipalSidebar
@@ -178,6 +179,7 @@ export function AppShell({ children }: Props) {
 					<div className="flex-1 overflow-y-auto p-3 sm:p-6">{children}</div>
 				</main>
 			</SidebarProvider>
+			<AdminProductTour />
 		</BreadcrumbsProvider>
 	);
 }

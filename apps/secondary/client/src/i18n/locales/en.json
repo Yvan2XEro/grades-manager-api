@@ -58,6 +58,19 @@
     "timetable": "Timetable",
     "official_exams": "Official Exams"
   },
+  "tour": {
+    "trigger_label": "Open the TKAMS tour",
+    "trigger_description": "Discover the main actions available in TKAMS Secondary",
+    "step": "Step {{current}} of {{total}}", "close": "Close tour", "skip": "Skip tour", "finish": "Finish", "restart": "Take the product tour again",
+    "dashboard_title": "Your dashboard", "dashboard_body": "Start here for a quick view of your school's activity and the active academic year.",
+    "students_title": "Manage students", "students_body": "Create student records and access their grades, fees and attendance.",
+    "classes_title": "Organise classes", "classes_body": "Set up classes, rosters, tracks and teacher assignments.",
+    "grades_title": "Enter grades", "grades_body": "Teachers enter marks only for their assigned classes and subjects.",
+    "report_cards_title": "Prepare report cards", "report_cards_body": "Generate term report cards with averages, rankings and comments.",
+    "councils_title": "Run class councils", "councils_body": "Review results and record the teaching team's decisions and observations.",
+    "school_title": "Follow school life", "school_body": "Attendance and school fees stay available in the same workspace.",
+    "settings_title": "Configure your school", "settings_body": "Update the school profile, academic settings, language and security."
+  },
   "common": {
     "loading": "Loading…",
     "save": "Save",

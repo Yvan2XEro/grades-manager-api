@@ -32,6 +32,8 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { authClient, signOut, useSession } from "@/lib/auth-client";
+import { AdminProductTourTrigger } from "../onboarding/admin-product-tour";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 function getInitials(name?: string | null): string {
 	if (!name) return "?";
@@ -126,6 +128,9 @@ export function AdminSidebar() {
 										<SidebarMenuButton
 											asChild
 											isActive={isItemActive(item.to, item.end)}
+											data-tour={
+												item.to === "/" ? "dashboard" : item.to.slice(1)
+											}
 										>
 											<NavLink to={item.to} end={item.end}>
 												<item.Icon />
@@ -163,14 +168,27 @@ export function AdminSidebar() {
 							<LogOut className="h-4 w-4" />
 						</button>
 					</div>
-					<p className="mt-2 text-center text-[10px] text-muted-foreground/50">
+					<div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-muted-foreground/50">
 						<a
 							href="mailto:support@tkams.com"
 							className="transition-colors hover:text-muted-foreground/70"
 						>
 							support@tkams.com
 						</a>
-					</p>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<span className="inline-flex">
+									<AdminProductTourTrigger />
+								</span>
+							</TooltipTrigger>
+							<TooltipContent side="top">
+								{t(
+									"tour.trigger_description",
+									"Discover the main actions available in TKAMS Secondary",
+								)}
+							</TooltipContent>
+						</Tooltip>
+					</div>
 				</div>
 			</SidebarFooter>
 		</Sidebar>

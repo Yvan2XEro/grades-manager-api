@@ -83,7 +83,7 @@ function Dashboard() {
 	}
 	const myMember = org?.members?.find((m) => m.userId === session?.user?.id);
 	const role = (myMember?.role ?? "teacher") as string;
-	if (role === "admin") return <AdminDashboard />;
+	if (role === "admin" || role === "owner") return <AdminDashboard />;
 	if (role === "principal") return <PrincipalDashboard />;
 	return <TeacherDashboard />;
 }

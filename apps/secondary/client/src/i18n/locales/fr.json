@@ -58,6 +58,19 @@
     "timetable": "Emploi du temps",
     "official_exams": "Examens officiels"
   },
+  "tour": {
+    "trigger_label": "Ouvrir la visite guidée de TKAMS",
+    "trigger_description": "Découvrir les principales actions de TKAMS Secondaire",
+    "step": "Étape {{current}} sur {{total}}", "close": "Fermer la visite", "skip": "Ignorer la visite", "finish": "Terminer", "restart": "Revoir la visite guidée",
+    "dashboard_title": "Votre tableau de bord", "dashboard_body": "Commencez ici pour voir l’activité de votre établissement et l’année scolaire active.",
+    "students_title": "Gérer les élèves", "students_body": "Créez les dossiers élèves et accédez à leurs notes, frais et présences.",
+    "classes_title": "Organiser les classes", "classes_body": "Configurez les classes, effectifs, filières et affectations des enseignants.",
+    "grades_title": "Saisir les notes", "grades_body": "Les enseignants saisissent les notes uniquement pour leurs classes et matières affectées.",
+    "report_cards_title": "Préparer les bulletins", "report_cards_body": "Générez les bulletins trimestriels avec moyennes, rangs et appréciations.",
+    "councils_title": "Tenir les conseils de classe", "councils_body": "Examinez les résultats et consignez les décisions de l’équipe pédagogique.",
+    "school_title": "Suivre la vie scolaire", "school_body": "Les présences et la scolarité restent accessibles dans le même espace.",
+    "settings_title": "Configurer l’établissement", "settings_body": "Modifiez le profil, les paramètres pédagogiques, la langue et la sécurité."
+  },
   "common": {
     "loading": "Chargement…",
     "save": "Enregistrer",

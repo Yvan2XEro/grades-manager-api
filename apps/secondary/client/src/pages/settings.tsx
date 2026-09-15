@@ -15,6 +15,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { z } from "zod";
+import { RestartAdminProductTour } from "@/components/onboarding/admin-product-tour";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
@@ -1030,12 +1031,15 @@ export function Settings() {
 					</p>
 				</div>
 				{isAdmin && (
-					<Button variant="outline" size="sm" asChild>
-						<Link to="/onboarding">
-							<Rocket className="mr-1.5 h-3.5 w-3.5" />
-							{t("onboarding.setup_wizard", "Setup wizard")}
-						</Link>
-					</Button>
+					<div className="flex flex-wrap items-center gap-3">
+						<Button variant="outline" size="sm" asChild>
+							<Link to="/onboarding">
+								<Rocket className="mr-1.5 h-3.5 w-3.5" />
+								{t("onboarding.setup_wizard", "Setup wizard")}
+							</Link>
+						</Button>
+						<RestartAdminProductTour />
+					</div>
 				)}
 			</div>
 
