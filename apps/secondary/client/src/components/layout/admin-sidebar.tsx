@@ -8,7 +8,6 @@ import {
 	GraduationCap,
 	Layers,
 	LayoutDashboard,
-	LogOut,
 	type LucideIcon,
 	School,
 	Settings,
@@ -18,7 +17,7 @@ import {
 	Users2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import {
 	Sidebar,
 	SidebarContent,
@@ -31,9 +30,10 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { authClient, signOut, useSession } from "@/lib/auth-client";
+import { authClient, useSession } from "@/lib/auth-client";
 import { AdminProductTourTrigger } from "../onboarding/admin-product-tour";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { UserProfileMenu } from "./user-profile-menu";
 
 function getInitials(name?: string | null): string {
 	if (!name) return "?";
@@ -93,7 +93,6 @@ const sections: {
 
 export function AdminSidebar() {
 	const { t } = useTranslation();
-	const navigate = useNavigate();
 	const location = useLocation();
 	const { data: session } = useSession();
 	const { data: org } = authClient.useActiveOrganization();
@@ -102,9 +101,6 @@ export function AdminSidebar() {
 		if (end) return location.pathname === to;
 		return location.pathname === to || location.pathname.startsWith(`${to}/`);
 	};
-
-	const handleSignOut = () =>
-		signOut({ fetchOptions: { onSuccess: () => navigate("/login") } });
 
 	return (
 		<Sidebar>
@@ -147,27 +143,24 @@ export function AdminSidebar() {
 
 			<SidebarFooter>
 				<div className="border-sidebar-border border-t px-2 py-3">
-					<div className="flex items-center gap-2.5">
-						<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground text-xs">
-							{getInitials(session?.user?.name)}
-						</div>
-						<div className="min-w-0 flex-1">
-							<p className="truncate font-medium text-sidebar-foreground text-sm">
-								{session?.user?.name ?? "—"}
-							</p>
-							<p className="truncate text-muted-foreground text-xs">
-								{session?.user?.email}
-							</p>
-						</div>
+					<UserProfileMenu align="start" side="top">
 						<button
 							type="button"
-							onClick={handleSignOut}
-							title={t("auth.logout", "Sign out")}
-							className="shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+							className="flex w-full items-center gap-2.5 rounded-md p-1.5 text-left transition-colors hover:bg-sidebar-accent"
 						>
-							<LogOut className="h-4 w-4" />
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground text-xs">
+								{getInitials(session?.user?.name)}
+							</div>
+							<div className="min-w-0 flex-1">
+								<p className="truncate font-medium text-sidebar-foreground text-sm">
+									{session?.user?.name ?? "—"}
+								</p>
+								<p className="truncate text-muted-foreground text-xs">
+									{session?.user?.email}
+								</p>
+							</div>
 						</button>
-					</div>
+					</UserProfileMenu>
 					<div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-muted-foreground/50">
 						<a
 							href="mailto:support@tkams.com"
