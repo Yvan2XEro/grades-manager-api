@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TKAMS Secondaire — Parcours métier production</title>
+  <style>
+    :root { --bg:#f7f9fc; --surface:#fff; --border:#dce3ee; --text:#1b2b45; --muted:#66758f; --accent:#2b6cb0; --soft:#ebf4ff; --ok:#276749; --ok-bg:#eaf7ee; --warn:#744210; --warn-bg:#fffbeb; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--text); background:var(--bg); font:14px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    header { background:var(--surface); border-bottom:1px solid var(--border); padding:32px max(24px,calc((100vw - 960px)/2)); }
+    main { max-width:960px; margin:0 auto; padding:28px 24px 72px; }
+    h1 { margin:0 0 5px; font-size:28px; letter-spacing:-.02em; }
+    h2 { margin:0; font-size:20px; }
+    h3 { margin:22px 0 8px; font-size:15px; }
+    .lede { margin:0; color:var(--muted); max-width:720px; }
+    .notice { margin:22px 0 30px; padding:14px 16px; border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:8px; background:var(--surface); }
+    .notice strong { color:var(--accent); }
+    nav { display:flex; flex-wrap:wrap; gap:7px; margin:0 0 28px; }
+    nav a { color:var(--accent); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:5px 11px; text-decoration:none; font-size:12px; }
+    nav a:hover { background:var(--soft); }
+    section { scroll-margin-top:18px; margin:0 0 28px; padding:20px; border:1px solid var(--border); border-radius:10px; background:var(--surface); }
+    .section-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .num { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; font-size:12px; }
+    .role { color:var(--accent); background:var(--soft); border-radius:999px; padding:3px 8px; font-size:11px; font-weight:600; }
+    .steps { margin:0; padding-left:22px; }
+    .steps li { margin:8px 0; padding-left:4px; }
+    .steps li::marker { color:var(--accent); font-weight:700; }
+    .expected { margin-top:14px; padding:10px 12px; border:1px solid #9ae6b4; border-radius:7px; background:var(--ok-bg); color:var(--ok); font-size:13px; }
+    .expected::before { content:"✓ Résultat attendu : "; font-weight:700; }
+    .warning { margin-top:14px; padding:10px 12px; border:1px solid #f6e05e; border-radius:7px; background:var(--warn-bg); color:var(--warn); font-size:13px; }
+    .warning::before { content:"À vérifier : "; font-weight:700; }
+    .data { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px; margin:12px 0 0; }
+    .data div { padding:9px 11px; border:1px solid var(--border); border-radius:6px; background:#fbfcfe; }
+    .data b { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    code { border-radius:4px; padding:1px 4px; background:#eef2f7; font-size:12px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
+    th,td { padding:8px 9px; border:1px solid var(--border); text-align:left; vertical-align:top; }
+    th { background:#f2f5fa; font-weight:600; }
+    footer { color:var(--muted); font-size:12px; text-align:center; padding-top:5px; }
+    @media (max-width:600px) { header { padding:24px; } main { padding:22px 14px 52px; } section { padding:16px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TKAMS Secondaire — Parcours métier production</h1>
+    <p class="lede">Validation d’une organisation réelle, créée sans seed, depuis la première connexion du owner jusqu’à la production des documents scolaires.</p>
+  </header>
+  <main>
+    <div class="notice"><strong>Règle du test :</strong> ne lancer aucun script de seed et ne réutiliser aucune donnée de démonstration. Utiliser une organisation de test vide et des adresses email contrôlées. Si l’email d’invitation n’arrive pas, copier le lien généré et poursuivre avec ce lien.</div>
+    <nav aria-label="Sections du test">
+      <a href="#preparation">Préparation</a><a href="#owner">Owner & onboarding</a><a href="#invitations">Invitations</a><a href="#structure">Structure académique</a><a href="#population">Élèves</a><a href="#notes">Notes</a><a href="#documents">Documents</a><a href="#controle">Contrôle final</a>
+    </nav>
+
+    <section id="preparation">
+      <div class="section-head"><span class="num">0</span><h2>Préparer les comptes et les données</h2></div>
+      <p>Créer des valeurs propres à cette exécution. Les mêmes personnes peuvent être réutilisées uniquement si l’organisation est neuve.</p>
+      <div class="data">
+        <div><b>URL</b><code>https://&lt;instance-secondaire&gt;</code></div>
+        <div><b>Owner</b><code>owner+tkams@&lt;domaine&gt;</code></div>
+        <div><b>Admin invité</b><code>admin+tkams@&lt;domaine&gt;</code></div>
+        <div><b>Enseignant invité</b><code>teacher+tkams@&lt;domaine&gt;</code></div>
+      </div>
+      <div class="expected">Les boîtes de réception ou les liens d’invitation sont accessibles au testeur et les mots de passe temporaires sont disponibles.</div>
+    </section>
+
+    <section id="owner">
+      <div class="section-head"><span class="num">1</span><h2>Connexion du owner et onboarding</h2><span class="role">Owner</span></div>
+      <ol class="steps">
+        <li>Ouvrir l’URL de production et se connecter avec le compte owner.</li>
+        <li>Vérifier que l’organisation vide déclenche l’onboarding. Renseigner son nom, son pays, son fuseau horaire et les informations demandées.</li>
+        <li>Créer l’année scolaire active et ses périodes (par exemple trois trimestres). Enregistrer chaque étape proposée par l’assistant.</li>
+        <li>À la fin, ouvrir le tableau de bord et vérifier que l’année active est visible.</li>
+      </ol>
+      <div class="expected">L’organisation est créée, l’année scolaire est active et le owner arrive sur un tableau de bord exploitable sans données préchargées.</div>
+    </section>
+
+    <section id="invitations">
+      <div class="section-head"><span class="num">2</span><h2>Inviter les membres de l’équipe</h2><span class="role">Owner</span></div>
+      <ol class="steps">
+        <li>Ouvrir <strong>Staff</strong> ou la gestion des membres depuis la navigation.</li>
+        <li>Inviter <code>admin+tkams@…</code> avec le rôle <strong>Admin</strong>, puis <code>teacher+tkams@…</code> avec le rôle <strong>Teacher</strong>. Ajouter éventuellement un <strong>Principal</strong> si ce rôle est utilisé dans l’établissement.</li>
+        <li>Contrôler le statut de chaque invitation. Ouvrir l’email reçu et accepter l’invitation ; à défaut, copier le lien affiché par l’application.</li>
+        <li>Dans une nouvelle session navigateur, terminer l’acceptation et vérifier que chaque utilisateur rejoint la bonne organisation avec le bon rôle.</li>
+      </ol>
+      <div class="expected">Les membres apparaissent dans l’organisation et leurs accès correspondent à leur rôle. Le teacher ne voit pas les écrans réservés à l’administration.</div>
+      <div class="warning">Ne pas tester les invitations uniquement avec des adresses fictives : l’objectif est de valider l’envoi réel ou le lien de secours.</div>
+    </section>
+
+    <section id="structure">
+      <div class="section-head"><span class="num">3</span><h2>Configurer la structure académique</h2><span class="role">Owner / Admin</span></div>
+      <ol class="steps">
+        <li>Créer au moins une classe (par exemple <strong>3e A</strong>) dans l’année active.</li>
+        <li>Créer les matières nécessaires (par exemple <strong>Mathématiques</strong> et <strong>Français</strong>) et, si utilisé, une filière ou un niveau.</li>
+        <li>Affecter le teacher invité à une classe et à une matière dans <strong>Subject assignments</strong>.</li>
+        <li>Vérifier que les périodes de l’année sont disponibles dans les écrans de notes et de bulletins.</li>
+      </ol>
+      <div class="expected">La classe, les matières, les périodes et l’affectation enseignant sont visibles dans les écrans métier concernés.</div>
+    </section>
+
+    <section id="population">
+      <div class="section-head"><span class="num">4</span><h2>Créer et inscrire les élèves</h2><span class="role">Owner / Admin</span></div>
+      <ol class="steps">
+        <li>Créer au moins trois élèves avec nom, prénom, sexe et date de naissance.</li>
+        <li>Inscrire chaque élève dans la classe créée pour l’année active.</li>
+        <li>Ouvrir une fiche élève et vérifier les onglets <strong>Profile</strong>, <strong>Grades</strong>, <strong>Fees</strong> et <strong>Attendance</strong>.</li>
+      </ol>
+      <div class="expected">Les élèves sont listés, associés à la bonne classe et accessibles depuis les listes et les fiches individuelles.</div>
+    </section>
+
+    <section id="notes">
+      <div class="section-head"><span class="num">5</span><h2>Saisir et valider les notes</h2><span class="role">Teacher puis Admin</span></div>
+      <ol class="steps">
+        <li>Se connecter avec le teacher invité dans une session séparée et ouvrir <strong>Grades</strong>.</li>
+        <li>Sélectionner la classe, la matière, la période et un type d’évaluation. Saisir des notes pour les trois élèves, puis enregistrer.</li>
+        <li>Rafraîchir la page et confirmer que les notes sauvegardées persistent.</li>
+        <li>Revenir avec le owner/admin et vérifier que les données sont visibles dans la classe et la fiche des élèves.</li>
+      </ol>
+      <div class="expected">Le teacher peut saisir uniquement les classes et matières qui lui sont affectées ; les notes sont persistantes et visibles par l’administration.</div>
+    </section>
+
+    <section id="documents">
+      <div class="section-head"><span class="num">6</span><h2>Produire les documents scolaires</h2><span class="role">Owner / Admin</span></div>
+      <ol class="steps">
+        <li>Ouvrir <strong>Report cards</strong>, choisir la classe et la période, puis ouvrir un bulletin.</li>
+        <li>Vérifier les matières, notes, moyennes, rangs et appréciations. Télécharger ou imprimer le PDF lorsque l’action est disponible.</li>
+        <li>Ouvrir <strong>Class councils</strong>, créer un conseil pour la même classe et période, puis le faire progresser dans son workflow (draft → scheduled → held → signed selon les règles de l’application).</li>
+        <li>Ouvrir le conseil signé et exporter le procès-verbal ou le document proposé par l’écran.</li>
+        <li>Si la finance et l’assiduité font partie du périmètre de l’établissement, enregistrer un paiement et une présence, puis vérifier leur présence dans les fiches et rapports concernés.</li>
+      </ol>
+      <div class="expected">Les bulletins et documents du conseil reprennent les données réellement saisies et les fichiers téléchargés sont lisibles et complets.</div>
+    </section>
+
+    <section id="controle">
+      <div class="section-head"><span class="num">7</span><h2>Contrôle métier final</h2><span class="role">Tous les rôles</span></div>
+      <table>
+        <thead><tr><th>Contrôle</th><th>Résultat attendu</th></tr></thead>
+        <tbody>
+          <tr><td>Owner / Admin</td><td>Peut gérer structure, membres, élèves, notes et documents.</td></tr>
+          <tr><td>Teacher</td><td>Voit ses classes et matières affectées, saisit les notes autorisées et n’accède pas aux fonctions d’administration.</td></tr>
+          <tr><td>Persistance</td><td>Après déconnexion et reconnexion, l’organisation, les membres, les notes et les documents sont toujours présents.</td></tr>
+          <tr><td>Documents</td><td>Un bulletin et un document de conseil peuvent être ouverts puis téléchargés depuis une session réelle.</td></tr>
+        </tbody>
+      </table>
+      <div class="expected">Le flux complet est validé sur une organisation créée en production sans seed, avec des utilisateurs et des données métier réellement créés pendant le test.</div>
+    </section>
+    <footer>Document de test fonctionnel — ne pas utiliser de mots de passe réels dans ce fichier.</footer>
+  </main>
+</body>
+</html>

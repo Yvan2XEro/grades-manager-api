@@ -119,6 +119,11 @@ export function AppRoutes() {
 
 	return (
 		<Routes>
+			{/* Public production business test guide. The HTML is copied from client/public. */}
+			<Route
+				path="/test-walkthrough"
+				element={<Navigate to="/test-walkthrough.html" replace />}
+			/>
 			<Route path="/login" element={<LoginPage />} />
 			<Route path="/forgot-password" element={<ForgotPasswordPage />} />
 			<Route path="/reset-password" element={<ResetPasswordPage />} />
