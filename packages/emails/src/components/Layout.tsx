@@ -17,10 +17,16 @@ import { colors, LOGO_URL, WEBSITE_URL } from "./brand";
 interface LayoutProps {
 	preview: string;
 	locale?: Locale;
+	unsubscribeUrl?: string;
 	children: React.ReactNode;
 }
 
-export function Layout({ preview, locale = "fr", children }: LayoutProps) {
+export function Layout({
+	preview,
+	locale = "fr",
+	unsubscribeUrl,
+	children,
+}: LayoutProps) {
 	const tr = t(locale);
 	return (
 		<Html lang={locale}>
@@ -52,7 +58,13 @@ export function Layout({ preview, locale = "fr", children }: LayoutProps) {
 					<Section style={footer}>
 						<Text style={footerTagline}>{tr.common.footer_tagline}</Text>
 						<Text style={footerMeta}>
-							{tr.common.footer_unsubscribe}
+							{unsubscribeUrl ? (
+								<Link href={unsubscribeUrl} style={footerLink}>
+									{tr.common.unsubscribe}
+								</Link>
+							) : (
+								tr.common.footer_unsubscribe
+							)}
 							{"  ·  "}
 							<Link href={WEBSITE_URL} style={footerLink}>
 								tkams.com
