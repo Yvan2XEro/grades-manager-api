@@ -1,6 +1,7 @@
-import { and, count, eq, ilike, sql } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { classes, enrollments, students } from "../../db/schema";
+import { classLevelFilterValues } from "../../lib/academic-levels";
 
 export async function findByYear(
 	academicYearId: string | undefined,
@@ -16,7 +17,8 @@ export async function findByYear(
 	const conditions = [eq(classes.institutionId, institutionId)];
 	if (academicYearId)
 		conditions.push(eq(classes.academicYearId, academicYearId));
-	if (level) conditions.push(eq(classes.level, level));
+	if (level)
+		conditions.push(inArray(classes.level, classLevelFilterValues(level)));
 	if (search) conditions.push(ilike(classes.name, `%${search}%`));
 	const where = and(...conditions);
 

@@ -18,6 +18,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
+import { subjectLabel } from "@/lib/subject-label";
 import { trpc } from "@/utils/trpc";
 
 const assignSchema = z.object({
@@ -39,7 +40,7 @@ function AssignDialog({
 	academicYearId: string;
 	existingSubjectIds: string[];
 }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const utils = trpc.useUtils();
 	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 200 });
 	const subjects = subjectsData?.items ?? [];
@@ -89,7 +90,7 @@ function AssignDialog({
 								<Combobox
 									options={available.map((s) => ({
 										value: s.id,
-										label: s.name,
+										label: subjectLabel(s, i18n.language),
 									}))}
 									value={field.value ?? ""}
 									onValueChange={field.onChange}
@@ -138,7 +139,7 @@ function AssignDialog({
 }
 
 export function ClassAssignments() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { id: classId } = useParams<{ id: string }>();
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const utils = trpc.useUtils();
@@ -237,7 +238,7 @@ export function ClassAssignments() {
 								return (
 									<tr key={id} className="transition-colors hover:bg-muted/20">
 										<td className="px-4 py-3 font-medium text-foreground">
-											{subject.name}
+											{subjectLabel(subject, i18n.language)}
 										</td>
 										<td className="px-4 py-3 text-muted-foreground">
 											{staff.lastName} {staff.firstName}

@@ -225,10 +225,10 @@ function RegisterCandidateDialog({
 
 // ─── Bulk import dialog ───────────────────────────────────────────────────────
 
-const EXAM_LEVEL: Record<string, string> = {
-	BAC: "Tle",
-	PROBATOIRE: "1re",
-	BEPC: "3e",
+const EXAM_LEVEL: Record<string, "third" | "first" | "terminal"> = {
+	BAC: "terminal",
+	PROBATOIRE: "first",
+	BEPC: "third",
 };
 
 function BulkImportDialog({

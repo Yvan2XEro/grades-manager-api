@@ -17,6 +17,7 @@ import {
 import { FormField } from "@/components/ui/form-field";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
+import { subjectLabel } from "@/lib/subject-label";
 import { trpc } from "@/utils/trpc";
 
 // ─── Assign dialog ────────────────────────────────────────────────────────────
@@ -43,7 +44,7 @@ function AssignDialog({
 	academicYearId,
 	existingSubjectIds,
 }: AssignDialogProps) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const utils = trpc.useUtils();
 
 	const { data: subjectsData } = trpc.subjects.list.useQuery({
@@ -110,7 +111,7 @@ function AssignDialog({
 								<Combobox
 									options={availableSubjects.map((s) => ({
 										value: s.id,
-										label: s.name,
+										label: subjectLabel(s, i18n.language),
 									}))}
 									value={field.value ?? ""}
 									onValueChange={field.onChange}
@@ -186,7 +187,7 @@ type Assignment = {
 };
 
 export function SubjectAssignments() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	useBreadcrumbs([
 		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("nav.subject_assignments", "Subject Assignments") },
@@ -308,7 +309,7 @@ export function SubjectAssignments() {
 								>
 									<td className="px-4 py-3">
 										<span className="font-medium text-foreground">
-											{a.subject.name}
+											{subjectLabel(a.subject, i18n.language)}
 										</span>
 										{a.subject.code && (
 											<Badge className="ml-2 bg-muted text-muted-foreground text-xs">

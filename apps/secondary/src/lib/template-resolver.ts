@@ -65,7 +65,7 @@ const REPORT_CARD_FR = `<!DOCTYPE html>
 
 <div class="student-info">
   <div class="info-row"><span class="info-label">Élève :</span><span>{{student_name}}</span></div>
-  <div class="info-row"><span class="info-label">Classe :</span><span>{{class_name}}</span></div>
+  <div class="info-row"><span class="info-label">Classe :</span><span>{{class_name}} {{class_level}}</span></div>
   <div class="info-row"><span class="info-label">Matricule :</span><span>{{student_mnu}}</span></div>
   <div class="info-row"><span class="info-label">Né(e) le :</span><span>{{student_dob}}</span></div>
   <div class="info-row"><span class="info-label">Rang :</span><span style="font-weight:bold;color:#1a56db">{{rank}}</span></div>
@@ -129,7 +129,7 @@ const REPORT_CARD_EN = `<!DOCTYPE html>
 
 <div class="student-info">
   <div class="info-row"><span class="info-label">Student:</span><span>{{student_name}}</span></div>
-  <div class="info-row"><span class="info-label">Class:</span><span>{{class_name}}</span></div>
+  <div class="info-row"><span class="info-label">Class:</span><span>{{class_name}} {{class_level}}</span></div>
   <div class="info-row"><span class="info-label">ID:</span><span>{{student_mnu}}</span></div>
   <div class="info-row"><span class="info-label">Date of birth:</span><span>{{student_dob}}</span></div>
   <div class="info-row"><span class="info-label">Rank:</span><span style="font-weight:bold;color:#1a56db">{{rank}}</span></div>
@@ -188,12 +188,12 @@ const CLASS_ROSTER_FR = `<!DOCTYPE html>
   </div>
   <div class="doc-title">
     <h2>LISTE DES ÉLÈVES</h2>
-    <div class="sub-label">{{class_name}} — {{year_name}}</div>
+    <div class="sub-label">{{class_name}} {{class_level}} — {{year_name}}</div>
   </div>
 </div>
 
 <div class="summary">
-  <div>Classe : <span>{{class_name}}</span></div>
+  <div>Classe : <span>{{class_name}} {{class_level}}</span></div>
   <div>Année scolaire : <span>{{year_name}}</span></div>
   <div>Total : <span>{{total_students}} élève(s)</span></div>
 </div>
@@ -241,12 +241,12 @@ const CLASS_ROSTER_EN = `<!DOCTYPE html>
   </div>
   <div class="doc-title">
     <h2>CLASS REGISTER</h2>
-    <div class="sub-label">{{class_name}} — {{year_name}}</div>
+    <div class="sub-label">{{class_name}} {{class_level}} — {{year_name}}</div>
   </div>
 </div>
 
 <div class="summary">
-  <div>Class: <span>{{class_name}}</span></div>
+  <div>Class: <span>{{class_name}} {{class_level}}</span></div>
   <div>Academic year: <span>{{year_name}}</span></div>
   <div>Total: <span>{{total_students}} student(s)</span></div>
 </div>

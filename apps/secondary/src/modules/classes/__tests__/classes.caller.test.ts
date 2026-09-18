@@ -50,12 +50,12 @@ describe("classes.create", () => {
 		const cls = await caller.classes.create({
 			name: "Terminale D",
 			code: `TLE-D-${Date.now()}`,
-			level: "Tle",
+			level: "terminal",
 			academicYearId,
 			trackId,
 		});
 		expect(cls.id).toBeString();
-		expect(cls.level).toBe("Tle");
+		expect(cls.level).toBe("terminal");
 		expect(cls.trackId).toBe(trackId);
 		classId = cls.id;
 	});
@@ -66,14 +66,14 @@ describe("classes.create", () => {
 		await caller.classes.create({
 			name: "Class A",
 			code,
-			level: "3e",
+			level: "third",
 			academicYearId,
 		});
 		await expect(
 			caller.classes.create({
 				name: "Class B",
 				code,
-				level: "3e",
+				level: "third",
 				academicYearId,
 			}),
 		).rejects.toMatchObject({ code: "CONFLICT" });

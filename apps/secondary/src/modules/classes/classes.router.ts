@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { InstitutionType } from "../../lib/academic-levels";
 import {
 	adminProcedure,
 	tenantProcedure,
@@ -6,6 +7,7 @@ import {
 } from "../../lib/trpc";
 import * as service from "./classes.service";
 import {
+	classLevelSchema,
 	createSchema,
 	idSchema,
 	listSchema,
@@ -18,7 +20,7 @@ const bulkCreateSchema = z.object({
 			z.object({
 				name: z.string().min(1).max(50),
 				code: z.string().min(1).max(20),
-				level: z.string().min(1).max(30),
+				level: classLevelSchema,
 				academicYearId: z.string().uuid(),
 				trackId: z.string().uuid().optional(),
 				room: z.string().max(50).optional(),
@@ -40,11 +42,21 @@ export const router = trpcRouter({
 	),
 	create: adminProcedure
 		.input(createSchema)
-		.mutation(({ ctx, input }) => service.create(input, ctx.institution.id)),
+		.mutation(({ ctx, input }) =>
+			service.create(
+				input,
+				ctx.institution.id,
+				ctx.institution.type as InstitutionType,
+			),
+		),
 	bulkCreate: adminProcedure
 		.input(bulkCreateSchema)
 		.mutation(({ ctx, input }) =>
-			service.bulkCreate(input.items, ctx.institution.id),
+			service.bulkCreate(
+				input.items,
+				ctx.institution.id,
+				ctx.institution.type as InstitutionType,
+			),
 		),
 	get: tenantProcedure
 		.input(idSchema)
@@ -55,14 +67,19 @@ export const router = trpcRouter({
 				id: z.string().uuid(),
 				name: z.string().min(1).max(50).optional(),
 				code: z.string().min(1).max(20).optional(),
-				level: z.string().min(1).max(30).optional(),
+				level: classLevelSchema.optional(),
 				room: z.string().max(50).optional().nullable(),
 				maxCapacity: z.number().int().positive().optional().nullable(),
 				trackId: z.string().uuid().optional().nullable(),
 			}),
 		)
 		.mutation(({ ctx, input }) =>
-			service.update(input.id, input, ctx.institution.id),
+			service.update(
+				input.id,
+				input,
+				ctx.institution.id,
+				ctx.institution.type as InstitutionType,
+			),
 		),
 	delete: adminProcedure
 		.input(z.object({ id: z.string().uuid() }))

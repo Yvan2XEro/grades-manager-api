@@ -15,10 +15,13 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import {
+	CLASS_LEVELS,
+	type ClassLevel,
+	normalizeClassLevel,
+} from "@/lib/academic-levels";
 import { trpc } from "@/utils/trpc";
 import { ClassFormDialog } from "./class-form-dialog";
-
-const LEVELS = ["6e", "5e", "4e", "3e", "2nde", "1ère", "Terminale"] as const;
 
 type SchoolClass = {
 	id: string;
@@ -36,7 +39,7 @@ export function ClassesList() {
 	]);
 	const { academicYearId } = useParams<{ academicYearId: string }>();
 	const [search, setSearch] = useState("");
-	const [levelFilter, setLevelFilter] = useState<string>("all");
+	const [levelFilter, setLevelFilter] = useState<ClassLevel | "all">("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -91,11 +94,13 @@ export function ClassesList() {
 			enableSorting: true,
 			header: t("classes.col_level", "Level"),
 			cell: ({ row }) => {
-				const level = row.original.level;
+				const level = row.original.level
+					? normalizeClassLevel(row.original.level)
+					: undefined;
 				if (!level) return <span className="text-muted-foreground">—</span>;
 				return (
 					<span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 font-medium text-muted-foreground text-xs">
-						{level}
+						{t(`classes.level_${level}`, level)}
 					</span>
 				);
 			},
@@ -157,14 +162,14 @@ export function ClassesList() {
 							{ key: "code", label: "Code", header: "code", required: true },
 							{
 								key: "level",
-								label: "Level (e.g. Tle)",
+								label: "Level (e.g. terminal)",
 								header: "level",
 								required: true,
 							},
 						]}
 						exampleRows={[
-							["Terminale A1", "TleA1", "Terminale"],
-							["Première C", "1C", "1ère"],
+							["Terminale A1", "TleA1", "terminal"],
+							["Première C", "1C", "first"],
 						]}
 						onImport={(rows) =>
 							bulkCreateClasses
@@ -172,7 +177,7 @@ export function ClassesList() {
 									items: rows.map((r) => ({
 										name: r.name,
 										code: r.code,
-										level: r.level,
+										level: normalizeClassLevel(r.level),
 										academicYearId: academicYearId!,
 									})),
 								})
@@ -203,7 +208,7 @@ export function ClassesList() {
 				<Select
 					value={levelFilter}
 					onValueChange={(v) => {
-						setLevelFilter(v);
+						setLevelFilter(v as ClassLevel | "all");
 						setPage(1);
 					}}
 				>
@@ -214,9 +219,9 @@ export function ClassesList() {
 						<SelectItem value="all">
 							{t("classes.all_levels", "All levels")}
 						</SelectItem>
-						{LEVELS.map((lv) => (
+						{CLASS_LEVELS.map((lv) => (
 							<SelectItem key={lv} value={lv}>
-								{lv}
+								{t(`classes.level_${lv}`, lv)}
 							</SelectItem>
 						))}
 					</SelectContent>

@@ -2,6 +2,7 @@ import { GraduationCap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { subjectLabel } from "@/lib/subject-label";
 import { trpc } from "@/utils/trpc";
 
 type Assignment = {
@@ -16,7 +17,7 @@ type Assignment = {
 };
 
 export function ClassGrades() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { id: classId } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 
@@ -125,7 +126,7 @@ export function ClassGrades() {
 									className="transition-colors hover:bg-muted/20"
 								>
 									<td className="px-4 py-3 font-medium text-foreground">
-										{a.subject.name}
+										{subjectLabel(a.subject, i18n.language)}
 									</td>
 									<td className="px-4 py-3 text-muted-foreground text-xs">
 										{a.staff.lastName} {a.staff.firstName}

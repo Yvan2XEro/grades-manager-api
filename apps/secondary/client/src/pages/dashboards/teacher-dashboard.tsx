@@ -8,6 +8,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { useSession } from "@/lib/auth-client";
+import { subjectLabel } from "@/lib/subject-label";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/utils/trpc";
 
@@ -58,7 +59,7 @@ function QuickLink({ to, icon, label }: QuickLinkProps) {
 }
 
 export function TeacherDashboard() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { data: session } = useSession();
 
 	const { data: academicYears = [] } = trpc.academicYears.list.useQuery();
@@ -149,7 +150,7 @@ export function TeacherDashboard() {
 										{a.class.name}
 									</td>
 									<td className="px-4 py-2 text-muted-foreground">
-										{a.subject.name}
+										{subjectLabel(a.subject, i18n.language)}
 									</td>
 									<td className="px-4 py-2 text-right">
 										{activeTerm ? (

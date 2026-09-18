@@ -51,7 +51,7 @@ export async function setupTestInstitution(): Promise<
 	// Application institution (id = org id, no defaultRandom in schema)
 	const [institution] = await db
 		.insert(institutions)
-		.values({ id: orgId, name: "Test School" })
+		.values({ id: orgId, name: "Test School", type: "mixed" })
 		.onConflictDoNothing()
 		.returning();
 

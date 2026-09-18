@@ -1,3 +1,4 @@
+import { classLevelLabel } from "../academic-levels";
 import type { TemplateData } from "../template-renderer";
 
 export function buildClassRosterTemplateData(params: {
@@ -7,6 +8,7 @@ export function buildClassRosterTemplateData(params: {
 		minesecCode?: string | null;
 	};
 	className: string;
+	classLevel?: string | null;
 	yearName: string;
 	language: "fr" | "en";
 	students: Array<{
@@ -39,6 +41,9 @@ export function buildClassRosterTemplateData(params: {
 		school_city: params.institution.city ?? "",
 		minesec_code: params.institution.minesecCode ?? "",
 		class_name: params.className,
+		class_level: params.classLevel
+			? classLevelLabel(params.classLevel, lang)
+			: "",
 		year_name: params.yearName,
 		total_students: String(params.students.length),
 		students,

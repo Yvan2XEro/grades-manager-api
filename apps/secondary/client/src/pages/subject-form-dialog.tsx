@@ -17,7 +17,7 @@ import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
 	name: z.string().min(1).max(100),
-	nameFr: z.string().max(100).optional(),
+	nameFr: z.string().min(1).max(100),
 	code: z.string().min(1).max(30),
 	minesecCode: z.string().max(30).optional(),
 	subjectGroup: z.string().max(50).optional(),
@@ -105,7 +105,7 @@ export function SubjectFormDialog({
 	const onSubmit = handleSubmit(async (data) => {
 		const payload = {
 			name: data.name,
-			nameFr: data.nameFr || undefined,
+			nameFr: data.nameFr,
 			code: data.code,
 			minesecCode: data.minesecCode || undefined,
 			subjectGroup: data.subjectGroup || undefined,
@@ -147,6 +147,7 @@ export function SubjectFormDialog({
 						<FormField
 							label={t("subjects.name_fr", "Subject name (FR)")}
 							error={errors.nameFr?.message}
+							required
 						>
 							<Input {...register("nameFr")} />
 						</FormField>

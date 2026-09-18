@@ -49,7 +49,7 @@ beforeAll(async () => {
 		trackId: track.id,
 		name: "Terminale C",
 		code: "TLE-C",
-		level: "Tle",
+		level: "terminal",
 	});
 	classId = cls.id;
 

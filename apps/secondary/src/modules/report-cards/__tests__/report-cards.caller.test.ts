@@ -43,7 +43,7 @@ beforeAll(async () => {
 	const cls = await admin.classes.create({
 		name: "Test Class",
 		code: `TEST-${Date.now()}`,
-		level: "3e",
+		level: "third",
 		academicYearId,
 	});
 	classId = cls.id;

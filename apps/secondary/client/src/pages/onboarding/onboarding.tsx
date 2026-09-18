@@ -33,6 +33,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import {
+	allowedClassLevels,
+	type ClassLevel,
+	type InstitutionType,
+	normalizeClassLevel,
+} from "@/lib/academic-levels";
 import { errorToast } from "@/lib/error-toast";
 import { uploadFile } from "@/lib/upload";
 import { trpc } from "@/utils/trpc";
@@ -180,7 +186,7 @@ function Step1Institution({ onNext }: { onNext: () => void }) {
 		{
 			value: "lycee",
 			label: t("settings.type_lycee", "Lycée"),
-			desc: t("settings.type_lycee_desc", "2nd cycle only (6e–Tle)"),
+			desc: t("settings.type_lycee_desc", "2nd cycle only (2nde–Terminale)"),
 		},
 		{
 			value: "college",
@@ -1117,13 +1123,13 @@ function Step4Subjects({ onNext }: { onNext: () => void }) {
 					minesecCode: r[3] ?? "",
 					subjectGroup: r[4] ?? "",
 				}))
-				.filter((r) => r.name && r.code),
+				.filter((r) => r.name && r.nameFr && r.code),
 		(items) => setRows((prev) => [...prev, ...items]),
 	);
 
 	const handleSave = async () => {
 		if (!hasExisting) {
-			const toCreate = rows.filter((r) => r.name && r.code);
+			const toCreate = rows.filter((r) => r.name && r.nameFr && r.code);
 			if (toCreate.length > 0) {
 				await bulkCreate.mutateAsync({ items: toCreate });
 				utils.subjects.list.invalidate();
@@ -1410,7 +1416,7 @@ const MINESEC_DEFAULT_COEFFS: Record<string, Record<string, number>> = {
 };
 
 function Step5Coefficients({ onNext }: { onNext: () => void }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { data: tracksData } = trpc.tracks.list.useQuery({ pageSize: 100 });
 	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 200 });
 	const bulkUpsert = trpc.tracks.bulkUpsertCoefficients.useMutation({
@@ -1664,7 +1670,11 @@ function Step5Coefficients({ onNext }: { onNext: () => void }) {
 							<tbody className="divide-y divide-border">
 								{subjects.map((s) => (
 									<tr key={s.id}>
-										<td className="px-4 py-1.5 font-medium">{s.name}</td>
+										<td className="px-4 py-1.5 font-medium">
+											{i18n.language.startsWith("fr")
+												? s.nameFr || s.name
+												: s.name}
+										</td>
 										<td className="px-4 py-1.5">
 											<Input
 												type="number"
@@ -1703,11 +1713,10 @@ function Step5Coefficients({ onNext }: { onNext: () => void }) {
 
 // ─── Step 6: Classes ──────────────────────────────────────────────────────────
 
-const LEVEL_OPTIONS = ["6ème", "5ème", "4ème", "3ème", "2nde", "1ère", "Tle"];
 type ClassRow = {
 	name: string;
 	code: string;
-	level: string;
+	level: ClassLevel;
 	trackCode: string;
 	room: string;
 };
@@ -1715,6 +1724,8 @@ type ClassRow = {
 function Step6Classes({ onNext }: { onNext: () => void }) {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
+	const { data: institution } = trpc.institutions.get.useQuery();
+	const levelOptions = allowedClassLevels(institution?.type as InstitutionType);
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = years.find((y) => y.status === "active") ?? years[0];
 	const { data: tracksData } = trpc.tracks.list.useQuery({ pageSize: 100 });
@@ -1733,7 +1744,7 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 	const [newRow, setNewRow] = useState<ClassRow>({
 		name: "",
 		code: "",
-		level: "6ème",
+		level: "sixth",
 		trackCode: "",
 		room: "",
 	});
@@ -1744,7 +1755,7 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 				.map((r) => ({
 					name: r[0] ?? "",
 					code: r[1] ?? "",
-					level: r[2] ?? "6ème",
+					level: normalizeClassLevel(r[2]),
 					trackCode: r[3] ?? "",
 					room: r[4] ?? "",
 				}))
@@ -1824,7 +1835,7 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 						downloadCsv(
 							"classes-template.csv",
 							"name,code,level,track_code,room",
-							["Terminale C,TLE-C,Tle,C,B01"],
+							["Terminale C,TLE-C,terminal,C,B01"],
 						)
 					}
 				>
@@ -1902,7 +1913,9 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 										value={row.level}
 										onValueChange={(v) =>
 											setRows((p) =>
-												p.map((r, i) => (i === idx ? { ...r, level: v } : r)),
+												p.map((r, i) =>
+													i === idx ? { ...r, level: v as ClassLevel } : r,
+												),
 											)
 										}
 									>
@@ -1910,9 +1923,9 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											{LEVEL_OPTIONS.map((l) => (
+											{levelOptions.map((l) => (
 												<SelectItem key={l} value={l}>
-													{l}
+													{t(`classes.level_${l}`, l)}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -1995,15 +2008,17 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 							<td className="px-3 py-2">
 								<Select
 									value={newRow.level}
-									onValueChange={(v) => setNewRow((p) => ({ ...p, level: v }))}
+									onValueChange={(v) =>
+										setNewRow((p) => ({ ...p, level: v as ClassLevel }))
+									}
 								>
 									<SelectTrigger className="h-7 text-xs">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{LEVEL_OPTIONS.map((l) => (
+										{levelOptions.map((l) => (
 											<SelectItem key={l} value={l}>
-												{l}
+												{t(`classes.level_${l}`, l)}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -2051,7 +2066,7 @@ function Step6Classes({ onNext }: { onNext: () => void }) {
 											setNewRow({
 												name: "",
 												code: "",
-												level: "6ème",
+												level: "sixth",
 												trackCode: "",
 												room: "",
 											});

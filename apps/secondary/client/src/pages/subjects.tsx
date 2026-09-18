@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
+import { subjectLabel } from "@/lib/subject-label";
 import { trpc } from "@/utils/trpc";
 import { SubjectFormDialog } from "./subject-form-dialog";
 
@@ -38,7 +39,7 @@ type Subject = {
 };
 
 export function Subjects() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	useBreadcrumbs([
 		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
 		{ label: t("nav.subjects", "Subjects") },
@@ -102,16 +103,9 @@ export function Subjects() {
 			enableSorting: true,
 			header: t("subjects.col_name", "Subject"),
 			cell: ({ row }) => (
-				<div>
-					<span className="font-medium text-foreground">
-						{row.original.name}
-					</span>
-					{row.original.nameFr && row.original.nameFr !== row.original.name && (
-						<p className="text-muted-foreground text-xs">
-							{row.original.nameFr}
-						</p>
-					)}
-				</div>
+				<span className="font-medium text-foreground">
+					{subjectLabel(row.original, i18n.language)}
+				</span>
 			),
 		},
 		{
@@ -210,7 +204,7 @@ export function Subjects() {
 									items: rows.map((r) => ({
 										name: r.name,
 										code: r.code,
-										nameFr: r.nameFr || undefined,
+										nameFr: r.nameFr || r.name,
 										minesecCode: r.minesecCode || undefined,
 										subjectGroup: r.subjectGroup || undefined,
 									})),

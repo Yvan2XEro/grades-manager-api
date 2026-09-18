@@ -12,7 +12,7 @@ const bulkCreateSchema = z.object({
 		.array(
 			z.object({
 				name: z.string().min(1).max(100),
-				nameFr: z.string().max(100).optional(),
+				nameFr: z.string().min(1).max(100),
 				code: z.string().min(1).max(30),
 				minesecCode: z.string().max(30).optional(),
 				subjectGroup: z.string().max(50).optional(),

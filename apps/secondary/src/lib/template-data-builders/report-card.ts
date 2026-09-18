@@ -1,6 +1,7 @@
 import { inArray } from "drizzle-orm";
 import { db } from "../../db";
 import { subjects } from "../../db/schema";
+import { classLevelLabel } from "../academic-levels";
 import type { TemplateData } from "../template-renderer";
 
 type SubjectAvgEntry = {
@@ -80,6 +81,7 @@ export async function buildReportCardTemplateData(params: {
 		logoUrl?: string | null;
 	};
 	className: string;
+	classLevel?: string | null;
 	yearName: string;
 	termNumber: number;
 	language: "fr" | "en";
@@ -163,6 +165,9 @@ export async function buildReportCardTemplateData(params: {
 		student_dob: formatDob(params.student.dateOfBirth, lang),
 		student_gender: params.student.gender ?? "",
 		class_name: params.className,
+		class_level: params.classLevel
+			? classLevelLabel(params.classLevel, lang)
+			: "",
 		year_name: params.yearName,
 		term: String(params.termNumber),
 		overall_avg: overallAverage !== null ? formatAvg(overallAverage) : "—",

@@ -109,6 +109,7 @@ export async function printClassRoster(
 			minesecCode: institution.minesecCode,
 		},
 		className: classRow.name,
+		classLevel: classRow.level,
 		yearName: yearRows[0]?.name ?? academicYearId,
 		language: lang,
 		students: items.map((row) => ({

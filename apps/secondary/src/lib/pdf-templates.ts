@@ -21,6 +21,7 @@ export function buildClassRosterHtml(data: {
 		minesecCode?: string | null;
 	};
 	className: string;
+	classLevel?: string | null;
 	yearName: string;
 	students: RosterStudent[];
 	language?: string;
@@ -106,7 +107,7 @@ tbody td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; }
   </div>
   <div class="doc-title">
     <h2>${L.title}</h2>
-    <div class="sub">${data.className} — ${data.yearName}</div>
+    <div class="sub">${data.className}${data.classLevel ? ` (${data.classLevel})` : ""} — ${data.yearName}</div>
   </div>
 </div>
 

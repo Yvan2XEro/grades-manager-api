@@ -12,13 +12,26 @@ import {
 } from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	allowedClassLevels,
+	CLASS_LEVELS,
+	type InstitutionType,
+	normalizeClassLevel,
+} from "@/lib/academic-levels";
 import { errorToast } from "@/lib/error-toast";
 import { trpc } from "@/utils/trpc";
 
 const schema = z.object({
 	name: z.string().min(1).max(50),
 	code: z.string().min(1).max(20),
-	level: z.string().min(1).max(30),
+	level: z.enum(CLASS_LEVELS),
 	academicYearId: z.string().uuid(),
 	trackId: z.string().uuid().optional(),
 	room: z.string().max(50).optional(),
@@ -54,6 +67,17 @@ export function ClassFormDialog({
 	const isEditing = !!editClass;
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
+	const { data: institution } = trpc.institutions.get.useQuery();
+	const currentLevel = editClass
+		? normalizeClassLevel(editClass.level)
+		: undefined;
+	const allowedLevels = allowedClassLevels(
+		institution?.type as InstitutionType,
+	);
+	const levelOptions =
+		currentLevel && !allowedLevels.includes(currentLevel)
+			? [...allowedLevels, currentLevel]
+			: allowedLevels;
 	const { data: tracksData } = trpc.tracks.list.useQuery({
 		page: 1,
 		pageSize: 100,
@@ -91,7 +115,7 @@ export function ClassFormDialog({
 			? {
 					name: editClass.name,
 					code: editClass.code,
-					level: editClass.level,
+					level: normalizeClassLevel(editClass.level),
 					academicYearId: editClass.academicYearId,
 					trackId: editClass.trackId ?? undefined,
 					room: editClass.room ?? undefined,
@@ -167,7 +191,24 @@ export function ClassFormDialog({
 						error={errors.level?.message}
 						required
 					>
-						<Input {...register("level")} placeholder="e.g. 6ème" />
+						<Controller
+							name="level"
+							control={control}
+							render={({ field }) => (
+								<Select value={field.value} onValueChange={field.onChange}>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{levelOptions.map((level) => (
+											<SelectItem key={level} value={level}>
+												{t(`classes.level_${level}`, level)}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							)}
+						/>
 					</FormField>
 
 					<FormField

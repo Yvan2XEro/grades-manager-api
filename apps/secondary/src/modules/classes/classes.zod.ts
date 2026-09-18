@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { CLASS_LEVELS } from "../../lib/academic-levels";
+
+export const classLevelSchema = z.enum(CLASS_LEVELS);
 
 export const listSchema = z.object({
 	academicYearId: z.string().uuid().optional(),
 	search: z.string().optional(),
-	level: z.string().optional(),
+	level: classLevelSchema.optional(),
 	page: z.number().int().min(1).default(1),
 	pageSize: z.number().int().min(1).max(500).default(25),
 });
@@ -11,7 +14,7 @@ export const listSchema = z.object({
 export const createSchema = z.object({
 	name: z.string().min(1).max(50),
 	code: z.string().min(1).max(20),
-	level: z.string().min(1).max(30),
+	level: classLevelSchema,
 	academicYearId: z.string().uuid(),
 	trackId: z.string().uuid().optional(),
 	classMasterId: z.string().uuid().optional(),

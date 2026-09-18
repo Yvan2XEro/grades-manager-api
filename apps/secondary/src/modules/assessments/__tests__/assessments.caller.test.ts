@@ -32,7 +32,7 @@ beforeAll(async () => {
 	const classRes = await admin.classes.create({
 		name: "Form 1A",
 		code: `FORM-${Date.now()}`,
-		level: "Tle",
+		level: "terminal",
 		academicYearId: year.id,
 		trackId: track.id,
 	});

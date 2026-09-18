@@ -1,3 +1,7 @@
+import {
+	type InstitutionType,
+	isClassLevelAllowed,
+} from "../../lib/academic-levels";
 import { conflict, notFound } from "../../lib/errors";
 import * as repo from "./classes.repo";
 
@@ -31,7 +35,11 @@ export async function create(
 		maxCapacity?: number;
 	},
 	institutionId: string,
+	institutionType: InstitutionType,
 ) {
+	if (!isClassLevelAllowed(institutionType, data.level)) {
+		throw conflict("CLASS_LEVEL_NOT_ALLOWED");
+	}
 	const existing = await repo.findByCode(
 		data.code,
 		data.academicYearId,
@@ -74,7 +82,11 @@ export async function update(
 		trackId?: string | null;
 	},
 	institutionId: string,
+	institutionType: InstitutionType,
 ) {
+	if (data.level && !isClassLevelAllowed(institutionType, data.level)) {
+		throw conflict("CLASS_LEVEL_NOT_ALLOWED");
+	}
 	const cls = await repo.updateClass(id, institutionId, data);
 	if (!cls) throw notFound("CLASS_NOT_FOUND");
 	return cls;
@@ -99,7 +111,11 @@ export async function bulkCreate(
 		maxCapacity?: number;
 	}[],
 	institutionId: string,
+	institutionType: InstitutionType,
 ) {
+	if (rows.some((row) => !isClassLevelAllowed(institutionType, row.level))) {
+		throw conflict("CLASS_LEVEL_NOT_ALLOWED");
+	}
 	const values = rows.map((r) => ({
 		institutionId,
 		academicYearId: r.academicYearId,
