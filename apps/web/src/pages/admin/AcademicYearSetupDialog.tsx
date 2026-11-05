@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
 import { Button } from "../../components/ui/button";
@@ -20,8 +22,6 @@ import { Label } from "../../components/ui/label";
 import { trpcClient } from "../../utils/trpc";
 
 interface Props {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
 	targetYear: { id: string; name: string };
 }
 
@@ -37,11 +37,15 @@ type PreviewData = {
 	};
 };
 
-export default function AcademicYearSetupDialog({
-	open,
-	onOpenChange,
-	targetYear,
-}: Props) {
+/**
+ * Previews then runs the "academic year setup" batch job that copies classes
+ * (and optionally the timetable) from a source year. Resolves with the job id
+ * once started, or `undefined` when dismissed.
+ */
+export const AcademicYearSetupDialog = createCallable<
+	Props,
+	string | undefined
+>(({ call, targetYear }) => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -77,21 +81,19 @@ export default function AcademicYearSetupDialog({
 		onSuccess: () => {
 			toast.success(t("admin.academicYears.setup.success"));
 			queryClient.invalidateQueries({ queryKey: ["batchJobs"] });
-			handleClose();
+			call.end(previewData?.jobId);
 			navigate(`/admin/batch-jobs/${previewData?.jobId}`);
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
 
-	function handleClose() {
-		setSourceYearId(null);
-		setIncludeTimetable(false);
-		setPreviewData(null);
-		onOpenChange(false);
-	}
+	const busy = previewMutation.isPending || runMutation.isPending;
 
 	return (
-		<Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+		<Dialog
+			open={!call.ended}
+			onOpenChange={(o) => !o && !busy && call.end(undefined)}
+		>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle>{t("admin.academicYears.setup.title")}</DialogTitle>
@@ -168,7 +170,11 @@ export default function AcademicYearSetupDialog({
 				</DialogBody>
 
 				<DialogFooter>
-					<Button variant="outline" onClick={handleClose}>
+					<Button
+						variant="outline"
+						disabled={busy}
+						onClick={() => call.end(undefined)}
+					>
 						{t("common.actions.cancel")}
 					</Button>
 					{!previewData ? (
@@ -196,4 +202,4 @@ export default function AcademicYearSetupDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);

@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,7 +18,6 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
@@ -33,7 +35,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
@@ -179,7 +180,6 @@ const PrerequisiteWarningsList = ({
 									course: targetLabel,
 								})}
 							</p>
-							<ConfirmDialog />
 						</div>
 					);
 				})}
@@ -246,44 +246,6 @@ const EnrollmentManagement = () => {
 		enabled: Boolean(selectedClass),
 	});
 
-	const [selectedStudent, setSelectedStudent] = useState<string>("");
-	const [rosterModalOpen, setRosterModalOpen] = useState(false);
-	const [autoEnrollDialogOpen, setAutoEnrollDialogOpen] = useState(false);
-	const [bulkEnrollOpen, setBulkEnrollOpen] = useState(false);
-	const [bulkSelectedClassIds, setBulkSelectedClassIds] = useState<Set<string>>(
-		new Set(),
-	);
-	const [bulkResults, setBulkResults] = useState<
-		Array<{
-			className: string;
-			created: number;
-			skipped: number;
-			error?: string;
-		}>
-	>([]);
-	const [courseWarnings, setCourseWarnings] = useState<
-		Record<string, PrerequisiteWarning[]>
-	>({});
-	const [autoEnrollWarnings, setAutoEnrollWarnings] = useState<
-		PrerequisiteWarning[]
-	>([]);
-
-	const courseEnrollmentQuery = useQuery({
-		...trpc.studentCourseEnrollments.list.queryOptions({
-			studentId: selectedStudent || undefined,
-			limit: 200,
-		}),
-		enabled: Boolean(selectedStudent && rosterModalOpen),
-	});
-
-	const selectedStudentProfile = useMemo(
-		() =>
-			studentsQuery.data?.items?.find(
-				(student) => student.id === selectedStudent,
-			) ?? null,
-		[studentsQuery.data?.items, selectedStudent],
-	);
-
 	const windowsQuery = useQuery(
 		trpc.workflows.enrollmentWindows.queryOptions(),
 	);
@@ -308,177 +270,8 @@ const EnrollmentManagement = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const rosterByClassCourse = useMemo(() => {
-		const map = new Map<string, CourseEnrollmentRow>();
-		courseEnrollmentQuery.data?.items?.forEach((item) => {
-			map.set(item.classCourseId, item);
-		});
-		return map;
-	}, [courseEnrollmentQuery.data?.items]);
-
-	const assignCourse = useMutation({
-		mutationFn: (classCourseId: string) =>
-			trpcClient.studentCourseEnrollments.create.mutate({
-				studentId: selectedStudent,
-				classCourseId,
-				status: "active",
-			}),
-		onSuccess: (result, classCourseIdParam) => {
-			toast.success(
-				t("admin.enrollments.toast.courseEnrolled", {
-					defaultValue: "Student enrolled in course",
-				}),
-			);
-			if (classCourseIdParam) {
-				setCourseWarnings((prev) => {
-					const next = { ...prev };
-					if (result.warnings?.length) {
-						next[classCourseIdParam] = result.warnings;
-					} else {
-						delete next[classCourseIdParam];
-					}
-					return next;
-				});
-			}
-			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const withdrawCourse = useMutation({
-		mutationFn: (payload: { id: string; status: "withdrawn" | "completed" }) =>
-			trpcClient.studentCourseEnrollments.updateStatus.mutate(payload),
-		onSuccess: () => {
-			toast.success(
-				t("admin.enrollments.toast.courseWithdrawn", {
-					defaultValue: "Enrollment updated",
-				}),
-			);
-			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const reactivateCourse = useMutation({
-		mutationFn: (id: string) =>
-			trpcClient.studentCourseEnrollments.updateStatus.mutate({
-				id,
-				status: "active",
-			}),
-		onSuccess: () => {
-			toast.success(
-				t("admin.enrollments.toast.courseReactivated", {
-					defaultValue: "Enrollment restored",
-				}),
-			);
-			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const bulkEnrollMutation = useMutation({
-		mutationFn: async () => {
-			if (!selectedAcademicYear || bulkSelectedClassIds.size === 0) {
-				throw new Error(
-					t("admin.enrollments.bulkEnroll.noSelection", {
-						defaultValue: "Sélectionnez au moins une classe.",
-					}),
-				);
-			}
-			const ids = Array.from(bulkSelectedClassIds);
-			const allClasses = classes?.items ?? [];
-			const results: typeof bulkResults = [];
-			for (const id of ids) {
-				const klass = allClasses.find((c) => c.id === id);
-				const className = klass?.name ?? id.slice(0, 8);
-				try {
-					const res =
-						await trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
-							classId: id,
-							academicYearId: selectedAcademicYear,
-						});
-					results.push({
-						className,
-						created: res.createdCount,
-						skipped: res.skippedCount,
-					});
-				} catch (err: any) {
-					results.push({
-						className,
-						created: 0,
-						skipped: 0,
-						error: err?.message ?? String(err),
-					});
-				}
-			}
-			return results;
-		},
-		onSuccess: (results) => {
-			setBulkResults(results);
-			const totalCreated = results.reduce((s, r) => s + r.created, 0);
-			const errCount = results.filter((r) => r.error).length;
-			if (errCount === 0) {
-				toast.success(
-					t("admin.enrollments.bulkEnroll.success", {
-						defaultValue: "{{count}} inscriptions créées sur {{n}} classe(s).",
-						count: totalCreated,
-						n: results.length,
-					}),
-				);
-			} else {
-				toast.error(
-					t("admin.enrollments.bulkEnroll.partial", {
-						defaultValue: "{{count}} inscriptions créées, {{err}} erreur(s).",
-						count: totalCreated,
-						err: errCount,
-					}),
-				);
-			}
-			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const autoEnrollMutation = useMutation({
-		mutationFn: () =>
-			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
-				classId: selectedClass,
-				academicYearId: selectedAcademicYear,
-				semesterId: selectedSemester || selectedClassDetails?.semester?.id,
-			}),
-		onSuccess: (result) => {
-			toast.success(
-				t("admin.enrollments.toast.autoEnrollSuccess", {
-					defaultValue: "Class roster synced ({{count}} records)",
-					count: result.createdCount,
-				}),
-			);
-			if (result.warnings?.length) {
-				setAutoEnrollWarnings(result.warnings);
-				setAutoEnrollDialogOpen(true);
-			} else {
-				setAutoEnrollWarnings([]);
-				setAutoEnrollDialogOpen(false);
-			}
-			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
 	const enrollmentItems = data?.items ?? [];
 	const selection = useRowSelection(enrollmentItems);
-
-	const { confirm, ConfirmDialog } = useConfirm();
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -514,39 +307,18 @@ const EnrollmentManagement = () => {
 		);
 	}, [windowsQuery.data, selectedAcademicYear, selectedClass]);
 
-	useEffect(() => {
-		setRosterModalOpen(false);
-		setSelectedStudent("");
-	}, []);
-
-	useEffect(() => {
-		if (!rosterModalOpen) {
-			setCourseWarnings({});
-		}
-	}, [rosterModalOpen]);
-
-	useEffect(() => {
-		if (!selectedStudent) {
-			setCourseWarnings({});
-		}
-	}, [selectedStudent]);
-
-	const handleAutoEnrollConfirm = () => {
-		setAutoEnrollWarnings([]);
-		autoEnrollMutation.mutate();
-	};
-
 	const openRosterForStudent = (studentId: string) => {
-		setSelectedStudent(studentId);
-		setCourseWarnings({});
-		setRosterModalOpen(true);
-	};
-
-	const handleRosterModalChange = (open: boolean) => {
-		setRosterModalOpen(open);
-		if (!open) {
-			setCourseWarnings({});
-		}
+		const student = studentsQuery.data?.items?.find(
+			(s: { id: string }) => s.id === studentId,
+		) as { profile: { firstName: string; lastName: string } } | undefined;
+		StudentCourseRosterDialog.call({
+			studentId,
+			studentName: student
+				? `${student.profile.firstName} ${student.profile.lastName}`
+				: "",
+			classId: selectedClass,
+			semesterId: selectedSemester || undefined,
+		});
 	};
 
 	const selectedClassDetails = useMemo(() => {
@@ -557,8 +329,7 @@ const EnrollmentManagement = () => {
 		selectedAcademicYear &&
 			selectedClass &&
 			studentsCount > 0 &&
-			classCoursesCount > 0 &&
-			!autoEnrollMutation.isPending,
+			classCoursesCount > 0,
 	);
 
 	return (
@@ -748,243 +519,47 @@ const EnrollmentManagement = () => {
 						</div>
 					</div>
 					<div className="flex flex-wrap gap-2">
-						<Dialog
-							open={bulkEnrollOpen}
-							onOpenChange={(open) => {
-								setBulkEnrollOpen(open);
-								if (!open) {
-									setBulkResults([]);
-									setBulkSelectedClassIds(new Set());
-								}
-							}}
+						<Button
+							type="button"
+							variant="default"
+							disabled={!selectedAcademicYear}
+							onClick={() =>
+								BulkEnrollClassesDialog.call({
+									academicYearId: selectedAcademicYear,
+									classes: classes?.items ?? [],
+								})
+							}
+							title={
+								!selectedAcademicYear
+									? t("admin.enrollments.bulkEnroll.requireYear", {
+											defaultValue: "Choisissez d'abord une année",
+										})
+									: undefined
+							}
 						>
-							<Button
-								type="button"
-								variant="default"
-								disabled={!selectedAcademicYear}
-								onClick={() => setBulkEnrollOpen(true)}
-								title={
-									!selectedAcademicYear
-										? t("admin.enrollments.bulkEnroll.requireYear", {
-												defaultValue: "Choisissez d'abord une année",
-											})
-										: undefined
-								}
-							>
-								{t("admin.enrollments.bulkEnroll.openButton", {
-									defaultValue: "Inscription de masse",
-								})}
-							</Button>
-							<DialogContent className="max-w-2xl p-6">
-								<div className="space-y-5">
-									<div>
-										<h3 className="font-semibold text-lg">
-											{t("admin.enrollments.bulkEnroll.title", {
-												defaultValue: "Inscription de masse",
-											})}
-										</h3>
-										<p className="mt-1 text-muted-foreground text-sm">
-											{t("admin.enrollments.bulkEnroll.description", {
-												defaultValue:
-													"Sélectionnez une ou plusieurs classes. Tous les étudiants de chaque classe seront inscrits à tous ses cours (tous semestres confondus). Pour cibler un semestre précis, utilise le bouton « Enroll entire class » classe par classe.",
-											})}
-										</p>
-									</div>
-
-									{bulkResults.length === 0 ? (
-										<>
-											<div>
-												<div className="mb-2 flex items-center justify-between">
-													<label className="font-medium text-sm">
-														{t("admin.enrollments.bulkEnroll.classesLabel", {
-															defaultValue: "Classes ({{n}} sélectionnées)",
-															n: bulkSelectedClassIds.size,
-														})}
-													</label>
-													<div className="flex gap-2">
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() =>
-																setBulkSelectedClassIds(
-																	new Set(
-																		(classes?.items ?? []).map((c) => c.id),
-																	),
-																)
-															}
-														>
-															{t("common.actions.selectAll", {
-																defaultValue: "Tout cocher",
-															})}
-														</Button>
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() => setBulkSelectedClassIds(new Set())}
-														>
-															{t("common.actions.clear", {
-																defaultValue: "Tout décocher",
-															})}
-														</Button>
-													</div>
-												</div>
-												<ScrollArea className="h-64 rounded-md border">
-													<div className="space-y-1 p-2">
-														{(classes?.items ?? []).map((klass) => (
-															<label
-																key={klass.id}
-																className="flex cursor-pointer items-center gap-2 rounded p-2 hover:bg-muted"
-															>
-																<Checkbox
-																	checked={bulkSelectedClassIds.has(klass.id)}
-																	onCheckedChange={(checked) => {
-																		setBulkSelectedClassIds((prev) => {
-																			const next = new Set(prev);
-																			if (checked) next.add(klass.id);
-																			else next.delete(klass.id);
-																			return next;
-																		});
-																	}}
-																/>
-																<span className="text-sm">{klass.name}</span>
-															</label>
-														))}
-														{!(classes?.items ?? []).length && (
-															<p className="p-4 text-center text-muted-foreground text-sm">
-																{t("admin.enrollments.bulkEnroll.noClasses", {
-																	defaultValue:
-																		"Aucune classe pour cette année.",
-																})}
-															</p>
-														)}
-													</div>
-												</ScrollArea>
-											</div>
-
-											<div className="flex justify-end gap-2">
-												<Button
-													variant="outline"
-													onClick={() => setBulkEnrollOpen(false)}
-													disabled={bulkEnrollMutation.isPending}
-												>
-													{t("common.actions.cancel", {
-														defaultValue: "Annuler",
-													})}
-												</Button>
-												<Button
-													onClick={() => bulkEnrollMutation.mutate()}
-													disabled={
-														bulkSelectedClassIds.size === 0 ||
-														bulkEnrollMutation.isPending
-													}
-												>
-													{bulkEnrollMutation.isPending && (
-														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-													)}
-													{t("admin.enrollments.bulkEnroll.run", {
-														defaultValue: "Lancer l'inscription",
-													})}
-												</Button>
-											</div>
-										</>
-									) : (
-										<>
-											<div className="max-h-80 space-y-1 overflow-y-auto rounded-md border p-3">
-												{bulkResults.map((r) => (
-													<div
-														key={r.className}
-														className={`flex items-center justify-between border-b py-1.5 last:border-0 ${
-															r.error ? "text-destructive" : ""
-														}`}
-													>
-														<span className="font-medium text-sm">
-															{r.className}
-														</span>
-														<span className="text-xs">
-															{r.error
-																? r.error
-																: `${r.created} créées${r.skipped ? `, ${r.skipped} déjà existantes` : ""}`}
-														</span>
-													</div>
-												))}
-											</div>
-											<div className="flex justify-end">
-												<Button onClick={() => setBulkEnrollOpen(false)}>
-													{t("common.actions.close", {
-														defaultValue: "Fermer",
-													})}
-												</Button>
-											</div>
-										</>
-									)}
-								</div>
-							</DialogContent>
-						</Dialog>
-						<AlertDialog
-							open={autoEnrollDialogOpen}
-							onOpenChange={(open) => {
-								setAutoEnrollDialogOpen(open);
-								if (!open) {
-									setAutoEnrollWarnings([]);
-								}
-							}}
+							{t("admin.enrollments.bulkEnroll.openButton", {
+								defaultValue: "Inscription de masse",
+							})}
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							disabled={!canAutoEnroll}
+							onClick={() =>
+								EnrollEntireClassDialog.call({
+									classId: selectedClass,
+									academicYearId: selectedAcademicYear,
+									semesterId:
+										selectedSemester || selectedClassDetails?.semester?.id,
+									studentsCount,
+									coursesCount: classCoursesCount,
+								})
+							}
 						>
-							<AlertDialogTrigger asChild>
-								<Button
-									type="button"
-									variant="outline"
-									disabled={!canAutoEnroll}
-								>
-									{autoEnrollMutation.isPending && (
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									)}
-									{t("admin.enrollments.autoEnroll.button", {
-										defaultValue: "Enroll entire class",
-									})}
-								</Button>
-							</AlertDialogTrigger>
-							<AlertDialogContent>
-								<AlertDialogHeader>
-									<AlertDialogTitle>
-										{t("admin.enrollments.autoEnroll.title", {
-											defaultValue: "Enroll every student?",
-										})}
-									</AlertDialogTitle>
-									<AlertDialogDescription>
-										{t("admin.enrollments.autoEnroll.description", {
-											defaultValue:
-												"This action enrolls {{students}} students into {{courses}} courses. Existing enrollments remain untouched.",
-											students: studentsCount,
-											courses: classCoursesCount,
-										})}
-									</AlertDialogDescription>
-								</AlertDialogHeader>
-								{autoEnrollWarnings.length > 0 ? (
-									<div className="py-2">
-										<PrerequisiteWarningsList
-											warnings={autoEnrollWarnings}
-											t={t}
-										/>
-									</div>
-								) : null}
-								<AlertDialogFooter>
-									<AlertDialogCancel disabled={autoEnrollMutation.isPending}>
-										{t("common.actions.cancel", { defaultValue: "Cancel" })}
-									</AlertDialogCancel>
-									<AlertDialogAction
-										onClick={handleAutoEnrollConfirm}
-										disabled={autoEnrollMutation.isPending}
-									>
-										{autoEnrollMutation.isPending && (
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										)}
-										{t("admin.enrollments.autoEnroll.confirm", {
-											defaultValue: "Confirm enrollment",
-										})}
-									</AlertDialogAction>
-								</AlertDialogFooter>
-							</AlertDialogContent>
-						</AlertDialog>
+							{t("admin.enrollments.autoEnroll.button", {
+								defaultValue: "Enroll entire class",
+							})}
+						</Button>
 						<Button
 							type="button"
 							onClick={() => toggleWindow.mutate("open")}
@@ -1028,7 +603,7 @@ const EnrollmentManagement = () => {
 								variant="destructive"
 								size="sm"
 								onClick={() =>
-									confirm({
+									confirmAction({
 										title: t("common.bulkActions.confirmDeleteTitle", {
 											defaultValue: "Delete selected items?",
 										}),
@@ -1203,242 +778,670 @@ const EnrollmentManagement = () => {
 						/>
 					</CardContent>
 				</Card>
-
-				<Dialog open={rosterModalOpen} onOpenChange={handleRosterModalChange}>
-					<DialogContent className="min-w-[90vw]">
-						<Card>
-							<CardHeader className="pb-4">
-								<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-									<div>
-										<CardTitle className="font-semibold text-foreground text-lg">
-											{t("admin.enrollments.courseRoster.title", {
-												defaultValue: "Course roster (per student)",
-											})}
-										</CardTitle>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.enrollments.courseRoster.subtitle", {
-												defaultValue:
-													"Select a student to review enrollment attempts, retakes, and status per course.",
-											})}
-										</p>
-									</div>
-									{selectedStudent && (
-										<Badge variant="outline" className="text-sm">
-											{t("admin.enrollments.courseRoster.selected", {
-												defaultValue: "Managing: {{value}}",
-												value: selectedStudentProfile
-													? `${selectedStudentProfile.profile.firstName} ${selectedStudentProfile.profile.lastName}`
-													: "",
-											})}
-										</Badge>
-									)}
-								</div>
-							</CardHeader>
-							<CardContent className="min-w-[70vw] space-y-4">
-								{selectedStudent ? (
-									<>
-										<p className="font-medium text-foreground text-sm">
-											{t("admin.enrollments.courseRoster.courses", {
-												defaultValue: "Class courses",
-											})}
-										</p>
-										<ScrollArea className="max-h-[420px] w-full rounded-md border">
-											<div className="divide-y">
-												{classCoursesQuery.data?.items?.map((course) => {
-													const enrollment = rosterByClassCourse.get(course.id);
-													const status = enrollment?.status ?? "none";
-													const courseName = course.courseName ?? course.course;
-													const teacherName = course.teacherFirstName
-														? `${course.teacherFirstName} ${course.teacherLastName ?? ""}`.trim()
-														: course.teacher;
-													const canReactivate =
-														enrollment && status === "withdrawn";
-													const warningsForCourse =
-														courseWarnings[course.id] ?? [];
-													const enrollDisabled =
-														!selectedStudent ||
-														status === "active" ||
-														(canReactivate
-															? reactivateCourse.isPending
-															: assignCourse.isPending);
-													const handlePrimaryAction = () => {
-														if (!selectedStudent) return;
-														if (canReactivate) {
-															reactivateCourse.mutate(enrollment.id);
-														} else {
-															assignCourse.mutate(course.id);
-														}
-													};
-													return (
-														<div
-															key={course.id}
-															className="space-y-2 px-4 py-3"
-														>
-															<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-																<div className="space-y-1">
-																	<p className="font-semibold text-foreground text-sm">
-																		{courseName}
-																	</p>
-																	<p className="text-muted-foreground text-xs">
-																		{t(
-																			"admin.enrollments.courseRoster.teacher",
-																			{
-																				defaultValue: "Teacher: {{value}}",
-																				value: teacherName,
-																			},
-																		)}
-																	</p>
-																</div>
-																<div className="flex flex-col gap-2 sm:items-end">
-																	<div className="flex items-center gap-2">
-																		<Badge
-																			variant="outline"
-																			className={
-																				status === "active"
-																					? "border-emerald-200 bg-emerald-50 text-emerald-800"
-																					: status === "completed"
-																						? "border-blue-200 bg-blue-50 text-blue-800"
-																						: status === "failed"
-																							? "border-rose-200 bg-rose-50 text-rose-800"
-																							: "border-border bg-muted text-foreground"
-																			}
-																		>
-																			{status === "none"
-																				? t(
-																						"admin.enrollments.courseRoster.notEnrolled",
-																						{
-																							defaultValue: "Not enrolled",
-																						},
-																					)
-																				: status}
-																		</Badge>
-																		{enrollment && enrollment.attempt > 1 && (
-																			<Badge
-																				variant="outline"
-																				className="border-orange-200 bg-orange-50 text-orange-800"
-																			>
-																				{t(
-																					"admin.enrollments.courseRoster.attemptBadge",
-																					{
-																						defaultValue: "Attempt {{value}}",
-																						value: enrollment.attempt,
-																					},
-																				)}
-																			</Badge>
-																		)}
-																		{status === "failed" && (
-																			<Badge
-																				variant="outline"
-																				className="border-amber-200 bg-amber-50 text-amber-800"
-																			>
-																				{t(
-																					"admin.enrollments.courseRoster.retakeEligible",
-																					{
-																						defaultValue: "Retake eligible",
-																					},
-																				)}
-																			</Badge>
-																		)}
-																	</div>
-																	<div className="flex flex-wrap gap-2">
-																		<Button
-																			type="button"
-																			size="xs"
-																			variant="outline"
-																			disabled={enrollDisabled}
-																			onClick={handlePrimaryAction}
-																		>
-																			{canReactivate
-																				? t(
-																						"admin.enrollments.courseRoster.reactivateBtn",
-																						{
-																							defaultValue:
-																								"Restore enrollment",
-																						},
-																					)
-																				: t(
-																						"admin.enrollments.courseRoster.enrollBtn",
-																						{
-																							defaultValue: "Enroll",
-																						},
-																					)}
-																		</Button>
-																		<Button
-																			type="button"
-																			size="xs"
-																			variant="secondary"
-																			disabled={
-																				!enrollment || withdrawCourse.isPending
-																			}
-																			onClick={() =>
-																				enrollment &&
-																				withdrawCourse.mutate({
-																					id: enrollment.id,
-																					status: "withdrawn",
-																				})
-																			}
-																		>
-																			{t(
-																				"admin.enrollments.courseRoster.withdrawBtn",
-																				{
-																					defaultValue: "Withdraw",
-																				},
-																			)}
-																		</Button>
-																		<Button
-																			type="button"
-																			size="xs"
-																			variant="ghost"
-																			disabled={!selectedStudent}
-																			onClick={() =>
-																				assignCourse.mutate(course.id)
-																			}
-																		>
-																			{t(
-																				"admin.enrollments.courseRoster.retakeBtn",
-																				{
-																					defaultValue: "Retake",
-																				},
-																			)}
-																		</Button>
-																	</div>
-																</div>
-															</div>
-															{warningsForCourse.length > 0 ? (
-																<PrerequisiteWarningsList
-																	warnings={warningsForCourse}
-																	t={t}
-																	showDescription={false}
-																/>
-															) : null}
-														</div>
-													);
-												}) ?? (
-													<p className="text-muted-foreground text-xs">
-														{t("admin.enrollments.courseRoster.noCourses", {
-															defaultValue:
-																"This class has no courses assigned yet.",
-														})}
-													</p>
-												)}
-											</div>
-										</ScrollArea>
-									</>
-								) : (
-									<p className="text-muted-foreground text-xs">
-										{t("admin.enrollments.courseRoster.selectStudent", {
-											defaultValue:
-												"Pick a student to manage course enrollments.",
-										})}
-									</p>
-								)}
-							</CardContent>
-						</Card>
-					</DialogContent>
-				</Dialog>
 			</div>
 		</div>
 	);
 };
 
 export default EnrollmentManagement;
+
+/**
+ * Per-student course roster of a class: enroll, withdraw, restore or retake
+ * each class course, with prerequisite warnings.
+ */
+export const StudentCourseRosterDialog = createCallable<{
+	studentId: string;
+	studentName: string;
+	classId: string;
+	semesterId?: string;
+}>(({ call, studentId, studentName, classId, semesterId }) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [courseWarnings, setCourseWarnings] = useState<
+		Record<string, PrerequisiteWarning[]>
+	>({});
+
+	const classCoursesQuery = useQuery(
+		trpc.classCourses.list.queryOptions({
+			classId,
+			semesterId,
+			limit: 100,
+		}),
+	);
+
+	const courseEnrollmentQuery = useQuery(
+		trpc.studentCourseEnrollments.list.queryOptions({
+			studentId,
+			limit: 200,
+		}),
+	);
+
+	const rosterByClassCourse = useMemo(() => {
+		const map = new Map<string, CourseEnrollmentRow>();
+		courseEnrollmentQuery.data?.items?.forEach((item) => {
+			map.set(item.classCourseId, item);
+		});
+		return map;
+	}, [courseEnrollmentQuery.data?.items]);
+
+	const assignCourse = useMutation({
+		mutationFn: (classCourseId: string) =>
+			trpcClient.studentCourseEnrollments.create.mutate({
+				studentId,
+				classCourseId,
+				status: "active",
+			}),
+		onSuccess: (result, classCourseIdParam) => {
+			toast.success(
+				t("admin.enrollments.toast.courseEnrolled", {
+					defaultValue: "Student enrolled in course",
+				}),
+			);
+			if (classCourseIdParam) {
+				setCourseWarnings((prev) => {
+					const next = { ...prev };
+					if (result.warnings?.length) {
+						next[classCourseIdParam] = result.warnings;
+					} else {
+						delete next[classCourseIdParam];
+					}
+					return next;
+				});
+			}
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const withdrawCourse = useMutation({
+		mutationFn: (payload: { id: string; status: "withdrawn" | "completed" }) =>
+			trpcClient.studentCourseEnrollments.updateStatus.mutate(payload),
+		onSuccess: () => {
+			toast.success(
+				t("admin.enrollments.toast.courseWithdrawn", {
+					defaultValue: "Enrollment updated",
+				}),
+			);
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const reactivateCourse = useMutation({
+		mutationFn: (id: string) =>
+			trpcClient.studentCourseEnrollments.updateStatus.mutate({
+				id,
+				status: "active",
+			}),
+		onSuccess: () => {
+			toast.success(
+				t("admin.enrollments.toast.courseReactivated", {
+					defaultValue: "Enrollment restored",
+				}),
+			);
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	return (
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
+			<DialogContent className="min-w-[90vw]">
+				<Card>
+					<CardHeader className="pb-4">
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+							<div>
+								<CardTitle className="font-semibold text-foreground text-lg">
+									{t("admin.enrollments.courseRoster.title", {
+										defaultValue: "Course roster (per student)",
+									})}
+								</CardTitle>
+								<p className="text-muted-foreground text-xs">
+									{t("admin.enrollments.courseRoster.subtitle", {
+										defaultValue:
+											"Select a student to review enrollment attempts, retakes, and status per course.",
+									})}
+								</p>
+							</div>
+							{studentId && (
+								<Badge variant="outline" className="text-sm">
+									{t("admin.enrollments.courseRoster.selected", {
+										defaultValue: "Managing: {{value}}",
+										value: studentName,
+									})}
+								</Badge>
+							)}
+						</div>
+					</CardHeader>
+					<CardContent className="min-w-[70vw] space-y-4">
+						{studentId ? (
+							<>
+								<p className="font-medium text-foreground text-sm">
+									{t("admin.enrollments.courseRoster.courses", {
+										defaultValue: "Class courses",
+									})}
+								</p>
+								<ScrollArea className="max-h-[420px] w-full rounded-md border">
+									<div className="divide-y">
+										{classCoursesQuery.data?.items?.map((course) => {
+											const enrollment = rosterByClassCourse.get(course.id);
+											const status = enrollment?.status ?? "none";
+											const courseName = course.courseName ?? course.course;
+											const teacherName = course.teacherFirstName
+												? `${course.teacherFirstName} ${course.teacherLastName ?? ""}`.trim()
+												: course.teacher;
+											const canReactivate =
+												enrollment && status === "withdrawn";
+											const warningsForCourse = courseWarnings[course.id] ?? [];
+											const enrollDisabled =
+												!studentId ||
+												status === "active" ||
+												(canReactivate
+													? reactivateCourse.isPending
+													: assignCourse.isPending);
+											const handlePrimaryAction = () => {
+												if (!studentId) return;
+												if (canReactivate) {
+													reactivateCourse.mutate(enrollment.id);
+												} else {
+													assignCourse.mutate(course.id);
+												}
+											};
+											return (
+												<div key={course.id} className="space-y-2 px-4 py-3">
+													<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+														<div className="space-y-1">
+															<p className="font-semibold text-foreground text-sm">
+																{courseName}
+															</p>
+															<p className="text-muted-foreground text-xs">
+																{t("admin.enrollments.courseRoster.teacher", {
+																	defaultValue: "Teacher: {{value}}",
+																	value: teacherName,
+																})}
+															</p>
+														</div>
+														<div className="flex flex-col gap-2 sm:items-end">
+															<div className="flex items-center gap-2">
+																<Badge
+																	variant="outline"
+																	className={
+																		status === "active"
+																			? "border-emerald-200 bg-emerald-50 text-emerald-800"
+																			: status === "completed"
+																				? "border-blue-200 bg-blue-50 text-blue-800"
+																				: status === "failed"
+																					? "border-rose-200 bg-rose-50 text-rose-800"
+																					: "border-border bg-muted text-foreground"
+																	}
+																>
+																	{status === "none"
+																		? t(
+																				"admin.enrollments.courseRoster.notEnrolled",
+																				{
+																					defaultValue: "Not enrolled",
+																				},
+																			)
+																		: status}
+																</Badge>
+																{enrollment && enrollment.attempt > 1 && (
+																	<Badge
+																		variant="outline"
+																		className="border-orange-200 bg-orange-50 text-orange-800"
+																	>
+																		{t(
+																			"admin.enrollments.courseRoster.attemptBadge",
+																			{
+																				defaultValue: "Attempt {{value}}",
+																				value: enrollment.attempt,
+																			},
+																		)}
+																	</Badge>
+																)}
+																{status === "failed" && (
+																	<Badge
+																		variant="outline"
+																		className="border-amber-200 bg-amber-50 text-amber-800"
+																	>
+																		{t(
+																			"admin.enrollments.courseRoster.retakeEligible",
+																			{
+																				defaultValue: "Retake eligible",
+																			},
+																		)}
+																	</Badge>
+																)}
+															</div>
+															<div className="flex flex-wrap gap-2">
+																<Button
+																	type="button"
+																	size="xs"
+																	variant="outline"
+																	disabled={enrollDisabled}
+																	onClick={handlePrimaryAction}
+																>
+																	{canReactivate
+																		? t(
+																				"admin.enrollments.courseRoster.reactivateBtn",
+																				{
+																					defaultValue: "Restore enrollment",
+																				},
+																			)
+																		: t(
+																				"admin.enrollments.courseRoster.enrollBtn",
+																				{
+																					defaultValue: "Enroll",
+																				},
+																			)}
+																</Button>
+																<Button
+																	type="button"
+																	size="xs"
+																	variant="secondary"
+																	disabled={
+																		!enrollment || withdrawCourse.isPending
+																	}
+																	onClick={() =>
+																		enrollment &&
+																		withdrawCourse.mutate({
+																			id: enrollment.id,
+																			status: "withdrawn",
+																		})
+																	}
+																>
+																	{t(
+																		"admin.enrollments.courseRoster.withdrawBtn",
+																		{
+																			defaultValue: "Withdraw",
+																		},
+																	)}
+																</Button>
+																<Button
+																	type="button"
+																	size="xs"
+																	variant="ghost"
+																	disabled={!studentId}
+																	onClick={() => assignCourse.mutate(course.id)}
+																>
+																	{t(
+																		"admin.enrollments.courseRoster.retakeBtn",
+																		{
+																			defaultValue: "Retake",
+																		},
+																	)}
+																</Button>
+															</div>
+														</div>
+													</div>
+													{warningsForCourse.length > 0 ? (
+														<PrerequisiteWarningsList
+															warnings={warningsForCourse}
+															t={t}
+															showDescription={false}
+														/>
+													) : null}
+												</div>
+											);
+										}) ?? (
+											<p className="text-muted-foreground text-xs">
+												{t("admin.enrollments.courseRoster.noCourses", {
+													defaultValue:
+														"This class has no courses assigned yet.",
+												})}
+											</p>
+										)}
+									</div>
+								</ScrollArea>
+							</>
+						) : (
+							<p className="text-muted-foreground text-xs">
+								{t("admin.enrollments.courseRoster.selectStudent", {
+									defaultValue: "Pick a student to manage course enrollments.",
+								})}
+							</p>
+						)}
+					</CardContent>
+				</Card>
+			</DialogContent>
+		</Dialog>
+	);
+}, DIALOG_EXIT_MS);
+
+type BulkEnrollResult = {
+	className: string;
+	created: number;
+	skipped: number;
+	error?: string;
+};
+
+/**
+ * Enrolls every student of the selected classes in all their courses for a
+ * year; resolves with the per-class results.
+ */
+export const BulkEnrollClassesDialog = createCallable<
+	{ academicYearId: string; classes: Array<{ id: string; name: string }> },
+	BulkEnrollResult[] | undefined
+>(({ call, academicYearId, classes }) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [bulkSelectedClassIds, setBulkSelectedClassIds] = useState<Set<string>>(
+		new Set(),
+	);
+	const [bulkResults, setBulkResults] = useState<BulkEnrollResult[]>([]);
+
+	const bulkEnrollMutation = useMutation({
+		mutationFn: async () => {
+			const results: BulkEnrollResult[] = [];
+			for (const id of Array.from(bulkSelectedClassIds)) {
+				const className =
+					classes.find((c) => c.id === id)?.name ?? id.slice(0, 8);
+				try {
+					const res =
+						await trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
+							classId: id,
+							academicYearId,
+						});
+					results.push({
+						className,
+						created: res.createdCount,
+						skipped: res.skippedCount,
+					});
+				} catch (err) {
+					results.push({
+						className,
+						created: 0,
+						skipped: 0,
+						error: (err as Error)?.message ?? String(err),
+					});
+				}
+			}
+			return results;
+		},
+		onSuccess: (results) => {
+			setBulkResults(results);
+			const totalCreated = results.reduce((s, r) => s + r.created, 0);
+			const errCount = results.filter((r) => r.error).length;
+			if (errCount === 0) {
+				toast.success(
+					t("admin.enrollments.bulkEnroll.success", {
+						defaultValue: "{{count}} inscriptions créées sur {{n}} classe(s).",
+						count: totalCreated,
+						n: results.length,
+					}),
+				);
+			} else {
+				toast.error(
+					t("admin.enrollments.bulkEnroll.partial", {
+						defaultValue: "{{count}} inscriptions créées, {{err}} erreur(s).",
+						count: totalCreated,
+						err: errCount,
+					}),
+				);
+			}
+			queryClient.invalidateQueries({
+				queryKey: trpc.studentCourseEnrollments.list.queryKey(),
+			});
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const close = () => call.end(bulkResults.length ? bulkResults : undefined);
+
+	return (
+		<Dialog
+			open={!call.ended}
+			onOpenChange={(o) => !o && !bulkEnrollMutation.isPending && close()}
+		>
+			<DialogContent className="max-w-2xl p-6">
+				<div className="space-y-5">
+					<div>
+						<h3 className="font-semibold text-lg">
+							{t("admin.enrollments.bulkEnroll.title", {
+								defaultValue: "Inscription de masse",
+							})}
+						</h3>
+						<p className="mt-1 text-muted-foreground text-sm">
+							{t("admin.enrollments.bulkEnroll.description", {
+								defaultValue:
+									"Sélectionnez une ou plusieurs classes. Tous les étudiants de chaque classe seront inscrits à tous ses cours (tous semestres confondus). Pour cibler un semestre précis, utilise le bouton « Enroll entire class » classe par classe.",
+							})}
+						</p>
+					</div>
+
+					{bulkResults.length === 0 ? (
+						<>
+							<div>
+								<div className="mb-2 flex items-center justify-between">
+									<label className="font-medium text-sm">
+										{t("admin.enrollments.bulkEnroll.classesLabel", {
+											defaultValue: "Classes ({{n}} sélectionnées)",
+											n: bulkSelectedClassIds.size,
+										})}
+									</label>
+									<div className="flex gap-2">
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={() =>
+												setBulkSelectedClassIds(
+													new Set(classes.map((c) => c.id)),
+												)
+											}
+										>
+											{t("common.actions.selectAll", {
+												defaultValue: "Tout cocher",
+											})}
+										</Button>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={() => setBulkSelectedClassIds(new Set())}
+										>
+											{t("common.actions.clear", {
+												defaultValue: "Tout décocher",
+											})}
+										</Button>
+									</div>
+								</div>
+								<ScrollArea className="h-64 rounded-md border">
+									<div className="space-y-1 p-2">
+										{classes.map((klass) => (
+											<label
+												key={klass.id}
+												className="flex cursor-pointer items-center gap-2 rounded p-2 hover:bg-muted"
+											>
+												<Checkbox
+													checked={bulkSelectedClassIds.has(klass.id)}
+													onCheckedChange={(checked) => {
+														setBulkSelectedClassIds((prev) => {
+															const next = new Set(prev);
+															if (checked) next.add(klass.id);
+															else next.delete(klass.id);
+															return next;
+														});
+													}}
+												/>
+												<span className="text-sm">{klass.name}</span>
+											</label>
+										))}
+										{!classes.length && (
+											<p className="p-4 text-center text-muted-foreground text-sm">
+												{t("admin.enrollments.bulkEnroll.noClasses", {
+													defaultValue: "Aucune classe pour cette année.",
+												})}
+											</p>
+										)}
+									</div>
+								</ScrollArea>
+							</div>
+
+							<div className="flex justify-end gap-2">
+								<Button
+									variant="outline"
+									onClick={close}
+									disabled={bulkEnrollMutation.isPending}
+								>
+									{t("common.actions.cancel", {
+										defaultValue: "Annuler",
+									})}
+								</Button>
+								<Button
+									onClick={() => bulkEnrollMutation.mutate()}
+									disabled={
+										bulkSelectedClassIds.size === 0 ||
+										bulkEnrollMutation.isPending
+									}
+								>
+									{bulkEnrollMutation.isPending && (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									)}
+									{t("admin.enrollments.bulkEnroll.run", {
+										defaultValue: "Lancer l'inscription",
+									})}
+								</Button>
+							</div>
+						</>
+					) : (
+						<>
+							<div className="max-h-80 space-y-1 overflow-y-auto rounded-md border p-3">
+								{bulkResults.map((r) => (
+									<div
+										key={r.className}
+										className={`flex items-center justify-between border-b py-1.5 last:border-0 ${
+											r.error ? "text-destructive" : ""
+										}`}
+									>
+										<span className="font-medium text-sm">{r.className}</span>
+										<span className="text-xs">
+											{r.error
+												? r.error
+												: `${r.created} créées${r.skipped ? `, ${r.skipped} déjà existantes` : ""}`}
+										</span>
+									</div>
+								))}
+							</div>
+							<div className="flex justify-end">
+								<Button onClick={close}>
+									{t("common.actions.close", {
+										defaultValue: "Fermer",
+									})}
+								</Button>
+							</div>
+						</>
+					)}
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}, DIALOG_EXIT_MS);
+
+/**
+ * Confirms then enrolls every student of a class in its courses. When the
+ * server reports prerequisite warnings, the dialog stays open to show them.
+ */
+export const EnrollEntireClassDialog = createCallable<{
+	classId: string;
+	academicYearId: string;
+	semesterId?: string;
+	studentsCount: number;
+	coursesCount: number;
+}>(
+	({
+		call,
+		classId,
+		academicYearId,
+		semesterId,
+		studentsCount,
+		coursesCount,
+	}) => {
+		const { t } = useTranslation();
+		const queryClient = useQueryClient();
+		const [autoEnrollWarnings, setAutoEnrollWarnings] = useState<
+			PrerequisiteWarning[]
+		>([]);
+		const classCoursesCount = coursesCount;
+
+		const autoEnrollMutation = useMutation({
+			mutationFn: () =>
+				trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
+					classId,
+					academicYearId,
+					semesterId,
+				}),
+			onSuccess: (result) => {
+				toast.success(
+					t("admin.enrollments.toast.autoEnrollSuccess", {
+						defaultValue: "Class roster synced ({{count}} records)",
+						count: result.createdCount,
+					}),
+				);
+				queryClient.invalidateQueries({
+					queryKey: trpc.studentCourseEnrollments.list.queryKey(),
+				});
+				if (result.warnings?.length) setAutoEnrollWarnings(result.warnings);
+				else call.end();
+			},
+			onError: (error: Error) => toast.error(error.message),
+		});
+
+		// preventDefault keeps AlertDialogAction from closing while the mutation runs
+		const handleAutoEnrollConfirm = (event: { preventDefault: () => void }) => {
+			event.preventDefault();
+			setAutoEnrollWarnings([]);
+			autoEnrollMutation.mutate();
+		};
+
+		return (
+			<AlertDialog
+				open={!call.ended}
+				onOpenChange={(o) => !o && !autoEnrollMutation.isPending && call.end()}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("admin.enrollments.autoEnroll.title", {
+								defaultValue: "Enroll every student?",
+							})}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("admin.enrollments.autoEnroll.description", {
+								defaultValue:
+									"This action enrolls {{students}} students into {{courses}} courses. Existing enrollments remain untouched.",
+								students: studentsCount,
+								courses: classCoursesCount,
+							})}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					{autoEnrollWarnings.length > 0 ? (
+						<div className="py-2">
+							<PrerequisiteWarningsList warnings={autoEnrollWarnings} t={t} />
+						</div>
+					) : null}
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={autoEnrollMutation.isPending}>
+							{t("common.actions.cancel", { defaultValue: "Cancel" })}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleAutoEnrollConfirm}
+							disabled={autoEnrollMutation.isPending}
+						>
+							{autoEnrollMutation.isPending && (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							)}
+							{t("admin.enrollments.autoEnroll.confirm", {
+								defaultValue: "Confirm enrollment",
+							})}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		);
+	},
+	DIALOG_EXIT_MS,
+);

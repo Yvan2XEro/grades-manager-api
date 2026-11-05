@@ -1,7 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import type { TFunction } from "i18next";
 import {
 	Check,
 	ClipboardList,
@@ -14,11 +12,10 @@ import {
 	Trash2,
 	X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
-import { z } from "zod";
+import { confirmAction } from "@/components/callable/confirm";
 import {
 	AcademicYearSelect,
 	ClassSelect,
@@ -32,23 +29,12 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../../components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -65,24 +51,6 @@ import {
 	EmptyTitle,
 } from "../../components/ui/empty";
 import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "../../components/ui/form";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import {
 	Table,
 	TableBody,
 	TableCell,
@@ -91,34 +59,13 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
-import { Textarea } from "../../components/ui/textarea";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpc, trpcClient } from "../../utils/trpc";
-
-const buildExamSchema = (t: TFunction) =>
-	z.object({
-		name: z.string().min(2, t("admin.exams.validation.name")),
-		type: z.string().min(2, t("admin.exams.validation.type")),
-		date: z.string().min(1, t("admin.exams.validation.date")),
-		percentage: z
-			.number()
-			.min(1, t("admin.exams.validation.percentage.min"))
-			.max(100, t("admin.exams.validation.percentage.max")),
-		classCourseId: z.string({
-			required_error: t("admin.exams.validation.classCourse"),
-		}),
-	});
-
-type ExamFormData = z.infer<ReturnType<typeof buildExamSchema>>;
-
-const buildRetakeSchema = (t: TFunction) =>
-	z.object({
-		name: z.string().optional(),
-		date: z.string().min(1, t("admin.exams.validation.date")),
-		scoringPolicy: z.enum(["replace", "best_of"]).default("replace"),
-	});
-
-type RetakeFormData = z.infer<ReturnType<typeof buildRetakeSchema>>;
+import {
+	ExamFormDialog,
+	RejectExamDialog,
+	RetakeExamDialog,
+} from "./exams/ExamDialogs";
 
 interface Exam {
 	id: string;
@@ -153,16 +100,6 @@ interface Course {
 }
 
 export default function ExamManagement() {
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const [isRetakeFormOpen, setIsRetakeFormOpen] = useState(false);
-	const [editingExam, setEditingExam] = useState<Exam | null>(null);
-	const [retakeParentExam, setRetakeParentExam] = useState<Exam | null>(null);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [rejectTarget, setRejectTarget] = useState<{ examId: string } | null>(
-		null,
-	);
-	const [rejectReason, setRejectReason] = useState("");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [classId, setClassId] = useState<string | null>(null);
@@ -200,8 +137,6 @@ export default function ExamManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const examSchema = useMemo(() => buildExamSchema(t), [t]);
-	const retakeSchema = useMemo(() => buildRetakeSchema(t), [t]);
 
 	const { data: examsData, isLoading: isLoadingExamsQuery } = useQuery(
 		trpc.exams.listPaged.queryOptions(
@@ -251,67 +186,9 @@ export default function ExamManagement() {
 		},
 	});
 
-	const form = useForm<ExamFormData>({
-		resolver: zodResolver(examSchema),
-	});
-
-	const retakeForm = useForm<RetakeFormData>({
-		resolver: zodResolver(retakeSchema),
-		defaultValues: {
-			scoringPolicy: "replace",
-		},
-	});
-
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c.name]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
 	const classCourseMap = new Map((classCourses ?? []).map((cc) => [cc.id, cc]));
-
-	const createMutation = useMutation({
-		mutationFn: async (data: ExamFormData) => {
-			await trpcClient.exams.create.mutate({
-				...data,
-				date: new Date(data.date),
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
-			toast.success(t("admin.exams.toast.createSuccess"));
-			setIsFormOpen(false);
-			form.reset();
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: t("admin.exams.toast.createError");
-			toast.error(message);
-		},
-	});
-
-	const updateMutation = useMutation({
-		mutationFn: async (data: ExamFormData & { id: string }) => {
-			const { id, ...updateData } = data;
-			await trpcClient.exams.update.mutate({
-				id,
-				...updateData,
-				date: new Date(updateData.date),
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
-			toast.success(t("admin.exams.toast.updateSuccess"));
-			setIsFormOpen(false);
-			setEditingExam(null);
-			form.reset();
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: t("admin.exams.toast.updateError");
-			toast.error(message);
-		},
-	});
 
 	const deleteMutation = useMutation({
 		mutationFn: async (id: string) => {
@@ -320,8 +197,6 @@ export default function ExamManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			toast.success(t("admin.exams.toast.deleteSuccess"));
-			setIsDeleteOpen(false);
-			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -333,8 +208,6 @@ export default function ExamManagement() {
 	});
 
 	const selection = useRowSelection(exams);
-
-	const { confirm, ConfirmDialog } = useConfirm();
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -357,31 +230,6 @@ export default function ExamManagement() {
 					defaultValue: "Failed to delete items",
 				}),
 			),
-	});
-
-	const createRetakeMutation = useMutation({
-		mutationFn: async (data: RetakeFormData & { parentExamId: string }) => {
-			await trpcClient.exams.createRetake.mutate({
-				parentExamId: data.parentExamId,
-				name: data.name || undefined,
-				date: new Date(data.date),
-				scoringPolicy: data.scoringPolicy,
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
-			toast.success(t("admin.exams.toast.retakeSuccess"));
-			setIsRetakeFormOpen(false);
-			setRetakeParentExam(null);
-			retakeForm.reset();
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: t("admin.exams.toast.retakeError");
-			toast.error(message);
-		},
 	});
 
 	const submitExamMutation = useMutation({
@@ -434,43 +282,18 @@ export default function ExamManagement() {
 		},
 	});
 
-	const onSubmit = async (data: ExamFormData) => {
-		if (editingExam) {
-			updateMutation.mutate({ ...data, id: editingExam.id });
-		} else {
-			createMutation.mutate(data);
-		}
-	};
+	const openExamForm = (exam?: Exam) => ExamFormDialog.call({ exam });
 
-	const onRetakeSubmit = async (data: RetakeFormData) => {
-		if (retakeParentExam) {
-			createRetakeMutation.mutate({
-				...data,
-				parentExamId: retakeParentExam.id,
-			});
-		}
-	};
+	const openRetakeModal = (exam: Exam) =>
+		RetakeExamDialog.call({ parentExam: exam });
 
-	const openRetakeModal = (exam: Exam) => {
-		setRetakeParentExam(exam);
-		retakeForm.reset({
-			name: `${exam.name} - ${t("retakes.badge.retake")}`,
-			date: "",
-			scoringPolicy: "replace",
+	const openDeleteModal = (id: string) =>
+		confirmAction({
+			title: t("admin.exams.delete.title"),
+			message: t("admin.exams.delete.message"),
+			confirmText: t("common.actions.delete"),
+			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
 		});
-		setIsRetakeFormOpen(true);
-	};
-
-	const openDeleteModal = (id: string) => {
-		setDeleteId(id);
-		setIsDeleteOpen(true);
-	};
-
-	const handleDelete = () => {
-		if (deleteId) {
-			deleteMutation.mutate(deleteId);
-		}
-	};
 
 	// Check if exam can have a retake created (must be normal, approved, and not already have a retake)
 	const canCreateRetake = (exam: Exam) => {
@@ -488,14 +311,7 @@ export default function ExamManagement() {
 					<h1 className="text-foreground">{t("admin.exams.title")}</h1>
 					<p className="text-muted-foreground">{t("admin.exams.subtitle")}</p>
 				</div>
-				<Button
-					onClick={() => {
-						setEditingExam(null);
-						form.reset();
-						setIsFormOpen(true);
-					}}
-					data-testid="add-exam-button"
-				>
+				<Button onClick={() => openExamForm()} data-testid="add-exam-button">
 					<Plus className="mr-2 h-5 w-5" />
 					{t("admin.exams.actions.add")}
 				</Button>
@@ -607,11 +423,7 @@ export default function ExamManagement() {
 							</EmptyHeader>
 							<EmptyContent>
 								<Button
-									onClick={() => {
-										setEditingExam(null);
-										form.reset();
-										setIsFormOpen(true);
-									}}
+									onClick={() => openExamForm()}
 									data-testid="add-exam-button-empty"
 								>
 									<Plus className="mr-2 h-4 w-4" />
@@ -629,7 +441,7 @@ export default function ExamManagement() {
 									variant="destructive"
 									size="sm"
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("common.bulkActions.confirmDeleteTitle", {
 												defaultValue: "Delete selected items?",
 											}),
@@ -708,9 +520,8 @@ export default function ExamManagement() {
 													actions={
 														<>
 															<ContextMenuItem
-																onSelect={() => {
-																	setEditingExam(exam);
-																}}
+																onSelect={() => openExamForm(exam)}
+																disabled={exam.isLocked}
 															>
 																<span>
 																	{t("common.actions.edit", {
@@ -831,17 +642,7 @@ export default function ExamManagement() {
 
 																{/* Edit */}
 																<DropdownMenuItem
-																	onClick={() => {
-																		setEditingExam(exam);
-																		form.reset({
-																			name: exam.name,
-																			type: exam.type,
-																			date: exam.date.split("T")[0],
-																			percentage: exam.percentage,
-																			classCourseId: exam.classCourse,
-																		});
-																		setIsFormOpen(true);
-																	}}
+																	onClick={() => openExamForm(exam)}
 																	disabled={exam.isLocked}
 																>
 																	<Pencil className="mr-2 h-4 w-4" />
@@ -880,10 +681,11 @@ export default function ExamManagement() {
 																			{t("admin.exams.actions.approve")}
 																		</DropdownMenuItem>
 																		<DropdownMenuItem
-																			onClick={() => {
-																				setRejectTarget({ examId: exam.id });
-																				setRejectReason("");
-																			}}
+																			onClick={() =>
+																				RejectExamDialog.call({
+																					examId: exam.id,
+																				})
+																			}
 																			disabled={validateExamMutation.isPending}
 																			className="text-red-600 focus:text-red-600"
 																		>
@@ -938,340 +740,6 @@ export default function ExamManagement() {
 					)}
 				</CardContent>
 			</Card>
-
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={() => {
-					setIsFormOpen(false);
-					setEditingExam(null);
-					form.reset();
-				}}
-				title={
-					editingExam
-						? t("admin.exams.form.editTitle")
-						: t("admin.exams.form.createTitle")
-				}
-			>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<FormField
-							control={form.control}
-							name="classCourseId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.exams.form.courseLabel")}</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<FormControl>
-											<SelectTrigger
-												id="classCourseId"
-												data-testid="class-course-select"
-											>
-												<SelectValue
-													placeholder={t("admin.exams.form.coursePlaceholder")}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{classCourses?.map((cc) => (
-												<SelectItem key={cc.id} value={cc.id}>
-													{courseMap.get(cc.course)} - {classMap.get(cc.class)}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.exams.form.nameLabel")}</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder={t("admin.exams.form.namePlaceholder")}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="type"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.exams.form.typeLabel")}</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											id="examType"
-											data-testid="exam-type-select"
-											placeholder={t("admin.exams.form.typePlaceholder")}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="date"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.exams.form.dateLabel")}</FormLabel>
-									<FormControl>
-										<DatePicker
-											value={field.value ?? ""}
-											onChange={field.onChange}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="percentage"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.exams.form.percentageLabel")}</FormLabel>
-									<FormControl>
-										<Input
-											type="number"
-											value={field.value ?? ""}
-											onChange={(event) =>
-												field.onChange(
-													event.target.value === ""
-														? undefined
-														: Number(event.target.value),
-												)
-											}
-											placeholder={t("admin.exams.form.percentagePlaceholder")}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<DialogFooter className="gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => {
-									setIsFormOpen(false);
-									setEditingExam(null);
-									form.reset();
-								}}
-							>
-								{t("common.actions.cancel")}
-							</Button>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
-								{form.formState.isSubmitting ? (
-									<Spinner className="mr-2 h-4 w-4" />
-								) : editingExam ? (
-									t("common.actions.saveChanges")
-								) : (
-									t("admin.exams.form.submit")
-								)}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</FormModal>
-
-			<ConfirmModal
-				isOpen={isDeleteOpen}
-				onClose={() => {
-					setIsDeleteOpen(false);
-					setDeleteId(null);
-				}}
-				onConfirm={handleDelete}
-				title={t("admin.exams.delete.title")}
-				message={t("admin.exams.delete.message")}
-				confirmText={t("common.actions.delete")}
-				isLoading={deleteMutation.isPending}
-			/>
-
-			{/* Retake Creation Modal */}
-			<FormModal
-				isOpen={isRetakeFormOpen}
-				onClose={() => {
-					setIsRetakeFormOpen(false);
-					setRetakeParentExam(null);
-					retakeForm.reset();
-				}}
-				title={t("retakes.form.title")}
-			>
-				<Form {...retakeForm}>
-					<form
-						onSubmit={retakeForm.handleSubmit(onRetakeSubmit)}
-						className="space-y-4"
-					>
-						{retakeParentExam && (
-							<div className="rounded-md border bg-muted/50 p-4">
-								<p className="text-muted-foreground text-xs">
-									{t("retakes.form.parentExamLabel")}
-								</p>
-								<p className="font-medium">{retakeParentExam.name}</p>
-								<p className="text-muted-foreground text-xs">
-									{retakeParentExam.courseName} - {retakeParentExam.className}
-								</p>
-							</div>
-						)}
-
-						<FormField
-							control={retakeForm.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("retakes.form.nameLabel")}</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder={
-												retakeParentExam
-													? `${retakeParentExam.name} - ${t("retakes.badge.retake")}`
-													: t("retakes.form.namePlaceholder")
-											}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={retakeForm.control}
-							name="date"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("retakes.form.dateLabel")}</FormLabel>
-									<FormControl>
-										<DatePicker
-											value={field.value ?? ""}
-											onChange={field.onChange}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={retakeForm.control}
-							name="scoringPolicy"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("retakes.form.scoringPolicyLabel")}</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											<SelectItem value="replace">
-												{t("retakes.scoringPolicy.replace")}
-											</SelectItem>
-											<SelectItem value="best_of">
-												{t("retakes.scoringPolicy.best_of")}
-											</SelectItem>
-										</SelectContent>
-									</Select>
-									<p className="text-muted-foreground text-xs">
-										{field.value === "replace"
-											? t("retakes.scoringPolicy.replaceDescription")
-											: t("retakes.scoringPolicy.best_ofDescription")}
-									</p>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<DialogFooter className="gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => {
-									setIsRetakeFormOpen(false);
-									setRetakeParentExam(null);
-									retakeForm.reset();
-								}}
-							>
-								{t("common.actions.cancel")}
-							</Button>
-							<Button
-								type="submit"
-								disabled={retakeForm.formState.isSubmitting}
-							>
-								{retakeForm.formState.isSubmitting ? (
-									<Spinner className="mr-2 h-4 w-4" />
-								) : (
-									t("retakes.form.submit")
-								)}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</FormModal>
-			<ConfirmDialog />
-
-			{/* Rejection reason dialog */}
-			<Dialog
-				open={!!rejectTarget}
-				onOpenChange={(o) => {
-					if (!o) setRejectTarget(null);
-				}}
-			>
-				<DialogContent className="sm:max-w-md">
-					<DialogHeader>
-						<DialogTitle>{t("admin.exams.actions.reject")}</DialogTitle>
-					</DialogHeader>
-					<DialogBody className="space-y-3 py-2">
-						<Label htmlFor="reject-reason">
-							{t("admin.exams.rejectReasonLabel")}
-						</Label>
-						<Textarea
-							id="reject-reason"
-							rows={3}
-							placeholder={t("admin.exams.rejectReasonPlaceholder")}
-							value={rejectReason}
-							onChange={(e) => setRejectReason(e.target.value)}
-						/>
-					</DialogBody>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setRejectTarget(null)}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={!rejectReason.trim() || validateExamMutation.isPending}
-							onClick={() => {
-								if (!rejectTarget) return;
-								validateExamMutation.mutate(
-									{
-										examId: rejectTarget.examId,
-										status: "rejected",
-										rejectionReason: rejectReason.trim(),
-									},
-									{ onSettled: () => setRejectTarget(null) },
-								);
-							}}
-						>
-							{t("admin.exams.actions.reject")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

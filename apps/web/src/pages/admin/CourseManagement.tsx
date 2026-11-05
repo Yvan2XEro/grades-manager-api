@@ -1,23 +1,15 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TFunction } from "i18next";
 import { Pencil, PlusIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
-import { CodedEntitySelect } from "@/components/forms";
-import FormModal from "@/components/modals/FormModal";
+import { confirmAction } from "@/components/callable/confirm";
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+	CourseFormDialog,
+	fetchTeachers,
+	formatTeacherName,
+	TEACHERS_KEY,
+	type Teacher,
+} from "@/components/callable/forms/CourseFormDialog";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +19,6 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { DialogFooter as ModalFooter } from "@/components/ui/dialog";
 import {
 	Empty,
 	EmptyContent,
@@ -35,22 +26,6 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "@/components/ui/empty";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -62,34 +37,10 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
-
-const buildCourseSchema = (t: TFunction) =>
-	z.object({
-		name: z.string().min(2, t("admin.courses.validation.name")),
-		hours: z.coerce.number().min(1, t("admin.courses.validation.hours")),
-		program: z.string({
-			required_error: t("admin.courses.validation.program"),
-		}),
-		defaultTeacher: z.string({
-			required_error: t("admin.courses.validation.teacher"),
-		}),
-		code: z
-			.string()
-			.trim()
-			.min(
-				2,
-				t("admin.courses.validation.code", {
-					defaultValue: "Code is required",
-				}),
-			),
-	});
-
-type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
 
 interface Course {
 	id: string;
@@ -97,25 +48,18 @@ interface Course {
 	name: string;
 	hours: number;
 	program: string;
+	teachingUnitId?: string | null;
 	defaultTeacher: string;
 }
 
 type ProgramOption = RouterOutputs["programs"]["list"]["items"][number];
 
-type Teacher = RouterOutputs["users"]["list"]["items"][number];
-
 export default function CourseManagement() {
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [programSearch, setProgramSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
-	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
 
 	const { data, isLoading } = useQuery(
 		trpc.courses.listPaged.queryOptions({
@@ -127,9 +71,7 @@ export default function CourseManagement() {
 	const courseItems = data?.items ?? [];
 	const selection = useRowSelection(courseItems);
 
-	const { confirm, ConfirmDialog } = useConfirm();
-
-	const { data: defaultPrograms = [] } = useQuery({
+	const { data: programs = [] } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
 			const { items } = await trpcClient.programs.list.query({ limit: 100 });
@@ -137,50 +79,10 @@ export default function CourseManagement() {
 		},
 	});
 
-	const { data: searchPrograms = [] } = useQuery({
-		queryKey: ["programs", "search", programSearch],
-		queryFn: async () => {
-			const items = await trpcClient.programs.search.query({
-				query: programSearch,
-			});
-			return items as ProgramOption[];
-		},
-		enabled: programSearch.length >= 2,
-	});
-
-	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
-
 	const { data: teachers } = useQuery({
-		queryKey: ["teachers"],
-		queryFn: async () => {
-			const { items } = await trpcClient.users.list.query({
-				role: "teacher",
-				limit: 100,
-			});
-			return items;
-		},
+		queryKey: TEACHERS_KEY,
+		queryFn: fetchTeachers,
 	});
-
-	const form = useForm<CourseFormData>({
-		resolver: zodResolver(courseSchema),
-		defaultValues: {
-			name: "",
-			hours: 0,
-			program: "",
-			defaultTeacher: "",
-			code: "",
-		},
-	});
-	const { watch } = form;
-	const selectedProgramId = watch("program");
-	const _selectedProgram = useMemo(
-		() => programs?.find((program) => program.id === selectedProgramId),
-		[programs, selectedProgramId],
-	);
-
-	const formatTeacherName = (teacher: Teacher) =>
-		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
-		teacher.email;
 
 	const teacherOptions = teachers ?? [];
 	const programMap = useMemo(
@@ -188,37 +90,11 @@ export default function CourseManagement() {
 		[programs],
 	);
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
+		teacherOptions.map((teacher: Teacher) => [
+			teacher.id,
+			formatTeacherName(teacher),
+		]),
 	);
-
-	const createMutation = useMutation({
-		mutationFn: async (data: CourseFormData) => {
-			await trpcClient.courses.create.mutate(data);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.courses.listPaged.queryKey());
-			toast.success(t("admin.courses.toast.createSuccess"));
-			handleCloseForm();
-		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.courses.toast.createError"));
-		},
-	});
-
-	const updateMutation = useMutation({
-		mutationFn: async (data: CourseFormData & { id: string }) => {
-			const { id, ...updateData } = data;
-			await trpcClient.courses.update.mutate({ id, ...updateData });
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.courses.listPaged.queryKey());
-			toast.success(t("admin.courses.toast.updateSuccess"));
-			handleCloseForm();
-		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.courses.toast.updateError"));
-		},
-	});
 
 	const deleteMutation = useMutation({
 		mutationFn: async (id: string) => {
@@ -227,8 +103,6 @@ export default function CourseManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.courses.listPaged.queryKey());
 			toast.success(t("admin.courses.toast.deleteSuccess"));
-			setIsDeleteOpen(false);
-			setDeleteId(null);
 		},
 		onError: (error: any) => {
 			toast.error(error.message || t("admin.courses.toast.deleteError"));
@@ -258,66 +132,22 @@ export default function CourseManagement() {
 			),
 	});
 
-	const onSubmit = (data: CourseFormData) => {
-		if (editingCourse) {
-			updateMutation.mutate({ ...data, id: editingCourse.id });
-		} else {
-			createMutation.mutate(data);
-		}
-	};
+	const startCreate = () => CourseFormDialog.call({});
 
-	const startCreate = () => {
-		setEditingCourse(null);
-		form.reset({
-			name: "",
-			hours: 0,
-			program: "",
-			defaultTeacher: "",
-			code: "",
+	const startEdit = (course: Course) => CourseFormDialog.call({ course });
+
+	const confirmDelete = (id: string) =>
+		confirmAction({
+			title: t("admin.courses.delete.title"),
+			message: t("admin.courses.delete.message"),
+			confirmText: t("common.actions.delete"),
+			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
 		});
-		setIsFormOpen(true);
-	};
-
-	const startEdit = (course: Course) => {
-		setEditingCourse(course);
-		form.reset({
-			name: course.name,
-			hours: course.hours,
-			program: course.program,
-			defaultTeacher: course.defaultTeacher,
-			code: course.code,
-		});
-		setIsFormOpen(true);
-	};
-
-	const handleCloseForm = () => {
-		setIsFormOpen(false);
-		setEditingCourse(null);
-		form.reset({
-			name: "",
-			hours: 0,
-			program: "",
-			defaultTeacher: "",
-			code: "",
-		});
-	};
-
-	const confirmDelete = (id: string) => {
-		setDeleteId(id);
-		setIsDeleteOpen(true);
-	};
-
-	const handleDelete = () => {
-		if (deleteId) {
-			deleteMutation.mutate(deleteId);
-		}
-	};
 
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-8 w-8" />
-				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -353,7 +183,7 @@ export default function CourseManagement() {
 									variant="destructive"
 									size="sm"
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("common.bulkActions.confirmDeleteTitle", {
 												defaultValue: "Delete selected items?",
 											}),
@@ -527,196 +357,6 @@ export default function CourseManagement() {
 					setPage(1);
 				}}
 			/>
-
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={handleCloseForm}
-				title={
-					editingCourse
-						? t("admin.courses.form.editTitle")
-						: t("admin.courses.form.createTitle")
-				}
-			>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.courses.form.nameLabel")}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.courses.form.namePlaceholder")}
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.courses.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.courses.form.codePlaceholder", {
-													defaultValue: "INF111",
-												})}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="hours"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.courses.form.hoursLabel")}
-										</FormLabel>
-										<FormControl>
-											<Input
-												type="number"
-												value={field.value ?? ""}
-												onChange={(event) =>
-													field.onChange(
-														event.target.value === ""
-															? undefined
-															: Number(event.target.value),
-													)
-												}
-												placeholder={t("admin.courses.form.hoursPlaceholder")}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="defaultTeacher"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.courses.form.teacherLabel")}
-										</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											value={field.value || undefined}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.courses.form.teacherPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<CodedEntitySelect
-							items={programs}
-							onSearch={setProgramSearch}
-							value={
-								programs.find((p) => p.id === form.watch("program"))?.code ||
-								null
-							}
-							onChange={(code) => {
-								const program = programs.find((p) => p.code === code);
-								form.setValue("program", program?.id || "");
-							}}
-							label={t("admin.courses.form.programLabel")}
-							placeholder={t("admin.courses.form.programPlaceholder")}
-							error={form.formState.errors.program?.message}
-							searchMode="hybrid"
-							required
-						/>
-						<ModalFooter className="gap-2">
-							<Button type="button" variant="outline" onClick={handleCloseForm}>
-								{t("common.actions.cancel")}
-							</Button>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
-								{form.formState.isSubmitting ? (
-									<Spinner className="mr-2 h-4 w-4" />
-								) : editingCourse ? (
-									t("common.actions.saveChanges")
-								) : (
-									t("admin.courses.form.createSubmit")
-								)}
-							</Button>
-						</ModalFooter>
-					</form>
-				</Form>
-			</FormModal>
-
-			<AlertDialog
-				open={isDeleteOpen}
-				onOpenChange={(open) => {
-					setIsDeleteOpen(open);
-					if (!open) {
-						setDeleteId(null);
-					}
-				}}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("admin.courses.delete.title")}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("admin.courses.delete.message")}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel disabled={deleteMutation.isPending}>
-							{t("common.actions.cancel")}
-						</AlertDialogCancel>
-						<AlertDialogAction
-							disabled={deleteMutation.isPending}
-							onClick={handleDelete}
-						>
-							{deleteMutation.isPending ? (
-								<Spinner className="mr-2 h-4 w-4" />
-							) : (
-								<>
-									<Trash2 className="mr-2 h-4 w-4" />
-									{t("common.actions.delete")}
-								</>
-							)}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }

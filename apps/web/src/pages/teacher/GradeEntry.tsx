@@ -29,15 +29,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -59,6 +50,7 @@ import {
 import { toast } from "@/lib/toast";
 import { useStore } from "../../store";
 import { trpc, trpcClient } from "../../utils/trpc";
+import { AssignDelegateDialog } from "./AssignDelegateDialog";
 
 type Student = {
 	id: string;
@@ -128,8 +120,6 @@ const GradeEntry: React.FC<{ basePath?: string }> = ({
 	const autoSelectExamRef = useRef<boolean>(Boolean(routeCourseId));
 	const manualCourseSelectionRef = useRef(false);
 	const [selectedExam, setSelectedExam] = useState<string>("");
-	const [isDelegateDialogOpen, setDelegateDialogOpen] = useState(false);
-	const [selectedEditorProfileId, setSelectedEditorProfileId] = useState("");
 
 	const {
 		register,
@@ -336,18 +326,6 @@ const GradeEntry: React.FC<{ basePath?: string }> = ({
 	});
 	const delegates = delegateQuery.data ?? [];
 
-	const candidateUsersQuery = useQuery({
-		queryKey: ["grade-editor-candidates"],
-		enabled: canManageDelegates && isDelegateDialogOpen,
-		queryFn: async () => {
-			const { items } = await trpcClient.users.list.query({
-				roles: ["administrator", "dean", "teacher", "staff"],
-				limit: 100,
-			});
-			return items;
-		},
-	});
-
 	const gradeEntries = useMemo(
 		() => gradesQuery.data ?? [],
 		[gradesQuery.data],
@@ -474,29 +452,6 @@ const GradeEntry: React.FC<{ basePath?: string }> = ({
 		},
 		onError: (error: any) => {
 			toast.error(error.message || t("teacher.gradeEntry.toast.lockError"));
-		},
-	});
-
-	const assignDelegateMutation = useMutation({
-		mutationFn: async (editorProfileId: string) => {
-			if (!selectedExam || !editorProfileId) {
-				throw new Error("Missing exam or editor");
-			}
-			return trpcClient.examGradeEditors.assign.mutate({
-				examId: selectedExam,
-				editorProfileId,
-			});
-		},
-		onSuccess: () => {
-			toast.success(t("teacher.gradeEntry.delegates.assignSuccess"));
-			setDelegateDialogOpen(false);
-			setSelectedEditorProfileId("");
-			delegateQuery.refetch();
-		},
-		onError: (error: any) => {
-			toast.error(
-				error.message || t("teacher.gradeEntry.delegates.assignError"),
-			);
 		},
 	});
 
@@ -703,85 +658,17 @@ const GradeEntry: React.FC<{ basePath?: string }> = ({
 							</CardDescription>
 						</div>
 						{canEditExam && canManageDelegates && (
-							<Dialog
-								open={isDelegateDialogOpen}
-								onOpenChange={(open) => {
-									setDelegateDialogOpen(open);
-									if (!open) {
-										setSelectedEditorProfileId("");
-									}
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={async () => {
+									if (await AssignDelegateDialog.call({ examId: selectedExam }))
+										delegateQuery.refetch();
 								}}
 							>
-								<DialogTrigger asChild>
-									<Button variant="outline" size="sm">
-										<UserPlus className="mr-2 h-4 w-4" />
-										{t("teacher.gradeEntry.delegates.add")}
-									</Button>
-								</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>
-											{t("teacher.gradeEntry.delegates.dialogTitle")}
-										</DialogTitle>
-										<DialogDescription>
-											{t("teacher.gradeEntry.delegates.dialogDescription")}
-										</DialogDescription>
-									</DialogHeader>
-									<div className="space-y-2 px-6 pb-4">
-										<Label>
-											{t("teacher.gradeEntry.delegates.selectLabel")}
-										</Label>
-										<Select
-											value={selectedEditorProfileId || undefined}
-											onValueChange={setSelectedEditorProfileId}
-											disabled={candidateUsersQuery.isLoading}
-										>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"teacher.gradeEntry.delegates.selectPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-											<SelectContent>
-												{candidateUsersQuery.data?.map((user) => (
-													<SelectItem key={user.id} value={user.id}>
-														{user.firstName} {user.lastName} •{" "}
-														{user.primaryEmail ??
-															t("teacher.gradeEntry.delegates.unknownEmail")}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</div>
-									<DialogFooter className="gap-2">
-										<Button
-											type="button"
-											variant="outline"
-											onClick={() => setDelegateDialogOpen(false)}
-										>
-											{t("common.actions.cancel")}
-										</Button>
-										<Button
-											type="button"
-											onClick={() =>
-												assignDelegateMutation.mutate(selectedEditorProfileId)
-											}
-											disabled={
-												!selectedEditorProfileId ||
-												assignDelegateMutation.isPending
-											}
-										>
-											{assignDelegateMutation.isPending ? (
-												<Spinner className="mr-2 h-4 w-4 text-white" />
-											) : (
-												<UserPlus className="mr-2 h-4 w-4" />
-											)}
-											{t("teacher.gradeEntry.delegates.add")}
-										</Button>
-									</DialogFooter>
-								</DialogContent>
-							</Dialog>
+								<UserPlus className="mr-2 h-4 w-4" />
+								{t("teacher.gradeEntry.delegates.add")}
+							</Button>
 						)}
 					</CardHeader>
 					<CardContent className="space-y-3">

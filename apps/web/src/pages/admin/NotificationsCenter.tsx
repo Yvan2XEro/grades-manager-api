@@ -12,16 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TablePagination } from "@/components/ui/table-pagination";
@@ -113,7 +104,6 @@ const NotificationsCenter = () => {
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
-	const [flushConfirm, setFlushConfirm] = useState(false);
 
 	const handleFilter =
 		<T,>(setter: (v: T) => void) =>
@@ -174,10 +164,34 @@ const NotificationsCenter = () => {
 			queryClient.invalidateQueries({
 				queryKey: trpc.notifications.listPaged.queryKey(),
 			});
+
 			selection.clear();
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
+
+	const confirmFlush = () =>
+		Confirm.call({
+			title: t("admin.notifications.actions.flush", {
+				defaultValue: "Flush pending",
+			}),
+			description: t("admin.notifications.flushConfirmDesc", {
+				defaultValue:
+					"This will immediately attempt delivery of all pending notifications. Continue?",
+			}),
+			confirmLabel: t("admin.notifications.actions.flush", {
+				defaultValue: "Flush",
+			}),
+			cancelLabel: t("common.cancel"),
+			destructive: false,
+			mutationFn: async (call) => {
+				try {
+					await flushMutation.mutateAsync();
+				} finally {
+					call.end(true);
+				}
+			},
+		});
 
 	return (
 		<div className="space-y-6">
@@ -204,7 +218,7 @@ const NotificationsCenter = () => {
 				<Button
 					variant="outline"
 					size="sm"
-					onClick={() => setFlushConfirm(true)}
+					onClick={confirmFlush}
 					disabled={flushMutation.isPending}
 					className="gap-2"
 				>
@@ -316,7 +330,7 @@ const NotificationsCenter = () => {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => setFlushConfirm(true)}
+							onClick={confirmFlush}
 							disabled={flushMutation.isPending}
 							className="h-7 gap-1.5 text-xs"
 						>
@@ -478,38 +492,6 @@ const NotificationsCenter = () => {
 					setPage(1);
 				}}
 			/>
-
-			<AlertDialog open={flushConfirm} onOpenChange={setFlushConfirm}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("admin.notifications.actions.flush", {
-								defaultValue: "Flush pending",
-							})}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("admin.notifications.flushConfirmDesc", {
-								defaultValue:
-									"This will immediately attempt delivery of all pending notifications. Continue?",
-							})}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() => {
-								flushMutation.mutate();
-								setFlushConfirm(false);
-							}}
-							disabled={flushMutation.isPending}
-						>
-							{t("admin.notifications.actions.flush", {
-								defaultValue: "Flush",
-							})}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 };

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	AlertCircle,
 	ArrowLeft,
@@ -16,9 +16,13 @@ import {
 	XCircle,
 } from "lucide-react";
 import type React from "react";
-import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { startTransition, useDeferredValue, useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { ClassFormDialog } from "@/components/callable/forms/ClassFormDialog";
+import { QuickCreate } from "@/components/callable/quick-create";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -309,47 +313,73 @@ function Metric({
 
 // ─── ResolveItemSheet ─────────────────────────────────────────────────────────
 
-function ResolveItemSheet({
-	item,
-	open,
-	onOpenChange,
-	targetClasses,
-	onResolved,
-}: {
-	item: TransitionItem | null;
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	targetClasses: Array<{ id: string; code: string; name: string }>;
-	onResolved: () => Promise<void>;
-}) {
-	const { t } = useTranslation();
-	const [outcome, setOutcome] = useState<TransitionOutcome>("repeat");
-	const [targetClassId, setTargetClassId] = useState("");
-	const [reason, setReason] = useState("");
+const targetClassesKey = (academicYearId?: string | null) => [
+	"classes",
+	"target",
+	academicYearId,
+];
 
-	useEffect(() => {
-		if (!item) return;
-		setOutcome(item.finalOutcome === "review" ? "repeat" : item.finalOutcome);
-		setTargetClassId(item.targetClass?.id ?? "");
-		setReason(item.overrideReason ?? "");
-	}, [item]);
+const fetchTargetClasses = (academicYearId?: string | null) =>
+	academicYearId
+		? trpcClient.classes.list.query({ academicYearId, limit: 500 })
+		: Promise.resolve({ items: [] });
+
+/**
+ * Resolves a blocked transition item; resolves `true` once saved. A missing
+ * destination class can be created in place from the "+" next to its select.
+ */
+export const ResolveItemSheet = createCallable<
+	{
+		item: TransitionItem;
+		targetAcademicYearId?: string | null;
+	},
+	boolean
+>(({ call, item, targetAcademicYearId }) => {
+	const { t } = useTranslation();
+	const [outcome, setOutcome] = useState<TransitionOutcome>(
+		item.finalOutcome === "review" ? "repeat" : item.finalOutcome,
+	);
+	const [targetClassId, setTargetClassId] = useState(
+		item.targetClass?.id ?? "",
+	);
+	const [reason, setReason] = useState(item.overrideReason ?? "");
+
+	const queryClient = useQueryClient();
+	const { data: targetClassesData } = useQuery({
+		queryKey: targetClassesKey(targetAcademicYearId),
+		queryFn: () => fetchTargetClasses(targetAcademicYearId),
+		enabled: Boolean(targetAcademicYearId),
+	});
+	const targetClasses = targetClassesData?.items ?? [];
+
+	// The class list rows are enriched server-side, so it is refetched rather
+	// than patched before the new class gets selected.
+	const createTargetClass = async () => {
+		if (!targetAcademicYearId) return;
+		const created = await ClassFormDialog.call({
+			defaults: { academicYearId: targetAcademicYearId },
+			lockAcademicYear: true,
+		});
+		if (!created) return;
+		await queryClient.invalidateQueries({
+			queryKey: targetClassesKey(targetAcademicYearId),
+		});
+		setTargetClassId(created.id);
+	};
 
 	const mutation = useMutation({
-		mutationFn: () => {
-			if (!item) throw new Error("Missing item");
-			return trpcClient.academicYearTransitions.resolveItem.mutate({
+		mutationFn: () =>
+			trpcClient.academicYearTransitions.resolveItem.mutate({
 				transitionId: item.transitionId,
 				itemId: item.id,
 				outcome: outcome as Exclude<TransitionOutcome, "review">,
 				targetClassId:
 					outcome === "promote" || outcome === "repeat" ? targetClassId : null,
 				reason,
-			});
-		},
-		onSuccess: async () => {
+			}),
+		onSuccess: () => {
 			toast.success(t("admin.academicYearTransitions.toast.resolved"));
-			setReason("");
-			await onResolved();
+			call.end(true);
 		},
 		onError: (error) => toast.error(error.message),
 	});
@@ -357,7 +387,7 @@ function ResolveItemSheet({
 	const needsTarget = outcome === "promote" || outcome === "repeat";
 
 	return (
-		<Sheet open={open} onOpenChange={onOpenChange}>
+		<Sheet open={!call.ended} onOpenChange={(o) => !o && call.end(false)}>
 			<SheetContent className="w-full overflow-y-auto sm:max-w-xl">
 				<SheetHeader>
 					<SheetTitle>
@@ -460,25 +490,31 @@ function ResolveItemSheet({
 									<Label>
 										{t("admin.academicYearTransitions.resolve.targetClass")}
 									</Label>
-									<Select
-										value={targetClassId}
-										onValueChange={setTargetClassId}
+									<QuickCreate
+										onCreate={createTargetClass}
+										label={t("admin.classes.actions.add")}
+										disabled={!targetAcademicYearId}
 									>
-										<SelectTrigger>
-											<SelectValue
-												placeholder={t(
-													"admin.academicYearTransitions.placeholders.targetClass",
-												)}
-											/>
-										</SelectTrigger>
-										<SelectContent>
-											{targetClasses.map((klass) => (
-												<SelectItem key={klass.id} value={klass.id}>
-													{klass.code} - {klass.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+										<Select
+											value={targetClassId}
+											onValueChange={setTargetClassId}
+										>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.academicYearTransitions.placeholders.targetClass",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												{targetClasses.map((klass) => (
+													<SelectItem key={klass.id} value={klass.id}>
+														{klass.code} - {klass.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</QuickCreate>
 								</div>
 							)}
 							<div className="space-y-2">
@@ -510,7 +546,7 @@ function ResolveItemSheet({
 			</SheetContent>
 		</Sheet>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── TransitionDetail ─────────────────────────────────────────────────────────
 
@@ -523,7 +559,6 @@ export default function TransitionDetail() {
 	const [itemStatus, setItemStatus] = useState<ItemStatus | "all">("all");
 	const [search, setSearch] = useState("");
 	const deferredSearch = useDeferredValue(search);
-	const [selectedItem, setSelectedItem] = useState<TransitionItem | null>(null);
 
 	const transitionQuery = useQuery({
 		queryKey: ["academic-year-transition", id],
@@ -532,18 +567,6 @@ export default function TransitionDetail() {
 		enabled: Boolean(id),
 	});
 	const transition = transitionQuery.data ?? null;
-
-	const targetClassesQuery = useQuery({
-		queryKey: ["classes", "target", transition?.targetAcademicYearId],
-		queryFn: async () => {
-			if (!transition?.targetAcademicYearId) return { items: [] };
-			return trpcClient.classes.list.query({
-				academicYearId: transition.targetAcademicYearId,
-				limit: 500,
-			});
-		},
-		enabled: Boolean(transition?.targetAcademicYearId),
-	});
 
 	const itemsQuery = useQuery({
 		queryKey: [
@@ -803,7 +826,14 @@ export default function TransitionDetail() {
 											<TableRow
 												key={item.id}
 												className="cursor-pointer"
-												onClick={() => setSelectedItem(item)}
+												onClick={async () => {
+													const resolved = await ResolveItemSheet.call({
+														item,
+														targetAcademicYearId:
+															transition?.targetAcademicYearId,
+													});
+													if (resolved) await invalidate();
+												}}
 											>
 												<TableCell>
 													<div className="font-medium">
@@ -1172,17 +1202,6 @@ export default function TransitionDetail() {
 					</Card>
 				</TabsContent>
 			</Tabs>
-
-			<ResolveItemSheet
-				item={selectedItem}
-				open={Boolean(selectedItem)}
-				onOpenChange={(open) => !open && setSelectedItem(null)}
-				targetClasses={targetClassesQuery.data?.items ?? []}
-				onResolved={async () => {
-					setSelectedItem(null);
-					await invalidate();
-				}}
-			/>
 		</div>
 	);
 }

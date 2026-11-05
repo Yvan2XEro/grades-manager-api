@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { confirmAction } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
@@ -89,7 +89,6 @@ const RegistrationNumberFormats = () => {
 	});
 
 	const selection = useRowSelection(formatsQuery.data ?? []);
-	const { confirm, ConfirmDialog } = useConfirm();
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -146,7 +145,7 @@ const RegistrationNumberFormats = () => {
 					variant="destructive"
 					size="sm"
 					onClick={() =>
-						confirm({
+						confirmAction({
 							title: t("common.bulkActions.confirmDeleteTitle", {
 								defaultValue: "Delete selected items?",
 							}),
@@ -335,7 +334,7 @@ const RegistrationNumberFormats = () => {
 														size="sm"
 														variant="destructive"
 														onClick={() =>
-															confirm({
+															confirmAction({
 																title: t(
 																	"admin.registrationNumbers.list.confirmDeleteTitle",
 																	{ defaultValue: "Delete format?" },
@@ -373,7 +372,6 @@ const RegistrationNumberFormats = () => {
 					</div>
 				</CardContent>
 			</Card>
-			<ConfirmDialog />
 		</div>
 	);
 };

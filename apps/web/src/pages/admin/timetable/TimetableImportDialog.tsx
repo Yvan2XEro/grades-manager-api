@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import Papa from "papaparse";
 import { useRef, useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -55,17 +57,13 @@ type ClassCourse = {
 	classRef: { name: string } | null;
 };
 
-export function TimetableImportDialog({
-	open,
-	onOpenChange,
-	onImported,
-	classCourses = [],
-}: {
-	open: boolean;
-	onOpenChange: (v: boolean) => void;
-	onImported: () => void;
-	classCourses?: ClassCourse[];
-}) {
+export const TimetableImportDialog = createCallable<
+	{
+		onImported: () => void;
+		classCourses?: ClassCourse[];
+	},
+	void
+>(({ call, onImported, classCourses = [] }) => {
 	const { t } = useTranslation();
 	const fileRef = useRef<HTMLInputElement>(null);
 	const [preview, setPreview] = useState<PreviewResult | null>(null);
@@ -132,7 +130,7 @@ export function TimetableImportDialog({
 	}
 
 	function handleClose() {
-		onOpenChange(false);
+		call.end();
 		setPreview(null);
 		setStep("upload");
 		setMode("create");
@@ -167,7 +165,7 @@ export function TimetableImportDialog({
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+		<Dialog open={!call.ended} onOpenChange={(v) => !v && handleClose()}>
 			<DialogContent className="max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>{t("teacher.timetable.import.title")}</DialogTitle>
@@ -331,4 +329,4 @@ export function TimetableImportDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);

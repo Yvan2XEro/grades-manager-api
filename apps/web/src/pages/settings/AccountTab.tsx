@@ -14,6 +14,7 @@ import {
 	ZoomOut,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createCallable } from "react-call";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import ReactCrop, {
@@ -24,6 +25,7 @@ import ReactCrop, {
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { z } from "zod";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -137,14 +139,11 @@ const resolveSessionToken = (session: SessionInfo) =>
 
 /* ─── Crop modal ─────────────────────────────── */
 
-type CropModalProps = {
-	src: string;
-	open: boolean;
-	onClose: () => void;
-	onConfirm: (blob: Blob) => void;
-};
-
-function AvatarCropModal({ src, open, onClose, onConfirm }: CropModalProps) {
+/** Crops an image to a square avatar; resolves with the JPEG blob, or `undefined`. */
+export const AvatarCropModal = createCallable<
+	{ src: string },
+	Blob | undefined
+>(({ call, src }) => {
 	const imgRef = useRef<HTMLImageElement>(null);
 	const [crop, setCrop] = useState<Crop>();
 	const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
@@ -158,15 +157,14 @@ function AvatarCropModal({ src, open, onClose, onConfirm }: CropModalProps) {
 	const handleConfirm = async () => {
 		if (!imgRef.current || !completedCrop) return;
 		try {
-			const blob = await cropToBlob(imgRef.current, completedCrop);
-			onConfirm(blob);
+			call.end(await cropToBlob(imgRef.current, completedCrop));
 		} catch {
 			toast.error("Erreur lors du recadrage");
 		}
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+		<Dialog open={!call.ended} onOpenChange={(v) => !v && call.end(undefined)}>
 			<DialogContent className="max-w-xl gap-0 p-0">
 				<DialogHeader className="px-6 pt-5 pb-4">
 					<DialogTitle className="flex items-center gap-2 text-base">
@@ -210,7 +208,7 @@ function AvatarCropModal({ src, open, onClose, onConfirm }: CropModalProps) {
 					<ZoomIn className="h-4 w-4 shrink-0 text-muted-foreground" />
 				</div>
 				<DialogFooter className="px-6 pt-2 pb-5">
-					<Button variant="outline" onClick={onClose}>
+					<Button variant="outline" onClick={() => call.end(undefined)}>
 						Annuler
 					</Button>
 					<Button onClick={handleConfirm} disabled={!completedCrop}>
@@ -220,7 +218,7 @@ function AvatarCropModal({ src, open, onClose, onConfirm }: CropModalProps) {
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 /* ─── Schemas ────────────────────────────────── */
 
@@ -267,8 +265,6 @@ export default function AccountTab() {
 
 	const avatarInputRef = useRef<HTMLInputElement>(null);
 	const [avatarUploading, setAvatarUploading] = useState(false);
-	const [cropSrc, setCropSrc] = useState<string | null>(null);
-	const [cropModalOpen, setCropModalOpen] = useState(false);
 	const [newEmail, setNewEmail] = useState("");
 	const [emailChanging, setEmailChanging] = useState(false);
 
@@ -400,7 +396,6 @@ export default function AccountTab() {
 		"?";
 
 	const uploadCroppedBlob = async (blob: Blob) => {
-		setCropModalOpen(false);
 		setAvatarUploading(true);
 		try {
 			const base64 = await new Promise<string>((resolve, reject) => {
@@ -421,28 +416,21 @@ export default function AccountTab() {
 			toast.error(t("settings.account.avatar.error"));
 		} finally {
 			setAvatarUploading(false);
-			if (cropSrc) {
-				URL.revokeObjectURL(cropSrc);
-				setCropSrc(null);
-			}
+		}
+	};
+
+	const cropAndUpload = async (file: File) => {
+		const src = URL.createObjectURL(file);
+		try {
+			const blob = await AvatarCropModal.call({ src });
+			if (blob) await uploadCroppedBlob(blob);
+		} finally {
+			URL.revokeObjectURL(src);
 		}
 	};
 
 	return (
 		<div className="space-y-6">
-			{cropSrc && (
-				<AvatarCropModal
-					src={cropSrc}
-					open={cropModalOpen}
-					onClose={() => {
-						setCropModalOpen(false);
-						URL.revokeObjectURL(cropSrc);
-						setCropSrc(null);
-					}}
-					onConfirm={uploadCroppedBlob}
-				/>
-			)}
-
 			<Card>
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
@@ -488,9 +476,7 @@ export default function AccountTab() {
 							onChange={(e) => {
 								const file = e.target.files?.[0];
 								if (!file) return;
-								const url = URL.createObjectURL(file);
-								setCropSrc(url);
-								setCropModalOpen(true);
+								void cropAndUpload(file);
 								e.target.value = "";
 							}}
 						/>

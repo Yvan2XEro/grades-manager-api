@@ -11,24 +11,15 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { confirmAction } from "@/components/callable/confirm";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { ClassSelect } from "@/components/inputs/ClassSelect";
-import ConfirmModal from "@/components/modals/ConfirmModal";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
+import { RejectExamDialog } from "@/pages/admin/exams/ExamDialogs";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 type ExamItem = RouterOutputs["exams"]["listPaged"]["items"][number];
@@ -48,11 +39,6 @@ const WorkflowApprovals = () => {
 	const [selectedExamIds, setSelectedExamIds] = useState<Set<string>>(
 		new Set(),
 	);
-	const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(
-		null,
-	);
-	const [rejectTarget, setRejectTarget] = useState<ExamItem | null>(null);
-	const [rejectReason, setRejectReason] = useState("");
 
 	// Filters
 	const [yearFilter, setYearFilter] = useState<string | null>(null);
@@ -103,23 +89,20 @@ const WorkflowApprovals = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const rejectExam = useMutation({
-		mutationFn: ({ examId, reason }: { examId: string; reason: string }) =>
-			trpcClient.exams.validate.mutate({
-				examId,
-				status: "rejected",
-				rejectionReason: reason,
+	const openReject = async (exam: ExamItem) => {
+		const rejected = await RejectExamDialog.call({
+			examId: exam.id,
+			description: t("dean.workflows.rejectDialog.subtitle", {
+				name: exam.name,
+				defaultValue:
+					'Provide a reason for rejecting "{{name}}". The teacher will see this.',
 			}),
-		onSuccess: () => {
-			toast.success(
-				t("dean.workflows.toast.rejected", { defaultValue: "Exam rejected" }),
-			);
-			setRejectTarget(null);
-			setRejectReason("");
-			invalidateExams();
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
+			successMessage: t("dean.workflows.toast.rejected", {
+				defaultValue: "Exam rejected",
+			}),
+		});
+		if (rejected) invalidateExams();
+	};
 
 	const bulkValidateMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -143,6 +126,33 @@ const WorkflowApprovals = () => {
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
+
+	const confirmApproval = (pending: PendingConfirm) =>
+		confirmAction({
+			title: t("dean.workflows.confirm.title", {
+				defaultValue: "Approve and lock?",
+			}),
+			message:
+				pending.kind === "bulk"
+					? t("dean.workflows.confirm.bulkMessage", {
+							count: pending.examIds.length,
+							defaultValue:
+								"You are about to approve and lock {{count}} exam(s). This action is irreversible — grades will no longer be editable.",
+						})
+					: t("dean.workflows.confirm.singleMessage", {
+							name: pending.examName,
+							defaultValue:
+								'Approve and lock "{{name}}"? This action is irreversible — grades will no longer be editable.',
+						}),
+			confirmText: t("dean.workflows.actions.validate", {
+				defaultValue: "Approve & lock",
+			}),
+			onConfirm: () =>
+				(pending.kind === "single"
+					? validateExam.mutateAsync(pending.examId)
+					: bulkValidateMutation.mutateAsync(pending.examIds)
+				).catch(() => undefined),
+		});
 
 	const toggleExam = (id: string) => {
 		setSelectedExamIds((prev) => {
@@ -217,7 +227,7 @@ const WorkflowApprovals = () => {
 						<Button
 							size="sm"
 							onClick={() =>
-								setPendingConfirm({
+								confirmApproval({
 									kind: "bulk",
 									examIds: [...selectedExamIds],
 								})
@@ -291,11 +301,7 @@ const WorkflowApprovals = () => {
 													size="sm"
 													variant="outline"
 													className="text-destructive hover:bg-destructive/10"
-													onClick={() => {
-														setRejectTarget(exam);
-														setRejectReason("");
-													}}
-													disabled={rejectExam.isPending}
+													onClick={() => openReject(exam)}
 												>
 													<XCircle className="mr-1 h-3.5 w-3.5" />
 													{t("dean.workflows.actions.reject", {
@@ -305,7 +311,7 @@ const WorkflowApprovals = () => {
 												<Button
 													size="sm"
 													onClick={() =>
-														setPendingConfirm({
+														confirmApproval({
 															kind: "single",
 															examId: exam.id,
 															examName: exam.name,
@@ -422,110 +428,6 @@ const WorkflowApprovals = () => {
 					))}
 				</div>
 			</div>
-
-			{/* ── Approve confirm modal ──────────────────────────────────────────── */}
-			<ConfirmModal
-				isOpen={pendingConfirm !== null}
-				onClose={() => setPendingConfirm(null)}
-				onConfirm={() => {
-					if (!pendingConfirm) return;
-					if (pendingConfirm.kind === "single") {
-						validateExam.mutate(pendingConfirm.examId);
-					} else {
-						bulkValidateMutation.mutate(pendingConfirm.examIds);
-					}
-					setPendingConfirm(null);
-				}}
-				title={t("dean.workflows.confirm.title", {
-					defaultValue: "Approve and lock?",
-				})}
-				message={
-					pendingConfirm?.kind === "bulk"
-						? t("dean.workflows.confirm.bulkMessage", {
-								count: pendingConfirm.examIds.length,
-								defaultValue:
-									"You are about to approve and lock {{count}} exam(s). This action is irreversible — grades will no longer be editable.",
-							})
-						: t("dean.workflows.confirm.singleMessage", {
-								name:
-									pendingConfirm?.kind === "single"
-										? pendingConfirm.examName
-										: "",
-								defaultValue:
-									'Approve and lock "{{name}}"? This action is irreversible — grades will no longer be editable.',
-							})
-				}
-				confirmText={t("dean.workflows.actions.validate", {
-					defaultValue: "Approve & lock",
-				})}
-				isLoading={validateExam.isPending || bulkValidateMutation.isPending}
-			/>
-
-			{/* ── Reject dialog ──────────────────────────────────────────────────── */}
-			<Dialog
-				open={rejectTarget !== null}
-				onOpenChange={(open) => {
-					if (!open) {
-						setRejectTarget(null);
-						setRejectReason("");
-					}
-				}}
-			>
-				<DialogContent className="sm:max-w-md">
-					<DialogHeader>
-						<DialogTitle>
-							{t("dean.workflows.rejectDialog.title", {
-								defaultValue: "Reject grades",
-							})}
-						</DialogTitle>
-					</DialogHeader>
-					<DialogBody className="space-y-3">
-						<p className="text-muted-foreground text-sm">
-							{t("dean.workflows.rejectDialog.subtitle", {
-								name: rejectTarget?.name ?? "",
-								defaultValue:
-									'Provide a reason for rejecting "{{name}}". The teacher will see this.',
-							})}
-						</p>
-						<div>
-							<Label>{t("admin.exams.rejectReasonLabel")}</Label>
-							<Textarea
-								className="mt-1"
-								rows={3}
-								value={rejectReason}
-								onChange={(e) => setRejectReason(e.target.value)}
-								placeholder={t("admin.exams.rejectReasonPlaceholder")}
-							/>
-						</div>
-					</DialogBody>
-					<DialogFooter className="gap-2">
-						<Button
-							variant="outline"
-							onClick={() => {
-								setRejectTarget(null);
-								setRejectReason("");
-							}}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={!rejectReason.trim() || rejectExam.isPending}
-							onClick={() => {
-								if (rejectTarget && rejectReason.trim()) {
-									rejectExam.mutate({
-										examId: rejectTarget.id,
-										reason: rejectReason.trim(),
-									});
-								}
-							}}
-						>
-							<XCircle className="mr-1.5 h-4 w-4" />
-							{t("dean.workflows.actions.reject", { defaultValue: "Reject" })}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 };

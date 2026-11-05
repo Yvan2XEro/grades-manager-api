@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Eye, EyeOff, Key, Plus, Trash2, Webhook } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Key, Plus, Trash2, Webhook } from "lucide-react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Area,
@@ -12,13 +12,12 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { confirmAction } from "@/components/callable/confirm";
 import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { toast } from "@/lib/toast";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
@@ -27,7 +26,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
-import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
 	EmptyContent,
@@ -35,9 +33,6 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "../../components/ui/empty";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -49,27 +44,15 @@ import {
 import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { trpc, trpcClient } from "../../utils/trpc";
 import type { ApiKey } from "../../utils/type";
+import {
+	CreateApiKeyDialog,
+	EditWebhookDialog,
+	RawApiKeyDialog,
+} from "./api-keys/ApiKeyDialogs";
 
 export default function ApiKeysManagement() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-
-	const [isCreateOpen, setIsCreateOpen] = useState(false);
-	const [isWebhookOpen, setIsWebhookOpen] = useState(false);
-	const [revokeId, setRevokeId] = useState<string | null>(null);
-	const [newRawKey, setNewRawKey] = useState<string | null>(null);
-	const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
-
-	// Create form state
-	const [label, setLabel] = useState("");
-	const [webhookUrl, setWebhookUrl] = useState("");
-	const [webhookSecret, setWebhookSecret] = useState("");
-	const [showSecret, setShowSecret] = useState(false);
-
-	// Webhook form state
-	const [editWebhookUrl, setEditWebhookUrl] = useState("");
-	const [editWebhookSecret, setEditWebhookSecret] = useState("");
-	const [showEditSecret, setShowEditSecret] = useState(false);
 
 	const ACTIVITY_DAYS = 30;
 	const SERIES_COLORS = [
@@ -157,30 +140,10 @@ export default function ApiKeysManagement() {
 		return { callLabelMap, callKeyIds, callChartData };
 	}, [callData]);
 
-	const createMutation = useMutation({
-		mutationFn: async () => {
-			return trpcClient.diplomationKeys.create.mutate({
-				label: label.trim(),
-				webhookUrl: webhookUrl.trim() || undefined,
-				webhookSecret: webhookSecret.trim() || undefined,
-			});
-		},
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["diplomation-api-keys"] });
-			setIsCreateOpen(false);
-			setLabel("");
-			setWebhookUrl("");
-			setWebhookSecret("");
-			setNewRawKey(data.rawKey);
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error
-					? error.message
-					: t("admin.apiKeys.toast.createError");
-			toast.error(message);
-		},
-	});
+	const createKey = async () => {
+		const rawKey = await CreateApiKeyDialog.call();
+		if (rawKey) await RawApiKeyDialog.call({ rawKey });
+	};
 
 	const revokeMutation = useMutation({
 		mutationFn: async (id: string) => {
@@ -189,7 +152,6 @@ export default function ApiKeysManagement() {
 		onSuccess: () => {
 			toast.success(t("admin.apiKeys.toast.revokeSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["diplomation-api-keys"] });
-			setRevokeId(null);
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -200,43 +162,15 @@ export default function ApiKeysManagement() {
 		},
 	});
 
-	const updateWebhookMutation = useMutation({
-		mutationFn: async () => {
-			if (!editingKey) return;
-			await trpcClient.diplomationKeys.updateWebhook.mutate({
-				id: editingKey.id,
-				webhookUrl: editWebhookUrl.trim() || null,
-				webhookSecret: editWebhookSecret.trim() || null,
-			});
-		},
-		onSuccess: () => {
-			toast.success(t("admin.apiKeys.toast.webhookUpdated"));
-			queryClient.invalidateQueries({ queryKey: ["diplomation-api-keys"] });
-			setIsWebhookOpen(false);
-			setEditingKey(null);
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error
-					? error.message
-					: t("admin.apiKeys.toast.webhookError");
-			toast.error(message);
-		},
-	});
+	const handleOpenWebhook = (apiKey: ApiKey) =>
+		EditWebhookDialog.call({ apiKey });
 
-	const handleOpenWebhook = (key: ApiKey) => {
-		setEditingKey(key);
-		setEditWebhookUrl(key.webhookUrl ?? "");
-		setEditWebhookSecret("");
-		setShowEditSecret(false);
-		setIsWebhookOpen(true);
-	};
-
-	const copyToClipboard = (text: string) => {
-		navigator.clipboard.writeText(text).then(() => {
-			toast.success(t("admin.apiKeys.toast.copied"));
+	const confirmRevoke = (id: string) =>
+		confirmAction({
+			title: t("admin.apiKeys.revoke.title"),
+			message: t("admin.apiKeys.revoke.message"),
+			onConfirm: () => revokeMutation.mutateAsync(id).catch(() => undefined),
 		});
-	};
 
 	const formatDate = (d: string | Date | null) => {
 		if (!d) return "—";
@@ -250,7 +184,7 @@ export default function ApiKeysManagement() {
 					<h1 className="text-foreground">{t("admin.apiKeys.title")}</h1>
 					<p className="text-muted-foreground">{t("admin.apiKeys.subtitle")}</p>
 				</div>
-				<Button onClick={() => setIsCreateOpen(true)}>
+				<Button onClick={createKey}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.apiKeys.actions.create")}
 				</Button>
@@ -502,7 +436,7 @@ export default function ApiKeysManagement() {
 												<ContextMenuSeparator />
 												<ContextMenuItem
 													variant="destructive"
-													onSelect={() => setRevokeId(key.id)}
+													onSelect={() => confirmRevoke(key.id)}
 													disabled={!key.isActive}
 												>
 													<span>{t("admin.apiKeys.actions.revoke")}</span>
@@ -550,7 +484,7 @@ export default function ApiKeysManagement() {
 											<Button
 												variant="ghost"
 												size="icon"
-												onClick={() => setRevokeId(key.id)}
+												onClick={() => confirmRevoke(key.id)}
 												disabled={!key.isActive}
 												title={t("admin.apiKeys.actions.revoke")}
 											>
@@ -574,195 +508,6 @@ export default function ApiKeysManagement() {
 					)}
 				</CardContent>
 			</Card>
-
-			{/* Create key modal */}
-			<FormModal
-				isOpen={isCreateOpen}
-				onClose={() => {
-					setIsCreateOpen(false);
-					setLabel("");
-					setWebhookUrl("");
-					setWebhookSecret("");
-				}}
-				title={t("admin.apiKeys.form.createTitle")}
-			>
-				<div className="space-y-4">
-					<div className="space-y-1.5">
-						<Label htmlFor="key-label">{t("admin.apiKeys.form.label")}</Label>
-						<Input
-							id="key-label"
-							value={label}
-							onChange={(e) => setLabel(e.target.value)}
-							placeholder={t("admin.apiKeys.form.labelPlaceholder")}
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label htmlFor="webhook-url">
-							{t("admin.apiKeys.form.webhookUrl")}
-						</Label>
-						<Input
-							id="webhook-url"
-							value={webhookUrl}
-							onChange={(e) => setWebhookUrl(e.target.value)}
-							placeholder="http://localhost:4242/webhook"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label htmlFor="webhook-secret">
-							{t("admin.apiKeys.form.webhookSecret")}
-						</Label>
-						<div className="relative">
-							<Input
-								id="webhook-secret"
-								type={showSecret ? "text" : "password"}
-								value={webhookSecret}
-								onChange={(e) => setWebhookSecret(e.target.value)}
-								placeholder={t("admin.apiKeys.form.webhookSecretPlaceholder")}
-								className="pr-10"
-							/>
-							<button
-								type="button"
-								onClick={() => setShowSecret((v) => !v)}
-								className="-translate-y-1/2 absolute top-1/2 right-2.5 text-muted-foreground hover:text-foreground"
-							>
-								{showSecret ? (
-									<EyeOff className="h-4 w-4" />
-								) : (
-									<Eye className="h-4 w-4" />
-								)}
-							</button>
-						</div>
-					</div>
-					<DialogFooter className="gap-2 sm:gap-0">
-						<Button
-							variant="ghost"
-							type="button"
-							onClick={() => setIsCreateOpen(false)}
-						>
-							{t("common.actions.cancel")}
-						</Button>
-						<Button
-							type="button"
-							disabled={!label.trim() || createMutation.isPending}
-							onClick={() => createMutation.mutate()}
-						>
-							{createMutation.isPending ? (
-								<Spinner className="mr-2 h-4 w-4" />
-							) : null}
-							{t("admin.apiKeys.actions.generate")}
-						</Button>
-					</DialogFooter>
-				</div>
-			</FormModal>
-
-			{/* Raw key display modal — shown once after creation */}
-			<FormModal
-				isOpen={!!newRawKey}
-				onClose={() => setNewRawKey(null)}
-				title={t("admin.apiKeys.rawKey.title")}
-			>
-				<div className="space-y-4">
-					<p className="text-muted-foreground text-sm">
-						{t("admin.apiKeys.rawKey.warning")}
-					</p>
-					<div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
-						<code className="flex-1 select-all break-all font-mono text-xs">
-							{newRawKey}
-						</code>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => newRawKey && copyToClipboard(newRawKey)}
-						>
-							<Copy className="h-4 w-4" />
-						</Button>
-					</div>
-					<DialogFooter>
-						<Button onClick={() => setNewRawKey(null)}>
-							{t("admin.apiKeys.rawKey.confirm")}
-						</Button>
-					</DialogFooter>
-				</div>
-			</FormModal>
-
-			{/* Edit webhook modal */}
-			<FormModal
-				isOpen={isWebhookOpen}
-				onClose={() => {
-					setIsWebhookOpen(false);
-					setEditingKey(null);
-				}}
-				title={t("admin.apiKeys.webhook.title")}
-			>
-				<div className="space-y-4">
-					<div className="space-y-1.5">
-						<Label htmlFor="edit-webhook-url">
-							{t("admin.apiKeys.form.webhookUrl")}
-						</Label>
-						<Input
-							id="edit-webhook-url"
-							value={editWebhookUrl}
-							onChange={(e) => setEditWebhookUrl(e.target.value)}
-							placeholder="http://localhost:4242/webhook"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label htmlFor="edit-webhook-secret">
-							{t("admin.apiKeys.form.webhookSecret")}
-						</Label>
-						<div className="relative">
-							<Input
-								id="edit-webhook-secret"
-								type={showEditSecret ? "text" : "password"}
-								value={editWebhookSecret}
-								onChange={(e) => setEditWebhookSecret(e.target.value)}
-								placeholder={t("admin.apiKeys.form.webhookSecretPlaceholder")}
-								className="pr-10"
-							/>
-							<button
-								type="button"
-								onClick={() => setShowEditSecret((v) => !v)}
-								className="-translate-y-1/2 absolute top-1/2 right-2.5 text-muted-foreground hover:text-foreground"
-							>
-								{showEditSecret ? (
-									<EyeOff className="h-4 w-4" />
-								) : (
-									<Eye className="h-4 w-4" />
-								)}
-							</button>
-						</div>
-					</div>
-					<DialogFooter className="gap-2 sm:gap-0">
-						<Button
-							variant="ghost"
-							type="button"
-							onClick={() => setIsWebhookOpen(false)}
-						>
-							{t("common.actions.cancel")}
-						</Button>
-						<Button
-							type="button"
-							disabled={updateWebhookMutation.isPending}
-							onClick={() => updateWebhookMutation.mutate()}
-						>
-							{updateWebhookMutation.isPending ? (
-								<Spinner className="mr-2 h-4 w-4" />
-							) : null}
-							{t("common.actions.save")}
-						</Button>
-					</DialogFooter>
-				</div>
-			</FormModal>
-
-			{/* Revoke confirm */}
-			<ConfirmModal
-				isOpen={!!revokeId}
-				onClose={() => setRevokeId(null)}
-				onConfirm={() => revokeId && revokeMutation.mutate(revokeId)}
-				title={t("admin.apiKeys.revoke.title")}
-				message={t("admin.apiKeys.revoke.message")}
-				isLoading={revokeMutation.isPending}
-			/>
 		</div>
 	);
 }

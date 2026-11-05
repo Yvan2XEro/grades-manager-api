@@ -13,8 +13,11 @@ import {
 	Search,
 } from "lucide-react";
 import { useCallback, useId, useMemo, useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import {
@@ -217,9 +220,12 @@ export default function GradeExport() {
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
 	const [_selectedUEs, _setSelectedUEs] = useState<string[]>([]);
 	const [exporting, setExporting] = useState<string | null>(null);
-	const [showPreview, setShowPreview] = useState(false);
-	const [previewHtml, setPreviewHtml] = useState("");
-	const [previewTitle, setPreviewTitle] = useState("");
+	const openPreview = (title: string, html: string) =>
+		DocumentPreviewDialog.call({
+			title,
+			description: "Prévisualisation HTML avant génération PDF",
+			html,
+		});
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortBy, setSortBy] = useState<"course" | "date" | "type">(
 		prefs.sortBy ?? "course",
@@ -1387,13 +1393,12 @@ export default function GradeExport() {
 				academicYearId: selectedYear,
 				includeRetakes,
 			});
-			setPreviewHtml(html);
-			setPreviewTitle(
+			openPreview(
 				includeRetakes
 					? "Prévisualisation - Procès-Verbal (avec rattrapages)"
 					: "Prévisualisation - Procès-Verbal (sans rattrapages)",
+				html,
 			);
-			setShowPreview(true);
 		} catch (error) {
 			console.error("PV preview error:", error);
 			toast.error(
@@ -1457,9 +1462,7 @@ export default function GradeExport() {
 				const html = await trpcClient.exports.previewEvaluation.query({
 					examId,
 				});
-				setPreviewHtml(html);
-				setPreviewTitle("Prévisualisation - Publication Évaluation");
-				setShowPreview(true);
+				openPreview("Prévisualisation - Publication Évaluation", html);
 			} catch (error) {
 				console.error("Evaluation preview error:", error);
 				toast.error(
@@ -1528,9 +1531,7 @@ export default function GradeExport() {
 					semesterId: selectedSemester,
 					academicYearId: selectedYear,
 				});
-				setPreviewHtml(html);
-				setPreviewTitle("Prévisualisation - Publication UE");
-				setShowPreview(true);
+				openPreview("Prévisualisation - Publication UE", html);
 			} catch (error) {
 				console.error("UE preview error:", error);
 				toast.error(
@@ -1606,9 +1607,7 @@ export default function GradeExport() {
 					...(selectedSemester ? { semesterId: selectedSemester } : {}),
 					...(selectedYear ? { academicYearId: selectedYear } : {}),
 				});
-				setPreviewHtml(html);
-				setPreviewTitle("Prévisualisation - Publication EC");
-				setShowPreview(true);
+				openPreview("Prévisualisation - Publication EC", html);
 			} catch (error) {
 				console.error("EC preview error:", error);
 				toast.error(
@@ -1775,13 +1774,6 @@ export default function GradeExport() {
 	// user can scope the bulk to "this year only" or "this class only" by
 	// selecting them, or leave them empty for institution-wide exports.
 	const [bulkElapsed, setBulkElapsed] = useState<number>(0); // seconds
-	const [bulkReport, setBulkReport] = useState<{
-		kind: "Évaluations" | "EC" | "UE";
-		total: number;
-		succeeded: number;
-		skipped: Array<{ id: string; reason: string }>;
-		filename: string;
-	} | null>(null);
 
 	const buildBulkFilters = useCallback(
 		(scope: "all" | "selected") => ({
@@ -1838,7 +1830,7 @@ export default function GradeExport() {
 					buildBulkFilters(scope),
 				);
 				downloadBlob(result.data, result.filename, result.mimeType);
-				setBulkReport({
+				BulkExportReportDialog.call({
 					kind: "Évaluations",
 					total: result.total,
 					succeeded: result.succeeded,
@@ -1866,7 +1858,7 @@ export default function GradeExport() {
 					buildBulkFilters(scope),
 				);
 				downloadBlob(result.data, result.filename, result.mimeType);
-				setBulkReport({
+				BulkExportReportDialog.call({
 					kind: "EC",
 					total: result.total,
 					succeeded: result.succeeded,
@@ -1894,7 +1886,7 @@ export default function GradeExport() {
 					buildBulkFilters(scope),
 				);
 				downloadBlob(result.data, result.filename, result.mimeType);
-				setBulkReport({
+				BulkExportReportDialog.call({
 					kind: "UE",
 					total: result.total,
 					succeeded: result.succeeded,
@@ -2785,113 +2777,93 @@ export default function GradeExport() {
 					</p>
 				</CardContent>
 			</Card>
-
-			<Dialog open={showPreview} onOpenChange={setShowPreview}>
-				<DialogContent className="max-h-[90vh] min-w-[80vw] overflow-auto">
-					<DialogHeader>
-						<DialogTitle>{previewTitle}</DialogTitle>
-						<DialogDescription>
-							Prévisualisation HTML avant génération PDF
-						</DialogDescription>
-					</DialogHeader>
-					<div className="h-[80vh] w-full overflow-hidden rounded-md border bg-muted">
-						<iframe
-							title="preview"
-							className="h-full w-full bg-card"
-							sandbox="allow-same-origin"
-							srcDoc={previewHtml}
-						/>
-					</div>
-				</DialogContent>
-			</Dialog>
-
-			{/* Bulk export results modal — shown after each ZIP completes.
-			    Lists succeeded count + every skipped item with its reason so
-			    the user can see exactly what didn't make it into the archive
-			    (typically ECs/UEs whose pondérations don't sum to 100%). */}
-			<Dialog
-				open={bulkReport !== null}
-				onOpenChange={(open) => !open && setBulkReport(null)}
-			>
-				<DialogContent className="max-h-[85vh] min-w-[60vw] gap-4 overflow-auto p-6">
-					<DialogHeader>
-						<DialogTitle className="flex items-center gap-2">
-							<Files className="h-5 w-5" />
-							Rapport d&apos;export — {bulkReport?.kind}
-						</DialogTitle>
-						<DialogDescription>
-							ZIP téléchargé :{" "}
-							<span className="font-mono text-xs">{bulkReport?.filename}</span>
-						</DialogDescription>
-					</DialogHeader>
-					{bulkReport && (
-						<div className="space-y-4">
-							<div className="grid grid-cols-3 gap-3">
-								<div className="rounded-md border p-3">
-									<div className="text-muted-foreground text-xs">
-										Total candidats
-									</div>
-									<div className="font-semibold text-2xl">
-										{bulkReport.total}
-									</div>
-								</div>
-								<div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-900/20">
-									<div className="flex items-center gap-1 text-emerald-800 text-xs dark:text-emerald-300">
-										<CheckCircle2 className="h-3.5 w-3.5" /> Générés
-									</div>
-									<div className="font-semibold text-2xl text-emerald-900 dark:text-emerald-200">
-										{bulkReport.succeeded}
-									</div>
-								</div>
-								<div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-900/20">
-									<div className="flex items-center gap-1 text-amber-800 text-xs dark:text-amber-300">
-										<AlertCircle className="h-3.5 w-3.5" /> Ignorés
-									</div>
-									<div className="font-semibold text-2xl text-amber-900 dark:text-amber-200">
-										{bulkReport.skipped.length}
-									</div>
-								</div>
-							</div>
-							{bulkReport.skipped.length > 0 && (
-								<div className="rounded-md border">
-									<div className="border-b bg-muted/40 px-4 py-2 font-medium text-sm">
-										Détail des éléments ignorés
-									</div>
-									<div className="max-h-[40vh] overflow-auto">
-										<table className="w-full text-sm">
-											<thead className="sticky top-0 bg-muted/40 text-xs">
-												<tr>
-													<th className="px-4 py-2 text-left font-medium">
-														ID
-													</th>
-													<th className="px-4 py-2 text-left font-medium">
-														Raison
-													</th>
-												</tr>
-											</thead>
-											<tbody className="divide-y">
-												{bulkReport.skipped.map((s, i) => (
-													<tr
-														key={`${s.id}-${i}`}
-														className="hover:bg-muted/30"
-													>
-														<td className="px-4 py-2 font-mono text-xs">
-															{s.id}
-														</td>
-														<td className="px-4 py-2 text-amber-800 dark:text-amber-300">
-															{s.reason}
-														</td>
-													</tr>
-												))}
-											</tbody>
-										</table>
-									</div>
-								</div>
-							)}
-						</div>
-					)}
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }
+
+type BulkExportReport = {
+	kind: "Évaluations" | "EC" | "UE";
+	total: number;
+	succeeded: number;
+	skipped: Array<{ id: string; reason: string }>;
+	filename: string;
+};
+
+/**
+ * Report shown after each bulk ZIP export: generated count and every skipped
+ * item with its reason (typically ECs/UEs whose weightings don't sum to 100%).
+ */
+export const BulkExportReportDialog = createCallable<BulkExportReport>(
+	({ call, ...report }) => (
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
+			<DialogContent className="max-h-[85vh] min-w-[60vw] gap-4 overflow-auto p-6">
+				<DialogHeader>
+					<DialogTitle className="flex items-center gap-2">
+						<Files className="h-5 w-5" />
+						Rapport d&apos;export — {report.kind}
+					</DialogTitle>
+					<DialogDescription>
+						ZIP téléchargé :{" "}
+						<span className="font-mono text-xs">{report.filename}</span>
+					</DialogDescription>
+				</DialogHeader>
+				<div className="space-y-4">
+					<div className="grid grid-cols-3 gap-3">
+						<div className="rounded-md border p-3">
+							<div className="text-muted-foreground text-xs">
+								Total candidats
+							</div>
+							<div className="font-semibold text-2xl">{report.total}</div>
+						</div>
+						<div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-900/20">
+							<div className="flex items-center gap-1 text-emerald-800 text-xs dark:text-emerald-300">
+								<CheckCircle2 className="h-3.5 w-3.5" /> Générés
+							</div>
+							<div className="font-semibold text-2xl text-emerald-900 dark:text-emerald-200">
+								{report.succeeded}
+							</div>
+						</div>
+						<div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-900/20">
+							<div className="flex items-center gap-1 text-amber-800 text-xs dark:text-amber-300">
+								<AlertCircle className="h-3.5 w-3.5" /> Ignorés
+							</div>
+							<div className="font-semibold text-2xl text-amber-900 dark:text-amber-200">
+								{report.skipped.length}
+							</div>
+						</div>
+					</div>
+					{report.skipped.length > 0 && (
+						<div className="rounded-md border">
+							<div className="border-b bg-muted/40 px-4 py-2 font-medium text-sm">
+								Détail des éléments ignorés
+							</div>
+							<div className="max-h-[40vh] overflow-auto">
+								<table className="w-full text-sm">
+									<thead className="sticky top-0 bg-muted/40 text-xs">
+										<tr>
+											<th className="px-4 py-2 text-left font-medium">ID</th>
+											<th className="px-4 py-2 text-left font-medium">
+												Raison
+											</th>
+										</tr>
+									</thead>
+									<tbody className="divide-y">
+										{report.skipped.map((s, i) => (
+											<tr key={`${s.id}-${i}`} className="hover:bg-muted/30">
+												<td className="px-4 py-2 font-mono text-xs">{s.id}</td>
+												<td className="px-4 py-2 text-amber-800 dark:text-amber-300">
+													{s.reason}
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					)}
+				</div>
+			</DialogContent>
+		</Dialog>
+	),
+	DIALOG_EXIT_MS,
+);

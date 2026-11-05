@@ -11,17 +11,11 @@ import {
 	UserMinus,
 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -100,13 +94,6 @@ export default function GuardianDirectory() {
 	const debouncedSearch = useDebounce(search, 300);
 
 	const [expandedId, setExpandedId] = useState<string | null>(null);
-	const [showAdd, setShowAdd] = useState(false);
-	const [prefTarget, setPrefTarget] = useState<{
-		id: string;
-		name: string;
-		preferences: PreferencesType;
-	} | null>(null);
-	const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
 	const { data, isLoading } = useQuery(
 		trpc.guardians.listAll.queryOptions({
@@ -136,21 +123,22 @@ export default function GuardianDirectory() {
 		onSuccess: () => {
 			toast.success(t("common.deleted"));
 			invalidate();
-			setDeleteTarget(null);
 		},
 		onError: (err: Error) => toast.error(err.message),
 	});
 
-	const prefMutation = useMutation({
-		mutationFn: (input: { guardianId: string; preferences: PreferencesType }) =>
-			trpcClient.guardians.updatePreferences.mutate(input),
-		onSuccess: () => {
-			toast.success(t("guardians.admin.toasts.preferencesSaved"));
-			invalidate();
-			setPrefTarget(null);
-		},
-		onError: (err: Error) => toast.error(err.message),
-	});
+	const confirmDelete = (guardianId: string) =>
+		confirmAction({
+			title: t("common.confirmDelete"),
+			message: t("guardians.admin.deleteConfirm", {
+				defaultValue:
+					"This will permanently delete the guardian and all student links.",
+			}),
+			confirmText: t("common.delete"),
+			cancelText: t("common.cancel"),
+			onConfirm: () =>
+				deleteMutation.mutateAsync(guardianId).catch(() => undefined),
+		});
 
 	const items = data?.items ?? [];
 
@@ -165,7 +153,9 @@ export default function GuardianDirectory() {
 						{t("guardians.admin.subtitle")}
 					</p>
 				</div>
-				<Button onClick={() => setShowAdd(true)}>
+				<Button
+					onClick={() => AddGuardianDialog.call({ onCreated: invalidate })}
+				>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("guardians.admin.addGuardian", { defaultValue: "Add guardian" })}
 				</Button>
@@ -287,7 +277,8 @@ export default function GuardianDirectory() {
 													</DropdownMenuItem>
 													<DropdownMenuItem
 														onClick={() =>
-															setPrefTarget({
+															GuardianPreferencesSheet.call({
+																onSaved: invalidate,
 																id: g.id,
 																name: `${g.firstName} ${g.lastName}`,
 																preferences: {
@@ -331,7 +322,7 @@ export default function GuardianDirectory() {
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
 														className="text-destructive"
-														onClick={() => setDeleteTarget(g.id)}
+														onClick={() => confirmDelete(g.id)}
 													>
 														<Trash2 className="mr-2 h-4 w-4" />
 														{t("common.actions.delete")}
@@ -409,119 +400,18 @@ export default function GuardianDirectory() {
 					setPage(1);
 				}}
 			/>
-
-			{/* Add Guardian Dialog */}
-			<AddGuardianDialog
-				open={showAdd}
-				onOpenChange={setShowAdd}
-				onCreated={() => {
-					invalidate();
-					setShowAdd(false);
-				}}
-			/>
-
-			{/* Edit Preferences Sheet */}
-			<Sheet
-				open={!!prefTarget}
-				onOpenChange={(o) => !o && setPrefTarget(null)}
-			>
-				<SheetContent>
-					<SheetHeader>
-						<SheetTitle>
-							{t("guardians.admin.editPreferences", {
-								defaultValue: "Edit preferences",
-							})}{" "}
-							— {prefTarget?.name}
-						</SheetTitle>
-					</SheetHeader>
-					{prefTarget && (
-						<div className="space-y-4 px-1 pt-6">
-							{Object.entries(DEFAULT_PREFERENCES).map(([key]) => {
-								const checked =
-									prefTarget.preferences[key as keyof PreferencesType] !==
-									false;
-								return (
-									<label key={key} className="flex items-center gap-3 text-sm">
-										<Checkbox
-											checked={checked}
-											onCheckedChange={(v) =>
-												setPrefTarget((prev) =>
-													prev
-														? {
-																...prev,
-																preferences: {
-																	...prev.preferences,
-																	[key]: v === true,
-																},
-															}
-														: null,
-												)
-											}
-										/>
-										{t(`guardians.preferences.${key}`)}
-									</label>
-								);
-							})}
-							<Button
-								className="mt-4 w-full"
-								disabled={prefMutation.isPending}
-								onClick={() =>
-									prefTarget &&
-									prefMutation.mutate({
-										guardianId: prefTarget.id,
-										preferences: prefTarget.preferences,
-									})
-								}
-							>
-								{t("common.actions.saveChanges")}
-							</Button>
-						</div>
-					)}
-				</SheetContent>
-			</Sheet>
-
-			{/* Delete Confirm */}
-			<AlertDialog
-				open={!!deleteTarget}
-				onOpenChange={(o) => !o && setDeleteTarget(null)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("guardians.admin.deleteConfirm", {
-								defaultValue:
-									"This will permanently delete the guardian and all student links.",
-							})}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() =>
-								deleteTarget && deleteMutation.mutate(deleteTarget)
-							}
-						>
-							{t("common.delete")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }
 
 // ─── Add Guardian Dialog ──────────────────────────────────────────────────────
 
-function AddGuardianDialog({
-	open,
-	onOpenChange,
-	onCreated,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	onCreated: () => void;
-}) {
+export const AddGuardianDialog = createCallable<
+	{
+		onCreated: () => void;
+	},
+	void
+>(({ call, onCreated }) => {
 	const { t } = useTranslation();
 	const [form, setForm] = useState({
 		firstName: "",
@@ -555,6 +445,7 @@ function AddGuardianDialog({
 		onSuccess: () => {
 			toast.success(t("guardians.admin.toasts.saved"));
 			onCreated();
+			call.end();
 			setForm({
 				firstName: "",
 				lastName: "",
@@ -573,7 +464,7 @@ function AddGuardianDialog({
 		form.firstName && form.lastName && form.email && form.studentId;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{t("guardians.admin.createTitle")}</DialogTitle>
@@ -685,7 +576,7 @@ function AddGuardianDialog({
 					</div>
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.actions.cancel")}
 					</Button>
 					<Button
@@ -698,4 +589,71 @@ function AddGuardianDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
+
+/** Edits a guardian's notification preferences; resolves `true` once saved. */
+export const GuardianPreferencesSheet = createCallable<
+	{
+		id: string;
+		name: string;
+		preferences: PreferencesType;
+		onSaved: () => void;
+	},
+	boolean
+>(({ call, id, name, preferences: initialPreferences, onSaved }) => {
+	const { t } = useTranslation();
+	const [preferences, setPreferences] =
+		useState<PreferencesType>(initialPreferences);
+
+	const save = useMutationFlow(call, async (call) => {
+		try {
+			await trpcClient.guardians.updatePreferences.mutate({
+				guardianId: id,
+				preferences,
+			});
+			toast.success(t("guardians.admin.toasts.preferencesSaved"));
+			onSaved();
+			call.end(true);
+		} catch (err) {
+			toast.error((err as Error).message);
+		}
+	});
+
+	return (
+		<Sheet
+			open={!call.ended}
+			onOpenChange={(o) => !o && !save.pending && call.end(false)}
+		>
+			<SheetContent>
+				<SheetHeader>
+					<SheetTitle>
+						{t("guardians.admin.editPreferences", {
+							defaultValue: "Edit preferences",
+						})}{" "}
+						— {name}
+					</SheetTitle>
+				</SheetHeader>
+				<div className="space-y-4 px-1 pt-6">
+					{Object.entries(DEFAULT_PREFERENCES).map(([key]) => (
+						<label key={key} className="flex items-center gap-3 text-sm">
+							<Checkbox
+								checked={preferences[key as keyof PreferencesType] !== false}
+								onCheckedChange={(v) =>
+									setPreferences((prev) => ({ ...prev, [key]: v === true }))
+								}
+							/>
+							{t(`guardians.preferences.${key}`)}
+						</label>
+					))}
+					<Button
+						className="mt-4 w-full"
+						disabled={save.pending}
+						onClick={() => save()}
+					>
+						{t("common.actions.saveChanges")}
+					</Button>
+				</div>
+			</SheetContent>
+		</Sheet>
+	);
+}, DIALOG_EXIT_MS);

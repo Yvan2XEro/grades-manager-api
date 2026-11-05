@@ -1,22 +1,18 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
+import { confirmAction } from "@/components/callable/confirm";
+import { ExamTypeFormDialog } from "@/components/callable/forms/ExamTypeFormDialog";
 import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { toast } from "@/lib/toast";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
-import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
 	EmptyContent,
@@ -24,15 +20,6 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "../../components/ui/empty";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "../../components/ui/form";
-import { Input } from "../../components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -43,37 +30,15 @@ import {
 } from "../../components/ui/table";
 import { TablePagination } from "../../components/ui/table-pagination";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
-import { useConfirm } from "../../hooks/useConfirm";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpc, trpcClient } from "../../utils/trpc";
 import type { ExamType } from "../../utils/type";
 
-const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
-	z.object({
-		name: z.string().min(2, t("admin.examTypes.form.nameLabel")),
-		description: z.string().optional(),
-		defaultPercentage: z.coerce.number().int().min(1).max(100).optional(),
-	});
-
-type FormValues = z.infer<ReturnType<typeof buildSchema>>;
-
 export default function ExamTypes() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const schema = useMemo(() => buildSchema(t), [t]);
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [editingType, setEditingType] = useState<ExamType | null>(null);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
-	const form = useForm<FormValues>({
-		resolver: zodResolver(schema),
-		defaultValues: { name: "", description: "", defaultPercentage: 40 },
-	});
-
-	const resetForm = () =>
-		form.reset({ name: "", description: "", defaultPercentage: 40 });
-
 	const { data, isLoading } = useQuery(
 		trpc.examTypes.listPaged.queryOptions({ page, pageSize }),
 	);
@@ -81,74 +46,17 @@ export default function ExamTypes() {
 	const examTypes = data?.items ?? [];
 	const selection = useRowSelection(examTypes);
 
-	const { confirm, ConfirmDialog } = useConfirm();
+	const handleOpenCreate = () => ExamTypeFormDialog.call({});
 
-	const handleOpenCreate = () => {
-		setEditingType(null);
-		resetForm();
-		setIsModalOpen(true);
-	};
+	const handleOpenEdit = (examType: ExamType) =>
+		ExamTypeFormDialog.call({ examType });
 
-	const handleOpenEdit = (type: ExamType) => {
-		setEditingType(type);
-		form.reset({
-			name: type.name,
-			description: type.description ?? "",
-			defaultPercentage: type.defaultPercentage ?? 40,
+	const confirmDelete = (id: string) =>
+		confirmAction({
+			title: t("admin.examTypes.delete.title"),
+			message: t("admin.examTypes.delete.message"),
+			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
 		});
-		setIsModalOpen(true);
-	};
-
-	const handleCloseModal = () => {
-		setIsModalOpen(false);
-		setEditingType(null);
-		resetForm();
-	};
-
-	const createMutation = useMutation({
-		mutationFn: async (values: FormValues) => {
-			await trpcClient.examTypes.create.mutate({
-				name: values.name,
-				description: values.description || undefined,
-				defaultPercentage: values.defaultPercentage,
-			});
-		},
-		onSuccess: () => {
-			toast.success(t("admin.examTypes.toast.createSuccess"));
-			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
-			handleCloseModal();
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: t("admin.examTypes.toast.createError");
-			toast.error(message);
-		},
-	});
-
-	const updateMutation = useMutation({
-		mutationFn: async ({ id, values }: { id: string; values: FormValues }) => {
-			await trpcClient.examTypes.update.mutate({
-				id,
-				name: values.name,
-				description: values.description || undefined,
-				defaultPercentage: values.defaultPercentage,
-			});
-		},
-		onSuccess: () => {
-			toast.success(t("admin.examTypes.toast.updateSuccess"));
-			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
-			handleCloseModal();
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: t("admin.examTypes.toast.updateError");
-			toast.error(message);
-		},
-	});
 
 	const deleteMutation = useMutation({
 		mutationFn: async (id: string) => {
@@ -157,7 +65,6 @@ export default function ExamTypes() {
 		onSuccess: () => {
 			toast.success(t("admin.examTypes.toast.deleteSuccess"));
 			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
-			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -191,19 +98,6 @@ export default function ExamTypes() {
 			),
 	});
 
-	const isSaving =
-		createMutation.isPending ||
-		updateMutation.isPending ||
-		deleteMutation.isPending;
-
-	const onSubmit = (values: FormValues) => {
-		if (editingType) {
-			updateMutation.mutate({ id: editingType.id, values });
-		} else {
-			createMutation.mutate(values);
-		}
-	};
-
 	return (
 		<div className="space-y-5">
 			<div className="flex justify-end">
@@ -227,7 +121,7 @@ export default function ExamTypes() {
 									variant="destructive"
 									size="sm"
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("common.bulkActions.confirmDeleteTitle", {
 												defaultValue: "Delete selected items?",
 											}),
@@ -288,7 +182,7 @@ export default function ExamTypes() {
 													<ContextMenuSeparator />
 													<ContextMenuItem
 														variant="destructive"
-														onSelect={() => setDeleteId(type.id)}
+														onSelect={() => confirmDelete(type.id)}
 													>
 														<span>{t("common.actions.delete")}</span>
 													</ContextMenuItem>
@@ -320,7 +214,7 @@ export default function ExamTypes() {
 												<Button
 													variant="ghost"
 													size="icon"
-													onClick={() => setDeleteId(type.id)}
+													onClick={() => confirmDelete(type.id)}
 												>
 													<Trash2 className="h-4 w-4 text-destructive" />
 												</Button>
@@ -354,84 +248,6 @@ export default function ExamTypes() {
 					)}
 				</CardContent>
 			</Card>
-
-			<FormModal
-				isOpen={isModalOpen}
-				onClose={handleCloseModal}
-				title={
-					editingType
-						? t("admin.examTypes.form.editTitle")
-						: t("admin.examTypes.form.createTitle")
-				}
-			>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.examTypes.form.nameLabel")}</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="description"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.examTypes.form.descriptionLabel")}
-									</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="defaultPercentage"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.examTypes.form.defaultPercentageLabel")}
-									</FormLabel>
-									<FormControl>
-										<Input type="number" min={1} max={100} {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<DialogFooter className="gap-2 sm:gap-0">
-							<Button variant="ghost" type="button" onClick={handleCloseModal}>
-								{t("common.actions.cancel")}
-							</Button>
-							<Button type="submit" disabled={isSaving}>
-								{isSaving
-									? t("common.actions.saving")
-									: t("admin.examTypes.form.submit")}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</FormModal>
-
-			<ConfirmModal
-				isOpen={Boolean(deleteId)}
-				onClose={() => setDeleteId(null)}
-				onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
-				title={t("admin.examTypes.delete.title")}
-				message={t("admin.examTypes.delete.message")}
-				isLoading={deleteMutation.isPending}
-			/>
-			<ConfirmDialog />
 		</div>
 	);
 }

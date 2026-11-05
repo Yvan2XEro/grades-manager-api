@@ -1,6 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
@@ -14,14 +12,16 @@ import {
 	Users,
 	Wand2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
-import { z } from "zod";
 import { BulkClassExportDialog } from "@/components/admin/document-templates/BulkClassExportDialog";
-import { CodedEntitySelect } from "@/components/forms";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
+import { ClassFormDialog } from "@/components/callable/forms/ClassFormDialog";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
@@ -49,12 +49,8 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
-import { generateClassCode } from "@/lib/code-generator";
 import { toast } from "@/lib/toast";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
 import {
 	Dialog,
@@ -65,57 +61,10 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "../../components/ui/dialog";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "../../components/ui/form";
-import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpc, trpcClient } from "../../utils/trpc";
-
-const buildClassSchema = (t: TFunction) =>
-	z.object({
-		programId: z.string({
-			required_error: t("admin.classes.validation.program"),
-		}),
-		academicYearId: z.string({
-			required_error: t("admin.classes.validation.academicYear"),
-		}),
-		cycleLevelId: z.string({
-			required_error: t("admin.classes.validation.cycleLevel", {
-				defaultValue: "Please select a cycle level",
-			}),
-		}),
-		programOptionId: z.string({
-			required_error: t("admin.classes.validation.programOption", {
-				defaultValue: "Please select a program option",
-			}),
-		}),
-		semesterId: z.string().optional(),
-		code: z.string().min(
-			3,
-			t("admin.classes.validation.code", {
-				defaultValue: "Code is required",
-			}),
-		),
-		name: z.string().min(2, t("admin.classes.validation.name")),
-		totalCredits: z.coerce.number().int().min(0).default(0),
-	});
-
-type ClassFormData = z.infer<ReturnType<typeof buildClassSchema>>;
 
 interface Class {
 	id: string;
@@ -142,34 +91,12 @@ interface Class {
 	studentCount: number;
 }
 
-type CycleLevelOption = RouterOutputs["studyCycles"]["listLevels"][number] & {
-	cycle: {
-		id: string;
-		name: string;
-		code: string | null;
-	};
-};
-
-type SemesterOption = RouterOutputs["semesters"]["list"][number];
-
 export default function ClassManagement() {
 	const navigate = useNavigate();
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [programSearch, setProgramSearch] = useState("");
-	const [programOptionSearch, setProgramOptionSearch] = useState("");
-	const [cycleLevelSearch, setCycleLevelSearch] = useState("");
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
-	const [isBulkGenOpen, setIsBulkGenOpen] = useState(false);
-	const [isBulkExportOpen, setIsBulkExportOpen] = useState(false);
-	const [bulkGenYearId, setBulkGenYearId] = useState<string | null>(null);
-	const [bulkGenSourceYearId, setBulkGenSourceYearId] = useState<string | null>(
-		null,
-	);
 
 	const handleFilter =
 		<T,>(setter: (v: T) => void) =>
@@ -180,7 +107,6 @@ export default function ClassManagement() {
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
-	const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
 	const { data, isLoading } = useQuery(
 		trpc.classes.listPaged.queryOptions({
@@ -236,210 +162,6 @@ export default function ClassManagement() {
 		studentCount: c.studentCount ?? 0,
 	}));
 	const selection = useRowSelection(classes ?? []);
-
-	const { confirm, ConfirmDialog } = useConfirm();
-
-	const { data: defaultPrograms = [] } = useQuery({
-		queryKey: ["programs"],
-		queryFn: async () => {
-			const { items } = await trpcClient.programs.list.query({ limit: 100 });
-			return items;
-		},
-	});
-
-	const { data: searchPrograms = [] } = useQuery({
-		queryKey: ["programs", "search", programSearch],
-		queryFn: async () => {
-			const items = await trpcClient.programs.search.query({
-				query: programSearch,
-			});
-			return items;
-		},
-		enabled: programSearch.length >= 2,
-	});
-
-	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
-
-	const { data: academicYearsRaw } = useQuery({
-		queryKey: ["academicYears"],
-		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({});
-			return items;
-		},
-	});
-	const academicYears = Array.isArray(academicYearsRaw) ? academicYearsRaw : [];
-
-	const form = useForm<ClassFormData>({
-		resolver: zodResolver(classSchema),
-		defaultValues: {
-			programId: "",
-			academicYearId: "",
-			cycleLevelId: "",
-			programOptionId: "",
-			semesterId: "",
-			code: "",
-			name: "",
-			totalCredits: 0,
-		},
-	});
-
-	const { watch, setValue } = form;
-
-	const selectedProgramId = watch("programId");
-	const selectedAcademicYearId = watch("academicYearId");
-	const selectedProgram = useMemo(
-		() => programs?.find((p) => p.id === selectedProgramId),
-		[programs, selectedProgramId],
-	);
-
-	// Use the program's own cycleId — programs belong to a single study cycle
-	const programCycleId = selectedProgram?.cycleId ?? "";
-
-	const { data: defaultCycleLevels = [] } = useQuery({
-		queryKey: ["cycleLevelsByProgram", programCycleId],
-		queryFn: async () => {
-			if (!programCycleId) return [] as CycleLevelOption[];
-			// Get the cycle metadata so we can attach it to each level
-			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				limit: 100,
-			});
-			const cycle = cycles.find((c) => c.id === programCycleId);
-			if (!cycle) return [];
-			const levelList = await trpcClient.studyCycles.listLevels.query({
-				cycleId: programCycleId,
-			});
-			return levelList.map((level) => ({
-				...level,
-				cycle: { id: cycle.id, name: cycle.name, code: cycle.code },
-			})) as CycleLevelOption[];
-		},
-		enabled: Boolean(programCycleId),
-	});
-
-	const { data: searchCycleLevels = [] } = useQuery({
-		queryKey: ["cycleLevels", "search", cycleLevelSearch, programCycleId],
-		queryFn: async () => {
-			if (!programCycleId) return [] as CycleLevelOption[];
-			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				limit: 100,
-			});
-			const cycle = cycles.find((c) => c.id === programCycleId);
-			if (!cycle) return [];
-			const items = await trpcClient.cycleLevels.search.query({
-				query: cycleLevelSearch,
-				cycleId: programCycleId,
-			});
-			return items.map((level) => ({
-				...level,
-				cycle: { id: cycle.id, name: cycle.name, code: cycle.code },
-			})) as CycleLevelOption[];
-		},
-		enabled: Boolean(programCycleId) && cycleLevelSearch.length >= 2,
-	});
-
-	const cycleLevels =
-		cycleLevelSearch.length >= 2 ? searchCycleLevels : defaultCycleLevels;
-	const cycleLevelId = watch("cycleLevelId");
-	const selectedCycleLevel = useMemo(
-		() => cycleLevels.find((level) => level.id === cycleLevelId),
-		[cycleLevels, cycleLevelId],
-	);
-
-	const { data: semestersData } = useQuery({
-		queryKey: ["semesters"],
-		queryFn: () => trpcClient.semesters.list.query(),
-	});
-	const semesters = semestersData?.items;
-	const semesterId = watch("semesterId");
-	const selectedSemester = useMemo(
-		() => semesters?.find((semester) => semester.id === semesterId),
-		[semesters, semesterId],
-	);
-
-	useEffect(() => {
-		if (!selectedProgram) {
-			setValue("cycleLevelId", "");
-		}
-	}, [selectedProgram, setValue]);
-
-	useEffect(() => {
-		if (!cycleLevels.length) return;
-		if (
-			!cycleLevelId ||
-			!cycleLevels.some((level) => level.id === cycleLevelId)
-		) {
-			setValue("cycleLevelId", cycleLevels[0].id);
-		}
-	}, [cycleLevels, cycleLevelId, setValue]);
-
-	const { data: defaultProgramOptions = [] } = useQuery({
-		queryKey: ["programOptions", selectedProgram?.id],
-		queryFn: async () => {
-			if (!selectedProgram) return [];
-			const { items } = await trpcClient.programOptions.list.query({
-				programId: selectedProgram.id,
-				limit: 100,
-			});
-			return items;
-		},
-		enabled: Boolean(selectedProgram?.id),
-	});
-
-	const { data: searchProgramOptions = [] } = useQuery({
-		queryKey: [
-			"programOptions",
-			"search",
-			programOptionSearch,
-			selectedProgram?.id,
-		],
-		queryFn: async () => {
-			if (!selectedProgram) return [];
-			const items = await trpcClient.programOptions.search.query({
-				query: programOptionSearch,
-				programId: selectedProgram.id,
-			});
-			return items;
-		},
-		enabled: Boolean(selectedProgram?.id) && programOptionSearch.length >= 2,
-	});
-
-	const programOptions =
-		programOptionSearch.length >= 2
-			? searchProgramOptions
-			: defaultProgramOptions;
-	const programOptionId = watch("programOptionId");
-	const selectedProgramOption = useMemo(
-		() => programOptions.find((option) => option.id === programOptionId),
-		[programOptions, programOptionId],
-	);
-
-	useEffect(() => {
-		if (!selectedProgram) {
-			setValue("programOptionId", "");
-		}
-	}, [selectedProgram, setValue]);
-
-	useEffect(() => {
-		if (!programOptions.length) return;
-		if (
-			!programOptionId ||
-			!programOptions.some((option) => option.id === programOptionId)
-		) {
-			setValue("programOptionId", programOptions[0].id);
-		}
-	}, [programOptions, programOptionId, setValue]);
-
-	useEffect(() => {
-		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
-		if (selectedProgramOption && year) {
-			const startYear = new Date(year.startDate).getFullYear();
-			const endYear = new Date(year.endDate).getFullYear();
-			setValue(
-				"name",
-				`${selectedProgramOption.name} (${startYear}-${endYear})`,
-			);
-		}
-	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
 
 	const handleExportStudentListPDF = async (classData: Class) => {
 		// New pipeline: render via the institution's `student_list` template
@@ -761,65 +483,15 @@ export default function ClassManagement() {
 		}
 	};
 
-	const classCodes = useMemo(
-		() => (classes ?? []).map((cls) => cls.code).filter(Boolean),
-		[classes],
-	);
-	const codeValue = watch("code");
-	const codeDirty = Boolean(form.formState.dirtyFields.code);
-	useEffect(() => {
-		if (codeDirty) return;
-		if (!selectedProgram?.code) return;
-		if (!selectedSemester?.code) return;
-		const suggestion = generateClassCode({
-			programCode: selectedProgram.code,
-			levelCode: selectedCycleLevel?.code,
-			semesterCode: selectedSemester.code,
+	const classCodes = classes.map((cls) => cls.code).filter(Boolean);
+
+	const openCreate = async () => {
+		const created = await ClassFormDialog.call({
+			defaults: { academicYearId: filterYear ?? undefined },
 			existingCodes: classCodes,
 		});
-		if (suggestion && codeValue !== suggestion) {
-			setValue("code", suggestion, { shouldDirty: false });
-		}
-	}, [
-		classCodes,
-		codeDirty,
-		codeValue,
-		selectedProgram?.code,
-		selectedCycleLevel?.code,
-		selectedSemester?.code,
-		setValue,
-	]);
-
-	const createMutation = useMutation({
-		mutationFn: async (data: ClassFormData) => {
-			return await trpcClient.classes.create.mutate({
-				name: data.name,
-				program: data.programId,
-				academicYear: data.academicYearId,
-				cycleLevelId: data.cycleLevelId,
-				programOptionId: data.programOptionId,
-				semesterId: data.semesterId || undefined,
-				code: data.code,
-				totalCredits: data.totalCredits,
-			});
-		},
-		onSuccess: (newClass) => {
-			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
-			toast.success(t("admin.classes.toast.createSuccess"));
-			setIsFormOpen(false);
-			form.reset();
-			if (newClass?.id) {
-				navigate(`/admin/classes/${newClass.id}/details`);
-			}
-		},
-		onError: (error: unknown) => {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: t("admin.classes.toast.createError");
-			toast.error(message);
-		},
-	});
+		if (created?.id) navigate(`/admin/classes/${created.id}/details`);
+	};
 
 	const deleteMutation = useMutation({
 		mutationFn: async (id: string) => {
@@ -828,8 +500,6 @@ export default function ClassManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(t("admin.classes.toast.deleteSuccess"));
-			setIsDeleteOpen(false);
-			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -863,47 +533,25 @@ export default function ClassManagement() {
 			),
 	});
 
-	const bulkGenerateMutation = useMutation({
-		mutationFn: () =>
-			trpcClient.classes.bulkGenerate.mutate({
-				academicYearId: bulkGenYearId!,
-				sourceAcademicYearId: bulkGenSourceYearId ?? undefined,
-			}),
-		onSuccess: (result) => {
-			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
-			toast.success(
-				t("admin.classes.toast.bulkGenerateSuccess", {
-					created: result.created,
-					skipped: result.skipped,
-					defaultValue: `${result.created} classe(s) créée(s), ${result.skipped} ignorée(s)`,
-				}),
-			);
-			setIsBulkGenOpen(false);
-			setBulkGenYearId(null);
-		},
-		onError: (err) => toast.error((err as Error).message),
-	});
-
-	const onSubmit = async (data: ClassFormData) => {
-		createMutation.mutate(data);
-	};
-
 	const openDeleteModal = (id: string) => {
-		setDeleteId(id);
-		setIsDeleteOpen(true);
-	};
-
-	const handleDelete = () => {
-		if (deleteId) {
-			deleteMutation.mutate(deleteId);
-		}
+		const studentCount = classes.find((c) => c.id === id)?.studentCount ?? 0;
+		return confirmAction({
+			title: t("admin.classes.delete.title"),
+			message:
+				studentCount > 0
+					? t("admin.classes.delete.messageWithStudents", {
+							count: studentCount,
+						})
+					: t("admin.classes.delete.message"),
+			confirmText: t("common.actions.delete"),
+			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
+		});
 	};
 
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<span className="loading loading-spinner loading-lg" />
-				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -919,7 +567,7 @@ export default function ClassManagement() {
 					<Button
 						type="button"
 						variant="outline"
-						onClick={() => setIsBulkGenOpen(true)}
+						onClick={() => BulkGenerateClassesDialog.call()}
 					>
 						<Wand2 className="mr-2 h-4 w-4" />
 						{t("admin.classes.actions.bulkGenerate", {
@@ -929,7 +577,7 @@ export default function ClassManagement() {
 					<Button
 						type="button"
 						variant="outline"
-						onClick={() => setIsBulkExportOpen(true)}
+						onClick={() => BulkClassExportDialog.call({ classes })}
 						disabled={classes.length === 0}
 					>
 						<Download className="mr-2 h-4 w-4" />
@@ -937,10 +585,7 @@ export default function ClassManagement() {
 					</Button>
 					<Button
 						type="button"
-						onClick={() => {
-							form.reset();
-							setIsFormOpen(true);
-						}}
+						onClick={openCreate}
 						className="btn btn-primary"
 					>
 						<Plus className="mr-2 h-5 w-5" />
@@ -991,7 +636,7 @@ export default function ClassManagement() {
 					variant="destructive"
 					size="sm"
 					onClick={() =>
-						confirm({
+						confirmAction({
 							title: t("common.bulkActions.confirmDeleteTitle", {
 								defaultValue: "Delete selected items?",
 							}),
@@ -1023,10 +668,7 @@ export default function ClassManagement() {
 						</p>
 						<Button
 							type="button"
-							onClick={() => {
-								form.reset();
-								setIsFormOpen(true);
-							}}
+							onClick={openCreate}
 							className="btn btn-primary mt-4"
 						>
 							<Plus className="mr-2 h-4 w-4" />
@@ -1272,362 +914,117 @@ export default function ClassManagement() {
 					setPage(1);
 				}}
 			/>
-
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={() => {
-					setIsFormOpen(false);
-					form.reset();
-				}}
-				title={t("admin.classes.form.createTitle")}
-			>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<CodedEntitySelect
-							items={programs}
-							onSearch={setProgramSearch}
-							value={
-								programs.find((p) => p.id === form.watch("programId"))?.code ||
-								null
-							}
-							onChange={(code) => {
-								const program = programs.find((p) => p.code === code);
-								form.setValue("programId", program?.id || "");
-							}}
-							label={t("admin.classes.form.programLabel")}
-							placeholder={t("admin.classes.form.programPlaceholder")}
-							error={form.formState.errors.programId?.message}
-							searchMode="hybrid"
-							getItemSubtitle={(program) => program.institutionInfo?.name || ""}
-							required
-						/>
-
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="academicYearId"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.classes.form.academicYearLabel")}
-										</FormLabel>
-										<FormControl>
-											<AcademicYearSelect
-												value={field.value || null}
-												onChange={field.onChange}
-												placeholder={t(
-													"admin.classes.form.academicYearPlaceholder",
-												)}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="semesterId"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classes.form.semesterLabel", {
-												defaultValue: "Semester",
-											})}
-										</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											value={field.value}
-											disabled={!semesters || semesters.length === 0}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.classes.form.semesterPlaceholder",
-															{ defaultValue: "Select a semester" },
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{semesters?.map((semester) => (
-													<SelectItem key={semester.id} value={semester.id}>
-														{semester.name} ({semester.code})
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-
-						<CodedEntitySelect
-							items={cycleLevels}
-							onSearch={setCycleLevelSearch}
-							value={
-								cycleLevels.find((l) => l.id === form.watch("cycleLevelId"))
-									?.code || null
-							}
-							onChange={(code) => {
-								const level = cycleLevels.find((l) => l.code === code);
-								form.setValue("cycleLevelId", level?.id || "");
-							}}
-							label={t("admin.classes.form.cycleLevelLabel", {
-								defaultValue: "Cycle level",
-							})}
-							placeholder={t("admin.classes.form.cycleLevelPlaceholder", {
-								defaultValue: "Select cycle level",
-							})}
-							error={form.formState.errors.cycleLevelId?.message}
-							searchMode="hybrid"
-							getItemSubtitle={(level) =>
-								`${level.cycle.name}${level.cycle.code ? ` (${level.cycle.code})` : ""}`
-							}
-							disabled={!selectedProgram || cycleLevels.length === 0}
-							emptyMessage={
-								!selectedProgram
-									? t("admin.classes.form.selectProgramFirst", {
-											defaultValue:
-												"Select a program to load its cycle levels.",
-										})
-									: t("admin.classes.form.emptyCycleLevels", {
-											defaultValue:
-												"No cycle levels available for the selected program's institution.",
-										})
-							}
-							required
-						/>
-						<CodedEntitySelect
-							items={programOptions}
-							onSearch={setProgramOptionSearch}
-							value={
-								programOptions.find(
-									(o) => o.id === form.watch("programOptionId"),
-								)?.code || null
-							}
-							onChange={(code) => {
-								const option = programOptions.find((o) => o.code === code);
-								form.setValue("programOptionId", option?.id || "");
-							}}
-							label={t("admin.classes.form.programOptionLabel", {
-								defaultValue: "Program option",
-							})}
-							placeholder={t("admin.classes.form.programOptionPlaceholder", {
-								defaultValue: "Select option",
-							})}
-							error={form.formState.errors.programOptionId?.message}
-							searchMode="hybrid"
-							disabled={!selectedProgram || programOptions.length === 0}
-							emptyMessage={
-								!selectedProgram
-									? t("admin.classes.form.selectProgramFirst", {
-											defaultValue: "Select a program to load its options.",
-										})
-									: "No options available"
-							}
-							required
-						/>
-
-						<div className="grid gap-4 sm:grid-cols-3">
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.classes.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												{...field}
-												placeholder={t("admin.classes.form.codePlaceholder", {
-													defaultValue: "INF11-01",
-												})}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
-										<FormControl>
-											<Input {...field} readOnly />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="totalCredits"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classes.form.totalCreditsLabel", {
-												defaultValue: "Total credits",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												{...field}
-												type="number"
-												min={0}
-												placeholder={t(
-													"admin.classes.form.totalCreditsPlaceholder",
-													{ defaultValue: "e.g. 30" },
-												)}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-
-						<DialogFooter className="gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => {
-									setIsFormOpen(false);
-									form.reset();
-								}}
-							>
-								{t("common.actions.cancel")}
-							</Button>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
-								{form.formState.isSubmitting ? (
-									<Spinner className="mr-2 h-4 w-4" />
-								) : (
-									t("admin.classes.form.createSubmit")
-								)}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</FormModal>
-
-			<ConfirmModal
-				isOpen={isDeleteOpen}
-				onClose={() => {
-					setIsDeleteOpen(false);
-					setDeleteId(null);
-				}}
-				onConfirm={handleDelete}
-				title={t("admin.classes.delete.title")}
-				message={(() => {
-					const studentCount =
-						classes.find((c) => c.id === deleteId)?.studentCount ?? 0;
-					return studentCount > 0
-						? t("admin.classes.delete.messageWithStudents", {
-								count: studentCount,
-							})
-						: t("admin.classes.delete.message");
-				})()}
-				confirmText={t("common.actions.delete")}
-				isLoading={deleteMutation.isPending}
-			/>
-			{/* Bulk Generate Dialog */}
-			<Dialog
-				open={isBulkGenOpen}
-				onOpenChange={(o) => {
-					if (!o) {
-						setIsBulkGenOpen(false);
-						setBulkGenYearId(null);
-						setBulkGenSourceYearId(null);
-					}
-				}}
-			>
-				<DialogContent className="max-w-md">
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.classes.bulkGenerate.title", {
-								defaultValue: "Générer toutes les classes",
-							})}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.classes.bulkGenerate.description", {
-								defaultValue:
-									"Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées.",
-							})}
-						</DialogDescription>
-					</DialogHeader>
-					<DialogBody className="space-y-4">
-						<div className="space-y-2">
-							<Label>
-								{t("admin.classes.bulkGenerate.yearLabel", {
-									defaultValue: "Année académique cible",
-								})}
-							</Label>
-							<AcademicYearSelect
-								value={bulkGenYearId}
-								onChange={setBulkGenYearId}
-								autoSelectActive
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>
-								{t("admin.classes.bulkGenerate.sourceYearLabel", {
-									defaultValue: "Cloner les affectations depuis (optionnel)",
-								})}
-							</Label>
-							<AcademicYearSelect
-								value={bulkGenSourceYearId}
-								onChange={setBulkGenSourceYearId}
-								autoSelectActive={false}
-								placeholder="Aucune (optionnel)"
-							/>
-							<p className="text-muted-foreground text-xs">
-								{t("admin.classes.bulkGenerate.sourceYearHint", {
-									defaultValue:
-										"Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes.",
-								})}
-							</p>
-						</div>
-					</DialogBody>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => {
-								setIsBulkGenOpen(false);
-								setBulkGenYearId(null);
-								setBulkGenSourceYearId(null);
-							}}
-						>
-							{t("common.actions.cancel")}
-						</Button>
-						<Button
-							onClick={() => bulkGenerateMutation.mutate()}
-							disabled={!bulkGenYearId || bulkGenerateMutation.isPending}
-						>
-							{bulkGenerateMutation.isPending && (
-								<Spinner className="mr-2 h-4 w-4 animate-spin" />
-							)}
-							{t("admin.classes.bulkGenerate.submit", {
-								defaultValue: "Générer",
-							})}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-
-			<BulkClassExportDialog
-				open={isBulkExportOpen}
-				onOpenChange={setIsBulkExportOpen}
-				classes={classes}
-			/>
 		</div>
 	);
 }
+
+/**
+ * Generates every program × option × level class of a year (optionally
+ * cloning teacher assignments from another year); resolves with the counts.
+ */
+export const BulkGenerateClassesDialog = createCallable<
+	void,
+	RouterOutputs["classes"]["bulkGenerate"] | undefined
+>(({ call }) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [yearId, setYearId] = useState<string | null>(null);
+	const [sourceYearId, setSourceYearId] = useState<string | null>(null);
+
+	const generate = useMutationFlow(call, async (call) => {
+		if (!yearId) return;
+		try {
+			const result = await trpcClient.classes.bulkGenerate.mutate({
+				academicYearId: yearId,
+				sourceAcademicYearId: sourceYearId ?? undefined,
+			});
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
+			toast.success(
+				t("admin.classes.toast.bulkGenerateSuccess", {
+					created: result.created,
+					skipped: result.skipped,
+					defaultValue: `${result.created} classe(s) créée(s), ${result.skipped} ignorée(s)`,
+				}),
+			);
+			call.end(result);
+		} catch (err) {
+			toast.error((err as Error).message);
+		}
+	});
+
+	return (
+		<Dialog
+			open={!call.ended}
+			onOpenChange={(o) => !o && !generate.pending && call.end(undefined)}
+		>
+			<DialogContent className="max-w-md">
+				<DialogHeader>
+					<DialogTitle>
+						{t("admin.classes.bulkGenerate.title", {
+							defaultValue: "Générer toutes les classes",
+						})}
+					</DialogTitle>
+					<DialogDescription>
+						{t("admin.classes.bulkGenerate.description", {
+							defaultValue:
+								"Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées.",
+						})}
+					</DialogDescription>
+				</DialogHeader>
+				<DialogBody className="space-y-4">
+					<div className="space-y-2">
+						<Label>
+							{t("admin.classes.bulkGenerate.yearLabel", {
+								defaultValue: "Année académique cible",
+							})}
+						</Label>
+						<AcademicYearSelect
+							value={yearId}
+							onChange={setYearId}
+							autoSelectActive
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label>
+							{t("admin.classes.bulkGenerate.sourceYearLabel", {
+								defaultValue: "Cloner les affectations depuis (optionnel)",
+							})}
+						</Label>
+						<AcademicYearSelect
+							value={sourceYearId}
+							onChange={setSourceYearId}
+							autoSelectActive={false}
+							placeholder="Aucune (optionnel)"
+						/>
+						<p className="text-muted-foreground text-xs">
+							{t("admin.classes.bulkGenerate.sourceYearHint", {
+								defaultValue:
+									"Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes.",
+							})}
+						</p>
+					</div>
+				</DialogBody>
+				<DialogFooter>
+					<Button
+						variant="outline"
+						disabled={generate.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.actions.cancel")}
+					</Button>
+					<Button
+						onClick={() => generate()}
+						disabled={!yearId || generate.pending}
+					>
+						{generate.pending && (
+							<Spinner className="mr-2 h-4 w-4 animate-spin" />
+						)}
+						{t("admin.classes.bulkGenerate.submit", {
+							defaultValue: "Générer",
+						})}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}, DIALOG_EXIT_MS);

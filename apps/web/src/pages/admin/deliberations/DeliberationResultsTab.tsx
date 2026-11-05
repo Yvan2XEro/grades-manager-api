@@ -183,8 +183,8 @@ export default function DeliberationResultsTab() {
 		isOpen,
 		isClosed,
 		isSigned,
-		setOverrideStudent,
-		setPromoteOpen,
+		overrideDecision,
+		promoteAdmitted,
 	} = useDeliberationContext();
 
 	const results = delib.studentResults ?? [];
@@ -211,7 +211,7 @@ export default function DeliberationResultsTab() {
 							</p>
 						</div>
 					</div>
-					<Button onClick={() => setPromoteOpen(true)}>
+					<Button onClick={promoteAdmitted}>
 						<UserCheck className="mr-2 h-4 w-4" />
 						{t("admin.deliberations.promote.button")}
 					</Button>
@@ -303,7 +303,7 @@ export default function DeliberationResultsTab() {
 									result={r}
 									isOpen={isOpen}
 									onOverride={() =>
-										setOverrideStudent({
+										overrideDecision({
 											studentResultId: r.id,
 											studentName:
 												`${r.student?.profile?.firstName ?? ""} ${r.student?.profile?.lastName ?? ""}`.trim(),

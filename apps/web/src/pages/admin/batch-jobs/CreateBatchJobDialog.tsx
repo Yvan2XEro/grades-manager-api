@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Button } from "../../../components/ui/button";
@@ -23,20 +25,12 @@ import {
 } from "../../../components/ui/select";
 import { trpcClient } from "../../../utils/trpc";
 
-interface CreateBatchJobDialogProps {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-}
-
 const JOB_TYPES = [
 	"creditLedger.recompute",
 	"studentFacts.refreshClass",
 ] as const;
 
-export function CreateBatchJobDialog({
-	open,
-	onOpenChange,
-}: CreateBatchJobDialogProps) {
+export const CreateBatchJobDialog = createCallable<void, void>(({ call }) => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 
@@ -55,7 +49,7 @@ export function CreateBatchJobDialog({
 			const { items } = await trpcClient.classes.list.query({});
 			return items;
 		},
-		enabled: open,
+		enabled: true,
 	});
 
 	const previewMutation = useMutation({
@@ -95,7 +89,7 @@ export function CreateBatchJobDialog({
 		setAcademicYearId("");
 		setClassId("");
 		setPreviewData(null);
-		onOpenChange(false);
+		call.end();
 	}
 
 	function buildParams(): Record<string, unknown> {
@@ -118,7 +112,7 @@ export function CreateBatchJobDialog({
 	const classes = classesQuery.data ?? [];
 
 	return (
-		<Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && handleClose()}>
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
 					<DialogTitle>
@@ -264,4 +258,4 @@ export function CreateBatchJobDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);

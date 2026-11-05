@@ -10,6 +10,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { confirmAction } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +27,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -87,7 +87,6 @@ const RegistrationNumberFormatDetail = () => {
 	const queryClient = useQueryClient();
 	const { formatId } = useParams<{ formatId: string }>();
 	const isCreateMode = !formatId || formatId === "+" || formatId === "new";
-	const { confirm, ConfirmDialog } = useConfirm();
 
 	const [draft, setDraft] = useState<DraftFormat>(createEmptyDraft());
 	const [previewClassId, setPreviewClassId] = useState("");
@@ -375,7 +374,7 @@ const RegistrationNumberFormatDetail = () => {
 						<Button
 							variant="destructive"
 							onClick={() =>
-								confirm({
+								confirmAction({
 									title: t(
 										"admin.registrationNumbers.list.confirmDeleteTitle",
 										{ defaultValue: "Delete format?" },
@@ -961,7 +960,6 @@ const RegistrationNumberFormatDetail = () => {
 					</Card>
 				</div>
 			</div>
-			<ConfirmDialog />
 		</div>
 	);
 };

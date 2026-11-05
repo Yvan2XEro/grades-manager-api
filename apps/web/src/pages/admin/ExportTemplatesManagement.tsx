@@ -2,11 +2,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Pencil, Plus, Settings, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { z } from "zod";
-import ConfirmModal from "@/components/modals/ConfirmModal";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
@@ -22,15 +28,6 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Empty, EmptyContent, EmptyHeader } from "@/components/ui/empty";
 import {
 	Form,
@@ -59,7 +56,6 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -98,11 +94,6 @@ export default function ExportTemplatesManagement() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const [isRenameOpen, setIsRenameOpen] = useState(false);
-	const [renamingTemplate, setRenamingTemplate] =
-		useState<ExportTemplate | null>(null);
-	const [deletingTemplate, setDeletingTemplate] =
-		useState<ExportTemplate | null>(null);
 	const [selectedType, setSelectedType] = useState<string>("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
@@ -113,17 +104,6 @@ export default function ExportTemplatesManagement() {
 			setter(v);
 			setPage(1);
 		};
-
-	const renameSchema = z.object({
-		name: z.string().min(2, t("admin.exportTemplates.validation.name")),
-	});
-
-	const renameForm = useForm<{ name: string }>({
-		resolver: zodResolver(renameSchema),
-		defaultValues: {
-			name: "",
-		},
-	});
 
 	// Fetch templates
 	const { data, isLoading } = useQuery(
@@ -148,30 +128,6 @@ export default function ExportTemplatesManagement() {
 	const templateItems = data?.items ?? [];
 	const selection = useRowSelection(templateItems);
 
-	const { confirm, ConfirmDialog } = useConfirm();
-
-	// Rename mutation
-	const renameMutation = useMutation({
-		mutationFn: async (values: { name: string }) => {
-			if (!renamingTemplate) return;
-			await trpcClient.exportTemplates.update.mutate({
-				id: renamingTemplate.id,
-				name: values.name,
-			});
-		},
-		onSuccess: () => {
-			toast.success(t("admin.exportTemplates.toast.updateSuccess"));
-			queryClient.invalidateQueries(trpc.exportTemplates.listPaged.queryKey());
-			setIsRenameOpen(false);
-			setRenamingTemplate(null);
-		},
-		onError: (error: any) => {
-			toast.error(
-				error.message || t("admin.exportTemplates.toast.updateError"),
-			);
-		},
-	});
-
 	// Delete mutation
 	const deleteMutation = useMutation({
 		mutationFn: async (id: string) => {
@@ -180,7 +136,6 @@ export default function ExportTemplatesManagement() {
 		onSuccess: () => {
 			toast.success(t("admin.exportTemplates.toast.deleteSuccess"));
 			queryClient.invalidateQueries(trpc.exportTemplates.listPaged.queryKey());
-			setDeletingTemplate(null);
 		},
 		onError: (error: any) => {
 			toast.error(
@@ -325,27 +280,18 @@ export default function ExportTemplatesManagement() {
 			),
 	});
 
-	const handleOpenRename = (template: ExportTemplate) => {
-		setRenamingTemplate(template);
-		renameForm.reset({ name: template.name });
-		setIsRenameOpen(true);
-	};
+	const handleOpenRename = (template: ExportTemplate) =>
+		RenameTemplateDialog.call({ template });
 
-	const handleCloseRename = () => {
-		setIsRenameOpen(false);
-		setRenamingTemplate(null);
-		renameForm.reset();
-	};
-
-	const handleRename = (values: { name: string }) => {
-		renameMutation.mutate(values);
-	};
-
-	const handleDelete = () => {
-		if (deletingTemplate) {
-			deleteMutation.mutate(deletingTemplate.id);
-		}
-	};
+	const confirmDelete = (template: ExportTemplate) =>
+		confirmAction({
+			title: t("admin.exportTemplates.delete.title"),
+			message: t("admin.exportTemplates.delete.message", {
+				name: template.name,
+			}),
+			onConfirm: () =>
+				deleteMutation.mutateAsync(template.id).catch(() => undefined),
+		});
 
 	const handleSetDefault = (template: ExportTemplate) => {
 		setDefaultMutation.mutate({ id: template.id, type: template.type });
@@ -436,7 +382,7 @@ export default function ExportTemplatesManagement() {
 							variant="destructive"
 							size="sm"
 							onClick={() =>
-								confirm({
+								confirmAction({
 									title: t("common.bulkActions.confirmDeleteTitle", {
 										defaultValue: "Delete selected items?",
 									}),
@@ -520,7 +466,7 @@ export default function ExportTemplatesManagement() {
 												<ContextMenuSeparator />
 												<ContextMenuItem
 													variant="destructive"
-													onSelect={() => setDeletingTemplate(template)}
+													onSelect={() => confirmDelete(template)}
 												>
 													<span>{t("common.actions.delete")}</span>
 												</ContextMenuItem>
@@ -590,7 +536,7 @@ export default function ExportTemplatesManagement() {
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() => setDeletingTemplate(template)}
+													onClick={() => confirmDelete(template)}
 													disabled={template.isDefault}
 													title={t("admin.exportTemplates.actions.delete")}
 												>
@@ -640,74 +586,93 @@ export default function ExportTemplatesManagement() {
 			/>
 
 			{/* Rename Dialog */}
-			<Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
-				<DialogContent className="max-w-md">
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.exportTemplates.form.renameTitle")}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.exportTemplates.form.renameDescription")}
-						</DialogDescription>
-					</DialogHeader>
-					<DialogBody>
-						<Form {...renameForm}>
-							<form
-								onSubmit={renameForm.handleSubmit(handleRename)}
-								className="space-y-4"
-							>
-								<FormField
-									control={renameForm.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.exportTemplates.form.name")}
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder={t(
-														"admin.exportTemplates.form.namePlaceholder",
-													)}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<DialogFooter>
-									<Button
-										type="button"
-										variant="outline"
-										onClick={handleCloseRename}
-									>
-										{t("common.actions.cancel")}
-									</Button>
-									<Button type="submit" disabled={renameMutation.isPending}>
-										{renameMutation.isPending && <Spinner className="mr-2" />}
-										{t("common.actions.save")}
-									</Button>
-								</DialogFooter>
-							</form>
-						</Form>
-					</DialogBody>
-				</DialogContent>
-			</Dialog>
-
-			{/* Delete Confirmation */}
-			<ConfirmModal
-				isOpen={!!deletingTemplate}
-				onClose={() => setDeletingTemplate(null)}
-				onConfirm={handleDelete}
-				title={t("admin.exportTemplates.delete.title")}
-				message={t("admin.exportTemplates.delete.message", {
-					name: deletingTemplate?.name,
-				})}
-				isLoading={deleteMutation.isPending}
-			/>
-			<ConfirmDialog />
 		</div>
 	);
 }
+
+/** Renames an export template; resolves `true` once saved. */
+export const RenameTemplateDialog = createCallable<
+	{ template: ExportTemplate },
+	boolean
+>(({ call, template }) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const form = useForm<{ name: string }>({
+		resolver: zodResolver(
+			z.object({
+				name: z.string().min(2, t("admin.exportTemplates.validation.name")),
+			}),
+		),
+		defaultValues: { name: template.name },
+	});
+
+	const rename = useMutationFlow(
+		call,
+		async (call, values: { name: string }) => {
+			try {
+				await trpcClient.exportTemplates.update.mutate({
+					id: template.id,
+					name: values.name,
+				});
+				toast.success(t("admin.exportTemplates.toast.updateSuccess"));
+				queryClient.invalidateQueries({
+					queryKey: trpc.exportTemplates.listPaged.queryKey(),
+				});
+				call.end(true);
+			} catch (error) {
+				toast.error(
+					(error as Error).message ||
+						t("admin.exportTemplates.toast.updateError"),
+				);
+			}
+		},
+	);
+
+	return (
+		<CallableDialog
+			call={call}
+			dismissValue={false}
+			preventDismiss={rename.pending}
+			className="sm:max-w-md"
+			title={t("admin.exportTemplates.form.renameTitle")}
+			description={t("admin.exportTemplates.form.renameDescription")}
+		>
+			<Form {...form}>
+				<form onSubmit={form.handleSubmit(rename)} className="space-y-4">
+					<FormField
+						control={form.control}
+						name="name"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("admin.exportTemplates.form.name")}</FormLabel>
+								<FormControl>
+									<Input
+										placeholder={t(
+											"admin.exportTemplates.form.namePlaceholder",
+										)}
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+						<Button
+							type="button"
+							variant="outline"
+							disabled={rename.pending}
+							onClick={() => call.end(false)}
+						>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button type="submit" disabled={rename.pending}>
+							{rename.pending && <Spinner className="mr-2" />}
+							{t("common.actions.save")}
+						</Button>
+					</div>
+				</form>
+			</Form>
+		</CallableDialog>
+	);
+}, DIALOG_EXIT_MS);

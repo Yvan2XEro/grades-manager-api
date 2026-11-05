@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { confirmAction } from "@/components/callable/confirm";
 import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
@@ -40,7 +41,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
-import { useConfirm } from "../../hooks/useConfirm";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
@@ -225,8 +225,6 @@ export default function ClassCourseManagement() {
 
 	const selection = useRowSelection(displayedClassCourses);
 
-	const { confirm, ConfirmDialog } = useConfirm();
-
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
 			await Promise.all(
@@ -273,7 +271,6 @@ export default function ClassCourseManagement() {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-6 w-6 text-primary" />
-				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -307,7 +304,7 @@ export default function ClassCourseManagement() {
 					variant="destructive"
 					size="sm"
 					onClick={() =>
-						confirm({
+						confirmAction({
 							title: t("common.bulkActions.confirmDeleteTitle", {
 								defaultValue: "Delete selected items?",
 							}),

@@ -2,21 +2,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
-import ConfirmModal from "@/components/modals/ConfirmModal";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { ContextMenuItem } from "@/components/ui/context-menu";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	Empty,
 	EmptyDescription,
@@ -41,43 +38,10 @@ import { trpcClient } from "@/utils/trpc";
 export default function GradeAccessGrants() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const [addOpen, setAddOpen] = useState(false);
-	const [selectedProfileId, setSelectedProfileId] = useState<string>("");
-	const [revokeId, setRevokeId] = useState<string | null>(null);
 
 	const grantsQuery = useQuery({
 		queryKey: ["gradeAccessGrants"],
 		queryFn: () => trpcClient.gradeAccessGrants.list.query(),
-	});
-
-	const candidatesQuery = useQuery({
-		queryKey: ["gradeAccessGrants-candidates"],
-		enabled: addOpen,
-		queryFn: async () => {
-			const { items } = await trpcClient.users.list.query({
-				roles: [
-					"super_admin",
-					"administrator",
-					"dean",
-					"teacher",
-					"grade_editor",
-				],
-				limit: 200,
-			});
-			return items;
-		},
-	});
-
-	const grantMutation = useMutation({
-		mutationFn: (profileId: string) =>
-			trpcClient.gradeAccessGrants.grant.mutate({ profileId }),
-		onSuccess: () => {
-			toast.success(t("admin.gradeAccessGrants.toast.granted"));
-			queryClient.invalidateQueries({ queryKey: ["gradeAccessGrants"] });
-			setAddOpen(false);
-			setSelectedProfileId("");
-		},
-		onError: (err) => toast.error((err as Error).message),
 	});
 
 	const revokeMutation = useMutation({
@@ -86,10 +50,17 @@ export default function GradeAccessGrants() {
 		onSuccess: () => {
 			toast.success(t("admin.gradeAccessGrants.toast.revoked"));
 			queryClient.invalidateQueries({ queryKey: ["gradeAccessGrants"] });
-			setRevokeId(null);
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
+
+	const confirmRevoke = (id: string) =>
+		confirmAction({
+			title: t("admin.gradeAccessGrants.revoke.title"),
+			message: t("admin.gradeAccessGrants.revoke.message"),
+			confirmText: t("admin.gradeAccessGrants.actions.revoke"),
+			onConfirm: () => revokeMutation.mutateAsync(id).catch(() => undefined),
+		});
 
 	const grants = Array.isArray(grantsQuery.data) ? grantsQuery.data : [];
 
@@ -108,7 +79,7 @@ export default function GradeAccessGrants() {
 						</p>
 					</div>
 				</div>
-				<Button onClick={() => setAddOpen(true)}>
+				<Button onClick={() => GrantGradeAccessDialog.call()}>
 					<UserPlus className="mr-2 h-4 w-4" />
 					{t("admin.gradeAccessGrants.actions.add")}
 				</Button>
@@ -163,7 +134,7 @@ export default function GradeAccessGrants() {
 									actions={
 										<ContextMenuItem
 											variant="destructive"
-											onSelect={() => setRevokeId(g.id)}
+											onSelect={() => confirmRevoke(g.id)}
 										>
 											<Trash2 className="h-4 w-4" />
 											{t("admin.gradeAccessGrants.actions.revoke")}
@@ -198,7 +169,7 @@ export default function GradeAccessGrants() {
 											variant="ghost"
 											size="icon"
 											className="h-8 w-8 text-destructive hover:text-destructive"
-											onClick={() => setRevokeId(g.id)}
+											onClick={() => confirmRevoke(g.id)}
 										>
 											<Trash2 className="h-4 w-4" />
 										</Button>
@@ -209,74 +180,100 @@ export default function GradeAccessGrants() {
 					</Table>
 				)}
 			</div>
-
-			{/* Add delegate dialog */}
-			<Dialog
-				open={addOpen}
-				onOpenChange={(o) => {
-					setAddOpen(o);
-					if (!o) setSelectedProfileId("");
-				}}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.gradeAccessGrants.dialog.title")}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.gradeAccessGrants.dialog.description")}
-						</DialogDescription>
-					</DialogHeader>
-					<DialogBody className="space-y-3">
-						<Label>{t("admin.gradeAccessGrants.dialog.selectLabel")}</Label>
-						<Combobox
-							value={selectedProfileId}
-							onValueChange={setSelectedProfileId}
-							disabled={candidatesQuery.isLoading}
-							placeholder={t(
-								"admin.gradeAccessGrants.dialog.selectPlaceholder",
-							)}
-							searchPlaceholder={t("common.search", {
-								defaultValue: "Rechercher...",
-							})}
-							options={
-								candidatesQuery.data?.map((user) => ({
-									value: user.id,
-									label: `${user.firstName} ${user.lastName}`.trim(),
-									description: user.primaryEmail ?? undefined,
-								})) ?? []
-							}
-						/>
-					</DialogBody>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setAddOpen(false)}>
-							{t("common.actions.cancel")}
-						</Button>
-						<Button
-							disabled={!selectedProfileId || grantMutation.isPending}
-							onClick={() => {
-								if (selectedProfileId) grantMutation.mutate(selectedProfileId);
-							}}
-						>
-							{grantMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}
-							{t("admin.gradeAccessGrants.actions.grant")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-
-			{/* Revoke confirm */}
-			<ConfirmModal
-				isOpen={!!revokeId}
-				onClose={() => setRevokeId(null)}
-				title={t("admin.gradeAccessGrants.revoke.title")}
-				message={t("admin.gradeAccessGrants.revoke.message")}
-				confirmText={t("admin.gradeAccessGrants.actions.revoke")}
-				isLoading={revokeMutation.isPending}
-				onConfirm={() => {
-					if (revokeId) revokeMutation.mutate(revokeId);
-				}}
-			/>
 		</div>
 	);
 }
+
+/** Grants grade-editing access to a staff profile; resolves `true` once granted. */
+export const GrantGradeAccessDialog = createCallable<void, boolean>(
+	({ call }) => {
+		const { t } = useTranslation();
+		const queryClient = useQueryClient();
+		const [selectedProfileId, setSelectedProfileId] = useState("");
+
+		const candidatesQuery = useQuery({
+			queryKey: ["gradeAccessGrants-candidates"],
+			queryFn: async () => {
+				const { items } = await trpcClient.users.list.query({
+					roles: [
+						"super_admin",
+						"administrator",
+						"dean",
+						"teacher",
+						"grade_editor",
+					],
+					limit: 200,
+				});
+				return items;
+			},
+		});
+
+		const grant = useMutationFlow(call, async (call) => {
+			try {
+				await trpcClient.gradeAccessGrants.grant.mutate({
+					profileId: selectedProfileId,
+				});
+				toast.success(t("admin.gradeAccessGrants.toast.granted"));
+				queryClient.invalidateQueries({ queryKey: ["gradeAccessGrants"] });
+				call.end(true);
+			} catch (err) {
+				toast.error((err as Error).message);
+			}
+		});
+
+		return (
+			<CallableDialog
+				call={call}
+				dismissValue={false}
+				preventDismiss={grant.pending}
+				className="sm:max-w-lg"
+				title={t("admin.gradeAccessGrants.dialog.title")}
+				description={t("admin.gradeAccessGrants.dialog.description")}
+			>
+				<div className="space-y-3">
+					<Label>{t("admin.gradeAccessGrants.dialog.selectLabel")}</Label>
+					<Combobox
+						value={selectedProfileId}
+						onValueChange={setSelectedProfileId}
+						disabled={candidatesQuery.isLoading}
+						placeholder={t("admin.gradeAccessGrants.dialog.selectPlaceholder")}
+						searchPlaceholder={t("common.search", {
+							defaultValue: "Rechercher...",
+						})}
+						options={
+							candidatesQuery.data?.map(
+								(user: {
+									id: string;
+									firstName: string;
+									lastName: string;
+									primaryEmail?: string | null;
+								}) => ({
+									value: user.id,
+									label: `${user.firstName} ${user.lastName}`.trim(),
+									description: user.primaryEmail ?? undefined,
+								}),
+							) ?? []
+						}
+					/>
+				</div>
+				<div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
+					<Button
+						variant="outline"
+						disabled={grant.pending}
+						onClick={() => call.end(false)}
+					>
+						{t("common.actions.cancel")}
+					</Button>
+					<Button
+						disabled={!selectedProfileId || grant.pending}
+						onClick={() => grant()}
+					>
+						{grant.pending && <Spinner className="mr-2 h-4 w-4" />}
+						{t("admin.gradeAccessGrants.actions.grant")}
+					</Button>
+				</div>
+			</CallableDialog>
+		);
+	},
+	DIALOG_EXIT_MS,
+);

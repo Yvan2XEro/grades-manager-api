@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { confirmAction } from "@/components/callable/confirm";
 import { toast } from "@/lib/toast";
-import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import {
@@ -45,7 +44,6 @@ export default function CenterManagement() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const centersQuery = useQuery({
 		queryKey: ["centers"],
@@ -68,10 +66,21 @@ export default function CenterManagement() {
 				}),
 			);
 			queryClient.invalidateQueries({ queryKey: ["centers"] });
-			setDeleteId(null);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
+
+	const confirmDelete = (id: string) =>
+		confirmAction({
+			title: t("admin.centers.delete.title", {
+				defaultValue: "Supprimer le centre",
+			}),
+			message: t("admin.centers.delete.message", {
+				defaultValue:
+					"Êtes-vous sûr de vouloir supprimer ce centre ? Cette action est irréversible.",
+			}),
+			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
+		});
 
 	return (
 		<div className="space-y-6">
@@ -156,7 +165,7 @@ export default function CenterManagement() {
 												<ContextMenuSeparator />
 												<ContextMenuItem
 													variant="destructive"
-													onSelect={() => setDeleteId(center.id)}
+													onSelect={() => confirmDelete(center.id)}
 												>
 													<Trash2 className="h-4 w-4" />
 													{t("common.actions.delete")}
@@ -218,7 +227,7 @@ export default function CenterManagement() {
 											<Button
 												variant="ghost"
 												size="icon"
-												onClick={() => setDeleteId(center.id)}
+												onClick={() => confirmDelete(center.id)}
 											>
 												<Trash2 className="h-4 w-4 text-destructive" />
 											</Button>
@@ -258,20 +267,6 @@ export default function CenterManagement() {
 					)}
 				</CardContent>
 			</Card>
-
-			<ConfirmModal
-				isOpen={Boolean(deleteId)}
-				onClose={() => setDeleteId(null)}
-				onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
-				title={t("admin.centers.delete.title", {
-					defaultValue: "Supprimer le centre",
-				})}
-				message={t("admin.centers.delete.message", {
-					defaultValue:
-						"Êtes-vous sûr de vouloir supprimer ce centre ? Cette action est irréversible.",
-				})}
-				isLoading={deleteMutation.isPending}
-			/>
 		</div>
 	);
 }

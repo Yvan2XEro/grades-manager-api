@@ -4,11 +4,14 @@ import {
 	CheckCircle2,
 	FileCheck2,
 	GraduationCap,
+	Plus,
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
+import { ClassFormDialog } from "@/components/callable/forms/ClassFormDialog";
+import { QuickCreate } from "@/components/callable/quick-create";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -64,6 +68,25 @@ export default function AdmissionDetail() {
 			? k.program === app.programId && k.academicYear === app.academicYearId
 			: true,
 	);
+
+	// Creates the missing class of the application's program and year in place,
+	// inserts it into the options cache feeding the select, then selects it.
+	const createClass = async () => {
+		if (!app) return;
+		const { programId, academicYearId } = app as {
+			programId: string;
+			academicYearId: string;
+		};
+		const created = await ClassFormDialog.call({
+			defaults: { programId, academicYearId },
+			lockAcademicYear: true,
+		});
+		if (!created) return;
+		queryClient.setQueryData(trpc.admissions.publicOptions.queryKey(), (old) =>
+			old ? { ...old, classes: upsertInList(old.classes, created) } : old,
+		);
+		setTargetClassId(created.id);
+	};
 
 	const invalidate = () => {
 		queryClient.invalidateQueries({
@@ -678,6 +701,7 @@ export default function AdmissionDetail() {
 							registrationNumber={registrationNumber}
 							setRegistrationNumber={setRegistrationNumber}
 							onConvert={() => convertMutation.mutate()}
+							onCreateClass={createClass}
 							isPending={convertMutation.isPending}
 							t={t}
 						/>
@@ -728,6 +752,7 @@ function ConvertSection({
 	registrationNumber,
 	setRegistrationNumber,
 	onConvert,
+	onCreateClass,
 	isPending,
 	t,
 }: {
@@ -743,6 +768,8 @@ function ConvertSection({
 	registrationNumber: string;
 	setRegistrationNumber: (v: string) => void;
 	onConvert: () => void;
+	/** Opens the nested class form to create the missing class in place. */
+	onCreateClass: () => Promise<void>;
 	isPending: boolean;
 	t: (k: string) => string;
 }) {
@@ -797,6 +824,16 @@ function ConvertSection({
 							<p className="mt-1 text-amber-700 text-xs dark:text-amber-400">
 								{t("admissions.admin.noClassesHint")}
 							</p>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="mt-3"
+								onClick={onCreateClass}
+							>
+								<Plus className="mr-2 size-4" />
+								{t("admin.classes.actions.add")}
+							</Button>
 						</div>
 					) : (
 						<div className="space-y-1.5">
@@ -804,25 +841,30 @@ function ConvertSection({
 								{t("admissions.fields.class")}{" "}
 								<span className="text-destructive">*</span>
 							</Label>
-							<Select value={targetClassId} onValueChange={setTargetClassId}>
-								<SelectTrigger
-									className={!targetClassId ? "border-amber-400" : ""}
-								>
-									<SelectValue
-										placeholder={t("admissions.admin.selectClass")}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									{classes.map((k) => (
-										<SelectItem key={k.id} value={k.id}>
-											<span className="font-medium">{k.name}</span>
-											<span className="ml-2 text-muted-foreground text-xs">
-												({k.code})
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<QuickCreate
+								onCreate={onCreateClass}
+								label={t("admin.classes.actions.add")}
+							>
+								<Select value={targetClassId} onValueChange={setTargetClassId}>
+									<SelectTrigger
+										className={!targetClassId ? "border-amber-400" : ""}
+									>
+										<SelectValue
+											placeholder={t("admissions.admin.selectClass")}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{classes.map((k) => (
+											<SelectItem key={k.id} value={k.id}>
+												<span className="font-medium">{k.name}</span>
+												<span className="ml-2 text-muted-foreground text-xs">
+													({k.code})
+												</span>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</QuickCreate>
 						</div>
 					)}
 

@@ -2,15 +2,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
+import {
+	fetchTeachers,
+	TEACHERS_KEY,
+} from "@/components/callable/forms/CourseFormDialog";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import { generateCourseCode } from "@/lib/code-generator";
 import { toast } from "@/lib/toast";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -99,12 +108,6 @@ export function TeachingUnitCoursesTable({
 }: TeachingUnitCoursesTableProps) {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["teaching-unit-courses", teachingUnitId],
@@ -129,20 +132,8 @@ export function TeachingUnitCoursesTable({
 	});
 
 	const { data: teachers } = useQuery({
-		queryKey: ["teachers"],
-		queryFn: async () => {
-			const { items } = await trpcClient.users.list.query({
-				role: "teacher",
-				limit: 200,
-			});
-			return items;
-		},
-	});
-
-	const { data: program } = useQuery({
-		queryKey: ["program", programId],
-		queryFn: () => trpcClient.programs.getById.query({ id: programId }),
-		enabled: Boolean(programId),
+		queryKey: TEACHERS_KEY,
+		queryFn: fetchTeachers,
 	});
 
 	const teacherOptions = teachers ?? [];
@@ -162,120 +153,31 @@ export function TeachingUnitCoursesTable({
 		[teacherOptions, formatTeacherName],
 	);
 
-	const form = useForm<CourseFormData>({
-		resolver: zodResolver(courseSchema),
-	});
-	const codeValue = form.watch("code");
-	const codeDirty = Boolean(form.formState.dirtyFields.code);
-	const courseCodes = useMemo(
-		() => (courses ?? []).map((course) => course.code).filter(Boolean),
-		[courses],
-	);
-	useEffect(() => {
-		if (editingCourse) return;
-		if (codeDirty) return;
-		if (!program?.code) return;
-		const suggestion = generateCourseCode({
-			programCode: program.code,
+	const courseCodes = (courses ?? [])
+		.map((course) => course.code)
+		.filter(Boolean);
+
+	const openCreate = () =>
+		UeCourseFormDialog.call({
+			teachingUnitId,
+			programId,
 			semesterCode,
 			existingCodes: courseCodes,
 		});
-		if (suggestion && codeValue !== suggestion) {
-			form.setValue("code", suggestion, { shouldDirty: false });
-		}
-	}, [
-		codeDirty,
-		codeValue,
-		courseCodes,
-		editingCourse,
-		form,
-		program?.code,
-		semesterCode,
-	]);
 
-	const openCreate = () => {
-		setEditingCourse(null);
-		form.reset({
-			name: "",
-			hours: undefined as unknown as number,
-			code: "",
-			defaultTeacher: "",
-			defaultCoefficient: 1,
+	const openEdit = (course: Course) =>
+		UeCourseFormDialog.call({
+			teachingUnitId,
+			programId,
+			semesterCode,
+			existingCodes: courseCodes,
+			course,
 		});
-		setIsFormOpen(true);
-	};
-
-	const openEdit = (course: Course) => {
-		setEditingCourse(course);
-		form.reset({
-			name: course.name,
-			hours: course.hours,
-			code: course.code,
-			defaultTeacher: course.defaultTeacher,
-			defaultCoefficient: course.defaultCoefficient,
-		});
-		setIsFormOpen(true);
-	};
-
-	const handleCloseForm = () => {
-		setEditingCourse(null);
-		form.reset({
-			name: "",
-			hours: undefined as unknown as number,
-			code: "",
-			defaultTeacher: "",
-			defaultCoefficient: 1,
-		});
-		setIsFormOpen(false);
-	};
 
 	const invalidateCourses = () =>
 		queryClient.invalidateQueries({
 			queryKey: ["teaching-unit-courses", teachingUnitId],
 		});
-
-	const createMutation = useMutation({
-		mutationFn: (data: CourseFormData) =>
-			trpcClient.courses.create.mutate({
-				...data,
-				program: programId,
-				teachingUnitId,
-			}),
-		onSuccess: () => {
-			toast.success(
-				t("admin.teachingUnits.courses.toast.createSuccess", {
-					defaultValue: "Element created",
-				}),
-			);
-			invalidateCourses();
-			handleCloseForm();
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const updateMutation = useMutation({
-		mutationFn: (data: CourseFormData & { id: string }) =>
-			trpcClient.courses.update.mutate({
-				id: data.id,
-				name: data.name,
-				hours: data.hours,
-				code: data.code,
-				defaultTeacher: data.defaultTeacher,
-				defaultCoefficient: data.defaultCoefficient,
-				program: programId,
-				teachingUnitId,
-			}),
-		onSuccess: () => {
-			toast.success(
-				t("admin.teachingUnits.courses.toast.updateSuccess", {
-					defaultValue: "Element updated",
-				}),
-			);
-			invalidateCourses();
-			handleCloseForm();
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
 
 	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.courses.delete.mutate({ id }),
@@ -286,19 +188,21 @@ export function TeachingUnitCoursesTable({
 				}),
 			);
 			invalidateCourses();
-			setIsDeleteOpen(false);
-			setDeleteId(null);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const onSubmit = (data: CourseFormData) => {
-		if (editingCourse) {
-			updateMutation.mutate({ ...data, id: editingCourse.id });
-		} else {
-			createMutation.mutate(data);
-		}
-	};
+	const confirmDelete = (id: string) =>
+		confirmAction({
+			title: t("admin.teachingUnits.courses.deleteTitle", {
+				defaultValue: "Delete element",
+			}),
+			message: t("admin.teachingUnits.courses.deleteMessage", {
+				defaultValue: "This action cannot be undone.",
+			}),
+			confirmText: t("common.actions.delete"),
+			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
+		});
 
 	if (!programId) {
 		return null;
@@ -391,8 +295,7 @@ export function TeachingUnitCoursesTable({
 													size="icon-sm"
 													className="text-destructive hover:text-destructive"
 													onClick={() => {
-														setDeleteId(course.id);
-														setIsDeleteOpen(true);
+														confirmDelete(course.id);
 													}}
 												>
 													<Trash2 className="h-4 w-4" />
@@ -412,12 +315,141 @@ export function TeachingUnitCoursesTable({
 					</p>
 				)}
 			</CardContent>
+		</Card>
+	);
+}
 
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={handleCloseForm}
+/**
+ * Creates or edits a course (EC) of a teaching unit; the code is suggested
+ * from the program and semester. Resolves `true` once saved.
+ */
+export const UeCourseFormDialog = createCallable<
+	{
+		teachingUnitId: string;
+		programId: string;
+		semesterCode?: string;
+		existingCodes: string[];
+		course?: Course;
+	},
+	boolean
+>(
+	({
+		call,
+		teachingUnitId,
+		programId,
+		semesterCode,
+		existingCodes,
+		course,
+	}) => {
+		const { t } = useTranslation();
+		const queryClient = useQueryClient();
+		const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
+
+		const { data: teachers } = useQuery({
+			queryKey: TEACHERS_KEY,
+			queryFn: fetchTeachers,
+		});
+		const teacherOptions = teachers ?? [];
+		const formatTeacherName = (teacher: Teacher) =>
+			[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
+			teacher.email;
+
+		const { data: program } = useQuery({
+			queryKey: ["program", programId],
+			queryFn: () => trpcClient.programs.getById.query({ id: programId }),
+			enabled: Boolean(programId),
+		});
+
+		const form = useForm<z.input<typeof courseSchema>, unknown, CourseFormData>(
+			{
+				resolver: zodResolver(courseSchema),
+				defaultValues: course
+					? {
+							name: course.name,
+							hours: course.hours,
+							code: course.code,
+							defaultTeacher: course.defaultTeacher,
+							defaultCoefficient: course.defaultCoefficient,
+						}
+					: {
+							name: "",
+							hours: undefined as unknown as number,
+							code: "",
+							defaultTeacher: "",
+							defaultCoefficient: 1,
+						},
+			},
+		);
+		const codeValue = form.watch("code");
+		const codeDirty = Boolean(form.formState.dirtyFields.code);
+		useEffect(() => {
+			if (course || codeDirty || !program?.code) return;
+			const suggestion = generateCourseCode({
+				programCode: program.code,
+				semesterCode,
+				existingCodes,
+			});
+			if (suggestion && codeValue !== suggestion) {
+				form.setValue("code", suggestion, { shouldDirty: false });
+			}
+		}, [
+			codeDirty,
+			codeValue,
+			existingCodes,
+			course,
+			form,
+			program?.code,
+			semesterCode,
+		]);
+
+		const submit = useMutationFlow(call, async (call, data: CourseFormData) => {
+			try {
+				if (course) {
+					await trpcClient.courses.update.mutate({
+						id: course.id,
+						name: data.name,
+						hours: data.hours,
+						code: data.code,
+						defaultTeacher: data.defaultTeacher,
+						defaultCoefficient: data.defaultCoefficient,
+						program: programId,
+						teachingUnitId,
+					});
+					toast.success(
+						t("admin.teachingUnits.courses.toast.updateSuccess", {
+							defaultValue: "Element updated",
+						}),
+					);
+				} else {
+					await trpcClient.courses.create.mutate({
+						...data,
+						program: programId,
+						teachingUnitId,
+					});
+					toast.success(
+						t("admin.teachingUnits.courses.toast.createSuccess", {
+							defaultValue: "Element created",
+						}),
+					);
+				}
+				queryClient.invalidateQueries({
+					queryKey: ["teaching-unit-courses", teachingUnitId],
+				});
+				queryClient.invalidateQueries({ queryKey: ["courses"] });
+				queryClient.invalidateQueries({ queryKey: ["course-options"] });
+				call.end(true);
+			} catch (error) {
+				toast.error((error as Error).message);
+			}
+		});
+
+		return (
+			<CallableDialog
+				call={call}
+				dismissValue={false}
+				preventDismiss={submit.pending}
 				title={
-					editingCourse
+					course
 						? t("admin.teachingUnits.courses.form.editTitle", {
 								defaultValue: "Edit element",
 							})
@@ -427,7 +459,7 @@ export function TeachingUnitCoursesTable({
 				}
 			>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form onSubmit={form.handleSubmit(submit)} className="space-y-4">
 						<FormField
 							control={form.control}
 							name="name"
@@ -569,46 +601,28 @@ export function TeachingUnitCoursesTable({
 						/>
 
 						<div className="flex justify-end gap-2">
-							<Button type="button" variant="outline" onClick={handleCloseForm}>
+							<Button
+								type="button"
+								variant="outline"
+								disabled={submit.pending}
+								onClick={() => call.end(false)}
+							>
 								{t("common.actions.cancel")}
 							</Button>
-							<Button
-								type="submit"
-								disabled={
-									form.formState.isSubmitting ||
-									createMutation.isPending ||
-									updateMutation.isPending
-								}
-							>
-								{form.formState.isSubmitting
+							<Button type="submit" disabled={submit.pending}>
+								{submit.pending
 									? t("common.actions.saving", {
 											defaultValue: "Saving...",
 										})
-									: editingCourse
+									: course
 										? t("common.actions.saveChanges")
 										: t("admin.teachingUnits.courses.form.submit")}
 							</Button>
 						</div>
 					</form>
 				</Form>
-			</FormModal>
-
-			<ConfirmModal
-				isOpen={isDeleteOpen}
-				onClose={() => {
-					setIsDeleteOpen(false);
-					setDeleteId(null);
-				}}
-				onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
-				title={t("admin.teachingUnits.courses.deleteTitle", {
-					defaultValue: "Delete element",
-				})}
-				message={t("admin.teachingUnits.courses.deleteMessage", {
-					defaultValue: "This action cannot be undone.",
-				})}
-				confirmText={t("common.actions.delete")}
-				isLoading={deleteMutation.isPending}
-			/>
-		</Card>
-	);
-}
+			</CallableDialog>
+		);
+	},
+	DIALOG_EXIT_MS,
+);

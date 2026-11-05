@@ -10,6 +10,8 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { ClassFormDialog } from "@/components/callable/forms/ClassFormDialog";
+import { QuickCreate } from "@/components/callable/quick-create";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,6 +42,7 @@ import {
 import { TablePagination } from "@/components/ui/table-pagination";
 import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/lib/hooks/use-debounce";
+import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -142,6 +145,25 @@ export default function AdmissionsManagement() {
 	const rows = listQuery.data?.rows ?? [];
 	const total = listQuery.data?.total ?? 0;
 	const pageCount = Math.ceil(total / PAGE_SIZE);
+
+	// Creates the missing class for the application's program and year in place,
+	// inserts it in the options feeding the select, then selects it.
+	const createClass = async () => {
+		if (!selected) return;
+		const { programId, academicYearId } = selected as {
+			programId: string;
+			academicYearId: string;
+		};
+		const created = await ClassFormDialog.call({
+			defaults: { programId, academicYearId },
+			lockAcademicYear: true,
+		});
+		if (!created) return;
+		queryClient.setQueryData(trpc.admissions.publicOptions.queryKey(), (old) =>
+			old ? { ...old, classes: upsertInList(old.classes, created) } : old,
+		);
+		setTargetClassId(created.id);
+	};
 
 	// ── Mutations ─────────────────────────────────────────────────────────────
 	const invalidate = () => {
@@ -452,6 +474,7 @@ export default function AdmissionsManagement() {
 								setRegistrationNumber={setRegistrationNumber}
 								targetClassId={targetClassId}
 								setTargetClassId={setTargetClassId}
+								onCreateClass={createClass}
 								onSetUnderReview={() => setUnderReview.mutate(selected.id)}
 								onReview={(status) =>
 									reviewApplication.mutate({
@@ -502,6 +525,7 @@ function ApplicationDrawer({
 	setRegistrationNumber,
 	targetClassId,
 	setTargetClassId,
+	onCreateClass,
 	onSetUnderReview,
 	onReview,
 	onReviewDocument,
@@ -520,6 +544,7 @@ function ApplicationDrawer({
 	setRegistrationNumber: (v: string) => void;
 	targetClassId: string;
 	setTargetClassId: (v: string) => void;
+	onCreateClass: () => Promise<void>;
 	onSetUnderReview: () => void;
 	onReview: (status: "accepted" | "rejected" | "waitlisted") => void;
 	onReviewDocument: (id: string, status: "valid" | "invalid") => void;
@@ -1036,20 +1061,28 @@ function ApplicationDrawer({
 						<div className="grid gap-3 sm:grid-cols-2">
 							<div className="space-y-1.5">
 								<Label>{t("admissions.fields.class")}</Label>
-								<Select value={targetClassId} onValueChange={setTargetClassId}>
-									<SelectTrigger>
-										<SelectValue
-											placeholder={t("admissions.admin.useApplicationClass")}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										{classes.map((k) => (
-											<SelectItem key={k.id} value={k.id}>
-												{k.name} ({k.code})
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<QuickCreate
+									onCreate={onCreateClass}
+									label={t("admin.classes.actions.add")}
+								>
+									<Select
+										value={targetClassId}
+										onValueChange={setTargetClassId}
+									>
+										<SelectTrigger>
+											<SelectValue
+												placeholder={t("admissions.admin.useApplicationClass")}
+											/>
+										</SelectTrigger>
+										<SelectContent>
+											{classes.map((k) => (
+												<SelectItem key={k.id} value={k.id}>
+													{k.name} ({k.code})
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</QuickCreate>
 							</div>
 							<div className="space-y-1.5">
 								<Label>{t("admissions.admin.registrationNumber")}</Label>

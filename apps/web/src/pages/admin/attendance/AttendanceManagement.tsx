@@ -13,22 +13,12 @@ import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { Checkbox } from "../../../components/ui/checkbox";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../../../components/ui/dialog";
 import {
 	Empty,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyTitle,
 } from "../../../components/ui/empty";
-import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import {
 	Select,
@@ -37,8 +27,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../../components/ui/select";
-import { Textarea } from "../../../components/ui/textarea";
 import { type RouterOutputs, trpc, trpcClient } from "../../../utils/trpc";
+import {
+	CreateAttendanceSessionDialog,
+	ExcuseAbsenceDialog,
+} from "./AttendanceDialogs";
 
 type AttendanceStatus = "present" | "absent" | "late" | "excused";
 type Session = RouterOutputs["attendance"]["listSessions"][number];
@@ -86,23 +79,6 @@ export default function AttendanceManagement() {
 	const [classCourseId, setClassCourseId] = useState<string | null>(null);
 	const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 	const [pendingSelectId, setPendingSelectId] = useState<string | null>(null);
-	const [newSessionDate, setNewSessionDate] = useState(
-		new Date().toISOString().slice(0, 10),
-	);
-	const [newCourseSessionId, setNewCourseSessionId] = useState<string | null>(
-		null,
-	);
-	const [isExceptional, setIsExceptional] = useState(false);
-	const [createDialogOpen, setCreateDialogOpen] = useState(false);
-	const [excuseDialogOpen, setExcuseDialogOpen] = useState(false);
-	const [excuseTarget, setExcuseTarget] = useState<{
-		recordId: string;
-		studentName: string;
-	} | null>(null);
-	const [excuseReason, setExcuseReason] = useState("");
-	const [excuseCategory, setExcuseCategory] = useState("");
-	const [justificationDocumentUrl, setJustificationDocumentUrl] = useState("");
-
 	const institutionQuery = useQuery(trpc.institutions.get.queryOptions());
 	const excusePolicy =
 		(
@@ -171,13 +147,6 @@ export default function AttendanceManagement() {
 		enabled: !!classCourseId,
 	});
 
-	const timetableSlotsQuery = useQuery({
-		...trpc.timetable.list.queryOptions({
-			classCourseId: classCourseId ?? "",
-		}),
-		enabled: !!classCourseId && createDialogOpen,
-	});
-
 	const invalidateSessions = () => {
 		queryClient.invalidateQueries(trpc.attendance.listSessions.queryFilter({}));
 	};
@@ -187,27 +156,6 @@ export default function AttendanceManagement() {
 				trpc.attendance.getSession.queryFilter({ id: selectedSession.id }),
 			);
 	};
-
-	const createSessionMutation = useMutation({
-		mutationFn: () =>
-			trpcClient.attendance.createSession.mutate({
-				classCourseId: classCourseId!,
-				sessionDate: newSessionDate,
-				courseSessionId: isExceptional
-					? undefined
-					: (newCourseSessionId ?? undefined),
-				isExceptional: isExceptional || undefined,
-			}),
-		onSuccess: (session) => {
-			toast.success(t("teacher.attendanceManagement.toast.sessionCreated"));
-			setCreateDialogOpen(false);
-			setNewCourseSessionId(null);
-			setIsExceptional(false);
-			setPendingSelectId(session.id);
-			invalidateSessions();
-		},
-		onError: (err) => toast.error(err.message),
-	});
 
 	const bulkMarkMutation = useMutation({
 		mutationFn: (records: { studentId: string; status: AttendanceStatus }[]) =>
@@ -243,51 +191,6 @@ export default function AttendanceManagement() {
 		onError: (err) => toast.error(err.message),
 	});
 
-	const excuseMutation = useMutation({
-		mutationFn: () =>
-			trpcClient.attendance.excuseAbsence.mutate({
-				attendanceRecordId: excuseTarget!.recordId,
-				excuseReason,
-				excuseCategory: excuseCategory || undefined,
-				justificationDocumentUrl: justificationDocumentUrl || undefined,
-				approve: true,
-			}),
-		onSuccess: () => {
-			toast.success(t("teacher.attendanceManagement.toast.excused"));
-			setExcuseDialogOpen(false);
-			setExcuseReason("");
-			setExcuseCategory("");
-			setJustificationDocumentUrl("");
-			invalidateDetail();
-			invalidateSessions();
-		},
-		onError: (err) => toast.error(err.message),
-	});
-
-	const uploadJustificationMutation = useMutation({
-		mutationFn: async (file: File) => {
-			const base64 = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => {
-					const result = String(reader.result ?? "");
-					resolve(result.includes(",") ? result.split(",")[1] : result);
-				};
-				reader.onerror = () => reject(reader.error);
-				reader.readAsDataURL(file);
-			});
-			return trpcClient.files.uploadAttendanceJustification.mutate({
-				filename: file.name,
-				mimeType: file.type || "application/octet-stream",
-				base64,
-			});
-		},
-		onSuccess: (stored) => {
-			setJustificationDocumentUrl(stored.url);
-			toast.success(t("teacher.attendanceManagement.toast.documentUploaded"));
-		},
-		onError: (err) => toast.error(err.message),
-	});
-
 	const sessionDetail = sessionDetailQuery.data;
 	const roster = rosterQuery.data ?? [];
 
@@ -305,11 +208,25 @@ export default function AttendanceManagement() {
 	}
 
 	function handleOpenExcuse(recordId: string, studentName: string) {
-		setExcuseTarget({ recordId, studentName });
-		setExcuseReason("");
-		setExcuseCategory("");
-		setJustificationDocumentUrl("");
-		setExcuseDialogOpen(true);
+		ExcuseAbsenceDialog.call({
+			recordId,
+			studentName,
+			acceptedCategories,
+			requiresDocument,
+			onExcused: () => {
+				invalidateDetail();
+				invalidateSessions();
+			},
+		});
+	}
+
+	async function handleCreateSession() {
+		if (!classCourseId) return;
+		const session = await CreateAttendanceSessionDialog.call({
+			classCourseId,
+			academicYearId,
+		});
+		if (session) setPendingSelectId(session.id);
 	}
 
 	function summaryStats() {
@@ -381,11 +298,7 @@ export default function AttendanceManagement() {
 
 				{classCourseId && (
 					<>
-						<Button
-							size="sm"
-							className="w-full"
-							onClick={() => setCreateDialogOpen(true)}
-						>
+						<Button size="sm" className="w-full" onClick={handleCreateSession}>
 							<Plus className="mr-1.5 h-3.5 w-3.5" />
 							{t("teacher.attendanceManagement.newSession")}
 						</Button>
@@ -677,199 +590,6 @@ export default function AttendanceManagement() {
 					</div>
 				)}
 			</div>
-			<Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("teacher.attendanceManagement.newSession")}
-						</DialogTitle>
-					</DialogHeader>
-					<DialogBody className="space-y-4">
-						<div>
-							<Label>{t("teacher.attendanceManagement.createSession")}</Label>
-							<Input
-								type="date"
-								className="mt-1"
-								value={newSessionDate}
-								onChange={(e) => setNewSessionDate(e.target.value)}
-							/>
-						</div>
-						{!isExceptional && (
-							<div>
-								<Label className="mb-1 block">
-									{t("teacher.attendanceManagement.timetableSlot")}
-								</Label>
-								<Select
-									value={newCourseSessionId ?? ""}
-									onValueChange={(v) => setNewCourseSessionId(v || null)}
-								>
-									<SelectTrigger>
-										<SelectValue
-											placeholder={t(
-												"teacher.attendanceManagement.timetableSlotPlaceholder",
-											)}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										{(timetableSlotsQuery.data ?? []).length === 0 ? (
-											<div className="px-3 py-2 text-muted-foreground text-sm">
-												{t("teacher.attendanceManagement.noSlots")}
-											</div>
-										) : (
-											(timetableSlotsQuery.data ?? []).map((slot) => (
-												<SelectItem key={slot.id} value={slot.id}>
-													{t(`teacher.timetable.days.${slot.dayOfWeek}`)}{" "}
-													{slot.startTime}–{slot.endTime}
-												</SelectItem>
-											))
-										)}
-									</SelectContent>
-								</Select>
-							</div>
-						)}
-						<div className="flex items-center gap-2">
-							<Checkbox
-								id="isExceptional"
-								checked={isExceptional}
-								onCheckedChange={(checked) => {
-									setIsExceptional(!!checked);
-									if (checked) setNewCourseSessionId(null);
-								}}
-							/>
-							<label htmlFor="isExceptional" className="cursor-pointer text-sm">
-								{t("teacher.attendanceManagement.isExceptional")}
-							</label>
-						</div>
-					</DialogBody>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => {
-								setCreateDialogOpen(false);
-								setNewCourseSessionId(null);
-								setIsExceptional(false);
-							}}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							onClick={() => createSessionMutation.mutate()}
-							disabled={
-								!classCourseId ||
-								!newSessionDate ||
-								(!isExceptional && !newCourseSessionId) ||
-								createSessionMutation.isPending
-							}
-						>
-							{t("common.create")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-			<Dialog open={excuseDialogOpen} onOpenChange={setExcuseDialogOpen}>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{t("teacher.attendanceManagement.excuse")}
-						</DialogTitle>
-					</DialogHeader>
-					<DialogBody className="space-y-3">
-						{excuseTarget && (
-							<p className="text-muted-foreground text-sm">
-								{t("teacher.attendanceManagement.student")}:{" "}
-								<span className="font-medium text-foreground">
-									{excuseTarget.studentName}
-								</span>
-							</p>
-						)}
-						{acceptedCategories.length > 0 && (
-							<div>
-								<Label>
-									{t("teacher.attendanceManagement.excuseCategory")}
-								</Label>
-								<Select
-									value={excuseCategory}
-									onValueChange={setExcuseCategory}
-								>
-									<SelectTrigger className="mt-1">
-										<SelectValue
-											placeholder={t(
-												"teacher.attendanceManagement.excuseCategoryPlaceholder",
-											)}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										{acceptedCategories.map((category) => (
-											<SelectItem key={category} value={category}>
-												{category}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						)}
-						<div>
-							<Label>{t("teacher.attendanceManagement.excuseReason")}</Label>
-							<Textarea
-								className="mt-1"
-								placeholder={t(
-									"teacher.attendanceManagement.excusePlaceholder",
-								)}
-								value={excuseReason}
-								onChange={(e) => setExcuseReason(e.target.value)}
-								rows={3}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>
-								{t("teacher.attendanceManagement.justificationDocument")}
-								{requiresDocument ? " *" : ""}
-							</Label>
-							<Input
-								type="file"
-								onChange={(event) => {
-									const file = event.target.files?.[0];
-									if (file) uploadJustificationMutation.mutate(file);
-								}}
-							/>
-							<Input
-								value={justificationDocumentUrl}
-								onChange={(event) =>
-									setJustificationDocumentUrl(event.target.value)
-								}
-								placeholder={t(
-									"teacher.attendanceManagement.justificationDocumentPlaceholder",
-								)}
-							/>
-							{uploadJustificationMutation.isPending && (
-								<p className="text-muted-foreground text-xs">
-									{t("teacher.attendanceManagement.uploadingDocument")}
-								</p>
-							)}
-						</div>
-					</DialogBody>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setExcuseDialogOpen(false)}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							onClick={() => excuseMutation.mutate()}
-							disabled={
-								!excuseReason.trim() ||
-								(acceptedCategories.length > 0 && !excuseCategory) ||
-								(requiresDocument && !justificationDocumentUrl.trim()) ||
-								excuseMutation.isPending ||
-								uploadJustificationMutation.isPending
-							}
-						>
-							{t("teacher.attendanceManagement.submitExcuse")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

@@ -13,7 +13,9 @@ import {
 	X,
 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { Badge } from "@/components/ui/badge";
@@ -56,17 +58,10 @@ type ExamItem = {
 
 // ─── Reject Dialog ────────────────────────────────────────────────────────────
 
-function RejectExamDialog({
-	examId,
-	examName,
-	open,
-	onClose,
-}: {
+export const DeanRejectExamDialog = createCallable<{
 	examId: string;
 	examName: string;
-	open: boolean;
-	onClose: () => void;
-}) {
+}>(({ call, examId, examName }) => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [reason, setReason] = useState("");
@@ -77,14 +72,14 @@ function RejectExamDialog({
 		onSuccess: () => {
 			toast.success(t("dean.approvals.rejected"));
 			queryClient.invalidateQueries({ queryKey: ["dean-exams"] });
-			onClose();
+			call.end();
 			setReason("");
 		},
 		onError: (e: Error) => toast.error(e.message),
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2 text-destructive">
@@ -104,7 +99,7 @@ function RejectExamDialog({
 					/>
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={onClose}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.cancel")}
 					</Button>
 					<Button
@@ -118,7 +113,7 @@ function RejectExamDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Exam Approval Card ───────────────────────────────────────────────────────
 
@@ -135,7 +130,6 @@ function ExamApprovalCard({
 }) {
 	const { t } = useTranslation();
 	const [expanded, setExpanded] = useState(false);
-	const [rejectOpen, setRejectOpen] = useState(false);
 
 	const gradesQuery = useQuery({
 		queryKey: ["dean-grades", exam.id],
@@ -247,7 +241,12 @@ function ExamApprovalCard({
 						size="sm"
 						variant="outline"
 						className="border-destructive/30 text-destructive hover:bg-destructive/5"
-						onClick={() => setRejectOpen(true)}
+						onClick={() =>
+							DeanRejectExamDialog.call({
+								examId: exam.id,
+								examName: exam.name,
+							})
+						}
 					>
 						<X className="mr-1 h-3.5 w-3.5" />
 						{t("dean.approvals.reject")}
@@ -342,13 +341,6 @@ function ExamApprovalCard({
 					)}
 				</div>
 			)}
-
-			<RejectExamDialog
-				examId={exam.id}
-				examName={exam.name}
-				open={rejectOpen}
-				onClose={() => setRejectOpen(false)}
-			/>
 		</div>
 	);
 }

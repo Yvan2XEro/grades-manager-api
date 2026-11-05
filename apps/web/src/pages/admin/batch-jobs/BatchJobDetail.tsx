@@ -13,18 +13,11 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../../../components/ui/dialog";
 import {
 	Select,
 	SelectContent,
@@ -57,9 +50,6 @@ export default function BatchJobDetail() {
 	const { jobId } = useParams<{ jobId: string }>();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(
-		null,
-	);
 	const [logLevel, setLogLevel] = useState<"all" | "info" | "warn" | "error">(
 		"all",
 	);
@@ -96,11 +86,9 @@ export default function BatchJobDetail() {
 		onSuccess: () => {
 			toast.success(t("admin.batchJobs.toast.cancelSuccess"));
 			invalidateJob();
-			setConfirmAction(null);
 		},
 		onError: (err) => {
 			toast.error((err as Error).message);
-			setConfirmAction(null);
 		},
 	});
 
@@ -110,15 +98,50 @@ export default function BatchJobDetail() {
 			toast.success(t("admin.batchJobs.toast.rollbackSuccess"));
 			invalidateJob();
 			invalidateList();
-			setConfirmAction(null);
 			// Navigate to the newly created rollback job
 			if (result?.id) navigate(`/admin/batch-jobs/${result.id}`);
 		},
 		onError: (err) => {
 			toast.error((err as Error).message);
-			setConfirmAction(null);
 		},
 	});
+
+	const confirmJobAction = (action: ConfirmAction) =>
+		Confirm.call({
+			title:
+				action === "cancel"
+					? t("admin.batchJobs.confirm.cancelTitle", {
+							defaultValue: "Cancel job?",
+						})
+					: t("admin.batchJobs.confirm.rollbackTitle", {
+							defaultValue: "Rollback job?",
+						}),
+			description:
+				action === "cancel"
+					? t("admin.batchJobs.confirm.cancelMessage", {
+							defaultValue:
+								"Cancelling will stop the job immediately. Partially processed data will not be reverted.",
+						})
+					: t("admin.batchJobs.confirm.rollbackMessage", {
+							defaultValue:
+								"A new rollback job will be created to undo the changes made by this job. This action cannot itself be undone.",
+						}),
+			confirmLabel:
+				action === "cancel"
+					? t("admin.batchJobs.actions.cancel")
+					: t("admin.batchJobs.actions.rollback"),
+			cancelLabel: t("common.cancel"),
+			mutationFn: async (call) => {
+				try {
+					if (action === "cancel") await cancelMutation.mutateAsync();
+					else await rollbackMutation.mutateAsync();
+				} catch {
+					// toast shown by the mutation
+				} finally {
+					call.end(true);
+				}
+			},
+		});
 
 	const job: BatchJob | undefined = jobQuery.data ?? undefined;
 
@@ -193,7 +216,7 @@ export default function BatchJobDetail() {
 					{canCancel && (
 						<Button
 							variant="outline"
-							onClick={() => setConfirmAction("cancel")}
+							onClick={() => confirmJobAction("cancel")}
 							disabled={cancelMutation.isPending}
 						>
 							{t("admin.batchJobs.actions.cancel")}
@@ -202,7 +225,7 @@ export default function BatchJobDetail() {
 					{canRollback && (
 						<Button
 							variant="outline"
-							onClick={() => setConfirmAction("rollback")}
+							onClick={() => confirmJobAction("rollback")}
 							disabled={rollbackMutation.isPending}
 						>
 							<RotateCcw className="mr-2 h-4 w-4" />
@@ -472,59 +495,6 @@ export default function BatchJobDetail() {
 			</div>
 
 			{/* Confirm cancel / rollback dialog */}
-			<Dialog
-				open={confirmAction !== null}
-				onOpenChange={(open) => {
-					if (!open) setConfirmAction(null);
-				}}
-			>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{confirmAction === "cancel"
-								? t("admin.batchJobs.confirm.cancelTitle", {
-										defaultValue: "Cancel job?",
-									})
-								: t("admin.batchJobs.confirm.rollbackTitle", {
-										defaultValue: "Rollback job?",
-									})}
-						</DialogTitle>
-					</DialogHeader>
-					<DialogBody>
-						<p className="text-muted-foreground text-sm">
-							{confirmAction === "cancel"
-								? t("admin.batchJobs.confirm.cancelMessage", {
-										defaultValue:
-											"Cancelling will stop the job immediately. Partially processed data will not be reverted.",
-									})
-								: t("admin.batchJobs.confirm.rollbackMessage", {
-										defaultValue:
-											"A new rollback job will be created to undo the changes made by this job. This action cannot itself be undone.",
-									})}
-						</p>
-					</DialogBody>
-					<DialogFooter className="gap-2">
-						<Button variant="outline" onClick={() => setConfirmAction(null)}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							variant="destructive"
-							disabled={cancelMutation.isPending || rollbackMutation.isPending}
-							onClick={() => {
-								if (confirmAction === "cancel") cancelMutation.mutate();
-								else rollbackMutation.mutate();
-							}}
-						>
-							{(cancelMutation.isPending || rollbackMutation.isPending) && (
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							)}
-							{confirmAction === "cancel"
-								? t("admin.batchJobs.actions.cancel")
-								: t("admin.batchJobs.actions.rollback")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

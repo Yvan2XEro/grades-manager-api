@@ -1,18 +1,11 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Confirm } from "@/components/callable/confirm";
+import { ClassFormDialog } from "@/components/callable/forms/ClassFormDialog";
+import { QuickCreate } from "@/components/callable/quick-create";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +28,7 @@ import { trpcClient } from "@/utils/trpc";
 
 export function ExecutePromotionPage() {
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const state = location.state as {
@@ -45,7 +39,6 @@ export function ExecutePromotionPage() {
 	} | null;
 
 	const [targetClassId, setTargetClassId] = useState<string>("");
-	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
 	// Fetch data
 	const { data: rule } = useQuery({
@@ -94,7 +87,51 @@ export function ExecutePromotionPage() {
 			return;
 		}
 
-		setShowConfirmDialog(true);
+		Confirm.call({
+			title: "Confirm Promotion Execution",
+			description: (
+				<>
+					{" "}
+					You are about to promote <strong>{state.studentIds.length}</strong>{" "}
+					student(s) from <strong>{sourceClass?.name}</strong> to{" "}
+					<strong>{classes.find((c) => c.id === targetClassId)?.name}</strong>
+					.
+					<br />
+					<br />
+					This action will:
+					<ul className="mt-2 list-inside list-disc space-y-1">
+						<li>Close current enrollments as "completed"</li>
+						<li>Create new enrollments in the target class</li>
+						<li>Update student class references</li>
+						<li>Record this action in the execution history</li>
+					</ul>
+					<br />
+					{useBatch && (
+						<>
+							<br />
+							This will run as a <strong>background batch job</strong> since
+							there are more than {BATCH_THRESHOLD} students.
+						</>
+					)}
+					<br />
+					This operation cannot be easily undone. Are you sure?
+				</>
+			),
+			confirmLabel: "Yes, Execute Promotion",
+			cancelLabel: "Cancel",
+			destructive: false,
+		}).then((confirmed) => confirmed && handleConfirmExecute());
+	};
+
+	// Creates the missing destination class in place (same program as the
+	// source class), refreshes the list and selects it.
+	const createTargetClass = async () => {
+		const created = await ClassFormDialog.call({
+			defaults: { programId: sourceClass?.program },
+		});
+		if (!created) return;
+		await queryClient.invalidateQueries({ queryKey: ["classes"] });
+		setTargetClassId(created.id);
 	};
 
 	// Batch job mutation for large promotions
@@ -148,7 +185,6 @@ export function ExecutePromotionPage() {
 		} else {
 			applyPromotionMutation.mutate(payload);
 		}
-		setShowConfirmDialog(false);
 	};
 
 	if (!state) {
@@ -252,20 +288,25 @@ export function ExecutePromotionPage() {
 				<CardContent className="space-y-6">
 					<div className="space-y-2">
 						<Label>Destination Class</Label>
-						<Select value={targetClassId} onValueChange={setTargetClassId}>
-							<SelectTrigger>
-								<SelectValue placeholder="Select the next class level" />
-							</SelectTrigger>
-							<SelectContent>
-								{classes
-									.filter((cls) => cls.id !== state.sourceClassId)
-									.map((cls) => (
-										<SelectItem key={cls.id} value={cls.id}>
-											{cls.name}
-										</SelectItem>
-									))}
-							</SelectContent>
-						</Select>
+						<QuickCreate
+							onCreate={createTargetClass}
+							label={t("admin.classes.actions.add")}
+						>
+							<Select value={targetClassId} onValueChange={setTargetClassId}>
+								<SelectTrigger>
+									<SelectValue placeholder="Select the next class level" />
+								</SelectTrigger>
+								<SelectContent>
+									{classes
+										.filter((cls) => cls.id !== state.sourceClassId)
+										.map((cls) => (
+											<SelectItem key={cls.id} value={cls.id}>
+												{cls.name}
+											</SelectItem>
+										))}
+								</SelectContent>
+							</Select>
+						</QuickCreate>
 						<p className="text-muted-foreground text-xs">
 							Students will be enrolled in this class for the next academic year
 						</p>
@@ -328,49 +369,6 @@ export function ExecutePromotionPage() {
 					)}
 				</Button>
 			</div>
-
-			{/* Confirmation Dialog */}
-			<AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Confirm Promotion Execution</AlertDialogTitle>
-						<AlertDialogDescription>
-							You are about to promote{" "}
-							<strong>{state.studentIds.length}</strong> student(s) from{" "}
-							<strong>{sourceClass?.name}</strong> to{" "}
-							<strong>
-								{classes.find((c) => c.id === targetClassId)?.name}
-							</strong>
-							.
-							<br />
-							<br />
-							This action will:
-							<ul className="mt-2 list-inside list-disc space-y-1">
-								<li>Close current enrollments as "completed"</li>
-								<li>Create new enrollments in the target class</li>
-								<li>Update student class references</li>
-								<li>Record this action in the execution history</li>
-							</ul>
-							<br />
-							{useBatch && (
-								<>
-									<br />
-									This will run as a <strong>background batch job</strong> since
-									there are more than {BATCH_THRESHOLD} students.
-								</>
-							)}
-							<br />
-							This operation cannot be easily undone. Are you sure?
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={handleConfirmExecute}>
-							Yes, Execute Promotion
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }

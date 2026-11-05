@@ -1,6 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Download, FileText } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -34,86 +37,10 @@ interface Props {
 }
 
 export function ExportStudentListButton({
-	classId,
-	programId,
-	academicYearId,
-	studentIds,
 	label = "Exporter (template)",
+	...filters
 }: Props) {
-	const [open, setOpen] = useState(false);
-	const [templateId, setTemplateId] = useState<string>("");
-	const [format, setFormat] = useState<"pdf" | "html">("pdf");
-	const [demoMode, setDemoMode] = useState(false);
-	const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-
-	const { data: templates } = useQuery({
-		queryKey: ["templates-student-list"],
-		queryFn: async () => {
-			const res = await trpcClient.exportTemplates.list.query({
-				type: "student_list",
-				limit: 100,
-			});
-			return (
-				res as {
-					items: Array<{ id: string; name: string; isDefault: boolean }>;
-				}
-			).items;
-		},
-		enabled: open,
-	});
-
-	const generate = useMutation({
-		mutationFn: async () => {
-			const result =
-				await trpcClient.academicDocuments.generateStudentList.mutate({
-					classId,
-					programId,
-					academicYearId,
-					studentIds,
-					templateId: templateId || undefined,
-					format,
-					demoMode,
-				});
-			return result as {
-				data: string;
-				filename: string;
-				mimeType: string;
-				usedTemplate: {
-					id: string | null;
-					name: string;
-					variant: "standard" | "center";
-					isSystemDefault: boolean;
-				};
-			};
-		},
-		onSuccess: (result) => {
-			const t = result.usedTemplate;
-			toast.success(
-				`Modèle utilisé : ${t.name}${t.variant === "center" ? " (centre)" : ""}`,
-			);
-			if (result.mimeType === "text/html") {
-				setPreviewHtml(result.data);
-				return;
-			}
-			const byteChars = atob(result.data);
-			const byteNumbers = new Array(byteChars.length);
-			for (let i = 0; i < byteChars.length; i++) {
-				byteNumbers[i] = byteChars.charCodeAt(i);
-			}
-			const blob = new Blob([new Uint8Array(byteNumbers)], {
-				type: result.mimeType,
-			});
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = result.filename;
-			a.click();
-			URL.revokeObjectURL(url);
-			setOpen(false);
-		},
-		onError: (err: any) => toast.error(err.message || "Échec de la génération"),
-	});
-
+	const { classId, programId, academicYearId, studentIds } = filters;
 	const hasFilter =
 		classId ||
 		programId ||
@@ -121,23 +48,109 @@ export function ExportStudentListButton({
 		(studentIds && studentIds.length > 0);
 
 	return (
-		<>
-			<Button
-				size="sm"
-				variant="outline"
-				onClick={() => setOpen(true)}
-				disabled={!hasFilter}
-				title={
-					hasFilter
-						? "Exporter cette liste avec un template officiel"
-						: "Sélectionnez d'abord une classe, un programme ou une année"
-				}
-			>
-				<FileText className="mr-1 h-4 w-4" />
-				{label}
-			</Button>
+		<Button
+			size="sm"
+			variant="outline"
+			onClick={() => ExportStudentListDialog.call(filters)}
+			disabled={!hasFilter}
+			title={
+				hasFilter
+					? "Exporter cette liste avec un template officiel"
+					: "Sélectionnez d'abord une classe, un programme ou une année"
+			}
+		>
+			<FileText className="mr-1 h-4 w-4" />
+			{label}
+		</Button>
+	);
+}
 
-			<Dialog open={open} onOpenChange={setOpen}>
+/**
+ * Exports a student list with an official template: downloads the PDF, or
+ * opens an HTML preview on top of the dialog.
+ */
+export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
+	({ call, classId, programId, academicYearId, studentIds }) => {
+		const [templateId, setTemplateId] = useState<string>("");
+		const [format, setFormat] = useState<"pdf" | "html">("pdf");
+		const [demoMode, setDemoMode] = useState(false);
+
+		const { data: templates } = useQuery({
+			queryKey: ["templates-student-list"],
+			queryFn: async () => {
+				const res = await trpcClient.exportTemplates.list.query({
+					type: "student_list",
+					limit: 100,
+				});
+				return (
+					res as {
+						items: Array<{ id: string; name: string; isDefault: boolean }>;
+					}
+				).items;
+			},
+		});
+
+		const generate = useMutation({
+			mutationFn: async () => {
+				const result =
+					await trpcClient.academicDocuments.generateStudentList.mutate({
+						classId,
+						programId,
+						academicYearId,
+						studentIds,
+						templateId: templateId || undefined,
+						format,
+						demoMode,
+					});
+				return result as {
+					data: string;
+					filename: string;
+					mimeType: string;
+					usedTemplate: {
+						id: string | null;
+						name: string;
+						variant: "standard" | "center";
+						isSystemDefault: boolean;
+					};
+				};
+			},
+			onSuccess: (result) => {
+				const t = result.usedTemplate;
+				toast.success(
+					`Modèle utilisé : ${t.name}${t.variant === "center" ? " (centre)" : ""}`,
+				);
+				if (result.mimeType === "text/html") {
+					DocumentPreviewDialog.call({
+						title: "Aperçu HTML — Liste d'étudiants",
+						html: result.data,
+					});
+					return;
+				}
+				const byteChars = atob(result.data);
+				const byteNumbers = new Array(byteChars.length);
+				for (let i = 0; i < byteChars.length; i++) {
+					byteNumbers[i] = byteChars.charCodeAt(i);
+				}
+				const blob = new Blob([new Uint8Array(byteNumbers)], {
+					type: result.mimeType,
+				});
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = result.filename;
+				a.click();
+				URL.revokeObjectURL(url);
+				call.end();
+			},
+			onError: (err: any) =>
+				toast.error(err.message || "Échec de la génération"),
+		});
+
+		return (
+			<Dialog
+				open={!call.ended}
+				onOpenChange={(o) => !o && !generate.isPending && call.end()}
+			>
 				<DialogContent className="max-w-md">
 					<DialogHeader>
 						<DialogTitle>Exporter la liste d'étudiants</DialogTitle>
@@ -200,7 +213,11 @@ export function ExportStudentListButton({
 						</div>
 					</div>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setOpen(false)}>
+						<Button
+							variant="outline"
+							disabled={generate.isPending}
+							onClick={() => call.end()}
+						>
 							Annuler
 						</Button>
 						<Button
@@ -214,26 +231,7 @@ export function ExportStudentListButton({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-
-			<Dialog
-				open={!!previewHtml}
-				onOpenChange={(o) => !o && setPreviewHtml(null)}
-			>
-				<DialogContent className="flex h-[85vh] max-w-6xl flex-col">
-					<DialogHeader>
-						<DialogTitle>Aperçu HTML — Liste d'étudiants</DialogTitle>
-					</DialogHeader>
-					<div className="mx-6 mb-6 flex-1 overflow-hidden rounded border">
-						{previewHtml && (
-							<iframe
-								title="Aperçu"
-								className="h-full w-full bg-white"
-								srcDoc={previewHtml}
-							/>
-						)}
-					</div>
-				</DialogContent>
-			</Dialog>
-		</>
-	);
-}
+		);
+	},
+	DIALOG_EXIT_MS,
+);

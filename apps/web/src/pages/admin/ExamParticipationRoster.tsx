@@ -1,17 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	Empty,
 	EmptyDescription,
@@ -28,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 
 type ExamItem = { id: string; name: string; classCourse: string };
@@ -40,13 +39,6 @@ export default function ExamParticipationRoster() {
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [classCourseId, setClassCourseId] = useState<string | null>(null);
 	const [examId, setExamId] = useState<string | null>(null);
-	const [overrideDialog, setOverrideDialog] = useState<{
-		studentId: string;
-		studentName: string | null;
-		currentEligible: boolean;
-	} | null>(null);
-	const [overrideEligible, setOverrideEligible] = useState(true);
-	const [overrideReason, setOverrideReason] = useState("");
 
 	const { data: classCourses } = useQuery({
 		queryKey: ["classCourses-for-participation", academicYearId],
@@ -116,27 +108,6 @@ export default function ExamParticipationRoster() {
 		},
 	});
 
-	const overrideMutation = useMutation({
-		mutationFn: (vars: {
-			studentId: string;
-			eligible: boolean;
-			reason: string | null;
-		}) =>
-			trpcClient.attendance.overrideEligibility.mutate({
-				examId: examId!,
-				studentId: vars.studentId,
-				eligible: vars.eligible,
-				reason: vars.reason,
-			}),
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: trpc.attendance.getExamRoster.queryKey({ examId: examId! }),
-			});
-			setOverrideDialog(null);
-			setOverrideReason("");
-		},
-	});
-
 	const rows = rosterQuery.data ?? [];
 	const status = rosterStatusQuery.data;
 	const isLocked = status?.locked ?? false;
@@ -147,9 +118,9 @@ export default function ExamParticipationRoster() {
 		studentName: string | null;
 		eligible: boolean;
 	}) {
-		setOverrideEligible(!row.eligible);
-		setOverrideReason("");
-		setOverrideDialog({
+		if (!examId) return;
+		ParticipationOverrideDialog.call({
+			examId,
 			studentId: row.studentId,
 			studentName: row.studentName,
 			currentEligible: row.eligible,
@@ -368,84 +339,95 @@ export default function ExamParticipationRoster() {
 			)}
 
 			{/* Override eligibility dialog */}
-			<Dialog
-				open={!!overrideDialog}
-				onOpenChange={(open) => {
-					if (!open) {
-						setOverrideDialog(null);
-						setOverrideReason("");
-					}
-				}}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.examParticipation.overrideDialog.title")}
-						</DialogTitle>
-						<DialogDescription>
-							{overrideDialog?.studentName ?? overrideDialog?.studentId}
-						</DialogDescription>
-					</DialogHeader>
-					<div className="space-y-3">
-						<div className="flex gap-2">
-							<Button
-								variant={overrideEligible ? "default" : "outline"}
-								size="sm"
-								onClick={() => setOverrideEligible(true)}
-							>
-								{t("admin.examParticipation.yes")}
-							</Button>
-							<Button
-								variant={!overrideEligible ? "destructive" : "outline"}
-								size="sm"
-								onClick={() => setOverrideEligible(false)}
-							>
-								{t("admin.examParticipation.no")}
-							</Button>
-						</div>
-						<div className="space-y-1">
-							<Label className="text-xs">
-								{t("admin.examParticipation.overrideDialog.reason")}
-							</Label>
-							<Textarea
-								rows={2}
-								value={overrideReason}
-								onChange={(e) => setOverrideReason(e.target.value)}
-								placeholder={t(
-									"admin.examParticipation.overrideDialog.reasonPlaceholder",
-								)}
-							/>
-						</div>
-					</div>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => {
-								setOverrideDialog(null);
-								setOverrideReason("");
-							}}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							disabled={overrideMutation.isPending}
-							onClick={() => {
-								if (!overrideDialog) return;
-								overrideMutation.mutate({
-									studentId: overrideDialog.studentId,
-									eligible: overrideEligible,
-									reason: overrideReason.trim() || null,
-								});
-							}}
-						>
-							{overrideMutation.isPending ? (
-								<Spinner className="mr-2 h-3 w-3" />
-							) : null}
-							{t("common.save")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }
+
+/** Overrides a student's exam participation eligibility; resolves `true` once saved. */
+export const ParticipationOverrideDialog = createCallable<
+	{
+		examId: string;
+		studentId: string;
+		studentName: string | null;
+		currentEligible: boolean;
+	},
+	boolean
+>(({ call, examId, studentId, studentName, currentEligible }) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [eligible, setEligible] = useState(!currentEligible);
+	const [reason, setReason] = useState("");
+
+	const save = useMutationFlow(call, async (call) => {
+		try {
+			await trpcClient.attendance.overrideEligibility.mutate({
+				examId,
+				studentId,
+				eligible,
+				reason: reason.trim() || null,
+			});
+			queryClient.invalidateQueries({
+				queryKey: trpc.attendance.getExamRoster.queryKey({ examId }),
+			});
+			call.end(true);
+		} catch (error) {
+			toast.error((error as Error).message);
+		}
+	});
+
+	return (
+		<CallableDialog
+			call={call}
+			dismissValue={false}
+			preventDismiss={save.pending}
+			className="sm:max-w-lg"
+			title={t("admin.examParticipation.overrideDialog.title")}
+			description={studentName ?? studentId}
+		>
+			<div className="space-y-3">
+				<div className="flex gap-2">
+					<Button
+						variant={eligible ? "default" : "outline"}
+						size="sm"
+						onClick={() => setEligible(true)}
+					>
+						{t("admin.examParticipation.yes")}
+					</Button>
+					<Button
+						variant={!eligible ? "destructive" : "outline"}
+						size="sm"
+						onClick={() => setEligible(false)}
+					>
+						{t("admin.examParticipation.no")}
+					</Button>
+				</div>
+				<div className="space-y-1">
+					<Label className="text-xs">
+						{t("admin.examParticipation.overrideDialog.reason")}
+					</Label>
+					<Textarea
+						rows={2}
+						value={reason}
+						onChange={(e) => setReason(e.target.value)}
+						placeholder={t(
+							"admin.examParticipation.overrideDialog.reasonPlaceholder",
+						)}
+					/>
+				</div>
+			</div>
+			<div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
+				<Button
+					variant="outline"
+					disabled={save.pending}
+					onClick={() => call.end(false)}
+				>
+					{t("common.cancel")}
+				</Button>
+				<Button disabled={save.pending} onClick={() => save()}>
+					{save.pending ? <Spinner className="mr-2 h-3 w-3" /> : null}
+					{t("common.save")}
+				</Button>
+			</div>
+		</CallableDialog>
+	);
+}, DIALOG_EXIT_MS);

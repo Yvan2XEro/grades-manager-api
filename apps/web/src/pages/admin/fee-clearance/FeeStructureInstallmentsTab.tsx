@@ -2,8 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -30,13 +32,10 @@ export default function FeeStructureInstallmentsTab() {
 	const { id } = useParams<{ id: string }>();
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const [showAdd, setShowAdd] = useState(false);
-	const [editTarget, setEditTarget] = useState<{
-		id: string;
-		label: string;
-		amount: string;
-		dueDate: string;
-	} | null>(null);
+	const refreshStructure = () =>
+		queryClient.invalidateQueries({
+			queryKey: trpc.feeClearance.getStructure.queryKey({ id: id! }),
+		});
 
 	const { data: structure } = useQuery(
 		trpc.feeClearance.getStructure.queryOptions({ id: id! }),
@@ -63,7 +62,17 @@ export default function FeeStructureInstallmentsTab() {
 				<h3 className="font-semibold">
 					{t("feeClearance.structures.installments.title")}
 				</h3>
-				<Button variant="outline" size="sm" onClick={() => setShowAdd(true)}>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() =>
+						AddInstallmentDialog.call({
+							feeStructureId: id!,
+							nextIndex: structure.installments?.length ?? 0,
+							onAdded: refreshStructure,
+						})
+					}
+				>
 					<Plus className="mr-1 h-4 w-4" />
 					{t("feeClearance.structures.installments.add")}
 				</Button>
@@ -104,11 +113,17 @@ export default function FeeStructureInstallmentsTab() {
 										variant="ghost"
 										size="sm"
 										onClick={() =>
-											setEditTarget({
-												id: inst.id,
-												label: inst.label,
-												amount: inst.amount ?? "",
-												dueDate: inst.dueDate ? inst.dueDate.slice(0, 10) : "",
+											EditInstallmentDialog.call({
+												currency: structure.currency,
+												onSaved: refreshStructure,
+												installment: {
+													id: inst.id,
+													label: inst.label,
+													amount: inst.amount ?? "",
+													dueDate: inst.dueDate
+														? inst.dueDate.slice(0, 10)
+														: "",
+												},
 											})
 										}
 									>
@@ -127,53 +142,18 @@ export default function FeeStructureInstallmentsTab() {
 					</TableBody>
 				</Table>
 			)}
-
-			<AddInstallmentDialog
-				open={showAdd}
-				onOpenChange={setShowAdd}
-				feeStructureId={id!}
-				nextIndex={structure.installments?.length ?? 0}
-				onAdded={() => {
-					queryClient.invalidateQueries({
-						queryKey: trpc.feeClearance.getStructure.queryKey({ id: id! }),
-					});
-					setShowAdd(false);
-				}}
-			/>
-
-			{editTarget && (
-				<EditInstallmentDialog
-					open={!!editTarget}
-					onOpenChange={(o) => {
-						if (!o) setEditTarget(null);
-					}}
-					installment={editTarget}
-					currency={structure.currency}
-					onSaved={() => {
-						queryClient.invalidateQueries({
-							queryKey: trpc.feeClearance.getStructure.queryKey({ id: id! }),
-						});
-						setEditTarget(null);
-					}}
-				/>
-			)}
 		</div>
 	);
 }
 
-function EditInstallmentDialog({
-	open,
-	onOpenChange,
-	installment,
-	currency,
-	onSaved,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	installment: { id: string; label: string; amount: string; dueDate: string };
-	currency: string;
-	onSaved: () => void;
-}) {
+export const EditInstallmentDialog = createCallable<
+	{
+		installment: { id: string; label: string; amount: string; dueDate: string };
+		currency: string;
+		onSaved: () => void;
+	},
+	void
+>(({ call, installment, currency, onSaved }) => {
 	const { t } = useTranslation();
 	const [form, setForm] = useState({
 		label: installment.label,
@@ -192,12 +172,13 @@ function EditInstallmentDialog({
 		onSuccess: () => {
 			toast.success(t("common.saved"));
 			onSaved();
+			call.end();
 		},
 		onError: (e) => toast.error(e.message),
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
@@ -239,7 +220,7 @@ function EditInstallmentDialog({
 					</div>
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.cancel")}
 					</Button>
 					<Button
@@ -252,21 +233,16 @@ function EditInstallmentDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
-function AddInstallmentDialog({
-	open,
-	onOpenChange,
-	feeStructureId,
-	nextIndex,
-	onAdded,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	feeStructureId: string;
-	nextIndex: number;
-	onAdded: () => void;
-}) {
+export const AddInstallmentDialog = createCallable<
+	{
+		feeStructureId: string;
+		nextIndex: number;
+		onAdded: () => void;
+	},
+	void
+>(({ call, feeStructureId, nextIndex, onAdded }) => {
 	const { t } = useTranslation();
 	const [form, setForm] = useState({ label: "", amount: "", dueDate: "" });
 
@@ -282,12 +258,13 @@ function AddInstallmentDialog({
 		onSuccess: () => {
 			toast.success(t("common.saved"));
 			onAdded();
+			call.end();
 			setForm({ label: "", amount: "", dueDate: "" });
 		},
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
@@ -327,7 +304,7 @@ function AddInstallmentDialog({
 					</div>
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.cancel")}
 					</Button>
 					<Button
@@ -340,4 +317,4 @@ function AddInstallmentDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);

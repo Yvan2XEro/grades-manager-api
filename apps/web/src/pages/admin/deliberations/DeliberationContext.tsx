@@ -21,8 +21,10 @@ export interface DeliberationContextValue {
 	isSigned: boolean;
 	logsLoading: boolean;
 	logs: LogEntry[];
-	setOverrideStudent: (s: OverrideState | null) => void;
-	setPromoteOpen: (open: boolean) => void;
+	/** Opens the decision-override dialog for one student result. */
+	overrideDecision: (s: OverrideState) => void;
+	/** Opens the dialog promoting admitted students to their next class. */
+	promoteAdmitted: () => void;
 }
 
 export const DeliberationContext =

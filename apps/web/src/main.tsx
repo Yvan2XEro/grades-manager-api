@@ -7,6 +7,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, HashRouter } from "react-router";
 import { Toaster } from "sonner";
 import App from "./App";
+import { CallableHost } from "./components/callable/callable-host";
 import "./i18n";
 import "./index.css";
 import { initClickEffects } from "./lib/click-effects";
@@ -31,6 +32,7 @@ createRoot(document.getElementById("root")!).render(
 				<Router>
 					<NuqsAdapter>
 						<App />
+						<CallableHost />
 						<Toaster position="top-right" richColors closeButton />
 					</NuqsAdapter>
 				</Router>

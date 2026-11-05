@@ -1,21 +1,10 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { z } from "zod";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { confirmAction } from "@/components/callable/confirm";
+import { StudyCycleFormDialog } from "@/components/callable/forms/StudyCycleFormDialog";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,15 +21,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
 	Table,
 	TableBody,
 	TableCell,
@@ -50,31 +30,14 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { Textarea } from "@/components/ui/textarea";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
-import FormModal from "../../components/modals/FormModal";
 import { trpc, trpcClient } from "../../utils/trpc";
-
-const cycleSchema = z.object({
-	code: z.string().min(1),
-	name: z.string().min(1),
-	nameEn: z.string().optional(),
-	description: z.string().optional(),
-	totalCreditsRequired: z.coerce.number().int().min(30),
-	durationYears: z.coerce.number().int().min(1),
-});
-
-type CycleForm = z.infer<typeof cycleSchema>;
 
 export default function StudyCycleManagement() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [editingId, setEditingId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 
@@ -84,60 +47,6 @@ export default function StudyCycleManagement() {
 
 	const cycles = cyclesData?.items ?? [];
 	const selection = useRowSelection(cycles);
-
-	const { confirm, ConfirmDialog } = useConfirm();
-
-	const form = useForm<CycleForm>({
-		resolver: zodResolver(cycleSchema),
-		defaultValues: {
-			code: "",
-			name: "",
-			nameEn: "",
-			description: "",
-			totalCreditsRequired: 180,
-			durationYears: 3,
-		},
-	});
-
-	const watchedCode = form.watch("code");
-	const watchedDuration = form.watch("durationYears");
-	const watchedCredits = form.watch("totalCreditsRequired");
-	const autoLevelsPreview = useMemo(() => {
-		const duration = Number(watchedDuration);
-		const credits = Number(watchedCredits);
-		if (!duration || duration < 1 || duration > 20) return [];
-		return Array.from({ length: duration }, (_, i) => ({
-			code: watchedCode ? `${watchedCode}-L${i + 1}` : `L${i + 1}`,
-			name: `Level ${i + 1}`,
-			minCredits: credits ? Math.floor(credits / duration) : 0,
-		}));
-	}, [watchedCode, watchedDuration, watchedCredits]);
-
-	const createCycleMutation = useMutation({
-		mutationFn: async (payload: CycleForm & { id?: string }) => {
-			if (payload.id) {
-				await trpcClient.studyCycles.updateCycle.mutate(payload);
-				return "update";
-			}
-			await trpcClient.studyCycles.createCycle.mutate(payload);
-			return "create";
-		},
-		onSuccess: (mode) => {
-			toast.success(
-				mode === "update"
-					? t("admin.studyCycles.toast.updateSuccess", {
-							defaultValue: "Study cycle updated",
-						})
-					: t("admin.studyCycles.toast.createSuccess", {
-							defaultValue: "Study cycle created",
-						}),
-			);
-			queryClient.invalidateQueries(trpc.studyCycles.listPaged.queryKey());
-			setIsFormOpen(false);
-			setEditingId(null);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
 
 	const deleteCycleMutation = useMutation({
 		mutationFn: (id: string) =>
@@ -149,7 +58,6 @@ export default function StudyCycleManagement() {
 				}),
 			);
 			queryClient.invalidateQueries(trpc.studyCycles.listPaged.queryKey());
-			setDeleteId(null);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -177,28 +85,27 @@ export default function StudyCycleManagement() {
 			),
 	});
 
-	const onSubmit = (data: CycleForm) => {
-		createCycleMutation.mutate(editingId ? { ...data, id: editingId } : data);
-	};
+	type Cycle = (typeof cycles)[number];
+
+	const editCycle = (cycle: Cycle) => StudyCycleFormDialog.call({ cycle });
+
+	const deleteCycle = (id: string) =>
+		confirmAction({
+			title: t("admin.studyCycles.delete.title", {
+				defaultValue: "Delete study cycle",
+			}),
+			message: t("admin.studyCycles.delete.message", {
+				defaultValue:
+					"Deleting a cycle does not remove existing classes or programs, but they will require reassignment.",
+			}),
+			confirmText: t("common.actions.delete"),
+			onConfirm: () => deleteCycleMutation.mutateAsync(id),
+		});
 
 	return (
 		<div className="space-y-5">
 			<div className="flex justify-end">
-				<Button
-					type="button"
-					onClick={() => {
-						setEditingId(null);
-						form.reset({
-							code: "",
-							name: "",
-							nameEn: "",
-							description: "",
-							totalCreditsRequired: 180,
-							durationYears: 3,
-						});
-						setIsFormOpen(true);
-					}}
-				>
+				<Button type="button" onClick={() => StudyCycleFormDialog.call({})}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.studyCycles.actions.add", { defaultValue: "Add cycle" })}
 				</Button>
@@ -218,7 +125,7 @@ export default function StudyCycleManagement() {
 									variant="destructive"
 									size="sm"
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("common.bulkActions.confirmDeleteTitle", {
 												defaultValue: "Delete selected items?",
 											}),
@@ -281,27 +188,13 @@ export default function StudyCycleManagement() {
 											className="cursor-pointer"
 											actions={
 												<>
-													<ContextMenuItem
-														onSelect={() => {
-															setEditingId(cycle.id);
-															form.reset({
-																code: cycle.code,
-																name: cycle.name,
-																nameEn: cycle.nameEn ?? "",
-																description: cycle.description ?? "",
-																totalCreditsRequired:
-																	cycle.totalCreditsRequired,
-																durationYears: cycle.durationYears,
-															});
-															setIsFormOpen(true);
-														}}
-													>
+													<ContextMenuItem onSelect={() => editCycle(cycle)}>
 														{t("common.actions.edit")}
 													</ContextMenuItem>
 													<ContextMenuSeparator />
 													<ContextMenuItem
 														className="text-destructive"
-														onSelect={() => setDeleteId(cycle.id)}
+														onSelect={() => deleteCycle(cycle.id)}
 													>
 														{t("common.actions.delete")}
 													</ContextMenuItem>
@@ -357,17 +250,7 @@ export default function StudyCycleManagement() {
 														<DropdownMenuItem
 															onClick={(e) => {
 																e.stopPropagation();
-																setEditingId(cycle.id);
-																form.reset({
-																	code: cycle.code,
-																	name: cycle.name,
-																	nameEn: cycle.nameEn ?? "",
-																	description: cycle.description ?? "",
-																	totalCreditsRequired:
-																		cycle.totalCreditsRequired,
-																	durationYears: cycle.durationYears,
-																});
-																setIsFormOpen(true);
+																editCycle(cycle);
 															}}
 														>
 															<Pencil className="mr-2 h-4 w-4" />
@@ -378,7 +261,7 @@ export default function StudyCycleManagement() {
 															className="text-destructive focus:text-destructive"
 															onClick={(e) => {
 																e.stopPropagation();
-																setDeleteId(cycle.id);
+																deleteCycle(cycle.id);
 															}}
 														>
 															<Trash2 className="mr-2 h-4 w-4" />
@@ -418,189 +301,6 @@ export default function StudyCycleManagement() {
 					)}
 				</CardContent>
 			</Card>
-
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={() => setIsFormOpen(false)}
-				title={
-					editingId
-						? t("admin.studyCycles.actions.update", {
-								defaultValue: "Update cycle",
-							})
-						: t("admin.studyCycles.actions.add", { defaultValue: "Add cycle" })
-				}
-				maxWidth="sm:max-w-xl"
-			>
-				<Form {...form}>
-					<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.studyCycles.form.name", {
-												defaultValue: "Name",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="Licence" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="nameEn"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.nameEn", {
-												defaultValue: "Name (English)",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="Bachelor of Science" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.studyCycles.form.code", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="BSC" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<FormField
-							control={form.control}
-							name="description"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.studyCycles.form.description", {
-											defaultValue: "Description",
-										})}
-									</FormLabel>
-									<FormControl>
-										<Textarea {...field} rows={3} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="totalCreditsRequired"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.credits", {
-												defaultValue: "Credits",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input type="number" min={30} {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="durationYears"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.duration", {
-												defaultValue: "Years",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input type="number" min={1} {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						{!editingId && autoLevelsPreview.length > 0 && (
-							<div className="rounded-lg border border-dashed bg-muted/40 p-3">
-								<p className="mb-2 font-medium text-muted-foreground text-xs">
-									{t("admin.studyCycles.form.autoLevelsPreview", {
-										defaultValue: "Levels that will be auto-created:",
-									})}
-								</p>
-								<div className="flex flex-wrap gap-1.5">
-									{autoLevelsPreview.map((lvl) => (
-										<span
-											key={lvl.code}
-											className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary text-xs"
-										>
-											{lvl.code} · {lvl.minCredits} cr
-										</span>
-									))}
-								</div>
-							</div>
-						)}
-						<Button
-							type="submit"
-							className="w-full"
-							disabled={createCycleMutation.isPending}
-						>
-							{t("common.actions.save")}
-						</Button>
-					</form>
-				</Form>
-			</FormModal>
-
-			<AlertDialog
-				open={Boolean(deleteId)}
-				onOpenChange={(open) => !open && setDeleteId(null)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("admin.studyCycles.delete.title", {
-								defaultValue: "Delete study cycle",
-							})}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("admin.studyCycles.delete.message", {
-								defaultValue:
-									"Deleting a cycle does not remove existing classes or programs, but they will require reassignment.",
-							})}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.actions.cancel")}</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() => deleteId && deleteCycleMutation.mutate(deleteId)}
-							className="bg-destructive text-white hover:bg-destructive/90"
-						>
-							{t("common.actions.delete")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-			<ConfirmDialog />
 		</div>
 	);
 }

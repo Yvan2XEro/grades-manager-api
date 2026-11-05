@@ -74,7 +74,6 @@ export default function BatchJobsDashboard() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const [statusFilter, setStatusFilter] = useState<string>("all");
-	const [isCreateOpen, setIsCreateOpen] = useState(false);
 
 	const jobsQuery = useQuery({
 		queryKey: ["batchJobs", statusFilter],
@@ -130,7 +129,7 @@ export default function BatchJobsDashboard() {
 						</p>
 					</div>
 				</div>
-				<Button onClick={() => setIsCreateOpen(true)}>
+				<Button onClick={() => CreateBatchJobDialog.call()}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.batchJobs.actions.create")}
 				</Button>
@@ -311,11 +310,6 @@ export default function BatchJobsDashboard() {
 					</Table>
 				)}
 			</div>
-
-			<CreateBatchJobDialog
-				open={isCreateOpen}
-				onOpenChange={setIsCreateOpen}
-			/>
 		</div>
 	);
 }

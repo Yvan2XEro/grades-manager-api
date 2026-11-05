@@ -13,7 +13,13 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { AcademicYearSelect } from "@/components/inputs";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -27,15 +33,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { ContextMenuItem } from "@/components/ui/context-menu";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	Empty,
 	EmptyContent,
@@ -91,11 +88,7 @@ interface EligibilityRow {
 	};
 }
 
-interface OverrideModalState {
-	isOpen: boolean;
-	row: EligibilityRow | null;
-	action: "force_eligible" | "force_ineligible" | null;
-}
+type OverrideDecision = "force_eligible" | "force_ineligible";
 
 export default function RetakeEligibility() {
 	const { t } = useTranslation();
@@ -116,12 +109,6 @@ export default function RetakeEligibility() {
 		return "annual" as const;
 	}, [filterSemester, semestersData]);
 	const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
-	const [overrideModal, setOverrideModal] = useState<OverrideModalState>({
-		isOpen: false,
-		row: null,
-		action: null,
-	});
-	const [overrideReason, setOverrideReason] = useState("");
 	const [search, setSearch] = useState("");
 
 	// Fetch approved exams for the selected academic year
@@ -147,27 +134,6 @@ export default function RetakeEligibility() {
 		enabled: Boolean(selectedExamId),
 	});
 
-	const upsertOverrideMutation = useMutation({
-		mutationFn: async (input: {
-			examId: string;
-			studentCourseEnrollmentId: string;
-			decision: "force_eligible" | "force_ineligible";
-			reason: string;
-		}) => {
-			return trpcClient.exams.upsertRetakeOverride.mutate(input);
-		},
-		onSuccess: () => {
-			toast.success(t("admin.retake.toast.overrideSuccess"));
-			queryClient.invalidateQueries({
-				queryKey: ["retakeEligibility", selectedExamId],
-			});
-			closeOverrideModal();
-		},
-		onError: (error: Error) => {
-			toast.error(error.message || t("admin.retake.toast.overrideError"));
-		},
-	});
-
 	const deleteOverrideMutation = useMutation({
 		mutationFn: async (input: {
 			examId: string;
@@ -186,25 +152,13 @@ export default function RetakeEligibility() {
 		},
 	});
 
-	const closeOverrideModal = () => {
-		setOverrideModal({ isOpen: false, row: null, action: null });
-		setOverrideReason("");
-	};
-
-	const handleOverrideSubmit = () => {
-		if (
-			!overrideModal.row ||
-			!overrideModal.action ||
-			!selectedExamId ||
-			!overrideReason.trim()
-		) {
-			return;
-		}
-		upsertOverrideMutation.mutate({
+	const openOverride = (row: EligibilityRow, action: OverrideDecision) => {
+		if (!selectedExamId) return;
+		RetakeOverrideDialog.call({
 			examId: selectedExamId,
-			studentCourseEnrollmentId: overrideModal.row.studentCourseEnrollmentId,
-			decision: overrideModal.action,
-			reason: overrideReason.trim(),
+			studentCourseEnrollmentId: row.studentCourseEnrollmentId,
+			studentName: row.studentName,
+			action,
 		});
 	};
 
@@ -314,13 +268,7 @@ export default function RetakeEligibility() {
 									<>
 										{showEligibleActions && (
 											<ContextMenuItem
-												onSelect={() =>
-													setOverrideModal({
-														isOpen: true,
-														type: "eligible",
-														row,
-													})
-												}
+												onSelect={() => openOverride(row, "force_eligible")}
 											>
 												{t("admin.retake.override.forceEligible", {
 													defaultValue: "Force eligible",
@@ -329,13 +277,7 @@ export default function RetakeEligibility() {
 										)}
 										<ContextMenuItem
 											className="text-destructive"
-											onSelect={() =>
-												setOverrideModal({
-													isOpen: true,
-													type: "ineligible",
-													row,
-												})
-											}
+											onSelect={() => openOverride(row, "force_ineligible")}
 										>
 											{t("admin.retake.override.forceIneligible", {
 												defaultValue: "Force ineligible",
@@ -384,13 +326,7 @@ export default function RetakeEligibility() {
 										<Button
 											variant="outline"
 											size="sm"
-											onClick={() =>
-												setOverrideModal({
-													isOpen: true,
-													row,
-													action: "force_ineligible",
-												})
-											}
+											onClick={() => openOverride(row, "force_ineligible")}
 										>
 											<ShieldOff className="mr-1 h-4 w-4" />
 											{t("admin.retake.override.forceIneligible")}
@@ -399,13 +335,7 @@ export default function RetakeEligibility() {
 										<Button
 											variant="outline"
 											size="sm"
-											onClick={() =>
-												setOverrideModal({
-													isOpen: true,
-													row,
-													action: "force_eligible",
-												})
-											}
+											onClick={() => openOverride(row, "force_eligible")}
 										>
 											<Shield className="mr-1 h-4 w-4" />
 											{t("admin.retake.override.forceEligible")}
@@ -594,57 +524,94 @@ export default function RetakeEligibility() {
 			)}
 
 			{/* Override Modal */}
-			<Dialog
-				open={overrideModal.isOpen}
-				onOpenChange={(open) => !open && closeOverrideModal()}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>{t("admin.retake.override.confirmTitle")}</DialogTitle>
-						<DialogDescription>
-							{t("admin.retake.override.confirmMessage", {
-								action:
-									overrideModal.action === "force_eligible"
-										? t("admin.retake.override.forceEligible").toLowerCase()
-										: t("admin.retake.override.forceIneligible").toLowerCase(),
-							})}
-						</DialogDescription>
-					</DialogHeader>
-					<DialogBody className="space-y-4 px-6 py-4">
-						<div className="space-y-2">
-							<Label>{t("admin.retake.table.student")}</Label>
-							<p className="font-medium">{overrideModal.row?.studentName}</p>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="overrideReason">
-								{t("admin.retake.override.reason")}
-							</Label>
-							<Input
-								id="overrideReason"
-								value={overrideReason}
-								onChange={(e) => setOverrideReason(e.target.value)}
-								placeholder={t("admin.retake.override.reasonPlaceholder")}
-							/>
-						</div>
-					</DialogBody>
-					<DialogFooter>
-						<Button variant="outline" onClick={closeOverrideModal}>
-							{t("common.actions.cancel")}
-						</Button>
-						<Button
-							onClick={handleOverrideSubmit}
-							disabled={
-								!overrideReason.trim() || upsertOverrideMutation.isPending
-							}
-						>
-							{upsertOverrideMutation.isPending ? (
-								<Spinner className="mr-2 h-4 w-4" />
-							) : null}
-							{t("common.actions.confirm")}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }
+
+/**
+ * Forces a student eligible / ineligible for a retake, with a mandatory
+ * reason; resolves `true` once saved.
+ */
+export const RetakeOverrideDialog = createCallable<
+	{
+		examId: string;
+		studentCourseEnrollmentId: string;
+		studentName: string;
+		action: OverrideDecision;
+	},
+	boolean
+>(({ call, examId, studentCourseEnrollmentId, studentName, action }) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [reason, setReason] = useState("");
+
+	const save = useMutationFlow(call, async (call) => {
+		try {
+			await trpcClient.exams.upsertRetakeOverride.mutate({
+				examId,
+				studentCourseEnrollmentId,
+				decision: action,
+				reason: reason.trim(),
+			});
+			toast.success(t("admin.retake.toast.overrideSuccess"));
+			queryClient.invalidateQueries({
+				queryKey: ["retakeEligibility", examId],
+			});
+			call.end(true);
+		} catch (error) {
+			toast.error(
+				(error as Error).message || t("admin.retake.toast.overrideError"),
+			);
+		}
+	});
+
+	return (
+		<CallableDialog
+			call={call}
+			dismissValue={false}
+			preventDismiss={save.pending}
+			className="sm:max-w-lg"
+			title={t("admin.retake.override.confirmTitle")}
+			description={t("admin.retake.override.confirmMessage", {
+				action:
+					action === "force_eligible"
+						? t("admin.retake.override.forceEligible").toLowerCase()
+						: t("admin.retake.override.forceIneligible").toLowerCase(),
+			})}
+		>
+			<div className="space-y-4 py-2">
+				<div className="space-y-2">
+					<Label>{t("admin.retake.table.student")}</Label>
+					<p className="font-medium">{studentName}</p>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="overrideReason">
+						{t("admin.retake.override.reason")}
+					</Label>
+					<Input
+						id="overrideReason"
+						value={reason}
+						onChange={(e) => setReason(e.target.value)}
+						placeholder={t("admin.retake.override.reasonPlaceholder")}
+					/>
+				</div>
+			</div>
+			<div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+				<Button
+					variant="outline"
+					disabled={save.pending}
+					onClick={() => call.end(false)}
+				>
+					{t("common.actions.cancel")}
+				</Button>
+				<Button
+					onClick={() => save()}
+					disabled={!reason.trim() || save.pending}
+				>
+					{save.pending ? <Spinner className="mr-2 h-4 w-4" /> : null}
+					{t("common.actions.confirm")}
+				</Button>
+			</div>
+		</CallableDialog>
+	);
+}, DIALOG_EXIT_MS);

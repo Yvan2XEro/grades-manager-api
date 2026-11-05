@@ -9,6 +9,7 @@ import {
 	Loader2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +20,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -89,11 +83,6 @@ export default function BulkDocumentGeneration() {
 	// HTML preview dialog state — picks one student and renders the document
 	// with the resolved template (without saving anything). Lets the user
 	// validate the rendering before launching a full batch.
-	const [previewState, setPreviewState] = useState<{
-		studentName: string;
-		html: string;
-		templateName?: string;
-	} | null>(null);
 
 	const { data: academicYears } = useQuery({
 		queryKey: ["bulk-academic-years"],
@@ -204,12 +193,21 @@ export default function BulkDocumentGeneration() {
 		},
 		onSuccess: (res, studentId) => {
 			const s = studentItems.find((x) => x.id === studentId);
-			setPreviewState({
-				studentName: s
-					? `${s.profile.lastName ?? ""} ${s.profile.firstName ?? ""}`.trim()
-					: studentId,
+			const studentName = s
+				? `${s.profile.lastName ?? ""} ${s.profile.firstName ?? ""}`.trim()
+				: studentId;
+			const templateName = res.usedTemplate?.name;
+			DocumentPreviewDialog.call({
+				title: `Aperçu — ${KIND_LABELS[kind]} (${studentName})`,
+				description: templateName ? (
+					<>
+						Modèle utilisé : <strong>{templateName}</strong>
+					</>
+				) : (
+					"Rendu HTML — données réelles, sans rasterisation PDF."
+				),
 				html: res.data,
-				templateName: res.usedTemplate?.name,
+				paper: true,
 			});
 		},
 		onError: (err: any) => {
@@ -655,41 +653,6 @@ export default function BulkDocumentGeneration() {
 			)}
 
 			{/* HTML preview dialog */}
-			<Dialog
-				open={!!previewState}
-				onOpenChange={(open) => !open && setPreviewState(null)}
-			>
-				<DialogContent className="flex h-[90vh] max-w-6xl flex-col">
-					<DialogHeader>
-						<DialogTitle>
-							Aperçu — {KIND_LABELS[kind]} ({previewState?.studentName})
-						</DialogTitle>
-						<DialogDescription>
-							{previewState?.templateName ? (
-								<>
-									Modèle utilisé : <strong>{previewState.templateName}</strong>
-								</>
-							) : (
-								"Rendu HTML — données réelles, sans rasterisation PDF."
-							)}
-						</DialogDescription>
-					</DialogHeader>
-					<div className="mx-6 mb-6 flex-1 overflow-auto rounded border bg-white">
-						{previewState?.html && (
-							<iframe
-								title="Aperçu document"
-								className="block h-full w-full"
-								style={{
-									minWidth: "210mm",
-									minHeight: "297mm",
-								}}
-								srcDoc={previewState.html}
-								sandbox="allow-same-origin"
-							/>
-						)}
-					</div>
-				</DialogContent>
-			</Dialog>
 
 			{summary.error > 0 && !isGenerating && (
 				<Card className="border-destructive/40">

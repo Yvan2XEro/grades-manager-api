@@ -1,23 +1,23 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TFunction } from "i18next";
 import { Copy, Pencil, Plus, School, Search, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { z } from "zod";
-import FormModal from "@/components/modals/FormModal";
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { Confirm, confirmAction } from "@/components/callable/confirm";
+import {
+	fetchStudyCyclesSelect,
+	ProgramFormDialog,
+	STUDY_CYCLES_SELECT_KEY,
+	type StudyCyclesSelect,
+} from "@/components/callable/forms/ProgramFormDialog";
+import { StudyCycleFormDialog } from "@/components/callable/forms/StudyCycleFormDialog";
+import { QuickCreate } from "@/components/callable/quick-create";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,15 +34,6 @@ import {
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import {
 	Empty,
 	EmptyContent,
 	EmptyDescription,
@@ -50,23 +41,8 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -76,24 +52,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
-import { trpcClient } from "@/utils/trpc";
-
-const buildProgramSchema = (t: TFunction) =>
-	z.object({
-		name: z.string().min(2, t("admin.programs.validation.name")),
-		code: z.string().min(
-			2,
-			t("admin.programs.validation.code", {
-				defaultValue: "Code is required",
-			}),
-		),
-		cycleId: z.string().nullable().optional(),
-	});
-
-type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
+import { type RouterOutputs, trpcClient } from "@/utils/trpc";
 
 type Program = {
 	id: string;
@@ -117,20 +79,9 @@ type Program = {
 };
 
 export default function ProgramManagement() {
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [isDuplicateOpen, setIsDuplicateOpen] = useState(false);
-	const [duplicateTargetCycleIds, setDuplicateTargetCycleIds] = useState<
-		string[]
-	>([]);
-	const [duplicateCloneCurriculum, setDuplicateCloneCurriculum] =
-		useState(true);
-
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
-	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
 	const [searchInput, _setSearchInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
@@ -140,8 +91,8 @@ export default function ProgramManagement() {
 	}, [searchInput]);
 
 	const { data: cycles } = useQuery({
-		queryKey: ["study-cycles-select"],
-		queryFn: () => trpcClient.studyCycles.listCycles.query({}),
+		queryKey: STUDY_CYCLES_SELECT_KEY,
+		queryFn: fetchStudyCyclesSelect,
 	});
 	const cycleMap = new Map((cycles?.items ?? []).map((c) => [c.id, c.name]));
 
@@ -175,34 +126,6 @@ export default function ProgramManagement() {
 		},
 	});
 
-	const form = useForm<ProgramFormData>({
-		resolver: zodResolver(programSchema),
-		defaultValues: {
-			name: "",
-			code: "",
-			cycleId: null,
-		},
-	});
-
-	const createMutation = useMutation({
-		mutationFn: async (data: ProgramFormData) => {
-			return trpcClient.programs.create.mutate(data);
-		},
-		onSuccess: (newProgram) => {
-			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success(t("admin.programs.toast.createSuccess"));
-			handleCloseForm();
-			if (newProgram?.id) {
-				navigate(`/admin/programs/${newProgram.id}/details`);
-			}
-		},
-		onError: (error: unknown) => {
-			toast.error(
-				(error as Error).message || t("admin.programs.toast.createError"),
-			);
-		},
-	});
-
 	const deleteMutation = useMutation({
 		mutationFn: async (id: string) => {
 			await trpcClient.programs.delete.mutate({ id });
@@ -210,8 +133,6 @@ export default function ProgramManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
 			toast.success(t("admin.programs.toast.deleteSuccess"));
-			setIsDeleteOpen(false);
-			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
 			toast.error(
@@ -221,8 +142,6 @@ export default function ProgramManagement() {
 	});
 
 	const selection = useRowSelection(programs ?? []);
-
-	const { confirm, ConfirmDialog } = useConfirm();
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -247,63 +166,36 @@ export default function ProgramManagement() {
 			),
 	});
 
-	const duplicateForCyclesMutation = useMutation({
-		mutationFn: (input: {
-			sourceProgramIds: string[];
-			targetCycleIds: string[];
-			cloneCurriculum: boolean;
-		}) => trpcClient.programs.duplicateForCycles.mutate(input),
-		onSuccess: (result) => {
-			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			selection.clear();
-			setIsDuplicateOpen(false);
-			setDuplicateTargetCycleIds([]);
-			toast.success(
-				t("admin.programs.duplicate.toast.success", {
-					defaultValue:
-						"{{created}} programme(s) créé(s){{skipped, plural, =0 {} other { ({{skipped}} ignoré(s))}}}",
-					created: result.createdCount,
-					skipped: result.skippedCount,
-				}),
-			);
-		},
-		onError: (err: unknown) =>
-			toast.error(
-				(err as Error).message ||
-					t("admin.programs.duplicate.toast.error", {
-						defaultValue: "Erreur lors de la duplication",
-					}),
-			),
-	});
-
-	const onSubmit = (data: ProgramFormData) => {
-		createMutation.mutate(data);
+	const startCreate = async () => {
+		const program = await ProgramFormDialog.call({});
+		if (program?.id) navigate(`/admin/programs/${program.id}/details`);
 	};
 
-	const startCreate = () => {
-		form.reset({ name: "", code: "", cycleId: null });
-		setIsFormOpen(true);
+	const startDuplicate = async () => {
+		const result = await DuplicateProgramsDialog.call({
+			sourceProgramIds: [...selection.selectedIds],
+		});
+		if (result) selection.clear();
 	};
 
 	const openDetail = (program: Program) => {
 		navigate(`/admin/programs/${program.id}/details`);
 	};
 
-	const handleCloseForm = () => {
-		setIsFormOpen(false);
-		form.reset({ name: "", code: "", cycleId: null });
-	};
-
-	const confirmDelete = (id: string) => {
-		setDeleteId(id);
-		setIsDeleteOpen(true);
-	};
-
-	const handleDelete = () => {
-		if (deleteId) {
-			deleteMutation.mutate(deleteId);
-		}
-	};
+	const confirmDelete = (id: string) =>
+		Confirm.call({
+			title: t("admin.programs.delete.title"),
+			description: t("admin.programs.delete.message"),
+			confirmLabel: t("common.actions.delete"),
+			mutationFn: async (call) => {
+				try {
+					await deleteMutation.mutateAsync(id);
+					call.end(true);
+				} catch {
+					// toast already shown by the mutation
+				}
+			},
+		});
 
 	return (
 		<div className="space-y-6">
@@ -324,15 +216,7 @@ export default function ProgramManagement() {
 				selectedCount={selection.selectedCount}
 				onClear={selection.clear}
 			>
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => {
-						setDuplicateTargetCycleIds([]);
-						setDuplicateCloneCurriculum(true);
-						setIsDuplicateOpen(true);
-					}}
-				>
+				<Button variant="outline" size="sm" onClick={startDuplicate}>
 					<Copy className="mr-1 h-3.5 w-3.5" />
 					{t("admin.programs.duplicate.button", {
 						defaultValue: "Dupliquer vers cycle…",
@@ -342,7 +226,7 @@ export default function ProgramManagement() {
 					variant="destructive"
 					size="sm"
 					onClick={() =>
-						confirm({
+						confirmAction({
 							title: t("common.bulkActions.confirmDeleteTitle", {
 								defaultValue: "Delete selected items?",
 							}),
@@ -519,273 +403,170 @@ export default function ProgramManagement() {
 					)}
 				</CardContent>
 			</Card>
-
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={handleCloseForm}
-				title={t("admin.programs.form.createTitle")}
-			>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.programs.form.nameLabel")}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.programs.form.namePlaceholder")}
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel required>
-											{t("admin.programs.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="INF-LIC"
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<FormField
-							control={form.control}
-							name="cycleId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.programs.form.cycleLabel", {
-											defaultValue: "Cycle d'études",
-										})}
-									</FormLabel>
-									<Select
-										value={field.value ?? "__NONE__"}
-										onValueChange={(v) =>
-											field.onChange(v === "__NONE__" ? null : v)
-										}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.programs.form.cyclePlaceholder",
-														{ defaultValue: "Sélectionner un cycle" },
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											<SelectItem value="__NONE__">
-												{t("admin.programs.form.cloneFromNone", {
-													defaultValue: "Aucun",
-												})}
-											</SelectItem>
-											{(cycles?.items ?? []).map((cyc) => (
-												<SelectItem key={cyc.id} value={cyc.id}>
-													{cyc.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={handleCloseForm}
-								disabled={form.formState.isSubmitting}
-							>
-								{t("common.actions.cancel")}
-							</Button>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
-								{form.formState.isSubmitting ? (
-									<Spinner className="mr-2 h-4 w-4" />
-								) : (
-									t("admin.programs.form.submit")
-								)}
-							</Button>
-						</div>
-					</form>
-				</Form>
-			</FormModal>
-
-			<AlertDialog
-				open={isDeleteOpen}
-				onOpenChange={(open) => {
-					setIsDeleteOpen(open);
-					if (!open) setDeleteId(null);
-				}}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("admin.programs.delete.title")}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("admin.programs.delete.message")}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel disabled={deleteMutation.isPending}>
-							{t("common.actions.cancel")}
-						</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={handleDelete}
-							disabled={deleteMutation.isPending}
-						>
-							{deleteMutation.isPending ? (
-								<Spinner className="mr-2 h-4 w-4" />
-							) : (
-								<>
-									<Trash2 className="mr-2 h-4 w-4" />
-									{t("common.actions.delete")}
-								</>
-							)}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-
-			<Dialog
-				open={isDuplicateOpen}
-				onOpenChange={(open) => {
-					setIsDuplicateOpen(open);
-					if (!open) {
-						setDuplicateTargetCycleIds([]);
-					}
-				}}
-			>
-				<DialogContent className="sm:max-w-lg">
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.programs.duplicate.title", {
-								defaultValue: "Dupliquer vers un autre cycle",
-							})}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.programs.duplicate.description", {
-								defaultValue:
-									"{{count}} programme(s) seront copiés vers chaque cycle sélectionné. Le code et le nom seront préfixés par celui du cycle.",
-								count: selection.selectedCount,
-							})}
-						</DialogDescription>
-					</DialogHeader>
-
-					<DialogBody className="space-y-4">
-						<div className="space-y-2">
-							<Label>
-								{t("admin.programs.duplicate.targetCycles", {
-									defaultValue: "Cycles cibles",
-								})}
-							</Label>
-							{cycles?.items?.length ? (
-								<div className="max-h-56 space-y-2 overflow-y-auto rounded-md border p-3">
-									{cycles.items.map((cycle) => {
-										const checked = duplicateTargetCycleIds.includes(cycle.id);
-										return (
-											<label
-												key={cycle.id}
-												className="flex cursor-pointer items-center gap-2 text-sm"
-											>
-												<Checkbox
-													checked={checked}
-													onCheckedChange={(value) => {
-														setDuplicateTargetCycleIds((prev) =>
-															value
-																? [...prev, cycle.id]
-																: prev.filter((id) => id !== cycle.id),
-														);
-													}}
-												/>
-												<span className="font-medium">{cycle.name}</span>
-												<span className="text-muted-foreground text-xs">
-													({cycle.code})
-												</span>
-											</label>
-										);
-									})}
-								</div>
-							) : (
-								<p className="text-muted-foreground text-sm">
-									{t("admin.programs.duplicate.noCycles", {
-										defaultValue: "Aucun cycle disponible",
-									})}
-								</p>
-							)}
-						</div>
-
-						<label className="flex cursor-pointer items-center gap-2 text-sm">
-							<Checkbox
-								checked={duplicateCloneCurriculum}
-								onCheckedChange={(v) => setDuplicateCloneCurriculum(Boolean(v))}
-							/>
-							<span>
-								{t("admin.programs.duplicate.cloneCurriculum", {
-									defaultValue: "Cloner également les UE et EC",
-								})}
-							</span>
-						</label>
-					</DialogBody>
-
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setIsDuplicateOpen(false)}
-							disabled={duplicateForCyclesMutation.isPending}
-						>
-							{t("common.actions.cancel")}
-						</Button>
-						<Button
-							onClick={() =>
-								duplicateForCyclesMutation.mutate({
-									sourceProgramIds: [...selection.selectedIds],
-									targetCycleIds: duplicateTargetCycleIds,
-									cloneCurriculum: duplicateCloneCurriculum,
-								})
-							}
-							disabled={
-								duplicateTargetCycleIds.length === 0 ||
-								selection.selectedCount === 0 ||
-								duplicateForCyclesMutation.isPending
-							}
-						>
-							{duplicateForCyclesMutation.isPending && (
-								<Spinner className="mr-2 h-4 w-4" />
-							)}
-							{t("admin.programs.duplicate.submit", {
-								defaultValue: "Dupliquer",
-							})}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-
-			<ConfirmDialog />
 		</div>
 	);
 }
+
+interface DuplicateProgramsProps {
+	sourceProgramIds: string[];
+}
+
+/**
+ * Duplicates programs into other study cycles; resolves with the result, or
+ * `undefined` when dismissed. A missing target cycle can be created in place.
+ */
+export const DuplicateProgramsDialog = createCallable<
+	DuplicateProgramsProps,
+	RouterOutputs["programs"]["duplicateForCycles"] | undefined
+>(({ call, sourceProgramIds }) => {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [targetCycleIds, setTargetCycleIds] = useState<string[]>([]);
+	const [cloneCurriculum, setCloneCurriculum] = useState(true);
+
+	const { data: cycles } = useQuery({
+		queryKey: STUDY_CYCLES_SELECT_KEY,
+		queryFn: fetchStudyCyclesSelect,
+	});
+
+	const createCycle = async () => {
+		const cycle = await StudyCycleFormDialog.call({});
+		if (!cycle) return;
+		queryClient.setQueryData<StudyCyclesSelect>(
+			STUDY_CYCLES_SELECT_KEY,
+			(old) => upsertInList(old, cycle),
+		);
+		setTargetCycleIds((prev) => [...prev, cycle.id]);
+	};
+
+	const submit = useMutationFlow(call, async (call) => {
+		try {
+			const result = await trpcClient.programs.duplicateForCycles.mutate({
+				sourceProgramIds,
+				targetCycleIds,
+				cloneCurriculum,
+			});
+			queryClient.invalidateQueries({ queryKey: ["programs"] });
+			toast.success(
+				t("admin.programs.duplicate.toast.success", {
+					defaultValue:
+						"{{created}} programme(s) créé(s){{skipped, plural, =0 {} other { ({{skipped}} ignoré(s))}}}",
+					created: result.createdCount,
+					skipped: result.skippedCount,
+				}),
+			);
+			call.end(result);
+		} catch (err) {
+			toast.error(
+				(err as Error).message ||
+					t("admin.programs.duplicate.toast.error", {
+						defaultValue: "Erreur lors de la duplication",
+					}),
+			);
+		}
+	});
+
+	return (
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="sm:max-w-lg"
+			title={t("admin.programs.duplicate.title", {
+				defaultValue: "Dupliquer vers un autre cycle",
+			})}
+			description={t("admin.programs.duplicate.description", {
+				defaultValue:
+					"{{count}} programme(s) seront copiés vers chaque cycle sélectionné. Le code et le nom seront préfixés par celui du cycle.",
+				count: sourceProgramIds.length,
+			})}
+		>
+			<div className="space-y-4">
+				<div className="space-y-2">
+					<div className="flex items-center justify-between gap-2">
+						<Label>
+							{t("admin.programs.duplicate.targetCycles", {
+								defaultValue: "Cycles cibles",
+							})}
+						</Label>
+						<QuickCreate
+							onCreate={createCycle}
+							label={t("admin.studyCycles.actions.add", {
+								defaultValue: "Add cycle",
+							})}
+						/>
+					</div>
+					{cycles?.items?.length ? (
+						<div className="max-h-56 space-y-2 overflow-y-auto rounded-md border p-3">
+							{cycles.items.map((cycle) => {
+								const checked = targetCycleIds.includes(cycle.id);
+								return (
+									<label
+										key={cycle.id}
+										className="flex cursor-pointer items-center gap-2 text-sm"
+									>
+										<Checkbox
+											checked={checked}
+											onCheckedChange={(value) => {
+												setTargetCycleIds((prev) =>
+													value
+														? [...prev, cycle.id]
+														: prev.filter((id) => id !== cycle.id),
+												);
+											}}
+										/>
+										<span className="font-medium">{cycle.name}</span>
+										<span className="text-muted-foreground text-xs">
+											({cycle.code})
+										</span>
+									</label>
+								);
+							})}
+						</div>
+					) : (
+						<p className="text-muted-foreground text-sm">
+							{t("admin.programs.duplicate.noCycles", {
+								defaultValue: "Aucun cycle disponible",
+							})}
+						</p>
+					)}
+				</div>
+
+				<label className="flex cursor-pointer items-center gap-2 text-sm">
+					<Checkbox
+						checked={cloneCurriculum}
+						onCheckedChange={(v) => setCloneCurriculum(Boolean(v))}
+					/>
+					<span>
+						{t("admin.programs.duplicate.cloneCurriculum", {
+							defaultValue: "Cloner également les UE et EC",
+						})}
+					</span>
+				</label>
+
+				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+					<Button
+						variant="outline"
+						onClick={() => call.end(undefined)}
+						disabled={submit.pending}
+					>
+						{t("common.actions.cancel")}
+					</Button>
+					<Button
+						onClick={() => submit()}
+						disabled={
+							targetCycleIds.length === 0 ||
+							sourceProgramIds.length === 0 ||
+							submit.pending
+						}
+					>
+						{submit.pending && <Spinner className="mr-2 h-4 w-4" />}
+						{t("admin.programs.duplicate.submit", {
+							defaultValue: "Dupliquer",
+						})}
+					</Button>
+				</div>
+			</div>
+		</CallableDialog>
+	);
+}, DIALOG_EXIT_MS);

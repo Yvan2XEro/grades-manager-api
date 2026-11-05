@@ -11,8 +11,10 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +54,7 @@ import {
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
-import BankImportDialog from "./BankImportDialog";
+import { BankImportDialog } from "./BankImportDialog";
 
 const statusVariants: Record<
 	string,
@@ -82,9 +84,10 @@ export default function FeeAssignmentsList() {
 	const [classFilter, setClassFilter] = useState("");
 	const [statusFilter, setStatusFilter] = useState("");
 	const [search, setSearch] = useState("");
-	const [showBulkAssign, setShowBulkAssign] = useState(false);
-	const [showBankImport, setShowBankImport] = useState(false);
-	const [showAssignStudent, setShowAssignStudent] = useState(false);
+	const refreshAssignments = () =>
+		queryClient.invalidateQueries({
+			queryKey: trpc.feeClearance.listAssignments.queryKey(),
+		});
 
 	const { data: classes } = useQuery(
 		trpc.classes.list.queryOptions(
@@ -136,14 +139,34 @@ export default function FeeAssignmentsList() {
 					</p>
 				</div>
 				<div className="flex gap-2">
-					<Button variant="outline" onClick={() => setShowBankImport(true)}>
+					<Button
+						variant="outline"
+						onClick={() =>
+							BankImportDialog.call({
+								onSuccess: () =>
+									queryClient.invalidateQueries({
+										queryKey: trpc.feeClearance.listAssignments.queryKey(),
+									}),
+							})
+						}
+					>
 						<FileUp className="mr-2 h-4 w-4" />
 						{t("feeClearance.bankImport.button")}
 					</Button>
-					<Button variant="outline" onClick={() => setShowAssignStudent(true)}>
+					<Button
+						variant="outline"
+						onClick={() =>
+							AssignStudentDialog.call({ onDone: refreshAssignments })
+						}
+					>
 						{t("feeClearance.assignments.assignStudentTitle")}
 					</Button>
-					<Button variant="outline" onClick={() => setShowBulkAssign(true)}>
+					<Button
+						variant="outline"
+						onClick={() =>
+							BulkAssignDialog.call({ onDone: refreshAssignments })
+						}
+					>
 						<Users className="mr-2 h-4 w-4" />
 						{t("feeClearance.assignments.bulkAssign")}
 					</Button>
@@ -319,38 +342,6 @@ export default function FeeAssignmentsList() {
 					{data.items.length} / {data.total}
 				</p>
 			)}
-
-			<BulkAssignDialog
-				open={showBulkAssign}
-				onOpenChange={setShowBulkAssign}
-				onDone={() => {
-					queryClient.invalidateQueries({
-						queryKey: trpc.feeClearance.listAssignments.queryKey(),
-					});
-					setShowBulkAssign(false);
-				}}
-			/>
-
-			<BankImportDialog
-				open={showBankImport}
-				onOpenChange={setShowBankImport}
-				onSuccess={() => {
-					queryClient.invalidateQueries({
-						queryKey: trpc.feeClearance.listAssignments.queryKey(),
-					});
-				}}
-			/>
-
-			<AssignStudentDialog
-				open={showAssignStudent}
-				onOpenChange={setShowAssignStudent}
-				onDone={() => {
-					queryClient.invalidateQueries({
-						queryKey: trpc.feeClearance.listAssignments.queryKey(),
-					});
-					setShowAssignStudent(false);
-				}}
-			/>
 		</div>
 	);
 }
@@ -359,15 +350,12 @@ type PreviewResult = RouterOutputs["feeClearance"]["previewBulkAssign"];
 
 type BulkMode = "class" | "program" | "year" | "students";
 
-function BulkAssignDialog({
-	open,
-	onOpenChange,
-	onDone,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	onDone: () => void;
-}) {
+export const BulkAssignDialog = createCallable<
+	{
+		onDone: () => void;
+	},
+	void
+>(({ call, onDone }) => {
 	const { t } = useTranslation();
 	const [mode, setMode] = useState<BulkMode>("class");
 	const [yearId, setYearId] = useState("");
@@ -483,6 +471,7 @@ function BulkAssignDialog({
 				}),
 			);
 			onDone();
+			call.end();
 		},
 	});
 
@@ -496,7 +485,7 @@ function BulkAssignDialog({
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.assignments.bulkAssign")}</DialogTitle>
@@ -678,7 +667,7 @@ function BulkAssignDialog({
 				</DialogBody>
 
 				<DialogFooter className="gap-2">
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.cancel")}
 					</Button>
 					{!showPreview ? (
@@ -707,7 +696,7 @@ function BulkAssignDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 function PreviewPanel({ preview }: { preview: PreviewResult }) {
 	const hasNew = preview.toAssign.length > 0;
@@ -766,15 +755,12 @@ function PreviewPanel({ preview }: { preview: PreviewResult }) {
 	);
 }
 
-function AssignStudentDialog({
-	open,
-	onOpenChange,
-	onDone,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	onDone: () => void;
-}) {
+export const AssignStudentDialog = createCallable<
+	{
+		onDone: () => void;
+	},
+	void
+>(({ call, onDone }) => {
 	const { t } = useTranslation();
 	const [yearId, setYearId] = useState("");
 	const [structureId, setStructureId] = useState("");
@@ -811,6 +797,7 @@ function AssignStudentDialog({
 		onSuccess: () => {
 			toast.success(t("common.saved"));
 			onDone();
+			call.end();
 			setStudentId("");
 			setStudentSearch("");
 			setStructureId("");
@@ -829,7 +816,7 @@ function AssignStudentDialog({
 		: "";
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
@@ -947,7 +934,7 @@ function AssignStudentDialog({
 					</div>
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.cancel")}
 					</Button>
 					<Button
@@ -960,4 +947,4 @@ function AssignStudentDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);

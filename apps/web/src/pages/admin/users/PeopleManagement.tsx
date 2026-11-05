@@ -1,29 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MoreHorizontal, Plus, Search, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { ClassSelect } from "@/components/inputs/ClassSelect";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -52,7 +42,7 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "@/utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 
 // Local type aliases — mirrors server/src/db/schema/app-schema.ts exports
 type BusinessRole =
@@ -97,8 +87,6 @@ export default function PeopleManagement() {
 	const [search, setSearch] = useState("");
 	const [classId, setClassId] = useState<string | null>(null);
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
-	const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-	const [showCreate, setShowCreate] = useState(false);
 
 	const debouncedSearch = useDebounce(search, 300);
 	const isStudent = role === "student";
@@ -125,13 +113,26 @@ export default function PeopleManagement() {
 		trpc.users.listPaged.queryOptions(queryParams),
 	);
 
+	const confirmDeleteProfile = (profileId: string) =>
+		confirmAction({
+			title: t("common.confirmDelete", { defaultValue: "Confirm delete" }),
+			message: t("usersHub.people.deleteConfirm", {
+				defaultValue: "This will permanently delete the profile.",
+			}),
+			confirmText: t("common.delete", { defaultValue: "Delete" }),
+			cancelText: t("common.cancel", { defaultValue: "Cancel" }),
+			onConfirm: () =>
+				deleteMutation.mutateAsync(profileId).catch(() => undefined),
+		});
+
 	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.users.deleteProfile.mutate({ id }),
 		onSuccess: () => {
 			toast.success(t("common.deleted", { defaultValue: "Deleted" }));
 			// Invalidate all listPaged variants so any cached pages refresh
-			queryClient.invalidateQueries(trpc.users.listPaged.queryKey());
-			setDeleteTarget(null);
+			queryClient.invalidateQueries({
+				queryKey: trpc.users.listPaged.queryKey(),
+			});
 		},
 		onError: (err: Error) => toast.error(err.message),
 	});
@@ -152,7 +153,7 @@ export default function PeopleManagement() {
 						})}
 					</p>
 				</div>
-				<Button onClick={() => setShowCreate(true)}>
+				<Button onClick={() => CreatePersonDialog.call()}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("usersHub.people.add", { defaultValue: "Add person" })}
 				</Button>
@@ -413,7 +414,7 @@ export default function PeopleManagement() {
 												<DropdownMenuSeparator />
 												<DropdownMenuItem
 													className="text-destructive"
-													onClick={() => setDeleteTarget(person.id)}
+													onClick={() => confirmDeleteProfile(person.id)}
 												>
 													{t("common.actions.delete", {
 														defaultValue: "Delete",
@@ -440,79 +441,28 @@ export default function PeopleManagement() {
 					setPage(1);
 				}}
 			/>
-
-			<AlertDialog
-				open={!!deleteTarget}
-				onOpenChange={(open) => !open && setDeleteTarget(null)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("common.confirmDelete", {
-								defaultValue: "Confirm delete",
-							})}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("usersHub.people.deleteConfirm", {
-								defaultValue: "This will permanently delete the profile.",
-							})}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("common.cancel", { defaultValue: "Cancel" })}
-						</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() =>
-								deleteTarget && deleteMutation.mutate(deleteTarget)
-							}
-						>
-							{t("common.delete", { defaultValue: "Delete" })}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-
-			<CreatePersonDialog
-				open={showCreate}
-				onOpenChange={setShowCreate}
-				onCreated={() => {
-					queryClient.invalidateQueries(trpc.users.listPaged.queryKey());
-				}}
-			/>
 		</div>
 	);
 }
 
 // ── Create Person Dialog ─────────────────────────────────────────────────────
 
-function CreatePersonDialog({
-	open,
-	onOpenChange,
-	onCreated,
-}: {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	onCreated: () => void;
-}) {
+/** Creates a person profile; resolves with it, or `undefined` when dismissed. */
+export const CreatePersonDialog = createCallable<
+	void,
+	RouterOutputs["users"]["createProfile"] | undefined
+>(({ call }) => {
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
 	const [form, setForm] = useState({
 		firstName: "",
 		lastName: "",
 		email: "",
 	});
-	const [submitting, setSubmitting] = useState(false);
 
-	const handleClose = () => {
-		onOpenChange(false);
-		setForm({ firstName: "", lastName: "", email: "" });
-	};
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setSubmitting(true);
+	const submit = useMutationFlow(call, async (call) => {
 		try {
-			await trpcClient.users.createProfile.mutate({
+			const created = await trpcClient.users.createProfile.mutate({
 				firstName: form.firstName.trim(),
 				lastName: form.lastName.trim(),
 				email: form.email.trim(),
@@ -520,76 +470,85 @@ function CreatePersonDialog({
 			toast.success(
 				t("usersHub.people.created", { defaultValue: "Person created." }),
 			);
-			onCreated();
-			handleClose();
+			queryClient.invalidateQueries({
+				queryKey: trpc.users.listPaged.queryKey(),
+			});
+			call.end(created);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : String(err));
-		} finally {
-			setSubmitting(false);
 		}
-	};
+	});
+	const submitting = submit.pending;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>
-						{t("usersHub.people.add", { defaultValue: "Add person" })}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-1">
-						<Label htmlFor="cp-first">
-							{t("common.fields.firstName", { defaultValue: "First name" })}
-						</Label>
-						<Input
-							id="cp-first"
-							required
-							value={form.firstName}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, firstName: e.target.value }))
-							}
-						/>
-					</div>
-					<div className="space-y-1">
-						<Label htmlFor="cp-last">
-							{t("common.fields.lastName", { defaultValue: "Last name" })}
-						</Label>
-						<Input
-							id="cp-last"
-							required
-							value={form.lastName}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, lastName: e.target.value }))
-							}
-						/>
-					</div>
-					<div className="space-y-1">
-						<Label htmlFor="cp-email">
-							{t("common.fields.email", { defaultValue: "Email" })}
-						</Label>
-						<Input
-							id="cp-email"
-							type="email"
-							required
-							value={form.email}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, email: e.target.value }))
-							}
-						/>
-					</div>
-					<DialogFooter>
-						<Button type="button" variant="outline" onClick={handleClose}>
-							{t("common.cancel", { defaultValue: "Cancel" })}
-						</Button>
-						<Button type="submit" disabled={submitting}>
-							{submitting
-								? t("common.saving", { defaultValue: "Saving…" })
-								: t("common.create", { defaultValue: "Create" })}
-						</Button>
-					</DialogFooter>
-				</form>
-			</DialogContent>
-		</Dialog>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submitting}
+			className="sm:max-w-lg"
+			title={t("usersHub.people.add", { defaultValue: "Add person" })}
+		>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					submit();
+				}}
+				className="space-y-4"
+			>
+				<div className="space-y-1">
+					<Label htmlFor="cp-first">
+						{t("common.fields.firstName", { defaultValue: "First name" })}
+					</Label>
+					<Input
+						id="cp-first"
+						required
+						value={form.firstName}
+						onChange={(e) =>
+							setForm((f) => ({ ...f, firstName: e.target.value }))
+						}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="cp-last">
+						{t("common.fields.lastName", { defaultValue: "Last name" })}
+					</Label>
+					<Input
+						id="cp-last"
+						required
+						value={form.lastName}
+						onChange={(e) =>
+							setForm((f) => ({ ...f, lastName: e.target.value }))
+						}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="cp-email">
+						{t("common.fields.email", { defaultValue: "Email" })}
+					</Label>
+					<Input
+						id="cp-email"
+						type="email"
+						required
+						value={form.email}
+						onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+					/>
+				</div>
+				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submitting}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", { defaultValue: "Cancel" })}
+					</Button>
+					<Button type="submit" disabled={submitting}>
+						{submitting
+							? t("common.saving", { defaultValue: "Saving…" })
+							: t("common.create", { defaultValue: "Create" })}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);

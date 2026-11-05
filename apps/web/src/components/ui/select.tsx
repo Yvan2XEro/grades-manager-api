@@ -5,9 +5,21 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 function Select({
+	onValueChange,
 	...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
-	return <SelectPrimitive.Root data-slot="select" {...props} />;
+	// Items can't have an empty value, so "" only comes from Radix's hidden
+	// native <select> when the value is set before its option is registered
+	// (e.g. selecting an entity just created in a nested dialog). Ignore it.
+	return (
+		<SelectPrimitive.Root
+			data-slot="select"
+			onValueChange={
+				onValueChange && ((value) => value !== "" && onValueChange(value))
+			}
+			{...props}
+		/>
+	);
 }
 
 function SelectGroup({

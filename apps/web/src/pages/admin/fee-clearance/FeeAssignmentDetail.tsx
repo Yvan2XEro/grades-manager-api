@@ -13,10 +13,14 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { z } from "zod";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -75,18 +79,6 @@ export default function FeeAssignmentDetail() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const [showPayment, setShowPayment] = useState(false);
-	const [showOrder, setShowOrder] = useState(false);
-	const [showExemptDialog, setShowExemptDialog] = useState(false);
-	const [showUpdateDiscount, setShowUpdateDiscount] = useState(false);
-	const [confirmOrderId, setConfirmOrderId] = useState<string | null>(null);
-	const [confirmPaymentDate, setConfirmPaymentDate] = useState(() =>
-		new Date().toISOString().slice(0, 10),
-	);
-	const [confirmPaymentMethod, setConfirmPaymentMethod] = useState("cash");
-	const [confirmReference, setConfirmReference] = useState("");
-	const [confirmNotes, setConfirmNotes] = useState("");
-	const [deletePaymentId, setDeletePaymentId] = useState<string | null>(null);
 	const [downloadingOrderId, setDownloadingOrderId] = useState<string | null>(
 		null,
 	);
@@ -128,41 +120,6 @@ export default function FeeAssignmentDetail() {
 		},
 	});
 
-	const confirmOrderMut = useMutation({
-		mutationFn: ({
-			orderId,
-			paymentDate,
-			paymentMethod,
-			reference,
-			notes,
-		}: {
-			orderId: string;
-			paymentDate: string;
-			paymentMethod: string;
-			reference?: string;
-			notes?: string;
-		}) =>
-			trpcClient.feeClearance.confirmOrder.mutate({
-				orderId,
-				paymentDate,
-				paymentMethod: paymentMethod as
-					| "cash"
-					| "bank_transfer"
-					| "mobile_money"
-					| "check"
-					| "other",
-				reference: reference || undefined,
-				notes: notes || undefined,
-			}),
-		onSuccess: () => {
-			toast.success(t("feeClearance.orders.confirmed"));
-			invalidate();
-			setConfirmOrderId(null);
-			setConfirmReference("");
-			setConfirmNotes("");
-		},
-	});
-
 	const exemptMut = useMutation({
 		mutationFn: () =>
 			trpcClient.feeClearance.exemptStudent.mutate({ assignmentId: id! }),
@@ -178,7 +135,6 @@ export default function FeeAssignmentDetail() {
 		onSuccess: () => {
 			toast.success(t("common.deleted"));
 			invalidate();
-			setDeletePaymentId(null);
 		},
 	});
 
@@ -268,18 +224,45 @@ export default function FeeAssignmentDetail() {
 						</Button>
 					)}
 					{assignment.status !== "exempt" && assignment.status !== "paid" && (
-						<Button variant="outline" onClick={() => setShowExemptDialog(true)}>
+						<Button
+							variant="outline"
+							onClick={() =>
+								ExemptWithNotesDialog.call({
+									assignmentId: id!,
+									onDone: invalidate,
+								})
+							}
+						>
 							{t("feeClearance.assignments.exempt")}
 						</Button>
 					)}
 					{assignment.status !== "paid" && assignment.status !== "exempt" && (
-						<Button variant="outline" onClick={() => setShowOrder(true)}>
+						<Button
+							variant="outline"
+							onClick={() =>
+								CreateOrderDialog.call({
+									feeAssignmentId: id!,
+									balance,
+									currency: assignment.currency,
+									installments: assignment.feeStructure?.installments ?? [],
+									onCreated: invalidate,
+								})
+							}
+						>
 							<ClipboardList className="mr-2 h-4 w-4" />
 							{t("feeClearance.orders.create")}
 						</Button>
 					)}
 					{assignment.status !== "paid" && assignment.status !== "exempt" && (
-						<Button onClick={() => setShowPayment(true)}>
+						<Button
+							onClick={() =>
+								RecordPaymentDialog.call({
+									feeAssignmentId: id!,
+									installments: assignment.feeStructure?.installments ?? [],
+									onRecorded: invalidate,
+								})
+							}
+						>
 							<Plus className="mr-2 h-4 w-4" />
 							{t("feeClearance.payments.record")}
 						</Button>
@@ -349,7 +332,15 @@ export default function FeeAssignmentDetail() {
 						variant="ghost"
 						size="sm"
 						className="ml-auto h-7 w-7 p-0"
-						onClick={() => setShowUpdateDiscount(true)}
+						onClick={() =>
+							UpdateDiscountDialog.call({
+								assignmentId: id!,
+								currentDiscountAmount: Number(assignment.discountAmount),
+								currentDiscountReason: assignment.discountReason ?? "",
+								currency: assignment.currency,
+								onSaved: invalidate,
+							})
+						}
 					>
 						<Pencil className="h-3.5 w-3.5" />
 					</Button>
@@ -425,7 +416,12 @@ export default function FeeAssignmentDetail() {
 													<Button
 														variant="ghost"
 														size="sm"
-														onClick={() => setConfirmOrderId(o.id)}
+														onClick={() =>
+															ConfirmOrderDialog.call({
+																orderId: o.id,
+																onConfirmed: invalidate,
+															})
+														}
 													>
 														<CheckCircle className="h-4 w-4 text-green-600" />
 													</Button>
@@ -506,7 +502,18 @@ export default function FeeAssignmentDetail() {
 											<Button
 												variant="ghost"
 												size="sm"
-												onClick={() => setDeletePaymentId(p.id)}
+												onClick={() =>
+													confirmAction({
+														title: t("common.confirmDelete"),
+														message: t("feeClearance.payments.deleteConfirm"),
+														confirmText: t("common.delete"),
+														cancelText: t("common.cancel"),
+														onConfirm: () =>
+															deletePaymentMut
+																.mutateAsync(p.id)
+																.catch(() => undefined),
+													})
+												}
 											>
 												<Trash2 className="h-4 w-4 text-destructive" />
 											</Button>
@@ -518,180 +525,6 @@ export default function FeeAssignmentDetail() {
 					</Table>
 				)}
 			</div>
-
-			<RecordPaymentDialog
-				open={showPayment}
-				onOpenChange={setShowPayment}
-				feeAssignmentId={id!}
-				installments={assignment.feeStructure?.installments ?? []}
-				onRecorded={() => {
-					invalidate();
-					setShowPayment(false);
-				}}
-			/>
-
-			<CreateOrderDialog
-				open={showOrder}
-				onOpenChange={setShowOrder}
-				feeAssignmentId={id!}
-				balance={balance}
-				currency={assignment.currency}
-				installments={assignment.feeStructure?.installments ?? []}
-				onCreated={() => {
-					invalidate();
-					setShowOrder(false);
-				}}
-			/>
-
-			<AlertDialog
-				open={!!confirmOrderId}
-				onOpenChange={(o) => !o && setConfirmOrderId(null)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("feeClearance.orders.confirmTitle")}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("feeClearance.orders.confirmDescription")}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<div className="grid gap-3 px-1 py-2">
-						<div className="grid gap-1">
-							<label
-								className="font-medium text-sm"
-								htmlFor="confirm-payment-date"
-							>
-								{t("feeClearance.orders.fields.paymentDate", {
-									defaultValue: "Payment date",
-								})}
-							</label>
-							<input
-								id="confirm-payment-date"
-								type="date"
-								className="rounded-md border px-3 py-1.5 text-sm"
-								value={confirmPaymentDate}
-								onChange={(e) => setConfirmPaymentDate(e.target.value)}
-							/>
-						</div>
-						<div className="grid gap-1">
-							<label
-								className="font-medium text-sm"
-								htmlFor="confirm-payment-method"
-							>
-								{t("feeClearance.orders.fields.paymentMethod", {
-									defaultValue: "Payment method",
-								})}
-							</label>
-							<select
-								id="confirm-payment-method"
-								className="rounded-md border px-3 py-1.5 text-sm"
-								value={confirmPaymentMethod}
-								onChange={(e) => setConfirmPaymentMethod(e.target.value)}
-							>
-								<option value="cash">Cash</option>
-								<option value="bank_transfer">Bank transfer</option>
-								<option value="mobile_money">Mobile money</option>
-								<option value="check">Check</option>
-								<option value="other">Other</option>
-							</select>
-						</div>
-						<div className="grid gap-1">
-							<label
-								className="font-medium text-sm"
-								htmlFor="confirm-reference"
-							>
-								{t("feeClearance.orders.fields.reference")}
-							</label>
-							<input
-								id="confirm-reference"
-								type="text"
-								className="rounded-md border px-3 py-1.5 text-sm"
-								value={confirmReference}
-								onChange={(e) => setConfirmReference(e.target.value)}
-								placeholder={t("common.optional")}
-							/>
-						</div>
-						<div className="grid gap-1">
-							<label className="font-medium text-sm" htmlFor="confirm-notes">
-								{t("feeClearance.orders.fields.notes")}
-							</label>
-							<input
-								id="confirm-notes"
-								type="text"
-								className="rounded-md border px-3 py-1.5 text-sm"
-								value={confirmNotes}
-								onChange={(e) => setConfirmNotes(e.target.value)}
-								placeholder={t("common.optional")}
-							/>
-						</div>
-					</div>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() =>
-								confirmOrderId &&
-								confirmOrderMut.mutate({
-									orderId: confirmOrderId,
-									paymentDate: confirmPaymentDate,
-									paymentMethod: confirmPaymentMethod,
-									reference: confirmReference,
-									notes: confirmNotes,
-								})
-							}
-						>
-							{t("feeClearance.orders.confirm")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-
-			<UpdateDiscountDialog
-				open={showUpdateDiscount}
-				onOpenChange={setShowUpdateDiscount}
-				assignmentId={id!}
-				currentDiscountAmount={Number(assignment.discountAmount)}
-				currentDiscountReason={assignment.discountReason ?? ""}
-				currency={assignment.currency}
-				onSaved={() => {
-					invalidate();
-					setShowUpdateDiscount(false);
-				}}
-			/>
-
-			<ExemptWithNotesDialog
-				open={showExemptDialog}
-				onOpenChange={setShowExemptDialog}
-				assignmentId={id!}
-				onDone={() => {
-					invalidate();
-					setShowExemptDialog(false);
-				}}
-			/>
-
-			<AlertDialog
-				open={!!deletePaymentId}
-				onOpenChange={(o) => !o && setDeletePaymentId(null)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("feeClearance.payments.deleteConfirm")}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() =>
-								deletePaymentId && deletePaymentMut.mutate(deletePaymentId)
-							}
-						>
-							{t("common.delete")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }
@@ -714,19 +547,14 @@ const paymentSchema = z.object({
 });
 type PaymentForm = z.infer<typeof paymentSchema>;
 
-function RecordPaymentDialog({
-	open,
-	onOpenChange,
-	feeAssignmentId,
-	installments,
-	onRecorded,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	feeAssignmentId: string;
-	installments: Array<{ id: string; label: string }>;
-	onRecorded: () => void;
-}) {
+export const RecordPaymentDialog = createCallable<
+	{
+		feeAssignmentId: string;
+		installments: Array<{ id: string; label: string }>;
+		onRecorded: () => void;
+	},
+	void
+>(({ call, feeAssignmentId, installments, onRecorded }) => {
 	const { t } = useTranslation();
 
 	const form = useForm<PaymentForm>({
@@ -757,12 +585,13 @@ function RecordPaymentDialog({
 			toast.success(t("common.saved"));
 			form.reset();
 			onRecorded();
+			call.end();
 		},
 		onError: (e) => toast.error(e.message),
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.payments.record")}</DialogTitle>
@@ -849,11 +678,7 @@ function RecordPaymentDialog({
 						)}
 					</DialogBody>
 					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
+						<Button type="button" variant="outline" onClick={() => call.end()}>
 							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={mut.isPending}>
@@ -864,101 +689,101 @@ function RecordPaymentDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
-function UpdateDiscountDialog({
-	open,
-	onOpenChange,
-	assignmentId,
-	currentDiscountAmount,
-	currentDiscountReason,
-	currency,
-	onSaved,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	assignmentId: string;
-	currentDiscountAmount: number;
-	currentDiscountReason: string;
-	currency: string;
-	onSaved: () => void;
-}) {
-	const { t } = useTranslation();
-	const [discountAmount, setDiscountAmount] = useState(
-		String(currentDiscountAmount || ""),
-	);
-	const [discountReason, setDiscountReason] = useState(currentDiscountReason);
+export const UpdateDiscountDialog = createCallable<
+	{
+		assignmentId: string;
+		currentDiscountAmount: number;
+		currentDiscountReason: string;
+		currency: string;
+		onSaved: () => void;
+	},
+	void
+>(
+	({
+		call,
+		assignmentId,
+		currentDiscountAmount,
+		currentDiscountReason,
+		currency,
+		onSaved,
+	}) => {
+		const { t } = useTranslation();
+		const [discountAmount, setDiscountAmount] = useState(
+			String(currentDiscountAmount || ""),
+		);
+		const [discountReason, setDiscountReason] = useState(currentDiscountReason);
 
-	const mut = useMutation({
-		mutationFn: () =>
-			trpcClient.feeClearance.updateDiscount.mutate({
-				assignmentId,
-				discountAmount: Number(discountAmount),
-				discountReason: discountReason || undefined,
-			}),
-		onSuccess: () => {
-			toast.success(t("common.saved"));
-			onSaved();
-		},
-		onError: (e) => toast.error(e.message),
-	});
+		const mut = useMutation({
+			mutationFn: () =>
+				trpcClient.feeClearance.updateDiscount.mutate({
+					assignmentId,
+					discountAmount: Number(discountAmount),
+					discountReason: discountReason || undefined,
+				}),
+			onSuccess: () => {
+				toast.success(t("common.saved"));
+				onSaved();
+				call.end();
+			},
+			onError: (e) => toast.error(e.message),
+		});
 
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>
-						{t("feeClearance.assignments.discountLabel")}
-					</DialogTitle>
-				</DialogHeader>
-				<DialogBody className="space-y-4">
-					<div>
-						<Label>
-							{t("feeClearance.assignments.fields.discount")} ({currency})
-						</Label>
-						<Input
-							type="number"
-							min={0}
-							value={discountAmount}
-							onChange={(e) => setDiscountAmount(e.target.value)}
-						/>
-					</div>
-					<div>
-						<Label>{t("feeClearance.assignments.discountReasonLabel")}</Label>
-						<Input
-							value={discountReason}
-							placeholder={t("common.optional")}
-							onChange={(e) => setDiscountReason(e.target.value)}
-						/>
-					</div>
-				</DialogBody>
-				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						{t("common.cancel")}
-					</Button>
-					<Button
-						disabled={discountAmount === "" || mut.isPending}
-						onClick={() => mut.mutate()}
-					>
-						{t("common.save")}
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
-}
+		return (
+			<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>
+							{t("feeClearance.assignments.discountLabel")}
+						</DialogTitle>
+					</DialogHeader>
+					<DialogBody className="space-y-4">
+						<div>
+							<Label>
+								{t("feeClearance.assignments.fields.discount")} ({currency})
+							</Label>
+							<Input
+								type="number"
+								min={0}
+								value={discountAmount}
+								onChange={(e) => setDiscountAmount(e.target.value)}
+							/>
+						</div>
+						<div>
+							<Label>{t("feeClearance.assignments.discountReasonLabel")}</Label>
+							<Input
+								value={discountReason}
+								placeholder={t("common.optional")}
+								onChange={(e) => setDiscountReason(e.target.value)}
+							/>
+						</div>
+					</DialogBody>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => call.end()}>
+							{t("common.cancel")}
+						</Button>
+						<Button
+							disabled={discountAmount === "" || mut.isPending}
+							onClick={() => mut.mutate()}
+						>
+							{t("common.save")}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		);
+	},
+	DIALOG_EXIT_MS,
+);
 
-function ExemptWithNotesDialog({
-	open,
-	onOpenChange,
-	assignmentId,
-	onDone,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	assignmentId: string;
-	onDone: () => void;
-}) {
+export const ExemptWithNotesDialog = createCallable<
+	{
+		assignmentId: string;
+		onDone: () => void;
+	},
+	void
+>(({ call, assignmentId, onDone }) => {
 	const { t } = useTranslation();
 	const [notes, setNotes] = useState("");
 
@@ -971,13 +796,14 @@ function ExemptWithNotesDialog({
 		onSuccess: () => {
 			toast.success(t("common.saved"));
 			onDone();
+			call.end();
 			setNotes("");
 		},
 		onError: (e) => toast.error(e.message),
 	});
 
 	return (
-		<AlertDialog open={open} onOpenChange={onOpenChange}>
+		<AlertDialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>
@@ -1015,25 +841,18 @@ function ExemptWithNotesDialog({
 			</AlertDialogContent>
 		</AlertDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
-function CreateOrderDialog({
-	open,
-	onOpenChange,
-	feeAssignmentId,
-	balance,
-	currency,
-	installments,
-	onCreated,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	feeAssignmentId: string;
-	balance: number;
-	currency: string;
-	installments: Array<{ id: string; label: string }>;
-	onCreated: () => void;
-}) {
+export const CreateOrderDialog = createCallable<
+	{
+		feeAssignmentId: string;
+		balance: number;
+		currency: string;
+		installments: Array<{ id: string; label: string }>;
+		onCreated: () => void;
+	},
+	void
+>(({ call, feeAssignmentId, balance, currency, installments, onCreated }) => {
 	const { t } = useTranslation();
 	const [form, setForm] = useState({
 		amount: "",
@@ -1058,6 +877,7 @@ function CreateOrderDialog({
 		onSuccess: () => {
 			toast.success(t("common.saved"));
 			onCreated();
+			call.end();
 			setForm({
 				amount: "",
 				notes: "",
@@ -1069,7 +889,7 @@ function CreateOrderDialog({
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.orders.create")}</DialogTitle>
@@ -1144,7 +964,7 @@ function CreateOrderDialog({
 					</div>
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.cancel")}
 					</Button>
 					<Button
@@ -1157,4 +977,139 @@ function CreateOrderDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
+
+/**
+ * Confirms a payment order with the actual payment details; resolves `true`
+ * once confirmed.
+ */
+export const ConfirmOrderDialog = createCallable<
+	{ orderId: string; onConfirmed: () => void },
+	boolean
+>(({ call, orderId, onConfirmed }) => {
+	const { t } = useTranslation();
+	const [paymentDate, setPaymentDate] = useState(() =>
+		new Date().toISOString().slice(0, 10),
+	);
+	const [paymentMethod, setPaymentMethod] = useState("cash");
+	const [reference, setReference] = useState("");
+	const [notes, setNotes] = useState("");
+
+	const confirmOrder = useMutationFlow(call, async (call) => {
+		try {
+			await trpcClient.feeClearance.confirmOrder.mutate({
+				orderId,
+				paymentDate,
+				paymentMethod: paymentMethod as
+					| "cash"
+					| "bank_transfer"
+					| "mobile_money"
+					| "check"
+					| "other",
+				reference: reference || undefined,
+				notes: notes || undefined,
+			});
+			toast.success(t("feeClearance.orders.confirmed"));
+			onConfirmed();
+			call.end(true);
+		} catch (err) {
+			toast.error((err as Error).message);
+		}
+	});
+
+	return (
+		<AlertDialog
+			open={!call.ended}
+			onOpenChange={(o) => !o && !confirmOrder.pending && call.end(false)}
+		>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>
+						{t("feeClearance.orders.confirmTitle")}
+					</AlertDialogTitle>
+					<AlertDialogDescription>
+						{t("feeClearance.orders.confirmDescription")}
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<div className="grid gap-3 px-1 py-2">
+					<div className="grid gap-1">
+						<label
+							className="font-medium text-sm"
+							htmlFor="confirm-payment-date"
+						>
+							{t("feeClearance.orders.fields.paymentDate", {
+								defaultValue: "Payment date",
+							})}
+						</label>
+						<input
+							id="confirm-payment-date"
+							type="date"
+							className="rounded-md border px-3 py-1.5 text-sm"
+							value={paymentDate}
+							onChange={(e) => setPaymentDate(e.target.value)}
+						/>
+					</div>
+					<div className="grid gap-1">
+						<label
+							className="font-medium text-sm"
+							htmlFor="confirm-payment-method"
+						>
+							{t("feeClearance.orders.fields.paymentMethod", {
+								defaultValue: "Payment method",
+							})}
+						</label>
+						<select
+							id="confirm-payment-method"
+							className="rounded-md border px-3 py-1.5 text-sm"
+							value={paymentMethod}
+							onChange={(e) => setPaymentMethod(e.target.value)}
+						>
+							<option value="cash">Cash</option>
+							<option value="bank_transfer">Bank transfer</option>
+							<option value="mobile_money">Mobile money</option>
+							<option value="check">Check</option>
+							<option value="other">Other</option>
+						</select>
+					</div>
+					<div className="grid gap-1">
+						<label className="font-medium text-sm" htmlFor="confirm-reference">
+							{t("feeClearance.orders.fields.reference")}
+						</label>
+						<input
+							id="confirm-reference"
+							type="text"
+							className="rounded-md border px-3 py-1.5 text-sm"
+							value={reference}
+							onChange={(e) => setReference(e.target.value)}
+							placeholder={t("common.optional")}
+						/>
+					</div>
+					<div className="grid gap-1">
+						<label className="font-medium text-sm" htmlFor="confirm-notes">
+							{t("feeClearance.orders.fields.notes")}
+						</label>
+						<input
+							id="confirm-notes"
+							type="text"
+							className="rounded-md border px-3 py-1.5 text-sm"
+							value={notes}
+							onChange={(e) => setNotes(e.target.value)}
+							placeholder={t("common.optional")}
+						/>
+					</div>
+				</div>
+				<AlertDialogFooter>
+					<AlertDialogCancel disabled={confirmOrder.pending}>
+						{t("common.cancel")}
+					</AlertDialogCancel>
+					<Button
+						disabled={confirmOrder.pending}
+						onClick={() => confirmOrder()}
+					>
+						{t("feeClearance.orders.confirm")}
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+	);
+}, DIALOG_EXIT_MS);

@@ -3,6 +3,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { confirmAction } from "@/components/callable/confirm";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
@@ -12,10 +13,8 @@ import {
 } from "@/components/ui/context-menu";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
-import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -56,8 +55,6 @@ const TeachingUnitManagement = () => {
 	const queryClient = useQueryClient();
 
 	const [selectedProgramId, setSelectedProgramId] = useState<string>("");
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 
@@ -86,8 +83,6 @@ const TeachingUnitManagement = () => {
 	const unitItems = data?.items ?? [];
 	const selection = useRowSelection(unitItems);
 
-	const { confirm, ConfirmDialog } = useConfirm();
-
 	const programMap = useMemo(
 		() => new Map(programList.map((program) => [program.id, program])),
 		[programList],
@@ -102,8 +97,6 @@ const TeachingUnitManagement = () => {
 				}),
 			);
 			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryKey());
-			setIsDeleteOpen(false);
-			setDeleteId(null);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -131,22 +124,22 @@ const TeachingUnitManagement = () => {
 			),
 	});
 
-	const handleDelete = () => {
-		if (deleteId) {
-			deleteMutation.mutate(deleteId);
-		}
-	};
-
-	const handleOpenDelete = (id: string) => {
-		setDeleteId(id);
-		setIsDeleteOpen(true);
-	};
+	const handleOpenDelete = (id: string) =>
+		confirmAction({
+			title: t("admin.teachingUnits.deleteTitle", {
+				defaultValue: "Delete teaching unit",
+			}),
+			message: t("admin.teachingUnits.deleteMessage", {
+				defaultValue: "Are you sure you want to remove this unit?",
+			}),
+			confirmText: t("common.actions.delete"),
+			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
+		});
 
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-8 w-8" />
-				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -222,7 +215,7 @@ const TeachingUnitManagement = () => {
 									variant="destructive"
 									size="sm"
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("common.bulkActions.confirmDeleteTitle", {
 												defaultValue: "Delete selected items?",
 											}),
@@ -421,23 +414,6 @@ const TeachingUnitManagement = () => {
 					)}
 				</CardContent>
 			</Card>
-
-			<ConfirmModal
-				isOpen={isDeleteOpen}
-				onClose={() => {
-					setIsDeleteOpen(false);
-					setDeleteId(null);
-				}}
-				onConfirm={handleDelete}
-				title={t("admin.teachingUnits.deleteTitle", {
-					defaultValue: "Delete teaching unit",
-				})}
-				message={t("admin.teachingUnits.deleteMessage", {
-					defaultValue: "Are you sure you want to remove this unit?",
-				})}
-				confirmText={t("common.actions.delete")}
-				isLoading={deleteMutation.isPending}
-			/>
 		</div>
 	);
 };

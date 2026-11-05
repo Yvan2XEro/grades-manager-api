@@ -10,20 +10,19 @@ import {
 	Play,
 	UserCheck,
 } from "lucide-react";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import * as XLSX from "xlsx";
+import { confirmAction } from "@/components/callable/confirm";
 import { HubNav } from "@/components/navigation/HubNav";
-import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { trpcClient } from "../../../utils/trpc";
 import type { OverrideState } from "./DeliberationContext";
 import { DeliberationContext } from "./DeliberationContext";
-import OverrideDecisionDialog from "./OverrideDecisionDialog";
-import PromoteAdmittedDialog from "./PromoteAdmittedDialog";
+import { OverrideDecisionDialog } from "./OverrideDecisionDialog";
+import { PromoteAdmittedDialog } from "./PromoteAdmittedDialog";
 
 const statusVariants: Record<
 	string,
@@ -55,11 +54,6 @@ export default function DeliberationDetail() {
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const [overrideStudent, setOverrideStudent] = useState<OverrideState | null>(
-		null,
-	);
-	const [promoteOpen, setPromoteOpen] = useState(false);
-	const { confirm, ConfirmDialog } = useConfirm();
 
 	const deliberationQuery = useQuery({
 		queryKey: ["deliberation", deliberationId],
@@ -237,6 +231,24 @@ export default function DeliberationDetail() {
 
 	const basePath = `/admin/academic-results/deliberations/${deliberationId}`;
 
+	const overrideDecision = (student: OverrideState) =>
+		OverrideDecisionDialog.call({
+			deliberationId: deliberationId!,
+			...student,
+		});
+
+	const promoteAdmitted = () => {
+		if (!delib.classId) return;
+		PromoteAdmittedDialog.call({
+			deliberationId: deliberationId!,
+			sourceClassId: delib.classId,
+			admittedCount: results.filter(
+				(r) =>
+					r.finalDecision === "admitted" || r.finalDecision === "compensated",
+			).length,
+		});
+	};
+
 	return (
 		<DeliberationContext.Provider
 			value={{
@@ -248,8 +260,8 @@ export default function DeliberationDetail() {
 				isSigned,
 				logsLoading: logsQuery.isLoading,
 				logs: logsQuery.data?.items ?? [],
-				setOverrideStudent,
-				setPromoteOpen,
+				overrideDecision,
+				promoteAdmitted,
 			}}
 		>
 			<div className="space-y-4">
@@ -311,7 +323,7 @@ export default function DeliberationDetail() {
 								</Button>
 								<Button
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("admin.deliberations.confirm.closeTitle"),
 											message: t("admin.deliberations.confirm.close"),
 											confirmText: t("admin.deliberations.actions.close"),
@@ -330,7 +342,7 @@ export default function DeliberationDetail() {
 								<Button
 									variant="outline"
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("admin.deliberations.confirm.reopenTitle"),
 											message: t("admin.deliberations.confirm.reopen"),
 											confirmText: t("admin.deliberations.actions.reopen"),
@@ -341,7 +353,7 @@ export default function DeliberationDetail() {
 								>
 									{t("admin.deliberations.actions.reopen")}
 								</Button>
-								<Button variant="outline" onClick={() => setPromoteOpen(true)}>
+								<Button variant="outline" onClick={promoteAdmitted}>
 									<UserCheck className="mr-2 h-4 w-4" />
 									{t("admin.deliberations.promote.button")}
 								</Button>
@@ -371,7 +383,7 @@ export default function DeliberationDetail() {
 								</Button>
 								<Button
 									onClick={() =>
-										confirm({
+										confirmAction({
 											title: t("admin.deliberations.confirm.signTitle"),
 											message: t("admin.deliberations.confirm.sign"),
 											confirmText: t("admin.deliberations.actions.sign"),
@@ -387,7 +399,7 @@ export default function DeliberationDetail() {
 						)}
 						{isSigned && (
 							<>
-								<Button variant="outline" onClick={() => setPromoteOpen(true)}>
+								<Button variant="outline" onClick={promoteAdmitted}>
 									<UserCheck className="mr-2 h-4 w-4" />
 									{t("admin.deliberations.promote.button")}
 								</Button>
@@ -422,36 +434,6 @@ export default function DeliberationDetail() {
 
 				{/* Hub tabs */}
 				<HubNav tabs={TABS} basePath={basePath} />
-
-				{/* Override dialog */}
-				{overrideStudent && (
-					<OverrideDecisionDialog
-						open={!!overrideStudent}
-						onOpenChange={(o) => !o && setOverrideStudent(null)}
-						deliberationId={deliberationId!}
-						studentResultId={overrideStudent.studentResultId}
-						studentName={overrideStudent.studentName}
-						currentDecision={overrideStudent.currentDecision}
-					/>
-				)}
-
-				{/* Promote admitted dialog */}
-				{(isClosed || isSigned) && delib.classId && (
-					<PromoteAdmittedDialog
-						open={promoteOpen}
-						onOpenChange={setPromoteOpen}
-						deliberationId={deliberationId!}
-						sourceClassId={delib.classId}
-						admittedCount={
-							results.filter(
-								(r) =>
-									r.finalDecision === "admitted" ||
-									r.finalDecision === "compensated",
-							).length
-						}
-					/>
-				)}
-				<ConfirmDialog />
 			</div>
 		</DeliberationContext.Provider>
 	);

@@ -8,8 +8,10 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,208 +66,18 @@ type ExecutionResult = {
 	evaluationData?: EvaluationData;
 };
 
-export function ExecutionHistoryPage() {
-	const { t } = useTranslation();
-	const navigate = useNavigate();
-	const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(
-		null,
-	);
-	const [filterYear, setFilterYear] = useState<string | null>(null);
+/** Read-only breakdown of one promotion execution, student by student. */
+export const ExecutionDetailsDialog = createCallable<{ executionId: string }>(
+	({ call, executionId }) => {
+		const { t } = useTranslation();
+		const { data: executionDetails } = useQuery({
+			queryKey: ["promotionExecutionDetails", executionId],
+			queryFn: async () =>
+				trpcClient.promotionRules.getExecutionDetails.query({ executionId }),
+		});
 
-	// Fetch executions
-	const { data: executionsData, isLoading } = useQuery({
-		queryKey: ["promotionExecutions", filterYear],
-		queryFn: async () =>
-			trpcClient.promotionRules.listExecutions.query({
-				...(filterYear ? { academicYearId: filterYear } : {}),
-			}),
-	});
-
-	// Fetch execution details
-	const { data: executionDetails } = useQuery({
-		queryKey: ["promotionExecutionDetails", selectedExecutionId],
-		queryFn: async () =>
-			trpcClient.promotionRules.getExecutionDetails.query({
-				executionId: selectedExecutionId!,
-			}),
-		enabled: !!selectedExecutionId,
-	});
-
-	return (
-		<div className="space-y-6">
-			{/* Header */}
-			<div className="space-y-4">
-				<Button
-					variant="ghost"
-					size="sm"
-					onClick={() => navigate("/admin/promotion-rules")}
-					className="gap-2"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					{t("common.actions.back")}
-				</Button>
-				<div>
-					<h1 className="text-foreground">
-						{t("admin.promotionRules.history.title")}
-					</h1>
-					<p className="mt-1 text-muted-foreground">
-						{t("admin.promotionRules.history.subtitle")}
-					</p>
-				</div>
-			</div>
-
-			<div className="flex flex-wrap items-end gap-4">
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.academicYear", {
-							defaultValue: "Academic Year",
-						})}
-					</Label>
-					<AcademicYearSelect
-						value={filterYear}
-						onChange={(v) => setFilterYear(v)}
-					/>
-				</div>
-			</div>
-
-			{/* Executions List */}
-			<Card className="border-0 shadow-sm">
-				<CardContent>
-					{isLoading ? (
-						<TableSkeleton columns={7} rows={8} />
-					) : executionsData?.items && executionsData.items.length > 0 ? (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>
-										{t("admin.promotionRules.history.table.date")}
-									</TableHead>
-									<TableHead>
-										{t("admin.promotionRules.history.table.rule")}
-									</TableHead>
-									<TableHead>
-										{t("admin.promotionRules.history.table.classes")}
-									</TableHead>
-									<TableHead>
-										{t("admin.promotionRules.history.table.students")}
-									</TableHead>
-									<TableHead>
-										{t("admin.promotionRules.history.table.successRate")}
-									</TableHead>
-									<TableHead>
-										{t("admin.promotionRules.history.table.executedBy")}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("admin.promotionRules.history.table.actions")}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{executionsData?.items?.map((execution) => (
-									<TableRow
-										key={execution.id}
-										actions={
-											<ContextMenuItem
-												onSelect={() => setSelectedExecutionId(execution.id)}
-											>
-												{t("admin.promotionRules.history.table.viewDetails")}
-											</ContextMenuItem>
-										}
-									>
-										<TableCell className="font-medium">
-											<div className="flex items-center gap-2">
-												<Clock className="h-4 w-4 text-muted-foreground" />
-												{new Date(execution.executedAt).toLocaleDateString()}
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="font-medium">
-												{(execution as PromotionExecution).metadata?.ruleName ||
-													"N/A"}
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-2 text-sm">
-												<span>
-													{(execution as PromotionExecution).metadata
-														?.sourceClassName || "N/A"}
-												</span>
-												<ArrowRight className="h-3 w-3" />
-												<span>
-													{(execution as PromotionExecution).metadata
-														?.targetClassName || "N/A"}
-												</span>
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-2">
-												<Badge variant="outline">
-													{t("admin.promotionRules.history.badges.evaluated", {
-														count: execution.studentsEvaluated,
-													})}
-												</Badge>
-												<Badge variant="default" className="bg-emerald-600">
-													{t("admin.promotionRules.history.badges.promoted", {
-														count: execution.studentsPromoted,
-													})}
-												</Badge>
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-1">
-												{execution.studentsPromoted ===
-												execution.studentsEvaluated ? (
-													<CheckCircle2 className="h-4 w-4 text-emerald-600" />
-												) : (
-													<XCircle className="h-4 w-4 text-muted-foreground" />
-												)}
-												<span>
-													{execution.studentsEvaluated > 0
-														? (
-																(execution.studentsPromoted /
-																	execution.studentsEvaluated) *
-																100
-															).toFixed(0)
-														: 0}
-													%
-												</span>
-											</div>
-										</TableCell>
-										<TableCell className="text-muted-foreground text-xs">
-											{/* Would need to join with domainUsers to show name */}
-											{t("admin.promotionRules.history.table.user")}
-										</TableCell>
-										<TableCell className="text-right">
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => setSelectedExecutionId(execution.id)}
-											>
-												<Eye className="mr-1 h-4 w-4" />
-												{t("admin.promotionRules.history.table.viewDetails")}
-											</Button>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					) : (
-						<Empty className="border border-dashed">
-							<EmptyHeader>
-								<EmptyDescription>
-									{t("admin.promotionRules.history.emptyState")}
-								</EmptyDescription>
-							</EmptyHeader>
-						</Empty>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Execution Details Dialog */}
-			<Dialog
-				open={!!selectedExecutionId}
-				onOpenChange={(open) => !open && setSelectedExecutionId(null)}
-			>
+		return (
+			<Dialog open={!call.ended} onOpenChange={(open) => !open && call.end()}>
 				<DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
 					<DialogHeader>
 						<DialogTitle>
@@ -424,6 +236,202 @@ export function ExecutionHistoryPage() {
 					</DialogBody>
 				</DialogContent>
 			</Dialog>
+		);
+	},
+	DIALOG_EXIT_MS,
+);
+
+export function ExecutionHistoryPage() {
+	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const [filterYear, setFilterYear] = useState<string | null>(null);
+
+	// Fetch executions
+	const { data: executionsData, isLoading } = useQuery({
+		queryKey: ["promotionExecutions", filterYear],
+		queryFn: async () =>
+			trpcClient.promotionRules.listExecutions.query({
+				...(filterYear ? { academicYearId: filterYear } : {}),
+			}),
+	});
+
+	return (
+		<div className="space-y-6">
+			{/* Header */}
+			<div className="space-y-4">
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={() => navigate("/admin/promotion-rules")}
+					className="gap-2"
+				>
+					<ArrowLeft className="h-4 w-4" />
+					{t("common.actions.back")}
+				</Button>
+				<div>
+					<h1 className="text-foreground">
+						{t("admin.promotionRules.history.title")}
+					</h1>
+					<p className="mt-1 text-muted-foreground">
+						{t("admin.promotionRules.history.subtitle")}
+					</p>
+				</div>
+			</div>
+
+			<div className="flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => setFilterYear(v)}
+					/>
+				</div>
+			</div>
+
+			{/* Executions List */}
+			<Card className="border-0 shadow-sm">
+				<CardContent>
+					{isLoading ? (
+						<TableSkeleton columns={7} rows={8} />
+					) : executionsData?.items && executionsData.items.length > 0 ? (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>
+										{t("admin.promotionRules.history.table.date")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.rule")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.classes")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.students")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.successRate")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.executedBy")}
+									</TableHead>
+									<TableHead className="text-right">
+										{t("admin.promotionRules.history.table.actions")}
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{executionsData?.items?.map((execution) => (
+									<TableRow
+										key={execution.id}
+										actions={
+											<ContextMenuItem
+												onSelect={() =>
+													ExecutionDetailsDialog.call({
+														executionId: execution.id,
+													})
+												}
+											>
+												{t("admin.promotionRules.history.table.viewDetails")}
+											</ContextMenuItem>
+										}
+									>
+										<TableCell className="font-medium">
+											<div className="flex items-center gap-2">
+												<Clock className="h-4 w-4 text-muted-foreground" />
+												{new Date(execution.executedAt).toLocaleDateString()}
+											</div>
+										</TableCell>
+										<TableCell>
+											<div className="font-medium">
+												{(execution as PromotionExecution).metadata?.ruleName ||
+													"N/A"}
+											</div>
+										</TableCell>
+										<TableCell>
+											<div className="flex items-center gap-2 text-sm">
+												<span>
+													{(execution as PromotionExecution).metadata
+														?.sourceClassName || "N/A"}
+												</span>
+												<ArrowRight className="h-3 w-3" />
+												<span>
+													{(execution as PromotionExecution).metadata
+														?.targetClassName || "N/A"}
+												</span>
+											</div>
+										</TableCell>
+										<TableCell>
+											<div className="flex items-center gap-2">
+												<Badge variant="outline">
+													{t("admin.promotionRules.history.badges.evaluated", {
+														count: execution.studentsEvaluated,
+													})}
+												</Badge>
+												<Badge variant="default" className="bg-emerald-600">
+													{t("admin.promotionRules.history.badges.promoted", {
+														count: execution.studentsPromoted,
+													})}
+												</Badge>
+											</div>
+										</TableCell>
+										<TableCell>
+											<div className="flex items-center gap-1">
+												{execution.studentsPromoted ===
+												execution.studentsEvaluated ? (
+													<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+												) : (
+													<XCircle className="h-4 w-4 text-muted-foreground" />
+												)}
+												<span>
+													{execution.studentsEvaluated > 0
+														? (
+																(execution.studentsPromoted /
+																	execution.studentsEvaluated) *
+																100
+															).toFixed(0)
+														: 0}
+													%
+												</span>
+											</div>
+										</TableCell>
+										<TableCell className="text-muted-foreground text-xs">
+											{/* Would need to join with domainUsers to show name */}
+											{t("admin.promotionRules.history.table.user")}
+										</TableCell>
+										<TableCell className="text-right">
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={() =>
+													ExecutionDetailsDialog.call({
+														executionId: execution.id,
+													})
+												}
+											>
+												<Eye className="mr-1 h-4 w-4" />
+												{t("admin.promotionRules.history.table.viewDetails")}
+											</Button>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					) : (
+						<Empty className="border border-dashed">
+							<EmptyHeader>
+								<EmptyDescription>
+									{t("admin.promotionRules.history.emptyState")}
+								</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
+					)}
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

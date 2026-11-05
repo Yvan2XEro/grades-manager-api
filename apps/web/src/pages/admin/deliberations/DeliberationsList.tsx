@@ -4,9 +4,9 @@ import { Gavel, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { confirmAction } from "@/components/callable/confirm";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusStepper } from "@/components/ui/status-stepper";
-import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Badge } from "../../../components/ui/badge";
@@ -46,7 +46,7 @@ import {
 import { TablePagination } from "../../../components/ui/table-pagination";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpc, trpcClient } from "../../../utils/trpc";
-import CreateDeliberationDialog from "./CreateDeliberationDialog";
+import { CreateDeliberationDialog } from "./CreateDeliberationDialog";
 
 const statusVariants: Record<
 	string,
@@ -65,13 +65,11 @@ export default function DeliberationsList() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [statusFilter, setStatusFilter] = useState<string>("open");
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
-	const { confirm, ConfirmDialog } = useConfirm();
 
 	const handleFilter =
 		<T,>(setter: (v: T) => void) =>
@@ -112,7 +110,7 @@ export default function DeliberationsList() {
 				title={t("admin.deliberations.title")}
 				description={t("admin.deliberations.subtitle")}
 				actions={
-					<Button onClick={() => setIsCreateOpen(true)}>
+					<Button onClick={() => CreateDeliberationDialog.call({})}>
 						<Plus className="mr-2 h-4 w-4" />
 						{t("admin.deliberations.actions.create")}
 					</Button>
@@ -227,7 +225,7 @@ export default function DeliberationsList() {
 													<ContextMenuItem
 														className="text-destructive"
 														onSelect={() =>
-															confirm({
+															confirmAction({
 																title: t(
 																	"admin.deliberations.confirm.deleteTitle",
 																	{ defaultValue: "Delete deliberation?" },
@@ -288,7 +286,7 @@ export default function DeliberationsList() {
 														<DropdownMenuItem
 															className="text-destructive"
 															onClick={() =>
-																confirm({
+																confirmAction({
 																	title: t(
 																		"admin.deliberations.confirm.deleteTitle",
 																		{ defaultValue: "Delete deliberation?" },
@@ -329,12 +327,6 @@ export default function DeliberationsList() {
 					setPage(1);
 				}}
 			/>
-
-			<CreateDeliberationDialog
-				open={isCreateOpen}
-				onOpenChange={setIsCreateOpen}
-			/>
-			<ConfirmDialog />
 		</div>
 	);
 }

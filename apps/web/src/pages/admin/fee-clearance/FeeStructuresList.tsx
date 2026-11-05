@@ -1,19 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
+import { confirmAction } from "@/components/callable/confirm";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,8 +51,6 @@ export default function FeeStructuresList() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const [showCreate, setShowCreate] = useState(false);
-	const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 	const [yearFilter, setYearFilter] = useState<string>("");
 
 	const { data: structures, isLoading } = useQuery(
@@ -76,7 +67,6 @@ export default function FeeStructuresList() {
 				queryKey: trpc.feeClearance.listStructures.queryKey(),
 			});
 			toast.success(t("common.deleted"));
-			setDeleteTarget(null);
 		},
 	});
 
@@ -96,7 +86,16 @@ export default function FeeStructuresList() {
 						{t("feeClearance.structures.subtitle")}
 					</p>
 				</div>
-				<Button onClick={() => setShowCreate(true)}>
+				<Button
+					onClick={() =>
+						CreateStructureDialog.call({
+							onCreated: () =>
+								queryClient.invalidateQueries({
+									queryKey: trpc.feeClearance.listStructures.queryKey(),
+								}),
+						})
+					}
+				>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("feeClearance.structures.create")}
 				</Button>
@@ -181,7 +180,16 @@ export default function FeeStructuresList() {
 									<Button
 										variant="ghost"
 										size="sm"
-										onClick={() => setDeleteTarget(s.id)}
+										onClick={() =>
+											confirmAction({
+												title: t("common.confirmDelete"),
+												message: t("feeClearance.structures.deleteConfirm"),
+												confirmText: t("common.delete"),
+												cancelText: t("common.cancel"),
+												onConfirm: () =>
+													deleteMut.mutateAsync(s.id).catch(() => undefined),
+											})
+										}
 									>
 										<Trash2 className="h-4 w-4 text-destructive" />
 									</Button>
@@ -191,52 +199,16 @@ export default function FeeStructuresList() {
 					</TableBody>
 				</Table>
 			)}
-
-			<CreateStructureDialog
-				open={showCreate}
-				onOpenChange={setShowCreate}
-				onCreated={() => {
-					queryClient.invalidateQueries({
-						queryKey: trpc.feeClearance.listStructures.queryKey(),
-					});
-					setShowCreate(false);
-				}}
-			/>
-
-			<AlertDialog
-				open={!!deleteTarget}
-				onOpenChange={(o) => !o && setDeleteTarget(null)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("feeClearance.structures.deleteConfirm")}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() => deleteTarget && deleteMut.mutate(deleteTarget)}
-						>
-							{t("common.delete")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }
 
-function CreateStructureDialog({
-	open,
-	onOpenChange,
-	onCreated,
-}: {
-	open: boolean;
-	onOpenChange: (o: boolean) => void;
-	onCreated: () => void;
-}) {
+export const CreateStructureDialog = createCallable<
+	{
+		onCreated: () => void;
+	},
+	void
+>(({ call, onCreated }) => {
 	const { t } = useTranslation();
 	const [form, setForm] = useState({
 		name: "",
@@ -280,6 +252,7 @@ function CreateStructureDialog({
 		onSuccess: () => {
 			toast.success(t("common.created"));
 			onCreated();
+			call.end();
 			setForm({
 				name: "",
 				academicYearId: "",
@@ -294,7 +267,7 @@ function CreateStructureDialog({
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.structures.create")}</DialogTitle>
@@ -426,7 +399,7 @@ function CreateStructureDialog({
 					)}
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button variant="outline" onClick={() => call.end()}>
 						{t("common.cancel")}
 					</Button>
 					<Button
@@ -444,4 +417,4 @@ function CreateStructureDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+}, DIALOG_EXIT_MS);
