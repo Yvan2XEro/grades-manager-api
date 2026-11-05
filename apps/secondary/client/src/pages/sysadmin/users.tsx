@@ -11,18 +11,18 @@ import {
 } from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
@@ -42,286 +42,206 @@ function formatDate(d: string | Date | null, locale: string) {
 
 // ─── Create user dialog ────────────────────────────────────────────────────────
 
-function CreateUserDialog({
-	open,
-	onClose,
-	onDone,
-}: {
-	open: boolean;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+export type CreateUserResult = RouterOutputs["systemAdmin"]["createUser"];
+
+/** Resolves with the created account, or `undefined` when dismissed. */
+export const CreateUserDialog = createCallable<
+	{ defaultName?: string },
+	CreateUserResult | undefined
+>(({ call, defaultName }) => {
 	const { t } = useTranslation();
-	const [name, setName] = useState("");
+	const utils = trpc.useUtils();
+	const [name, setName] = useState(defaultName ?? "");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [role, setRole] = useState<"user" | "admin">("user");
 	const create = trpc.systemAdmin.createUser.useMutation({
-		onSuccess: () => {
-			onDone();
-			onClose();
-			setName("");
-			setEmail("");
-			setPassword("");
-			setRole("user");
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.systemAdmin.listUsers.invalidate(),
 	});
 
-	const handleClose = () => {
-		setName("");
-		setEmail("");
-		setPassword("");
-		setRole("user");
-		onClose();
-	};
-
-	return (
-		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.users.create_user_title", "Create user account")}
-					</DialogTitle>
-					<DialogDescription className="text-muted-foreground text-sm">
-						{t(
-							"sysadmin.users.create_user_desc",
-							"The account is created immediately. Share the password with the user.",
-						)}
-					</DialogDescription>
-				</DialogHeader>
-				<div className="space-y-4 pt-1">
-					<div className="space-y-1.5">
-						<Label htmlFor="cu-name">
-							{t("sysadmin.users.field_name", "Full name")}
-						</Label>
-						<Input
-							id="cu-name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							placeholder="Jean Dupont"
-							autoComplete="off"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label htmlFor="cu-email">
-							{t("sysadmin.users.field_email", "Email")}
-						</Label>
-						<Input
-							id="cu-email"
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="jean@exemple.com"
-							autoComplete="off"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label htmlFor="cu-password">
-							{t("sysadmin.users.field_password", "Password")}
-						</Label>
-						<Input
-							id="cu-password"
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							placeholder="••••••••"
-							autoComplete="new-password"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label htmlFor="cu-role">
-							{t("sysadmin.users.field_role", "Platform role")}
-						</Label>
-						<Combobox
-							options={[
-								{ value: "user", label: t("sysadmin.users.role_user", "User") },
-								{
-									value: "admin",
-									label: t("sysadmin.users.role_admin", "Admin"),
-								},
-							]}
-							value={role}
-							onValueChange={(v) => setRole(v as "user" | "admin")}
-							placeholder={t("sysadmin.users.role_user", "User")}
-						/>
-					</div>
-					<div className="flex justify-end gap-2 pt-1">
-						<Button variant="ghost" onClick={handleClose}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							disabled={
-								create.isPending ||
-								!name.trim() ||
-								!email.trim() ||
-								password.length < 8
-							}
-							onClick={() =>
-								create.mutate({
-									name: name.trim(),
-									email: email.trim(),
-									password,
-									role,
-								})
-							}
-						>
-							{create.isPending
-								? t("sysadmin.users.creating", "Creating…")
-								: t("sysadmin.users.create_btn", "Create account")}
-						</Button>
-					</div>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-// ─── Ban dialog ────────────────────────────────────────────────────────────────
-
-function BanDialog({
-	user,
-	onClose,
-	onDone,
-}: {
-	user: { id: string; name: string } | null;
-	onClose: () => void;
-	onDone: () => void;
-}) {
-	const { t } = useTranslation();
-	const [reason, setReason] = useState("");
-	const ban = trpc.systemAdmin.banUser.useMutation({
-		onSuccess: () => {
-			onDone();
-			onClose();
-			setReason("");
-		},
-		onError: (err) => errorToast(err, t),
+	const submit = useMutationFlow(call, async (call) => {
+		try {
+			call.end(
+				await create.mutateAsync({
+					name: name.trim(),
+					email: email.trim(),
+					password,
+					role,
+				}),
+			);
+		} catch (err) {
+			errorToast(err, t);
+		}
 	});
 
 	return (
-		<Dialog open={!!user} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.users.ban_title", "Ban user?")}
-					</DialogTitle>
-				</DialogHeader>
-				<p className="text-muted-foreground text-sm">
-					<span className="font-medium text-foreground">{user?.name}</span>{" "}
-					{t(
-						"sysadmin.users.ban_desc_1",
-						"will be immediately signed out and blocked from logging in.",
-					)}
-				</p>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="sm:max-w-md"
+			title={t("sysadmin.users.create_user_title", "Create user account")}
+			description={t(
+				"sysadmin.users.create_user_desc",
+				"The account is created immediately. Share the password with the user.",
+			)}
+		>
+			<div className="space-y-4 pt-1">
 				<div className="space-y-1.5">
-					<Label htmlFor="ban-reason">
-						{t("sysadmin.users.ban_reason", "Reason (optional)")}
+					<Label htmlFor="cu-name">
+						{t("sysadmin.users.field_name", "Full name")}
 					</Label>
 					<Input
-						id="ban-reason"
-						value={reason}
-						onChange={(e) => setReason(e.target.value)}
-						placeholder={t(
-							"sysadmin.users.ban_reason_placeholder",
-							"Policy violation…",
-						)}
+						id="cu-name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						placeholder="Jean Dupont"
+						autoComplete="off"
+					/>
+				</div>
+				<div className="space-y-1.5">
+					<Label htmlFor="cu-email">
+						{t("sysadmin.users.field_email", "Email")}
+					</Label>
+					<Input
+						id="cu-email"
+						type="email"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						placeholder="jean@exemple.com"
+						autoComplete="off"
+					/>
+				</div>
+				<div className="space-y-1.5">
+					<Label htmlFor="cu-password">
+						{t("sysadmin.users.field_password", "Password")}
+					</Label>
+					<Input
+						id="cu-password"
+						type="password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						placeholder="••••••••"
+						autoComplete="new-password"
+					/>
+				</div>
+				<div className="space-y-1.5">
+					<Label htmlFor="cu-role">
+						{t("sysadmin.users.field_role", "Platform role")}
+					</Label>
+					<Combobox
+						options={[
+							{ value: "user", label: t("sysadmin.users.role_user", "User") },
+							{
+								value: "admin",
+								label: t("sysadmin.users.role_admin", "Admin"),
+							},
+						]}
+						value={role}
+						onValueChange={(v) => setRole(v as "user" | "admin")}
+						placeholder={t("sysadmin.users.role_user", "User")}
 					/>
 				</div>
 				<div className="flex justify-end gap-2 pt-1">
-					<Button variant="ghost" onClick={onClose}>
+					<Button
+						variant="ghost"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
 						{t("common.cancel")}
 					</Button>
 					<Button
-						variant="destructive"
-						disabled={ban.isPending}
-						onClick={() =>
-							user &&
-							ban.mutate({ userId: user.id, reason: reason || undefined })
+						disabled={
+							submit.pending ||
+							!name.trim() ||
+							!email.trim() ||
+							password.length < 8
 						}
+						onClick={() => submit()}
 					>
-						{ban.isPending
-							? t("sysadmin.users.banning", "Banning…")
-							: t("sysadmin.users.ban_user", "Ban user")}
+						{submit.pending
+							? t("sysadmin.users.creating", "Creating…")
+							: t("sysadmin.users.create_btn", "Create account")}
 					</Button>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</div>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
-// ─── Role confirm dialog ───────────────────────────────────────────────────────
+// ─── Ban dialog ────────────────────────────────────────────────────────────────
 
-function RoleDialog({
-	user,
-	onClose,
-	onDone,
-}: {
-	user: { id: string; name: string; role: string | null } | null;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+/** Bans a user with an optional reason; resolves `true` once banned. */
+export const BanUserDialog = createCallable<
+	{ user: { id: string; name: string } },
+	boolean
+>(({ call, user }) => {
 	const { t } = useTranslation();
-	const targetRole = user?.role === "admin" ? "user" : "admin";
-	const setRole = trpc.systemAdmin.setUserRole.useMutation({
-		onSuccess: () => {
-			onDone();
-			onClose();
-		},
-		onError: (err) => errorToast(err, t),
+	const utils = trpc.useUtils();
+	const [reason, setReason] = useState("");
+	const ban = trpc.systemAdmin.banUser.useMutation({
+		onSuccess: () => utils.systemAdmin.listUsers.invalidate(),
+	});
+
+	const submit = useMutationFlow(call, async (call) => {
+		try {
+			await ban.mutateAsync({ userId: user.id, reason: reason || undefined });
+			call.end(true);
+		} catch (err) {
+			errorToast(err, t);
+		}
 	});
 
 	return (
-		<Dialog open={!!user} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{targetRole === "admin"
-							? t("sysadmin.users.grant_admin_title", "Grant admin access?")
-							: t("sysadmin.users.revoke_admin_title", "Revoke admin access?")}
-					</DialogTitle>
-				</DialogHeader>
-				<p className="text-muted-foreground text-sm">
-					{targetRole === "admin" ? (
-						<>
-							<span className="font-medium text-foreground">{user?.name}</span>{" "}
-							{t(
-								"sysadmin.users.grant_admin_desc_1",
-								"will gain full platform admin privileges. Only do this for trusted operators.",
-							)}
-						</>
-					) : (
-						<>
-							<span className="font-medium text-foreground">{user?.name}</span>{" "}
-							{t(
-								"sysadmin.users.revoke_admin_desc_1",
-								"will lose platform admin access and revert to a regular user.",
-							)}
-						</>
+		<CallableDialog
+			call={call}
+			dismissValue={false}
+			preventDismiss={submit.pending}
+			className="sm:max-w-sm"
+			title={t("sysadmin.users.ban_title", "Ban user?")}
+		>
+			<p className="text-muted-foreground text-sm">
+				<span className="font-medium text-foreground">{user.name}</span>{" "}
+				{t(
+					"sysadmin.users.ban_desc_1",
+					"will be immediately signed out and blocked from logging in.",
+				)}
+			</p>
+			<div className="space-y-1.5">
+				<Label htmlFor="ban-reason">
+					{t("sysadmin.users.ban_reason", "Reason (optional)")}
+				</Label>
+				<Input
+					id="ban-reason"
+					value={reason}
+					onChange={(e) => setReason(e.target.value)}
+					placeholder={t(
+						"sysadmin.users.ban_reason_placeholder",
+						"Policy violation…",
 					)}
-				</p>
-				<div className="flex justify-end gap-2 pt-1">
-					<Button variant="ghost" onClick={onClose}>
-						{t("common.cancel")}
-					</Button>
-					<Button
-						variant={targetRole === "admin" ? "default" : "destructive"}
-						disabled={setRole.isPending}
-						onClick={() =>
-							user && setRole.mutate({ userId: user.id, role: targetRole })
-						}
-					>
-						{setRole.isPending
-							? t("sysadmin.users.saving", "Saving…")
-							: targetRole === "admin"
-								? t("sysadmin.users.grant_admin_btn", "Grant admin")
-								: t("sysadmin.users.revoke_admin_btn", "Revoke admin")}
-					</Button>
-				</div>
-			</DialogContent>
-		</Dialog>
+				/>
+			</div>
+			<div className="flex justify-end gap-2 pt-1">
+				<Button
+					variant="ghost"
+					disabled={submit.pending}
+					onClick={() => call.end(false)}
+				>
+					{t("common.cancel")}
+				</Button>
+				<Button
+					variant="destructive"
+					disabled={submit.pending}
+					onClick={() => submit()}
+				>
+					{submit.pending
+						? t("sysadmin.users.banning", "Banning…")
+						: t("sysadmin.users.ban_user", "Ban user")}
+				</Button>
+			</div>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Row actions ──────────────────────────────────────────────────────────────
 
@@ -416,17 +336,6 @@ export function SysAdminUsers() {
 
 	const sorting: SortingState = [{ id: sortBy, desc: sortDir === "desc" }];
 
-	const [createOpen, setCreateOpen] = useState(false);
-	const [banTarget, setBanTarget] = useState<{
-		id: string;
-		name: string;
-	} | null>(null);
-	const [roleTarget, setRoleTarget] = useState<{
-		id: string;
-		name: string;
-		role: string | null;
-	} | null>(null);
-
 	const bannedFilter =
 		banned === "true" ? true : banned === "false" ? false : undefined;
 
@@ -444,6 +353,48 @@ export function SysAdminUsers() {
 		onSuccess: () => refetch(),
 		onError: (err) => errorToast(err, t),
 	});
+
+	const setUserRole = trpc.systemAdmin.setUserRole.useMutation({
+		onSuccess: () => refetch(),
+	});
+
+	const confirmRoleChange = (user: {
+		id: string;
+		name: string;
+		role: string | null;
+	}) => {
+		const targetRole = user.role === "admin" ? "user" : "admin";
+		const grant = targetRole === "admin";
+		return Confirm.call({
+			title: grant
+				? t("sysadmin.users.grant_admin_title", "Grant admin access?")
+				: t("sysadmin.users.revoke_admin_title", "Revoke admin access?"),
+			description: `${user.name} ${
+				grant
+					? t(
+							"sysadmin.users.grant_admin_desc_1",
+							"will gain full platform admin privileges. Only do this for trusted operators.",
+						)
+					: t(
+							"sysadmin.users.revoke_admin_desc_1",
+							"will lose platform admin access and revert to a regular user.",
+						)
+			}`,
+			confirmLabel: grant
+				? t("sysadmin.users.grant_admin_btn", "Grant admin")
+				: t("sysadmin.users.revoke_admin_btn", "Revoke admin"),
+			cancelLabel: t("common.cancel"),
+			destructive: !grant,
+			mutationFn: async (call) => {
+				try {
+					await setUserRole.mutateAsync({ userId: user.id, role: targetRole });
+					call.end(true);
+				} catch (err) {
+					errorToast(err, t);
+				}
+			},
+		});
+	};
 
 	const rows = data?.rows ?? [];
 	const total = data?.total ?? 0;
@@ -537,9 +488,9 @@ export function SysAdminUsers() {
 			cell: ({ row }) => (
 				<RowActions
 					user={row.original}
-					onBan={setBanTarget}
+					onBan={(user) => BanUserDialog.call({ user })}
 					onUnban={(userId) => unban.mutate({ userId })}
-					onRole={setRoleTarget}
+					onRole={confirmRoleChange}
 					isUnbanning={unban.isPending}
 				/>
 			),
@@ -562,7 +513,7 @@ export function SysAdminUsers() {
 						)}
 					</p>
 				</div>
-				<Button onClick={() => setCreateOpen(true)}>
+				<Button onClick={() => CreateUserDialog.call({})}>
 					<Plus className="h-4 w-4" />
 					{t("sysadmin.users.create_user", "Create account")}
 				</Button>
@@ -654,22 +605,6 @@ export function SysAdminUsers() {
 					onPageSizeChange={(s) => setQuery({ pageSize: s, page: 1 })}
 				/>
 			)}
-
-			<CreateUserDialog
-				open={createOpen}
-				onClose={() => setCreateOpen(false)}
-				onDone={() => refetch()}
-			/>
-			<BanDialog
-				user={banTarget}
-				onClose={() => setBanTarget(null)}
-				onDone={() => refetch()}
-			/>
-			<RoleDialog
-				user={roleTarget}
-				onClose={() => setRoleTarget(null)}
-				onDone={() => refetch()}
-			/>
 		</div>
 	);
 }

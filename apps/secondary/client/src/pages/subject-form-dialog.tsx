@@ -1,19 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { errorToast } from "@/lib/error-toast";
-import { trpc } from "@/utils/trpc";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 const schema = z.object({
 	name: z.string().min(1).max(100),
@@ -34,45 +33,32 @@ interface SubjectData {
 	subjectGroup?: string | null;
 }
 
+export type SubjectFormResult = RouterOutputs["subjects"]["create"];
+
 interface Props {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	onSuccess: () => void;
 	subject?: SubjectData;
 }
 
-export function SubjectFormDialog({
-	open,
-	onOpenChange,
-	onSuccess,
-	subject,
-}: Props) {
+/** Resolves with the saved subject, or `undefined` when dismissed. */
+export const SubjectFormDialog = createCallable<
+	Props,
+	SubjectFormResult | undefined
+>(({ call, subject }) => {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 
 	const create = trpc.subjects.create.useMutation({
-		onSuccess: () => {
-			utils.subjects.list.invalidate();
-			onSuccess();
-			onOpenChange(false);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.subjects.list.invalidate(),
 	});
 
 	const update = trpc.subjects.update.useMutation({
-		onSuccess: () => {
-			utils.subjects.list.invalidate();
-			onSuccess();
-			onOpenChange(false);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.subjects.list.invalidate(),
 	});
 
 	const {
 		register,
 		handleSubmit,
-		reset,
-		formState: { errors, isSubmitting },
+		formState: { errors },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
 		defaultValues: subject
@@ -86,23 +72,7 @@ export function SubjectFormDialog({
 			: {},
 	});
 
-	// Dialog keeps its content mounted when closed, so defaultValues (evaluated once at mount)
-	// won't update when the `subject` prop changes. Reset explicitly on each prop change.
-	useEffect(() => {
-		if (subject) {
-			reset({
-				name: subject.name,
-				nameFr: subject.nameFr ?? "",
-				code: subject.code ?? "",
-				minesecCode: subject.minesecCode ?? "",
-				subjectGroup: subject.subjectGroup ?? "",
-			});
-		} else {
-			reset({});
-		}
-	}, [subject, reset]);
-
-	const onSubmit = handleSubmit(async (data) => {
+	const submit = useMutationFlow(call, async (call, data: FormValues) => {
 		const payload = {
 			name: data.name,
 			nameFr: data.nameFr,
@@ -110,88 +80,86 @@ export function SubjectFormDialog({
 			minesecCode: data.minesecCode || undefined,
 			subjectGroup: data.subjectGroup || undefined,
 		};
-
-		if (subject) {
-			await update.mutateAsync({ id: subject.id, ...payload });
-		} else {
-			await create.mutateAsync(payload);
+		try {
+			call.end(
+				subject
+					? await update.mutateAsync({ id: subject.id, ...payload })
+					: await create.mutateAsync(payload),
+			);
+		} catch (err) {
+			errorToast(err, t);
 		}
 	});
 
-	const handleOpenChange = (open: boolean) => {
-		if (!open) reset();
-		onOpenChange(open);
-	};
-
-	const _mutationError = create.error ?? update.error;
-
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="max-w-lg">
-				<DialogHeader>
-					<DialogTitle>
-						{subject
-							? t("subjects.edit", "Edit subject")
-							: t("subjects.add", "Add subject")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="flex flex-col gap-4">
-					<div className="grid grid-cols-2 gap-3">
-						<FormField
-							label={t("subjects.name", "Subject name (EN)")}
-							error={errors.name?.message}
-							required
-						>
-							<Input {...register("name")} />
-						</FormField>
-						<FormField
-							label={t("subjects.name_fr", "Subject name (FR)")}
-							error={errors.nameFr?.message}
-							required
-						>
-							<Input {...register("nameFr")} />
-						</FormField>
-					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<FormField
-							label={t("subjects.code", "Code")}
-							error={errors.code?.message}
-							required
-						>
-							<Input {...register("code")} />
-						</FormField>
-						<FormField
-							label={t("subjects.minesec_code", "MINESEC code")}
-							error={errors.minesecCode?.message}
-						>
-							<Input {...register("minesecCode")} />
-						</FormField>
-					</div>
-
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="max-w-lg"
+			title={
+				subject
+					? t("subjects.edit", "Edit subject")
+					: t("subjects.add", "Add subject")
+			}
+		>
+			<form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
+				<div className="grid grid-cols-2 gap-3">
 					<FormField
-						label={t("subjects.subject_group", "Subject group")}
-						error={errors.subjectGroup?.message}
+						label={t("subjects.name", "Subject name (EN)")}
+						error={errors.name?.message}
+						required
 					>
-						<Input {...register("subjectGroup")} />
+						<Input {...register("name")} />
 					</FormField>
+					<FormField
+						label={t("subjects.name_fr", "Subject name (FR)")}
+						error={errors.nameFr?.message}
+						required
+					>
+						<Input {...register("nameFr")} />
+					</FormField>
+				</div>
 
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{subject
-								? t("common.save", "Save")
-								: t("subjects.add", "Add subject")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="grid grid-cols-2 gap-3">
+					<FormField
+						label={t("subjects.code", "Code")}
+						error={errors.code?.message}
+						required
+					>
+						<Input {...register("code")} />
+					</FormField>
+					<FormField
+						label={t("subjects.minesec_code", "MINESEC code")}
+						error={errors.minesecCode?.message}
+					>
+						<Input {...register("minesecCode")} />
+					</FormField>
+				</div>
+
+				<FormField
+					label={t("subjects.subject_group", "Subject group")}
+					error={errors.subjectGroup?.message}
+				>
+					<Input {...register("subjectGroup")} />
+				</FormField>
+
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{subject
+							? t("common.save", "Save")
+							: t("subjects.add", "Add subject")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);

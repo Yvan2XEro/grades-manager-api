@@ -10,13 +10,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
 	Sheet,
@@ -98,46 +93,6 @@ function aLabel(type: string) {
 	return ASSESSMENT_LABELS[type] ?? type;
 }
 
-// ─── Unsaved warning dialog ────────────────────────────────────────────────────
-
-function UnsavedDialog({
-	open,
-	onLeave,
-	onStay,
-}: {
-	open: boolean;
-	onLeave: () => void;
-	onStay: () => void;
-}) {
-	const { t } = useTranslation();
-	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onStay()}>
-			<DialogContent className="max-w-sm">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						<AlertTriangle className="h-5 w-5 text-amber-500" />
-						{t("grades.unsaved_title", "Unsaved changes")}
-					</DialogTitle>
-				</DialogHeader>
-				<p className="text-muted-foreground text-sm">
-					{t(
-						"grades.unsaved_body",
-						"You have unsaved grade changes. If you leave now they will be lost.",
-					)}
-				</p>
-				<div className="flex justify-end gap-2 pt-2">
-					<Button variant="outline" onClick={onStay}>
-						{t("grades.stay", "Stay and save")}
-					</Button>
-					<Button variant="destructive" onClick={onLeave}>
-						{t("grades.discard", "Leave anyway")}
-					</Button>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function GradeGrid() {
@@ -163,7 +118,6 @@ export function GradeGrid() {
 	const [isDirty, setIsDirty] = useState(false);
 	const [savedAt, setSavedAt] = useState<Date | null>(null);
 	const [savedAgoText, setSavedAgoText] = useState("");
-	const [pendingNavTo, setPendingNavTo] = useState<string | null>(null);
 	const [showComments, setShowComments] = useState(false);
 
 	// ── Queries ────────────────────────────────────────────────────────────────
@@ -329,14 +283,29 @@ export function GradeGrid() {
 
 	// ── Navigation guard ───────────────────────────────────────────────────────
 
-	const _guardedNavigate = (to: string) => {
-		if (isDirty) setPendingNavTo(to);
-		else navigate(to);
+	/** Resolves `true` when there is nothing to lose or the user agrees to discard. */
+	const confirmLeave = async () => {
+		if (!isDirty) return true;
+		const leave = await Confirm.call({
+			title: t("grades.unsaved_title", "Unsaved changes"),
+			description: t(
+				"grades.unsaved_body",
+				"You have unsaved grade changes. If you leave now they will be lost.",
+			),
+			cancelLabel: t("grades.stay", "Stay and save"),
+			confirmLabel: t("grades.discard", "Leave anyway"),
+			destructive: true,
+		});
+		if (leave) setIsDirty(false);
+		return leave;
 	};
 
-	const handleBack = () => {
-		if (isDirty) setPendingNavTo("__back__");
-		else navigate(-1);
+	const _guardedNavigate = async (to: string) => {
+		if (await confirmLeave()) navigate(to);
+	};
+
+	const handleBack = async () => {
+		if (await confirmLeave()) navigate(-1);
 	};
 
 	// ── Stats ──────────────────────────────────────────────────────────────────
@@ -531,18 +500,6 @@ export function GradeGrid() {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<UnsavedDialog
-				open={pendingNavTo !== null}
-				onLeave={() => {
-					const dest = pendingNavTo!;
-					setPendingNavTo(null);
-					setIsDirty(false);
-					if (dest === "__back__") navigate(-1);
-					else navigate(dest);
-				}}
-				onStay={() => setPendingNavTo(null)}
-			/>
-
 			{/* ─── Toolbar ─────────────────────────────────────────────────────── */}
 			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3">
 				{/* Back */}

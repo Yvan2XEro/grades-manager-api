@@ -8,26 +8,27 @@ import {
 	Users,
 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { z } from "zod";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
+import { CreatableCombobox } from "@/components/ui/creatable-combobox";
 import { DatePicker } from "@/components/ui/date-picker";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
-import { trpc } from "@/utils/trpc";
+import { EnrollStudentDialog } from "@/pages/enrollments/enroll-student-dialog";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,23 +65,25 @@ const registerSchema = z.object({
 });
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-function RegisterCandidateDialog({
-	examSessionId,
-	yearId,
-	existingEnrollmentIds,
-	onRegistered,
-}: {
-	examSessionId: string;
-	yearId: string;
-	existingEnrollmentIds: Set<string>;
-	onRegistered: () => void;
-}) {
+/**
+ * Registers an enrolled student as candidate. A student not yet enrolled for
+ * the year can be enrolled in place from the "+" next to the select.
+ */
+export const RegisterCandidateDialog = createCallable<
+	{
+		examSessionId: string;
+		yearId: string;
+		existingEnrollmentIds: Set<string>;
+	},
+	RouterOutputs["officialExams"]["registerCandidate"] | undefined
+>(({ call, examSessionId, yearId, existingEnrollmentIds }) => {
 	const { t } = useTranslation();
-	const [open, setOpen] = useState(false);
+	const utils = trpc.useUtils();
 
+	const enrollmentsInput = { academicYearId: yearId, pageSize: 500 };
 	const { data: enrollmentsData } = trpc.enrollments.list.useQuery(
-		{ academicYearId: yearId, pageSize: 500 },
-		{ enabled: !!yearId && open },
+		enrollmentsInput,
+		{ enabled: !!yearId },
 	);
 	const enrollments = (enrollmentsData?.items ?? []) as Array<{
 		enrollment: { id: string; studentId: string };
@@ -95,8 +98,7 @@ function RegisterCandidateDialog({
 		register,
 		control,
 		handleSubmit,
-		reset,
-		formState: { isSubmitting, errors },
+		formState: { errors },
 	} = useForm<RegisterFormValues>({
 		resolver: zodResolver(registerSchema),
 		defaultValues: {
@@ -106,122 +108,132 @@ function RegisterCandidateDialog({
 		},
 	});
 
-	const registerCandidate = trpc.officialExams.registerCandidate.useMutation({
-		onError: (err) => errorToast(err, t),
-	});
+	const registerCandidate = trpc.officialExams.registerCandidate.useMutation();
 
-	const onSubmit = handleSubmit(async (values) => {
-		await registerCandidate.mutateAsync({
-			examSessionId,
-			enrollmentId: values.enrollmentId,
-			candidateNumber: values.candidateNumber || undefined,
-			isEligible: values.isEligible,
-			hasPaidFee: values.hasPaidFee,
+	// Enrollment rows are joined with the student, so the fresh list is
+	// refetched (rather than patched) to get the new row's label.
+	const enrollStudent = async () => {
+		const enrollment = await EnrollStudentDialog.call({
+			academicYearId: yearId,
 		});
-		reset();
-		setOpen(false);
-		onRegistered();
-	});
+		if (!enrollment) return;
+		await utils.enrollments.list.invalidate(enrollmentsInput);
+		const fresh = await utils.enrollments.list.fetch(enrollmentsInput);
+		const row = (fresh.items as typeof enrollments).find(
+			(e) => e.enrollment.id === enrollment.id,
+		);
+		return row
+			? {
+					value: row.enrollment.id,
+					label: `${row.student.lastName} ${row.student.firstName}`,
+				}
+			: undefined;
+	};
+
+	const submit = useMutationFlow(
+		call,
+		async (call, values: RegisterFormValues) => {
+			try {
+				call.end(
+					await registerCandidate.mutateAsync({
+						examSessionId,
+						enrollmentId: values.enrollmentId,
+						candidateNumber: values.candidateNumber || undefined,
+						isEligible: values.isEligible,
+						hasPaidFee: values.hasPaidFee,
+					}),
+				);
+			} catch (err) {
+				errorToast(err, t);
+			}
+		},
+	);
 
 	return (
-		<Dialog
-			open={open}
-			onOpenChange={(v) => {
-				reset();
-				setOpen(v);
-			}}
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			title={t("official_exams.register_candidate", "Register candidate")}
 		>
-			<DialogTrigger asChild>
-				<Button size="sm">
-					<Plus className="mr-2 h-4 w-4" />
-					{t("official_exams.register_candidate", "Register candidate")}
-				</Button>
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>
-						{t("official_exams.register_candidate", "Register candidate")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="space-y-4">
-					{/* Student */}
-					<div className="space-y-1.5">
-						<Label>{t("enrollments.col_student", "Student")}</Label>
-						<Controller
-							name="enrollmentId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={availableEnrollments.map((e) => ({
-										value: e.enrollment.id,
-										label: `${e.student.lastName} ${e.student.firstName}`,
-									}))}
-									value={field.value ?? ""}
-									onValueChange={field.onChange}
-									placeholder={t("common.search", "Search…")}
-								/>
-							)}
-						/>
-						{errors.enrollmentId && (
-							<p className="text-destructive text-xs">
-								{errors.enrollmentId.message}
-							</p>
+			<form onSubmit={handleSubmit(submit)} className="space-y-4">
+				{/* Student */}
+				<div className="space-y-1.5">
+					<Label>{t("enrollments.col_student", "Student")}</Label>
+					<Controller
+						name="enrollmentId"
+						control={control}
+						render={({ field }) => (
+							<CreatableCombobox
+								options={availableEnrollments.map((e) => ({
+									value: e.enrollment.id,
+									label: `${e.student.lastName} ${e.student.firstName}`,
+								}))}
+								value={field.value ?? ""}
+								onValueChange={field.onChange}
+								placeholder={t("common.search", "Search…")}
+								onCreate={enrollStudent}
+								createLabel={t("enrollments.enroll_btn", "Enroll")}
+							/>
 						)}
-					</div>
+					/>
+					{errors.enrollmentId && (
+						<p className="text-destructive text-xs">
+							{errors.enrollmentId.message}
+						</p>
+					)}
+				</div>
 
-					{/* Candidate number */}
-					<div className="space-y-1.5">
-						<Label>
-							{t("official_exams.candidate_number", "Candidate number")}{" "}
-							<span className="text-muted-foreground text-xs">
-								({t("common.optional", "Optional")})
-							</span>
-						</Label>
-						<Input {...register("candidateNumber")} placeholder="Ex: 0001" />
-					</div>
+				{/* Candidate number */}
+				<div className="space-y-1.5">
+					<Label>
+						{t("official_exams.candidate_number", "Candidate number")}{" "}
+						<span className="text-muted-foreground text-xs">
+							({t("common.optional", "Optional")})
+						</span>
+					</Label>
+					<Input {...register("candidateNumber")} placeholder="Ex: 0001" />
+				</div>
 
-					{/* Flags */}
-					<div className="flex items-center gap-6">
-						<label className="flex cursor-pointer items-center gap-2 text-sm">
-							<input
-								type="checkbox"
-								{...register("isEligible")}
-								className="h-4 w-4"
-							/>
-							{t("official_exams.eligible", "Eligible")}
-						</label>
-						<label className="flex cursor-pointer items-center gap-2 text-sm">
-							<input
-								type="checkbox"
-								{...register("hasPaidFee")}
-								className="h-4 w-4"
-							/>
-							{t("official_exams.fee_paid", "Fee paid")}
-						</label>
-					</div>
+				{/* Flags */}
+				<div className="flex items-center gap-6">
+					<label className="flex cursor-pointer items-center gap-2 text-sm">
+						<input
+							type="checkbox"
+							{...register("isEligible")}
+							className="h-4 w-4"
+						/>
+						{t("official_exams.eligible", "Eligible")}
+					</label>
+					<label className="flex cursor-pointer items-center gap-2 text-sm">
+						<input
+							type="checkbox"
+							{...register("hasPaidFee")}
+							className="h-4 w-4"
+						/>
+						{t("official_exams.fee_paid", "Fee paid")}
+					</label>
+				</div>
 
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => {
-								reset();
-								setOpen(false);
-							}}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting
-								? t("common.saving", "Saving…")
-								: t("official_exams.register", "Register")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{submit.pending
+							? t("common.saving", "Saving…")
+							: t("official_exams.register", "Register")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Bulk import dialog ───────────────────────────────────────────────────────
 
@@ -231,177 +243,148 @@ const EXAM_LEVEL: Record<string, "third" | "first" | "terminal"> = {
 	BEPC: "third",
 };
 
-function BulkImportDialog({
-	examSessionId,
-	academicYearId,
-	examType,
-	onImported,
-}: {
-	examSessionId: string;
-	academicYearId: string;
-	examType?: string;
-	onImported: () => void;
-}) {
+type BulkImportResult = {
+	registered: number;
+	skipped: number;
+	skippedNoMnu: number;
+};
+
+/** Registers every active student of a class; resolves with the import counts. */
+export const BulkImportDialog = createCallable<
+	{ examSessionId: string; academicYearId: string; examType?: string },
+	BulkImportResult | undefined
+>(({ call, examSessionId, academicYearId, examType }) => {
 	const { t } = useTranslation();
-	const [open, setOpen] = useState(false);
 	const [selectedClassId, setSelectedClassId] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [result, setResult] = useState<{
-		registered: number;
-		skipped: number;
-		skippedNoMnu: number;
-	} | null>(null);
+	const [result, setResult] = useState<BulkImportResult | null>(null);
 
 	const eligibleLevel = examType ? EXAM_LEVEL[examType] : undefined;
 	const { data: classesData } = trpc.classes.list.useQuery(
 		{ academicYearId, level: eligibleLevel, pageSize: 200 },
-		{ enabled: !!academicYearId && open },
+		{ enabled: !!academicYearId },
 	);
 	const classes = (classesData?.items ?? []) as Array<{
 		id: string;
 		name: string;
 	}>;
 
-	const bulkRegister = trpc.officialExams.bulkRegisterCandidates.useMutation({
-		onError: (err) => errorToast(err, t),
-	});
+	const bulkRegister = trpc.officialExams.bulkRegisterCandidates.useMutation();
 
-	const handleOpen = (v: boolean) => {
-		if (!v) {
-			setSelectedClassId("");
-			setResult(null);
-		}
-		setOpen(v);
-	};
-
-	const handleImport = async () => {
+	// Keeps the dialog open briefly on the summary before resolving.
+	const runImport = useMutationFlow(call, async (call) => {
 		if (!selectedClassId) return;
-		setIsLoading(true);
 		try {
 			const res = await bulkRegister.mutateAsync({
 				examSessionId,
 				classId: selectedClassId,
 			});
-			setResult({
+			const summary = {
 				registered: res.registered,
 				skipped: res.skipped,
 				skippedNoMnu: (res as { skippedNoMnu?: number }).skippedNoMnu ?? 0,
-			});
-			setTimeout(() => {
-				onImported();
-				handleOpen(false);
-			}, 1500);
-		} finally {
-			setIsLoading(false);
+			};
+			setResult(summary);
+			setTimeout(() => call.end(summary), 1500);
+		} catch (err) {
+			errorToast(err, t);
 		}
-	};
+	});
+	const isLoading = runImport.pending;
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpen}>
-			<DialogTrigger asChild>
-				<Button size="sm" variant="outline">
-					<Users className="mr-2 h-4 w-4" />
-					{t("official_exams.import_from_class", "Import from class")}
-				</Button>
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>
+		<CallableDialog
+			call={call}
+			dismissValue={result ?? undefined}
+			preventDismiss={isLoading}
+			title={t(
+				"official_exams.import_candidates_from_class",
+				"Import candidates from class",
+			)}
+		>
+			{result ? (
+				<div className="flex flex-col items-center gap-3 py-6 text-center">
+					<CheckCircle className="h-10 w-10 text-green-500" />
+					<p className="font-medium text-foreground">
 						{t(
-							"official_exams.import_candidates_from_class",
-							"Import candidates from class",
+							"official_exams.import_success_registered",
+							"{{count}} students registered",
+							{
+								count: result.registered,
+							},
 						)}
-					</DialogTitle>
-				</DialogHeader>
-
-				{result ? (
-					<div className="flex flex-col items-center gap-3 py-6 text-center">
-						<CheckCircle className="h-10 w-10 text-green-500" />
-						<p className="font-medium text-foreground">
-							{t(
-								"official_exams.import_success_registered",
-								"{{count}} students registered",
-								{
-									count: result.registered,
-								},
-							)}
-							{result.skipped > 0 && (
-								<>
-									{", "}
-									{t(
-										"official_exams.import_success_skipped",
-										"{{count}} already registered (skipped)",
-										{
-											count: result.skipped,
-										},
-									)}
-								</>
-							)}
-						</p>
-						{result.skippedNoMnu > 0 && (
-							<p className="font-medium text-amber-600 text-sm dark:text-amber-400">
-								⚠{" "}
+						{result.skipped > 0 && (
+							<>
+								{", "}
 								{t(
-									"official_exams.import_no_mnu_warning",
-									"{{count}} student(s) skipped — no MNU set. Update their student records first.",
+									"official_exams.import_success_skipped",
+									"{{count}} already registered (skipped)",
 									{
-										count: result.skippedNoMnu,
+										count: result.skipped,
 									},
 								)}
-							</p>
+							</>
 						)}
-					</div>
-				) : (
-					<div className="space-y-4">
-						<div className="space-y-1.5">
-							<Label>{t("classes.title", "Class")}</Label>
-							<Combobox
-								options={classes.map((cls) => ({
-									value: cls.id,
-									label: cls.name,
-								}))}
-								value={selectedClassId}
-								onValueChange={setSelectedClassId}
-								placeholder={t(
-									"official_exams.select_class",
-									"Select a class…",
-								)}
-								disabled={isLoading}
-							/>
-						</div>
-
-						<p className="text-muted-foreground text-sm">
+					</p>
+					{result.skippedNoMnu > 0 && (
+						<p className="font-medium text-amber-600 text-sm dark:text-amber-400">
+							⚠{" "}
 							{t(
-								"official_exams.bulk_import_info",
-								"All active students enrolled in the selected class will be registered. Students already registered will be skipped.",
+								"official_exams.import_no_mnu_warning",
+								"{{count}} student(s) skipped — no MNU set. Update their student records first.",
+								{
+									count: result.skippedNoMnu,
+								},
 							)}
 						</p>
-
-						<div className="flex justify-end gap-2 pt-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => handleOpen(false)}
-								disabled={isLoading}
-							>
-								{t("common.cancel", "Cancel")}
-							</Button>
-							<Button
-								type="button"
-								onClick={handleImport}
-								disabled={!selectedClassId || isLoading}
-							>
-								{isLoading
-									? t("common.loading", "Loading…")
-									: t("official_exams.import", "Import")}
-							</Button>
-						</div>
+					)}
+				</div>
+			) : (
+				<div className="space-y-4">
+					<div className="space-y-1.5">
+						<Label>{t("classes.title", "Class")}</Label>
+						<Combobox
+							options={classes.map((cls) => ({
+								value: cls.id,
+								label: cls.name,
+							}))}
+							value={selectedClassId}
+							onValueChange={setSelectedClassId}
+							placeholder={t("official_exams.select_class", "Select a class…")}
+							disabled={isLoading}
+						/>
 					</div>
-				)}
-			</DialogContent>
-		</Dialog>
+
+					<p className="text-muted-foreground text-sm">
+						{t(
+							"official_exams.bulk_import_info",
+							"All active students enrolled in the selected class will be registered. Students already registered will be skipped.",
+						)}
+					</p>
+
+					<div className="flex justify-end gap-2 pt-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => call.end(undefined)}
+							disabled={isLoading}
+						>
+							{t("common.cancel", "Cancel")}
+						</Button>
+						<Button
+							type="button"
+							onClick={() => runImport()}
+							disabled={!selectedClassId || isLoading}
+						>
+							{isLoading
+								? t("common.loading", "Loading…")
+								: t("official_exams.import", "Import")}
+						</Button>
+					</div>
+				</div>
+			)}
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Record fee dialog ────────────────────────────────────────────────────────
 
@@ -412,129 +395,110 @@ const feeSchema = z.object({
 });
 type FeeFormValues = z.infer<typeof feeSchema>;
 
-function RecordFeeDialog({
-	registrationId,
-	onSaved,
-}: {
-	registrationId: string;
-	onSaved: () => void;
-}) {
+/** Records an exam fee payment; resolves with the updated registration. */
+export const RecordFeeDialog = createCallable<
+	{ registrationId: string },
+	RouterOutputs["officialExams"]["updateCandidate"] | undefined
+>(({ call, registrationId }) => {
 	const { t } = useTranslation();
-	const [open, setOpen] = useState(false);
-	const update = trpc.officialExams.updateCandidate.useMutation({
-		onSuccess: () => {
-			setOpen(false);
-			onSaved();
-		},
-		onError: (err) => errorToast(err, t),
-	});
+	const update = trpc.officialExams.updateCandidate.useMutation();
 	const {
 		register,
 		handleSubmit,
-		reset,
 		control,
-		formState: { errors, isSubmitting },
+		formState: { errors },
 	} = useForm<FeeFormValues>({
 		resolver: zodResolver(feeSchema),
 		defaultValues: { feePaidAt: new Date().toISOString().slice(0, 10) },
 	});
 
-	const onSubmit = (values: FeeFormValues) => {
-		update.mutate({
-			id: registrationId,
-			hasPaidFee: true,
-			feeAmount: values.feeAmount,
-			feePaidAt: new Date(values.feePaidAt).toISOString(),
-			feeTransactionRef: values.feeTransactionRef || null,
-		});
-	};
+	const submit = useMutationFlow(call, async (call, values: FeeFormValues) => {
+		try {
+			call.end(
+				await update.mutateAsync({
+					id: registrationId,
+					hasPaidFee: true,
+					feeAmount: values.feeAmount,
+					feePaidAt: new Date(values.feePaidAt).toISOString(),
+					feeTransactionRef: values.feeTransactionRef || null,
+				}),
+			);
+		} catch (err) {
+			errorToast(err, t);
+		}
+	});
 
 	return (
-		<Dialog
-			open={open}
-			onOpenChange={(v) => {
-				setOpen(v);
-				if (!v) reset();
-			}}
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="max-w-sm"
+			title={t("official_exams.record_payment_title", "Record fee payment")}
 		>
-			<DialogTrigger asChild>
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-6 px-2 font-medium text-muted-foreground text-xs hover:text-foreground"
-				>
-					{t("official_exams.record_fee", "Record")}
-				</Button>
-			</DialogTrigger>
-			<DialogContent className="max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t("official_exams.record_payment_title", "Record fee payment")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
-					<div className="space-y-1.5">
-						<Label>{t("official_exams.fee_amount", "Amount (FCFA)")} *</Label>
-						<Input
-							type="number"
-							min={1}
-							placeholder="18000"
-							{...register("feeAmount", { valueAsNumber: true })}
-						/>
-						{errors.feeAmount && (
-							<p className="text-destructive text-xs">
-								{errors.feeAmount.message}
-							</p>
+			<form onSubmit={handleSubmit(submit)} className="space-y-4 pt-2">
+				<div className="space-y-1.5">
+					<Label>{t("official_exams.fee_amount", "Amount (FCFA)")} *</Label>
+					<Input
+						type="number"
+						min={1}
+						placeholder="18000"
+						{...register("feeAmount", { valueAsNumber: true })}
+					/>
+					{errors.feeAmount && (
+						<p className="text-destructive text-xs">
+							{errors.feeAmount.message}
+						</p>
+					)}
+				</div>
+				<div className="space-y-1.5">
+					<Label>{t("official_exams.fee_paid_at", "Payment date")} *</Label>
+					<Controller
+						name="feePaidAt"
+						control={control}
+						render={({ field }) => (
+							<DatePicker
+								value={field.value ?? ""}
+								onChange={field.onChange}
+								startMonth={new Date(2020, 0)}
+								endMonth={new Date(2035, 11)}
+							/>
 						)}
-					</div>
-					<div className="space-y-1.5">
-						<Label>{t("official_exams.fee_paid_at", "Payment date")} *</Label>
-						<Controller
-							name="feePaidAt"
-							control={control}
-							render={({ field }) => (
-								<DatePicker
-									value={field.value ?? ""}
-									onChange={field.onChange}
-									startMonth={new Date(2020, 0)}
-									endMonth={new Date(2035, 11)}
-								/>
-							)}
-						/>
-						{errors.feePaidAt && (
-							<p className="text-destructive text-xs">
-								{errors.feePaidAt.message}
-							</p>
-						)}
-					</div>
-					<div className="space-y-1.5">
-						<Label>
-							{t("official_exams.fee_ref", "Transaction ref")}{" "}
-							<span className="text-muted-foreground text-xs">
-								({t("common.optional", "optional")})
-							</span>
-						</Label>
-						<Input placeholder="TXN-001" {...register("feeTransactionRef")} />
-					</div>
-					<div className="flex justify-end gap-2 pt-1">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting || update.isPending}>
-							{update.isPending
-								? t("common.saving", "Saving…")
-								: t("official_exams.confirm_payment", "Confirm payment")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+					/>
+					{errors.feePaidAt && (
+						<p className="text-destructive text-xs">
+							{errors.feePaidAt.message}
+						</p>
+					)}
+				</div>
+				<div className="space-y-1.5">
+					<Label>
+						{t("official_exams.fee_ref", "Transaction ref")}{" "}
+						<span className="text-muted-foreground text-xs">
+							({t("common.optional", "optional")})
+						</span>
+					</Label>
+					<Input placeholder="TXN-001" {...register("feeTransactionRef")} />
+				</div>
+				<div className="flex justify-end gap-2 pt-1">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{submit.pending
+							? t("common.saving", "Saving…")
+							: t("official_exams.confirm_payment", "Confirm payment")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Candidate row ────────────────────────────────────────────────────────────
 
@@ -657,10 +621,21 @@ function CandidateRow({
 						<span className="inline-flex h-6 items-center rounded-full bg-muted px-2.5 font-medium text-muted-foreground text-xs">
 							{t("official_exams.fee_pending", "Fee pending")}
 						</span>
-						<RecordFeeDialog
-							registrationId={registration.id}
-							onSaved={onUpdate}
-						/>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="h-6 px-2 font-medium text-muted-foreground text-xs hover:text-foreground"
+							onClick={async () => {
+								if (
+									await RecordFeeDialog.call({
+										registrationId: registration.id,
+									})
+								)
+									onUpdate();
+							}}
+						>
+							{t("official_exams.record_fee", "Record")}
+						</Button>
 					</div>
 				)}
 			</td>
@@ -856,17 +831,38 @@ export function ExamCandidatesTab() {
 				)}
 				{yearId && id && (
 					<>
-						<BulkImportDialog
-							examSessionId={id}
-							academicYearId={academicYearId}
-							onImported={onUpdate}
-						/>
-						<RegisterCandidateDialog
-							examSessionId={id}
-							yearId={yearId}
-							existingEnrollmentIds={existingEnrollmentIds}
-							onRegistered={onUpdate}
-						/>
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={async () => {
+								if (
+									await BulkImportDialog.call({
+										examSessionId: id,
+										academicYearId,
+									})
+								)
+									onUpdate();
+							}}
+						>
+							<Users className="mr-2 h-4 w-4" />
+							{t("official_exams.import_from_class", "Import from class")}
+						</Button>
+						<Button
+							size="sm"
+							onClick={async () => {
+								if (
+									await RegisterCandidateDialog.call({
+										examSessionId: id,
+										yearId,
+										existingEnrollmentIds,
+									})
+								)
+									onUpdate();
+							}}
+						>
+							<Plus className="mr-2 h-4 w-4" />
+							{t("official_exams.register_candidate", "Register candidate")}
+						</Button>
 					</>
 				)}
 			</div>

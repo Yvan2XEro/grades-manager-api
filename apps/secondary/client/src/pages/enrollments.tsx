@@ -9,7 +9,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
-import { EnrollExistingStudentDialog } from "./enrollments/enroll-existing-student-dialog";
+import { EnrollStudentDialog } from "./enrollments/enroll-student-dialog";
 
 type EnrollmentRow = RouterOutputs["enrollments"]["list"]["items"][number];
 
@@ -88,9 +88,7 @@ export function Enrollments() {
 	const [pageSize, setPageSize] = useState(25);
 	const [search, setSearch] = useState("");
 	const [filterClassId, setFilterClassId] = useState("all");
-	const [showEnrollDialog, setShowEnrollDialog] = useState(false);
 
-	const utils = trpc.useUtils();
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = years.find((y) => y.status === "active") ?? years[0];
 	const yearId = activeYear?.id ?? "";
@@ -199,7 +197,7 @@ export function Enrollments() {
 				<div className="flex gap-2">
 					<Button
 						variant="outline"
-						onClick={() => setShowEnrollDialog(true)}
+						onClick={() => EnrollStudentDialog.call({ academicYearId: yearId })}
 						disabled={!yearId}
 					>
 						<UserPlus className="mr-2 h-4 w-4" />
@@ -273,18 +271,6 @@ export function Enrollments() {
 					onPageSizeChange={(s) => {
 						setPageSize(s);
 						setPage(1);
-					}}
-				/>
-			)}
-
-			{yearId && (
-				<EnrollExistingStudentDialog
-					open={showEnrollDialog}
-					onOpenChange={setShowEnrollDialog}
-					academicYearId={yearId}
-					classes={classes}
-					onSuccess={() => {
-						utils.enrollments.list.invalidate();
 					}}
 				/>
 			)}

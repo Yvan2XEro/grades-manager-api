@@ -9,20 +9,19 @@ import {
 	Plus,
 	Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { z } from "zod";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Confirm } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -82,19 +81,11 @@ function paramsToAmount(params: Record<string, unknown>): number {
 
 // ─── Contract form dialog ─────────────────────────────────────────────────────
 
-function ContractDialog({
-	institutionId,
-	contract,
-	open,
-	onClose,
-	onDone,
-}: {
-	institutionId: string;
-	contract?: Contract;
-	open: boolean;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+/** Creates or edits a billing contract; resolves `true` once saved. */
+export const ContractDialog = createCallable<
+	{ institutionId: string; contract?: Contract },
+	boolean
+>(({ call, institutionId, contract }) => {
 	const { t } = useTranslation();
 	const isEdit = !!contract;
 
@@ -111,7 +102,6 @@ function ContractDialog({
 		watch,
 		setValue,
 		formState: { errors },
-		reset,
 	} = useForm<ContractFormData>({
 		resolver: zodResolver(contractSchema),
 		defaultValues: {
@@ -140,23 +130,10 @@ function ContractDialog({
 		return { flatFee: data.priceAmount, currency: data.currency };
 	}
 
-	const create = trpc.systemAdmin.createBillingContract.useMutation({
-		onSuccess: () => {
-			onDone();
-			reset();
-		},
-		onError: (err) => errorToast(err, t),
-	});
-	const update = trpc.systemAdmin.updateBillingContract.useMutation({
-		onSuccess: () => {
-			onDone();
-		},
-		onError: (err) => errorToast(err, t),
-	});
+	const create = trpc.systemAdmin.createBillingContract.useMutation();
+	const update = trpc.systemAdmin.updateBillingContract.useMutation();
 
-	const isPending = create.isPending || update.isPending;
-
-	function onSubmit(data: ContractFormData) {
+	const submit = useMutationFlow(call, async (call, data: ContractFormData) => {
 		const payload = {
 			formula: data.formula,
 			params: buildParams(data),
@@ -166,12 +143,15 @@ function ContractDialog({
 			endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
 			notes: data.notes || undefined,
 		};
-		if (isEdit) {
-			update.mutate({ id: contract.id, ...payload });
-		} else {
-			create.mutate({ institutionId, ...payload });
+		try {
+			if (contract) await update.mutateAsync({ id: contract.id, ...payload });
+			else await create.mutateAsync({ institutionId, ...payload });
+			call.end(true);
+		} catch (err) {
+			errorToast(err, t);
 		}
-	}
+	});
+	const isPending = submit.pending;
 
 	const amountLabel =
 		formula === "per_student"
@@ -181,121 +161,117 @@ function ContractDialog({
 				: t("sysadmin.billing.flat_amount");
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle>
-						{isEdit
-							? t("sysadmin.billing.edit_contract")
-							: t("sysadmin.billing.new_contract")}
-					</DialogTitle>
-				</DialogHeader>
+		<CallableDialog
+			call={call}
+			dismissValue={false}
+			preventDismiss={isPending}
+			className="sm:max-w-md"
+			title={
+				isEdit
+					? t("sysadmin.billing.edit_contract")
+					: t("sysadmin.billing.new_contract")
+			}
+		>
+			<form onSubmit={handleSubmit(submit)} className="space-y-4 py-2">
+				<div className="space-y-1.5">
+					<Label>{t("sysadmin.billing.formula")}</Label>
+					<Select
+						value={formula}
+						onValueChange={(v) =>
+							setValue("formula", v as ContractFormData["formula"])
+						}
+					>
+						<SelectTrigger>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{formulaOptions.map((o) => (
+								<SelectItem key={o.value} value={o.value}>
+									{o.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
 
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+				<div className="grid grid-cols-2 gap-3">
 					<div className="space-y-1.5">
-						<Label>{t("sysadmin.billing.formula")}</Label>
-						<Select
-							value={formula}
-							onValueChange={(v) =>
-								setValue("formula", v as ContractFormData["formula"])
-							}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{formulaOptions.map((o) => (
-									<SelectItem key={o.value} value={o.value}>
-										{o.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label>{amountLabel}</Label>
-							<Input
-								type="number"
-								min={0}
-								{...register("priceAmount", { valueAsNumber: true })}
-								placeholder="0"
-							/>
-							{errors.priceAmount && (
-								<p className="text-destructive text-xs">
-									{errors.priceAmount.message}
-								</p>
-							)}
-						</div>
-						<div className="space-y-1.5">
-							<Label>{t("sysadmin.billing.currency")}</Label>
-							<Input
-								{...register("currency")}
-								placeholder="XAF"
-								maxLength={3}
-							/>
-						</div>
-					</div>
-
-					<div className="space-y-1.5">
-						<Label>{t("sysadmin.billing.billing_period_months")}</Label>
+						<Label>{amountLabel}</Label>
 						<Input
 							type="number"
-							min={1}
-							{...register("billingPeriodMonths", { valueAsNumber: true })}
-							placeholder="12"
+							min={0}
+							{...register("priceAmount", { valueAsNumber: true })}
+							placeholder="0"
 						/>
+						{errors.priceAmount && (
+							<p className="text-destructive text-xs">
+								{errors.priceAmount.message}
+							</p>
+						)}
 					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label>{t("sysadmin.billing.start_date")} *</Label>
-							<Input type="date" {...register("startDate")} />
-							{errors.startDate && (
-								<p className="text-destructive text-xs">
-									{errors.startDate.message}
-								</p>
-							)}
-						</div>
-						<div className="space-y-1.5">
-							<Label>{t("sysadmin.billing.end_date")}</Label>
-							<Input type="date" {...register("endDate")} />
-						</div>
-					</div>
-
 					<div className="space-y-1.5">
-						<Label>{t("sysadmin.billing.notes")}</Label>
-						<textarea
-							{...register("notes")}
-							placeholder={t("sysadmin.billing.notes_placeholder")}
-							rows={2}
-							className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-						/>
+						<Label>{t("sysadmin.billing.currency")}</Label>
+						<Input {...register("currency")} placeholder="XAF" maxLength={3} />
 					</div>
+				</div>
 
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={onClose}
-							disabled={isPending}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button type="submit" disabled={isPending}>
-							{isPending
-								? t("common.saving")
-								: isEdit
-									? t("common.save")
-									: t("sysadmin.billing.create_contract")}
-						</Button>
+				<div className="space-y-1.5">
+					<Label>{t("sysadmin.billing.billing_period_months")}</Label>
+					<Input
+						type="number"
+						min={1}
+						{...register("billingPeriodMonths", { valueAsNumber: true })}
+						placeholder="12"
+					/>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<div className="space-y-1.5">
+						<Label>{t("sysadmin.billing.start_date")} *</Label>
+						<Input type="date" {...register("startDate")} />
+						{errors.startDate && (
+							<p className="text-destructive text-xs">
+								{errors.startDate.message}
+							</p>
+						)}
 					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+					<div className="space-y-1.5">
+						<Label>{t("sysadmin.billing.end_date")}</Label>
+						<Input type="date" {...register("endDate")} />
+					</div>
+				</div>
+
+				<div className="space-y-1.5">
+					<Label>{t("sysadmin.billing.notes")}</Label>
+					<textarea
+						{...register("notes")}
+						placeholder={t("sysadmin.billing.notes_placeholder")}
+						rows={2}
+						className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+					/>
+				</div>
+
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => call.end(false)}
+						disabled={isPending}
+					>
+						{t("common.cancel")}
+					</Button>
+					<Button type="submit" disabled={isPending}>
+						{isPending
+							? t("common.saving")
+							: isEdit
+								? t("common.save")
+								: t("sysadmin.billing.create_contract")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Main tab ─────────────────────────────────────────────────────────────────
 
@@ -304,8 +280,10 @@ export function InstitutionBillingTab() {
 	const { t, i18n } = useTranslation();
 	const utils = trpc.useUtils();
 
-	const [showCreate, setShowCreate] = useState(false);
-	const [editContract, setEditContract] = useState<Contract | null>(null);
+	const openContract = async (contract?: Contract) => {
+		if (await ContractDialog.call({ institutionId: institutionId!, contract }))
+			invalidate();
+	};
 
 	const formulaOptions = [
 		{ value: "per_student", label: t("sysadmin.billing.formula_per_student") },
@@ -386,7 +364,7 @@ export function InstitutionBillingTab() {
 						{t("sysadmin.billing.subtitle")}
 					</p>
 				</div>
-				<Button size="sm" onClick={() => setShowCreate(true)}>
+				<Button size="sm" onClick={() => openContract()}>
 					<Plus className="mr-1.5 h-4 w-4" />
 					{t("sysadmin.billing.new_contract")}
 				</Button>
@@ -409,11 +387,7 @@ export function InstitutionBillingTab() {
 							{t("sysadmin.billing.no_contracts_desc")}
 						</p>
 					</div>
-					<Button
-						size="sm"
-						variant="outline"
-						onClick={() => setShowCreate(true)}
-					>
+					<Button size="sm" variant="outline" onClick={() => openContract()}>
 						<Plus className="mr-1.5 h-4 w-4" />
 						{t("sysadmin.billing.create_contract")}
 					</Button>
@@ -481,7 +455,7 @@ export function InstitutionBillingTab() {
 								<Button
 									size="sm"
 									variant="ghost"
-									onClick={() => setEditContract(contract)}
+									onClick={() => openContract(contract)}
 								>
 									<Edit2 className="h-4 w-4" />
 								</Button>
@@ -536,30 +510,6 @@ export function InstitutionBillingTab() {
 					</Button>
 				</div>
 			</div>
-
-			{/* Dialogs */}
-			<ContractDialog
-				institutionId={institutionId!}
-				open={showCreate}
-				onClose={() => setShowCreate(false)}
-				onDone={() => {
-					setShowCreate(false);
-					invalidate();
-				}}
-			/>
-
-			{editContract && (
-				<ContractDialog
-					institutionId={institutionId!}
-					contract={editContract}
-					open={!!editContract}
-					onClose={() => setEditContract(null)}
-					onDone={() => {
-						setEditContract(null);
-						invalidate();
-					}}
-				/>
-			)}
 		</div>
 	);
 }

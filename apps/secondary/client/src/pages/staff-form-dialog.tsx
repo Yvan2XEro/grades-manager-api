@@ -1,15 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -21,7 +20,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { errorToast } from "@/lib/error-toast";
-import { trpc } from "@/utils/trpc";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 const ROLES = [
 	"teacher",
@@ -50,11 +49,12 @@ interface StaffMember {
 	role?: string | null;
 }
 
+export type StaffFormResult = RouterOutputs["staff"]["create"];
+
 interface Props {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	onSuccess: () => void;
 	staff?: StaffMember;
+	/** Preselected role when creating, e.g. "teacher" from an assignment form. */
+	defaultRole?: (typeof ROLES)[number];
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -65,62 +65,41 @@ const ROLE_LABELS: Record<string, string> = {
 	staff: "Staff",
 };
 
-export function StaffFormDialog({
-	open,
-	onOpenChange,
-	onSuccess,
-	staff,
-}: Props) {
+/** Resolves with the saved staff member, or `undefined` when dismissed. */
+export const StaffFormDialog = createCallable<
+	Props,
+	StaffFormResult | undefined
+>(({ call, staff, defaultRole = "teacher" }) => {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 
 	const create = trpc.staff.create.useMutation({
-		onSuccess: () => {
-			utils.staff.list.invalidate();
-			onSuccess();
-			onOpenChange(false);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.staff.list.invalidate(),
 	});
 
 	const update = trpc.staff.update.useMutation({
-		onSuccess: () => {
-			utils.staff.list.invalidate();
-			onSuccess();
-			onOpenChange(false);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.staff.list.invalidate(),
 	});
 
 	const {
 		register,
 		handleSubmit,
-		reset,
 		control,
-		formState: { errors, isSubmitting },
+		formState: { errors },
 	} = useForm<FormValues>({
 		resolver: zodResolver(schema),
-		defaultValues: { role: "teacher" },
+		defaultValues: staff
+			? {
+					firstName: staff.firstName,
+					lastName: staff.lastName,
+					email: staff.email,
+					phone: staff.phone ?? "",
+					role: (staff.role as (typeof ROLES)[number] | undefined) ?? undefined,
+				}
+			: { role: defaultRole },
 	});
 
-	useEffect(() => {
-		if (open) {
-			reset(
-				staff
-					? {
-							firstName: staff.firstName,
-							lastName: staff.lastName,
-							email: staff.email,
-							phone: staff.phone ?? "",
-							role:
-								(staff.role as (typeof ROLES)[number] | undefined) ?? undefined,
-						}
-					: { role: "teacher" },
-			);
-		}
-	}, [open, staff?.id]);
-
-	const onSubmit = handleSubmit(async (data) => {
+	const submit = useMutationFlow(call, async (call, data: FormValues) => {
 		const payload = {
 			firstName: data.firstName,
 			lastName: data.lastName,
@@ -128,134 +107,133 @@ export function StaffFormDialog({
 			phone: data.phone || undefined,
 			role: data.role,
 		};
-		if (staff) {
-			await update.mutateAsync({ id: staff.id, ...payload });
-		} else {
-			await create.mutateAsync(payload);
+		try {
+			call.end(
+				staff
+					? await update.mutateAsync({ id: staff.id, ...payload })
+					: await create.mutateAsync(payload),
+			);
+		} catch (err) {
+			errorToast(err, t);
 		}
 	});
 
-	const handleOpenChange = (open: boolean) => {
-		if (!open) reset();
-		onOpenChange(open);
-	};
-
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="max-w-lg">
-				<DialogHeader>
-					<DialogTitle>
-						{staff
-							? t("staff.edit", "Edit staff member")
-							: t("staff.add", "Add staff member")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="flex flex-col gap-4">
-					<div className="grid grid-cols-2 gap-3">
-						<FormField
-							label={t("staff.first_name", "First name")}
-							error={errors.firstName?.message}
-							required
-						>
-							<Input {...register("firstName")} />
-						</FormField>
-						<FormField
-							label={t("staff.last_name", "Last name")}
-							error={errors.lastName?.message}
-							required
-						>
-							<Input {...register("lastName")} />
-						</FormField>
-					</div>
-
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="max-w-lg"
+			title={
+				staff
+					? t("staff.edit", "Edit staff member")
+					: t("staff.add", "Add staff member")
+			}
+		>
+			<form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
+				<div className="grid grid-cols-2 gap-3">
 					<FormField
-						label={t("staff.email", "Email")}
-						error={errors.email?.message}
-						required={!staff}
-						hint={
+						label={t("staff.first_name", "First name")}
+						error={errors.firstName?.message}
+						required
+					>
+						<Input {...register("firstName")} />
+					</FormField>
+					<FormField
+						label={t("staff.last_name", "Last name")}
+						error={errors.lastName?.message}
+						required
+					>
+						<Input {...register("lastName")} />
+					</FormField>
+				</div>
+
+				<FormField
+					label={t("staff.email", "Email")}
+					error={errors.email?.message}
+					required={!staff}
+					hint={
+						staff
+							? t(
+									"staff.email_readonly_hint",
+									"Email cannot be changed — managed by the staff member",
+								)
+							: undefined
+					}
+				>
+					<Input
+						type="email"
+						{...register("email")}
+						readOnly={!!staff}
+						className={
 							staff
-								? t(
-										"staff.email_readonly_hint",
-										"Email cannot be changed — managed by the staff member",
-									)
+								? "cursor-default bg-muted text-muted-foreground"
 								: undefined
 						}
+					/>
+				</FormField>
+
+				<div className="grid grid-cols-2 gap-3">
+					<FormField
+						label={t("staff.phone", "Phone")}
+						error={errors.phone?.message}
 					>
-						<Input
-							type="email"
-							{...register("email")}
-							readOnly={!!staff}
-							className={
-								staff
-									? "cursor-default bg-muted text-muted-foreground"
-									: undefined
-							}
+						<Controller
+							name="phone"
+							control={control}
+							render={({ field }) => (
+								<PhoneInput
+									defaultCountry="CM"
+									value={field.value ?? ""}
+									onChange={field.onChange}
+								/>
+							)}
 						/>
 					</FormField>
+					<FormField
+						label={t("staff.role", "Role")}
+						error={errors.role?.message}
+					>
+						<Controller
+							name="role"
+							control={control}
+							render={({ field }) => (
+								<Select
+									value={field.value ?? ""}
+									onValueChange={field.onChange}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder={t("common.select", "Select…")} />
+									</SelectTrigger>
+									<SelectContent>
+										{ROLES.map((r) => (
+											<SelectItem key={r} value={r}>
+												{ROLE_LABELS[r] ?? r}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							)}
+						/>
+					</FormField>
+				</div>
 
-					<div className="grid grid-cols-2 gap-3">
-						<FormField
-							label={t("staff.phone", "Phone")}
-							error={errors.phone?.message}
-						>
-							<Controller
-								name="phone"
-								control={control}
-								render={({ field }) => (
-									<PhoneInput
-										defaultCountry="CM"
-										value={field.value ?? ""}
-										onChange={field.onChange}
-									/>
-								)}
-							/>
-						</FormField>
-						<FormField
-							label={t("staff.role", "Role")}
-							error={errors.role?.message}
-						>
-							<Controller
-								name="role"
-								control={control}
-								render={({ field }) => (
-									<Select
-										value={field.value ?? ""}
-										onValueChange={field.onChange}
-									>
-										<SelectTrigger>
-											<SelectValue
-												placeholder={t("common.select", "Select…")}
-											/>
-										</SelectTrigger>
-										<SelectContent>
-											{ROLES.map((r) => (
-												<SelectItem key={r} value={r}>
-													{ROLE_LABELS[r] ?? r}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								)}
-							/>
-						</FormField>
-					</div>
-
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting
-								? t("common.saving", "Saving…")
-								: t("common.save", "Save")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{submit.pending
+							? t("common.saving", "Saving…")
+							: t("common.save", "Save")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);

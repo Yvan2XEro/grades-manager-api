@@ -4,7 +4,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter } from "react-router";
 import { Toaster } from "sonner";
-import { Confirm } from "./components/callable/confirm";
+import { CallableHost } from "./components/callable/callable-host";
 import "./i18n/index";
 import "./index.css";
 import { AppRoutes } from "./routes";
@@ -19,9 +19,9 @@ createRoot(root).render(
 				<HashRouter>
 					<NuqsAdapter>
 						<AppRoutes />
+						<CallableHost />
 					</NuqsAdapter>
 				</HashRouter>
-				<Confirm />
 				<Toaster richColors closeButton duration={5000} />
 			</QueryClientProvider>
 		</trpc.Provider>

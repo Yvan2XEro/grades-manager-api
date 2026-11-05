@@ -77,10 +77,6 @@ export function Staff() {
 	const [pageSize, setPageSize] = useState(25);
 	const [search, setSearch] = useState("");
 	const [roleFilter, setRoleFilter] = useState<string>("all");
-	const [dialogOpen, setDialogOpen] = useState(false);
-	const [editingStaff, setEditingStaff] = useState<StaffMember | undefined>(
-		undefined,
-	);
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "lastName", desc: false },
 	]);
@@ -210,10 +206,7 @@ export function Staff() {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							<DropdownMenuItem
-								onClick={() => {
-									setEditingStaff(member);
-									setDialogOpen(true);
-								}}
+								onClick={() => StaffFormDialog.call({ staff: member })}
 							>
 								<Pencil className="mr-2 h-4 w-4" />
 								{t("common.edit", "Edit")}
@@ -299,12 +292,7 @@ export function Staff() {
 								.then((res) => ({ created: res.length }))
 						}
 					/>
-					<Button
-						onClick={() => {
-							setEditingStaff(undefined);
-							setDialogOpen(true);
-						}}
-					>
+					<Button onClick={() => StaffFormDialog.call({})}>
 						<UserPlus className="mr-2 h-4 w-4" />
 						{t("staff.add", "Add staff member")}
 					</Button>
@@ -369,13 +357,6 @@ export function Staff() {
 					setPageSize(s);
 					setPage(1);
 				}}
-			/>
-
-			<StaffFormDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				onSuccess={() => {}}
-				staff={editingStaff}
 			/>
 		</div>
 	);

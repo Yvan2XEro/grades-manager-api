@@ -15,19 +15,19 @@ import {
 	UserX,
 } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -49,6 +49,7 @@ import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { authClient } from "@/lib/auth-client";
 import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
+import { CreateInstitutionDialog } from "@/pages/sysadmin/institutions";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 type UserDetail = RouterOutputs["systemAdmin"]["getUser"];
@@ -82,17 +83,11 @@ function DetailRow({
 
 // ─── Ban dialog ───────────────────────────────────────────────────────────────
 
-function BanDialog({
-	open,
-	user,
-	onClose,
-	onDone,
-}: {
-	open: boolean;
-	user: { id: string; name: string } | null;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+/** Bans the user (optionally for a number of days); resolves `true` once banned. */
+export const BanUserDetailDialog = createCallable<
+	{ user: { id: string; name: string } },
+	boolean
+>(({ call, user }) => {
 	const { t } = useTranslation();
 	const [reason, setReason] = useState("");
 	const [expiresInDays, setExpiresInDays] = useState("");
@@ -100,7 +95,6 @@ function BanDialog({
 	const [error, setError] = useState("");
 
 	const handleBan = async () => {
-		if (!user) return;
 		setLoading(true);
 		setError("");
 		const res = await authClient.admin.banUser({
@@ -113,130 +107,126 @@ function BanDialog({
 			setError(res.error.message ?? "Error");
 			return;
 		}
-		onDone();
-		onClose();
+		call.end(true);
 		setReason("");
 		setExpiresInDays("");
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.users.ban_title", "Ban user?")}
-					</DialogTitle>
-				</DialogHeader>
-				<p className="text-muted-foreground text-sm">
-					<strong className="text-foreground">{user?.name}</strong>{" "}
-					{t(
-						"sysadmin.users.ban_desc_1",
-						"will be immediately signed out and blocked from logging in.",
-					)}
-				</p>
-				<div className="space-y-3">
-					<div className="space-y-1.5">
-						<Label htmlFor="ban-reason">
-							{t("sysadmin.users.ban_reason", "Reason (optional)")}
-						</Label>
-						<Input
-							id="ban-reason"
-							value={reason}
-							onChange={(e) => setReason(e.target.value)}
-							placeholder={t(
-								"sysadmin.users.ban_reason_placeholder",
-								"Policy violation…",
-							)}
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label htmlFor="ban-expires">
-							{t(
-								"sysadmin.users.detail.ban_expires_label",
-								"Duration in days (leave empty = permanent)",
-							)}
-						</Label>
-						<Input
-							id="ban-expires"
-							type="number"
-							min="1"
-							value={expiresInDays}
-							onChange={(e) => setExpiresInDays(e.target.value)}
-							placeholder={t(
-								"sysadmin.users.detail.ban_expires_placeholder",
-								"e.g. 30",
-							)}
-						/>
-					</div>
+		<CallableDialog
+			call={call}
+			dismissValue={false}
+			preventDismiss={loading}
+			className="sm:max-w-sm"
+			title={t("sysadmin.users.ban_title", "Ban user?")}
+		>
+			<p className="text-muted-foreground text-sm">
+				<strong className="text-foreground">{user.name}</strong>{" "}
+				{t(
+					"sysadmin.users.ban_desc_1",
+					"will be immediately signed out and blocked from logging in.",
+				)}
+			</p>
+			<div className="space-y-3">
+				<div className="space-y-1.5">
+					<Label htmlFor="ban-reason">
+						{t("sysadmin.users.ban_reason", "Reason (optional)")}
+					</Label>
+					<Input
+						id="ban-reason"
+						value={reason}
+						onChange={(e) => setReason(e.target.value)}
+						placeholder={t(
+							"sysadmin.users.ban_reason_placeholder",
+							"Policy violation…",
+						)}
+					/>
 				</div>
-				{error && <p className="text-destructive text-sm">{error}</p>}
-				<div className="flex justify-end gap-2 pt-1">
-					<Button variant="ghost" onClick={onClose}>
-						{t("cancel", "Cancel")}
-					</Button>
-					<Button variant="destructive" disabled={loading} onClick={handleBan}>
-						{loading
-							? t("sysadmin.users.banning", "Banning…")
-							: t("sysadmin.users.ban_user", "Ban user")}
-					</Button>
+				<div className="space-y-1.5">
+					<Label htmlFor="ban-expires">
+						{t(
+							"sysadmin.users.detail.ban_expires_label",
+							"Duration in days (leave empty = permanent)",
+						)}
+					</Label>
+					<Input
+						id="ban-expires"
+						type="number"
+						min="1"
+						value={expiresInDays}
+						onChange={(e) => setExpiresInDays(e.target.value)}
+						placeholder={t(
+							"sysadmin.users.detail.ban_expires_placeholder",
+							"e.g. 30",
+						)}
+					/>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</div>
+			{error && <p className="text-destructive text-sm">{error}</p>}
+			<div className="flex justify-end gap-2 pt-1">
+				<Button
+					variant="ghost"
+					disabled={loading}
+					onClick={() => call.end(false)}
+				>
+					{t("cancel", "Cancel")}
+				</Button>
+				<Button variant="destructive" disabled={loading} onClick={handleBan}>
+					{loading
+						? t("sysadmin.users.banning", "Banning…")
+						: t("sysadmin.users.ban_user", "Ban user")}
+				</Button>
+			</div>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Set password dialog ──────────────────────────────────────────────────────
 
-function SetPasswordDialog({
-	open,
-	userId,
-	onClose,
-	onDone,
-}: {
-	open: boolean;
-	userId: string;
-	onClose: () => void;
-	onDone: () => void;
-}) {
-	const { t } = useTranslation();
-	const [password, setPassword] = useState("");
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
+/** Sets a new password for the user; resolves `true` once set. */
+export const SetPasswordDialog = createCallable<{ userId: string }, boolean>(
+	({ call, userId }) => {
+		const { t } = useTranslation();
+		const [password, setPassword] = useState("");
+		const [loading, setLoading] = useState(false);
+		const [error, setError] = useState("");
 
-	const handleSet = async () => {
-		if (password.length < 8) {
-			setError(
-				t(
-					"sysadmin.users.detail.set_password_error",
-					"Password must be at least 8 characters",
-				),
-			);
-			return;
-		}
-		setLoading(true);
-		setError("");
-		const res = await authClient.admin.setUserPassword({
-			userId,
-			newPassword: password,
-		});
-		setLoading(false);
-		if (res.error) {
-			setError(res.error.message ?? "Error");
-			return;
-		}
-		onDone();
-		onClose();
-		setPassword("");
-	};
+		const handleSet = async () => {
+			if (password.length < 8) {
+				setError(
+					t(
+						"sysadmin.users.detail.set_password_error",
+						"Password must be at least 8 characters",
+					),
+				);
+				return;
+			}
+			setLoading(true);
+			setError("");
+			const res = await authClient.admin.setUserPassword({
+				userId,
+				newPassword: password,
+			});
+			setLoading(false);
+			if (res.error) {
+				setError(res.error.message ?? "Error");
+				return;
+			}
+			call.end(true);
+			setPassword("");
+		};
 
-	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.users.detail.set_password_title", "Set new password")}
-					</DialogTitle>
-				</DialogHeader>
+		return (
+			<CallableDialog
+				call={call}
+				dismissValue={false}
+				preventDismiss={loading}
+				className="sm:max-w-sm"
+				title={t(
+					"sysadmin.users.detail.set_password_title",
+					"Set new password",
+				)}
+			>
 				<p className="text-muted-foreground text-sm">
 					{t(
 						"sysadmin.users.detail.set_password_desc",
@@ -260,7 +250,11 @@ function SetPasswordDialog({
 				</div>
 				{error && <p className="text-destructive text-sm">{error}</p>}
 				<div className="flex justify-end gap-2 pt-1">
-					<Button variant="ghost" onClick={onClose}>
+					<Button
+						variant="ghost"
+						disabled={loading}
+						onClick={() => call.end(false)}
+					>
 						{t("cancel", "Cancel")}
 					</Button>
 					<Button disabled={loading} onClick={handleSet}>
@@ -269,34 +263,25 @@ function SetPasswordDialog({
 							: t("sysadmin.users.detail.set_password_btn", "Set password")}
 					</Button>
 				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
+			</CallableDialog>
+		);
+	},
+	DIALOG_EXIT_MS,
+);
 
 // ─── Update user dialog ───────────────────────────────────────────────────────
 
-function UpdateUserDialog({
-	open,
-	user,
-	onClose,
-	onDone,
-}: {
-	open: boolean;
-	user: { id: string; name: string; email: string } | null;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+/** Edits the user's name; resolves `true` once saved. */
+export const UpdateUserDialog = createCallable<
+	{ user: { id: string; name: string; email: string } },
+	boolean
+>(({ call, user }) => {
 	const { t } = useTranslation();
-	const [name, setName] = useState(user?.name ?? "");
+	const [name, setName] = useState(user.name);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	const currentName = user?.name ?? "";
-	if (name === "" && currentName !== "") setName(currentName);
-
 	const handleUpdate = async () => {
-		if (!user) return;
 		if (!name.trim()) {
 			setError(t("sysadmin.users.detail.name_required", "Name is required"));
 			return;
@@ -312,55 +297,57 @@ function UpdateUserDialog({
 			setError(res.error.message ?? "Error");
 			return;
 		}
-		onDone();
-		onClose();
+		call.end(true);
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.users.detail.update_title", "Edit user")}
-					</DialogTitle>
-				</DialogHeader>
-				<div className="space-y-3">
-					<div className="space-y-1.5">
-						<Label htmlFor="edit-name">
-							{t("sysadmin.users.detail.field_name", "Name")}
-						</Label>
-						<Input
-							id="edit-name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label>{t("sysadmin.users.detail.field_email", "Email")}</Label>
-						<Input value={user?.email ?? ""} readOnly className="opacity-60" />
-						<p className="text-muted-foreground text-xs">
-							{t(
-								"sysadmin.users.detail.email_readonly",
-								"Email change requires user verification — not supported here.",
-							)}
-						</p>
-					</div>
+		<CallableDialog
+			call={call}
+			dismissValue={false}
+			preventDismiss={loading}
+			className="sm:max-w-sm"
+			title={t("sysadmin.users.detail.update_title", "Edit user")}
+		>
+			<div className="space-y-3">
+				<div className="space-y-1.5">
+					<Label htmlFor="edit-name">
+						{t("sysadmin.users.detail.field_name", "Name")}
+					</Label>
+					<Input
+						id="edit-name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+					/>
 				</div>
-				{error && <p className="text-destructive text-sm">{error}</p>}
-				<div className="flex justify-end gap-2 pt-1">
-					<Button variant="ghost" onClick={onClose}>
-						{t("cancel", "Cancel")}
-					</Button>
-					<Button disabled={loading} onClick={handleUpdate}>
-						{loading
-							? t("sysadmin.users.saving", "Saving…")
-							: t("sysadmin.users.detail.save_changes", "Save changes")}
-					</Button>
+				<div className="space-y-1.5">
+					<Label>{t("sysadmin.users.detail.field_email", "Email")}</Label>
+					<Input value={user.email} readOnly className="opacity-60" />
+					<p className="text-muted-foreground text-xs">
+						{t(
+							"sysadmin.users.detail.email_readonly",
+							"Email change requires user verification — not supported here.",
+						)}
+					</p>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</div>
+			{error && <p className="text-destructive text-sm">{error}</p>}
+			<div className="flex justify-end gap-2 pt-1">
+				<Button
+					variant="ghost"
+					disabled={loading}
+					onClick={() => call.end(false)}
+				>
+					{t("cancel", "Cancel")}
+				</Button>
+				<Button disabled={loading} onClick={handleUpdate}>
+					{loading
+						? t("sysadmin.users.saving", "Saving…")
+						: t("sysadmin.users.detail.save_changes", "Save changes")}
+				</Button>
+			</div>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Institution search field ──────────────────────────────────────────────────
 
@@ -392,62 +379,79 @@ function InstitutionSearchField({
 			</Button>
 		</div>
 	) : (
-		<div className="relative">
-			<UserSearch className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-			<Input
-				placeholder={t(
-					"sysadmin.users.detail.search_institution",
-					"Search institution…",
-				)}
-				value={search}
-				onChange={(e) => setSearch(e.target.value)}
-				className="pl-9"
-			/>
-			{search.length >= 2 && data && data.rows.length > 0 && (
-				<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md">
-					{data.rows.map((i) => (
-						<button
-							key={i.id}
-							type="button"
-							className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted/60"
-							onClick={() => {
-								onSelect({ id: i.id, name: i.name });
-								setSearch("");
-							}}
-						>
-							<span className="font-medium">{i.name}</span>
-							<span className="text-muted-foreground text-xs capitalize">
-								{i.type}
-							</span>
-						</button>
-					))}
-				</div>
-			)}
-			{search.length >= 2 && data?.rows.length === 0 && (
-				<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover px-3 py-2 text-muted-foreground text-sm shadow-md">
-					{t(
-						"sysadmin.users.detail.no_institutions_found",
-						"No institutions found",
+		<div className="flex items-start gap-2">
+			<div className="relative min-w-0 flex-1">
+				<UserSearch className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+				<Input
+					placeholder={t(
+						"sysadmin.users.detail.search_institution",
+						"Search institution…",
 					)}
-				</div>
-			)}
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					className="pl-9"
+				/>
+				{search.length >= 2 && data && data.rows.length > 0 && (
+					<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md">
+						{data.rows.map((i) => (
+							<button
+								key={i.id}
+								type="button"
+								className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted/60"
+								onClick={() => {
+									onSelect({ id: i.id, name: i.name });
+									setSearch("");
+								}}
+							>
+								<span className="font-medium">{i.name}</span>
+								<span className="text-muted-foreground text-xs capitalize">
+									{i.type}
+								</span>
+							</button>
+						))}
+					</div>
+				)}
+				{search.length >= 2 && data?.rows.length === 0 && (
+					<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover px-3 py-2 text-muted-foreground text-sm shadow-md">
+						{t(
+							"sysadmin.users.detail.no_institutions_found",
+							"No institutions found",
+						)}
+					</div>
+				)}
+			</div>
+			<Button
+				type="button"
+				variant="outline"
+				size="icon"
+				className="shrink-0"
+				aria-label={t("sysadmin.institutions.new_title", "New Institution")}
+				title={t("sysadmin.institutions.new_title", "New Institution")}
+				onClick={async () => {
+					const created = await CreateInstitutionDialog.call({
+						defaultName: search,
+					});
+					if (!created) return;
+					onSelect({ id: created.id, name: created.name });
+					setSearch("");
+				}}
+			>
+				<Plus className="h-4 w-4" />
+			</Button>
 		</div>
 	);
 }
 
 // ─── Add to institution dialog ─────────────────────────────────────────────────
 
-function AddToInstitutionDialog({
-	userId,
-	open,
-	onClose,
-	onDone,
-}: {
-	userId: string;
-	open: boolean;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+/**
+ * Adds the user to an institution with a role. A missing institution can be
+ * created in place from the "+" next to the search.
+ */
+export const AddToInstitutionDialog = createCallable<
+	{ userId: string },
+	RouterOutputs["systemAdmin"]["addMember"] | undefined
+>(({ call, userId }) => {
 	const { t } = useTranslation();
 	const [institution, setInstitution] = useState<{
 		id: string;
@@ -456,86 +460,93 @@ function AddToInstitutionDialog({
 	const [role, setRole] = useState<"admin" | "principal" | "teacher">(
 		"teacher",
 	);
+	const utils = trpc.useUtils();
 
 	const add = trpc.systemAdmin.addMember.useMutation({
-		onSuccess: () => {
-			onDone();
-			onClose();
-			setInstitution(null);
-			setRole("teacher");
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.systemAdmin.getUser.invalidate({ userId }),
+	});
+
+	const submit = useMutationFlow(call, async (call) => {
+		if (!institution) return;
+		try {
+			call.end(
+				await add.mutateAsync({
+					institutionId: institution.id,
+					userId,
+					role,
+				}),
+			);
+		} catch (err) {
+			errorToast(err, t);
+		}
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t(
-							"sysadmin.users.detail.add_to_institution",
-							"Add to institution",
-						)}
-					</DialogTitle>
-				</DialogHeader>
-				<div className="space-y-4">
-					<div className="space-y-1.5">
-						<Label>
-							{t("sysadmin.users.detail.institution_label", "Institution")}
-						</Label>
-						<InstitutionSearchField
-							value={institution}
-							onSelect={setInstitution}
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label>{t("sysadmin.users.detail.role_label", "Role")}</Label>
-						<Combobox
-							options={[
-								{
-									value: "teacher",
-									label: t("roles.teacher", "Teacher"),
-								},
-								{
-									value: "principal",
-									label: t("roles.principal", "Principal"),
-								},
-								{
-									value: "admin",
-									label: t("roles.admin", "Admin"),
-								},
-							]}
-							value={role}
-							onValueChange={(v) =>
-								setRole(v as "admin" | "principal" | "teacher")
-							}
-							placeholder={t(
-								"sysadmin.users.detail.select_role",
-								"Select role",
-							)}
-						/>
-					</div>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="sm:max-w-sm"
+			title={t(
+				"sysadmin.users.detail.add_to_institution",
+				"Add to institution",
+			)}
+		>
+			<div className="space-y-4">
+				<div className="space-y-1.5">
+					<Label>
+						{t("sysadmin.users.detail.institution_label", "Institution")}
+					</Label>
+					<InstitutionSearchField
+						value={institution}
+						onSelect={setInstitution}
+					/>
 				</div>
-				<div className="flex justify-end gap-2 pt-2">
-					<Button variant="ghost" onClick={onClose}>
-						{t("cancel", "Cancel")}
-					</Button>
-					<Button
-						disabled={!institution || add.isPending}
-						onClick={() =>
-							institution &&
-							add.mutate({ institutionId: institution.id, userId, role })
+				<div className="space-y-1.5">
+					<Label>{t("sysadmin.users.detail.role_label", "Role")}</Label>
+					<Combobox
+						options={[
+							{
+								value: "teacher",
+								label: t("roles.teacher", "Teacher"),
+							},
+							{
+								value: "principal",
+								label: t("roles.principal", "Principal"),
+							},
+							{
+								value: "admin",
+								label: t("roles.admin", "Admin"),
+							},
+						]}
+						value={role}
+						onValueChange={(v) =>
+							setRole(v as "admin" | "principal" | "teacher")
 						}
-					>
-						{add.isPending
-							? t("sysadmin.users.detail.adding", "Adding…")
-							: t("sysadmin.users.detail.add_btn", "Add")}
-					</Button>
+						placeholder={t("sysadmin.users.detail.select_role", "Select role")}
+					/>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</div>
+			<div className="flex justify-end gap-2 pt-2">
+				<Button
+					variant="ghost"
+					disabled={submit.pending}
+					onClick={() => call.end(undefined)}
+				>
+					{t("cancel", "Cancel")}
+				</Button>
+				<Button
+					disabled={!institution || submit.pending}
+					onClick={() => submit()}
+				>
+					{submit.pending
+						? t("sysadmin.users.detail.adding", "Adding…")
+						: t("sysadmin.users.detail.add_btn", "Add")}
+				</Button>
+			</div>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Profile tab ──────────────────────────────────────────────────────────────
 
@@ -673,7 +684,6 @@ export function UserProfileTab() {
 export function UserMembershipsTab() {
 	const { id } = useParams<{ id: string }>();
 	const { t, i18n } = useTranslation();
-	const [showAdd, setShowAdd] = useState(false);
 
 	const { data, isLoading, refetch } = trpc.systemAdmin.getUser.useQuery(
 		{ userId: id! },
@@ -823,7 +833,11 @@ export function UserMembershipsTab() {
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-end">
-				<Button size="sm" onClick={() => setShowAdd(true)}>
+				<Button
+					size="sm"
+					disabled={!id}
+					onClick={() => id && AddToInstitutionDialog.call({ userId: id })}
+				>
 					<Plus className="mr-1.5 h-4 w-4" />
 					{t("sysadmin.users.detail.add_to_institution", "Add to institution")}
 				</Button>
@@ -855,15 +869,6 @@ export function UserMembershipsTab() {
 					onPageSizeChange={() => {}}
 				/>
 			)}
-
-			{id && (
-				<AddToInstitutionDialog
-					userId={id}
-					open={showAdd}
-					onClose={() => setShowAdd(false)}
-					onDone={() => refetch()}
-				/>
-			)}
 		</div>
 	);
 }
@@ -886,9 +891,6 @@ export function SysAdminUserDetail() {
 		{ label: data?.name ?? "…" },
 	]);
 
-	const [showBan, setShowBan] = useState(false);
-	const [showSetPassword, setShowSetPassword] = useState(false);
-	const [showUpdateUser, setShowUpdateUser] = useState(false);
 	const [unbanPending, setUnbanPending] = useState(false);
 	const [rolePending, setRolePending] = useState(false);
 
@@ -1007,7 +1009,12 @@ export function SysAdminUserDetail() {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => setShowUpdateUser(true)}
+							onClick={async () => {
+								if (data && (await UpdateUserDialog.call({ user: data }))) {
+									refetch();
+									utils.systemAdmin.listUsers.invalidate();
+								}
+							}}
 						>
 							<Pencil className="mr-1.5 h-4 w-4" />
 							{t("sysadmin.users.detail.edit_info", "Edit")}
@@ -1015,7 +1022,9 @@ export function SysAdminUserDetail() {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => setShowSetPassword(true)}
+							onClick={() =>
+								data && SetPasswordDialog.call({ userId: data.id })
+							}
 						>
 							<KeyRound className="mr-1.5 h-4 w-4" />
 							{t("sysadmin.users.detail.set_password_title", "Password")}
@@ -1024,7 +1033,10 @@ export function SysAdminUserDetail() {
 							<Button
 								variant="outline"
 								size="sm"
-								onClick={() => setShowBan(true)}
+								onClick={async () => {
+									if (data && (await BanUserDetailDialog.call({ user: data })))
+										refetch();
+								}}
 							>
 								<UserX className="mr-1.5 h-4 w-4" />
 								{t("sysadmin.users.detail.ban_action", "Ban")}
@@ -1174,35 +1186,6 @@ export function SysAdminUserDetail() {
 			</div>
 
 			<Outlet />
-
-			{/* Dialogs */}
-			<BanDialog
-				open={showBan}
-				user={data ?? null}
-				onClose={() => setShowBan(false)}
-				onDone={() => refetch()}
-			/>
-
-			{data && (
-				<SetPasswordDialog
-					open={showSetPassword}
-					userId={data.id}
-					onClose={() => setShowSetPassword(false)}
-					onDone={() => {}}
-				/>
-			)}
-
-			{data && (
-				<UpdateUserDialog
-					open={showUpdateUser}
-					user={data}
-					onClose={() => setShowUpdateUser(false)}
-					onDone={() => {
-						refetch();
-						utils.systemAdmin.listUsers.invalidate();
-					}}
-				/>
-			)}
 		</div>
 	);
 }

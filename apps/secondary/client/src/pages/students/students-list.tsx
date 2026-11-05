@@ -33,7 +33,6 @@ export function StudentsList() {
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "lastName", desc: false },
 	]);
-	const [dialogOpen, setDialogOpen] = useState(false);
 
 	const utils = trpc.useUtils();
 
@@ -188,7 +187,12 @@ export function StudentsList() {
 								.then((res) => ({ created: res.length }))
 						}
 					/>
-					<Button onClick={() => setDialogOpen(true)} data-tour="students-add">
+					<Button
+						onClick={() =>
+							StudentFormDialog.call({ activeYearId: activeYear?.id })
+						}
+						data-tour="students-add"
+					>
 						<UserPlus className="mr-2 h-4 w-4" />
 						{t("students.add", "Add student")}
 					</Button>
@@ -265,14 +269,6 @@ export function StudentsList() {
 					setPageSize(s);
 					setPage(1);
 				}}
-			/>
-
-			<StudentFormDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				onSuccess={() => {}}
-				activeYearId={activeYear?.id}
-				classes={classes}
 			/>
 		</div>
 	);

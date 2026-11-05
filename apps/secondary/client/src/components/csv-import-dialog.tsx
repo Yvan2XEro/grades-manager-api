@@ -1,13 +1,12 @@
 import { Upload } from "lucide-react";
 import { useRef, useState } from "react";
+import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 export interface CsvColumn {
@@ -48,16 +47,31 @@ function parseCsv(text: string): Record<string, string>[] {
 		.filter((row) => Object.values(row).some((v) => v.trim()));
 }
 
-export function CsvImportDialog({
-	title,
-	columns,
-	onImport,
-	templateFilename,
-	exampleRows,
-	disabled,
-}: CsvImportDialogProps) {
+/** Trigger button opening the {@link CsvImport} Callable. */
+export function CsvImportDialog({ disabled, ...props }: CsvImportDialogProps) {
 	const { t } = useTranslation();
-	const [open, setOpen] = useState(false);
+	return (
+		<Button
+			variant="outline"
+			onClick={() => CsvImport.call(props)}
+			disabled={disabled}
+			type="button"
+		>
+			<Upload className="mr-2 h-4 w-4" />
+			{t("csv_import.btn", "Import CSV")}
+		</Button>
+	);
+}
+
+/**
+ * CSV import dialog. Stays open after a successful import to show the result;
+ * resolves with the created count on close, or `undefined` if nothing was imported.
+ */
+export const CsvImport = createCallable<
+	Omit<CsvImportDialogProps, "disabled">,
+	{ created: number } | undefined
+>(({ call, title, columns, onImport, templateFilename, exampleRows }) => {
+	const { t } = useTranslation();
 	const [rows, setRows] = useState<Record<string, string>[]>([]);
 	const [validationError, setValidationError] = useState<string | null>(null);
 	const [importing, setImporting] = useState(false);
@@ -145,146 +159,120 @@ export function CsvImportDialog({
 		}
 	}
 
-	function handleOpenChange(next: boolean) {
-		if (!next) {
-			setRows([]);
-			setValidationError(null);
-			setFileError(null);
-			setSuccessCount(null);
-			if (fileRef.current) fileRef.current.value = "";
-		}
-		setOpen(next);
-	}
-
 	const preview = rows.slice(0, 5);
 
+	const result = successCount !== null ? { created: successCount } : undefined;
+
 	return (
-		<>
-			<Button
-				variant="outline"
-				onClick={() => setOpen(true)}
-				disabled={disabled}
-				type="button"
-			>
-				<Upload className="mr-2 h-4 w-4" />
-				{t("csv_import.btn", "Import CSV")}
-			</Button>
+		<CallableDialog
+			call={call}
+			dismissValue={result}
+			preventDismiss={importing}
+			className="max-w-2xl"
+			title={title}
+		>
+			<div className="space-y-4">
+				{/* Template download */}
+				<div>
+					<a
+						href={templateCsv}
+						download={templateFilename}
+						className="text-primary text-sm underline hover:no-underline"
+					>
+						{t("csv_import.download_template", "Download template")}
+					</a>
+				</div>
 
-			<Dialog open={open} onOpenChange={handleOpenChange}>
-				<DialogContent className="max-w-2xl">
-					<DialogHeader>
-						<DialogTitle>{title}</DialogTitle>
-					</DialogHeader>
+				{/* File input */}
+				<div className="space-y-1">
+					<Label htmlFor="csv-file-input">
+						{t("csv_import.upload_label", "Upload your CSV file")}
+					</Label>
+					<input
+						id="csv-file-input"
+						ref={fileRef}
+						type="file"
+						accept=".csv"
+						onChange={handleFile}
+						className="block w-full cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:font-medium file:text-sm"
+					/>
+				</div>
 
-					<div className="space-y-4">
-						{/* Template download */}
-						<div>
-							<a
-								href={templateCsv}
-								download={templateFilename}
-								className="text-primary text-sm underline hover:no-underline"
-							>
-								{t("csv_import.download_template", "Download template")}
-							</a>
-						</div>
+				{fileError && <p className="text-destructive text-sm">{fileError}</p>}
 
-						{/* File input */}
-						<div className="space-y-1">
-							<Label htmlFor="csv-file-input">
-								{t("csv_import.upload_label", "Upload your CSV file")}
-							</Label>
-							<input
-								id="csv-file-input"
-								ref={fileRef}
-								type="file"
-								accept=".csv"
-								onChange={handleFile}
-								className="block w-full cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:font-medium file:text-sm"
-							/>
-						</div>
-
-						{fileError && (
-							<p className="text-destructive text-sm">{fileError}</p>
-						)}
-
-						{/* Preview */}
-						{preview.length > 0 && (
-							<div className="space-y-2">
-								<p className="font-medium text-sm">
-									{t("csv_import.preview_title", "Preview (first 5 rows)")}
-								</p>
-								<div className="overflow-x-auto rounded-md border">
-									<table className="w-full text-sm">
-										<thead className="bg-muted">
-											<tr>
-												{columns.map((col) => (
-													<th
-														key={col.key}
-														className="px-3 py-2 text-left font-medium text-muted-foreground text-xs"
-													>
-														{col.label}
-														{col.required && (
-															<span className="ml-1 text-destructive">*</span>
-														)}
-													</th>
-												))}
-											</tr>
-										</thead>
-										<tbody>
-											{preview.map((row, i) => (
-												<tr key={i} className="border-t">
-													{columns.map((col) => (
-														<td key={col.key} className="px-3 py-2 text-xs">
-															{row[colHeader(col)] ?? ""}
-														</td>
-													))}
-												</tr>
+				{/* Preview */}
+				{preview.length > 0 && (
+					<div className="space-y-2">
+						<p className="font-medium text-sm">
+							{t("csv_import.preview_title", "Preview (first 5 rows)")}
+						</p>
+						<div className="overflow-x-auto rounded-md border">
+							<table className="w-full text-sm">
+								<thead className="bg-muted">
+									<tr>
+										{columns.map((col) => (
+											<th
+												key={col.key}
+												className="px-3 py-2 text-left font-medium text-muted-foreground text-xs"
+											>
+												{col.label}
+												{col.required && (
+													<span className="ml-1 text-destructive">*</span>
+												)}
+											</th>
+										))}
+									</tr>
+								</thead>
+								<tbody>
+									{preview.map((row, i) => (
+										<tr key={i} className="border-t">
+											{columns.map((col) => (
+												<td key={col.key} className="px-3 py-2 text-xs">
+													{row[colHeader(col)] ?? ""}
+												</td>
 											))}
-										</tbody>
-									</table>
-								</div>
-							</div>
-						)}
-
-						{validationError && (
-							<p className="text-destructive text-sm">{validationError}</p>
-						)}
-
-						{successCount !== null && (
-							<p className="text-green-600 text-sm dark:text-green-400">
-								{t(
-									"csv_import.success",
-									"{{count}} rows created successfully",
-									{
-										count: successCount,
-									},
-								)}
-							</p>
-						)}
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
 					</div>
+				)}
 
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							variant="outline"
-							onClick={() => handleOpenChange(false)}
-							type="button"
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button
-							onClick={handleImport}
-							disabled={rows.length === 0 || importing}
-							type="button"
-						>
-							{importing
-								? "..."
-								: t("csv_import.import_btn", "Import {{count}} rows", {
-										count: rows.length,
-									})}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
-		</>
+				{validationError && (
+					<p className="text-destructive text-sm">{validationError}</p>
+				)}
+
+				{successCount !== null && (
+					<p className="text-green-600 text-sm dark:text-green-400">
+						{t("csv_import.success", "{{count}} rows created successfully", {
+							count: successCount,
+						})}
+					</p>
+				)}
+			</div>
+
+			<div className="flex justify-end gap-2 pt-2">
+				<Button
+					variant="outline"
+					disabled={importing}
+					onClick={() => call.end(result)}
+					type="button"
+				>
+					{t("common.cancel", "Cancel")}
+				</Button>
+				<Button
+					onClick={handleImport}
+					disabled={rows.length === 0 || importing}
+					type="button"
+				>
+					{importing
+						? "..."
+						: t("csv_import.import_btn", "Import {{count}} rows", {
+								count: rows.length,
+							})}
+				</Button>
+			</div>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);

@@ -11,18 +11,18 @@ import {
 } from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -30,6 +30,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { cn } from "@/lib/utils";
+import { CreateUserDialog } from "@/pages/sysadmin/users";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 type Institution =
@@ -87,42 +88,62 @@ function UserSearchField({
 					</Button>
 				</div>
 			) : (
-				<div className="relative">
-					<UserSearch className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-					<Input
-						placeholder={t(
-							"sysadmin.institutions.search_users",
-							"Search users by name or email…",
+				<div className="flex items-start gap-2">
+					<div className="relative min-w-0 flex-1">
+						<UserSearch className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+						<Input
+							placeholder={t(
+								"sysadmin.institutions.search_users",
+								"Search users by name or email…",
+							)}
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							className="pl-9"
+						/>
+						{search.length >= 2 && data && data.rows.length > 0 && (
+							<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md">
+								{data.rows.map((u) => (
+									<button
+										key={u.id}
+										type="button"
+										className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted/60"
+										onClick={() => {
+											onSelect({ id: u.id, name: u.name });
+											setSearch("");
+										}}
+									>
+										<span className="font-medium">{u.name}</span>
+										<span className="text-muted-foreground text-xs">
+											{u.email}
+										</span>
+									</button>
+								))}
+							</div>
 						)}
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						className="pl-9"
-					/>
-					{search.length >= 2 && data && data.rows.length > 0 && (
-						<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md">
-							{data.rows.map((u) => (
-								<button
-									key={u.id}
-									type="button"
-									className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted/60"
-									onClick={() => {
-										onSelect({ id: u.id, name: u.name });
-										setSearch("");
-									}}
-								>
-									<span className="font-medium">{u.name}</span>
-									<span className="text-muted-foreground text-xs">
-										{u.email}
-									</span>
-								</button>
-							))}
-						</div>
-					)}
-					{search.length >= 2 && data?.rows.length === 0 && (
-						<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover px-3 py-2 text-muted-foreground text-sm shadow-md">
-							{t("sysadmin.users.no_users", "No users found")}
-						</div>
-					)}
+						{search.length >= 2 && data?.rows.length === 0 && (
+							<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover px-3 py-2 text-muted-foreground text-sm shadow-md">
+								{t("sysadmin.users.no_users", "No users found")}
+							</div>
+						)}
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						className="shrink-0"
+						aria-label={t("sysadmin.users.create_user", "Create account")}
+						title={t("sysadmin.users.create_user", "Create account")}
+						onClick={async () => {
+							const created = await CreateUserDialog.call({
+								defaultName: search,
+							});
+							if (!created) return;
+							onSelect({ id: created.user.id, name: created.user.name });
+							setSearch("");
+						}}
+					>
+						<Plus className="h-4 w-4" />
+					</Button>
 				</div>
 			)}
 		</div>
@@ -131,17 +152,20 @@ function UserSearchField({
 
 // ─── Create dialog ─────────────────────────────────────────────────────────────
 
-function CreateInstitutionDialog({
-	open,
-	onClose,
-	onCreated,
-}: {
-	open: boolean;
-	onClose: () => void;
-	onCreated: () => void;
-}) {
+export type CreateInstitutionResult =
+	RouterOutputs["systemAdmin"]["createInstitution"];
+
+/**
+ * Resolves with the created institution, or `undefined` when dismissed. The
+ * owner can be an existing user or one created in place from the "+".
+ */
+export const CreateInstitutionDialog = createCallable<
+	{ defaultName?: string },
+	CreateInstitutionResult | undefined
+>(({ call, defaultName }) => {
 	const { t } = useTranslation();
-	const [name, setName] = useState("");
+	const utils = trpc.useUtils();
+	const [name, setName] = useState(defaultName ?? "");
 	const [type, setType] = useState<"lycee" | "college" | "mixed">("lycee");
 	const [city, setCity] = useState("");
 	const [minesecCode, setMinesecCode] = useState("");
@@ -157,166 +181,163 @@ function CreateInstitutionDialog({
 	};
 
 	const create = trpc.systemAdmin.createInstitution.useMutation({
-		onSuccess: () => {
-			setName("");
-			setType("lycee");
-			setCity("");
-			setMinesecCode("");
-			setPhone("");
-			setEmail("");
-			setAddress("");
-			setOwner(null);
-			onClose();
-			// defer refetch so Radix scroll-lock cleanup runs before re-render
-			setTimeout(() => onCreated(), 0);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.systemAdmin.listInstitutions.invalidate(),
+	});
+
+	const submit = useMutationFlow(call, async (call) => {
+		try {
+			call.end(
+				await create.mutateAsync({
+					name: name.trim(),
+					type,
+					city: city.trim() || undefined,
+					minesecCode: minesecCode.trim() || undefined,
+					phone: phone.trim() || undefined,
+					email: email.trim() || undefined,
+					address: address.trim() || undefined,
+					ownerUserId: owner?.id,
+				}),
+			);
+		} catch (err) {
+			errorToast(err, t);
+		}
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.institutions.new_title", "New Institution")}
-					</DialogTitle>
-				</DialogHeader>
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						if (!name.trim()) return;
-						create.mutate({
-							name: name.trim(),
-							type,
-							city: city.trim() || undefined,
-							minesecCode: minesecCode.trim() || undefined,
-							phone: phone.trim() || undefined,
-							email: email.trim() || undefined,
-							address: address.trim() || undefined,
-							ownerUserId: owner?.id,
-						});
-					}}
-					className="space-y-4 pt-1"
-				>
-					<div className="space-y-1.5">
-						<Label htmlFor="inst-name">
-							{t("sysadmin.institutions.name_required", "Name *")}
-						</Label>
-						<Input
-							id="inst-name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							placeholder="Lycée de la Réussite"
-							required
-						/>
-					</div>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="sm:max-w-lg"
+			title={t("sysadmin.institutions.new_title", "New Institution")}
+		>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					if (name.trim()) submit();
+				}}
+				className="space-y-4 pt-1"
+			>
+				<div className="space-y-1.5">
+					<Label htmlFor="inst-name">
+						{t("sysadmin.institutions.name_required", "Name *")}
+					</Label>
+					<Input
+						id="inst-name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						placeholder="Lycée de la Réussite"
+						required
+					/>
+				</div>
 
-					<div className="space-y-2">
-						<Label>{t("sysadmin.institutions.field_type", "Type")}</Label>
-						<RadioGroup
-							value={type}
-							onValueChange={(v) => setType(v as typeof type)}
-							className="flex gap-3"
-						>
-							{(["lycee", "college", "mixed"] as const).map((t_) => (
-								<label
-									key={t_}
-									className={cn(
-										"flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
-										type === t_
-											? "border-primary bg-primary/5 text-foreground"
-											: "border-border text-muted-foreground hover:bg-muted/40",
-									)}
-								>
-									<RadioGroupItem value={t_} id={`type-${t_}`} />
-									{typeLabels[t_]}
-								</label>
-							))}
-						</RadioGroup>
-					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label htmlFor="inst-city">
-								{t("sysadmin.institutions.field_city", "City")}
-							</Label>
-							<Input
-								id="inst-city"
-								value={city}
-								onChange={(e) => setCity(e.target.value)}
-								placeholder="Yaoundé"
-							/>
-						</div>
-						<div className="space-y-1.5">
-							<Label htmlFor="inst-code">
-								{t("sysadmin.institutions.field_minesec_code", "MINESEC code")}
-							</Label>
-							<Input
-								id="inst-code"
-								value={minesecCode}
-								onChange={(e) => setMinesecCode(e.target.value)}
-								placeholder="CM-CE-001"
-							/>
-						</div>
-					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label htmlFor="inst-phone">
-								{t("sysadmin.institutions.field_phone", "Phone")}
-							</Label>
-							<PhoneInput
-								defaultCountry="CM"
-								value={phone}
-								onChange={(v) => setPhone(v ?? "")}
-							/>
-						</div>
-						<div className="space-y-1.5">
-							<Label htmlFor="inst-email">
-								{t(
-									"sysadmin.institutions.field_contact_email",
-									"Contact email",
+				<div className="space-y-2">
+					<Label>{t("sysadmin.institutions.field_type", "Type")}</Label>
+					<RadioGroup
+						value={type}
+						onValueChange={(v) => setType(v as typeof type)}
+						className="flex gap-3"
+					>
+						{(["lycee", "college", "mixed"] as const).map((t_) => (
+							<label
+								key={t_}
+								className={cn(
+									"flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+									type === t_
+										? "border-primary bg-primary/5 text-foreground"
+										: "border-border text-muted-foreground hover:bg-muted/40",
 								)}
-							</Label>
-							<Input
-								id="inst-email"
-								type="email"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								placeholder="direction@school.cm"
-							/>
-						</div>
-					</div>
+							>
+								<RadioGroupItem value={t_} id={`type-${t_}`} />
+								{typeLabels[t_]}
+							</label>
+						))}
+					</RadioGroup>
+				</div>
 
+				<div className="grid grid-cols-2 gap-3">
 					<div className="space-y-1.5">
-						<Label htmlFor="inst-address">
-							{t("sysadmin.institutions.field_address", "Address")}
+						<Label htmlFor="inst-city">
+							{t("sysadmin.institutions.field_city", "City")}
 						</Label>
 						<Input
-							id="inst-address"
-							value={address}
-							onChange={(e) => setAddress(e.target.value)}
-							placeholder="Quartier, Rue…"
+							id="inst-city"
+							value={city}
+							onChange={(e) => setCity(e.target.value)}
+							placeholder="Yaoundé"
 						/>
 					</div>
-
-					<UserSearchField value={owner} onSelect={setOwner} />
-
-					<div className="flex justify-end gap-2 pt-2">
-						<Button type="button" variant="ghost" onClick={onClose}>
-							{t("common.cancel")}
-						</Button>
-						<Button type="submit" disabled={create.isPending || !name.trim()}>
-							{create.isPending
-								? t("sysadmin.institutions.creating", "Creating…")
-								: t("sysadmin.institutions.create_btn", "Create institution")}
-						</Button>
+					<div className="space-y-1.5">
+						<Label htmlFor="inst-code">
+							{t("sysadmin.institutions.field_minesec_code", "MINESEC code")}
+						</Label>
+						<Input
+							id="inst-code"
+							value={minesecCode}
+							onChange={(e) => setMinesecCode(e.target.value)}
+							placeholder="CM-CE-001"
+						/>
 					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<div className="space-y-1.5">
+						<Label htmlFor="inst-phone">
+							{t("sysadmin.institutions.field_phone", "Phone")}
+						</Label>
+						<PhoneInput
+							defaultCountry="CM"
+							value={phone}
+							onChange={(v) => setPhone(v ?? "")}
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<Label htmlFor="inst-email">
+							{t("sysadmin.institutions.field_contact_email", "Contact email")}
+						</Label>
+						<Input
+							id="inst-email"
+							type="email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+							placeholder="direction@school.cm"
+						/>
+					</div>
+				</div>
+
+				<div className="space-y-1.5">
+					<Label htmlFor="inst-address">
+						{t("sysadmin.institutions.field_address", "Address")}
+					</Label>
+					<Input
+						id="inst-address"
+						value={address}
+						onChange={(e) => setAddress(e.target.value)}
+						placeholder="Quartier, Rue…"
+					/>
+				</div>
+
+				<UserSearchField value={owner} onSelect={setOwner} />
+
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="ghost"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending || !name.trim()}>
+						{submit.pending
+							? t("sysadmin.institutions.creating", "Creating…")
+							: t("sysadmin.institutions.create_btn", "Create institution")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Row actions ──────────────────────────────────────────────────────────────
 
@@ -399,8 +420,6 @@ export function SysAdminInstitutions() {
 			sortBy: parseAsString.withDefault("createdAt"),
 			sortDir: parseAsString.withDefault("desc"),
 		});
-
-	const [showCreate, setShowCreate] = useState(false);
 
 	const sorting: SortingState = sortBy
 		? [{ id: sortBy, desc: sortDir === "desc" }]
@@ -606,7 +625,7 @@ export function SysAdminInstitutions() {
 						)}
 					</p>
 				</div>
-				<Button onClick={() => setShowCreate(true)}>
+				<Button onClick={() => CreateInstitutionDialog.call({})}>
 					<Plus className="mr-1.5 h-4 w-4" />
 					{t("sysadmin.institutions.new_institution", "New Institution")}
 				</Button>
@@ -686,7 +705,7 @@ export function SysAdminInstitutions() {
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={() => setShowCreate(true)}
+						onClick={() => CreateInstitutionDialog.call({})}
 					>
 						{t("sysadmin.institutions.create_first", "Create the first one")}
 					</Button>
@@ -723,12 +742,6 @@ export function SysAdminInstitutions() {
 					onPageSizeChange={(s) => setQuery({ pageSize: s, page: 1 })}
 				/>
 			)}
-
-			<CreateInstitutionDialog
-				open={showCreate}
-				onClose={() => setShowCreate(false)}
-				onCreated={() => refetch()}
-			/>
 		</div>
 	);
 }

@@ -113,7 +113,8 @@ export interface ComboboxOption {
 	description?: string;
 }
 
-interface ComboboxProps {
+export interface ComboboxProps {
+	id?: string;
 	options: ComboboxOption[];
 	value?: string;
 	onValueChange?: (value: string) => void;
@@ -128,6 +129,7 @@ interface ComboboxProps {
 }
 
 export function Combobox({
+	id,
 	options,
 	value,
 	onValueChange,
@@ -158,6 +160,7 @@ export function Combobox({
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button
+					id={id}
 					variant="outline"
 					role="combobox"
 					aria-expanded={open}
@@ -174,7 +177,7 @@ export function Combobox({
 							: (placeholder ?? t("common.select", "Select…"))}
 					</span>
 					<div className="flex shrink-0 items-center gap-1">
-						{clearable && selected && (
+						{clearable && selected && !disabled && (
 							<X
 								className="h-3.5 w-3.5 opacity-50 transition-opacity hover:opacity-100"
 								onClick={handleClear}

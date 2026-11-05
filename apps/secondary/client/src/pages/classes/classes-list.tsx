@@ -42,7 +42,6 @@ export function ClassesList() {
 	const [levelFilter, setLevelFilter] = useState<ClassLevel | "all">("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
-	const [dialogOpen, setDialogOpen] = useState(false);
 
 	const utils = trpc.useUtils();
 
@@ -184,7 +183,14 @@ export function ClassesList() {
 								.then((res) => ({ created: res.length }))
 						}
 					/>
-					<Button onClick={() => setDialogOpen(true)} data-tour="classes-add">
+					<Button
+						onClick={() =>
+							ClassFormDialog.call({
+								defaults: { academicYearId: academicYearId || undefined },
+							})
+						}
+						data-tour="classes-add"
+					>
 						<Plus className="mr-2 h-4 w-4" />
 						{t("classes.add", "Add class")}
 					</Button>
@@ -245,12 +251,6 @@ export function ClassesList() {
 					setPageSize(s);
 					setPage(1);
 				}}
-			/>
-
-			<ClassFormDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				onSuccess={() => {}}
 			/>
 		</div>
 	);

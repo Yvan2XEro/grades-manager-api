@@ -9,26 +9,32 @@ import {
 	Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { z } from "zod";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
+import { CreatableCombobox } from "@/components/ui/creatable-combobox";
 import { DatePicker } from "@/components/ui/date-picker";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
+import { upsertInList } from "@/lib/query-cache";
+import { subjectLabel } from "@/lib/subject-label";
 import { cn } from "@/lib/utils";
-import { trpc } from "@/utils/trpc";
+import { ClassFormDialog } from "@/pages/classes/class-form-dialog";
+import { SubjectFormDialog } from "@/pages/subject-form-dialog";
+import { CreateTermDialog } from "@/pages/terms/terms-list";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 // ─── Types & constants ────────────────────────────────────────────────────────
 
@@ -92,33 +98,35 @@ const createSessionSchema = z.object({
 type CreateSessionForm = z.infer<typeof createSessionSchema>;
 
 interface CreateSessionDialogProps {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
 	defaultClassId?: string;
 	activeYearId?: string;
 }
 
-function CreateSessionDialog({
-	open,
-	onOpenChange,
-	defaultClassId,
-	activeYearId,
-}: CreateSessionDialogProps) {
-	const { t } = useTranslation();
+const CLASSES_INPUT = { pageSize: 200 };
+const SUBJECTS_INPUT = { pageSize: 200 };
+
+/**
+ * Resolves with the created session, or `undefined` when dismissed. Missing
+ * classes, terms and subjects can be created in place from the "+" buttons.
+ */
+export const CreateSessionDialog = createCallable<
+	CreateSessionDialogProps,
+	RouterOutputs["attendance"]["createSession"] | undefined
+>(({ call, defaultClassId, activeYearId }) => {
+	const { t, i18n } = useTranslation();
 	const utils = trpc.useUtils();
 
-	const { data: classesData } = trpc.classes.list.useQuery({ pageSize: 200 });
+	const { data: classesData } = trpc.classes.list.useQuery(CLASSES_INPUT);
 	const classes = classesData?.items ?? [];
 
-	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 200 });
+	const { data: subjectsData } = trpc.subjects.list.useQuery(SUBJECTS_INPUT);
 	const subjects = subjectsData?.items ?? [];
 
 	const {
 		register,
 		handleSubmit,
-		reset,
 		control,
-		formState: { errors, isSubmitting },
+		formState: { errors },
 	} = useForm<CreateSessionForm>({
 		resolver: zodResolver(createSessionSchema),
 		defaultValues: {
@@ -131,165 +139,206 @@ function CreateSessionDialog({
 		},
 	});
 
-	const { data: terms = [] } = trpc.terms.list.useQuery(
-		{ academicYearId: activeYearId ?? "" },
-		{ enabled: !!activeYearId },
-	);
+	const termsInput = { academicYearId: activeYearId ?? "" };
+	const { data: terms = [] } = trpc.terms.list.useQuery(termsInput, {
+		enabled: !!activeYearId,
+	});
 
 	const createSession = trpc.attendance.createSession.useMutation({
-		onSuccess: () => {
-			utils.attendance.listSessions.invalidate();
-			reset();
-			onOpenChange(false);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.attendance.listSessions.invalidate(),
 	});
 
-	const onSubmit = handleSubmit(async (data) => {
-		await createSession.mutateAsync({
-			classId: data.classId,
-			termId: data.termId,
-			subjectId: data.subjectId || undefined,
-			sessionDate: new Date(data.sessionDate),
-			startTime: data.startTime || undefined,
-			endTime: data.endTime || undefined,
+	const createClass = async () => {
+		const created = await ClassFormDialog.call({
+			defaults: { academicYearId: activeYearId },
 		});
-	});
-
-	const handleOpenChange = (next: boolean) => {
-		if (!next) reset();
-		onOpenChange(next);
+		if (!created) return;
+		utils.classes.list.setData(CLASSES_INPUT, (old) =>
+			upsertInList(old, { ...created, studentCount: 0 }),
+		);
+		return { value: created.id, label: created.name };
 	};
 
-	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="max-w-lg">
-				<DialogHeader>
-					<DialogTitle>
-						{t("attendance.create_session", "New Attendance Session")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="flex flex-col gap-4">
-					<FormField
-						label={t("attendance.class", "Class")}
-						error={errors.classId?.message}
-						required
-					>
-						<Controller
-							name="classId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={classes.map((c) => ({ value: c.id, label: c.name }))}
-									value={field.value}
-									onValueChange={field.onChange}
-									placeholder={t("attendance.select_class", "Select class…")}
-								/>
-							)}
-						/>
-					</FormField>
+	const createTerm = async () => {
+		if (!activeYearId) return;
+		const term = await CreateTermDialog.call({
+			academicYearId: activeYearId,
+			existingTermNumbers: terms.map((trm) => trm.termNumber),
+		});
+		if (!term) return;
+		utils.terms.list.setData(termsInput, (old) => upsertInList(old, term));
+		return {
+			value: term.id,
+			label: t(`terms.term_${term.termNumber}`, `Term ${term.termNumber}`),
+		};
+	};
 
-					<FormField
-						label={t("attendance.term", "Term")}
-						error={errors.termId?.message}
-						required
-					>
-						<Controller
-							name="termId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={terms.map((trm) => ({
-										value: trm.id,
-										label: t(
-											`terms.term_${trm.termNumber}`,
-											`Term ${trm.termNumber}`,
-										),
-									}))}
-									value={field.value}
-									onValueChange={field.onChange}
-									placeholder={t("attendance.select_term", "Select term…")}
-								/>
-							)}
-						/>
-					</FormField>
+	const createSubject = async () => {
+		const subject = await SubjectFormDialog.call({});
+		if (!subject) return;
+		utils.subjects.list.setData(SUBJECTS_INPUT, (old) =>
+			upsertInList(old, subject),
+		);
+		return { value: subject.id, label: subjectLabel(subject, i18n.language) };
+	};
 
-					<FormField
-						label={t("attendance.subject", "Subject")}
-						error={errors.subjectId?.message}
-					>
-						<Controller
-							name="subjectId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={subjects.map((s) => ({
-										value: s.id,
-										label: s.name,
-									}))}
-									value={field.value ?? ""}
-									onValueChange={(val) => field.onChange(val || undefined)}
-									placeholder={t(
-										"attendance.optional_subject",
-										"General (no subject)",
-									)}
-									clearable
-								/>
-							)}
-						/>
-					</FormField>
-
-					<FormField
-						label={t("attendance.date", "Date")}
-						error={errors.sessionDate?.message}
-						required
-					>
-						<Controller
-							name="sessionDate"
-							control={control}
-							render={({ field }) => (
-								<DatePicker
-									value={field.value ?? ""}
-									onChange={field.onChange}
-									startMonth={new Date(2020, 0)}
-									endMonth={new Date(2035, 11)}
-								/>
-							)}
-						/>
-					</FormField>
-
-					<div className="grid grid-cols-2 gap-3">
-						<FormField
-							label={t("attendance.start_time", "Start time")}
-							error={errors.startTime?.message}
-						>
-							<Input type="time" {...register("startTime")} />
-						</FormField>
-						<FormField
-							label={t("attendance.end_time", "End time")}
-							error={errors.endTime?.message}
-						>
-							<Input type="time" {...register("endTime")} />
-						</FormField>
-					</div>
-
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{t("attendance.create", "Create session")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+	const submit = useMutationFlow(
+		call,
+		async (call, data: CreateSessionForm) => {
+			try {
+				call.end(
+					await createSession.mutateAsync({
+						classId: data.classId,
+						termId: data.termId,
+						subjectId: data.subjectId || undefined,
+						sessionDate: new Date(data.sessionDate),
+						startTime: data.startTime || undefined,
+						endTime: data.endTime || undefined,
+					}),
+				);
+			} catch (err) {
+				errorToast(err, t);
+			}
+		},
 	);
-}
+
+	return (
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="max-w-lg"
+			title={t("attendance.create_session", "New Attendance Session")}
+		>
+			<form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
+				<FormField
+					label={t("attendance.class", "Class")}
+					error={errors.classId?.message}
+					required
+				>
+					<Controller
+						name="classId"
+						control={control}
+						render={({ field }) => (
+							<CreatableCombobox
+								options={classes.map((c) => ({ value: c.id, label: c.name }))}
+								value={field.value}
+								onValueChange={field.onChange}
+								placeholder={t("attendance.select_class", "Select class…")}
+								onCreate={createClass}
+								createLabel={t("classes.add", "Add class")}
+							/>
+						)}
+					/>
+				</FormField>
+
+				<FormField
+					label={t("attendance.term", "Term")}
+					error={errors.termId?.message}
+					required
+				>
+					<Controller
+						name="termId"
+						control={control}
+						render={({ field }) => (
+							<CreatableCombobox
+								options={terms.map((trm) => ({
+									value: trm.id,
+									label: t(
+										`terms.term_${trm.termNumber}`,
+										`Term ${trm.termNumber}`,
+									),
+								}))}
+								value={field.value}
+								onValueChange={field.onChange}
+								placeholder={t("attendance.select_term", "Select term…")}
+								onCreate={
+									activeYearId && terms.length < 3 ? createTerm : undefined
+								}
+								createLabel={t("terms.create", "Create term")}
+							/>
+						)}
+					/>
+				</FormField>
+
+				<FormField
+					label={t("attendance.subject", "Subject")}
+					error={errors.subjectId?.message}
+				>
+					<Controller
+						name="subjectId"
+						control={control}
+						render={({ field }) => (
+							<CreatableCombobox
+								options={subjects.map((s) => ({
+									value: s.id,
+									label: subjectLabel(s, i18n.language),
+								}))}
+								value={field.value ?? ""}
+								onValueChange={(val) => field.onChange(val || undefined)}
+								placeholder={t(
+									"attendance.optional_subject",
+									"General (no subject)",
+								)}
+								clearable
+								onCreate={createSubject}
+								createLabel={t("subjects.add", "Add subject")}
+							/>
+						)}
+					/>
+				</FormField>
+
+				<FormField
+					label={t("attendance.date", "Date")}
+					error={errors.sessionDate?.message}
+					required
+				>
+					<Controller
+						name="sessionDate"
+						control={control}
+						render={({ field }) => (
+							<DatePicker
+								value={field.value ?? ""}
+								onChange={field.onChange}
+								startMonth={new Date(2020, 0)}
+								endMonth={new Date(2035, 11)}
+							/>
+						)}
+					/>
+				</FormField>
+
+				<div className="grid grid-cols-2 gap-3">
+					<FormField
+						label={t("attendance.start_time", "Start time")}
+						error={errors.startTime?.message}
+					>
+						<Input type="time" {...register("startTime")} />
+					</FormField>
+					<FormField
+						label={t("attendance.end_time", "End time")}
+						error={errors.endTime?.message}
+					>
+						<Input type="time" {...register("endTime")} />
+					</FormField>
+				</div>
+
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{t("attendance.create", "Create session")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
+	);
+}, DIALOG_EXIT_MS);
 
 // ─── Attendance Sheet ─────────────────────────────────────────────────────────
 
@@ -552,7 +601,6 @@ export function AttendanceOverview() {
 		{ label: t("nav.attendance", "Attendance") },
 	]);
 	const [searchParams, setSearchParams] = useSearchParams();
-	const [createOpen, setCreateOpen] = useState(false);
 
 	const classId = searchParams.get("classId") ?? "";
 	const termId = searchParams.get("termId") ?? "";
@@ -640,7 +688,15 @@ export function AttendanceOverview() {
 						{t("attendance.subtitle", "Track and manage session attendance")}
 					</p>
 				</div>
-				<Button onClick={() => setCreateOpen(true)} className="gap-2">
+				<Button
+					onClick={() =>
+						CreateSessionDialog.call({
+							defaultClassId: classId,
+							activeYearId: activeYear?.id,
+						})
+					}
+					className="gap-2"
+				>
 					<CalendarPlus className="h-4 w-4" />
 					{t("attendance.new_session", "New Session")}
 				</Button>
@@ -812,14 +868,6 @@ export function AttendanceOverview() {
 					})}
 				</div>
 			)}
-
-			{/* Create session dialog */}
-			<CreateSessionDialog
-				open={createOpen}
-				onOpenChange={setCreateOpen}
-				defaultClassId={classId}
-				activeYearId={activeYear?.id}
-			/>
 		</div>
 	);
 }

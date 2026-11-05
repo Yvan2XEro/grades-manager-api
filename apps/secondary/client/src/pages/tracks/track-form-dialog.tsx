@@ -1,14 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
+import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,7 +19,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { errorToast } from "@/lib/error-toast";
-import { trpc } from "@/utils/trpc";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 const schema = z.object({
 	name: z.string().min(1).max(100),
@@ -30,10 +30,9 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+export type TrackFormResult = RouterOutputs["tracks"]["create"];
+
 interface Props {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	onSuccess: () => void;
 	editTrack?: {
 		id: string;
 		name: string;
@@ -41,41 +40,32 @@ interface Props {
 		cycleLevel: "first_cycle" | "second_cycle" | "technical";
 		isOfficial?: boolean;
 	};
+	defaults?: Partial<FormValues>;
 }
 
-export function TrackFormDialog({
-	open,
-	onOpenChange,
-	onSuccess,
-	editTrack,
-}: Props) {
+/** Resolves with the saved track, or `undefined` when dismissed. */
+export const TrackFormDialog = createCallable<
+	Props,
+	TrackFormResult | undefined
+>(({ call, editTrack, defaults }) => {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 	const isEditing = !!editTrack;
 
 	const create = trpc.tracks.create.useMutation({
-		onSuccess: () => {
-			utils.tracks.list.invalidate();
-			onSuccess();
-			onOpenChange(false);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.tracks.list.invalidate(),
 	});
 
 	const update = trpc.tracks.update.useMutation({
 		onSuccess: () => {
 			utils.tracks.list.invalidate();
 			utils.tracks.get.invalidate({ id: editTrack?.id });
-			onSuccess();
-			onOpenChange(false);
 		},
-		onError: (err) => errorToast(err, t),
 	});
 
 	const {
 		register,
 		handleSubmit,
-		reset,
 		setValue,
 		watch,
 		formState: { errors },
@@ -84,93 +74,95 @@ export function TrackFormDialog({
 		defaultValues: editTrack ?? {
 			cycleLevel: "second_cycle",
 			isOfficial: false,
+			...defaults,
 		},
 	});
 
 	const cycleLevel = watch("cycleLevel");
 
-	const onSubmit = (values: FormValues) => {
-		if (isEditing && editTrack) {
-			update.mutate({ id: editTrack.id, ...values });
-		} else {
-			create.mutate(values);
+	const submit = useMutationFlow(call, async (call, values: FormValues) => {
+		try {
+			call.end(
+				isEditing && editTrack
+					? await update.mutateAsync({ id: editTrack.id, ...values })
+					: await create.mutateAsync(values),
+			);
+		} catch (err) {
+			errorToast(err, t);
 		}
-	};
-
-	const handleClose = () => {
-		reset();
-		onOpenChange(false);
-	};
+	});
 
 	return (
-		<Dialog open={open} onOpenChange={handleClose}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>
-						{isEditing
-							? t("tracks.edit", "Edit track")
-							: t("tracks.create_title", "Create Track")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<FormField
-						label={t("tracks.field_name", "Track name")}
-						error={errors.name?.message}
-					>
-						<Input {...register("name")} placeholder="Terminale C" />
-					</FormField>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			title={
+				isEditing
+					? t("tracks.edit", "Edit track")
+					: t("tracks.create_title", "Create Track")
+			}
+		>
+			<form onSubmit={handleSubmit(submit)} className="space-y-4">
+				<FormField
+					label={t("tracks.field_name", "Track name")}
+					error={errors.name?.message}
+				>
+					<Input {...register("name")} placeholder="Terminale C" />
+				</FormField>
 
-					<FormField
-						label={t("tracks.field_code", "Code")}
-						error={errors.code?.message}
-					>
-						<Input {...register("code")} placeholder="TLE-C" />
-					</FormField>
+				<FormField
+					label={t("tracks.field_code", "Code")}
+					error={errors.code?.message}
+				>
+					<Input {...register("code")} placeholder="TLE-C" />
+				</FormField>
 
-					<FormField
-						label={t("tracks.field_cycle", "Cycle level")}
-						error={errors.cycleLevel?.message}
+				<FormField
+					label={t("tracks.field_cycle", "Cycle level")}
+					error={errors.cycleLevel?.message}
+				>
+					<Select
+						value={cycleLevel}
+						onValueChange={(val) =>
+							setValue("cycleLevel", val as FormValues["cycleLevel"])
+						}
 					>
-						<Select
-							value={cycleLevel}
-							onValueChange={(val) =>
-								setValue("cycleLevel", val as FormValues["cycleLevel"])
-							}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="first_cycle">
-									{t("tracks.cycle_first", "First cycle (6e–3e)")}
-								</SelectItem>
-								<SelectItem value="second_cycle">
-									{t("tracks.cycle_second", "Second cycle (2nde–Tle)")}
-								</SelectItem>
-								<SelectItem value="technical">
-									{t("tracks.cycle_technical", "Technical")}
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</FormField>
+						<SelectTrigger>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="first_cycle">
+								{t("tracks.cycle_first", "First cycle (6e–3e)")}
+							</SelectItem>
+							<SelectItem value="second_cycle">
+								{t("tracks.cycle_second", "Second cycle (2nde–Tle)")}
+							</SelectItem>
+							<SelectItem value="technical">
+								{t("tracks.cycle_technical", "Technical")}
+							</SelectItem>
+						</SelectContent>
+					</Select>
+				</FormField>
 
-					<div className="flex justify-end gap-3 pt-2">
-						<Button type="button" variant="outline" onClick={handleClose}>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button
-							type="submit"
-							disabled={create.isPending || update.isPending}
-						>
-							{create.isPending || update.isPending
-								? t("common.saving", "Saving…")
-								: isEditing
-									? t("common.save", "Save")
-									: t("common.create", "Create")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex justify-end gap-3 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{submit.pending
+							? t("common.saving", "Saving…")
+							: isEditing
+								? t("common.save", "Save")
+								: t("common.create", "Create")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);

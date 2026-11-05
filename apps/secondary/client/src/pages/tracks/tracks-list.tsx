@@ -34,7 +34,6 @@ export function TracksList() {
 	]);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
-	const [showCreate, setShowCreate] = useState(false);
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "code", desc: false },
 	]);
@@ -120,7 +119,7 @@ export function TracksList() {
 						)}
 					</p>
 				</div>
-				<Button onClick={() => setShowCreate(true)} size="sm">
+				<Button onClick={() => TrackFormDialog.call({})} size="sm">
 					<Plus className="mr-2 h-4 w-4" />
 					{t("tracks.create_btn", "New Track")}
 				</Button>
@@ -144,12 +143,6 @@ export function TracksList() {
 					setPageSize(s);
 					setPage(1);
 				}}
-			/>
-
-			<TrackFormDialog
-				open={showCreate}
-				onOpenChange={setShowCreate}
-				onSuccess={() => setShowCreate(false)}
 			/>
 		</div>
 	);

@@ -54,7 +54,6 @@ export function TrackDetail() {
 
 	const navigate = useNavigate();
 	const [saved, setSaved] = useState(false);
-	const [showEdit, setShowEdit] = useState(false);
 
 	// ── Queries ──────────────────────────────────────────────────────────────
 
@@ -184,7 +183,21 @@ export function TrackDetail() {
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={() => setShowEdit(true)}
+						onClick={() =>
+							track &&
+							TrackFormDialog.call({
+								editTrack: {
+									id: track.id,
+									name: track.name,
+									code: track.code,
+									cycleLevel: track.cycleLevel as
+										| "first_cycle"
+										| "second_cycle"
+										| "technical",
+									isOfficial: track.isOfficial ?? false,
+								},
+							})
+						}
 						disabled={!track}
 					>
 						<Pencil className="mr-1.5 h-3.5 w-3.5" />
@@ -213,24 +226,6 @@ export function TrackDetail() {
 					</Button>
 				</div>
 			</div>
-
-			{track && (
-				<TrackFormDialog
-					open={showEdit}
-					onOpenChange={setShowEdit}
-					onSuccess={() => {}}
-					editTrack={{
-						id: track.id,
-						name: track.name,
-						code: track.code,
-						cycleLevel: track.cycleLevel as
-							| "first_cycle"
-							| "second_cycle"
-							| "technical",
-						isOfficial: track.isOfficial ?? false,
-					}}
-				/>
-			)}
 
 			{/* Coefficient matrix */}
 			{isLoading ? (

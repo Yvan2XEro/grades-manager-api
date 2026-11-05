@@ -1,147 +1,18 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { BookUser, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import { z } from "zod";
 import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { subjectLabel } from "@/lib/subject-label";
+import { AssignSubjectDialog } from "@/pages/subject-assignments/assign-subject-dialog";
 import { trpc } from "@/utils/trpc";
-
-const assignSchema = z.object({
-	subjectId: z.string().uuid(),
-	staffId: z.string().uuid(),
-});
-type AssignFormValues = z.infer<typeof assignSchema>;
-
-function AssignDialog({
-	open,
-	onOpenChange,
-	classId,
-	academicYearId,
-	existingSubjectIds,
-}: {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	classId: string;
-	academicYearId: string;
-	existingSubjectIds: string[];
-}) {
-	const { t, i18n } = useTranslation();
-	const utils = trpc.useUtils();
-	const { data: subjectsData } = trpc.subjects.list.useQuery({ pageSize: 200 });
-	const subjects = subjectsData?.items ?? [];
-	const { data: staffData } = trpc.staff.list.useQuery({ pageSize: 200 });
-	const staffList = staffData?.items ?? [];
-
-	const assign = trpc.subjectAssignments.create.useMutation({
-		onSuccess: () => {
-			utils.subjectAssignments.list.invalidate();
-			onOpenChange(false);
-			reset();
-		},
-		onError: (err) => errorToast(err, t),
-	});
-
-	const {
-		handleSubmit,
-		reset,
-		control,
-		formState: { errors, isSubmitting },
-	} = useForm<AssignFormValues>({ resolver: zodResolver(assignSchema) });
-
-	const onSubmit = handleSubmit(async (data) => {
-		await assign.mutateAsync({ ...data, classId, academicYearId });
-	});
-
-	const available = subjects.filter((s) => !existingSubjectIds.includes(s.id));
-
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t("subject_assignments.assign", "Assign subject")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="flex flex-col gap-4">
-					<FormField
-						label={t("subject_assignments.col_subject", "Subject")}
-						error={errors.subjectId?.message}
-						required
-					>
-						<Controller
-							name="subjectId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={available.map((s) => ({
-										value: s.id,
-										label: subjectLabel(s, i18n.language),
-									}))}
-									value={field.value ?? ""}
-									onValueChange={field.onChange}
-									placeholder={t("common.select", "Select…")}
-								/>
-							)}
-						/>
-					</FormField>
-					<FormField
-						label={t("subject_assignments.col_teacher", "Teacher")}
-						error={errors.staffId?.message}
-						required
-					>
-						<Controller
-							name="staffId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={staffList.map((m) => ({
-										value: m.id,
-										label: `${m.lastName} ${m.firstName}`,
-									}))}
-									value={field.value ?? ""}
-									onValueChange={field.onChange}
-									placeholder={t("common.select", "Select…")}
-								/>
-							)}
-						/>
-					</FormField>
-					<div className="flex justify-end gap-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{t("subject_assignments.assign", "Assign")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
-	);
-}
 
 export function ClassAssignments() {
 	const { t, i18n } = useTranslation();
 	const { id: classId } = useParams<{ id: string }>();
-	const [dialogOpen, setDialogOpen] = useState(false);
 	const utils = trpc.useUtils();
 
 	const { data: klass } = trpc.classes.get.useQuery(
@@ -183,7 +54,13 @@ export function ClassAssignments() {
 				</h2>
 				<Button
 					size="sm"
-					onClick={() => setDialogOpen(true)}
+					onClick={() =>
+						AssignSubjectDialog.call({
+							classId: classId ?? "",
+							academicYearId: yearId,
+							existingSubjectIds,
+						})
+					}
 					disabled={!yearId || !classId}
 				>
 					<Plus className="mr-2 h-4 w-4" />
@@ -274,14 +151,6 @@ export function ClassAssignments() {
 					</table>
 				</div>
 			)}
-
-			<AssignDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				classId={classId ?? ""}
-				academicYearId={yearId}
-				existingSubjectIds={existingSubjectIds}
-			/>
 		</div>
 	);
 }

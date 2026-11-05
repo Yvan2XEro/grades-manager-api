@@ -2,17 +2,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Confirm } from "@/components/callable/confirm";
 import { CsvImportDialog } from "@/components/csv-import-dialog";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DataTable, type SortingState } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
@@ -48,13 +39,6 @@ export function Subjects() {
 	const [groupFilter, setGroupFilter] = useState<string>("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
-	const [dialogOpen, setDialogOpen] = useState(false);
-	const [editingSubject, setEditingSubject] = useState<Subject | undefined>(
-		undefined,
-	);
-	const [deletingSubject, setDeletingSubject] = useState<Subject | undefined>(
-		undefined,
-	);
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
@@ -76,12 +60,28 @@ export function Subjects() {
 	});
 
 	const deleteSubject = trpc.subjects.delete.useMutation({
-		onSuccess: () => {
-			utils.subjects.list.invalidate();
-			setDeletingSubject(undefined);
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.subjects.list.invalidate(),
 	});
+
+	const confirmDelete = (subject: Subject) =>
+		Confirm.call({
+			title: t("subjects.delete_confirm_title", "Delete subject?"),
+			description: t(
+				"subjects.delete_confirm_desc",
+				"This will permanently delete the subject. This action cannot be undone.",
+			),
+			confirmLabel: t("common.delete", "Delete"),
+			cancelLabel: t("common.cancel", "Cancel"),
+			destructive: true,
+			mutationFn: async (call) => {
+				try {
+					await deleteSubject.mutateAsync({ id: subject.id });
+					call.end(true);
+				} catch (err) {
+					errorToast(err, t);
+				}
+			},
+		});
 
 	const { data: groups } = trpc.subjects.groups.useQuery();
 	const { data, isLoading } = trpc.subjects.list.useQuery({
@@ -144,10 +144,7 @@ export function Subjects() {
 						variant="ghost"
 						size="sm"
 						className="h-7 px-2 text-xs"
-						onClick={() => {
-							setEditingSubject(row.original);
-							setDialogOpen(true);
-						}}
+						onClick={() => SubjectFormDialog.call({ subject: row.original })}
 					>
 						<Pencil className="mr-1 h-3 w-3" />
 						{t("common.edit", "Edit")}
@@ -157,7 +154,7 @@ export function Subjects() {
 						size="sm"
 						className="h-7 px-2 text-destructive text-xs hover:text-destructive"
 						aria-label={t("subjects.delete_subject", "Delete subject")}
-						onClick={() => setDeletingSubject(row.original)}
+						onClick={() => confirmDelete(row.original)}
 					>
 						<Trash2 className="h-3 w-3" />
 					</Button>
@@ -212,12 +209,7 @@ export function Subjects() {
 								.then((res) => ({ created: res.length }))
 						}
 					/>
-					<Button
-						onClick={() => {
-							setEditingSubject(undefined);
-							setDialogOpen(true);
-						}}
-					>
+					<Button onClick={() => SubjectFormDialog.call({})}>
 						<Plus className="mr-2 h-4 w-4" />
 						{t("subjects.add", "Add subject")}
 					</Button>
@@ -286,47 +278,6 @@ export function Subjects() {
 					setPage(1);
 				}}
 			/>
-
-			<SubjectFormDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				onSuccess={() => {}}
-				subject={editingSubject}
-			/>
-
-			<AlertDialog
-				open={!!deletingSubject}
-				onOpenChange={(open) => !open && setDeletingSubject(undefined)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("subjects.delete_confirm_title", "Delete subject?")}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t(
-								"subjects.delete_confirm_desc",
-								"This will permanently delete the subject. This action cannot be undone.",
-							)}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("common.cancel", "Cancel")}
-						</AlertDialogCancel>
-						<AlertDialogAction
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							onClick={() => {
-								if (deletingSubject) {
-									deleteSubject.mutate({ id: deletingSubject.id });
-								}
-							}}
-						>
-							{t("common.delete", "Delete")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }

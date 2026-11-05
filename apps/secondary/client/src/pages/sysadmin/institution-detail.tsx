@@ -17,19 +17,19 @@ import {
 } from "lucide-react";
 import { parseAsInteger, useQueryStates } from "nuqs";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { flushSync } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -52,6 +52,7 @@ import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
 import { uploadFile } from "@/lib/upload";
 import { cn } from "@/lib/utils";
+import { CreateUserDialog } from "@/pages/sysadmin/users";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 type Member =
@@ -149,161 +150,171 @@ function UserSearchField({
 			</Button>
 		</div>
 	) : (
-		<div className="relative">
-			<UserSearch className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-			<Input
-				placeholder={t("sysadmin.institution_detail.search_user_placeholder")}
-				value={search}
-				onChange={(e) => setSearch(e.target.value)}
-				className="pl-9"
-			/>
-			{search.length >= 2 && data && data.rows.length > 0 && (
-				<div
-					role="listbox"
-					className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md"
-				>
-					{data.rows.map((u) => (
-						<button
-							key={u.id}
-							type="button"
-							role="option"
-							aria-selected={false}
-							className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted/60"
-							onClick={() => {
-								onSelect({ id: u.id, name: u.name });
-								setSearch("");
-							}}
-						>
-							<span className="font-medium">{u.name}</span>
-							<span className="text-muted-foreground text-xs">{u.email}</span>
-						</button>
-					))}
-				</div>
-			)}
-			{search.length >= 2 && data?.rows.length === 0 && (
-				<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover px-3 py-2 text-muted-foreground text-sm shadow-md">
-					{t("sysadmin.institution_detail.no_users_found")}
-				</div>
-			)}
+		<div className="flex items-start gap-2">
+			<div className="relative min-w-0 flex-1">
+				<UserSearch className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+				<Input
+					placeholder={t("sysadmin.institution_detail.search_user_placeholder")}
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					className="pl-9"
+				/>
+				{search.length >= 2 && data && data.rows.length > 0 && (
+					<div
+						role="listbox"
+						className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md"
+					>
+						{data.rows.map((u) => (
+							<button
+								key={u.id}
+								type="button"
+								role="option"
+								aria-selected={false}
+								className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted/60"
+								onClick={() => {
+									onSelect({ id: u.id, name: u.name });
+									setSearch("");
+								}}
+							>
+								<span className="font-medium">{u.name}</span>
+								<span className="text-muted-foreground text-xs">{u.email}</span>
+							</button>
+						))}
+					</div>
+				)}
+				{search.length >= 2 && data?.rows.length === 0 && (
+					<div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover px-3 py-2 text-muted-foreground text-sm shadow-md">
+						{t("sysadmin.institution_detail.no_users_found")}
+					</div>
+				)}
+			</div>
+			<Button
+				type="button"
+				variant="outline"
+				size="icon"
+				className="shrink-0"
+				aria-label={t("sysadmin.users.create_user", "Create account")}
+				title={t("sysadmin.users.create_user", "Create account")}
+				onClick={async () => {
+					const created = await CreateUserDialog.call({ defaultName: search });
+					if (!created) return;
+					onSelect({ id: created.user.id, name: created.user.name });
+					setSearch("");
+				}}
+			>
+				<Plus className="h-4 w-4" />
+			</Button>
 		</div>
 	);
 }
 
 // ─── Add member dialog ────────────────────────────────────────────────────────
 
-function AddMemberDialog({
-	institutionId,
-	open,
-	onClose,
-	onDone,
-}: {
-	institutionId: string;
-	open: boolean;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+/**
+ * Adds a member to the institution. A user without an account can be created
+ * in place from the "+" next to the search.
+ */
+export const AddMemberDialog = createCallable<
+	{ institutionId: string },
+	RouterOutputs["systemAdmin"]["addMember"] | undefined
+>(({ call, institutionId }) => {
 	const { t } = useTranslation();
 	const [user, setUser] = useState<{ id: string; name: string } | null>(null);
 	const [role, setRole] = useState<"owner" | "admin" | "principal" | "teacher">(
 		"teacher",
 	);
 
-	const add = trpc.systemAdmin.addMember.useMutation({
-		onSuccess: () => {
-			onDone();
-			onClose();
-			setUser(null);
-			setRole("teacher");
-		},
-		onError: (err) => errorToast(err, t),
+	const add = trpc.systemAdmin.addMember.useMutation();
+
+	const submit = useMutationFlow(call, async (call) => {
+		if (!user) return;
+		try {
+			call.end(await add.mutateAsync({ institutionId, userId: user.id, role }));
+		} catch (err) {
+			errorToast(err, t);
+		}
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="sm:max-w-sm">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.institution_detail.add_member")}
-					</DialogTitle>
-				</DialogHeader>
-				<div className="space-y-4">
-					<div className="space-y-1.5">
-						<Label>{t("sysadmin.institution_detail.field_user")}</Label>
-						<UserSearchField value={user} onSelect={setUser} />
-					</div>
-					<div className="space-y-1.5">
-						<Label>{t("sysadmin.institution_detail.field_role")}</Label>
-						<Combobox
-							options={[
-								{
-									value: "owner",
-									label: t("roles.owner", "Owner"),
-								},
-								{
-									value: "teacher",
-									label: t("roles.teacher", "Teacher"),
-								},
-								{
-									value: "principal",
-									label: t("roles.principal", "Principal"),
-								},
-								{
-									value: "admin",
-									label: t("roles.admin", "Admin"),
-								},
-							]}
-							value={role}
-							onValueChange={(v) =>
-								setRole(v as "owner" | "admin" | "principal" | "teacher")
-							}
-							placeholder={t("sysadmin.institution_detail.select_role")}
-						/>
-					</div>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="sm:max-w-sm"
+			title={t("sysadmin.institution_detail.add_member")}
+		>
+			<div className="space-y-4">
+				<div className="space-y-1.5">
+					<Label>{t("sysadmin.institution_detail.field_user")}</Label>
+					<UserSearchField value={user} onSelect={setUser} />
 				</div>
-				<div className="flex justify-end gap-2 pt-2">
-					<Button variant="ghost" onClick={onClose}>
-						{t("common.cancel")}
-					</Button>
-					<Button
-						disabled={!user || add.isPending}
-						onClick={() =>
-							user && add.mutate({ institutionId, userId: user.id, role })
+				<div className="space-y-1.5">
+					<Label>{t("sysadmin.institution_detail.field_role")}</Label>
+					<Combobox
+						options={[
+							{
+								value: "owner",
+								label: t("roles.owner", "Owner"),
+							},
+							{
+								value: "teacher",
+								label: t("roles.teacher", "Teacher"),
+							},
+							{
+								value: "principal",
+								label: t("roles.principal", "Principal"),
+							},
+							{
+								value: "admin",
+								label: t("roles.admin", "Admin"),
+							},
+						]}
+						value={role}
+						onValueChange={(v) =>
+							setRole(v as "owner" | "admin" | "principal" | "teacher")
 						}
-					>
-						{add.isPending
-							? t("sysadmin.institution_detail.adding")
-							: t("sysadmin.institution_detail.add_member_btn")}
-					</Button>
+						placeholder={t("sysadmin.institution_detail.select_role")}
+					/>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</div>
+			<div className="flex justify-end gap-2 pt-2">
+				<Button
+					variant="ghost"
+					disabled={submit.pending}
+					onClick={() => call.end(undefined)}
+				>
+					{t("common.cancel")}
+				</Button>
+				<Button disabled={!user || submit.pending} onClick={() => submit()}>
+					{submit.pending
+						? t("sysadmin.institution_detail.adding")
+						: t("sysadmin.institution_detail.add_member_btn")}
+				</Button>
+			</div>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Edit institution dialog ──────────────────────────────────────────────────
 
-function EditInstitutionDialog({
-	institution,
-	open,
-	onClose,
-	onDone,
-}: {
-	institution: {
-		id: string;
-		name: string;
-		type: string;
-		city: string | null;
-		minesecCode: string | null;
-		phone: string | null;
-		email: string | null;
-		address: string | null;
-		logoUrl: string | null;
-		assessmentMode: string | null;
-	};
-	open: boolean;
-	onClose: () => void;
-	onDone: () => void;
-}) {
+/** Resolves with the updated institution, or `undefined` when dismissed. */
+export const EditInstitutionDialog = createCallable<
+	{
+		institution: {
+			id: string;
+			name: string;
+			type: string;
+			city: string | null;
+			minesecCode: string | null;
+			phone: string | null;
+			email: string | null;
+			address: string | null;
+			logoUrl: string | null;
+			assessmentMode: string | null;
+		};
+	},
+	RouterOutputs["systemAdmin"]["updateInstitution"] | undefined
+>(({ call, institution }) => {
 	const { t } = useTranslation();
 	const [name, setName] = useState(institution.name);
 	const [type, setType] = useState<"lycee" | "college" | "mixed">(
@@ -317,12 +328,26 @@ function EditInstitutionDialog({
 	const [logoUrl, setLogoUrl] = useState(institution.logoUrl ?? "");
 	const [uploading, setUploading] = useState(false);
 
-	const update = trpc.systemAdmin.updateInstitution.useMutation({
-		onSuccess: () => {
-			onDone();
-			onClose();
-		},
-		onError: (err) => errorToast(err, t),
+	const update = trpc.systemAdmin.updateInstitution.useMutation();
+
+	const submit = useMutationFlow(call, async (call) => {
+		try {
+			call.end(
+				await update.mutateAsync({
+					id: institution.id,
+					name: name.trim() || undefined,
+					type,
+					city: city.trim() || undefined,
+					minesecCode: minesecCode.trim() || undefined,
+					phone: phone.trim() || undefined,
+					email: email.trim() || undefined,
+					address: address.trim() || undefined,
+					logoUrl: logoUrl || null,
+				}),
+			);
+		} catch (err) {
+			errorToast(err, t);
+		}
 	});
 
 	const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -346,186 +371,180 @@ function EditInstitutionDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>
-						{t("sysadmin.institution_detail.edit_institution")}
-					</DialogTitle>
-				</DialogHeader>
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						update.mutate({
-							id: institution.id,
-							name: name.trim() || undefined,
-							type,
-							city: city.trim() || undefined,
-							minesecCode: minesecCode.trim() || undefined,
-							phone: phone.trim() || undefined,
-							email: email.trim() || undefined,
-							address: address.trim() || undefined,
-							logoUrl: logoUrl || null,
-						});
-					}}
-					className="space-y-4 pt-1"
-				>
-					{/* Logo upload */}
-					<div className="space-y-2">
-						<Label>{t("sysadmin.institution_detail.logo")}</Label>
-						<div className="flex items-center gap-3">
-							{logoUrl ? (
-								<img
-									src={logoUrl}
-									alt="Logo"
-									className="h-14 w-14 rounded-lg border border-border object-cover"
-								/>
-							) : (
-								<div className="flex h-14 w-14 items-center justify-center rounded-lg border border-border bg-muted">
-									<Building2 className="h-5 w-5 text-muted-foreground" />
-								</div>
-							)}
-							<label
-								className={`flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-1.5 text-foreground text-sm transition-colors hover:bg-muted/50 ${uploading ? "pointer-events-none opacity-60" : ""}`}
-							>
-								{uploading ? (
-									<Loader2 className="h-4 w-4 animate-spin" />
-								) : (
-									<ImagePlus className="h-4 w-4" />
-								)}
-								{uploading
-									? t("sysadmin.institution_detail.uploading")
-									: t("sysadmin.institution_detail.change_logo")}
-								<input
-									type="file"
-									accept="image/*"
-									className="sr-only"
-									onChange={handleLogoChange}
-									disabled={uploading}
-								/>
-							</label>
-							{logoUrl && (
-								<button
-									type="button"
-									onClick={() => setLogoUrl("")}
-									className="text-muted-foreground text-xs hover:text-destructive"
-								>
-									{t("sysadmin.institution_detail.remove_logo")}
-								</button>
-							)}
-						</div>
-					</div>
-
-					<div className="space-y-1.5">
-						<Label htmlFor="edit-name">
-							{t("sysadmin.institution_detail.edit_name")}
-						</Label>
-						<Input
-							id="edit-name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							required
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>{t("sysadmin.institution_detail.edit_type")}</Label>
-						<div className="flex gap-2">
-							{(["lycee", "college", "mixed"] as const).map((t_) => (
-								<button
-									key={t_}
-									type="button"
-									onClick={() => setType(t_)}
-									className={`flex-1 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
-										type === t_
-											? "border-primary bg-primary/5 text-foreground"
-											: "border-border text-muted-foreground hover:bg-muted/40"
-									}`}
-								>
-									{typeLabels[t_]}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label htmlFor="edit-city">
-								{t("sysadmin.institution_detail.edit_city")}
-							</Label>
-							<Input
-								id="edit-city"
-								value={city}
-								onChange={(e) => setCity(e.target.value)}
-								placeholder="Yaoundé"
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+			title={t("sysadmin.institution_detail.edit_institution")}
+		>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					submit();
+				}}
+				className="space-y-4 pt-1"
+			>
+				{/* Logo upload */}
+				<div className="space-y-2">
+					<Label>{t("sysadmin.institution_detail.logo")}</Label>
+					<div className="flex items-center gap-3">
+						{logoUrl ? (
+							<img
+								src={logoUrl}
+								alt="Logo"
+								className="h-14 w-14 rounded-lg border border-border object-cover"
 							/>
-						</div>
-						<div className="space-y-1.5">
-							<Label htmlFor="edit-code">
-								{t("sysadmin.institution_detail.edit_minesec_code")}
-							</Label>
-							<Input
-								id="edit-code"
-								value={minesecCode}
-								onChange={(e) => setMinesecCode(e.target.value)}
-								placeholder="CM-CE-001"
-							/>
-						</div>
-					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label>{t("sysadmin.institution_detail.edit_phone")}</Label>
-							<PhoneInput
-								defaultCountry="CM"
-								value={phone}
-								onChange={(v) => setPhone(v ?? "")}
-							/>
-						</div>
-						<div className="space-y-1.5">
-							<Label htmlFor="edit-email">
-								{t("sysadmin.institution_detail.edit_email")}
-							</Label>
-							<Input
-								id="edit-email"
-								type="email"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								placeholder="direction@school.cm"
-							/>
-						</div>
-					</div>
-
-					<div className="space-y-1.5">
-						<Label htmlFor="edit-address">
-							{t("sysadmin.institution_detail.edit_address")}
-						</Label>
-						<Input
-							id="edit-address"
-							value={address}
-							onChange={(e) => setAddress(e.target.value)}
-							placeholder="Quartier, Rue…"
-						/>
-					</div>
-
-					<div className="flex justify-end gap-2 pt-2">
-						<Button type="button" variant="ghost" onClick={onClose}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							type="submit"
-							disabled={update.isPending || uploading || !name.trim()}
+						) : (
+							<div className="flex h-14 w-14 items-center justify-center rounded-lg border border-border bg-muted">
+								<Building2 className="h-5 w-5 text-muted-foreground" />
+							</div>
+						)}
+						<label
+							className={`flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-1.5 text-foreground text-sm transition-colors hover:bg-muted/50 ${uploading ? "pointer-events-none opacity-60" : ""}`}
 						>
-							{update.isPending
-								? t("sysadmin.institution_detail.saving")
-								: t("sysadmin.institution_detail.save_changes")}
-						</Button>
+							{uploading ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<ImagePlus className="h-4 w-4" />
+							)}
+							{uploading
+								? t("sysadmin.institution_detail.uploading")
+								: t("sysadmin.institution_detail.change_logo")}
+							<input
+								type="file"
+								accept="image/*"
+								className="sr-only"
+								onChange={handleLogoChange}
+								disabled={uploading}
+							/>
+						</label>
+						{logoUrl && (
+							<button
+								type="button"
+								onClick={() => setLogoUrl("")}
+								className="text-muted-foreground text-xs hover:text-destructive"
+							>
+								{t("sysadmin.institution_detail.remove_logo")}
+							</button>
+						)}
 					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				</div>
+
+				<div className="space-y-1.5">
+					<Label htmlFor="edit-name">
+						{t("sysadmin.institution_detail.edit_name")}
+					</Label>
+					<Input
+						id="edit-name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						required
+					/>
+				</div>
+
+				<div className="space-y-2">
+					<Label>{t("sysadmin.institution_detail.edit_type")}</Label>
+					<div className="flex gap-2">
+						{(["lycee", "college", "mixed"] as const).map((t_) => (
+							<button
+								key={t_}
+								type="button"
+								onClick={() => setType(t_)}
+								className={`flex-1 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+									type === t_
+										? "border-primary bg-primary/5 text-foreground"
+										: "border-border text-muted-foreground hover:bg-muted/40"
+								}`}
+							>
+								{typeLabels[t_]}
+							</button>
+						))}
+					</div>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<div className="space-y-1.5">
+						<Label htmlFor="edit-city">
+							{t("sysadmin.institution_detail.edit_city")}
+						</Label>
+						<Input
+							id="edit-city"
+							value={city}
+							onChange={(e) => setCity(e.target.value)}
+							placeholder="Yaoundé"
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<Label htmlFor="edit-code">
+							{t("sysadmin.institution_detail.edit_minesec_code")}
+						</Label>
+						<Input
+							id="edit-code"
+							value={minesecCode}
+							onChange={(e) => setMinesecCode(e.target.value)}
+							placeholder="CM-CE-001"
+						/>
+					</div>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<div className="space-y-1.5">
+						<Label>{t("sysadmin.institution_detail.edit_phone")}</Label>
+						<PhoneInput
+							defaultCountry="CM"
+							value={phone}
+							onChange={(v) => setPhone(v ?? "")}
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<Label htmlFor="edit-email">
+							{t("sysadmin.institution_detail.edit_email")}
+						</Label>
+						<Input
+							id="edit-email"
+							type="email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+							placeholder="direction@school.cm"
+						/>
+					</div>
+				</div>
+
+				<div className="space-y-1.5">
+					<Label htmlFor="edit-address">
+						{t("sysadmin.institution_detail.edit_address")}
+					</Label>
+					<Input
+						id="edit-address"
+						value={address}
+						onChange={(e) => setAddress(e.target.value)}
+						placeholder="Quartier, Rue…"
+					/>
+				</div>
+
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="ghost"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel")}
+					</Button>
+					<Button
+						type="submit"
+						disabled={submit.pending || uploading || !name.trim()}
+					>
+						{submit.pending
+							? t("sysadmin.institution_detail.saving")
+							: t("sysadmin.institution_detail.save_changes")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Overview tab ─────────────────────────────────────────────────────────────
 
@@ -675,7 +694,6 @@ export function InstitutionOverviewTab() {
 export function InstitutionMembersTab() {
 	const { id } = useParams<{ id: string }>();
 	const { t, i18n } = useTranslation();
-	const [showAdd, setShowAdd] = useState(false);
 
 	const [{ page, pageSize, sortBy, sortDir }, setQuery] = useQueryStates({
 		page: parseAsInteger.withDefault(1),
@@ -815,7 +833,12 @@ export function InstitutionMembersTab() {
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-end">
-				<Button size="sm" onClick={() => setShowAdd(true)}>
+				<Button
+					size="sm"
+					onClick={async () => {
+						if (await AddMemberDialog.call({ institutionId: id! })) refetch();
+					}}
+				>
 					<Plus className="mr-1.5 h-4 w-4" />
 					{t("sysadmin.institution_detail.add_member_button")}
 				</Button>
@@ -840,13 +863,6 @@ export function InstitutionMembersTab() {
 				emptyMessage={t("sysadmin.institution_detail.no_members")}
 				onPageChange={(p) => setQuery({ page: p })}
 				onPageSizeChange={(s) => setQuery({ pageSize: s, page: 1 })}
-			/>
-
-			<AddMemberDialog
-				institutionId={id!}
-				open={showAdd}
-				onClose={() => setShowAdd(false)}
-				onDone={() => refetch()}
 			/>
 		</div>
 	);
@@ -976,7 +992,6 @@ export function SysAdminInstitutionDetail() {
 		{ label: data?.name ?? "…" },
 	]);
 
-	const [showEditDialog, setShowEditDialog] = useState(false);
 	const suspend = trpc.systemAdmin.suspendInstitution.useMutation({
 		onSuccess: () => {
 			refetch();
@@ -1070,7 +1085,15 @@ export function SysAdminInstitutionDetail() {
 							<Button
 								variant="outline"
 								size="sm"
-								onClick={() => setShowEditDialog(true)}
+								onClick={async () => {
+									if (
+										data &&
+										(await EditInstitutionDialog.call({ institution: data }))
+									) {
+										refetch();
+										utils.systemAdmin.listInstitutions.invalidate();
+									}
+								}}
 							>
 								<Pencil className="mr-1.5 h-4 w-4" />
 								{t("sysadmin.institution_detail.edit")}
@@ -1160,19 +1183,6 @@ export function SysAdminInstitutionDetail() {
 			</div>
 
 			<Outlet />
-
-			{/* Edit dialog */}
-			{data && (
-				<EditInstitutionDialog
-					institution={data}
-					open={showEditDialog}
-					onClose={() => setShowEditDialog(false)}
-					onDone={() => {
-						refetch();
-						utils.systemAdmin.listInstitutions.invalidate();
-					}}
-				/>
-			)}
 		</div>
 	);
 }

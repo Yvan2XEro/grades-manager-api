@@ -6,7 +6,6 @@ import {
 	Trash2,
 	Users,
 } from "lucide-react";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router";
 import { Confirm } from "@/components/callable/confirm";
@@ -43,7 +42,6 @@ export function ClassDetail() {
 	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
-	const [showEdit, setShowEdit] = useState(false);
 
 	const TABS = [
 		{
@@ -109,7 +107,24 @@ export function ClassDetail() {
 					</div>
 				</div>
 				<div className="flex gap-2">
-					<Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							ClassFormDialog.call({
+								editClass: {
+									id: klass.id,
+									name: klass.name,
+									code: klass.code ?? "",
+									level: klass.level,
+									academicYearId: klass.academicYearId,
+									trackId: klass.trackId,
+									room: klass.room,
+									maxCapacity: klass.maxCapacity,
+								},
+							})
+						}
+					>
 						<Pencil className="mr-1.5 h-3.5 w-3.5" />
 						{t("classes.edit", "Edit")}
 					</Button>
@@ -136,22 +151,6 @@ export function ClassDetail() {
 					</Button>
 				</div>
 			</div>
-
-			<ClassFormDialog
-				open={showEdit}
-				onOpenChange={setShowEdit}
-				onSuccess={() => {}}
-				editClass={{
-					id: klass.id,
-					name: klass.name,
-					code: klass.code ?? "",
-					level: klass.level,
-					academicYearId: klass.academicYearId,
-					trackId: klass.trackId,
-					room: klass.room,
-					maxCapacity: klass.maxCapacity,
-				}}
-			/>
 
 			<div className="flex border-border border-b" role="tablist">
 				{TABS.map(({ to, label, fallback, icon: Icon }) => (

@@ -1,18 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, Plus } from "lucide-react";
-import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router";
 import { z } from "zod";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
-import { trpc } from "@/utils/trpc";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 type StudentData = { id: string; firstName: string; lastName: string };
 
@@ -42,15 +41,11 @@ const recordPaymentSchema = z.object({
 
 type RecordPaymentValues = z.infer<typeof recordPaymentSchema>;
 
-function RecordPaymentDialog({
-	enrollmentId,
-	open,
-	onClose,
-}: {
-	enrollmentId: string;
-	open: boolean;
-	onClose: () => void;
-}) {
+/** Resolves with the recorded payment, or `undefined` when dismissed. */
+export const RecordPaymentDialog = createCallable<
+	{ enrollmentId: string },
+	RouterOutputs["finance"]["recordPayment"] | undefined
+>(({ call, enrollmentId }) => {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 
@@ -58,16 +53,12 @@ function RecordPaymentDialog({
 		onSuccess: () => {
 			utils.finance.listPayments.invalidate();
 			utils.finance.getBalance.invalidate();
-			onClose();
-			reset();
 		},
-		onError: (err) => errorToast(err, t),
 	});
 
 	const {
 		register,
 		handleSubmit,
-		reset,
 		control,
 		formState: { errors },
 	} = useForm<RecordPaymentValues>({
@@ -75,86 +66,93 @@ function RecordPaymentDialog({
 		defaultValues: { paymentMethod: "cash" },
 	});
 
-	const onSubmit = (data: RecordPaymentValues) => {
-		record.mutate({ enrollmentId, ...data });
-	};
+	const submit = useMutationFlow(
+		call,
+		async (call, data: RecordPaymentValues) => {
+			try {
+				call.end(await record.mutateAsync({ enrollmentId, ...data }));
+			} catch (err) {
+				errorToast(err, t);
+			}
+		},
+	);
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>
-						{t("fees.record_payment", "Record payment")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<FormField
-						label={t("fees.amount_xaf", "Amount (XAF)")}
-						error={errors.amount?.message}
-						required
-					>
-						<Input
-							type="number"
-							min={1}
-							placeholder="e.g. 50000"
-							{...register("amount", { valueAsNumber: true })}
-						/>
-					</FormField>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			title={t("fees.record_payment", "Record payment")}
+		>
+			<form onSubmit={handleSubmit(submit)} className="space-y-4">
+				<FormField
+					label={t("fees.amount_xaf", "Amount (XAF)")}
+					error={errors.amount?.message}
+					required
+				>
+					<Input
+						type="number"
+						min={1}
+						placeholder="e.g. 50000"
+						{...register("amount", { valueAsNumber: true })}
+					/>
+				</FormField>
 
-					<FormField
-						label={t("fees.payment_method", "Payment method")}
-						error={errors.paymentMethod?.message}
-						required
-					>
-						<Controller
-							name="paymentMethod"
-							control={control}
-							render={({ field }) => (
-								<Select value={field.value} onValueChange={field.onChange}>
-									<SelectTrigger>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="cash">
-											{t("fees.method_cash", "Cash")}
-										</SelectItem>
-										<SelectItem value="mtn_momo">MTN Mobile Money</SelectItem>
-										<SelectItem value="orange_money">Orange Money</SelectItem>
-										<SelectItem value="bank_transfer">
-											{t("fees.method_bank_transfer", "Bank transfer")}
-										</SelectItem>
-										<SelectItem value="campost">CamPost</SelectItem>
-									</SelectContent>
-								</Select>
-							)}
-						/>
-					</FormField>
+				<FormField
+					label={t("fees.payment_method", "Payment method")}
+					error={errors.paymentMethod?.message}
+					required
+				>
+					<Controller
+						name="paymentMethod"
+						control={control}
+						render={({ field }) => (
+							<Select value={field.value} onValueChange={field.onChange}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="cash">
+										{t("fees.method_cash", "Cash")}
+									</SelectItem>
+									<SelectItem value="mtn_momo">MTN Mobile Money</SelectItem>
+									<SelectItem value="orange_money">Orange Money</SelectItem>
+									<SelectItem value="bank_transfer">
+										{t("fees.method_bank_transfer", "Bank transfer")}
+									</SelectItem>
+									<SelectItem value="campost">CamPost</SelectItem>
+								</SelectContent>
+							</Select>
+						)}
+					/>
+				</FormField>
 
-					<FormField
-						label={t("fees.note", "Note")}
-						error={errors.note?.message}
-					>
-						<Input
-							placeholder={t("fees.note_placeholder", "Optional note…")}
-							{...register("note")}
-						/>
-					</FormField>
+				<FormField label={t("fees.note", "Note")} error={errors.note?.message}>
+					<Input
+						placeholder={t("fees.note_placeholder", "Optional note…")}
+						{...register("note")}
+					/>
+				</FormField>
 
-					<div className="flex justify-end gap-2 pt-2">
-						<Button type="button" variant="outline" onClick={onClose}>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={record.isPending}>
-							{record.isPending
-								? t("common.saving", "Saving…")
-								: t("fees.record", "Record")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{submit.pending
+							? t("common.saving", "Saving…")
+							: t("fees.record", "Record")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 export function StudentFeesTab() {
 	const { t } = useTranslation();
@@ -168,7 +166,6 @@ export function StudentFeesTab() {
 		},
 		{ label: t("students.tab_fees", "Fees") },
 	]);
-	const [dialogOpen, setDialogOpen] = useState(false);
 
 	const { data: academicYears = [] } = trpc.academicYears.list.useQuery();
 	const activeYear = academicYears.find((y) => y.status === "active");
@@ -240,7 +237,11 @@ export function StudentFeesTab() {
 						{formatAmount(balance)}
 					</p>
 				</div>
-				<Button onClick={() => setDialogOpen(true)}>
+				<Button
+					onClick={() =>
+						RecordPaymentDialog.call({ enrollmentId: enrollment.id })
+					}
+				>
 					<Plus className="mr-1 h-4 w-4" />
 					{t("fees.record_payment", "Record payment")}
 				</Button>
@@ -299,14 +300,6 @@ export function StudentFeesTab() {
 					</table>
 				)}
 			</div>
-
-			{dialogOpen && (
-				<RecordPaymentDialog
-					enrollmentId={enrollment.id}
-					open={dialogOpen}
-					onClose={() => setDialogOpen(false)}
-				/>
-			)}
 		</div>
 	);
 }

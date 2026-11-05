@@ -2,21 +2,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Combobox, PillCombobox } from "@/components/ui/combobox";
+import { PillCombobox } from "@/components/ui/combobox";
+import { CreatableCombobox } from "@/components/ui/creatable-combobox";
 import { DataTable } from "@/components/ui/data-table";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -28,7 +28,10 @@ import {
 } from "@/components/ui/select";
 import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
 import { errorToast } from "@/lib/error-toast";
-import { trpc } from "@/utils/trpc";
+import { upsertInList } from "@/lib/query-cache";
+import { ClassFormDialog } from "@/pages/classes/class-form-dialog";
+import { CreateTermDialog } from "@/pages/terms/terms-list";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,191 +77,216 @@ const createSchema = z.object({
 
 type CreateFormValues = z.infer<typeof createSchema>;
 
-interface CreateCouncilDialogProps {
-	yearId: string;
-	classItems: { id: string; name: string }[];
-	onCreated: () => void;
-}
+/** Classes of the year, shared with the page's class filter cache entry. */
+const classesInput = (yearId: string) => ({
+	academicYearId: yearId,
+	page: 1,
+	pageSize: 200,
+});
 
-function CreateCouncilDialog({
-	yearId,
-	classItems,
-	onCreated,
-}: CreateCouncilDialogProps) {
+/**
+ * Resolves with the created council, or `undefined` when dismissed. A missing
+ * class or term of the year can be created in place from the "+" buttons.
+ */
+export const CreateCouncilDialog = createCallable<
+	{ yearId: string },
+	RouterOutputs["classCouncils"]["create"] | undefined
+>(({ call, yearId }) => {
 	const { t } = useTranslation();
-	const [open, setOpen] = useState(false);
+	const utils = trpc.useUtils();
 
 	const {
 		control,
 		register,
 		handleSubmit,
-		watch,
-		reset,
-		formState: { isSubmitting, errors },
+		formState: { errors },
 	} = useForm<CreateFormValues>({
 		resolver: zodResolver(createSchema),
 		defaultValues: { status: "draft" },
 	});
 
-	const _selectedClassId = watch("classId");
-
-	const { data: termsData } = trpc.terms.list.useQuery(
-		{ academicYearId: yearId },
-		{ enabled: !!yearId },
+	const { data: classesData } = trpc.classes.list.useQuery(
+		classesInput(yearId),
 	);
+	const classItems = classesData?.items ?? [];
+
+	const termsInput = { academicYearId: yearId };
+	const { data: termsData } = trpc.terms.list.useQuery(termsInput);
 	const termItems = termsData ?? [];
 
 	const createCouncil = trpc.classCouncils.create.useMutation({
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.classCouncils.list.invalidate(),
 	});
 
-	const onSubmit = handleSubmit(async (values) => {
-		await createCouncil.mutateAsync({
-			classId: values.classId,
-			termId: values.termId,
-			status: values.status,
-			scheduledAt: values.scheduledAt
-				? new Date(values.scheduledAt).toISOString()
-				: undefined,
+	const createClass = async () => {
+		const created = await ClassFormDialog.call({
+			defaults: { academicYearId: yearId },
+			lockAcademicYear: true,
 		});
-		reset();
-		setOpen(false);
-		onCreated();
-	});
+		if (!created) return;
+		utils.classes.list.setData(classesInput(yearId), (old) =>
+			upsertInList(old, { ...created, studentCount: 0 }),
+		);
+		return { value: created.id, label: created.name };
+	};
+
+	const createTerm = async () => {
+		const term = await CreateTermDialog.call({
+			academicYearId: yearId,
+			existingTermNumbers: termItems.map((trm) => trm.termNumber),
+		});
+		if (!term) return;
+		utils.terms.list.setData(termsInput, (old) => upsertInList(old, term));
+		return {
+			value: term.id,
+			label: t(`terms.term_${term.termNumber}`, `Term ${term.termNumber}`),
+		};
+	};
+
+	const submit = useMutationFlow(
+		call,
+		async (call, values: CreateFormValues) => {
+			try {
+				call.end(
+					await createCouncil.mutateAsync({
+						classId: values.classId,
+						termId: values.termId,
+						status: values.status,
+						scheduledAt: values.scheduledAt
+							? new Date(values.scheduledAt).toISOString()
+							: undefined,
+					}),
+				);
+			} catch (err) {
+				errorToast(err, t);
+			}
+		},
+	);
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<Button data-tour="class-councils-create">
-					<Plus />
-					{t("class_councils.new_council", "New Council")}
-				</Button>
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>
-						{t("class_councils.create_title", "Create class council")}
-					</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="space-y-4">
-					{/* Class */}
-					<div className="space-y-1.5">
-						<Label htmlFor="create-class">
-							{t("class_councils.col_class", "Class")}
-						</Label>
-						<Controller
-							name="classId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={classItems.map((c) => ({
-										value: c.id,
-										label: c.name,
-									}))}
-									value={field.value ?? ""}
-									onValueChange={field.onChange}
-									placeholder={t("grades.select_class", "Select class…")}
-								/>
-							)}
-						/>
-						{errors.classId && (
-							<p className="text-destructive text-xs">
-								{errors.classId.message}
-							</p>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			title={t("class_councils.create_title", "Create class council")}
+		>
+			<form onSubmit={handleSubmit(submit)} className="space-y-4">
+				{/* Class */}
+				<div className="space-y-1.5">
+					<Label htmlFor="create-class">
+						{t("class_councils.col_class", "Class")}
+					</Label>
+					<Controller
+						name="classId"
+						control={control}
+						render={({ field }) => (
+							<CreatableCombobox
+								id="create-class"
+								options={classItems.map((c) => ({
+									value: c.id,
+									label: c.name,
+								}))}
+								value={field.value ?? ""}
+								onValueChange={field.onChange}
+								placeholder={t("grades.select_class", "Select class…")}
+								onCreate={createClass}
+								createLabel={t("classes.add", "Add class")}
+							/>
 						)}
-					</div>
+					/>
+					{errors.classId && (
+						<p className="text-destructive text-xs">{errors.classId.message}</p>
+					)}
+				</div>
 
-					{/* Term */}
-					<div className="space-y-1.5">
-						<Label htmlFor="create-term">
-							{t("class_councils.col_term", "Term")}
-						</Label>
-						<Controller
-							name="termId"
-							control={control}
-							render={({ field }) => (
-								<Combobox
-									options={termItems.map((trm) => ({
-										value: trm.id,
-										label: t(
-											`terms.term_${trm.termNumber}`,
-											`Term ${trm.termNumber}`,
-										),
-									}))}
-									value={field.value ?? ""}
-									onValueChange={field.onChange}
-									placeholder={t("class_councils.select_term", "Select term…")}
-									disabled={termItems.length === 0}
-								/>
-							)}
-						/>
-						{errors.termId && (
-							<p className="text-destructive text-xs">
-								{errors.termId.message}
-							</p>
+				{/* Term */}
+				<div className="space-y-1.5">
+					<Label htmlFor="create-term">
+						{t("class_councils.col_term", "Term")}
+					</Label>
+					<Controller
+						name="termId"
+						control={control}
+						render={({ field }) => (
+							<CreatableCombobox
+								id="create-term"
+								options={termItems.map((trm) => ({
+									value: trm.id,
+									label: t(
+										`terms.term_${trm.termNumber}`,
+										`Term ${trm.termNumber}`,
+									),
+								}))}
+								value={field.value ?? ""}
+								onValueChange={field.onChange}
+								placeholder={t("class_councils.select_term", "Select term…")}
+								onCreate={termItems.length < 3 ? createTerm : undefined}
+								createLabel={t("terms.create", "Create term")}
+							/>
 						)}
-					</div>
+					/>
+					{errors.termId && (
+						<p className="text-destructive text-xs">{errors.termId.message}</p>
+					)}
+				</div>
 
-					{/* Status */}
-					<div className="space-y-1.5">
-						<Label htmlFor="create-status">
-							{t("class_councils.col_status", "Status")}
-						</Label>
-						<Controller
-							name="status"
-							control={control}
-							render={({ field }) => (
-								<Select value={field.value} onValueChange={field.onChange}>
-									<SelectTrigger>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="draft">
-											{t("councils.draft", "Draft")}
-										</SelectItem>
-										<SelectItem value="scheduled">
-											{t("councils.scheduled", "Scheduled")}
-										</SelectItem>
-									</SelectContent>
-								</Select>
-							)}
-						/>
-					</div>
+				{/* Status */}
+				<div className="space-y-1.5">
+					<Label htmlFor="create-status">
+						{t("class_councils.col_status", "Status")}
+					</Label>
+					<Controller
+						name="status"
+						control={control}
+						render={({ field }) => (
+							<Select value={field.value} onValueChange={field.onChange}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="draft">
+										{t("councils.draft", "Draft")}
+									</SelectItem>
+									<SelectItem value="scheduled">
+										{t("councils.scheduled", "Scheduled")}
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						)}
+					/>
+				</div>
 
-					{/* Scheduled date */}
-					<div className="space-y-1.5">
-						<Label htmlFor="create-date">
-							{t("class_councils.col_date", "Scheduled date")}
-						</Label>
-						<Input
-							id="create-date"
-							type="datetime-local"
-							{...register("scheduledAt")}
-						/>
-					</div>
+				{/* Scheduled date */}
+				<div className="space-y-1.5">
+					<Label htmlFor="create-date">
+						{t("class_councils.col_date", "Scheduled date")}
+					</Label>
+					<Input
+						id="create-date"
+						type="datetime-local"
+						{...register("scheduledAt")}
+					/>
+				</div>
 
-					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => {
-								reset();
-								setOpen(false);
-							}}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting
-								? t("common.creating", "Creating…")
-								: t("common.create", "Create")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex justify-end gap-2 pt-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{submit.pending
+							? t("common.creating", "Creating…")
+							: t("common.create", "Create")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -282,7 +310,7 @@ export function ClassCouncilsList() {
 	const yearId = activeYear?.id ?? "";
 
 	const { data: classesData } = trpc.classes.list.useQuery(
-		{ academicYearId: yearId, page: 1, pageSize: 200 },
+		classesInput(yearId),
 		{ enabled: !!yearId },
 	);
 	const classItems = classesData?.items ?? [];
@@ -292,8 +320,6 @@ export function ClassCouncilsList() {
 		{ enabled: !!yearId },
 	);
 	const termItems = termsData ?? [];
-
-	const utils = trpc.useUtils();
 
 	const { data, isLoading } = trpc.classCouncils.list.useQuery({
 		classId: filterClassId || undefined,
@@ -405,11 +431,13 @@ export function ClassCouncilsList() {
 					</p>
 				</div>
 				{yearId && (
-					<CreateCouncilDialog
-						yearId={yearId}
-						classItems={classItems}
-						onCreated={() => utils.classCouncils.list.invalidate()}
-					/>
+					<Button
+						data-tour="class-councils-create"
+						onClick={() => CreateCouncilDialog.call({ yearId })}
+					>
+						<Plus />
+						{t("class_councils.new_council", "New Council")}
+					</Button>
 				)}
 			</div>
 

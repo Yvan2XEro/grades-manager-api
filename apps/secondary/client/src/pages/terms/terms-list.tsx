@@ -1,19 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar, Plus } from "lucide-react";
 import { useState } from "react";
+import { createCallable } from "react-call";
+import { useMutationFlow } from "react-call/mutation-flow";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import {
+	CallableDialog,
+	DIALOG_EXIT_MS,
+} from "@/components/callable/callable-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DatePicker } from "@/components/ui/date-picker";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import {
 	Select,
@@ -23,7 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { errorToast } from "@/lib/error-toast";
-import { trpc } from "@/utils/trpc";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 
 // ─── Term create form ────────────────────────────────────────────────────────
 
@@ -36,47 +36,43 @@ const createSchema = z.object({
 type CreateFormValues = z.infer<typeof createSchema>;
 
 interface CreateTermDialogProps {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
 	academicYearId: string;
 	existingTermNumbers: number[];
 }
 
-function CreateTermDialog({
-	open,
-	onOpenChange,
-	academicYearId,
-	existingTermNumbers,
-}: CreateTermDialogProps) {
+/** Resolves with the created term, or `undefined` when dismissed. */
+export const CreateTermDialog = createCallable<
+	CreateTermDialogProps,
+	RouterOutputs["terms"]["create"] | undefined
+>(({ call, academicYearId, existingTermNumbers }) => {
 	const { t } = useTranslation();
 	const utils = trpc.useUtils();
 
 	const create = trpc.terms.create.useMutation({
-		onSuccess: () => {
-			utils.terms.list.invalidate();
-			onOpenChange(false);
-			reset();
-		},
-		onError: (err) => errorToast(err, t),
+		onSuccess: () => utils.terms.list.invalidate(),
 	});
 
 	const {
-		register,
 		handleSubmit,
-		reset,
 		control,
-		formState: { errors, isSubmitting },
+		formState: { errors },
 	} = useForm<CreateFormValues>({
 		resolver: zodResolver(createSchema),
 	});
 
-	const onSubmit = handleSubmit(async (data) => {
-		await create.mutateAsync({
-			academicYearId,
-			termNumber: Number.parseInt(data.termNumber, 10),
-			startDate: new Date(data.startDate),
-			endDate: new Date(data.endDate),
-		});
+	const submit = useMutationFlow(call, async (call, data: CreateFormValues) => {
+		try {
+			call.end(
+				await create.mutateAsync({
+					academicYearId,
+					termNumber: Number.parseInt(data.termNumber, 10),
+					startDate: new Date(data.startDate),
+					endDate: new Date(data.endDate),
+				}),
+			);
+		} catch (err) {
+			errorToast(err, t);
+		}
 	});
 
 	const availableTerms = [1, 2, 3].filter(
@@ -84,95 +80,94 @@ function CreateTermDialog({
 	);
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-sm">
-				<DialogHeader>
-					<DialogTitle>{t("terms.create", "Create term")}</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={onSubmit} className="flex flex-col gap-4">
-					<FormField
-						label={t("terms.term_number", "Term number")}
-						error={errors.termNumber?.message}
-						required
-					>
-						<Controller
-							name="termNumber"
-							control={control}
-							render={({ field }) => (
-								<Select
-									value={field.value ?? ""}
-									onValueChange={field.onChange}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="—" />
-									</SelectTrigger>
-									<SelectContent>
-										{availableTerms.map((n) => (
-											<SelectItem key={n} value={String(n)}>
-												{t(`terms.term_${n}`, `Term ${n}`)}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							)}
-						/>
-					</FormField>
+		<CallableDialog
+			call={call}
+			dismissValue={undefined}
+			preventDismiss={submit.pending}
+			className="max-w-sm"
+			title={t("terms.create", "Create term")}
+		>
+			<form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
+				<FormField
+					label={t("terms.term_number", "Term number")}
+					error={errors.termNumber?.message}
+					required
+				>
+					<Controller
+						name="termNumber"
+						control={control}
+						render={({ field }) => (
+							<Select value={field.value ?? ""} onValueChange={field.onChange}>
+								<SelectTrigger>
+									<SelectValue placeholder="—" />
+								</SelectTrigger>
+								<SelectContent>
+									{availableTerms.map((n) => (
+										<SelectItem key={n} value={String(n)}>
+											{t(`terms.term_${n}`, `Term ${n}`)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
+					/>
+				</FormField>
 
-					<FormField
-						label={t("terms.start_date", "Start date")}
-						error={errors.startDate?.message}
-						required
-					>
-						<Controller
-							name="startDate"
-							control={control}
-							render={({ field }) => (
-								<DatePicker
-									value={field.value ?? ""}
-									onChange={field.onChange}
-									startMonth={new Date(2020, 0)}
-									endMonth={new Date(2035, 11)}
-								/>
-							)}
-						/>
-					</FormField>
+				<FormField
+					label={t("terms.start_date", "Start date")}
+					error={errors.startDate?.message}
+					required
+				>
+					<Controller
+						name="startDate"
+						control={control}
+						render={({ field }) => (
+							<DatePicker
+								value={field.value ?? ""}
+								onChange={field.onChange}
+								startMonth={new Date(2020, 0)}
+								endMonth={new Date(2035, 11)}
+							/>
+						)}
+					/>
+				</FormField>
 
-					<FormField
-						label={t("terms.end_date", "End date")}
-						error={errors.endDate?.message}
-						required
-					>
-						<Controller
-							name="endDate"
-							control={control}
-							render={({ field }) => (
-								<DatePicker
-									value={field.value ?? ""}
-									onChange={field.onChange}
-									startMonth={new Date(2020, 0)}
-									endMonth={new Date(2035, 11)}
-								/>
-							)}
-						/>
-					</FormField>
+				<FormField
+					label={t("terms.end_date", "End date")}
+					error={errors.endDate?.message}
+					required
+				>
+					<Controller
+						name="endDate"
+						control={control}
+						render={({ field }) => (
+							<DatePicker
+								value={field.value ?? ""}
+								onChange={field.onChange}
+								startMonth={new Date(2020, 0)}
+								endMonth={new Date(2035, 11)}
+							/>
+						)}
+					/>
+				</FormField>
 
-					<div className="flex justify-end gap-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
-							{t("common.cancel", "Cancel")}
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{t("terms.create", "Create term")}
-						</Button>
-					</div>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex justify-end gap-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={submit.pending}
+						onClick={() => call.end(undefined)}
+					>
+						{t("common.cancel", "Cancel")}
+					</Button>
+					<Button type="submit" disabled={submit.pending}>
+						{t("terms.create", "Create term")}
+					</Button>
+				</div>
+			</form>
+		</CallableDialog>
 	);
-}
+}, DIALOG_EXIT_MS);
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -213,7 +208,6 @@ type Term = {
 export function TermsContent() {
 	const { t } = useTranslation();
 	const [selectedYearId, setSelectedYearId] = useState<string>("");
-	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
 	const { data: years = [] } = trpc.academicYears.list.useQuery();
 	const utils = trpc.useUtils();
@@ -262,7 +256,12 @@ export function TermsContent() {
 					/>
 				</div>
 				<Button
-					onClick={() => setCreateDialogOpen(true)}
+					onClick={() =>
+						CreateTermDialog.call({
+							academicYearId: yearId,
+							existingTermNumbers,
+						})
+					}
 					disabled={!yearId || existingTermNumbers.length >= 3}
 					size="sm"
 				>
@@ -357,15 +356,6 @@ export function TermsContent() {
 						);
 					})}
 				</div>
-			)}
-
-			{yearId && (
-				<CreateTermDialog
-					open={createDialogOpen}
-					onOpenChange={setCreateDialogOpen}
-					academicYearId={yearId}
-					existingTermNumbers={existingTermNumbers}
-				/>
 			)}
 		</div>
 	);
