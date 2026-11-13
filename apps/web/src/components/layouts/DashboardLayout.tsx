@@ -35,7 +35,8 @@ const DashboardLayout: React.FC = () => {
 				<Header />
 
 				<main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
-					<div className="min-w-0 px-4 py-6 md:px-8">
+					{/* Bounded on md+ so list pages can keep only their table rows scrolling */}
+					<div className="flex min-h-full min-w-0 flex-col px-4 pt-6 *:w-full *:shrink-0 after:block after:h-6 after:shrink-0 md:h-full md:px-8">
 						<Outlet />
 					</div>
 				</main>

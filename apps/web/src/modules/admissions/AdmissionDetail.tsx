@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
-import { ClassFormDialog } from "@/modules/classes/ClassFormDialog";
+import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { trpc, trpcClient } from "@/utils/trpc";
 
 const STATUS_COLORS: Record<string, string> = {

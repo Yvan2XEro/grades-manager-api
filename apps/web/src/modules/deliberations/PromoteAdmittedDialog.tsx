@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/lib/toast";
-import { ClassFormDialog } from "@/modules/classes/ClassFormDialog";
+import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { trpcClient } from "@/utils/trpc";
 
 interface Props {

@@ -21,7 +21,8 @@ const serverUrl = getServerUrl();
 /** Prepend server URL for relative paths, pass through absolute URLs. */
 export function resolveUrl(url: string | null | undefined): string | undefined {
 	if (!url) return undefined;
-	if (url.startsWith("http://") || url.startsWith("https://")) return url;
+	// Absolute, inline (data:) and local blob URLs are used as they are
+	if (/^(https?:|data:|blob:)/.test(url)) return url;
 	return `${serverUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 

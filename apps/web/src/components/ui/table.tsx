@@ -97,7 +97,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
 	return (
 		<div
 			ref={outerRef}
-			className="relative w-full rounded-xl bg-card"
+			className="relative flex min-h-0 w-full flex-1 flex-col rounded-xl bg-card"
 			onMouseMove={onMouseMove}
 			onMouseLeave={() => setArrowY(null)}
 		>
@@ -106,7 +106,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
 				ref={containerRef}
 				onMouseDown={onMouseDown}
 				className={cn(
-					"table-scroll w-full overflow-x-auto",
+					"table-scroll min-h-0 w-full flex-1 overflow-auto",
 					canScrollLeft || canScrollRight
 						? isDragging
 							? "cursor-grabbing select-none"
@@ -149,7 +149,11 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
 	return (
 		<thead
 			data-slot="table-header"
-			className={cn("border-border border-b bg-muted/40", className)}
+			className={cn(
+				// Sticky: when the table area is height-bounded only the rows scroll
+				"sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_var(--border)] [&>tr]:bg-muted/40",
+				className,
+			)}
 			{...props}
 		/>
 	);

@@ -135,11 +135,19 @@ Key domain tables:
 
 ### Frontend Architecture (`apps/web/src/`)
 
-- **Modules**: `modules/<domain>/` (classes, programs, exams, grades, timetable, fees, …) hold the pages, tabs, dialogs and entity form Callables of one domain. Folders are by domain, never by user role.
-- **Shared code**: `components/` (ui, forms, inputs, layouts, navigation, callable), `hooks/`, `lib/`, `store/`, `utils/`
-- **Routing**: each module exports its routes from `modules/<domain>/routes.tsx` (relative paths); `App.tsx` composes them under one `DashboardLayout`
-  - URLs never carry the user's role (`/classes`, `/grades/:courseId`, not `/admin/...`). A path shared by several roles renders the view of the user's role group via `<RoleView fallback={…} teacher={…} student={…} />` (`components/navigation/RoleView.tsx`), e.g. `/` (dashboards), `/timetable`, `/exams`, `/workflows`
-  - Old URLs (`/admin/*`, `/teacher/*`, `/dean/*`, `/student/*`, `/grade-editor/*`, renamed paths) redirect via `components/navigation/legacy-routes.tsx` — keep them for bookmarks
+- **Modules**: `modules/<domain>/` (classes, programs, exams, grades, timetable, fees, …) hold everything of one domain. Folders are by domain, never by user role. Inside a module (kebab-case file names, `modules/classes` is the reference):
+  - `pages/` — route components, thin: they compose hooks, tables and components (`classes-page.tsx`; detail pages with tabs in a sub-folder: `pages/class-detail/class-detail-layout.tsx`, `class-detail-details.tsx`, …)
+  - `components/` — dialogs (Callables), form fields, cards, headers of the domain (`class-form-dialog.tsx`, `class-form-fields.tsx`)
+  - `hooks/` — data hooks wrapping queries/mutations and form state (`use-classes.ts`, `use-class-form.ts`)
+  - `services/` — non-React logic: exports, PDF/Excel generation, mappings (`student-list-export.ts`)
+  - `table/` — column definitions for `DataTable` (`classes-columns.tsx`)
+  - `types.ts`, `routes.tsx`
+  - A create dialog and an edit page share one form hook + one fields component; never copy a form.
+- **Shared code**: `components/` (ui, forms, inputs, layouts, navigation, callable, data-table), `hooks/`, `lib/`, `store/`, `utils/`
+  - `components/data-table` — `DataTable` (TanStack Table column defs, `selection` from `useRowSelection`, `rowActions` rendered both as "…" menu and right-click menu)
+  - `components/layouts/ListLayout.tsx` — `ListLayout` (header / toolbar / table / footer: on md+ the page does not scroll, only the table rows do, under a sticky header) and `HubLayout` for pages with `HubNav` tabs. Every list page uses them.
+  - `components/period-filters.tsx` (academic year + semester), `lib/download.ts` (`downloadBlob`, `downloadBase64`)
+- **React Compiler is on**: don't call `form.watch()` in a child component that receives `form` (memoized → stale values); read watched values in the component/hook that owns `useForm`, or use `useWatch`.
 - **tRPC Client**: `utils/trpc.ts` - Type-safe API client
 - **Auth Client**: `lib/auth-client.ts` - Better-Auth client
 - **State**: `store/index.ts` - Zustand for global state

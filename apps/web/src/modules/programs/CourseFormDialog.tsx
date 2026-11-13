@@ -32,7 +32,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
-import { classFormKeys } from "@/modules/classes/ClassFormDialog";
+import { classFormKeys } from "@/modules/classes/hooks/use-class-form";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 import { ProgramFormDialog } from "./ProgramFormDialog";
 import { TeachingUnitFormDialog } from "./TeachingUnitFormDialog";

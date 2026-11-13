@@ -23,7 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { ClassFormDialog } from "@/modules/classes/ClassFormDialog";
+import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { trpcClient } from "@/utils/trpc";
 
 export function ExecutePromotionPage() {

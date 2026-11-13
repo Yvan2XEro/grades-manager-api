@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { trpc } from "@/utils/trpc";
-import { ClassContext } from "./ClassContext";
+import { ClassContext } from "../../hooks/use-class-context";
 
 const TABS = [
 	{ path: "details", labelKey: "classes.hub.tabs.details" },
@@ -15,7 +15,7 @@ const TABS = [
 	{ path: "courses", labelKey: "classes.hub.tabs.courses" },
 ] as const;
 
-export default function ClassDetail() {
+export default function ClassDetailLayout() {
 	const { classId } = useParams<{ classId: string }>();
 	const { t } = useTranslation();
 

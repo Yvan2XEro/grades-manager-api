@@ -1,26 +1,26 @@
 import { Navigate, Route } from "react-router";
 import EnrollmentManagement from "@/modules/enrollments/EnrollmentManagement";
-import ClassCourseManagement from "./ClassCourseManagement";
-import ClassCoursesTab from "./ClassCoursesTab";
-import ClassDetail from "./ClassDetail";
-import ClassDetailsTab from "./ClassDetailsTab";
-import ClassesHub from "./ClassesHub";
-import ClassManagement from "./ClassManagement";
-import ClassStudentsTab from "./ClassStudentsTab";
+import ClassCoursesPage from "./pages/class-courses-page";
+import ClassDetailCourses from "./pages/class-detail/class-detail-courses";
+import ClassDetailDetails from "./pages/class-detail/class-detail-details";
+import ClassDetailLayout from "./pages/class-detail/class-detail-layout";
+import ClassDetailStudents from "./pages/class-detail/class-detail-students";
+import ClassesLayout from "./pages/classes-layout";
+import ClassesPage from "./pages/classes-page";
 
 export const classesRoutes = (
 	<Route path="classes">
-		<Route element={<ClassesHub />}>
+		<Route element={<ClassesLayout />}>
 			<Route index element={<Navigate to="classes" replace />} />
-			<Route path="classes" element={<ClassManagement />} />
-			<Route path="assignments" element={<ClassCourseManagement />} />
+			<Route path="classes" element={<ClassesPage />} />
+			<Route path="assignments" element={<ClassCoursesPage />} />
 			<Route path="enrollments" element={<EnrollmentManagement />} />
 		</Route>
-		<Route path=":classId" element={<ClassDetail />}>
+		<Route path=":classId" element={<ClassDetailLayout />}>
 			<Route index element={<Navigate to="details" replace />} />
-			<Route path="details" element={<ClassDetailsTab />} />
-			<Route path="students" element={<ClassStudentsTab />} />
-			<Route path="courses" element={<ClassCoursesTab />} />
+			<Route path="details" element={<ClassDetailDetails />} />
+			<Route path="students" element={<ClassDetailStudents />} />
+			<Route path="courses" element={<ClassDetailCourses />} />
 		</Route>
 	</Route>
 );

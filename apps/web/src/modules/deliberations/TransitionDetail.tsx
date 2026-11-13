@@ -61,7 +61,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { ClassFormDialog } from "@/modules/classes/ClassFormDialog";
+import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { queryClient, type RouterOutputs, trpcClient } from "@/utils/trpc";
 
 type Transition = RouterOutputs["academicYearTransitions"]["getById"];

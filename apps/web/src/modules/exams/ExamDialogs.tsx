@@ -34,13 +34,13 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
+import { ClassCourseFormDialog } from "@/modules/classes/components/class-course-form-dialog";
 import {
 	CLASSES_KEY,
-	ClassCourseFormDialog,
 	COURSES_KEY,
 	fetchClassOptions,
 	fetchCourseOptions,
-} from "@/modules/classes/ClassCourseDialogs";
+} from "@/modules/classes/hooks/use-class-options";
 import { trpc, trpcClient } from "@/utils/trpc";
 
 type ClassCourseOption = { id: string; class: string; course: string };

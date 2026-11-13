@@ -23,7 +23,7 @@ import {
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
-import { useClassContext } from "./ClassContext";
+import { useClassContext } from "../../hooks/use-class-context";
 
 type ClassCourse = RouterOutputs["classCourses"]["list"]["items"][number];
 
@@ -34,7 +34,7 @@ function teacherName(cc: ClassCourse): string {
 	return full || "—";
 }
 
-export default function ClassCoursesTab() {
+export default function ClassDetailCourses() {
 	const { t } = useTranslation();
 	const { cls } = useClassContext();
 	const queryClient = useQueryClient();

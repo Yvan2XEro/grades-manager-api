@@ -12,14 +12,12 @@ import {
 	ExcuseAbsenceDialog,
 } from "@/modules/attendance/AttendanceDialogs";
 import { CreateBatchJobDialog } from "@/modules/batch-jobs/CreateBatchJobDialog";
-import {
-	AssignTeachingUnitDialog,
-	AutoEnrollClassDialog,
-	ClassCourseFormDialog,
-	CourseCatalogExportDialog,
-} from "@/modules/classes/ClassCourseDialogs";
-import { ClassFormDialog } from "@/modules/classes/ClassFormDialog";
-import { BulkGenerateClassesDialog } from "@/modules/classes/ClassManagement";
+import { AssignTeachingUnitDialog } from "@/modules/classes/components/assign-teaching-unit-dialog";
+import { AutoEnrollClassDialog } from "@/modules/classes/components/auto-enroll-class-dialog";
+import { BulkGenerateClassesDialog } from "@/modules/classes/components/bulk-generate-classes-dialog";
+import { ClassCourseFormDialog } from "@/modules/classes/components/class-course-form-dialog";
+import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
+import { CourseCatalogExportDialog } from "@/modules/classes/components/course-catalog-export-dialog";
 import { CreateDeliberationDialog } from "@/modules/deliberations/CreateDeliberationDialog";
 import { DeliberationRuleFormDialog } from "@/modules/deliberations/DeliberationRules";
 import { OverrideDecisionDialog } from "@/modules/deliberations/OverrideDecisionDialog";

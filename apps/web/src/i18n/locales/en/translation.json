@@ -1995,7 +1995,8 @@
       "subtitle": "Create classes for each program and academic year",
       "actions": {
         "add": "Add class",
-        "bulkGenerate": "Bulk generate"
+        "bulkGenerate": "Bulk generate",
+        "bulkExport": "Bulk export"
       },
       "empty": {
         "title": "No classes yet",
@@ -2049,7 +2050,8 @@
         "labelLabel": "Generated class label",
         "totalCreditsLabel": "Total credits",
         "totalCreditsPlaceholder": "e.g. 30",
-        "programCycleSummary": "Cycle : {{value}}"
+        "programCycleSummary": "Cycle : {{value}}",
+        "emptyProgramOptions": "No options available"
       },
       "toast": {
         "createSuccess": "Class created successfully",

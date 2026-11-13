@@ -43,7 +43,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
-import { ClassFormDialog } from "@/modules/classes/ClassFormDialog";
+import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
 

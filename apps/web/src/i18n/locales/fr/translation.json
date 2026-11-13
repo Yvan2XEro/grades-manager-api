@@ -940,7 +940,8 @@
       "subtitle": "Créez des classes pour chaque programme et année académique",
       "actions": {
         "add": "Ajouter une classe",
-        "bulkGenerate": "Génération en masse"
+        "bulkGenerate": "Génération en masse",
+        "bulkExport": "Exporter en lot"
       },
       "empty": {
         "title": "Aucune classe",
@@ -994,7 +995,8 @@
         "totalCreditsLabel": "Crédits totaux",
         "totalCreditsPlaceholder": "ex. 30",
         "emptyCycleLevels": "Aucun niveau de cycle disponible pour la faculté sélectionnée.",
-        "programSummary": "Faculté : {{value}}"
+        "programSummary": "Faculté : {{value}}",
+        "emptyProgramOptions": "Aucune option disponible"
       },
       "toast": {
         "createSuccess": "Classe créée avec succès",

@@ -20,9 +20,9 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { trpcClient } from "@/utils/trpc";
-import { useClassContext } from "./ClassContext";
+import { useClassContext } from "../../hooks/use-class-context";
 
-export default function ClassStudentsTab() {
+export default function ClassDetailStudents() {
 	const { t } = useTranslation();
 	const { cls } = useClassContext();
 
