@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router";
+import { Link, Outlet, useParams } from "react-router";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -64,7 +64,10 @@ export default function TeachingUnitDetail() {
 					</div>
 				</div>
 			</div>
-			{!isCreating && (
+			{/* HubNav renders the tab Outlet; in create mode only the form is shown */}
+			{isCreating ? (
+				<Outlet />
+			) : (
 				<HubNav
 					tabs={TABS}
 					basePath={`/admin/programs/teaching-units/${teachingUnitId}`}
