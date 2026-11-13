@@ -49,6 +49,6 @@ const createProgram = async () => {
 ## Remaining / to verify
 
 - [ ] Click through the converted dialogs in the browser. Only the class → program → cycle chain was tested end to end in web. Priorities: exams, class-courses, timetable, fees, deliberations, transitions (`ResolveItemSheet`), avatar crop (Account settings), grade delegates (`AssignDelegateDialog`).
-- [ ] Legacy pages `pages/teacher/{StudentManagement,ClassCourseManagement,ExamManagement,CourseManagement}.tsx` are **not routed or imported**. They still use `components/modals/ConfirmModal|FormModal`. Delete them, or convert them if they are meant to come back.
+- [x] ~~Legacy pages `pages/teacher/{StudentManagement,ClassCourseManagement,ExamManagement,CourseManagement}.tsx`~~ — **deleted** (were never routed/imported). `components/modals/` directory also deleted (no remaining consumers). Build verified clean.
 - [ ] `AdmissionsManagement` drawer stays a `Sheet` (it is a master-detail panel, not a value-returning modal). Only a class "+" was added to it.
 - [ ] Web type checking: `bun check-types` does not really check `apps/web`, and a plain `tsc` crashes on `NotificationBell.tsx` (TypeScript bug). There are about 1,800 pre-existing type errors, none added by this work.
