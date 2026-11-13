@@ -108,9 +108,9 @@
     "create": "Créer",
     "yes": "Oui",
     "no": "Non",
-    "add": "Add",
-    "error": "Error",
-    "hide": "Hide",
+    "add": "Ajouter",
+    "error": "Erreur",
+    "hide": "Masquer",
     "total": "Total",
     "confirmDeleteDesc": "Cette action est irréversible.",
     "clearFilters": "Réinitialiser les filtres"
@@ -199,7 +199,7 @@
         "exportTemplates": "Modèles d'exportation",
         "classDocumentTemplates": "Documents par classe",
         "documentBatch": "Génération en lot",
-        "monitoring": "Monitoring",
+        "monitoring": "Supervision",
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
         "dataImport": "Import de données",
@@ -263,9 +263,9 @@
       },
       "dean": {
         "dashboard": "Tableau de bord",
-        "workflows": "Workflows",
+        "workflows": "Approbations",
         "history": "Historique",
-        "monitoring": "Monitoring",
+        "monitoring": "Supervision",
         "pendingApprovals": "Approbations en attente"
       },
       "student": {
@@ -306,8 +306,8 @@
       "noAccount": "Pas de compte ?",
       "registerLink": "Créer un compte",
       "notMember": "Vous n'êtes pas membre de cette organisation. Contactez votre administrateur.",
-      "rememberMe": "Remember Me",
-      "subtitle": "Subtitle"
+      "rememberMe": "Se souvenir de moi pendant 30 jours",
+      "subtitle": "Connectez-vous pour accéder à vos établissements."
     },
     "register": {
       "title": "Créer un compte",
@@ -346,9 +346,9 @@
       "error": "Impossible de mettre à jour le mot de passe",
       "backToLogin": "Retour à la connexion",
       "subtitle": "Choisissez un nouveau mot de passe sécurisé pour votre compte.",
-      "signInNow": "Sign In Now",
-      "successMessage": "Success Message",
-      "successTitle": "Success Title"
+      "signInNow": "Se connecter maintenant",
+      "successMessage": "Redirection vers la connexion dans {{countdown}} secondes...",
+      "successTitle": "Mot de passe mis à jour"
     },
     "logout": {
       "success": "Déconnexion réussie",
@@ -364,10 +364,10 @@
       "passwordsMismatch": "Les mots de passe ne correspondent pas"
     },
     "orgPicker": {
-      "back": "Back",
-      "noOrgs": "No Orgs",
-      "subtitle": "Subtitle",
-      "title": "Title"
+      "back": "Changer de compte",
+      "noOrgs": "Aucun établissement trouvé pour ce compte. Contactez votre administrateur.",
+      "subtitle": "Sélectionnez l'établissement auquel vous souhaitez accéder.",
+      "title": "Choisissez votre établissement"
     }
   },
   "admin": {
@@ -735,6 +735,7 @@
         "confirmRun": "Êtes-vous sûr de vouloir exécuter ce traitement ? Cette opération peut prendre plusieurs minutes."
       },
       "detail": {
+        "timedOut": "Le traitement a expiré",
         "title": "Détails du traitement",
         "steps": "Étapes",
         "logs": "Journaux",
@@ -749,16 +750,16 @@
           "error": "Erreur"
         },
         "logStep": "Étape",
-        "failed": "Failed",
-        "failureSummary": "Failure Summary",
-        "items": "Items",
-        "notFound": "Not Found",
-        "originalJob": "Original Job",
-        "processed": "Processed",
-        "rollbackJob": "Rollback Job",
-        "skipped": "Skipped",
-        "step": "Step",
-        "unknownError": "Unknown Error"
+        "failed": "Échecs : {{count}}",
+        "failureSummary": "Le traitement a échoué",
+        "items": "éléments",
+        "notFound": "Traitement introuvable",
+        "originalJob": "Voir le traitement d'origine",
+        "processed": "Traités : {{count}}",
+        "rollbackJob": "Voir le traitement d'annulation",
+        "skipped": "Ignorés : {{count}}",
+        "step": "Étape {{current}}/{{total}}",
+        "unknownError": "Erreur inconnue"
       },
       "toast": {
         "previewSuccess": "Aperçu généré avec succès",
@@ -774,10 +775,10 @@
         "skipped": "Ignoré"
       },
       "confirm": {
-        "cancelMessage": "Cancel Message",
-        "cancelTitle": "Cancel Title",
-        "rollbackMessage": "Rollback Message",
-        "rollbackTitle": "Rollback Title"
+        "cancelMessage": "L'annulation arrête immédiatement le traitement. Les données déjà traitées ne seront pas restaurées.",
+        "cancelTitle": "Annuler le traitement ?",
+        "rollbackMessage": "Un traitement d'annulation sera créé pour défaire les modifications de ce traitement. Cette action est elle-même irréversible.",
+        "rollbackTitle": "Annuler les effets du traitement ?"
       }
     },
     "academicYears": {
@@ -1117,20 +1118,20 @@
         "noSupervisingFaculty": "Aucune",
         "noDefaultYear": "Aucune année par défaut",
         "noRegistrationFormat": "Aucun format de matricule (utiliser le format actif)",
-        "abbreviation": "Abbreviation",
+        "abbreviation": "Abréviation",
         "typePlaceholder": "Select type",
-        "parentInstitutionPlaceholder": "Select parent institution",
-        "supervisingFacultyPlaceholder": "Select supervising faculty",
-        "defaultAcademicYearManagedHint": "Manage the active academic year from Academic Years.",
-        "registrationFormatManagedHint": "Manage the active registration format from Registration Formats.",
+        "parentInstitutionPlaceholder": "Sélectionner l'établissement parent",
+        "supervisingFacultyPlaceholder": "Sélectionner la faculté de tutelle",
+        "defaultAcademicYearManagedHint": "L'année académique active se gère depuis Années académiques.",
+        "registrationFormatManagedHint": "Le format de matricule actif se gère depuis Formats de matricule.",
         "signatoryName": "Signatory name",
         "signatoryTitle": "Signatory title",
-        "city": "City (for document date line)",
-        "logoSvg": "Logo Svg",
-        "logoSvgHint": "Logo Svg Hint"
+        "city": "Ville (pour la ligne de date des documents)",
+        "logoSvg": "Logo SVG (code source)",
+        "logoSvgHint": "Si renseigné, le SVG est utilisé en priorité sur les exports (à la place du logo PNG/URL)."
       },
       "sections": {
-        "contact": "Contact",
+        "contact": "Contact et localisation",
         "contactHint": "Téléphone, e-mail, fax et adresse postale affichés sur les documents officiels.",
         "media": "Médias",
         "mediaHint": "Logo et image de couverture utilisés dans les rapports générés et les tableaux de bord.",
@@ -1139,7 +1140,7 @@
         "system": "Système",
         "systemHint": "Année académique par défaut et format de matricule.",
         "documentParams": "Document Generation",
-        "documentParamsHint": "Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation."
+        "documentParamsHint": "Signataire et ville utilisés sur les diplômes, attestations et relevés générés. Synchronisés automatiquement avec Diplomation."
       }
     },
     "studyCycles": {
@@ -1394,9 +1395,9 @@
         "specialiteFrLabel": "Spécialité (FR)",
         "specialiteEnLabel": "Specialization (EN)",
         "diplomaTitleFrLabel": "Titre diplôme (FR)",
-        "diplomaTitleEnLabel": "Diploma title (EN)",
+        "diplomaTitleEnLabel": "Titre diplôme (EN)",
         "attestationValidityFrLabel": "Validité attestation (FR)",
-        "attestationValidityEnLabel": "Attestation validity (EN)",
+        "attestationValidityEnLabel": "Validité attestation (EN)",
         "centerLabel": "Centre",
         "centerPlaceholder": "Aucun centre",
         "centerNone": "Aucun (programme général)",
@@ -1453,16 +1454,16 @@
         }
       },
       "duplicate": {
-        "button": "Button",
-        "cloneCurriculum": "Clone Curriculum",
-        "description": "Description",
-        "noCycles": "No Cycles",
-        "submit": "Submit",
-        "targetCycles": "Target Cycles",
-        "title": "Title",
+        "button": "Dupliquer vers cycle…",
+        "cloneCurriculum": "Cloner également les UE et EC",
+        "description": "{{count}} programme(s) seront copiés vers chaque cycle sélectionné. Le code et le nom seront préfixés par ceux du cycle.",
+        "noCycles": "Aucun cycle disponible",
+        "submit": "Dupliquer",
+        "targetCycles": "Cycles cibles",
+        "title": "Dupliquer vers un autre cycle",
         "toast": {
-          "error": "Error",
-          "success": "Success"
+          "error": "Erreur lors de la duplication",
+          "success": "{{created}} programme(s) créé(s), {{skipped}} ignoré(s)"
         }
       }
     },
@@ -2008,8 +2009,8 @@
         "title": "Sélectionnez les évaluations à inclure",
         "emptyTitle": "Aucune évaluation trouvée",
         "emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe.",
-        "loadingDescription": "Loading Description",
-        "loadingTitle": "Loading Title"
+        "loadingDescription": "Récupération de tous les examens et de leurs cours pour cette classe.",
+        "loadingTitle": "Chargement des évaluations…"
       },
       "columns": {
         "lastName": "Nom",
@@ -2035,8 +2036,8 @@
         "ueGenerateError": "Échec de la génération UE",
         "bulkEvaluationsError": "Échec de la génération en masse des évaluations",
         "bulkUesError": "Échec de la génération en masse des UE",
-        "ecGenerateError": "Ec Generate Error",
-        "ecPreviewError": "Ec Preview Error"
+        "ecGenerateError": "Échec de la génération des EC",
+        "ecPreviewError": "Impossible de générer l'aperçu des EC"
       }
     },
     "students": {
@@ -2287,8 +2288,8 @@
         "createSubmit": "Créer un utilisateur",
         "profileSection": "Profile",
         "systemAccessSection": "System Access",
-        "canConnectLabel": "Can log in",
-        "canConnectDescription": "Creates a system account with login access",
+        "canConnectLabel": "Peut se connecter",
+        "canConnectDescription": "Crée un compte système avec accès à la connexion",
         "memberRoleLabel": "Role",
         "memberRolePlaceholder": "Select a role"
       },
@@ -2333,8 +2334,8 @@
         "email": "Saisissez une adresse e-mail valide",
         "role": "Veuillez sélectionner un rôle",
         "passwordRequired": "Le mot de passe est obligatoire",
-        "passwordMin": "Password must be at least 8 characters",
-        "memberRoleRequired": "Role is required when system access is enabled"
+        "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
+        "memberRoleRequired": "Le rôle est obligatoire lorsque l'accès au système est activé"
       }
     },
     "enrollments": {
@@ -2428,16 +2429,16 @@
         "withdrawn": "Retiré"
       },
       "bulkEnroll": {
-        "classesLabel": "Classes Label",
-        "description": "Description",
-        "noClasses": "No Classes",
+        "classesLabel": "Classes ({{n}} sélectionnées)",
+        "description": "Sélectionnez une ou plusieurs classes. Tous les étudiants de chaque classe seront inscrits à tous ses cours (tous semestres confondus). Pour cibler un semestre précis, utilisez « Inscrire toute la classe » classe par classe.",
+        "noClasses": "Aucune classe pour cette année.",
         "noSelection": "No Selection",
-        "openButton": "Open Button",
-        "partial": "Partial",
-        "requireYear": "Require Year",
-        "run": "Run",
-        "success": "Success",
-        "title": "Title"
+        "openButton": "Inscription de masse",
+        "partial": "{{count}} inscriptions créées, {{err}} erreur(s).",
+        "requireYear": "Choisissez d'abord une année",
+        "run": "Lancer l'inscription",
+        "success": "{{count}} inscriptions créées sur {{n}} classe(s).",
+        "title": "Inscription de masse"
       }
     },
     "notifications": {
@@ -2473,11 +2474,11 @@
       "actions": {
         "flush": "Vider la file",
         "ack": "Accuser réception",
-        "retry": "Retry"
+        "retry": "Relancer"
       },
       "toast": {
         "flushed": "Notifications en attente supprimées",
-        "retried": "Retried"
+        "retried": "Notification remise en file d'attente"
       },
       "gradeValidated": "Validation des notes terminée",
       "gradeValidatedDesc": "Un examen a été validé et verrouillé pour publication.",
@@ -2981,8 +2982,8 @@
           "goToClasses": "goToClasses"
         },
         "targetClassHint": "targetClassHint",
-        "ctaDesc": "Cta Desc",
-        "ctaTitle": "Cta Title"
+        "ctaDesc": "Les étudiants avec la décision « Admis » peuvent être promus au niveau suivant.",
+        "ctaTitle": "Promouvoir les étudiants admis"
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -3110,9 +3111,9 @@
         "country": "Pays",
         "addressFr": "Adresse (FR)",
         "addressEn": "Adresse (EN)",
-        "adminInstanceLogoSvg": "Admin Instance Logo Svg",
-        "logoSvg": "Logo Svg",
-        "watermarkLogoSvg": "Watermark Logo Svg"
+        "adminInstanceLogoSvg": "…ou code SVG (prioritaire)",
+        "logoSvg": "…ou code SVG (prioritaire)",
+        "watermarkLogoSvg": "…ou code SVG (prioritaire)"
       },
       "actions": {
         "addInstance": "Ajouter une instance",
@@ -3231,7 +3232,7 @@
       },
       "table": {
         "student": "Etudiant",
-        "decision": "Decision",
+        "decision": "Décision",
         "source": "Classe d'origine",
         "outcome": "Action",
         "destination": "Destination",
@@ -3597,13 +3598,13 @@
           "cycleInfo": "Cycle: {{value}}"
         },
         "validation": {
-          "code": "Code is required"
+          "code": "Le code est obligatoire"
         }
       },
       "filters": {
         "allClasses": "All Classes",
         "allDelegations": "All Delegations",
-        "allExamTypes": "All Exam Types",
+        "allExamTypes": "Tous les types d'examen",
         "allPrograms": "All Programs",
         "allSemesters": "All Semesters",
         "allStatuses": "All Statuses",
@@ -3619,7 +3620,7 @@
         "teacher": "Teacher"
       },
       "noMatch": "No Match",
-      "noMatchHint": "No Match Hint",
+      "noMatchHint": "Essayez une autre recherche ou effacez les filtres.",
       "searchPlaceholder": "Search Placeholder",
       "summary": "Summary"
     },
@@ -3724,7 +3725,7 @@
         "saving": "Enregistrement...",
         "exportTemplate": "Exporter le modèle",
         "importGrades": "Importer les notes",
-        "lockRequiresApproval": "Lock Requires Approval"
+        "lockRequiresApproval": "L'examen doit être approuvé avant verrouillage"
       },
       "info": {
         "title": "Informations de notation",
@@ -3899,7 +3900,7 @@
         "name": "Le nom doit comporter au moins 2 caractères",
         "faculty": "Veuillez sélectionner une faculté",
         "cycle": "Veuillez sélectionner un cycle",
-        "code": "Code is required"
+        "code": "Le code est obligatoire"
       },
       "toast": {
         "createSuccess": "Programme créé avec succès",
@@ -4502,12 +4503,12 @@
       "actions": {
         "validate": "Valider et verrouiller",
         "bulkValidate": "Validation en masse",
-        "reject": "Reject"
+        "reject": "Rejeter"
       },
       "toast": {
         "validated": "Examen approuvé",
         "bulkValidated": "Examens validés avec succès",
-        "rejected": "Rejected"
+        "rejected": "Examen rejeté"
       },
       "notifications": "Notifications du workflow",
       "notificationsEmpty": "Aucune notification",
@@ -4531,9 +4532,9 @@
         "bulkMessage": "bulkMessage",
         "singleMessage": "singleMessage"
       },
-      "dateFrom": "Date From",
+      "dateFrom": "Soumis à partir du",
       "rejectDialog": {
-        "subtitle": "Subtitle",
+        "subtitle": "Indiquez le motif du rejet de « {{name}} ». L'enseignant le verra.",
         "title": "Title"
       }
     },
@@ -4592,17 +4593,17 @@
       "searchPlaceholder": "Rechercher un examen...",
       "allClasses": "Toutes les classes",
       "allYears": "Toutes les années",
-      "allTeachers": "All Teachers",
-      "dateFrom": "Date From",
-      "dateTo": "Date To",
-      "teacherFilter": "Teacher Filter"
+      "allTeachers": "Tous les enseignants",
+      "dateFrom": "Du",
+      "dateTo": "Au",
+      "teacherFilter": "Tous les enseignants"
     },
     "auditHistory": {
-      "by": "By",
-      "empty": "Empty",
-      "system": "System",
-      "title": "Title",
-      "toggle": "Toggle"
+      "by": "par",
+      "empty": "Aucun événement enregistré.",
+      "system": "Système",
+      "title": "Journal d'audit",
+      "toggle": "Journal d'audit"
     }
   },
   "student": {
@@ -4760,7 +4761,7 @@
         "excluded": "Exclu",
         "pending": "En cours"
       },
-      "eventCount": "Event Count"
+      "eventCount": "{{count}} événement(s)"
     },
     "enrollment": {
       "title": "Inscription",
@@ -5067,9 +5068,9 @@
         "student": "Étudiant",
         "status": "Statut"
       },
-      "forceMatch": "Force Match",
-      "forced": "Forced",
-      "xlsxLoaded": "Xlsx Loaded",
+      "forceMatch": "Forcer",
+      "forced": "Forcé",
+      "xlsxLoaded": "{{count}} lignes chargées depuis le fichier Excel",
       "notes": "Note de batch (optionnelle)",
       "notesPlaceholder": "Ex : virement du 15 juillet 2026"
     },
@@ -5208,8 +5209,8 @@
     "payment": {
       "methods": {
         "bank_transfer": "Bank transfer",
-        "cash": "Cash",
-        "check": "Check",
+        "cash": "Espèces",
+        "check": "Chèque",
         "mobile_money": "Mobile money"
       }
     }
@@ -5263,10 +5264,10 @@
     "noData": "Aucune séance de présence enregistrée pour ce cours.",
     "title": "Taux de présence",
     "exportFilename": "taux-presence.xlsx",
-    "export": "Export",
-    "rate": "Rate",
-    "student": "Student",
-    "subtitle": "Subtitle"
+    "export": "Exporter",
+    "rate": "Taux de présence",
+    "student": "Étudiant",
+    "subtitle": "Taux de présence par étudiant"
   },
   "timetableHub": {
     "title": "Emploi du temps & Présences",

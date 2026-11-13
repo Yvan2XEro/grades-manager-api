@@ -132,7 +132,7 @@
       "filters": {
         "allClasses": "All Classes",
         "allDelegations": "All Delegations",
-        "allExamTypes": "All Exam Types",
+        "allExamTypes": "All exam types",
         "allPrograms": "All Programs",
         "allSemesters": "All Semesters",
         "allStatuses": "All Statuses",
@@ -148,7 +148,7 @@
         "teacher": "Teacher"
       },
       "noMatch": "No Match",
-      "noMatchHint": "No Match Hint",
+      "noMatchHint": "Try another search or clear the filters.",
       "searchPlaceholder": "Search Placeholder",
       "summary": "Summary"
     },
@@ -355,7 +355,7 @@
         "saving": "Saving...",
         "exportTemplate": "Export Template",
         "importGrades": "Import Grades",
-        "lockRequiresApproval": "Lock Requires Approval"
+        "lockRequiresApproval": "The exam must be approved before locking"
       },
       "info": {
         "title": "Grading information",
@@ -1315,8 +1315,8 @@
       "noAccount": "Don't have an account?",
       "registerLink": "Create one",
       "notMember": "You are not a member of this organization. Contact your administrator.",
-      "rememberMe": "Remember Me",
-      "subtitle": "Subtitle"
+      "rememberMe": "Remember me for 30 days",
+      "subtitle": "Sign in to access your institutions."
     },
     "register": {
       "title": "Create your account",
@@ -1355,9 +1355,9 @@
       "error": "Unable to update the password",
       "backToLogin": "Return to sign in",
       "subtitle": "Choose a strong new password for your account.",
-      "signInNow": "Sign In Now",
-      "successMessage": "Success Message",
-      "successTitle": "Success Title"
+      "signInNow": "Sign in now",
+      "successMessage": "Redirecting to sign in in {{countdown}} seconds...",
+      "successTitle": "Password updated"
     },
     "logout": {
       "success": "Signed out successfully",
@@ -1373,10 +1373,10 @@
       "passwordsMismatch": "Passwords do not match"
     },
     "orgPicker": {
-      "back": "Back",
-      "noOrgs": "No Orgs",
-      "subtitle": "Subtitle",
-      "title": "Title"
+      "back": "Switch account",
+      "noOrgs": "No institution found for this account. Contact your administrator.",
+      "subtitle": "Select the institution you want to access.",
+      "title": "Choose your institution"
     }
   },
   "admin": {
@@ -1674,7 +1674,7 @@
       },
       "toast": {
         "flushed": "Pending notifications flushed",
-        "retried": "Retried"
+        "retried": "Notification requeued"
       },
       "flushConfirmDesc": "This will immediately attempt delivery of all pending notifications. Continue?"
     },
@@ -1730,13 +1730,13 @@
         "copied": "Copied to clipboard"
       },
       "activity": {
-        "title": "Activité — 30 derniers jours",
-        "empty": "Aucune activité enregistrée.",
+        "title": "Activity — last 30 days",
+        "empty": "No activity recorded.",
         "unknownKey": "Sans clé"
       },
       "callActivity": {
-        "title": "Appels API — 30 derniers jours",
-        "empty": "Aucun appel enregistré."
+        "title": "API calls — last 30 days",
+        "empty": "No calls recorded."
       }
     },
     "batchJobs": {
@@ -1790,6 +1790,7 @@
         "confirmRun": "Are you sure you want to execute this batch job? This operation may take several minutes."
       },
       "detail": {
+        "timedOut": "Job timed out",
         "title": "Job Details",
         "steps": "Steps",
         "logs": "Logs",
@@ -1804,16 +1805,16 @@
           "error": "Error"
         },
         "logStep": "Step",
-        "failed": "Failed",
-        "failureSummary": "Failure Summary",
-        "items": "Items",
-        "notFound": "Not Found",
-        "originalJob": "Original Job",
-        "processed": "Processed",
-        "rollbackJob": "Rollback Job",
-        "skipped": "Skipped",
-        "step": "Step",
-        "unknownError": "Unknown Error"
+        "failed": "Failed: {{count}}",
+        "failureSummary": "Job failed",
+        "items": "items",
+        "notFound": "Job not found",
+        "originalJob": "View original job",
+        "processed": "Processed: {{count}}",
+        "rollbackJob": "View rollback job",
+        "skipped": "Skipped: {{count}}",
+        "step": "Step {{current}}/{{total}}",
+        "unknownError": "Unknown error"
       },
       "toast": {
         "previewSuccess": "Preview generated successfully",
@@ -1829,10 +1830,10 @@
         "skipped": "Skipped"
       },
       "confirm": {
-        "cancelMessage": "Cancel Message",
-        "cancelTitle": "Cancel Title",
-        "rollbackMessage": "Rollback Message",
-        "rollbackTitle": "Rollback Title"
+        "cancelMessage": "Cancelling will stop the job immediately. Partially processed data will not be reverted.",
+        "cancelTitle": "Cancel job?",
+        "rollbackMessage": "A new rollback job will be created to undo the changes made by this job. This action cannot itself be undone.",
+        "rollbackTitle": "Roll back job?"
       }
     },
     "academicYears": {
@@ -1977,16 +1978,16 @@
         "submit": "Enroll students"
       },
       "export": {
-        "success": "Catalogue exporté avec succès",
+        "success": "Catalogue exported successfully",
         "error": "Error during export",
-        "title": "Exporter le catalogue UE / EC",
+        "title": "Export the teaching unit / course catalogue",
         "scopeLabel": "Périmètre",
         "scopeYear": "All classes for the filtered year",
-        "noYearWarning": "aucune année sélectionnée",
-        "scopeSelection": "Classes spécifiques",
+        "noYearWarning": "no year selected",
+        "scopeSelection": "Specific classes",
         "classesLabel": "Classes à inclure",
         "selectedCount": "classe(s) sélectionnée(s)",
-        "generate": "Générer le PDF"
+        "generate": "Generate PDF"
       }
     },
     "classes": {
@@ -2097,8 +2098,8 @@
         "submit": "Generate classes",
         "title": "Bulk class generation",
         "yearLabel": "Academic year",
-        "sourceYearLabel": "Cloner les affectations depuis (optionnel)",
-        "sourceYearHint": "Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes."
+        "sourceYearLabel": "Clone assignments from (optional)",
+        "sourceYearHint": "If set, this year's teacher assignments are copied to the new classes."
       }
     },
     "institution": {
@@ -2181,11 +2182,11 @@
         "signatoryName": "Signatory name",
         "signatoryTitle": "Signatory title",
         "city": "City (for document date line)",
-        "logoSvg": "Logo Svg",
-        "logoSvgHint": "Logo Svg Hint"
+        "logoSvg": "SVG logo (source code)",
+        "logoSvgHint": "If set, the SVG takes priority over the PNG/URL logo in exports."
       },
       "sections": {
-        "contact": "Contact",
+        "contact": "Contact & location",
         "contactHint": "Phone, email, fax and postal address displayed on official documents.",
         "media": "Media",
         "mediaHint": "Logo and cover image used in generated reports and dashboards.",
@@ -2355,20 +2356,20 @@
         "abbreviationLabel": "Abréviation",
         "domainFrLabel": "Domaine (FR)",
         "domainEnLabel": "Domain (EN)",
-        "specialiteFrLabel": "Spécialité (FR)",
+        "specialiteFrLabel": "Specialty (FR)",
         "specialiteEnLabel": "Specialization (EN)",
-        "diplomaTitleFrLabel": "Titre diplôme (FR)",
+        "diplomaTitleFrLabel": "Diploma title (FR)",
         "diplomaTitleEnLabel": "Diploma title (EN)",
-        "attestationValidityFrLabel": "Validité attestation (FR)",
+        "attestationValidityFrLabel": "Attestation validity (FR)",
         "attestationValidityEnLabel": "Attestation validity (EN)",
         "centerLabel": "Centre",
         "centerPlaceholder": "Aucun centre",
-        "centerNone": "Aucun (programme général)",
-        "isCenterProgramLabel": "Programme de centre",
-        "isCenterProgramHint": "Marquez ce programme comme rattaché à un centre.",
+        "centerNone": "None (general program)",
+        "isCenterProgramLabel": "Center program",
+        "isCenterProgramHint": "Mark this program as belonging to a center.",
         "exportTemplatesLabel": "Export templates",
-        "exportTemplatesHint": "Choisissez le modèle par défaut par type de document.",
-        "exportTemplatePlaceholder": "Aucun modèle",
+        "exportTemplatesHint": "Choose the default template for each document type.",
+        "exportTemplatePlaceholder": "No template",
         "exportTemplateNone": "Aucun"
       },
       "validation": {
@@ -2417,16 +2418,16 @@
         }
       },
       "duplicate": {
-        "button": "Button",
-        "cloneCurriculum": "Clone Curriculum",
-        "description": "Description",
-        "noCycles": "No Cycles",
-        "submit": "Submit",
-        "targetCycles": "Target Cycles",
-        "title": "Title",
+        "button": "Duplicate to cycle…",
+        "cloneCurriculum": "Also clone teaching units and courses",
+        "description": "{{count}} program(s) will be copied to each selected cycle. Code and name are prefixed with the cycle's.",
+        "noCycles": "No cycle available",
+        "submit": "Duplicate",
+        "targetCycles": "Target cycles",
+        "title": "Duplicate to another cycle",
         "toast": {
-          "error": "Error",
-          "success": "Success"
+          "error": "Duplication failed",
+          "success": "{{created}} program(s) created, {{skipped}} skipped"
         }
       }
     },
@@ -2912,8 +2913,8 @@
         "title": "Select exams to include",
         "emptyTitle": "No exams found",
         "emptyDescription": "There are no exams created for this class yet.",
-        "loadingDescription": "Loading Description",
-        "loadingTitle": "Loading Title"
+        "loadingDescription": "Fetching all exams and their courses for this class.",
+        "loadingTitle": "Loading assessments…"
       },
       "columns": {
         "lastName": "Last name",
@@ -2965,8 +2966,8 @@
         "ueGenerateError": "UE generation failed",
         "bulkEvaluationsError": "Bulk evaluations generation failed",
         "bulkUesError": "Bulk UE generation failed",
-        "ecGenerateError": "Ec Generate Error",
-        "ecPreviewError": "Ec Preview Error"
+        "ecGenerateError": "EC generation failed",
+        "ecPreviewError": "Could not generate EC preview"
       }
     },
     "students": {
@@ -3358,16 +3359,16 @@
         "withdrawn": "Withdrawn"
       },
       "bulkEnroll": {
-        "classesLabel": "Classes Label",
-        "description": "Description",
-        "noClasses": "No Classes",
+        "classesLabel": "Classes ({{n}} selected)",
+        "description": "Select one or more classes. Every student of each class will be enrolled in all of its courses (all semesters). To target a specific semester, use “Enroll entire class” class by class.",
+        "noClasses": "No class for this year.",
         "noSelection": "No Selection",
-        "openButton": "Open Button",
-        "partial": "Partial",
-        "requireYear": "Require Year",
-        "run": "Run",
-        "success": "Success",
-        "title": "Title"
+        "openButton": "Bulk enrollment",
+        "partial": "{{count}} enrollments created, {{err}} error(s).",
+        "requireYear": "Choose a year first",
+        "run": "Run enrollment",
+        "success": "{{count}} enrollments created across {{n}} class(es).",
+        "title": "Bulk enrollment"
       }
     },
     "teachingUnits": {
@@ -3810,7 +3811,7 @@
         "pending": "Pending"
       },
       "mention": {
-        "passable": "Passable",
+        "passable": "Pass",
         "assez_bien": "Fairly good",
         "bien": "Good",
         "tres_bien": "Very good",
@@ -3837,15 +3838,15 @@
         "quickStart": "Quick start",
         "quickStartHint": "Creates the deliberation, opens it and computes results in one step",
         "quickStartSubmit": "Create & compute",
-        "createDescription": "Configurez et lancez une nouvelle session de délibération",
+        "createDescription": "Configure and start a new deliberation session",
         "tabSingle": "Classe unique",
         "tabMulti": "Multi-classes",
-        "juryNumber": "Numéro de jury",
+        "juryNumber": "Jury number",
         "juryNumberPlaceholder": "ex: J2024-001",
         "classes": "Classes",
         "selectYearFirst": "Select an academic year first",
-        "noClasses": "Aucune classe pour cette année",
-        "batchCreating": "Création en cours…",
+        "noClasses": "No class for this year",
+        "batchCreating": "Creating…",
         "batchSubmit": "batchSubmit"
       },
       "detail": {
@@ -3924,8 +3925,8 @@
           "goToClasses": "goToClasses"
         },
         "targetClassHint": "targetClassHint",
-        "ctaDesc": "Cta Desc",
-        "ctaTitle": "Cta Title"
+        "ctaDesc": "Students with an 'Admitted' decision can be promoted to the next academic level.",
+        "ctaTitle": "Promote admitted students"
       },
       "ueDecision": {
         "ADM": "Acquired",
@@ -4086,9 +4087,9 @@
         "contact": "Contact"
       },
       "detail": {
-        "title": "Gestion des Centres",
-        "subtitle": "Configurez les centres de formation professionnelle",
-        "backToList": "Retour à la liste"
+        "title": "Center management",
+        "subtitle": "Configure vocational training centers",
+        "backToList": "Back to list"
       },
       "sections": {
         "identity": "Informations Générales",
@@ -4098,52 +4099,52 @@
         "contact": "Coordonnées"
       },
       "form": {
-        "shortName": "Nom du centre (court)",
+        "shortName": "Center name (short)",
         "city": "Localisation",
-        "name": "Nom complet (Français)",
-        "nameEn": "Nom complet (Anglais)",
+        "name": "Full name (French)",
+        "nameEn": "Full name (English)",
         "isActive": "Centre actif",
-        "logoUrl": "Logo du centre",
-        "logoUrlHint": "Affiché dans les en-têtes.",
+        "logoUrl": "Center logo",
+        "logoUrlHint": "Shown in document headers.",
         "adminInstanceLogoUrl": "Administrative instance logo (e.g. MINEFOP)",
         "adminInstanceLogoUrlHint": "Main logo of the supervising authority.",
-        "watermarkLogoUrl": "Logo de fond (watermark)",
-        "watermarkLogoUrlHint": "Logo affiché en filigrane sur les documents.",
+        "watermarkLogoUrl": "Background logo (watermark)",
+        "watermarkLogoUrlHint": "Logo shown as a watermark on documents.",
         "adminInstanceLogo": "Instance logo",
-        "showOnTranscripts": "Afficher le logo sur les relevés",
+        "showOnTranscripts": "Show the logo on transcripts",
         "showOnTranscriptsHint": "The logo will appear in the header of transcripts",
-        "showOnCertificates": "Afficher le logo sur les attestations",
+        "showOnCertificates": "Show the logo on attestations",
         "showOnCertificatesHint": "The logo will appear in the header of certificates",
         "authorizationOrderFr": "Authorization order (French)",
         "authorizationOrderEn": "Authorization order (English)",
-        "postalBox": "Boîte postale",
+        "postalBox": "P.O. box",
         "contactPhone": "Téléphone",
         "contactEmail": "Email",
         "country": "Pays",
         "addressFr": "Adresse (FR)",
         "addressEn": "Adresse (EN)",
-        "adminInstanceLogoSvg": "Admin Instance Logo Svg",
-        "logoSvg": "Logo Svg",
-        "watermarkLogoSvg": "Watermark Logo Svg"
+        "adminInstanceLogoSvg": "…or SVG code (takes priority)",
+        "logoSvg": "…or SVG code (takes priority)",
+        "watermarkLogoSvg": "…or SVG code (takes priority)"
       },
       "actions": {
-        "addInstance": "Ajouter une instance",
+        "addInstance": "Add an instance",
         "addLegalText": "Ajouter",
-        "add": "Ajouter un centre"
+        "add": "Add a center"
       },
       "adminInstances": {
-        "empty": "Aucune instance administrative — cliquez sur Ajouter pour en créer.",
+        "empty": "No administrative instance — click Add to create one.",
         "itemTitle": "itemTitle"
       },
       "legalTexts": {
-        "title": "Textes Légaux (Vu les lois...)",
-        "empty": "Aucun texte légal",
+        "title": "Legal texts (Having regard to…)",
+        "empty": "No legal text",
         "itemTitle": "itemTitle"
       },
       "toast": {
         "deleteSuccess": "Centre supprimé",
         "createSuccess": "Centre créé",
-        "updateSuccess": "Centre mis à jour"
+        "updateSuccess": "Center updated"
       },
       "title": "Nos centres",
       "subtitle": "Configure your institution's professional training centers.",
@@ -4157,11 +4158,11 @@
       },
       "empty": {
         "title": "Aucun centre",
-        "description": "Créez votre premier centre pour organiser les programmes par campus."
+        "description": "Create your first center to organize programs by campus."
       },
       "delete": {
-        "title": "Supprimer le centre",
-        "message": "Êtes-vous sûr de vouloir supprimer ce centre ? Cette action est irréversible."
+        "title": "Delete center",
+        "message": "Are you sure you want to delete this center? This action cannot be undone."
       }
     },
     "graduation": {
@@ -4517,7 +4518,7 @@
       "toast": {
         "validated": "Exam approved",
         "bulkValidated": "Exams validated successfully",
-        "rejected": "Rejected"
+        "rejected": "Exam rejected"
       },
       "notificationsEmpty": "No notifications",
       "windows": "Enrollment windows",
@@ -4526,9 +4527,9 @@
         "bulkMessage": "bulkMessage",
         "singleMessage": "singleMessage"
       },
-      "dateFrom": "Date From",
+      "dateFrom": "Submitted from",
       "rejectDialog": {
-        "subtitle": "Subtitle",
+        "subtitle": "Provide a reason for rejecting \"{{name}}\". The teacher will see it.",
         "title": "Title"
       }
     },
@@ -4587,17 +4588,17 @@
       "searchPlaceholder": "Search exams...",
       "allClasses": "All classes",
       "allYears": "All years",
-      "allTeachers": "All Teachers",
-      "dateFrom": "Date From",
-      "dateTo": "Date To",
-      "teacherFilter": "Teacher Filter"
+      "allTeachers": "All teachers",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "teacherFilter": "All teachers"
     },
     "auditHistory": {
-      "by": "By",
-      "empty": "Empty",
+      "by": "by",
+      "empty": "No events recorded.",
       "system": "System",
-      "title": "Title",
-      "toggle": "Toggle"
+      "title": "Audit trail",
+      "toggle": "Audit trail"
     }
   },
   "student": {
@@ -4755,7 +4756,7 @@
         "excluded": "Excluded",
         "pending": "Pending"
       },
-      "eventCount": "Event Count"
+      "eventCount": "{{count}} event(s)"
     },
     "enrollment": {
       "title": "Enrollment",
@@ -5062,9 +5063,9 @@
         "student": "Student",
         "status": "Status"
       },
-      "forceMatch": "Force Match",
+      "forceMatch": "Force",
       "forced": "Forced",
-      "xlsxLoaded": "Xlsx Loaded",
+      "xlsxLoaded": "{{count}} rows loaded from the Excel file",
       "notes": "Batch note (optional)",
       "notesPlaceholder": "E.g. bank transfer of July 15 2026"
     },
@@ -5259,9 +5260,9 @@
     "title": "Attendance rates",
     "exportFilename": "attendance-rates.xlsx",
     "export": "Export",
-    "rate": "Rate",
+    "rate": "Attendance rate",
     "student": "Student",
-    "subtitle": "Subtitle"
+    "subtitle": "Attendance rate per student"
   },
   "timetableHub": {
     "title": "Timetable & Attendance",

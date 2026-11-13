@@ -269,10 +269,13 @@ export default function BatchJobDetail() {
 					<AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
 					<div className="space-y-1">
 						<p className="font-medium text-red-800 text-sm">
-							{t("admin.batchJobs.detail.failureSummary", {
-								defaultValue:
-									job.status === "stale" ? "Job timed out" : "Job failed",
-							})}
+							{job.status === "stale"
+								? t("admin.batchJobs.detail.timedOut", {
+										defaultValue: "Job timed out",
+									})
+								: t("admin.batchJobs.detail.failureSummary", {
+										defaultValue: "Job failed",
+									})}
 						</p>
 						{job.error && <p className="text-red-700 text-sm">{job.error}</p>}
 						{job.steps?.some((s) => s.status === "failed") && (

@@ -450,7 +450,7 @@ export const DuplicateProgramsDialog = createCallable<
 			toast.success(
 				t("admin.programs.duplicate.toast.success", {
 					defaultValue:
-						"{{created}} programme(s) créé(s){{skipped, plural, =0 {} other { ({{skipped}} ignoré(s))}}}",
+						"{{created}} programme(s) créé(s), {{skipped}} ignoré(s)",
 					created: result.createdCount,
 					skipped: result.skippedCount,
 				}),
