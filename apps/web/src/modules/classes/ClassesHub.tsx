@@ -16,7 +16,7 @@ export default function ClassesHub() {
 				title={t("classesHub.title")}
 				description={t("classesHub.description")}
 			/>
-			<HubNav tabs={tabs} basePath="/admin/classes" />
+			<HubNav tabs={tabs} basePath="/classes" />
 		</div>
 	);
 }

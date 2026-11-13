@@ -16,7 +16,8 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Should redirect to admin dashboard
-			cy.location("pathname", { timeout: 10000 }).should("include", "/admin");
+			// Every role lands on `/`, which renders its own dashboard
+			cy.location("pathname", { timeout: 10000 }).should("eq", "/");
 			cy.contains(/dashboard|accueil/i).should("exist");
 		});
 
@@ -66,7 +67,7 @@ describe("Authentication - Login", () => {
 		});
 
 		it("redirects to requested page after login", () => {
-			const targetRoute = "/admin/students";
+			const targetRoute = "/users/people";
 			const loginUrl = `/auth/login?return=${encodeURIComponent(targetRoute)}`;
 
 			cy.visit(loginUrl);
@@ -95,18 +96,19 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Should redirect to teacher dashboard
-			cy.location("pathname", { timeout: 10000 }).should("include", "/teacher");
+			// Every role lands on `/`, which renders its own dashboard
+			cy.location("pathname", { timeout: 10000 }).should("eq", "/");
 		});
 
 		it("has access only to authorized features", () => {
 			cy.loginAs("teacher");
 
-			// Teacher should be able to access grade entry
-			cy.visit("/teacher/grades");
-			cy.location("pathname").should("eq", "/teacher/grades");
+			// Teacher's course list (grade entry) is their home page
+			cy.visit("/grades");
+			cy.location("pathname").should("eq", "/");
 
 			// Teacher should NOT be able to access admin pages
-			cy.visit("/admin/students", { failOnStatusCode: false });
+			cy.visit("/users/people", { failOnStatusCode: false });
 
 			// Check if access is restricted
 			cy.wait(2000);
@@ -115,7 +117,7 @@ describe("Authentication - Login", () => {
 				const text = $body.text();
 
 				// Check if redirected away from admin page
-				const isRedirected = currentPath !== "/admin/students";
+				const isRedirected = currentPath !== "/users/people";
 
 				// Or check if there's an unauthorized message
 				const hasUnauthorizedMessage =
@@ -160,7 +162,8 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Should redirect to student dashboard
-			cy.location("pathname", { timeout: 10000 }).should("include", "/student");
+			// Every role lands on `/`, which renders its own dashboard
+			cy.location("pathname", { timeout: 10000 }).should("eq", "/");
 		});
 
 		it("cannot access admin or teacher pages", () => {
@@ -180,12 +183,12 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Try to access admin page
-			cy.visit("/admin/students", { failOnStatusCode: false });
+			cy.visit("/users/people", { failOnStatusCode: false });
 			cy.wait(2000);
 			cy.get("body").then(($body) => {
 				const currentPath = window.location.pathname;
 				const text = $body.text();
-				const isRedirected = currentPath !== "/admin/students";
+				const isRedirected = currentPath !== "/users/people";
 				const hasUnauthorizedMessage =
 					text.match(/unauthorized|forbidden|access.*denied|non.*autorisé/i) !==
 					null;
@@ -198,12 +201,12 @@ describe("Authentication - Login", () => {
 			});
 
 			// Try to access teacher page
-			cy.visit("/teacher/grades", { failOnStatusCode: false });
+			cy.visit("/grades", { failOnStatusCode: false });
 			cy.wait(2000);
 			cy.get("body").then(($body) => {
 				const currentPath = window.location.pathname;
 				const text = $body.text();
-				const isRedirected = currentPath !== "/teacher/grades";
+				const isRedirected = currentPath !== "/grades";
 				const hasUnauthorizedMessage =
 					text.match(/unauthorized|forbidden|access.*denied|non.*autorisé/i) !==
 					null;

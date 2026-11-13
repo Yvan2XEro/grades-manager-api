@@ -91,7 +91,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "high",
 		category: "academic",
 		kind: "info",
-		toFn: () => "/student",
+		toFn: () => "/",
 	},
 	"grade.approved": {
 		icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
@@ -100,7 +100,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "medium",
 		category: "academic",
 		kind: "info",
-		toFn: () => "/student",
+		toFn: () => "/",
 	},
 	"grade.rejected": {
 		icon: <XCircle className="h-4 w-4 text-destructive" />,
@@ -109,7 +109,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "high",
 		category: "academic",
 		kind: "info",
-		toFn: () => "/student",
+		toFn: () => "/",
 	},
 	"fee.payment_confirmed": {
 		icon: <CreditCard className="h-4 w-4 text-emerald-600" />,
@@ -121,7 +121,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "low",
 		category: "financial",
 		kind: "info",
-		toFn: () => "/student/fees",
+		toFn: () => "/fees",
 	},
 	"payment.pending": {
 		icon: <CreditCard className="h-4 w-4 text-amber-500" />,
@@ -129,7 +129,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "high",
 		category: "financial",
 		kind: "action",
-		toFn: () => "/student/fees",
+		toFn: () => "/fees",
 	},
 	"enrollment.window_open": {
 		icon: <CalendarCheck className="h-4 w-4 text-emerald-600" />,
@@ -137,7 +137,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "high",
 		category: "enrollment",
 		kind: "action",
-		toFn: () => "/student",
+		toFn: () => "/",
 	},
 	"document.available": {
 		icon: <FileText className="h-4 w-4 text-sky-600" />,
@@ -146,7 +146,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "low",
 		category: "documents",
 		kind: "info",
-		toFn: () => "/student/documents",
+		toFn: () => "/documents",
 	},
 	"batch_job.completed": {
 		icon: <ServerCog className="h-4 w-4 text-emerald-600" />,
@@ -639,7 +639,7 @@ function DeliberationDecisionCard({
 			{decision.closedAt && (
 				<div className="border-t px-4 py-3">
 					<Button asChild size="sm" variant="outline">
-						<Link to="/student/documents">
+						<Link to="/documents">
 							<FileText className="mr-2 h-4 w-4" />
 							{t("student.performance.downloadDocuments")}
 						</Link>
@@ -725,7 +725,7 @@ function EnrollmentWindowBanner() {
 				</p>
 			</div>
 			<Button variant="outline" size="sm" className="shrink-0" asChild>
-				<Link to="/student/enrollments">
+				<Link to="/enrollments">
 					{t("student.enrollment.enroll")}
 					<ChevronRight className="ml-1 h-3 w-3" />
 				</Link>
@@ -804,7 +804,7 @@ function FeeClearanceWidget({ assignments }: { assignments: FeeAssignment[] }) {
 				</p>
 			</div>
 			<Button variant="ghost" size="sm" asChild>
-				<Link to="/student/fees">
+				<Link to="/fees">
 					<CreditCard className="mr-1 h-4 w-4" />
 					{t("student.dashboard.viewFees")}
 					<ChevronRight className="ml-1 h-3 w-3" />
@@ -857,7 +857,7 @@ function UpcomingExamsStrip({ exams }: { exams: UpcomingExam[] }) {
 					</Badge>
 				</div>
 				<Button variant="ghost" size="sm" asChild>
-					<Link to="/student/exams">
+					<Link to="/exams">
 						{t("student.dashboard.viewExams")}
 						<ChevronRight className="ml-1 h-3 w-3" />
 					</Link>
@@ -1353,9 +1353,7 @@ const PerformanceDashboard = () => {
 								{t("student.dashboard.pendingFees")}
 							</div>
 							<Button variant="outline" size="sm" className="shrink-0" asChild>
-								<Link to="/student/fees">
-									{t("student.dashboard.viewFees")}
-								</Link>
+								<Link to="/fees">{t("student.dashboard.viewFees")}</Link>
 							</Button>
 						</motion.div>
 					)}

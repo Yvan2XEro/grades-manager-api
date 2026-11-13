@@ -129,7 +129,7 @@ const RegistrationNumberFormats = () => {
 						})}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/registration-numbers/new")}>
+				<Button onClick={() => navigate("/registration-numbers/new")}>
 					<PlusCircle className="mr-2 h-4 w-4" />
 					{t("admin.registrationNumbers.actions.new", {
 						defaultValue: "New format",
@@ -238,9 +238,7 @@ const RegistrationNumberFormats = () => {
 												<>
 													<ContextMenuItem
 														onSelect={() =>
-															navigate(
-																`/admin/registration-numbers/${format.id}`,
-															)
+															navigate(`/registration-numbers/${format.id}`)
 														}
 													>
 														<span>
@@ -309,9 +307,7 @@ const RegistrationNumberFormats = () => {
 														size="sm"
 														variant="outline"
 														onClick={() =>
-															navigate(
-																`/admin/registration-numbers/${format.id}`,
-															)
+															navigate(`/registration-numbers/${format.id}`)
 														}
 													>
 														{t("admin.registrationNumbers.list.edit", {

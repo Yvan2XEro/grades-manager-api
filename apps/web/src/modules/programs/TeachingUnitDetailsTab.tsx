@@ -127,7 +127,7 @@ export default function TeachingUnitDetailsTab() {
 				}),
 			);
 			invalidateLists();
-			navigate(`/admin/programs/teaching-units/${unit.id}/details`);
+			navigate(`/programs/teaching-units/${unit.id}/details`);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -325,7 +325,7 @@ export default function TeachingUnitDetailsTab() {
 							<Button
 								type="button"
 								variant="outline"
-								onClick={() => navigate("/admin/programs/teaching-units")}
+								onClick={() => navigate("/programs/teaching-units")}
 							>
 								{t("common.actions.cancel")}
 							</Button>

@@ -216,7 +216,7 @@ export default function FeeAssignmentDetail() {
 							size="sm"
 							onClick={() =>
 								navigate(
-									`/admin/fee-clearance/students/${assignment.student!.id}/history`,
+									`/fee-clearance/students/${assignment.student!.id}/history`,
 								)
 							}
 						>

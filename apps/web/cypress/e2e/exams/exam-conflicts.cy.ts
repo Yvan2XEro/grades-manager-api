@@ -5,7 +5,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 
 	describe("Detecting Date Conflicts", () => {
 		it("detects when two exams are scheduled on the same date for same class", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create first exam
 			cy.findByRole("button", {
@@ -75,7 +75,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 		});
 
 		it("shows conflict alert message", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create exam
 			cy.findByRole("button", {
@@ -146,7 +146,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 		});
 
 		it("allows scheduling exams on same date for different classes", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create exam for first class/course
 			cy.findByRole("button", {
@@ -209,7 +209,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 
 	describe("Conflict Resolution", () => {
 		it("provides option to override conflict warning", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create first exam
 			cy.findByRole("button", {
@@ -288,7 +288,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 		});
 
 		it("allows changing date to resolve conflict", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create first exam
 			cy.findByRole("button", {
@@ -350,7 +350,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 		});
 
 		it("suggests alternative dates (if feature exists)", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create exam
 			cy.findByRole("button", {
@@ -423,7 +423,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 
 	describe("Conflict Prevention", () => {
 		it("shows existing exams when selecting date", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create first exam
 			cy.findByRole("button", {
@@ -470,7 +470,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 		});
 
 		it("highlights conflicting dates in date picker (if feature exists)", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create exam
 			cy.findByRole("button", {
@@ -530,7 +530,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 
 	describe("Viewing Conflicts", () => {
 		it("displays conflict summary on exam list", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create multiple exams on same date
 			for (let i = 0; i < 2; i++) {

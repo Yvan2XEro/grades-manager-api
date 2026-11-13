@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
+import { useRoleGroup } from "@/components/navigation/RoleView";
 import { cn } from "@/lib/utils";
 import { getHelpSections } from "./help-content";
 import { ADMIN_WORKFLOW, getCurrentStepIndex } from "./workflow-steps";
@@ -19,10 +20,11 @@ export function HelpWidget() {
 	const [expanded, setExpanded] = useState<string | null>(null);
 	const [workflowExpanded, setWorkflowExpanded] = useState(false);
 	const location = useLocation();
+	const roleGroup = useRoleGroup();
 	const { i18n, t } = useTranslation();
 
 	const lang = (i18n.language?.startsWith("fr") ? "fr" : "en") as "en" | "fr";
-	const sections = getHelpSections(location.pathname, lang);
+	const sections = getHelpSections(location.pathname, lang, roleGroup);
 
 	const currentStepIndex = getCurrentStepIndex(location.pathname);
 	const isInWorkflow = currentStepIndex !== -1;

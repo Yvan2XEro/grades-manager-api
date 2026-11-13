@@ -46,30 +46,28 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 		icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />,
 		labelKey: "notifications.types.grade_approved",
 		subtitleFn: (p) => String(p.examName ?? ""),
-		toFn: (p) =>
-			p.classCourseId ? `/teacher/grades/${p.classCourseId}` : undefined,
+		toFn: (p) => (p.classCourseId ? `/grades/${p.classCourseId}` : undefined),
 	},
 	"grade.rejected": {
 		icon: <XCircle className="h-3.5 w-3.5 text-destructive" />,
 		labelKey: "notifications.types.grade_rejected",
 		subtitleFn: (p) => (p.reason ? String(p.reason) : String(p.examName ?? "")),
-		toFn: (p) =>
-			p.classCourseId ? `/teacher/grades/${p.classCourseId}` : undefined,
+		toFn: (p) => (p.classCourseId ? `/grades/${p.classCourseId}` : undefined),
 	},
 	"deliberation.published": {
 		icon: <GraduationCap className="h-3.5 w-3.5 text-violet-600" />,
 		labelKey: "notifications.types.deliberation_published",
-		toFn: () => "/student/performance",
+		toFn: () => "/performance",
 	},
 	"payment.pending": {
 		icon: <CreditCard className="h-3.5 w-3.5 text-amber-500" />,
 		labelKey: "notifications.types.payment_pending",
-		toFn: () => "/student/fees",
+		toFn: () => "/fees",
 	},
 	"enrollment.window_open": {
 		icon: <GraduationCap className="h-3.5 w-3.5 text-emerald-600" />,
 		labelKey: "notifications.types.enrollment_window_open",
-		toFn: () => "/student",
+		toFn: () => "/",
 	},
 	"batch_job.completed": {
 		icon: <ServerCog className="h-3.5 w-3.5 text-emerald-600" />,
@@ -85,7 +83,7 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 				itemsProcessed: p.itemsProcessed ?? 0,
 			});
 		},
-		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
+		toFn: (p) => (p.jobId ? `/batch-jobs/${p.jobId}` : undefined),
 	},
 	"batch_job.failed": {
 		icon: <ServerCog className="h-3.5 w-3.5 text-destructive" />,
@@ -101,13 +99,13 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 				error: p.error ? String(p.error) : "",
 			});
 		},
-		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
+		toFn: (p) => (p.jobId ? `/batch-jobs/${p.jobId}` : undefined),
 	},
 	"document.available": {
 		icon: <FileText className="h-3.5 w-3.5 text-sky-600" />,
 		labelKey: "notifications.types.document_available",
 		subtitleFn: (p) => String(p.documentKind ?? ""),
-		toFn: () => "/student/documents",
+		toFn: () => "/documents",
 	},
 };
 

@@ -5,7 +5,7 @@ describe("Exam Management - Manual Creation", () => {
 
 	describe("Creating an Exam", () => {
 		it("successfully creates an exam with complete information", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Click create/add exam button
 			cy.findByRole("button", {
@@ -45,7 +45,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("displays created exam in the list", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -81,7 +81,7 @@ describe("Exam Management - Manual Creation", () => {
 
 	describe("Exam Form Validation", () => {
 		it("requires class course selection", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -97,7 +97,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("requires exam type selection", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -121,7 +121,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("requires date", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -149,7 +149,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("requires coefficient", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -179,7 +179,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("validates coefficient is positive", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -214,7 +214,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("validates date format", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -248,7 +248,7 @@ describe("Exam Management - Manual Creation", () => {
 
 	describe("Exam Properties", () => {
 		it("allows setting exam description/notes (if available)", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -292,7 +292,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("displays exam type in the exam list", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -336,7 +336,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("displays coefficient in the exam list", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -372,7 +372,7 @@ describe("Exam Management - Manual Creation", () => {
 
 	describe("Cancel Exam Creation", () => {
 		it("allows canceling exam creation", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -395,7 +395,7 @@ describe("Exam Management - Manual Creation", () => {
 		});
 
 		it("discards data when canceling", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			cy.findByRole("button", {
 				name: /add.*exam|create.*exam|new.*exam|ajouter.*examen|nouvel.*examen/i,
@@ -425,7 +425,7 @@ describe("Exam Management - Manual Creation", () => {
 
 	describe("Multiple Exam Creation", () => {
 		it("allows creating multiple exams for the same course", () => {
-			cy.loginAs("administrator", { route: "/admin/exams" });
+			cy.loginAs("administrator", { route: "/exams" });
 
 			// Create first exam
 			cy.findByRole("button", {

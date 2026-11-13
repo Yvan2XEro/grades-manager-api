@@ -168,7 +168,7 @@ export default function ProgramManagement() {
 
 	const startCreate = async () => {
 		const program = await ProgramFormDialog.call({});
-		if (program?.id) navigate(`/admin/programs/${program.id}/details`);
+		if (program?.id) navigate(`/programs/${program.id}/details`);
 	};
 
 	const startDuplicate = async () => {
@@ -179,7 +179,7 @@ export default function ProgramManagement() {
 	};
 
 	const openDetail = (program: Program) => {
-		navigate(`/admin/programs/${program.id}/details`);
+		navigate(`/programs/${program.id}/details`);
 	};
 
 	const confirmDelete = (id: string) =>

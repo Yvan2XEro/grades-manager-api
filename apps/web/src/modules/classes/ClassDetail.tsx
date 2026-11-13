@@ -46,7 +46,7 @@ export default function ClassDetail() {
 			<div className="space-y-6">
 				<div className="flex items-start gap-4">
 					<Button variant="ghost" size="icon" asChild>
-						<Link to="/admin/classes/classes">
+						<Link to="/classes/classes">
 							<ArrowLeft className="h-4 w-4" />
 						</Link>
 					</Button>
@@ -63,7 +63,7 @@ export default function ClassDetail() {
 						</div>
 					</div>
 				</div>
-				<HubNav tabs={TABS} basePath={`/admin/classes/${classId}`} />
+				<HubNav tabs={TABS} basePath={`/classes/${classId}`} />
 			</div>
 		</ClassContext.Provider>
 	);

@@ -124,7 +124,7 @@ export default function AcademicYearTransitionsPage() {
 		onSuccess: async (transition) => {
 			toast.success(t("admin.academicYearTransitions.toast.created"));
 			await invalidateTransitions();
-			void navigate(`/admin/promotion/${transition.id}`);
+			void navigate(`/promotion/${transition.id}`);
 		},
 		onError: (error) => toast.error(error.message),
 	});
@@ -355,7 +355,7 @@ export default function AcademicYearTransitionsPage() {
 											type="button"
 											className="font-medium underline underline-offset-2 hover:no-underline"
 											onClick={() =>
-												void navigate(`/admin/promotion/${duplicatePlan.id}`)
+												void navigate(`/promotion/${duplicatePlan.id}`)
 											}
 										>
 											{t("admin.academicYearTransitions.duplicateWarningLink")}
@@ -390,9 +390,7 @@ export default function AcademicYearTransitionsPage() {
 								<button
 									key={transition.id}
 									type="button"
-									onClick={() =>
-										void navigate(`/admin/promotion/${transition.id}`)
-									}
+									onClick={() => void navigate(`/promotion/${transition.id}`)}
 									className="w-full rounded-md border p-3 text-left transition hover:bg-muted/60"
 								>
 									<div className="flex items-center justify-between gap-2">

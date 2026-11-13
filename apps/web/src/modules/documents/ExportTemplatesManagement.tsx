@@ -337,7 +337,7 @@ export default function ExportTemplatesManagement() {
 						{seedSystemMutation.isPending && <Spinner className="mr-2" />}
 						Initialiser modèles officiels
 					</Button>
-					<Button onClick={() => navigate("/admin/export-templates/new")}>
+					<Button onClick={() => navigate("/export-templates/new")}>
 						<Plus className="mr-2 h-4 w-4" />
 						{t("admin.exportTemplates.actions.add")}
 					</Button>
@@ -437,7 +437,7 @@ export default function ExportTemplatesManagement() {
 											<>
 												<ContextMenuItem
 													onSelect={() =>
-														navigate(`/admin/export-templates/${template.id}`)
+														navigate(`/export-templates/${template.id}`)
 													}
 												>
 													<span>
@@ -519,7 +519,7 @@ export default function ExportTemplatesManagement() {
 													variant="ghost"
 													size="sm"
 													onClick={() =>
-														navigate(`/admin/export-templates/${template.id}`)
+														navigate(`/export-templates/${template.id}`)
 													}
 													title={t("admin.exportTemplates.actions.edit")}
 												>
@@ -561,7 +561,7 @@ export default function ExportTemplatesManagement() {
 									{t("admin.exportTemplates.empty.description")}
 								</p>
 								<Button
-									onClick={() => navigate("/admin/export-templates/new")}
+									onClick={() => navigate("/export-templates/new")}
 									className="mt-4"
 								>
 									<Plus className="mr-2 h-4 w-4" />

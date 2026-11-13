@@ -5,7 +5,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Search by Name", () => {
 		it("finds students by first name", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Wait for students to load
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
@@ -32,7 +32,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("finds students by last name", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -48,7 +48,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("performs case-insensitive search", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -64,7 +64,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("handles partial name matches", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -80,7 +80,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("shows no results message when no matches found", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -98,7 +98,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("clears search results when search is cleared", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -127,7 +127,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Search by Registration Number", () => {
 		it("finds student by exact registration number", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -155,7 +155,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("finds student by partial registration number", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -173,7 +173,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Filter by Class", () => {
 		it("filters students by selected class", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -194,7 +194,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("shows all students when 'All Classes' is selected", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -230,7 +230,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Combined Search and Filter", () => {
 		it("applies both search and class filter together", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -252,7 +252,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("maintains filter when performing search", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -281,7 +281,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Search Performance", () => {
 		it("performs search quickly with many results", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -306,7 +306,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Search Results Display", () => {
 		it("displays relevant student information in search results", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -322,7 +322,7 @@ describe("Student Management - Search and Filtering", () => {
 		});
 
 		it("shows search result count", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -345,7 +345,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Clear Filters", () => {
 		it("provides clear all filters button", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
@@ -385,7 +385,7 @@ describe("Student Management - Search and Filtering", () => {
 
 	describe("Real-time Search", () => {
 		it("updates results as user types", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 

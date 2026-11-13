@@ -46,7 +46,7 @@ export default function ProgramDetail() {
 			<div className="space-y-6">
 				<div className="flex items-start gap-4">
 					<Button variant="ghost" size="icon" asChild>
-						<Link to="/admin/programs/programs">
+						<Link to="/programs/programs">
 							<ArrowLeft className="h-4 w-4" />
 						</Link>
 					</Button>
@@ -63,7 +63,7 @@ export default function ProgramDetail() {
 						</div>
 					</div>
 				</div>
-				<HubNav tabs={TABS} basePath={`/admin/programs/${programId}`} />
+				<HubNav tabs={TABS} basePath={`/programs/${programId}`} />
 			</div>
 		</ProgramContext.Provider>
 	);

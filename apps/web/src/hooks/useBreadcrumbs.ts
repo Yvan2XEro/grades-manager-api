@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
+import { useRoleGroup } from "@/components/navigation/RoleView";
 
 interface BreadcrumbItem {
 	label: string;
@@ -10,12 +11,6 @@ const UUID_REGEX =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const segmentLabels: Record<string, string> = {
-	// Role roots
-	admin: "navigation.breadcrumbs.admin",
-	teacher: "navigation.breadcrumbs.teacher",
-	dean: "navigation.breadcrumbs.dean",
-	student: "navigation.breadcrumbs.student",
-
 	// Top-level hubs
 	profiles: "navigation.breadcrumbs.profiles",
 	"academic-years": "navigation.sidebar.admin.academicYears",
@@ -116,9 +111,14 @@ const segmentLabels: Record<string, string> = {
 export function useBreadcrumbs(): BreadcrumbItem[] {
 	const { t } = useTranslation();
 	const { pathname } = useLocation();
+	const roleGroup = useRoleGroup();
 
 	const segments = pathname.split("/").filter(Boolean);
-	const crumbs: BreadcrumbItem[] = [];
+	if (segments.length === 0) return [];
+	// The home page (`/`) is the dashboard of the user's role group
+	const crumbs: BreadcrumbItem[] = [
+		{ label: t(`navigation.breadcrumbs.${roleGroup ?? "admin"}`), href: "/" },
+	];
 
 	// Find the last non-UUID segment index for correct "current page" detection
 	let lastNonUuidIndex = segments.length - 1;
@@ -137,10 +137,13 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 		const labelKey = segmentLabels[segment];
 		const isLast = i === lastNonUuidIndex;
 
-		crumbs.push({
-			label: labelKey ? t(labelKey) : segment.replace(/-/g, " "),
+		const crumb: BreadcrumbItem = {
+			label: labelKey ? String(t(labelKey)) : segment.replace(/-/g, " "),
 			href: isLast ? undefined : currentPath,
-		});
+		};
+		// A hub and its default tab often share a label (Classes › Classes)
+		if (crumbs.at(-1)?.label === crumb.label) crumbs[crumbs.length - 1] = crumb;
+		else crumbs.push(crumb);
 	}
 
 	return crumbs;

@@ -347,7 +347,7 @@ function ExamApprovalCard({
 
 // ─── DeanDashboard ────────────────────────────────────────────────────────────
 
-export default function DeanDashboard() {
+export default function ExamApprovals() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

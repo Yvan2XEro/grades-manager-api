@@ -100,7 +100,7 @@ export function RulesListPage() {
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={() => navigate("/admin/promotion-rules")}
+					onClick={() => navigate("/promotion-rules")}
 					className="gap-2"
 				>
 					<ArrowLeft className="h-4 w-4" />

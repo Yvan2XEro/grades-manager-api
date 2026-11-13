@@ -16,7 +16,7 @@ export default function InstitutionHub() {
 				title={t("institutionHub.title")}
 				description={t("institutionHub.description")}
 			/>
-			<HubNav tabs={tabs} basePath="/admin/institution" />
+			<HubNav tabs={tabs} basePath="/institution" />
 		</div>
 	);
 }

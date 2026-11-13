@@ -229,7 +229,7 @@ export default function DeliberationDetail() {
 	const isClosed = status === "closed";
 	const isSigned = status === "signed";
 
-	const basePath = `/admin/academic-results/deliberations/${deliberationId}`;
+	const basePath = `/academic-results/deliberations/${deliberationId}`;
 
 	const overrideDecision = (student: OverrideState) =>
 		OverrideDecisionDialog.call({
@@ -271,7 +271,7 @@ export default function DeliberationDetail() {
 						<Button
 							variant="ghost"
 							size="icon"
-							onClick={() => navigate("/admin/academic-results/deliberations")}
+							onClick={() => navigate("/academic-results/deliberations")}
 						>
 							<ArrowLeft className="h-5 w-5" />
 						</Button>

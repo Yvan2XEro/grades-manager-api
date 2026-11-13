@@ -47,7 +47,7 @@ export default function ProfileHub() {
 		profile.availableTabs.includes(tab.path),
 	);
 
-	const basePath = `/admin/profiles/${profileId}`;
+	const basePath = `/profiles/${profileId}`;
 	const isStudent = !!profile.student;
 	const fullName = `${profile.firstName} ${profile.lastName}`;
 
@@ -58,7 +58,7 @@ export default function ProfileHub() {
 			<div className="space-y-6">
 				<div className="flex items-start gap-4">
 					<Button variant="ghost" size="icon" asChild>
-						<Link to="/admin/users/accounts">
+						<Link to="/users/accounts">
 							<ArrowLeft className="h-4 w-4" />
 						</Link>
 					</Button>

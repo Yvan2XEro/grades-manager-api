@@ -8,52 +8,52 @@ export interface WorkflowStep {
 export const ADMIN_WORKFLOW: WorkflowStep[] = [
 	{
 		key: "institution",
-		route: "/admin/settings",
+		route: "/settings",
 		label: { en: "Institution settings", fr: "Paramètres institution" },
 	},
 	{
 		key: "academic-years",
-		route: "/admin/academic-years",
+		route: "/academic-years",
 		label: { en: "Academic years", fr: "Années académiques" },
 	},
 	{
 		key: "faculties",
-		route: "/admin/faculties",
+		route: "/faculties",
 		label: { en: "Faculties", fr: "Facultés" },
 	},
 	{
 		key: "study-cycles",
-		route: "/admin/study-cycles",
+		route: "/study-cycles",
 		label: { en: "Study cycles", fr: "Cycles d'études" },
 	},
 	{
 		key: "classes",
-		route: "/admin/classes",
+		route: "/classes",
 		label: { en: "Classes", fr: "Classes" },
 	},
 	{
 		key: "teaching-units",
-		route: "/admin/teaching-units",
+		route: "/teaching-units",
 		label: { en: "Teaching units", fr: "Unités d'enseignement" },
 	},
 	{
 		key: "exam-types",
-		route: "/admin/exam-types",
+		route: "/exam-types",
 		label: { en: "Exam types", fr: "Types d'examen" },
 	},
 	{
 		key: "students",
-		route: "/admin/students",
+		route: "/students",
 		label: { en: "Students", fr: "Étudiants" },
 	},
 	{
 		key: "enrollments",
-		route: "/admin/enrollments",
+		route: "/enrollments",
 		label: { en: "Enrollments", fr: "Inscriptions" },
 	},
 	{
 		key: "exams",
-		route: "/admin/exams",
+		route: "/exams",
 		label: { en: "Exams", fr: "Examens" },
 	},
 ];

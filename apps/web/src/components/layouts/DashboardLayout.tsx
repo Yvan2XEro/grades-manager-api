@@ -1,6 +1,6 @@
 import type React from "react";
 import { useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet } from "react-router";
 import { useStore } from "../../store";
 import { HelpWidget } from "../help/HelpWidget";
 import Header from "../navigation/Header";
@@ -9,17 +9,6 @@ import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const DashboardLayout: React.FC = () => {
 	const { user, setSidebarOpen } = useStore();
-	const navigate = useNavigate();
-	const location = useLocation();
-
-	// Redirect if not authenticated
-	useEffect(() => {
-		if (!user) {
-			navigate(`/auth/login?return=${location.pathname}`, {
-				replace: true,
-			});
-		}
-	}, [user, navigate, location.pathname]);
 
 	// Close sidebar on mobile when navigating
 	useEffect(() => {
@@ -28,6 +17,8 @@ const DashboardLayout: React.FC = () => {
 		}
 	}, [setSidebarOpen]);
 
+	// App only mounts this layout with a session (the `*` route sends guests to
+	// login with a return URL); the store user follows the session on the next tick
 	if (!user) {
 		return null;
 	}

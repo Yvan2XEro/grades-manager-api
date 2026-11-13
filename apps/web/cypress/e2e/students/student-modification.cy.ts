@@ -5,7 +5,7 @@ describe("Student Management - Modification", () => {
 
 	describe("Editing Student Information", () => {
 		it("successfully edits student personal information", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Find and click edit button on first student
 			cy.findAllByRole("button", { name: /edit|modifier/i })
@@ -36,7 +36,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("allows changing student class", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Edit first student
 			cy.findAllByRole("button", { name: /edit|modifier/i })
@@ -63,7 +63,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("persists changes after page reload", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Edit first student
 			cy.findAllByRole("button", { name: /edit|modifier/i })
@@ -92,7 +92,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("validates email format during edit", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()
@@ -119,7 +119,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("prevents setting duplicate email during edit", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Get the email of the second student to attempt duplication
 			let existingEmail: string;
@@ -158,7 +158,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("loads current student data in edit form", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Capture student name from list
 			let _studentName: string;
@@ -186,7 +186,7 @@ describe("Student Management - Modification", () => {
 
 	describe("Cancel Edit", () => {
 		it("allows canceling edit without saving", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()
@@ -205,7 +205,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("discards changes when canceling", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Get original first name
 			let _originalName: string;
@@ -241,7 +241,7 @@ describe("Student Management - Modification", () => {
 
 	describe("Edit Validation", () => {
 		it("requires first name when editing", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()
@@ -261,7 +261,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("requires last name when editing", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()
@@ -281,7 +281,7 @@ describe("Student Management - Modification", () => {
 		});
 
 		it("requires email when editing", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()
@@ -303,7 +303,7 @@ describe("Student Management - Modification", () => {
 
 	describe("Multiple Edits", () => {
 		it("allows editing multiple students sequentially", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Edit first student
 			cy.findAllByRole("button", { name: /edit|modifier/i })
@@ -347,7 +347,7 @@ describe("Student Management - Modification", () => {
 
 	describe("Update Registration Number", () => {
 		it("allows updating registration number (if editable)", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()
@@ -381,7 +381,7 @@ describe("Student Management - Modification", () => {
 
 	describe("Edit Student Status", () => {
 		it("allows changing student status (if feature exists)", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()

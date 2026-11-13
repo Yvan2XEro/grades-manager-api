@@ -9,7 +9,7 @@ const tabs = [
 export default function UsersHub() {
 	return (
 		<div className="space-y-6">
-			<HubNav tabs={tabs} basePath="/admin/users" />
+			<HubNav tabs={tabs} basePath="/users" />
 		</div>
 	);
 }

@@ -16,7 +16,7 @@ export default function ProgramsHub() {
 				title={t("programsHub.title")}
 				description={t("programsHub.description")}
 			/>
-			<HubNav tabs={tabs} basePath="/admin/programs" />
+			<HubNav tabs={tabs} basePath="/programs" />
 		</div>
 	);
 }

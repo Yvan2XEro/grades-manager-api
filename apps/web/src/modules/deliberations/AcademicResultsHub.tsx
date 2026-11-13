@@ -18,7 +18,7 @@ export default function AcademicResultsHub() {
 				title={t("academicResultsHub.title")}
 				description={t("academicResultsHub.description")}
 			/>
-			<HubNav tabs={tabs} basePath="/admin/academic-results" />
+			<HubNav tabs={tabs} basePath="/academic-results" />
 		</div>
 	);
 }

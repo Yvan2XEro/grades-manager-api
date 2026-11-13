@@ -57,7 +57,7 @@ export default function FeeStructureDetail() {
 		<div className="space-y-6">
 			<div className="flex items-center gap-3">
 				<Button variant="ghost" size="icon" asChild>
-					<Link to="/admin/fee-clearance/structures">
+					<Link to="/fee-clearance/structures">
 						<ArrowLeft className="h-4 w-4" />
 					</Link>
 				</Button>
@@ -77,7 +77,7 @@ export default function FeeStructureDetail() {
 					/>
 				</div>
 			</div>
-			<HubNav tabs={TABS} basePath={`/admin/fee-clearance/structures/${id}`} />
+			<HubNav tabs={TABS} basePath={`/fee-clearance/structures/${id}`} />
 		</div>
 	);
 }

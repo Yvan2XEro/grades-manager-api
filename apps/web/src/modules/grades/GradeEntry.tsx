@@ -105,9 +105,7 @@ type Delegate = {
 	} | null;
 };
 
-const GradeEntry: React.FC<{ basePath?: string }> = ({
-	basePath = "/teacher",
-}) => {
+const GradeEntry: React.FC = () => {
 	const { courseId: routeCourseId } = useParams<{ courseId?: string }>();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
@@ -152,9 +150,9 @@ const GradeEntry: React.FC<{ basePath?: string }> = ({
 		setSelectedCourseId(value);
 		setSelectedExam("");
 		if (value) {
-			navigate(`${basePath}/grades/${value}`, { replace: true });
+			navigate(`/grades/${value}`, { replace: true });
 		} else {
-			navigate(`${basePath}/grades`, { replace: true });
+			navigate("/", { replace: true });
 		}
 	};
 

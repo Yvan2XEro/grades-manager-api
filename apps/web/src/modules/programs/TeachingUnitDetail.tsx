@@ -42,7 +42,7 @@ export default function TeachingUnitDetail() {
 		<div className="space-y-6">
 			<div className="flex items-start gap-4">
 				<Button variant="ghost" size="icon" asChild>
-					<Link to="/admin/programs/teaching-units">
+					<Link to="/programs/teaching-units">
 						<ArrowLeft className="h-4 w-4" />
 					</Link>
 				</Button>
@@ -70,7 +70,7 @@ export default function TeachingUnitDetail() {
 			) : (
 				<HubNav
 					tabs={TABS}
-					basePath={`/admin/programs/teaching-units/${teachingUnitId}`}
+					basePath={`/programs/teaching-units/${teachingUnitId}`}
 				/>
 			)}
 		</div>

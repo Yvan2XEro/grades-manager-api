@@ -24,7 +24,7 @@ export default function FeeClearanceHub() {
 			<nav className="border-b">
 				<div className="flex gap-1">
 					{tabs.map((tab) => {
-						const href = `/admin/fee-clearance/${tab.path}`;
+						const href = `/fee-clearance/${tab.path}`;
 						const isActive = location.pathname.startsWith(href);
 						return (
 							<NavLink

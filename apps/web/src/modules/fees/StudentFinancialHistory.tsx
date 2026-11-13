@@ -119,7 +119,7 @@ export default function StudentFinancialHistory() {
 										variant="outline"
 										size="sm"
 										onClick={() =>
-											navigate(`/admin/fee-clearance/assignments/${a.id}`)
+											navigate(`/fee-clearance/assignments/${a.id}`)
 										}
 									>
 										{t("feeClearance.history.viewDetail")}

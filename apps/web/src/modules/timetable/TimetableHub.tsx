@@ -18,7 +18,7 @@ export default function TimetableHub() {
 				title={t("timetableHub.title")}
 				description={t("timetableHub.description")}
 			/>
-			<HubNav tabs={tabs} basePath="/admin/timetable" />
+			<HubNav tabs={tabs} basePath="/timetable" />
 		</div>
 	);
 }

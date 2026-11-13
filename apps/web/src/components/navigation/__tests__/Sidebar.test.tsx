@@ -100,12 +100,12 @@ describe("Sidebar navigation", () => {
 		);
 
 		// Overview group is always rendered for admin
-		expect(screen.getByTestId("nav-/admin")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/admin/institution")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/admin/academic-years")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/institution")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/academic-years")).toBeInTheDocument();
 
 		// Teacher-specific links must not be present
-		expect(screen.queryByTestId("nav-/teacher")).not.toBeInTheDocument();
+		expect(screen.queryByTestId("nav-/exports")).not.toBeInTheDocument();
 	});
 
 	it("shows flat teacher links and hides admin links for teacher role", () => {
@@ -118,12 +118,12 @@ describe("Sidebar navigation", () => {
 		);
 
 		// Flat mode — all links always rendered
-		expect(screen.getByTestId("nav-/teacher")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/teacher/attendance")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/teacher/exports")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/attendance")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/exports")).toBeInTheDocument();
 
 		// Admin-specific links must not be present
-		expect(screen.queryByTestId("nav-/admin")).not.toBeInTheDocument();
+		expect(screen.queryByTestId("nav-/institution")).not.toBeInTheDocument();
 	});
 
 	it("shows new sidebar groups for admin role (JVL-99)", () => {
@@ -136,30 +136,24 @@ describe("Sidebar navigation", () => {
 		);
 
 		// Inscriptions & Admissions group
-		expect(screen.getByTestId("nav-/admin/students")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/admin/admissions")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/admin/guardians")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/users/people")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/admissions")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/users/guardians")).toBeInTheDocument();
 
 		// Academic results hub replaces separate deliberations/promotion entries
-		expect(
-			screen.getByTestId("nav-/admin/academic-results"),
-		).toBeInTheDocument();
-		expect(
-			screen.queryByTestId("nav-/admin/deliberations"),
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByTestId("nav-/admin/promotion"),
-		).not.toBeInTheDocument();
+		expect(screen.getByTestId("nav-/academic-results")).toBeInTheDocument();
+		expect(screen.queryByTestId("nav-/deliberations")).not.toBeInTheDocument();
+		expect(screen.queryByTestId("nav-/promotion")).not.toBeInTheDocument();
 
 		// Users reduced to its own group
-		expect(screen.getByTestId("nav-/admin/users")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/users")).toBeInTheDocument();
 
 		// Export templates and class doc templates removed from sidebar (now in grades hub)
 		expect(
-			screen.queryByTestId("nav-/admin/export-templates"),
+			screen.queryByTestId("nav-/export-templates"),
 		).not.toBeInTheDocument();
 		expect(
-			screen.queryByTestId("nav-/admin/class-document-templates"),
+			screen.queryByTestId("nav-/class-document-templates"),
 		).not.toBeInTheDocument();
 	});
 });

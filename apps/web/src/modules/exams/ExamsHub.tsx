@@ -22,7 +22,7 @@ export default function ExamsHub() {
 				title={t("examsHub.title")}
 				description={t("examsHub.description")}
 			/>
-			<HubNav tabs={tabs} basePath="/admin/exams" />
+			<HubNav tabs={tabs} basePath="/exams" />
 		</div>
 	);
 }

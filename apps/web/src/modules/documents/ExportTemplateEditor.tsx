@@ -115,7 +115,7 @@ export default function ExportTemplateEditor() {
 		},
 		onSuccess: (result) => {
 			toast.success(t("admin.exportTemplates.toast.createSuccess"));
-			navigate(`/admin/export-templates/${result.id}`, { replace: true });
+			navigate(`/export-templates/${result.id}`, { replace: true });
 			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
 		},
 		onError: (error: any) => {

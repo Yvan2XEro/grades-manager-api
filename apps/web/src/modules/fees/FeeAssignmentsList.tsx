@@ -309,9 +309,7 @@ export default function FeeAssignmentsList() {
 							<TableRow
 								key={a.id}
 								className="cursor-pointer"
-								onClick={() =>
-									navigate(`/admin/fee-clearance/assignments/${a.id}`)
-								}
+								onClick={() => navigate(`/fee-clearance/assignments/${a.id}`)}
 							>
 								<TableCell className="font-medium">
 									{getStudentName(a)}

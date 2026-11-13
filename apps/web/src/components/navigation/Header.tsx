@@ -178,7 +178,7 @@ const Header: React.FC = () => {
 							<Breadcrumb className="hidden md:flex">
 								<BreadcrumbList>
 									{crumbs.map((crumb, index) => (
-										<React.Fragment key={crumb.label}>
+										<React.Fragment key={crumb.href ?? crumb.label}>
 											{index > 0 && <BreadcrumbSeparator />}
 											<BreadcrumbItem>
 												{crumb.href ? (

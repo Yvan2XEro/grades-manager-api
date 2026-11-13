@@ -13,8 +13,8 @@ function renderHubNav(initialPath: string) {
 		<MemoryRouter initialEntries={[initialPath]}>
 			<Routes>
 				<Route
-					path="/admin/institution/*"
-					element={<HubNav tabs={tabs} basePath="/admin/institution" />}
+					path="/institution/*"
+					element={<HubNav tabs={tabs} basePath="/institution" />}
 				/>
 			</Routes>
 		</MemoryRouter>,
@@ -23,21 +23,21 @@ function renderHubNav(initialPath: string) {
 
 describe("HubNav", () => {
 	it("renders all tabs as links with correct hrefs", () => {
-		renderHubNav("/admin/institution/overview");
+		renderHubNav("/institution/overview");
 
 		expect(
 			screen.getByRole("link", { name: "institutionHub.tabs.overview" }),
-		).toHaveAttribute("href", "/admin/institution/overview");
+		).toHaveAttribute("href", "/institution/overview");
 		expect(
 			screen.getByRole("link", { name: "institutionHub.tabs.faculties" }),
-		).toHaveAttribute("href", "/admin/institution/faculties");
+		).toHaveAttribute("href", "/institution/faculties");
 		expect(
 			screen.getByRole("link", { name: "institutionHub.tabs.cycles" }),
-		).toHaveAttribute("href", "/admin/institution/cycles");
+		).toHaveAttribute("href", "/institution/cycles");
 	});
 
 	it("applies active style to the tab matching current path", () => {
-		renderHubNav("/admin/institution/faculties");
+		renderHubNav("/institution/faculties");
 
 		const facultesLink = screen.getByRole("link", {
 			name: "institutionHub.tabs.faculties",
@@ -53,7 +53,7 @@ describe("HubNav", () => {
 	});
 
 	it("marks active tab when current path has a sub-segment", () => {
-		renderHubNav("/admin/institution/faculties/some-id");
+		renderHubNav("/institution/faculties/some-id");
 
 		const facultesLink = screen.getByRole("link", {
 			name: "institutionHub.tabs.faculties",

@@ -129,7 +129,7 @@ export default function CenterDetail() {
 						defaultValue: "Centre créé",
 					}),
 				);
-				navigate(`/admin/centers/${(data as { id: string }).id}/identity`);
+				navigate(`/centers/${(data as { id: string }).id}/identity`);
 			} else {
 				toast.success(
 					t("admin.centers.toast.updateSuccess", {
@@ -172,7 +172,7 @@ export default function CenterDetail() {
 							<Button
 								type="button"
 								variant="ghost"
-								onClick={() => navigate("/admin/centers")}
+								onClick={() => navigate("/centers")}
 							>
 								<ArrowLeft className="mr-2 h-4 w-4" />
 								{t("admin.centers.detail.backToList", {
@@ -303,7 +303,7 @@ export default function CenterDetail() {
 	}
 
 	// ── Edit mode: tabbed hub ─────────────────────────────────────────────────
-	const basePath = `/admin/centers/${centerId}`;
+	const basePath = `/centers/${centerId}`;
 	const centerName = centerQuery.data?.name ?? "";
 
 	return (
@@ -325,7 +325,7 @@ export default function CenterDetail() {
 						<Button
 							type="button"
 							variant="ghost"
-							onClick={() => navigate("/admin/centers")}
+							onClick={() => navigate("/centers")}
 						>
 							<ArrowLeft className="mr-2 h-4 w-4" />
 							{t("admin.centers.detail.backToList", {

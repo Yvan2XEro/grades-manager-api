@@ -99,7 +99,7 @@ export default function BatchJobDetail() {
 			invalidateJob();
 			invalidateList();
 			// Navigate to the newly created rollback job
-			if (result?.id) navigate(`/admin/batch-jobs/${result.id}`);
+			if (result?.id) navigate(`/batch-jobs/${result.id}`);
 		},
 		onError: (err) => {
 			toast.error((err as Error).message);
@@ -184,7 +184,7 @@ export default function BatchJobDetail() {
 					<Button
 						variant="ghost"
 						size="icon"
-						onClick={() => navigate("/admin/batch-jobs")}
+						onClick={() => navigate("/batch-jobs")}
 					>
 						<ArrowLeft className="h-5 w-5" />
 					</Button>
@@ -240,7 +240,7 @@ export default function BatchJobDetail() {
 				<div className="flex flex-wrap gap-3">
 					{job.parentJobId && (
 						<Link
-							to={`/admin/batch-jobs/${job.parentJobId}`}
+							to={`/batch-jobs/${job.parentJobId}`}
 							className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-sm hover:bg-muted/50"
 						>
 							<ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
@@ -251,7 +251,7 @@ export default function BatchJobDetail() {
 					)}
 					{job.rollbackJobId && (
 						<Link
-							to={`/admin/batch-jobs/${job.rollbackJobId}`}
+							to={`/batch-jobs/${job.rollbackJobId}`}
 							className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-sm hover:bg-muted/50"
 						>
 							<RotateCcw className="h-3.5 w-3.5 text-muted-foreground" />

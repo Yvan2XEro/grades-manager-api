@@ -410,7 +410,7 @@ export default function AdmissionsManagement() {
 										asChild
 										onClick={(e) => e.stopPropagation()}
 									>
-										<Link to={`/admin/admissions/${app.id}`}>
+										<Link to={`/admissions/${app.id}`}>
 											<ExternalLink className="size-4" />
 										</Link>
 									</Button>
@@ -579,7 +579,7 @@ function ApplicationDrawer({
 					className="mt-2 w-full gap-2"
 					asChild
 				>
-					<Link to={`/admin/admissions/${selected.id}`}>
+					<Link to={`/admissions/${selected.id}`}>
 						<ExternalLink className="size-3.5" />
 						{t("admissions.admin.fullDossier")}
 					</Link>

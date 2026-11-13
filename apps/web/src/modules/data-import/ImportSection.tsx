@@ -86,7 +86,7 @@ export function ImportSection({ type, prereqHint }: Props) {
 		mutationFn: () => trpcClient.batchJobs.run.mutate({ jobId: jobId! }),
 		onSuccess: () => {
 			toast.success(t("admin.dataImport.toast.importStarted"));
-			navigate(`/admin/batch-jobs/${jobId}`);
+			navigate(`/batch-jobs/${jobId}`);
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});

@@ -490,7 +490,7 @@ export default function ClassManagement() {
 			defaults: { academicYearId: filterYear ?? undefined },
 			existingCodes: classCodes,
 		});
-		if (created?.id) navigate(`/admin/classes/${created.id}/details`);
+		if (created?.id) navigate(`/classes/${created.id}/details`);
 	};
 
 	const deleteMutation = useMutation({
@@ -723,14 +723,12 @@ export default function ClassManagement() {
 							{classes?.map((cls) => (
 								<TableRow
 									key={cls.id}
-									onClick={() => navigate(`/admin/classes/${cls.id}/details`)}
+									onClick={() => navigate(`/classes/${cls.id}/details`)}
 									className="cursor-pointer"
 									actions={
 										<>
 											<ContextMenuItem
-												onSelect={() =>
-													navigate(`/admin/classes/${cls.id}/details`)
-												}
+												onSelect={() => navigate(`/classes/${cls.id}/details`)}
 											>
 												<span>
 													{t("common.actions.edit", { defaultValue: "Edit" })}
@@ -878,9 +876,7 @@ export default function ClassManagement() {
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end">
 												<DropdownMenuItem
-													onClick={() =>
-														navigate(`/admin/classes/${cls.id}/details`)
-													}
+													onClick={() => navigate(`/classes/${cls.id}/details`)}
 												>
 													<Pencil className="mr-2 h-4 w-4" />
 													{t("common.actions.edit", {

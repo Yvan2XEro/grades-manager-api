@@ -183,7 +183,7 @@ export default function StudyCycleManagement() {
 										<TableRow
 											key={cycle.id}
 											onClick={() =>
-												navigate(`/admin/institution/cycles/${cycle.id}/levels`)
+												navigate(`/institution/cycles/${cycle.id}/levels`)
 											}
 											className="cursor-pointer"
 											actions={
@@ -238,7 +238,7 @@ export default function StudyCycleManagement() {
 															onClick={(e) => {
 																e.stopPropagation();
 																navigate(
-																	`/admin/institution/cycles/${cycle.id}/levels`,
+																	`/institution/cycles/${cycle.id}/levels`,
 																);
 															}}
 														>

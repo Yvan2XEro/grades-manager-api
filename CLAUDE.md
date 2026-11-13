@@ -137,6 +137,9 @@ Key domain tables:
 
 - **Modules**: `modules/<domain>/` (classes, programs, exams, grades, timetable, fees, …) hold the pages, tabs, dialogs and entity form Callables of one domain. Folders are by domain, never by user role.
 - **Shared code**: `components/` (ui, forms, inputs, layouts, navigation, callable), `hooks/`, `lib/`, `store/`, `utils/`
+- **Routing**: each module exports its routes from `modules/<domain>/routes.tsx` (relative paths); `App.tsx` composes them under one `DashboardLayout`
+  - URLs never carry the user's role (`/classes`, `/grades/:courseId`, not `/admin/...`). A path shared by several roles renders the view of the user's role group via `<RoleView fallback={…} teacher={…} student={…} />` (`components/navigation/RoleView.tsx`), e.g. `/` (dashboards), `/timetable`, `/exams`, `/workflows`
+  - Old URLs (`/admin/*`, `/teacher/*`, `/dean/*`, `/student/*`, `/grade-editor/*`, renamed paths) redirect via `components/navigation/legacy-routes.tsx` — keep them for bookmarks
 - **tRPC Client**: `utils/trpc.ts` - Type-safe API client
 - **Auth Client**: `lib/auth-client.ts` - Better-Auth client
 - **State**: `store/index.ts` - Zustand for global state

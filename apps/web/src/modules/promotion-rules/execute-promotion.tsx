@@ -74,7 +74,7 @@ export function ExecutePromotionPage() {
 		}) => trpcClient.promotionRules.applyPromotion.mutate(data),
 		onSuccess: () => {
 			toast.success("Promotion applied successfully!");
-			navigate("/admin/promotion-rules/history");
+			navigate("/promotion-rules/history");
 		},
 		onError: (error: any) => {
 			toast.error(`Failed to apply promotion: ${error.message}`);
@@ -159,7 +159,7 @@ export function ExecutePromotionPage() {
 		},
 		onSuccess: () => {
 			toast.success("Batch promotion started! Redirecting to batch jobs...");
-			navigate("/admin/batch-jobs");
+			navigate("/batch-jobs");
 		},
 		onError: (error: any) => {
 			toast.error(`Failed to start batch promotion: ${error.message}`);
@@ -200,9 +200,7 @@ export function ExecutePromotionPage() {
 								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
-								<Button
-									onClick={() => navigate("/admin/promotion-rules/evaluate")}
-								>
+								<Button onClick={() => navigate("/promotion-rules/evaluate")}>
 									Go to Evaluation
 								</Button>
 							</EmptyContent>
@@ -220,7 +218,7 @@ export function ExecutePromotionPage() {
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={() => navigate("/admin/promotion-rules/evaluate")}
+					onClick={() => navigate("/promotion-rules/evaluate")}
 					className="gap-2"
 				>
 					<ArrowLeft className="h-4 w-4" />
@@ -339,7 +337,7 @@ export function ExecutePromotionPage() {
 			<div className="flex items-center gap-4">
 				<Button
 					variant="outline"
-					onClick={() => navigate("/admin/promotion-rules/evaluate")}
+					onClick={() => navigate("/promotion-rules/evaluate")}
 				>
 					Back to Evaluation
 				</Button>

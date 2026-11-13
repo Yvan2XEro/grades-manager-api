@@ -164,7 +164,7 @@ export default function AdmissionDetail() {
 			<div className="flex h-96 flex-col items-center justify-center gap-3 text-muted-foreground">
 				<p>{t("admissions.admin.notFound")}</p>
 				<Button variant="ghost" asChild>
-					<Link to="/admin/admissions">
+					<Link to="/admissions">
 						<ArrowLeft className="mr-2 size-4" />
 						{t("common.back")}
 					</Link>
@@ -180,7 +180,7 @@ export default function AdmissionDetail() {
 			{/* Back + Header */}
 			<div className="flex items-start gap-4">
 				<Button variant="ghost" size="icon" className="mt-0.5 shrink-0" asChild>
-					<Link to="/admin/admissions">
+					<Link to="/admissions">
 						<ArrowLeft className="size-4" />
 					</Link>
 				</Button>

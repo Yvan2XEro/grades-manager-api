@@ -5,7 +5,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 
 	describe("Basic Grade Entry", () => {
 		it("allows teacher to enter grades for multiple students", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select a class course
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -47,7 +47,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 		});
 
 		it("validates grade values between 0 and 20", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select class course and exam
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -78,7 +78,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 		});
 
 		it("validates grade values are not negative", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select class course and exam
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -109,7 +109,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 		});
 
 		it("allows decimal grades", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select class course and exam
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -140,7 +140,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 		});
 
 		it("shows confirmation message after successful save", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select class course and exam
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -173,7 +173,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 
 	describe("Grade Entry - Course Selection", () => {
 		it("requires course selection before entering grades", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Without selecting course/exam, grade inputs should not be visible
 			cy.get(
@@ -182,7 +182,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 		});
 
 		it("requires exam selection before entering grades", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select only class course
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -196,7 +196,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 		});
 
 		it("loads student list after selecting course and exam", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select class course
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -220,7 +220,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 
 	describe("Bulk Grade Entry", () => {
 		it("allows entering grades for all students in a list", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select class course and exam
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -253,7 +253,7 @@ describe("Grade Entry - Teacher Workflow", () => {
 		});
 
 		it("can save partial grades (not all students)", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select class course and exam
 			cy.get('[data-testid="class-course-select"], #class-course', {

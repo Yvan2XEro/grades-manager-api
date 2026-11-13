@@ -147,7 +147,7 @@ const TeachingUnitManagement = () => {
 	return (
 		<div className="space-y-5">
 			<div className="flex justify-end">
-				<Button onClick={() => navigate("/admin/programs/teaching-units/new")}>
+				<Button onClick={() => navigate("/programs/teaching-units/new")}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.teachingUnits.actions.create", {
 						defaultValue: "Create UE",
@@ -279,7 +279,7 @@ const TeachingUnitManagement = () => {
 															<ContextMenuItem
 																onSelect={() =>
 																	navigate(
-																		`/admin/programs/teaching-units/${unit.id}/details`,
+																		`/programs/teaching-units/${unit.id}/details`,
 																	)
 																}
 															>
@@ -346,7 +346,7 @@ const TeachingUnitManagement = () => {
 																size="sm"
 																onClick={() =>
 																	navigate(
-																		`/admin/programs/teaching-units/${unit.id}/details`,
+																		`/programs/teaching-units/${unit.id}/details`,
 																	)
 																}
 															>
@@ -402,7 +402,7 @@ const TeachingUnitManagement = () => {
 							</EmptyHeader>
 							<EmptyContent>
 								<Button
-									onClick={() => navigate("/admin/programs/teaching-units/new")}
+									onClick={() => navigate("/programs/teaching-units/new")}
 								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.teachingUnits.actions.create", {

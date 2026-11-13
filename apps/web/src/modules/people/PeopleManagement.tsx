@@ -306,7 +306,7 @@ export default function PeopleManagement() {
 								<TableRow
 									key={person.id}
 									className="cursor-pointer"
-									onClick={() => navigate(`/admin/profiles/${person.id}`)}
+									onClick={() => navigate(`/profiles/${person.id}`)}
 								>
 									<TableCell className="font-medium">
 										{person.firstName} {person.lastName}
@@ -396,15 +396,13 @@ export default function PeopleManagement() {
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end">
 												<DropdownMenuItem
-													onClick={() =>
-														navigate(`/admin/profiles/${person.id}`)
-													}
+													onClick={() => navigate(`/profiles/${person.id}`)}
 												>
 													{t("common.actions.open", { defaultValue: "Open" })}
 												</DropdownMenuItem>
 												<DropdownMenuItem
 													onClick={() =>
-														navigate(`/admin/profiles/${person.id}/access`)
+														navigate(`/profiles/${person.id}/access`)
 													}
 												>
 													{t("usersHub.people.manageAccess", {

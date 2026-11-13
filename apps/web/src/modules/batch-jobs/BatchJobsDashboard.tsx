@@ -196,11 +196,11 @@ export default function BatchJobsDashboard() {
 								<TableRow
 									key={job.id}
 									className="cursor-pointer"
-									onClick={() => navigate(`/admin/batch-jobs/${job.id}`)}
+									onClick={() => navigate(`/batch-jobs/${job.id}`)}
 									actions={
 										<>
 											<ContextMenuItem
-												onSelect={() => navigate(`/admin/batch-jobs/${job.id}`)}
+												onSelect={() => navigate(`/batch-jobs/${job.id}`)}
 											>
 												{t("common.actions.open", { defaultValue: "Open" })}
 											</ContextMenuItem>

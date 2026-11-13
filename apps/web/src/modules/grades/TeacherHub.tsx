@@ -74,12 +74,10 @@ function CompactExamRow({
 	exam,
 	studentCount,
 	classCourseId,
-	basePath,
 }: {
 	exam: ExamData;
 	studentCount: number;
 	classCourseId: string;
-	basePath: string;
 }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -118,7 +116,7 @@ function CompactExamRow({
 		(exam.isLocked && ["draft", "open"].includes(exam.status)) ||
 		exam.status === "locked";
 
-	const goToGradeEntry = () => navigate(`${basePath}/grades/${classCourseId}`);
+	const goToGradeEntry = () => navigate(`/grades/${classCourseId}`);
 
 	const actionButton = () => {
 		if (canSubmit)
@@ -202,13 +200,7 @@ function CompactExamRow({
 
 // ─── Course Card ──────────────────────────────────────────────────────────────
 
-function TeacherCourseCard({
-	course,
-	basePath,
-}: {
-	course: CourseData;
-	basePath: string;
-}) {
+function TeacherCourseCard({ course }: { course: CourseData }) {
 	const hasPendingAction = course.exams.some(
 		(e) =>
 			e.status === "locked" ||
@@ -261,7 +253,6 @@ function TeacherCourseCard({
 							exam={exam}
 							studentCount={course.studentCount}
 							classCourseId={course.classCourseId}
-							basePath={basePath}
 						/>
 					))}
 				</div>
@@ -272,17 +263,13 @@ function TeacherCourseCard({
 
 // ─── TeacherHub ───────────────────────────────────────────────────────────────
 
-export default function TeacherHub({
-	basePath = "/teacher",
-}: {
-	basePath?: string;
-}) {
+export default function TeacherHub() {
 	const [search, setSearch] = useState("");
 	const [filterAction, setFilterAction] = useState(false);
 	const [sortBy, setSortBy] = useState<SortBy>("relevance");
 
 	const { data: coursesData, isLoading } = useQuery({
-		queryKey: ["teacher-hub-courses", basePath],
+		queryKey: ["teacher-hub-courses"],
 		queryFn: () => trpcClient.classCourses.teacherOverview.query(),
 	});
 
@@ -426,11 +413,7 @@ export default function TeacherHub({
 					) : (
 						<div className="grid gap-4 sm:grid-cols-2">
 							{filteredCourses.map((course) => (
-								<TeacherCourseCard
-									key={course.classCourseId}
-									course={course}
-									basePath={basePath}
-								/>
+								<TeacherCourseCard key={course.classCourseId} course={course} />
 							))}
 						</div>
 					)}

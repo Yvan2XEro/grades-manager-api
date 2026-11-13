@@ -237,7 +237,7 @@ const RegistrationNumberFormatDetail = () => {
 			);
 			invalidateList();
 			if (!draft.id) {
-				navigate(`/admin/registration-numbers/${result.id}`, {
+				navigate(`/registration-numbers/${result.id}`, {
 					replace: true,
 				});
 			} else {
@@ -264,7 +264,7 @@ const RegistrationNumberFormatDetail = () => {
 				}),
 			);
 			invalidateList();
-			navigate("/admin/registration-numbers");
+			navigate("/registration-numbers");
 		},
 		onError: (error) => toast.error(error.message),
 	});
@@ -310,7 +310,7 @@ const RegistrationNumberFormatDetail = () => {
 				<Button
 					variant="ghost"
 					className="flex items-center gap-2"
-					onClick={() => navigate("/admin/registration-numbers")}
+					onClick={() => navigate("/registration-numbers")}
 				>
 					<ArrowLeft className="h-4 w-4" />
 					{t("common.actions.back", { defaultValue: "Back" })}
@@ -333,7 +333,7 @@ const RegistrationNumberFormatDetail = () => {
 					<button
 						type="button"
 						className="flex items-center gap-2 text-muted-foreground text-sm hover:text-foreground"
-						onClick={() => navigate("/admin/registration-numbers")}
+						onClick={() => navigate("/registration-numbers")}
 					>
 						<ArrowLeft className="h-4 w-4" />
 						{t("common.actions.back", { defaultValue: "Back" })}

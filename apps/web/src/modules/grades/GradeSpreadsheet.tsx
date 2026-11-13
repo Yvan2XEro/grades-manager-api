@@ -63,11 +63,7 @@ function isValidScore(value: string): { ok: boolean; n?: number } {
 	return { ok: true, n };
 }
 
-export default function GradeSpreadsheet({
-	basePath = "/teacher",
-}: {
-	basePath?: string;
-}) {
+export default function GradeSpreadsheet() {
 	const { courseId } = useParams<{ courseId: string }>();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
@@ -378,7 +374,7 @@ export default function GradeSpreadsheet({
 				<div>
 					<div className="mb-1 flex items-center gap-2">
 						<Button variant="ghost" size="sm" asChild>
-							<Link to={`${basePath}/courses`}>
+							<Link to="/">
 								<ArrowLeft className="mr-1 h-4 w-4" />
 								{t("common.actions.back", { defaultValue: "Retour" })}
 							</Link>
@@ -409,7 +405,7 @@ export default function GradeSpreadsheet({
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={() => navigate(`${basePath}/grades/${courseId}`)}
+						onClick={() => navigate(`/grades/${courseId}`)}
 					>
 						{t("teacher.spreadsheet.perExamMode", {
 							defaultValue: "Mode examen unique",

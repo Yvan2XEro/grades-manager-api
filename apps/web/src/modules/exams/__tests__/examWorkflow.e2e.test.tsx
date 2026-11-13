@@ -506,8 +506,8 @@ describe("exam workflow UI e2e", () => {
 		approvals.unmount();
 
 		const gradeEntry = renderWithProviders(<GradeEntry />, {
-			route: `/teacher/grades/${CLASS_COURSE_ID}`,
-			path: "/teacher/grades/:courseId",
+			route: `/grades/${CLASS_COURSE_ID}`,
+			path: "/grades/:courseId",
 		});
 		await screen.findByText("REG-001");
 

@@ -69,7 +69,7 @@ export const CopyTimetableDialog = createCallable<Props, void>(
 			onSuccess: () => {
 				toast.success(t("admin.timetable.copyDialog.success"));
 				handleClose();
-				navigate(`/admin/batch-jobs/${previewData?.jobId}`);
+				navigate(`/batch-jobs/${previewData?.jobId}`);
 			},
 			onError: (err) => toast.error((err as Error).message),
 		});

@@ -4,7 +4,7 @@ describe("Enrollment management", () => {
 	});
 
 	it("opens windows, auto-enrolls the class, and inspects roster", () => {
-		cy.loginAs("administrator", { route: "/admin/enrollments" });
+		cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 		cy.get('[data-testid="academic-year-select"]').click();
 		cy.findByRole("option", { name: /2024-2025/i }).click();

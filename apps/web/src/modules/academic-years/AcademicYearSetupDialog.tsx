@@ -82,7 +82,7 @@ export const AcademicYearSetupDialog = createCallable<
 			toast.success(t("admin.academicYears.setup.success"));
 			queryClient.invalidateQueries({ queryKey: ["batchJobs"] });
 			call.end(previewData?.jobId);
-			navigate(`/admin/batch-jobs/${previewData?.jobId}`);
+			navigate(`/batch-jobs/${previewData?.jobId}`);
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});

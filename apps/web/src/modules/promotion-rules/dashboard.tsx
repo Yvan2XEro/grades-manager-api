@@ -142,7 +142,7 @@ export function PromotionRulesDashboard() {
 						</div>
 					</CardHeader>
 					<CardContent>
-						<Link to="/admin/promotion-rules/rules">
+						<Link to="/promotion-rules/rules">
 							<Button className="w-full group-hover:bg-primary/90">
 								{t("admin.promotionRules.dashboard.actions.viewRules")}
 								<ArrowRight className="ml-2 h-4 w-4" />
@@ -168,7 +168,7 @@ export function PromotionRulesDashboard() {
 						</div>
 					</CardHeader>
 					<CardContent>
-						<Link to="/admin/promotion-rules/evaluate">
+						<Link to="/promotion-rules/evaluate">
 							<Button className="w-full bg-green-600 hover:bg-green-700">
 								{t("admin.promotionRules.dashboard.actions.startEvaluation")}
 								<ArrowRight className="ml-2 h-4 w-4" />
@@ -194,7 +194,7 @@ export function PromotionRulesDashboard() {
 						</div>
 					</CardHeader>
 					<CardContent>
-						<Link to="/admin/promotion-rules/history">
+						<Link to="/promotion-rules/history">
 							<Button
 								variant="outline"
 								className="w-full group-hover:bg-blue-50"
@@ -244,7 +244,7 @@ export function PromotionRulesDashboard() {
 												</div>
 											</div>
 										</div>
-										<Link to="/admin/promotion-rules/history">
+										<Link to="/promotion-rules/history">
 											<Button variant="ghost" size="sm">
 												{t(
 													"admin.promotionRules.dashboard.recentActivity.details",

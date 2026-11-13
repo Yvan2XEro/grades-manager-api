@@ -532,7 +532,7 @@ export default function ExamManagement() {
 															<ContextMenuItem
 																onSelect={() =>
 																	navigate(
-																		`/teacher/grades/${exam.classCourse}?examId=${exam.id}`,
+																		`/grades/${exam.classCourse}?examId=${exam.id}`,
 																	)
 																}
 															>
@@ -633,7 +633,7 @@ export default function ExamManagement() {
 																{/* Review Grades */}
 																<DropdownMenuItem asChild>
 																	<Link
-																		to={`/teacher/grades/${exam.classCourse}?examId=${exam.id}`}
+																		to={`/grades/${exam.classCourse}?examId=${exam.id}`}
 																	>
 																		<ClipboardList className="mr-2 h-4 w-4" />
 																		{t("admin.exams.actions.reviewGrades")}

@@ -98,7 +98,7 @@ export default function ClassStudentsTab() {
 									<TableCell>
 										{student.domainUserId && (
 											<Button variant="ghost" size="icon" asChild>
-												<Link to={`/admin/profiles/${student.domainUserId}`}>
+												<Link to={`/profiles/${student.domainUserId}`}>
 													<ExternalLink className="h-4 w-4" />
 												</Link>
 											</Button>

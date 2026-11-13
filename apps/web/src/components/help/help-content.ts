@@ -1,3 +1,5 @@
+import type { RoleGroup } from "@/components/navigation/RoleView";
+
 export type HelpItem = {
 	q: string;
 	a: string;
@@ -8,6 +10,10 @@ export type HelpSection = {
 	items: HelpItem[];
 };
 
+/**
+ * Keyed by path. A key may be scoped to a role group (`"teacher:/"`) when a
+ * shared path renders a different view for that group.
+ */
 type LangContent = {
 	[route: string]: HelpSection[];
 };
@@ -15,7 +21,7 @@ type LangContent = {
 const content: Record<"en" | "fr", LangContent> = {
 	en: {
 		// ─── Admin: index = Dashboard ────────────────────────────────
-		"/admin": [
+		"admin:/": [
 			{
 				title: "Dashboard",
 				items: [
@@ -36,7 +42,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Students ────────────────────────────────────────────────
-		"/admin/students": [
+		"/students": [
 			{
 				title: "Students",
 				items: [
@@ -61,7 +67,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Enrollments ─────────────────────────────────────────────
-		"/admin/enrollments": [
+		"admin:/enrollments": [
 			{
 				title: "Enrollments",
 				items: [
@@ -82,7 +88,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exams ───────────────────────────────────────────────────
-		"/admin/exams": [
+		"admin:/exams": [
 			{
 				title: "Exams",
 				items: [
@@ -103,7 +109,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam types ──────────────────────────────────────────────
-		"/admin/exam-types": [
+		"/exam-types": [
 			{
 				title: "Exam types",
 				items: [
@@ -120,7 +126,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam scheduler ──────────────────────────────────────────
-		"/admin/exam-scheduler": [
+		"/exam-scheduler": [
 			{
 				title: "Exam scheduler",
 				items: [
@@ -137,7 +143,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Retake eligibility ──────────────────────────────────────
-		"/admin/retake-eligibility": [
+		"/retake-eligibility": [
 			{
 				title: "Retake eligibility",
 				items: [
@@ -154,7 +160,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Faculties ───────────────────────────────────────────────
-		"/admin/faculties": [
+		"/faculties": [
 			{
 				title: "Faculties",
 				items: [
@@ -175,7 +181,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Programs (admin) ────────────────────────────────────────
-		"/admin/programs": [
+		"/programs": [
 			{
 				title: "Programs",
 				items: [
@@ -192,7 +198,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Study cycles ────────────────────────────────────────────
-		"/admin/study-cycles": [
+		"/study-cycles": [
 			{
 				title: "Study cycles",
 				items: [
@@ -209,7 +215,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Courses (admin) ─────────────────────────────────────────
-		"/admin/courses": [
+		"/courses": [
 			{
 				title: "Courses",
 				items: [
@@ -226,7 +232,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teaching units ──────────────────────────────────────────
-		"/admin/teaching-units": [
+		"/teaching-units": [
 			{
 				title: "Teaching units",
 				items: [
@@ -243,7 +249,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Classes ─────────────────────────────────────────────────
-		"/admin/classes": [
+		"/classes": [
 			{
 				title: "Classes",
 				items: [
@@ -260,7 +266,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Class courses ───────────────────────────────────────────
-		"/admin/class-courses": [
+		"/class-courses": [
 			{
 				title: "Class courses",
 				items: [
@@ -277,7 +283,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Academic years ──────────────────────────────────────────
-		"/admin/academic-years": [
+		"/academic-years": [
 			{
 				title: "Academic years",
 				items: [
@@ -298,7 +304,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Users ───────────────────────────────────────────────────
-		"/admin/users": [
+		"/users": [
 			{
 				title: "Users",
 				items: [
@@ -319,7 +325,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Deliberations ───────────────────────────────────────────
-		"/admin/deliberations": [
+		"/deliberations": [
 			{
 				title: "Deliberations",
 				items: [
@@ -340,7 +346,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Promotion rules ─────────────────────────────────────────
-		"/admin/promotion-rules": [
+		"/promotion-rules": [
 			{
 				title: "Promotion rules",
 				items: [
@@ -357,7 +363,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Monitoring ──────────────────────────────────────────────
-		"/admin/monitoring": [
+		"/monitoring": [
 			{
 				title: "Monitoring",
 				items: [
@@ -370,7 +376,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Batch jobs ──────────────────────────────────────────────
-		"/admin/batch-jobs": [
+		"/batch-jobs": [
 			{
 				title: "Batch jobs",
 				items: [
@@ -387,7 +393,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Notifications ───────────────────────────────────────────
-		"/admin/notifications": [
+		"/notifications/center": [
 			{
 				title: "Notifications",
 				items: [
@@ -404,7 +410,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Institution settings ────────────────────────────────────
-		"/admin/institution": [
+		"/institution": [
 			{
 				title: "Institution settings",
 				items: [
@@ -421,7 +427,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Grade export ────────────────────────────────────────────
-		"/admin/grade-export": [
+		"/grade-export": [
 			{
 				title: "Grade export",
 				items: [
@@ -438,7 +444,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Export templates ────────────────────────────────────────
-		"/admin/export-templates": [
+		"/export-templates": [
 			{
 				title: "Export templates",
 				items: [
@@ -451,7 +457,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Registration numbers ────────────────────────────────────
-		"/admin/registration-numbers": [
+		"/registration-numbers": [
 			{
 				title: "Registration numbers",
 				items: [
@@ -468,7 +474,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Dean: workflows ─────────────────────────────────────────
-		"/dean/workflows": [
+		"/workflows": [
 			{
 				title: "Workflow approvals",
 				items: [
@@ -485,7 +491,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: dashboard ──────────────────────────────────────
-		"/teacher": [
+		"teacher:/": [
 			{
 				title: "Teacher dashboard",
 				items: [
@@ -502,7 +508,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: courses ────────────────────────────────────────
-		"/teacher/courses": [
+		"teacher:/courses": [
 			{
 				title: "My courses",
 				items: [
@@ -519,7 +525,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: grades ─────────────────────────────────────────
-		"/teacher/grades": [
+		"/grades": [
 			{
 				title: "Grade entry",
 				items: [
@@ -540,7 +546,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: attendance ─────────────────────────────────────
-		"/teacher/attendance": [
+		"/attendance": [
 			{
 				title: "Attendance alerts",
 				items: [
@@ -553,7 +559,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: workflows ──────────────────────────────────────
-		"/teacher/workflows": [
+		"teacher:/workflows": [
 			{
 				title: "My grade change requests",
 				items: [
@@ -570,7 +576,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Student: dashboard ──────────────────────────────────────
-		"/student": [
+		"student:/": [
 			{
 				title: "My performance",
 				items: [
@@ -635,7 +641,7 @@ const content: Record<"en" | "fr", LangContent> = {
 
 	fr: {
 		// ─── Admin: index = Dashboard ────────────────────────────────
-		"/admin": [
+		"admin:/": [
 			{
 				title: "Tableau de bord",
 				items: [
@@ -656,7 +662,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Students ────────────────────────────────────────────────
-		"/admin/students": [
+		"/students": [
 			{
 				title: "Étudiants",
 				items: [
@@ -681,7 +687,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Enrollments ─────────────────────────────────────────────
-		"/admin/enrollments": [
+		"admin:/enrollments": [
 			{
 				title: "Inscriptions",
 				items: [
@@ -702,7 +708,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exams ───────────────────────────────────────────────────
-		"/admin/exams": [
+		"admin:/exams": [
 			{
 				title: "Examens",
 				items: [
@@ -723,7 +729,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam types ──────────────────────────────────────────────
-		"/admin/exam-types": [
+		"/exam-types": [
 			{
 				title: "Types d'examen",
 				items: [
@@ -740,7 +746,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam scheduler ──────────────────────────────────────────
-		"/admin/exam-scheduler": [
+		"/exam-scheduler": [
 			{
 				title: "Planificateur d'examens",
 				items: [
@@ -757,7 +763,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Retake eligibility ──────────────────────────────────────
-		"/admin/retake-eligibility": [
+		"/retake-eligibility": [
 			{
 				title: "Éligibilité au rattrapage",
 				items: [
@@ -774,7 +780,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Faculties ───────────────────────────────────────────────
-		"/admin/faculties": [
+		"/faculties": [
 			{
 				title: "Facultés",
 				items: [
@@ -795,7 +801,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Programs ────────────────────────────────────────────────
-		"/admin/programs": [
+		"/programs": [
 			{
 				title: "Programmes",
 				items: [
@@ -812,7 +818,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Study cycles ────────────────────────────────────────────
-		"/admin/study-cycles": [
+		"/study-cycles": [
 			{
 				title: "Cycles d'études",
 				items: [
@@ -829,7 +835,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Courses (admin) ─────────────────────────────────────────
-		"/admin/courses": [
+		"/courses": [
 			{
 				title: "Cours",
 				items: [
@@ -846,7 +852,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teaching units ──────────────────────────────────────────
-		"/admin/teaching-units": [
+		"/teaching-units": [
 			{
 				title: "Unités d'enseignement",
 				items: [
@@ -863,7 +869,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Classes ─────────────────────────────────────────────────
-		"/admin/classes": [
+		"/classes": [
 			{
 				title: "Classes",
 				items: [
@@ -880,7 +886,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Class courses ───────────────────────────────────────────
-		"/admin/class-courses": [
+		"/class-courses": [
 			{
 				title: "Cours de classe",
 				items: [
@@ -897,7 +903,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Academic years ──────────────────────────────────────────
-		"/admin/academic-years": [
+		"/academic-years": [
 			{
 				title: "Années académiques",
 				items: [
@@ -918,7 +924,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Users ───────────────────────────────────────────────────
-		"/admin/users": [
+		"/users": [
 			{
 				title: "Utilisateurs",
 				items: [
@@ -939,7 +945,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Deliberations ───────────────────────────────────────────
-		"/admin/deliberations": [
+		"/deliberations": [
 			{
 				title: "Délibérations",
 				items: [
@@ -960,7 +966,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Promotion rules ─────────────────────────────────────────
-		"/admin/promotion-rules": [
+		"/promotion-rules": [
 			{
 				title: "Règles de promotion",
 				items: [
@@ -977,7 +983,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Monitoring ──────────────────────────────────────────────
-		"/admin/monitoring": [
+		"/monitoring": [
 			{
 				title: "Surveillance",
 				items: [
@@ -990,7 +996,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Batch jobs ──────────────────────────────────────────────
-		"/admin/batch-jobs": [
+		"/batch-jobs": [
 			{
 				title: "Tâches planifiées",
 				items: [
@@ -1007,7 +1013,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Notifications ───────────────────────────────────────────
-		"/admin/notifications": [
+		"/notifications/center": [
 			{
 				title: "Notifications",
 				items: [
@@ -1024,7 +1030,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Institution settings ────────────────────────────────────
-		"/admin/institution": [
+		"/institution": [
 			{
 				title: "Paramètres de l'institution",
 				items: [
@@ -1041,7 +1047,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Grade export ────────────────────────────────────────────
-		"/admin/grade-export": [
+		"/grade-export": [
 			{
 				title: "Export des notes",
 				items: [
@@ -1058,7 +1064,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Export templates ────────────────────────────────────────
-		"/admin/export-templates": [
+		"/export-templates": [
 			{
 				title: "Modèles d'export",
 				items: [
@@ -1071,7 +1077,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Registration numbers ────────────────────────────────────
-		"/admin/registration-numbers": [
+		"/registration-numbers": [
 			{
 				title: "Numéros d'inscription",
 				items: [
@@ -1088,7 +1094,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Dean: workflows ─────────────────────────────────────────
-		"/dean/workflows": [
+		"/workflows": [
 			{
 				title: "Approbations de workflows",
 				items: [
@@ -1105,7 +1111,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: dashboard ──────────────────────────────────────
-		"/teacher": [
+		"teacher:/": [
 			{
 				title: "Tableau de bord enseignant",
 				items: [
@@ -1122,7 +1128,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: courses ────────────────────────────────────────
-		"/teacher/courses": [
+		"teacher:/courses": [
 			{
 				title: "Mes cours",
 				items: [
@@ -1139,7 +1145,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: grades ─────────────────────────────────────────
-		"/teacher/grades": [
+		"/grades": [
 			{
 				title: "Saisie des notes",
 				items: [
@@ -1160,7 +1166,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: attendance ─────────────────────────────────────
-		"/teacher/attendance": [
+		"/attendance": [
 			{
 				title: "Alertes de présence",
 				items: [
@@ -1173,7 +1179,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: workflows ──────────────────────────────────────
-		"/teacher/workflows": [
+		"teacher:/workflows": [
 			{
 				title: "Mes demandes de modification",
 				items: [
@@ -1190,7 +1196,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Student: dashboard ──────────────────────────────────────
-		"/student": [
+		"student:/": [
 			{
 				title: "Mes résultats",
 				items: [
@@ -1257,14 +1263,27 @@ const content: Record<"en" | "fr", LangContent> = {
 export function getHelpSections(
 	pathname: string,
 	lang: "en" | "fr",
+	roleGroup?: RoleGroup | null,
 ): HelpSection[] {
 	const langContent = content[lang] ?? content.en;
 
-	// Find the best matching route key (longest prefix match, excluding "default")
-	const routeKeys = Object.keys(langContent).filter((k) => k !== "default");
-	const matched = routeKeys
-		.filter((key) => pathname === key || pathname.startsWith(`${key}/`))
-		.sort((a, b) => b.length - a.length)[0];
+	// Best matching route key: longest path prefix, role-scoped keys first
+	const candidates = Object.keys(langContent)
+		.filter((k) => k !== "default")
+		.map((key) => {
+			const [scope, path] = key.includes(":") ? key.split(":") : [null, key];
+			return { key, scope, path };
+		})
+		.filter(
+			({ scope, path }) =>
+				(!scope || scope === roleGroup) &&
+				(pathname === path || pathname.startsWith(`${path}/`)),
+		)
+		.sort(
+			(a, b) =>
+				b.path.length - a.path.length || Number(!!b.scope) - Number(!!a.scope),
+		);
+	const matched = candidates[0]?.key;
 
 	const pageSections = matched ? (langContent[matched] ?? []) : [];
 	const defaultSections = langContent.default ?? [];

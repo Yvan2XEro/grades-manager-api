@@ -19,7 +19,7 @@ describe("Authentication - Logout", () => {
 		);
 
 		// Session should be invalidated
-		cy.visit("/admin", { failOnStatusCode: false });
+		cy.visit("/", { failOnStatusCode: false });
 		cy.location("pathname").should("include", "/auth/login");
 	});
 
@@ -37,7 +37,7 @@ describe("Authentication - Logout", () => {
 		);
 
 		// Try to access teacher pages - should be redirected
-		cy.visit("/teacher/grades", { failOnStatusCode: false });
+		cy.visit("/grades", { failOnStatusCode: false });
 		cy.location("pathname").should("include", "/auth/login");
 	});
 
@@ -72,7 +72,7 @@ describe("Authentication - Logout", () => {
 
 	it("prevents back navigation after logout", () => {
 		cy.loginAs("administrator");
-		cy.visit("/admin/students");
+		cy.visit("/users/people");
 
 		cy.findByRole("button", {
 			name: /logout|sign out|déconnexion/i,
@@ -101,7 +101,7 @@ describe("Authentication - Logout", () => {
 		);
 
 		// Try to access protected page without logging back in
-		cy.visit("/admin/students", { failOnStatusCode: false });
+		cy.visit("/users/people", { failOnStatusCode: false });
 		cy.location("pathname").should("include", "/auth/login");
 
 		// Now log back in

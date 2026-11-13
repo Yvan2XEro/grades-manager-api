@@ -101,7 +101,7 @@ export default function CenterManagement() {
 						</p>
 					</div>
 				</div>
-				<Button onClick={() => navigate("/admin/centers/new")}>
+				<Button onClick={() => navigate("/centers/new")}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.centers.actions.add", {
 						defaultValue: "Ajouter un centre",
@@ -155,9 +155,7 @@ export default function CenterManagement() {
 										actions={
 											<>
 												<ContextMenuItem
-													onSelect={() =>
-														navigate(`/admin/centers/${center.id}`)
-													}
+													onSelect={() => navigate(`/centers/${center.id}`)}
 												>
 													<Pencil className="h-4 w-4" />
 													{t("common.actions.edit")}
@@ -220,7 +218,7 @@ export default function CenterManagement() {
 											<Button
 												variant="ghost"
 												size="icon"
-												onClick={() => navigate(`/admin/centers/${center.id}`)}
+												onClick={() => navigate(`/centers/${center.id}`)}
 											>
 												<Pencil className="h-4 w-4" />
 											</Button>
@@ -255,7 +253,7 @@ export default function CenterManagement() {
 							<EmptyContent>
 								<Button
 									variant="outline"
-									onClick={() => navigate("/admin/centers/new")}
+									onClick={() => navigate("/centers/new")}
 								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.centers.actions.add", {

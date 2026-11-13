@@ -82,7 +82,7 @@ export default function ClassCoursesTab() {
 					{t("classes.hub.tabs.courses", { defaultValue: "Courses" })}
 				</CardTitle>
 				<Button size="sm" asChild>
-					<Link to="/admin/classes/assignments">
+					<Link to="/classes/assignments">
 						{t("admin.classCourses.actions.manage", {
 							defaultValue: "Manage All",
 						})}

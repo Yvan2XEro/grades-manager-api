@@ -5,7 +5,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 
 	describe("Creating Individual Enrollment", () => {
 		it("successfully enrolls a student in a class", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			// Select academic year
 			cy.get('[data-testid="academic-year-select"]', {
@@ -51,7 +51,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		});
 
 		it("sets enrollment status to 'active'", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -76,7 +76,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		});
 
 		it("prevents duplicate enrollment for same student/class/year", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -113,7 +113,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 
 	describe("Enrollment Selection", () => {
 		it("requires student selection", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -139,7 +139,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		});
 
 		it("requires class selection", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -153,7 +153,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		});
 
 		it("requires academic year selection", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			// Without selecting academic year, class selection should be disabled
 			cy.get('[data-testid="class-select"]').should("be.disabled");
@@ -162,7 +162,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 
 	describe("Enrollment Display", () => {
 		it("displays enrolled student in roster", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -185,7 +185,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		});
 
 		it("shows enrollment status", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -207,7 +207,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		});
 
 		it("displays enrollment date/timestamp", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -237,7 +237,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 
 	describe("Enrollment Validation", () => {
 		it("validates that student belongs to selected class", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -275,7 +275,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 
 	describe("Multiple Enrollments", () => {
 		it("allows enrolling the same student in different academic years", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			// Enroll in first year
 			cy.get('[data-testid="academic-year-select"]', {
@@ -314,7 +314,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 
 	describe("Course-Level Enrollment", () => {
 		it("opens course roster dialog", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -345,7 +345,7 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		});
 
 		it("allows withdrawing student from specific course", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,

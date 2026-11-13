@@ -17,7 +17,7 @@ export default function ConfigurationHub() {
 				title={t("configurationHub.title")}
 				description={t("configurationHub.description")}
 			/>
-			<HubNav tabs={tabs} basePath="/admin/configuration" />
+			<HubNav tabs={tabs} basePath="/configuration" />
 		</div>
 	);
 }

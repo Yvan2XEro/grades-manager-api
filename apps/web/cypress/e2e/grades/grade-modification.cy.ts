@@ -5,7 +5,7 @@ describe("Grade Modification", () => {
 
 	describe("Modifying Existing Grades", () => {
 		it("loads existing grades when selecting course and exam", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// First, enter some grades
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -54,7 +54,7 @@ describe("Grade Modification", () => {
 		});
 
 		it("allows modifying an existing grade", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Enter initial grade
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -96,7 +96,7 @@ describe("Grade Modification", () => {
 		});
 
 		it("verifies grade update persists after reload", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Enter initial grade
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -156,7 +156,7 @@ describe("Grade Modification", () => {
 		});
 
 		it("allows clearing a grade", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Enter initial grade
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -199,7 +199,7 @@ describe("Grade Modification", () => {
 
 	describe("Modification History", () => {
 		it("maintains modification history (if feature exists)", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Enter initial grade
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -261,7 +261,7 @@ describe("Grade Modification", () => {
 
 	describe("Multiple Modifications", () => {
 		it("allows modifying multiple students' grades at once", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Enter initial grades
 			cy.get('[data-testid="class-course-select"], #class-course', {
@@ -309,7 +309,7 @@ describe("Grade Modification", () => {
 
 	describe("Validation on Modification", () => {
 		it("validates modified grades are within range", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Enter initial grade
 			cy.get('[data-testid="class-course-select"], #class-course', {
