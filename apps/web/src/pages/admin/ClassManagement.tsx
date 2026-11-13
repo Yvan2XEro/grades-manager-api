@@ -678,7 +678,7 @@ export default function ClassManagement() {
 				) : isLoading ? (
 					<TableSkeleton columns={8} rows={8} />
 				) : (
-					<Table>
+					<Table className="table-fixed">
 						<TableHeader>
 							<TableRow>
 								<TableHead className="w-10">
@@ -690,33 +690,33 @@ export default function ClassManagement() {
 										aria-label="Select all"
 									/>
 								</TableHead>
-								<TableHead className="w-24">
+								<TableHead className="w-[13%] truncate">
 									{t("admin.classes.table.code", { defaultValue: "Code" })}
 								</TableHead>
-								<TableHead>
+								<TableHead className="w-[28%] truncate">
 									{t("admin.classes.table.classProgram", {
 										defaultValue: "Class / Program",
 									})}
 								</TableHead>
-								<TableHead className="w-36">
+								<TableHead className="w-[20%] truncate">
 									{t("admin.classes.table.cycle", {
 										defaultValue: "Cycle / level",
 									})}
 								</TableHead>
-								<TableHead>
+								<TableHead className="w-[11%] truncate">
 									{t("admin.classes.table.optionSemester", {
 										defaultValue: "Option / Semester",
 									})}
 								</TableHead>
-								<TableHead className="w-16">
+								<TableHead className="w-[13%] truncate">
 									{t("admin.classes.table.credits", {
 										defaultValue: "Credits",
 									})}
 								</TableHead>
-								<TableHead className="w-24">
+								<TableHead className="w-[11%] truncate">
 									{t("admin.classes.table.students")}
 								</TableHead>
-								<TableHead className="w-10" />
+								<TableHead className="w-12" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -783,18 +783,34 @@ export default function ClassManagement() {
 										/>
 									</TableCell>
 									<TableCell>
-										<div className="space-y-0.5">
-											<p className="font-medium text-sm">{cls.name}</p>
-											<p className="text-muted-foreground text-xs">
+										<div className="min-w-0 space-y-0.5">
+											<p
+												className="truncate font-medium text-sm"
+												title={cls.name}
+											>
+												{cls.name}
+											</p>
+											<p
+												className="truncate text-muted-foreground text-xs"
+												title={cls.program?.name}
+											>
 												{cls.program?.name}
 											</p>
 										</div>
 									</TableCell>
 									<TableCell>
 										{cls.cycle ? (
-											<div className="space-y-0.5">
-												<p className="font-medium text-sm">{cls.cycle.name}</p>
-												<p className="text-muted-foreground text-xs">
+											<div className="min-w-0 space-y-0.5">
+												<p
+													className="truncate font-medium text-sm"
+													title={cls.cycle.name}
+												>
+													{cls.cycle.name}
+												</p>
+												<p
+													className="truncate text-muted-foreground text-xs"
+													title={cls.cycleLevel?.name}
+												>
 													{cls.cycleLevel?.name}
 													{cls.cycleLevel?.code
 														? ` (${cls.cycleLevel.code})`
@@ -806,9 +822,12 @@ export default function ClassManagement() {
 										)}
 									</TableCell>
 									<TableCell>
-										<div className="space-y-0.5">
+										<div className="min-w-0 space-y-0.5">
 											{cls.programOption ? (
-												<p className="font-medium text-sm">
+												<p
+													className="truncate font-medium text-sm"
+													title={cls.programOption.name}
+												>
 													{cls.programOption.name}
 												</p>
 											) : (
@@ -819,14 +838,14 @@ export default function ClassManagement() {
 												</p>
 											)}
 											{cls.semester ? (
-												<p className="text-muted-foreground text-xs">
+												<p className="truncate text-muted-foreground text-xs">
 													{cls.semester.name}
 												</p>
 											) : null}
 										</div>
 									</TableCell>
 									<TableCell>
-										<div className="flex items-center gap-1.5">
+										<div className="flex items-center gap-1.5 whitespace-nowrap">
 											<span className="font-medium text-sm">
 												{cls.assignedCredits}
 											</span>
@@ -845,7 +864,7 @@ export default function ClassManagement() {
 										</div>
 									</TableCell>
 									<TableCell>
-										<div className="flex items-center gap-2">
+										<div className="flex items-center gap-2 whitespace-nowrap">
 											<Users className="h-4 w-4" />
 											<span>{cls.studentCount ?? 0}</span>
 										</div>
