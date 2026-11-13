@@ -135,6 +135,8 @@ Key domain tables:
 
 ### Frontend Architecture (`apps/web/src/`)
 
+- **Modules**: `modules/<domain>/` (classes, programs, exams, grades, timetable, fees, …) hold the pages, tabs, dialogs and entity form Callables of one domain. Folders are by domain, never by user role.
+- **Shared code**: `components/` (ui, forms, inputs, layouts, navigation, callable), `hooks/`, `lib/`, `store/`, `utils/`
 - **tRPC Client**: `utils/trpc.ts` - Type-safe API client
 - **Auth Client**: `lib/auth-client.ts` - Better-Auth client
 - **State**: `store/index.ts` - Zustand for global state

@@ -1,93 +1,93 @@
-import { BulkClassExportDialog } from "@/components/admin/document-templates/BulkClassExportDialog";
-import { ExportStudentListDialog } from "@/components/admin/document-templates/ExportStudentListButton";
-import { GenerateDocumentDialog } from "@/components/admin/document-templates/GenerateDocumentButton";
-import { UeCourseFormDialog } from "@/components/admin/TeachingUnitCoursesTable";
 import { Confirm } from "@/components/callable/confirm";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
-import { AcademicYearFormDialog } from "@/components/callable/forms/AcademicYearFormDialog";
-import { ClassFormDialog } from "@/components/callable/forms/ClassFormDialog";
-import { CourseFormDialog } from "@/components/callable/forms/CourseFormDialog";
-import { CycleLevelFormDialog } from "@/components/callable/forms/CycleLevelFormDialog";
-import { ExamTypeFormDialog } from "@/components/callable/forms/ExamTypeFormDialog";
-import { InstitutionFormDialog } from "@/components/callable/forms/InstitutionFormDialog";
-import { ProgramFormDialog } from "@/components/callable/forms/ProgramFormDialog";
-import { ProgramOptionFormDialog } from "@/components/callable/forms/ProgramOptionFormDialog";
-import { RoomFormDialog } from "@/components/callable/forms/RoomFormDialog";
-import { StudyCycleFormDialog } from "@/components/callable/forms/StudyCycleFormDialog";
-import { TeachingUnitFormDialog } from "@/components/callable/forms/TeachingUnitFormDialog";
-import { AcademicYearSetupDialog } from "@/pages/admin/AcademicYearSetupDialog";
+import { AcademicYearFormDialog } from "@/modules/academic-years/AcademicYearFormDialog";
+import { AcademicYearSetupDialog } from "@/modules/academic-years/AcademicYearSetupDialog";
 import {
 	CreateApiKeyDialog,
 	EditWebhookDialog,
 	RawApiKeyDialog,
-} from "@/pages/admin/api-keys/ApiKeyDialogs";
+} from "@/modules/api-keys/ApiKeyDialogs";
 import {
 	CreateAttendanceSessionDialog,
 	ExcuseAbsenceDialog,
-} from "@/pages/admin/attendance/AttendanceDialogs";
-import { CreateBatchJobDialog } from "@/pages/admin/batch-jobs/CreateBatchJobDialog";
-import { BulkGenerateClassesDialog } from "@/pages/admin/ClassManagement";
+} from "@/modules/attendance/AttendanceDialogs";
+import { CreateBatchJobDialog } from "@/modules/batch-jobs/CreateBatchJobDialog";
 import {
 	AssignTeachingUnitDialog,
 	AutoEnrollClassDialog,
 	ClassCourseFormDialog,
 	CourseCatalogExportDialog,
-} from "@/pages/admin/class-courses/ClassCourseDialogs";
-import { CreateDeliberationDialog } from "@/pages/admin/deliberations/CreateDeliberationDialog";
-import { DeliberationRuleFormDialog } from "@/pages/admin/deliberations/DeliberationRules";
-import { OverrideDecisionDialog } from "@/pages/admin/deliberations/OverrideDecisionDialog";
-import { PromoteAdmittedDialog } from "@/pages/admin/deliberations/PromoteAdmittedDialog";
-import { ResolveItemSheet } from "@/pages/admin/deliberations/TransitionDetail";
+} from "@/modules/classes/ClassCourseDialogs";
+import { ClassFormDialog } from "@/modules/classes/ClassFormDialog";
+import { BulkGenerateClassesDialog } from "@/modules/classes/ClassManagement";
+import { CreateDeliberationDialog } from "@/modules/deliberations/CreateDeliberationDialog";
+import { DeliberationRuleFormDialog } from "@/modules/deliberations/DeliberationRules";
+import { OverrideDecisionDialog } from "@/modules/deliberations/OverrideDecisionDialog";
+import { PromoteAdmittedDialog } from "@/modules/deliberations/PromoteAdmittedDialog";
+import { ResolveItemSheet } from "@/modules/deliberations/TransitionDetail";
+import { RenameTemplateDialog } from "@/modules/documents/ExportTemplatesManagement";
+import { BulkClassExportDialog } from "@/modules/documents/editor/BulkClassExportDialog";
+import { ExportStudentListDialog } from "@/modules/documents/editor/ExportStudentListButton";
+import { GenerateDocumentDialog } from "@/modules/documents/editor/GenerateDocumentButton";
 import {
 	BulkEnrollClassesDialog,
 	EnrollEntireClassDialog,
 	StudentCourseRosterDialog,
-} from "@/pages/admin/EnrollmentManagement";
-import { ParticipationOverrideDialog } from "@/pages/admin/ExamParticipationRoster";
-import {
-	RunDetailsDialog,
-	ScheduleExamsDialog,
-} from "@/pages/admin/ExamScheduler";
-import { RenameTemplateDialog } from "@/pages/admin/ExportTemplatesManagement";
+} from "@/modules/enrollments/EnrollmentManagement";
 import {
 	ExamFormDialog,
 	RejectExamDialog,
 	RetakeExamDialog,
-} from "@/pages/admin/exams/ExamDialogs";
-import { BankImportDialog } from "@/pages/admin/fee-clearance/BankImportDialog";
+} from "@/modules/exams/ExamDialogs";
+import { ParticipationOverrideDialog } from "@/modules/exams/ExamParticipationRoster";
+import {
+	RunDetailsDialog,
+	ScheduleExamsDialog,
+} from "@/modules/exams/ExamScheduler";
+import { ExamTypeFormDialog } from "@/modules/exams/ExamTypeFormDialog";
+import { RetakeOverrideDialog } from "@/modules/exams/RetakeEligibility";
+import { BankImportDialog } from "@/modules/fees/BankImportDialog";
 import {
 	ConfirmOrderDialog,
 	CreateOrderDialog,
 	ExemptWithNotesDialog,
 	RecordPaymentDialog,
 	UpdateDiscountDialog,
-} from "@/pages/admin/fee-clearance/FeeAssignmentDetail";
+} from "@/modules/fees/FeeAssignmentDetail";
 import {
 	AssignStudentDialog,
 	BulkAssignDialog,
-} from "@/pages/admin/fee-clearance/FeeAssignmentsList";
+} from "@/modules/fees/FeeAssignmentsList";
 import {
 	AddInstallmentDialog,
 	EditInstallmentDialog,
-} from "@/pages/admin/fee-clearance/FeeStructureInstallmentsTab";
-import { CreateStructureDialog } from "@/pages/admin/fee-clearance/FeeStructuresList";
-import { GrantGradeAccessDialog } from "@/pages/admin/GradeAccessGrants";
-import { BulkExportReportDialog } from "@/pages/admin/GradeExport";
-import { ExecutionDetailsDialog } from "@/pages/admin/promotion-rules/execution-history";
-import { PromotionRuleFormDialog } from "@/pages/admin/promotion-rules/rules-list";
-import { RetakeOverrideDialog } from "@/pages/admin/RetakeEligibility";
-import { CopyTimetableDialog } from "@/pages/admin/timetable/CopyTimetableDialog";
-import { TimetableImportDialog } from "@/pages/admin/timetable/TimetableImportDialog";
-import { TimetableSessionDialog } from "@/pages/admin/timetable/TimetableSessionDialog";
+} from "@/modules/fees/FeeStructureInstallmentsTab";
+import { CreateStructureDialog } from "@/modules/fees/FeeStructuresList";
+import { AssignDelegateDialog } from "@/modules/grades/AssignDelegateDialog";
+import { GrantGradeAccessDialog } from "@/modules/grades/GradeAccessGrants";
+import { BulkExportReportDialog } from "@/modules/grades/GradeExport";
 import {
 	AddGuardianDialog,
 	GuardianPreferencesSheet,
-} from "@/pages/admin/users/GuardianDirectory";
-import { CreatePersonDialog } from "@/pages/admin/users/PeopleManagement";
-import { DeanRejectExamDialog } from "@/pages/dean/DeanDashboard";
-import { AvatarCropModal } from "@/pages/settings/AccountTab";
-import { AssignDelegateDialog } from "@/pages/teacher/AssignDelegateDialog";
-import { DuplicateProgramsDialog } from "@/pages/teacher/ProgramManagement";
+} from "@/modules/guardians/GuardianDirectory";
+import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
+import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
+import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
+import { CreatePersonDialog } from "@/modules/people/PeopleManagement";
+import { CourseFormDialog } from "@/modules/programs/CourseFormDialog";
+import { ProgramFormDialog } from "@/modules/programs/ProgramFormDialog";
+import { DuplicateProgramsDialog } from "@/modules/programs/ProgramManagement";
+import { ProgramOptionFormDialog } from "@/modules/programs/ProgramOptionFormDialog";
+import { UeCourseFormDialog } from "@/modules/programs/TeachingUnitCoursesTable";
+import { TeachingUnitFormDialog } from "@/modules/programs/TeachingUnitFormDialog";
+import { ExecutionDetailsDialog } from "@/modules/promotion-rules/execution-history";
+import { PromotionRuleFormDialog } from "@/modules/promotion-rules/rules-list";
+import { AvatarCropModal } from "@/modules/settings/AccountTab";
+import { CopyTimetableDialog } from "@/modules/timetable/CopyTimetableDialog";
+import { RoomFormDialog } from "@/modules/timetable/RoomFormDialog";
+import { TimetableImportDialog } from "@/modules/timetable/TimetableImportDialog";
+import { TimetableSessionDialog } from "@/modules/timetable/TimetableSessionDialog";
+import { DeanRejectExamDialog } from "@/modules/workflows/ExamApprovals";
 
 /**
  * Mounts the single Root of every Callable. Rendered once inside the app

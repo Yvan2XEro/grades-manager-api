@@ -22,7 +22,7 @@ enriched server-side) and then selected. Nesting is recursive
 - `src/components/callable/confirm.tsx`: `Confirm` Callable plus the `confirmAction({...})` helper. This replaces the deleted `hooks/useConfirm.tsx`.
 - `src/components/callable/quick-create.tsx`: `<QuickCreate onCreate label>{select}</QuickCreate>` renders the select with an aligned "+" button.
 - `src/components/forms/coded-entity-select.tsx`: `onCreate` / `createLabel` props. The consumer selects the created item itself (by id) inside `onCreate`.
-- `src/components/callable/forms/*`: reusable entity forms that resolve with the created entity (`undefined` when dismissed).
+- Entity form Callables (`ClassFormDialog`, `ProgramFormDialog`, …) live in their module (`src/modules/<module>/`) and resolve with the created entity (`undefined` when dismissed).
 - `src/lib/query-cache.ts`: `upsertInList(old, item)` works for arrays and for `{ items, total }`.
 - Pattern: `useMutationFlow(call, async (call, data) => { ...; call.end(result) })` keeps the dialog open on error.
 
