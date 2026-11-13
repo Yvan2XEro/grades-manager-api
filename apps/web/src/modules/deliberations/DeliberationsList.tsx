@@ -209,11 +209,15 @@ export default function DeliberationsList() {
 								<TableRow
 									key={d.id}
 									className="cursor-pointer"
-									onClick={() => navigate(`/deliberations/${d.id}`)}
+									onClick={() =>
+										navigate(`/academic-results/deliberations/${d.id}`)
+									}
 									actions={
 										<>
 											<ContextMenuItem
-												onSelect={() => navigate(`/deliberations/${d.id}`)}
+												onSelect={() =>
+													navigate(`/academic-results/deliberations/${d.id}`)
+												}
 											>
 												{t("common.actions.open", { defaultValue: "Open" })}
 											</ContextMenuItem>

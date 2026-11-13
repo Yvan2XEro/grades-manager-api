@@ -42,7 +42,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Students ────────────────────────────────────────────────
-		"/students": [
+		"/users/people": [
 			{
 				title: "Students",
 				items: [
@@ -67,7 +67,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Enrollments ─────────────────────────────────────────────
-		"admin:/enrollments": [
+		"/classes/enrollments": [
 			{
 				title: "Enrollments",
 				items: [
@@ -109,7 +109,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam types ──────────────────────────────────────────────
-		"/exam-types": [
+		"/exams/types": [
 			{
 				title: "Exam types",
 				items: [
@@ -126,7 +126,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam scheduler ──────────────────────────────────────────
-		"/exam-scheduler": [
+		"/exams/scheduler": [
 			{
 				title: "Exam scheduler",
 				items: [
@@ -143,7 +143,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Retake eligibility ──────────────────────────────────────
-		"/retake-eligibility": [
+		"/exams/retakes": [
 			{
 				title: "Retake eligibility",
 				items: [
@@ -160,7 +160,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Faculties ───────────────────────────────────────────────
-		"/faculties": [
+		"/institution/faculties": [
 			{
 				title: "Faculties",
 				items: [
@@ -198,7 +198,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Study cycles ────────────────────────────────────────────
-		"/study-cycles": [
+		"/institution/cycles": [
 			{
 				title: "Study cycles",
 				items: [
@@ -215,7 +215,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Courses (admin) ─────────────────────────────────────────
-		"/courses": [
+		"/programs/courses": [
 			{
 				title: "Courses",
 				items: [
@@ -232,7 +232,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teaching units ──────────────────────────────────────────
-		"/teaching-units": [
+		"/programs/teaching-units": [
 			{
 				title: "Teaching units",
 				items: [
@@ -266,7 +266,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Class courses ───────────────────────────────────────────
-		"/class-courses": [
+		"/classes/assignments": [
 			{
 				title: "Class courses",
 				items: [
@@ -325,7 +325,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Deliberations ───────────────────────────────────────────
-		"/deliberations": [
+		"/academic-results/deliberations": [
 			{
 				title: "Deliberations",
 				items: [
@@ -346,7 +346,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Promotion rules ─────────────────────────────────────────
-		"/promotion-rules": [
+		"/promotion-legacy": [
 			{
 				title: "Promotion rules",
 				items: [
@@ -427,7 +427,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Grade export ────────────────────────────────────────────
-		"/grade-export": [
+		"/exams/export": [
 			{
 				title: "Grade export",
 				items: [
@@ -444,7 +444,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Export templates ────────────────────────────────────────
-		"/export-templates": [
+		"/exams/templates": [
 			{
 				title: "Export templates",
 				items: [
@@ -457,7 +457,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Registration numbers ────────────────────────────────────
-		"/registration-numbers": [
+		"/configuration/reg-numbers": [
 			{
 				title: "Registration numbers",
 				items: [
@@ -505,10 +505,6 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 				],
 			},
-		],
-
-		// ─── Teacher: courses ────────────────────────────────────────
-		"teacher:/courses": [
 			{
 				title: "My courses",
 				items: [
@@ -522,7 +518,22 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 				],
 			},
+			{
+				title: "Mes cours",
+				items: [
+					{
+						q: "Où saisir les notes ?",
+						a: "Cliquez sur un cours pour ouvrir la vue de saisie des notes pour les examens de ce cours.",
+					},
+					{
+						q: "Pourquoi un cours n'est-il pas dans ma liste ?",
+						a: "Vous devez être assigné au cours par un administrateur via l'affectation cours-classe.",
+					},
+				],
+			},
 		],
+
+		// ─── Teacher: courses ────────────────────────────────────────
 
 		// ─── Teacher: grades ─────────────────────────────────────────
 		"/grades": [
@@ -662,7 +673,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Students ────────────────────────────────────────────────
-		"/students": [
+		"/users/people": [
 			{
 				title: "Étudiants",
 				items: [
@@ -687,7 +698,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Enrollments ─────────────────────────────────────────────
-		"admin:/enrollments": [
+		"/classes/enrollments": [
 			{
 				title: "Inscriptions",
 				items: [
@@ -729,7 +740,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam types ──────────────────────────────────────────────
-		"/exam-types": [
+		"/exams/types": [
 			{
 				title: "Types d'examen",
 				items: [
@@ -746,7 +757,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Exam scheduler ──────────────────────────────────────────
-		"/exam-scheduler": [
+		"/exams/scheduler": [
 			{
 				title: "Planificateur d'examens",
 				items: [
@@ -763,7 +774,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Retake eligibility ──────────────────────────────────────
-		"/retake-eligibility": [
+		"/exams/retakes": [
 			{
 				title: "Éligibilité au rattrapage",
 				items: [
@@ -780,7 +791,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Faculties ───────────────────────────────────────────────
-		"/faculties": [
+		"/institution/faculties": [
 			{
 				title: "Facultés",
 				items: [
@@ -818,7 +829,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Study cycles ────────────────────────────────────────────
-		"/study-cycles": [
+		"/institution/cycles": [
 			{
 				title: "Cycles d'études",
 				items: [
@@ -835,7 +846,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Courses (admin) ─────────────────────────────────────────
-		"/courses": [
+		"/programs/courses": [
 			{
 				title: "Cours",
 				items: [
@@ -852,7 +863,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teaching units ──────────────────────────────────────────
-		"/teaching-units": [
+		"/programs/teaching-units": [
 			{
 				title: "Unités d'enseignement",
 				items: [
@@ -886,7 +897,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Class courses ───────────────────────────────────────────
-		"/class-courses": [
+		"/classes/assignments": [
 			{
 				title: "Cours de classe",
 				items: [
@@ -945,7 +956,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Deliberations ───────────────────────────────────────────
-		"/deliberations": [
+		"/academic-results/deliberations": [
 			{
 				title: "Délibérations",
 				items: [
@@ -966,7 +977,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Promotion rules ─────────────────────────────────────────
-		"/promotion-rules": [
+		"/promotion-legacy": [
 			{
 				title: "Règles de promotion",
 				items: [
@@ -1047,7 +1058,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Grade export ────────────────────────────────────────────
-		"/grade-export": [
+		"/exams/export": [
 			{
 				title: "Export des notes",
 				items: [
@@ -1064,7 +1075,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Export templates ────────────────────────────────────────
-		"/export-templates": [
+		"/exams/templates": [
 			{
 				title: "Modèles d'export",
 				items: [
@@ -1077,7 +1088,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Registration numbers ────────────────────────────────────
-		"/registration-numbers": [
+		"/configuration/reg-numbers": [
 			{
 				title: "Numéros d'inscription",
 				items: [
@@ -1128,21 +1139,6 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Teacher: courses ────────────────────────────────────────
-		"teacher:/courses": [
-			{
-				title: "Mes cours",
-				items: [
-					{
-						q: "Où saisir les notes ?",
-						a: "Cliquez sur un cours pour ouvrir la vue de saisie des notes pour les examens de ce cours.",
-					},
-					{
-						q: "Pourquoi un cours n'est-il pas dans ma liste ?",
-						a: "Vous devez être assigné au cours par un administrateur via l'affectation cours-classe.",
-					},
-				],
-			},
-		],
 
 		// ─── Teacher: grades ─────────────────────────────────────────
 		"/grades": [

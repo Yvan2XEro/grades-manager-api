@@ -8,7 +8,7 @@ export interface WorkflowStep {
 export const ADMIN_WORKFLOW: WorkflowStep[] = [
 	{
 		key: "institution",
-		route: "/settings",
+		route: "/institution/overview",
 		label: { en: "Institution settings", fr: "Paramètres institution" },
 	},
 	{
@@ -18,12 +18,12 @@ export const ADMIN_WORKFLOW: WorkflowStep[] = [
 	},
 	{
 		key: "faculties",
-		route: "/faculties",
+		route: "/institution/faculties",
 		label: { en: "Faculties", fr: "Facultés" },
 	},
 	{
 		key: "study-cycles",
-		route: "/study-cycles",
+		route: "/institution/cycles",
 		label: { en: "Study cycles", fr: "Cycles d'études" },
 	},
 	{
@@ -33,22 +33,22 @@ export const ADMIN_WORKFLOW: WorkflowStep[] = [
 	},
 	{
 		key: "teaching-units",
-		route: "/teaching-units",
+		route: "/programs/teaching-units",
 		label: { en: "Teaching units", fr: "Unités d'enseignement" },
 	},
 	{
 		key: "exam-types",
-		route: "/exam-types",
+		route: "/exams/types",
 		label: { en: "Exam types", fr: "Types d'examen" },
 	},
 	{
 		key: "students",
-		route: "/students",
+		route: "/users/people",
 		label: { en: "Students", fr: "Étudiants" },
 	},
 	{
 		key: "enrollments",
-		route: "/enrollments",
+		route: "/classes/enrollments",
 		label: { en: "Enrollments", fr: "Inscriptions" },
 	},
 	{

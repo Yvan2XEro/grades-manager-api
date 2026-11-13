@@ -1,7 +1,7 @@
 import { Navigate } from "react-router";
 
 const RuleManagement = () => {
-	return <Navigate to="/promotion-rules/rules" replace />;
+	return <Navigate to="/promotion-legacy?tab=rules" replace />;
 };
 
 export default RuleManagement;

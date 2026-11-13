@@ -153,7 +153,7 @@ export function EvaluatePromotionPage() {
 		}
 
 		// Navigate to execution page with selections
-		navigate("/promotion-rules/execute", {
+		navigate("/promotion-legacy?tab=execute", {
 			state: {
 				ruleId: selectedRuleId,
 				sourceClassId: selectedSourceClassId,
@@ -170,7 +170,7 @@ export function EvaluatePromotionPage() {
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={() => navigate("/promotion-rules")}
+					onClick={() => navigate("/promotion-legacy")}
 					className="gap-2"
 				>
 					<ArrowLeft className="h-4 w-4" />

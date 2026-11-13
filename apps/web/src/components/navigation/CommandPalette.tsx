@@ -63,7 +63,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 				{
 					labelKey: "navigation.sidebar.admin.students",
 					icon: <GraduationCap className={IC} />,
-					href: "/students",
+					href: "/users/people",
 					keywords: "students élèves étudiants",
 				},
 				{

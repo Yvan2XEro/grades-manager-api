@@ -669,7 +669,7 @@ export default function TransitionDetail() {
 					variant="ghost"
 					size="sm"
 					className="mb-4 gap-2"
-					onClick={() => navigate("/promotion")}
+					onClick={() => navigate("/academic-results/promotion")}
 				>
 					<ArrowLeft className="size-4" />
 					{t("common.actions.back")}
@@ -985,7 +985,7 @@ export default function TransitionDetail() {
 													</span>
 												) : (
 													<a
-														href="/deliberations"
+														href="/academic-results/deliberations"
 														className="flex items-center gap-1 text-amber-600 text-sm hover:underline"
 													>
 														<AlertCircle className="size-3.5" />

@@ -163,7 +163,7 @@ const QUICK_ACTIONS = [
 	{
 		label: "Ajouter un étudiant",
 		icon: <UserPlus className="h-4 w-4" />,
-		href: "/students",
+		href: "/users/people",
 		color:
 			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
 			icon: <Users className="h-5 w-5" />,
 			gradient: "bg-primary/10",
 			iconColor: "text-primary",
-			href: "/students",
+			href: "/users/people",
 		},
 		{
 			key: "enrollments",
