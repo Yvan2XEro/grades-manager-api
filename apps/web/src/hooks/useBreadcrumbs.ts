@@ -106,6 +106,7 @@ const segmentLabels: Record<string, string> = {
 	"retake-eligibility": "navigation.sidebar.admin.retakeEligibility",
 	workflows: "navigation.sidebar.dean.workflows",
 	grades: "navigation.sidebar.teacher.grades",
+	fast: "teacher.courses.actions.fastEntry",
 };
 
 export function useBreadcrumbs(): BreadcrumbItem[] {

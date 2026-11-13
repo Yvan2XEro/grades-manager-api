@@ -3580,7 +3580,7 @@
       "delegatedDashboardBadge": "Délégué",
       "actions": {
         "viewGrades": "Voir les notes",
-        "fastEntry": "Fast Entry"
+        "fastEntry": "Saisie rapide"
       },
       "empty": {
         "title": "Aucun cours attribué",
@@ -4476,21 +4476,21 @@
       }
     },
     "spreadsheet": {
-      "errors": "Errors",
-      "filled": "Filled",
-      "invalidScore": "Invalid Score",
+      "errors": "erreurs",
+      "filled": "remplies",
+      "invalidScore": "La note doit être comprise entre 0 et 20",
       "legend": {
-        "hint": "Hint",
-        "title": "Title"
+        "hint": "Tab/Entrée/flèches pour naviguer. Videz une cellule pour supprimer la note. Enregistrement automatique en quittant la cellule.",
+        "title": "Saisie rapide — enregistrement automatique"
       },
       "matricule": "Matricule",
-      "noCourse": "No Course",
-      "noExams": "No Exams",
-      "noStudents": "No Students",
-      "pending": "Pending",
-      "perExamMode": "Per Exam Mode",
-      "searchStudent": "Search Student",
-      "studentCol": "Student Col"
+      "noCourse": "Aucun cours sélectionné",
+      "noExams": "Aucun examen pour ce cours. Créez-en un d'abord.",
+      "noStudents": "Aucun étudiant ne correspond à la recherche.",
+      "pending": "en cours",
+      "perExamMode": "Mode examen unique",
+      "searchStudent": "Rechercher un étudiant…",
+      "studentCol": "Étudiant"
     }
   },
   "dean": {

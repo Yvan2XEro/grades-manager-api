@@ -1107,21 +1107,21 @@
       "rejectionReason": "Rejection reason"
     },
     "spreadsheet": {
-      "errors": "Errors",
-      "filled": "Filled",
-      "invalidScore": "Invalid Score",
+      "errors": "errors",
+      "filled": "filled",
+      "invalidScore": "Score must be between 0 and 20",
       "legend": {
-        "hint": "Hint",
-        "title": "Title"
+        "hint": "Tab/Enter/arrows to move. Clear a cell to delete the grade. Saved automatically when leaving the cell.",
+        "title": "Fast entry — autosave"
       },
-      "matricule": "Matricule",
-      "noCourse": "No Course",
-      "noExams": "No Exams",
-      "noStudents": "No Students",
-      "pending": "Pending",
-      "perExamMode": "Per Exam Mode",
-      "searchStudent": "Search Student",
-      "studentCol": "Student Col"
+      "matricule": "Registration no.",
+      "noCourse": "No course selected",
+      "noExams": "No exam for this course yet. Create one first.",
+      "noStudents": "No student matches the search.",
+      "pending": "pending",
+      "perExamMode": "Per-exam mode",
+      "searchStudent": "Search for a student…",
+      "studentCol": "Student"
     }
   },
   "navigation": {

@@ -1138,7 +1138,7 @@ const PerformanceDashboard = () => {
 			: 0;
 
 	const fullName = student
-		? `${student.firstName} ${student.lastName}`.trim()
+		? `${student.profile.firstName} ${student.profile.lastName}`.trim()
 		: "";
 
 	const units = transcript?.units ?? [];

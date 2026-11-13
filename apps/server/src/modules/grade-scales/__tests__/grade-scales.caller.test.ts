@@ -20,12 +20,13 @@ afterAll(async () => {});
 
 describe("gradeScales router", () => {
 	describe("get", () => {
-		it("returns undefined when no scale configured", async () => {
+		it("returns null when no scale configured", async () => {
 			const ctx = asAdmin();
 			const caller = createCaller(ctx);
 			const result = await caller.gradeScales.get();
-			// No scale yet → undefined (raw DB row, not resolved default)
-			expect(result).toBeUndefined();
+			// No scale yet → null (raw DB row, not resolved default); undefined
+			// would be rejected by React Query on the client
+			expect(result).toBeNull();
 		});
 	});
 

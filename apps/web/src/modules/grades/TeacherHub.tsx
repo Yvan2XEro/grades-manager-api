@@ -10,10 +10,11 @@ import {
 	Send,
 	Users,
 	X,
+	Zap,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -201,6 +202,7 @@ function CompactExamRow({
 // ─── Course Card ──────────────────────────────────────────────────────────────
 
 function TeacherCourseCard({ course }: { course: CourseData }) {
+	const { t } = useTranslation();
 	const hasPendingAction = course.exams.some(
 		(e) =>
 			e.status === "locked" ||
@@ -231,6 +233,19 @@ function TeacherCourseCard({ course }: { course: CourseData }) {
 					</div>
 				</div>
 				<div className="flex shrink-0 items-center gap-2 text-muted-foreground text-xs">
+					{course.exams.length > 0 && (
+						<Button
+							asChild
+							size="sm"
+							variant="ghost"
+							className="h-7 px-2 text-xs"
+						>
+							<Link to={`/grades/${course.classCourseId}/fast`}>
+								<Zap className="mr-1 h-3 w-3" />
+								{t("teacher.courses.actions.fastEntry")}
+							</Link>
+						</Button>
+					)}
 					<Users className="h-3.5 w-3.5" />
 					<span>{course.studentCount}</span>
 					{hasPendingAction && (
