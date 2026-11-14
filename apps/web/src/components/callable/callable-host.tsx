@@ -44,30 +44,22 @@ import {
 } from "@/modules/exams/ExamScheduler";
 import { ExamTypeFormDialog } from "@/modules/exams/ExamTypeFormDialog";
 import { RetakeOverrideDialog } from "@/modules/exams/RetakeEligibility";
-import { BankImportDialog } from "@/modules/fees/BankImportDialog";
-import {
-	ConfirmOrderDialog,
-	CreateOrderDialog,
-	ExemptWithNotesDialog,
-	RecordPaymentDialog,
-	UpdateDiscountDialog,
-} from "@/modules/fees/FeeAssignmentDetail";
-import {
-	AssignStudentDialog,
-	BulkAssignDialog,
-} from "@/modules/fees/FeeAssignmentsList";
-import {
-	AddInstallmentDialog,
-	EditInstallmentDialog,
-} from "@/modules/fees/FeeStructureInstallmentsTab";
-import { CreateStructureDialog } from "@/modules/fees/FeeStructuresList";
+import { AddInstallmentDialog } from "@/modules/fees/components/add-installment-dialog";
+import { AssignStudentDialog } from "@/modules/fees/components/assign-student-dialog";
+import { BankImportDialog } from "@/modules/fees/components/bank-import-dialog";
+import { BulkAssignDialog } from "@/modules/fees/components/bulk-assign-dialog";
+import { ConfirmOrderDialog } from "@/modules/fees/components/confirm-order-dialog";
+import { CreateOrderDialog } from "@/modules/fees/components/create-order-dialog";
+import { CreateStructureDialog } from "@/modules/fees/components/create-structure-dialog";
+import { EditInstallmentDialog } from "@/modules/fees/components/edit-installment-dialog";
+import { ExemptWithNotesDialog } from "@/modules/fees/components/exempt-with-notes-dialog";
+import { RecordPaymentDialog } from "@/modules/fees/components/record-payment-dialog";
+import { UpdateDiscountDialog } from "@/modules/fees/components/update-discount-dialog";
 import { AssignDelegateDialog } from "@/modules/grades/AssignDelegateDialog";
 import { GrantGradeAccessDialog } from "@/modules/grades/GradeAccessGrants";
 import { BulkExportReportDialog } from "@/modules/grades/GradeExport";
-import {
-	AddGuardianDialog,
-	GuardianPreferencesSheet,
-} from "@/modules/guardians/GuardianDirectory";
+import { AddGuardianDialog } from "@/modules/guardians/components/add-guardian-dialog";
+import { GuardianPreferencesSheet } from "@/modules/guardians/components/guardian-preferences-sheet";
 import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
 import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
 import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";

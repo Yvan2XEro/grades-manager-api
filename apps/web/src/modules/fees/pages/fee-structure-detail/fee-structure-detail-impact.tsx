@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { trpc } from "@/utils/trpc";
 
-export default function FeeStructureImpactTab() {
+export default function FeeStructureDetailImpact() {
 	const { id } = useParams<{ id: string }>();
 	const { t } = useTranslation();
 

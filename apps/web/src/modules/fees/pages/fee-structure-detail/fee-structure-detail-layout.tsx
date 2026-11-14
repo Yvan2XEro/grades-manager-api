@@ -1,13 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "@/utils/trpc";
+import {
+	useFeeStructure,
+	useUpdateStructure,
+} from "../../hooks/use-fee-structures";
 
 const TABS = [
 	{ path: "details", labelKey: "feeClearance.structures.tabs.details" },
@@ -22,25 +24,11 @@ const TABS = [
 	},
 ] as const;
 
-export default function FeeStructureDetail() {
+export default function FeeStructureDetailLayout() {
 	const { id } = useParams<{ id: string }>();
 	const { t } = useTranslation();
-	const queryClient = useQueryClient();
-
-	const { data: structure, isLoading } = useQuery(
-		trpc.feeClearance.getStructure.queryOptions({ id: id! }),
-	);
-
-	const updateMut = useMutation({
-		mutationFn: (data: { isActive?: boolean }) =>
-			trpcClient.feeClearance.updateStructure.mutate({ id: id!, ...data }),
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: trpc.feeClearance.getStructure.queryKey({ id: id! }),
-			});
-			toast.success(t("common.saved"));
-		},
-	});
+	const { structure, isLoading } = useFeeStructure(id!);
+	const updateMut = useUpdateStructure(id!);
 
 	if (isLoading) {
 		return (
@@ -54,7 +42,7 @@ export default function FeeStructureDetail() {
 	if (!structure) return null;
 
 	return (
-		<div className="space-y-6">
+		<HubLayout>
 			<div className="flex items-center gap-3">
 				<Button variant="ghost" size="icon" asChild>
 					<Link to="/fee-clearance/structures">
@@ -78,6 +66,6 @@ export default function FeeStructureDetail() {
 				</div>
 			</div>
 			<HubNav tabs={TABS} basePath={`/fee-clearance/structures/${id}`} />
-		</div>
+		</HubLayout>
 	);
 }

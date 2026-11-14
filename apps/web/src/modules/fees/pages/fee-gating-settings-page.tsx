@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 
-export default function FeeGatingSettings() {
+export default function FeeGatingSettingsPage() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 

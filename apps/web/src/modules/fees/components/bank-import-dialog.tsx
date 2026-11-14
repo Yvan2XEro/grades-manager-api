@@ -1,20 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-	AlertCircle,
-	CheckCircle2,
-	HelpCircle,
-	Loader2,
-	Upload,
-	XCircle,
-} from "lucide-react";
+import { CheckCircle2, Loader2, Upload, XCircle } from "lucide-react";
 import { useRef, useState } from "react";
 import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
-import * as XLSX from "xlsx";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogBody,
@@ -31,135 +21,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
-import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
-
-type PreviewResult =
-	RouterOutputs["feeClearance"]["previewBankImport"]["results"][number];
-
-type ImportStatus = PreviewResult["status"];
-
-const STATUS_BADGE: Record<
-	ImportStatus,
-	{
-		label: string;
-		variant: "default" | "secondary" | "destructive" | "outline";
-		icon: React.ReactNode;
-	}
-> = {
-	matched: {
-		label: "Correspondance",
-		variant: "default",
-		icon: <CheckCircle2 className="h-3 w-3" />,
-	},
-	duplicate: {
-		label: "Doublon",
-		variant: "secondary",
-		icon: <AlertCircle className="h-3 w-3" />,
-	},
-	unknown_ref: {
-		label: "Référence inconnue",
-		variant: "destructive",
-		icon: <XCircle className="h-3 w-3" />,
-	},
-	amount_mismatch: {
-		label: "Montant incorrect",
-		variant: "outline",
-		icon: <HelpCircle className="h-3 w-3" />,
-	},
-};
-
-type ParsedRow = { reference: string; amount: number; date: string };
-
-function parseCSV(raw: string): ParsedRow[] {
-	return raw
-		.split("\n")
-		.map((line) => line.trim())
-		.filter(Boolean)
-		.filter(
-			(line) =>
-				!line.startsWith("#") && !line.toLowerCase().startsWith("reference"),
-		)
-		.map((line) => {
-			const parts = line.split(/[,;\t]/);
-			const reference = parts[0]?.trim() ?? "";
-			const amount = Number.parseFloat(
-				(parts[1] ?? "").trim().replace(/\s/g, ""),
-			);
-			const date = (parts[2] ?? "").trim();
-			return { reference, amount, date };
-		})
-		.filter(
-			(r) =>
-				r.reference.length > 0 &&
-				!Number.isNaN(r.amount) &&
-				r.amount > 0 &&
-				/^\d{4}-\d{2}-\d{2}$/.test(r.date),
-		);
-}
-
-function xlsxDateToISO(value: unknown): string {
-	if (value instanceof Date) {
-		return value.toISOString().slice(0, 10);
-	}
-	if (typeof value === "number") {
-		// Excel serial date
-		const d = XLSX.SSF.parse_date_code(value);
-		if (d) {
-			const month = String(d.m).padStart(2, "0");
-			const day = String(d.d).padStart(2, "0");
-			return `${d.y}-${month}-${day}`;
-		}
-	}
-	if (typeof value === "string") {
-		// Try ISO or DD/MM/YYYY
-		const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-		if (iso) return value;
-		const fr = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-		if (fr) return `${fr[3]}-${fr[2]}-${fr[1]}`;
-	}
-	return "";
-}
-
-function parseXLSX(buffer: ArrayBuffer): ParsedRow[] {
-	const wb = XLSX.read(buffer, { type: "array", cellDates: true });
-	const ws = wb.Sheets[wb.SheetNames[0]];
-	if (!ws) return [];
-	const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, {
-		header: 1,
-		defval: "",
-	}) as unknown[][];
-
-	return rows
-		.slice(1) // skip header
-		.map((row) => {
-			const reference = String(row[0] ?? "").trim();
-			const rawAmount = row[1];
-			const amount = Number.parseFloat(
-				String(rawAmount ?? "")
-					.trim()
-					.replace(/\s/g, ""),
-			);
-			const date = xlsxDateToISO(row[2]);
-			return { reference, amount, date };
-		})
-		.filter(
-			(r) =>
-				r.reference.length > 0 &&
-				!Number.isNaN(r.amount) &&
-				r.amount > 0 &&
-				/^\d{4}-\d{2}-\d{2}$/.test(r.date),
-		);
-}
+import { trpc, trpcClient } from "@/utils/trpc";
+import {
+	type ParsedRow,
+	parseCSV,
+	parseXLSX,
+} from "../services/bank-import-parser";
+import { BankImportPreview } from "./bank-import-preview";
 
 interface Props {
 	onSuccess: () => void;
@@ -377,127 +247,12 @@ export const BankImportDialog = createCallable<Props, void>(
 
 						{/* Preview table */}
 						{showPreview && (
-							<div className="space-y-2">
-								{previewQuery.isLoading ? (
-									<div className="flex items-center justify-center py-6">
-										<Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-									</div>
-								) : preview ? (
-									<>
-										{/* Summary chips */}
-										<div className="flex flex-wrap gap-2">
-											{(
-												[
-													["matched", preview.summary.matched],
-													["duplicate", preview.summary.duplicate],
-													["unknown_ref", preview.summary.unknownRef],
-													["amount_mismatch", preview.summary.amountMismatch],
-												] as [ImportStatus, number][]
-											)
-												.filter(([, n]) => n > 0)
-												.map(([status, n]) => {
-													const cfg = STATUS_BADGE[status];
-													return (
-														<Badge
-															key={status}
-															variant={cfg.variant}
-															className="gap-1"
-														>
-															{cfg.icon}
-															{cfg.label}: {n}
-														</Badge>
-													);
-												})}
-										</div>
-
-										<div className="max-h-64 overflow-y-auto rounded border">
-											<Table>
-												<TableHeader>
-													<TableRow>
-														<TableHead>
-															{t("feeClearance.bankImport.col.reference")}
-														</TableHead>
-														<TableHead className="text-right">
-															{t("feeClearance.bankImport.col.amount")}
-														</TableHead>
-														<TableHead>
-															{t("feeClearance.bankImport.col.date")}
-														</TableHead>
-														<TableHead>
-															{t("feeClearance.bankImport.col.student")}
-														</TableHead>
-														<TableHead>
-															{t("feeClearance.bankImport.col.status")}
-														</TableHead>
-														<TableHead />
-													</TableRow>
-												</TableHeader>
-												<TableBody>
-													{preview.results.map((r, i) => {
-														const cfg = STATUS_BADGE[r.status];
-														const isForced = forceMatchRefs.has(r.reference);
-														return (
-															<TableRow key={`${r.reference}-${i}`}>
-																<TableCell className="font-mono text-xs">
-																	{r.reference}
-																</TableCell>
-																<TableCell className="text-right text-xs">
-																	{r.amount.toLocaleString()}
-																	{r.orderAmount &&
-																		r.orderAmount !== r.amount && (
-																			<span className="ml-1 text-muted-foreground">
-																				(attendu:{" "}
-																				{r.orderAmount.toLocaleString()})
-																			</span>
-																		)}
-																</TableCell>
-																<TableCell className="text-xs">
-																	{r.date}
-																</TableCell>
-																<TableCell className="text-xs">
-																	{r.studentName ?? "—"}
-																</TableCell>
-																<TableCell>
-																	<Badge
-																		variant={isForced ? "default" : cfg.variant}
-																		className="gap-1 text-xs"
-																	>
-																		{isForced ? (
-																			<CheckCircle2 className="h-3 w-3" />
-																		) : (
-																			cfg.icon
-																		)}
-																		{isForced
-																			? t("feeClearance.bankImport.forced", {
-																					defaultValue: "Forcé",
-																				})
-																			: cfg.label}
-																	</Badge>
-																</TableCell>
-																<TableCell>
-																	{r.status === "amount_mismatch" && (
-																		<label className="flex cursor-pointer items-center gap-1.5 text-xs">
-																			<Checkbox
-																				checked={isForced}
-																				onCheckedChange={() =>
-																					toggleForceMatch(r.reference)
-																				}
-																			/>
-																			{t("feeClearance.bankImport.forceMatch", {
-																				defaultValue: "Forcer",
-																			})}
-																		</label>
-																	)}
-																</TableCell>
-															</TableRow>
-														);
-													})}
-												</TableBody>
-											</Table>
-										</div>
-									</>
-								) : null}
-							</div>
+							<BankImportPreview
+								preview={previewQuery.data}
+								isLoading={previewQuery.isLoading}
+								forceMatchRefs={forceMatchRefs}
+								onToggleForceMatch={toggleForceMatch}
+							/>
 						)}
 					</DialogBody>
 

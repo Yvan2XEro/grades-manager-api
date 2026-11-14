@@ -1,5 +1,5 @@
 import { Route } from "react-router";
-import GuardianPortal from "./GuardianPortal";
+import GuardianPortal from "./pages/guardian-portal-page";
 
 /** Public guardian portal (token-based access, no session). */
 export const guardiansPublicRoutes = (
