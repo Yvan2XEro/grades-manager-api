@@ -1,3 +1,4 @@
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 
 const tabs = [
@@ -8,8 +9,8 @@ const tabs = [
 
 export default function UsersHub() {
 	return (
-		<div className="space-y-6">
+		<HubLayout>
 			<HubNav tabs={tabs} basePath="/users" />
-		</div>
+		</HubLayout>
 	);
 }

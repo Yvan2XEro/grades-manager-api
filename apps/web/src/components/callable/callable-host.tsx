@@ -2,11 +2,9 @@ import { Confirm } from "@/components/callable/confirm";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { AcademicYearFormDialog } from "@/modules/academic-years/AcademicYearFormDialog";
 import { AcademicYearSetupDialog } from "@/modules/academic-years/AcademicYearSetupDialog";
-import {
-	CreateApiKeyDialog,
-	EditWebhookDialog,
-	RawApiKeyDialog,
-} from "@/modules/api-keys/ApiKeyDialogs";
+import { CreateApiKeyDialog } from "@/modules/api-keys/components/create-api-key-dialog";
+import { EditWebhookDialog } from "@/modules/api-keys/components/edit-webhook-dialog";
+import { RawApiKeyDialog } from "@/modules/api-keys/components/raw-api-key-dialog";
 import {
 	CreateAttendanceSessionDialog,
 	ExcuseAbsenceDialog,
@@ -71,7 +69,7 @@ import {
 import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
 import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
 import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
-import { CreatePersonDialog } from "@/modules/people/PeopleManagement";
+import { CreatePersonDialog } from "@/modules/people/components/create-person-dialog";
 import { CourseFormDialog } from "@/modules/programs/CourseFormDialog";
 import { ProgramFormDialog } from "@/modules/programs/ProgramFormDialog";
 import { DuplicateProgramsDialog } from "@/modules/programs/ProgramManagement";

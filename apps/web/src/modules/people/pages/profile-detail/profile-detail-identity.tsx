@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useProfileContext } from "./ProfileContext";
+import { useProfileContext } from "../../hooks/use-profile-context";
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
 	if (!value) return null;

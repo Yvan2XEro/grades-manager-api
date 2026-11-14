@@ -1,18 +1,16 @@
 import { Navigate, Route } from "react-router";
-import ApiKeysManagement from "@/modules/api-keys/ApiKeysManagement";
+import ApiKeysManagement from "@/modules/api-keys/pages/api-keys-page";
 import GuardianDirectory from "@/modules/guardians/GuardianDirectory";
-import AcademicTimeline from "./AcademicTimeline";
-import {
-	ProfileAccessTab,
-	ProfileEnrollmentsTab,
-	ProfileFinancesTab,
-	ProfileGuardiansTab,
-	ProfileHub,
-	ProfileIdentityTab,
-	ProfileResultsTab,
-} from "./index";
-import PeopleManagement from "./PeopleManagement";
-import UsersHub from "./UsersHub";
+import AcademicTimeline from "./pages/academic-timeline-page";
+import PeopleManagement from "./pages/people-page";
+import ProfileAccessTab from "./pages/profile-detail/profile-detail-access";
+import ProfileEnrollmentsTab from "./pages/profile-detail/profile-detail-enrollments";
+import ProfileFinancesTab from "./pages/profile-detail/profile-detail-finances";
+import ProfileGuardiansTab from "./pages/profile-detail/profile-detail-guardians";
+import ProfileIdentityTab from "./pages/profile-detail/profile-detail-identity";
+import ProfileHub from "./pages/profile-detail/profile-detail-layout";
+import ProfileResultsTab from "./pages/profile-detail/profile-detail-results";
+import UsersHub from "./pages/users-layout";
 
 export const peopleRoutes = (
 	<>

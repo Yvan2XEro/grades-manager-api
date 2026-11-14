@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { trpcClient } from "@/utils/trpc";
-import { useProfileContext } from "./ProfileContext";
+import { useProfileContext } from "../../hooks/use-profile-context";
 
 export default function ProfileGuardiansTab() {
 	const { profileId } = useProfileContext();

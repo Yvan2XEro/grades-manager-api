@@ -6,7 +6,7 @@ import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { trpcClient } from "@/utils/trpc";
-import { ProfileContext } from "./ProfileContext";
+import { ProfileContext } from "../../hooks/use-profile-context";
 
 const ALL_TABS = [
 	{ path: "identity", labelKey: "profileHub.tabs.identity" },
