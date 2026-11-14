@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Button } from "@/components/ui/button";
 import { staggerItem } from "@/lib/animations";
 
@@ -18,7 +18,7 @@ export function PendingFeesBanner() {
 				{t("student.dashboard.pendingFees")}
 			</div>
 			<Button variant="outline" size="sm" className="shrink-0" asChild>
-				<Link to="/fees">{t("student.dashboard.viewFees")}</Link>
+				<PageLink to="/fees">{t("student.dashboard.viewFees")}</PageLink>
 			</Button>
 		</motion.div>
 	);

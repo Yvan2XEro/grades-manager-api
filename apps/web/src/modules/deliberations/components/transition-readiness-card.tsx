@@ -1,5 +1,6 @@
-import { AlertCircle, CheckCircle2, ExternalLink, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -103,14 +104,14 @@ export function TransitionReadinessCard({
 											{t("admin.academicYearTransitions.readiness.signed")}
 										</span>
 									) : (
-										<a
-											href="/academic-results/deliberations"
+										<PageLink
+											to="/academic-results/deliberations"
 											className="flex items-center gap-1 text-amber-600 text-sm hover:underline"
+											hideIcon
 										>
 											<AlertCircle className="size-3.5" />
 											{t("admin.academicYearTransitions.readiness.missing")}
-											<ExternalLink className="size-3" />
-										</a>
+										</PageLink>
 									)}
 								</TableCell>
 								<TableCell className="text-right text-sm tabular-nums">

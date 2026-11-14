@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { MoreHorizontal } from "lucide-react";
 import { Fragment } from "react";
+import { ExternalLinkIcon } from "@/components/navigation/external-link-icon";
 import { Button } from "@/components/ui/button";
 import {
 	ContextMenuItem,
@@ -23,6 +24,8 @@ export interface RowAction {
 	disabled?: boolean;
 	/** Draws a separator above this action. */
 	separator?: boolean;
+	/** The action leaves the current page: shows an external-link icon. */
+	external?: boolean;
 }
 
 export function RowActionsDropdown({ actions }: { actions: RowAction[] }) {
@@ -50,6 +53,7 @@ export function RowActionsDropdown({ actions }: { actions: RowAction[] }) {
 						>
 							{Icon && <Icon className="h-4 w-4" />}
 							{label}
+							{action.external && <ExternalLinkIcon className="ml-auto" />}
 						</DropdownMenuItem>
 					</Fragment>
 				))}
@@ -71,6 +75,7 @@ export function RowContextMenuItems({ actions }: { actions: RowAction[] }) {
 					>
 						{Icon && <Icon className="h-4 w-4" />}
 						<span>{label}</span>
+						{action.external && <ExternalLinkIcon className="ml-auto" />}
 					</ContextMenuItem>
 				</Fragment>
 			))}

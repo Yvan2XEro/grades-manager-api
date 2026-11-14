@@ -1,5 +1,5 @@
 import { Bell, ChevronRight } from "lucide-react";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Button } from "@/components/ui/button";
 import type { NotifItem, TFn } from "../../types";
 
@@ -42,10 +42,10 @@ export function ActionRow({
 					asChild
 					onClick={() => onMarkRead(item.id)}
 				>
-					<Link to={to}>
+					<PageLink to={to}>
 						{t("student.pendingActions.act")}
 						<ChevronRight className="ml-1 h-3 w-3" />
-					</Link>
+					</PageLink>
 				</Button>
 			) : (
 				<button
@@ -94,13 +94,13 @@ export function InfoRow({
 	return (
 		<li className="group flex items-center gap-2 px-4 py-2">
 			{to ? (
-				<Link
+				<PageLink
 					to={to}
 					className="min-w-0 flex-1"
 					onClick={() => onMarkRead(item.id)}
 				>
 					{inner}
-				</Link>
+				</PageLink>
 			) : (
 				<div className="min-w-0 flex-1">{inner}</div>
 			)}

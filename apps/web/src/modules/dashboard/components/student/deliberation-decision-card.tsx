@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { Award, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DecisionResult } from "../../types";
@@ -195,10 +195,10 @@ export function DeliberationDecisionCard({
 			{decision.closedAt && (
 				<div className="border-t px-4 py-3">
 					<Button asChild size="sm" variant="outline">
-						<Link to="/documents">
+						<PageLink to="/documents">
 							<FileText className="mr-2 h-4 w-4" />
 							{t("student.performance.downloadDocuments")}
-						</Link>
+						</PageLink>
 					</Button>
 				</div>
 			)}

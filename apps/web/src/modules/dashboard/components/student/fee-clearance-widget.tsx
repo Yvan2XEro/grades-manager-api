@@ -5,7 +5,7 @@ import {
 	CreditCard,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Button } from "@/components/ui/button";
 import type { FeeAssignment } from "../../types";
 
@@ -55,11 +55,11 @@ export function FeeClearanceWidget({
 				</p>
 			</div>
 			<Button variant="ghost" size="sm" asChild>
-				<Link to="/fees">
+				<PageLink to="/fees">
 					<CreditCard className="mr-1 h-4 w-4" />
 					{t("student.dashboard.viewFees")}
 					<ChevronRight className="ml-1 h-3 w-3" />
-				</Link>
+				</PageLink>
 			</Button>
 		</div>
 	);

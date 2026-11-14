@@ -1,21 +1,26 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { Link } from "react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
 import { staggerItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
+import { useDashboardPages } from "../../hooks/use-dashboard-pages";
 import type { KpiCard } from "../../types";
 
 export function StatCard({ card, label }: { card: KpiCard; label: string }) {
 	const count = useAnimatedCounter(card.count);
+	const openPage = useDashboardPages();
 	return (
 		<motion.div
 			variants={staggerItem}
 			whileHover={{ y: -3 }}
 			transition={{ duration: 0.15 }}
 		>
-			<Link to={card.href}>
+			<button
+				type="button"
+				className="block w-full text-left"
+				onClick={() => openPage(card.page)}
+			>
 				<Card className="group cursor-pointer border-0 shadow-sm transition-all duration-200 hover:shadow-lg">
 					<CardContent className="flex items-center gap-4 p-5">
 						<div
@@ -41,7 +46,7 @@ export function StatCard({ card, label }: { card: KpiCard; label: string }) {
 						<ArrowUpRight className="group-hover:-translate-y-0.5 h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
 					</CardContent>
 				</Card>
-			</Link>
+			</button>
 		</motion.div>
 	);
 }

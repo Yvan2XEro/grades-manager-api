@@ -67,9 +67,15 @@ export const CopyTimetableDialog = createCallable<Props, void>(
 		const runMutation = useMutation({
 			mutationFn: (jobId: string) => trpcClient.batchJobs.run.mutate({ jobId }),
 			onSuccess: () => {
-				toast.success(t("admin.timetable.copyDialog.success"));
+				const jobId = previewData?.jobId;
+				// The user stays on the timetable; following the job is their choice
+				toast.success(t("admin.timetable.copyDialog.success"), {
+					action: {
+						label: `${t("common.actions.followJob")} ↗`,
+						onClick: () => navigate(`/batch-jobs/${jobId}`),
+					},
+				});
 				handleClose();
-				navigate(`/batch-jobs/${previewData?.jobId}`);
 			},
 			onError: (err) => toast.error((err as Error).message),
 		});

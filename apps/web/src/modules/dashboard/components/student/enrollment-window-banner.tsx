@@ -1,6 +1,6 @@
 import { CalendarCheck, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Button } from "@/components/ui/button";
 
 export function EnrollmentWindowBanner() {
@@ -17,10 +17,10 @@ export function EnrollmentWindowBanner() {
 				</p>
 			</div>
 			<Button variant="outline" size="sm" className="shrink-0" asChild>
-				<Link to="/enrollments">
+				<PageLink to="/enrollments">
 					{t("student.enrollment.enroll")}
 					<ChevronRight className="ml-1 h-3 w-3" />
-				</Link>
+				</PageLink>
 			</Button>
 		</div>
 	);

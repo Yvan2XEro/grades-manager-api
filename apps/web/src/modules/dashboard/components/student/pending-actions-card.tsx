@@ -1,6 +1,6 @@
 import { Bell, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { NotifItem } from "../../types";
@@ -43,10 +43,10 @@ export function PendingActionsCard({
 					)}
 				</div>
 				<Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-					<Link to="/notifications">
+					<PageLink to="/notifications">
 						{t("student.pendingActions.viewAll")}
 						<ChevronRight className="ml-1 h-3 w-3" />
-					</Link>
+					</PageLink>
 				</Button>
 			</div>
 
@@ -103,14 +103,14 @@ export function PendingActionsCard({
 
 			{items.length > actionItems.length + infoItems.length && (
 				<div className="border-t px-4 py-2 text-center">
-					<Link
+					<PageLink
 						to="/notifications"
 						className="text-muted-foreground text-xs hover:text-foreground hover:underline"
 					>
 						{t("student.pendingActions.moreItems", {
 							count: items.length - actionItems.length - infoItems.length,
 						})}
-					</Link>
+					</PageLink>
 				</div>
 			)}
 		</div>

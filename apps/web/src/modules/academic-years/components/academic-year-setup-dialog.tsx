@@ -79,10 +79,16 @@ export const AcademicYearSetupDialog = createCallable<
 	const runMutation = useMutation({
 		mutationFn: (jobId: string) => trpcClient.batchJobs.run.mutate({ jobId }),
 		onSuccess: () => {
-			toast.success(t("admin.academicYears.setup.success"));
+			const jobId = previewData?.jobId;
+			// The user stays where they are; following the job is their choice
+			toast.success(t("admin.academicYears.setup.success"), {
+				action: {
+					label: `${t("common.actions.followJob")} ↗`,
+					onClick: () => navigate(`/batch-jobs/${jobId}`),
+				},
+			});
 			queryClient.invalidateQueries({ queryKey: ["batchJobs"] });
-			call.end(previewData?.jobId);
-			navigate(`/batch-jobs/${previewData?.jobId}`);
+			call.end(jobId);
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});

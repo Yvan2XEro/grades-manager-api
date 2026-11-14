@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { Calendar, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { UpcomingExam } from "../../types";
@@ -39,10 +39,10 @@ export function UpcomingExamsStrip({ exams }: { exams: UpcomingExam[] }) {
 					</Badge>
 				</div>
 				<Button variant="ghost" size="sm" asChild>
-					<Link to="/exams">
+					<PageLink to="/exams">
 						{t("student.dashboard.viewExams")}
 						<ChevronRight className="ml-1 h-3 w-3" />
-					</Link>
+					</PageLink>
 				</Button>
 			</div>
 			<div className="space-y-2">

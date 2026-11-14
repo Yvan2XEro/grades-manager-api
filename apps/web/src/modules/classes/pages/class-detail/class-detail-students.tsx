@@ -97,8 +97,16 @@ export default function ClassDetailStudents() {
 									</TableCell>
 									<TableCell>
 										{student.domainUserId && (
-											<Button variant="ghost" size="icon" asChild>
-												<Link to={`/profiles/${student.domainUserId}`}>
+											<Button
+												variant="ghost"
+												size="icon"
+												asChild
+												title={t("navigation.pages.openProfile")}
+											>
+												<Link
+													to={`/profiles/${student.domainUserId}`}
+													aria-label={t("navigation.pages.openProfile")}
+												>
 													<ExternalLink className="h-4 w-4" />
 												</Link>
 											</Button>

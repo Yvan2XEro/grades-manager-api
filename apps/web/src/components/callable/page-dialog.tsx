@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
@@ -10,6 +10,7 @@ import {
 	DialogDescription,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { sounds } from "@/lib/sounds";
 import { DIALOG_EXIT_MS } from "./callable-dialog";
 
@@ -70,7 +71,9 @@ export const PageDialog = createCallable<PageDialogProps, void>(
 							{showTitle && (
 								<h2 className="pr-8 font-semibold text-xl">{title}</h2>
 							)}
-							{content}
+							<Suspense fallback={<Skeleton className="h-96 w-full" />}>
+								{content}
+							</Suspense>
 						</div>
 					</div>
 				</DialogContent>

@@ -37,7 +37,8 @@
       "deselectAll": "Deselect all",
       "selectAll": "Select all",
       "clear": "Clear",
-      "clearFilters": "Clear filters"
+      "clearFilters": "Clear filters",
+      "followJob": "Follow the job"
     },
     "fields": {
       "email": "Email",
@@ -1302,6 +1303,21 @@
       "administrator": "Administrator",
       "super_admin": "Super admin",
       "owner": "Owner"
+    },
+    "pages": {
+      "people": "People",
+      "enrollments": "Enrollments",
+      "admissions": "Admissions",
+      "exams": "Exams",
+      "deliberations": "Deliberations",
+      "feeAssignments": "Fee assignments",
+      "academicYears": "Academic years",
+      "myFees": "My fees",
+      "courseEnrollment": "Course registration",
+      "examCalendar": "Exam calendar",
+      "documents": "Documents",
+      "notifications": "Notifications",
+      "openProfile": "Open the profile"
     }
   },
   "auth": {
@@ -1417,7 +1433,25 @@
         "scheduleExam": "Schedule an exam",
         "enrollments": "Manage enrollments",
         "academicYears": "Academic years",
-        "statistics": "Detailed statistics"
+        "statistics": "Detailed statistics",
+        "title": "Shortcuts",
+        "exams": "Plan an exam"
+      },
+      "alerts": {
+        "examsPending_one": "{{count}} exam awaiting approval",
+        "examsPending_other": "{{count}} exams awaiting approval",
+        "examsLink": "View submitted exams",
+        "deliberations_one": "{{count}} deliberation in progress",
+        "deliberations_other": "{{count}} deliberations in progress",
+        "deliberationsLink": "View deliberations"
+      },
+      "fees": {
+        "title": "Tuition",
+        "viewAll": "View all",
+        "expected": "Expected",
+        "collected": "Collected",
+        "remaining": "Remaining",
+        "rate": "Collection rate"
       }
     },
     "statistics": {

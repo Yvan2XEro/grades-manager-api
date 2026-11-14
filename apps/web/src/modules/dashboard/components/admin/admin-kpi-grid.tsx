@@ -35,7 +35,7 @@ export function AdminKpiGrid({
 			icon: <Users className="h-5 w-5" />,
 			gradient: "bg-primary/10",
 			iconColor: "text-primary",
-			href: "/users/people",
+			page: "people",
 		},
 		{
 			key: "enrollments",
@@ -43,7 +43,7 @@ export function AdminKpiGrid({
 			icon: <GraduationCap className="h-5 w-5" />,
 			gradient: "bg-primary/10",
 			iconColor: "text-primary",
-			href: "/classes/enrollments",
+			page: "enrollments",
 		},
 		{
 			key: "admissionsTotal",
@@ -51,7 +51,7 @@ export function AdminKpiGrid({
 			icon: <School className="h-5 w-5" />,
 			gradient: "bg-primary/10",
 			iconColor: "text-primary",
-			href: "/admissions",
+			page: "admissions",
 		},
 		{
 			key: "examsPending",
@@ -59,7 +59,7 @@ export function AdminKpiGrid({
 			icon: <ClipboardCheck className="h-5 w-5" />,
 			gradient: "bg-amber-500/10",
 			iconColor: "text-amber-600 dark:text-amber-400",
-			href: "/exams",
+			page: "exams",
 		},
 		{
 			key: "deliberationsOpen",
@@ -67,7 +67,7 @@ export function AdminKpiGrid({
 			icon: <BookOpen className="h-5 w-5" />,
 			gradient: "bg-blue-500/10",
 			iconColor: "text-blue-600 dark:text-blue-400",
-			href: "/academic-results/deliberations",
+			page: "deliberations",
 		},
 		{
 			key: "feeCollectionRate",
@@ -75,7 +75,7 @@ export function AdminKpiGrid({
 			icon: <Wallet className="h-5 w-5" />,
 			gradient: "bg-green-500/10",
 			iconColor: "text-green-600 dark:text-green-400",
-			href: "/fee-clearance",
+			page: "fees",
 			suffix: "%",
 		},
 	];

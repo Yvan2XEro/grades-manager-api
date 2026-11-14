@@ -37,7 +37,8 @@
       "deselectAll": "Tout désélectionner",
       "selectAll": "Tout sélectionner",
       "clear": "Effacer",
-      "clearFilters": "Réinitialiser les filtres"
+      "clearFilters": "Réinitialiser les filtres",
+      "followJob": "Suivre le traitement"
     },
     "fields": {
       "email": "E-mail",
@@ -293,6 +294,21 @@
       "administrator": "Administrateur",
       "super_admin": "Super administrateur",
       "owner": "Propriétaire"
+    },
+    "pages": {
+      "people": "Personnes",
+      "enrollments": "Inscriptions",
+      "admissions": "Admissions",
+      "exams": "Examens",
+      "deliberations": "Délibérations",
+      "feeAssignments": "Affectations de frais",
+      "academicYears": "Années académiques",
+      "myFees": "Mes frais",
+      "courseEnrollment": "Inscription aux cours",
+      "examCalendar": "Calendrier des examens",
+      "documents": "Documents",
+      "notifications": "Notifications",
+      "openProfile": "Ouvrir la fiche"
     }
   },
   "auth": {
@@ -540,7 +556,25 @@
         "scheduleExam": "Planifier un examen",
         "enrollments": "Gérer les inscriptions",
         "academicYears": "Années académiques",
-        "statistics": "Statistiques détaillées"
+        "statistics": "Statistiques détaillées",
+        "title": "Raccourcis",
+        "exams": "Planifier un examen"
+      },
+      "alerts": {
+        "examsPending_one": "{{count}} examen en attente d'approbation",
+        "examsPending_other": "{{count}} examens en attente d'approbation",
+        "examsLink": "Voir les examens soumis",
+        "deliberations_one": "{{count}} délibération en cours",
+        "deliberations_other": "{{count}} délibérations en cours",
+        "deliberationsLink": "Voir les délibérations"
+      },
+      "fees": {
+        "title": "Scolarité",
+        "viewAll": "Voir tout",
+        "expected": "Attendu",
+        "collected": "Collecté",
+        "remaining": "Restant",
+        "rate": "Taux de collecte"
       }
     },
     "statistics": {

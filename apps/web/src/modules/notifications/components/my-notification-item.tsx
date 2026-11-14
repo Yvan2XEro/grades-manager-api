@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { PageLink } from "@/components/navigation/page-link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -61,7 +61,7 @@ export function MyNotificationItem({
 			)}
 		>
 			{to ? (
-				<Link
+				<PageLink
 					to={to}
 					className="flex min-w-0 flex-1 items-start gap-4"
 					onClick={() => {
@@ -69,7 +69,7 @@ export function MyNotificationItem({
 					}}
 				>
 					{content}
-				</Link>
+				</PageLink>
 			) : (
 				<div className="flex min-w-0 flex-1 items-start gap-4">{content}</div>
 			)}

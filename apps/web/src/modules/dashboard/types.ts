@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { DashboardPage } from "./hooks/use-dashboard-pages";
 
 export type TFn = (key: string, opts?: Record<string, unknown>) => string;
 
@@ -10,7 +11,8 @@ export type KpiCard = {
 	icon: ReactNode;
 	gradient: string;
 	iconColor: string;
-	href: string;
+	/** Page opened over the dashboard. */
+	page: DashboardPage;
 	suffix?: string;
 };
 
