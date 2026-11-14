@@ -50,9 +50,9 @@ import { BulkExportReportDialog } from "@/modules/grades/components/bulk-export-
 import { GrantGradeAccessDialog } from "@/modules/grades/components/grant-grade-access-dialog";
 import { AddGuardianDialog } from "@/modules/guardians/components/add-guardian-dialog";
 import { GuardianPreferencesSheet } from "@/modules/guardians/components/guardian-preferences-sheet";
-import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
-import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
-import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
+import { CycleLevelFormDialog } from "@/modules/institution/components/cycle-level-form-dialog";
+import { InstitutionFormDialog } from "@/modules/institution/components/institution-form-dialog";
+import { StudyCycleFormDialog } from "@/modules/institution/components/study-cycle-form-dialog";
 import { CreatePersonDialog } from "@/modules/people/components/create-person-dialog";
 import { CourseFormDialog } from "@/modules/programs/components/course-form-dialog";
 import { DuplicateProgramsDialog } from "@/modules/programs/components/duplicate-programs-dialog";
