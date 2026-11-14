@@ -6,7 +6,6 @@ import DeliberationJuryTab from "./pages/deliberation-detail/deliberation-detail
 import DeliberationDetail from "./pages/deliberation-detail/deliberation-detail-layout";
 import DeliberationResultsTab from "./pages/deliberation-detail/deliberation-detail-results";
 import { DeliberationLegacyRedirect } from "./pages/deliberation-legacy-redirect";
-import DeliberationRules from "./pages/deliberation-rules-page";
 import DeliberationsList from "./pages/deliberations-page";
 import GraduatedStudents from "./pages/graduated-students-page";
 import TransitionDetail from "./pages/transition-detail-page";
@@ -29,7 +28,10 @@ export const deliberationsRoutes = (
 				<Route path="activity" element={<DeliberationActivityTab />} />
 			</Route>
 		</Route>
-		<Route path="deliberations/rules" element={<DeliberationRules />} />
+		<Route
+			path="deliberations/rules"
+			element={<Navigate to="/configuration/rules" replace />}
+		/>
 		<Route
 			path="deliberations/:deliberationId/*"
 			element={<DeliberationLegacyRedirect />}

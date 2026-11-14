@@ -69,11 +69,11 @@ const RENAMED: [from: string, to: string][] = [
 	["registration-numbers", "/configuration/reg-numbers"],
 	["deliberations", "/academic-results/deliberations"],
 	["promotion", "/academic-results/promotion"],
-	["promotion-rules", "/promotion-legacy"],
-	["promotion-rules/rules", "/promotion-legacy?tab=rules"],
-	["promotion-rules/evaluate", "/promotion-legacy?tab=evaluate"],
-	["promotion-rules/execute", "/promotion-legacy?tab=execute"],
-	["promotion-rules/history", "/promotion-legacy?tab=history"],
+	["promotion-rules", "/academic-results/promotion"],
+	["promotion-rules/rules", "/configuration/rules"],
+	["promotion-rules/evaluate", "/academic-results/promotion"],
+	["promotion-rules/execute", "/academic-results/promotion"],
+	["promotion-rules/history", "/academic-results/promotion"],
 ];
 
 /** Legacy paths, rendered inside the dashboard layout. */

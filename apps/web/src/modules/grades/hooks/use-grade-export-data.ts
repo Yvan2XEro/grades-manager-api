@@ -54,7 +54,7 @@ export function useGradeExportData({
 	});
 
 	const { data: semesters = [] } = useQuery({
-		queryKey: ["semesters"],
+		queryKey: ["semesters", "items"],
 		queryFn: async () => {
 			try {
 				const result = await trpcClient.semesters.list.query({});
@@ -72,7 +72,7 @@ export function useGradeExportData({
 	});
 
 	const { data: academicYears } = useQuery({
-		queryKey: ["academicYears"],
+		queryKey: ["academicYears", "items"],
 		queryFn: async () => {
 			const { items } = await trpcClient.academicYears.list.query({});
 			return items as Array<{ id: string; name: string }>;

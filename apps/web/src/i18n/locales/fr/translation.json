@@ -3489,7 +3489,6 @@
       "guided": {
         "title": "Mise en route & import des données",
         "description": "Configurez votre institution étape par étape : son profil, sa structure académique, puis les données de chaque année. Chaque étape se fait par import Excel ou à la main.",
-        "legacyLink": "Import avancé (ancien format en un seul fichier)",
         "how": {
           "order": {
             "title": "Dans l'ordre",
@@ -5980,7 +5979,7 @@
       "regNumbers": "Formats de matricule",
       "gradeScale": "Barème de notes",
       "templates": "Modèles d'export",
-      "rules": "Moteur de règles"
+      "rules": "Règles de délibération"
     }
   },
   "academicResultsHub": {

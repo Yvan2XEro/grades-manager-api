@@ -4501,7 +4501,6 @@
       "guided": {
         "title": "Setup & data import",
         "description": "Set up your institution step by step: its profile, its academic structure, then the data of each year. Each step can be done by Excel import or by hand.",
-        "legacyLink": "Advanced import (former single-file format)",
         "how": {
           "order": {
             "title": "In order",
@@ -5975,7 +5974,7 @@
       "regNumbers": "Registration Numbers",
       "gradeScale": "Grade Scale",
       "templates": "Export Templates",
-      "rules": "Rules Engine"
+      "rules": "Deliberation rules"
     }
   },
   "academicResultsHub": {

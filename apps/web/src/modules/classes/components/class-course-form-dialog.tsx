@@ -155,7 +155,7 @@ export const ClassCourseFormDialog = createCallable<
 	});
 
 	const { data: semestersData } = useQuery({
-		queryKey: ["semesters"],
+		queryKey: ["semesters", "list"],
 		queryFn: () => trpcClient.semesters.list.query(),
 	});
 	const semesters = semestersData?.items;

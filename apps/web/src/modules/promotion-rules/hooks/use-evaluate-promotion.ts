@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "@/lib/toast";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 import type { PromotionSelection } from "../types";
 
 /**
@@ -30,13 +30,12 @@ export function useEvaluatePromotion() {
 	});
 
 	const { data: classes } = useQuery({
-		queryKey: ["classes"],
-		queryFn: async () => trpcClient.classes.list.query({}),
+		...trpc.classes.list.queryOptions({}),
 	});
 
 	// Prefetched as before (its data is not used here)
 	useQuery({
-		queryKey: ["academicYears"],
+		queryKey: ["academicYears", "list"],
 		queryFn: async () => trpcClient.academicYears.list.query({}),
 	});
 

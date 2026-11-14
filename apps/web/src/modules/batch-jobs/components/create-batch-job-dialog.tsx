@@ -23,7 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 
 const JOB_TYPES = [
 	"creditLedger.recompute",
@@ -44,12 +44,8 @@ export const CreateBatchJobDialog = createCallable<void, void>(({ call }) => {
 	} | null>(null);
 
 	const classesQuery = useQuery({
-		queryKey: ["classes"],
-		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
-			return items;
-		},
-		enabled: true,
+		...trpc.classes.list.queryOptions({}),
+		select: (data) => data.items,
 	});
 
 	const previewMutation = useMutation({

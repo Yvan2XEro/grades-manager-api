@@ -1,11 +1,5 @@
-import {
-	ArrowRight,
-	FileSpreadsheet,
-	ListChecks,
-	ShieldCheck,
-} from "lucide-react";
+import { FileSpreadsheet, ListChecks, ShieldCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AcademicYearsCard } from "../components/academic-years-card";
@@ -59,14 +53,6 @@ export default function DataImportPage() {
 					/>
 				</>
 			)}
-
-			<Link
-				to="/import/legacy"
-				className="inline-flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
-			>
-				{t(`${G}legacyLink`)}
-				<ArrowRight className="h-3 w-3" />
-			</Link>
 		</div>
 	);
 }

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router";
 import { Confirm } from "@/components/callable/confirm";
 import { toast } from "@/lib/toast";
 import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 import { PromotionConfirmDescription } from "../components/promotion-confirm-description";
 import type { PromotionPayload, PromotionSelection } from "../types";
 
@@ -37,11 +37,8 @@ export function useExecutePromotion() {
 	});
 
 	const { data: classes } = useQuery({
-		queryKey: ["classes"],
-		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
-			return items;
-		},
+		...trpc.classes.list.queryOptions({}),
+		select: (data) => data.items,
 	});
 
 	const applyPromotionMutation = useMutation({
@@ -123,7 +120,7 @@ export function useExecutePromotion() {
 			defaults: { programId: sourceClass?.program },
 		});
 		if (!created) return;
-		await queryClient.invalidateQueries({ queryKey: ["classes"] });
+		await queryClient.invalidateQueries(trpc.classes.list.queryFilter());
 		setTargetClassId(created.id);
 	};
 

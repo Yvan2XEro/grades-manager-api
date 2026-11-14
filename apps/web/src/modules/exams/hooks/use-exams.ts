@@ -110,11 +110,8 @@ export function useExams({
 		queryFn: fetchExamClassCourses,
 	});
 	const { data: classes } = useQuery({
-		queryKey: ["classes"],
-		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
-			return items as { id: string; name: string }[];
-		},
+		...trpc.classes.list.queryOptions({}),
+		select: (data) => data.items as { id: string; name: string }[],
 	});
 	const { data: courses } = useQuery({
 		queryKey: ["courses"],

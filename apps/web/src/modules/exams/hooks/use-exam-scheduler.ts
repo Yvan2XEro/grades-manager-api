@@ -78,7 +78,7 @@ export function useScheduleExams(mode: SessionMode, onDone: () => void) {
 	const examTypes = examTypesQuery.data ?? [];
 
 	useQuery({
-		queryKey: ["semesters"],
+		queryKey: ["semesters", "items", 200],
 		queryFn: async () => {
 			const result = await trpcClient.semesters.list.query({
 				limit: 200,
