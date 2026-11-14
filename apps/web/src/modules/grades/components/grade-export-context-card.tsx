@@ -24,7 +24,7 @@ export function GradeExportContextCard({
 	selectedYear: string;
 	selectedClass: string;
 	classes: ExportClass[] | undefined;
-	onYearChange: (value: string) => void;
+	onYearChange: (value: string | null) => void;
 	onClassChange: (value: string) => void;
 }) {
 	const { t } = useTranslation();

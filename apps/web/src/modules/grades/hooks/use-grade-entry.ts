@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "@/lib/toast";
 import { useStore } from "@/store";
-import { trpc, trpcClient } from "@/utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 import type {
 	CourseInfo,
 	Delegate,
@@ -12,6 +12,8 @@ import type {
 	GradesByStudent,
 	RosterStudent,
 } from "../types";
+
+type GradeEntryItem = RouterOutputs["grades"]["listByExam"]["items"][number];
 
 /**
  * State of the grade entry page: the class course (from the route), its
@@ -103,8 +105,11 @@ export function useGradeEntry() {
 		},
 	});
 
-	const courseInfo = courseContextQuery.data?.courseInfo ?? null;
-	const courseOwnerId = courseContextQuery.data?.teacherId ?? null;
+	const courseContext = courseContextQuery.data as
+		| { courseInfo: CourseInfo; teacherId: string | null }
+		| undefined;
+	const courseInfo = courseContext?.courseInfo ?? null;
+	const courseOwnerId = courseContext?.teacherId ?? null;
 
 	const canManageDelegates = useMemo(() => {
 		const role = user?.role;
@@ -171,7 +176,12 @@ export function useGradeEntry() {
 		},
 	});
 
-	const exams = useMemo(() => examsQuery.data ?? [], [examsQuery.data]);
+	// `onError` is not a useQuery option in react-query v5, which breaks the
+	// inference of `data`: the casts restore it.
+	const exams = useMemo(
+		() => (examsQuery.data ?? []) as EntryExam[],
+		[examsQuery.data],
+	);
 
 	useEffect(() => {
 		if (!exams.length) {
@@ -229,7 +239,7 @@ export function useGradeEntry() {
 	});
 
 	const gradeEntries = useMemo(
-		() => gradesQuery.data ?? [],
+		() => (gradesQuery.data ?? []) as GradeEntryItem[],
 		[gradesQuery.data],
 	);
 	const gradesByStudent = useMemo(() => {
@@ -258,7 +268,7 @@ export function useGradeEntry() {
 		handleCourseChange,
 		courseInfo,
 		canManageDelegates,
-		rosterStudents: rosterQuery.data ?? [],
+		rosterStudents: (rosterQuery.data ?? []) as RosterStudent[],
 		exams,
 		selectedExam,
 		setSelectedExam,

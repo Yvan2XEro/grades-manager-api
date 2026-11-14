@@ -66,7 +66,7 @@ export default function GradeExport() {
 				selectedClass={selectedClass}
 				classes={data.classes}
 				onYearChange={(value) => {
-					setSelectedYear(value);
+					setSelectedYear(value ?? "");
 					setSelectedClass("");
 					selection.deselectAll();
 					savePrefs({ year: value, class: "" });

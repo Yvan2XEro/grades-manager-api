@@ -3,7 +3,7 @@ import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { BulkExportReportDialog } from "../components/bulk-export-report-dialog";
-import type { BulkExportReport, BulkScope } from "../types";
+import type { BulkScope } from "../types";
 import type { ExportFilters, ExportTask } from "./use-export-task";
 
 type BulkFilters = Parameters<
@@ -26,7 +26,7 @@ const BULK_EXPORTS = {
 		mutate: (filters: BulkFilters) =>
 			trpcClient.exports.bulkExportUes.mutate(filters),
 	},
-} as const satisfies Record<string, { kind: BulkExportReport["kind"] }>;
+} as const;
 
 export type BulkExportKind = keyof typeof BULK_EXPORTS;
 
