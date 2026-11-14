@@ -18,7 +18,7 @@ export function getInstitutionsColumns(t: TFunction): ColumnDef<Institution>[] {
 		{
 			id: "type",
 			header: t("admin.institutions.table.type", { defaultValue: "Type" }),
-			meta: { className: "w-28" },
+			meta: { className: "w-44" },
 			cell: ({ row }) => (
 				<span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs">
 					{institutionTypeLabel(t, row.original.type)}

@@ -52,13 +52,8 @@ export function InstitutionFormSection({
 	);
 }
 
-type TextFieldName = {
-	[K in keyof InstitutionFormValues]: InstitutionFormValues[K] extends
-		| string
-		| undefined
-		? K
-		: never;
-}[keyof InstitutionFormValues];
+/** Every field but the `type` enum is a string. */
+type TextFieldName = Exclude<keyof InstitutionFormValues, "type">;
 
 interface TextFieldProps {
 	form: InstitutionForm;
