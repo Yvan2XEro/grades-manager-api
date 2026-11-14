@@ -17,6 +17,13 @@ const REQUIRED_FILL: ExcelJS.Fill = {
 	fgColor: { argb: "FFB91C1C" },
 };
 const LISTS_SHEET = "Listes";
+
+/** Range data validations: supported by ExcelJS but missing from its typings. */
+type RangeValidations = ExcelJS.Worksheet & {
+	dataValidations: {
+		add: (range: string, rule: ExcelJS.DataValidation) => void;
+	};
+};
 const VALIDATED_ROWS = 2000;
 
 /** Accent/case/space-insensitive form used to match headers and enum values. */
@@ -92,14 +99,17 @@ export async function buildTemplate(
 				formula = `${LISTS_SHEET}!$${letter}$2:$${letter}$${lists[col.listFrom].length + 1}`;
 			}
 			if (!formula) return;
-			for (let r = 2; r <= VALIDATED_ROWS; r++) {
-				ws.getCell(r, index + 1).dataValidation = {
+			const letter = ws.getColumn(index + 1).letter;
+			// One range rule (not per cell) so the sheet keeps its real row count
+			(ws as RangeValidations).dataValidations.add(
+				`${letter}2:${letter}${VALIDATED_ROWS}`,
+				{
 					type: "list",
 					allowBlank: true,
 					showErrorMessage: Boolean(col.enum),
 					formulae: [formula],
-				};
-			}
+				},
+			);
 		});
 	}
 
