@@ -1,5 +1,5 @@
 import { Navigate, Route } from "react-router";
-import ExportTemplatesManagement from "@/modules/documents/ExportTemplatesManagement";
+import ExportTemplatesManagement from "@/modules/documents/pages/export-templates-page";
 import ConfigurationHub from "./ConfigurationHub";
 import GradeScaleSettings from "./GradeScaleSettings";
 import RegistrationNumberFormatDetail from "./RegistrationNumberFormatDetail";

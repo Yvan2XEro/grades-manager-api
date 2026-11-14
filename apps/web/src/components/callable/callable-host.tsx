@@ -11,7 +11,7 @@ import {
 	CreateAttendanceSessionDialog,
 	ExcuseAbsenceDialog,
 } from "@/modules/attendance/AttendanceDialogs";
-import { CreateBatchJobDialog } from "@/modules/batch-jobs/CreateBatchJobDialog";
+import { CreateBatchJobDialog } from "@/modules/batch-jobs/components/create-batch-job-dialog";
 import { AssignTeachingUnitDialog } from "@/modules/classes/components/assign-teaching-unit-dialog";
 import { AutoEnrollClassDialog } from "@/modules/classes/components/auto-enroll-class-dialog";
 import { BulkGenerateClassesDialog } from "@/modules/classes/components/bulk-generate-classes-dialog";
@@ -23,10 +23,10 @@ import { DeliberationRuleFormDialog } from "@/modules/deliberations/Deliberation
 import { OverrideDecisionDialog } from "@/modules/deliberations/OverrideDecisionDialog";
 import { PromoteAdmittedDialog } from "@/modules/deliberations/PromoteAdmittedDialog";
 import { ResolveItemSheet } from "@/modules/deliberations/TransitionDetail";
-import { RenameTemplateDialog } from "@/modules/documents/ExportTemplatesManagement";
-import { BulkClassExportDialog } from "@/modules/documents/editor/BulkClassExportDialog";
-import { ExportStudentListDialog } from "@/modules/documents/editor/ExportStudentListButton";
-import { GenerateDocumentDialog } from "@/modules/documents/editor/GenerateDocumentButton";
+import { RenameTemplateDialog } from "@/modules/documents/components/rename-template-dialog";
+import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class-export-dialog";
+import { ExportStudentListDialog } from "@/modules/documents/components/export-student-list-dialog";
+import { GenerateDocumentDialog } from "@/modules/documents/components/generate-document-dialog";
 import {
 	BulkEnrollClassesDialog,
 	EnrollEntireClassDialog,
