@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/ui/page-header";
 import { Spinner } from "@/components/ui/spinner";
 import { staggerContainer, staggerItem } from "@/lib/animations";
+import { useMarkNotificationRead } from "@/modules/notifications/hooks/use-my-notifications";
 import { CreditProgressCard } from "../components/student/credit-progress-card";
 import { DecisionsSection } from "../components/student/decisions-section";
 import { EnrollmentStatusCard } from "../components/student/enrollment-status-card";
@@ -14,10 +15,7 @@ import { ProjectionCard } from "../components/student/projection-card";
 import { StudentSummaryCards } from "../components/student/student-summary-cards";
 import { TranscriptSection } from "../components/student/transcript-section";
 import { UpcomingExamsStrip } from "../components/student/upcoming-exams-strip";
-import {
-	useMarkNotificationRead,
-	useStudentDashboard,
-} from "../hooks/use-student-dashboard";
+import { useStudentDashboard } from "../hooks/use-student-dashboard";
 import type { ClassInfo, FeeAssignment } from "../types";
 
 /** Student home page. */

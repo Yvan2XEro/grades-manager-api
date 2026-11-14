@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type { DecisionResult, NotifItem, UpcomingExam } from "../types";
 
@@ -112,19 +112,4 @@ export function useStudentDashboard() {
 		onTrackUnits,
 		projectionRate,
 	};
-}
-
-/** Marks a notification as read and refreshes the notification queries. */
-export function useMarkNotificationRead() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: (id: string) =>
-			trpcClient.notifications.markRead.mutate({ id }),
-		onSuccess: () => {
-			queryClient.invalidateQueries(
-				trpc.notifications.myNotifications.queryKey(),
-			);
-			queryClient.invalidateQueries(trpc.notifications.unreadCount.queryKey());
-		},
-	});
 }
