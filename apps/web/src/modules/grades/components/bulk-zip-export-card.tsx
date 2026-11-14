@@ -121,9 +121,9 @@ export function BulkZipExportCard({
 					))}
 				</div>
 				<p className="text-muted-foreground text-xs">
-					⚠️ La génération massive peut prendre plusieurs minutes selon le
-					volume (1 PDF ≈ 1-2s). Le serveur réutilise un seul navigateur
-					Chromium pour accélérer le batch.
+					⚠️ La génération massive peut prendre plusieurs minutes selon le volume
+					(1 PDF ≈ 1-2s). Le serveur réutilise un seul navigateur Chromium pour
+					accélérer le batch.
 				</p>
 			</CardContent>
 		</Card>

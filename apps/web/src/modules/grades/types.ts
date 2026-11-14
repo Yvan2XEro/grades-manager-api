@@ -197,3 +197,20 @@ export interface TeacherExportExam {
 	percentage: number;
 	courseName: string;
 }
+
+// ─── Grade access grants ─────────────────────────────────────────────────────
+
+export type GradeAccessGrantRow = {
+	id: string;
+	createdAt: string | Date;
+	profile: {
+		firstName?: string | null;
+		lastName?: string | null;
+		role?: string | null;
+		primaryEmail?: string | null;
+	};
+	grantedBy?: {
+		firstName?: string | null;
+		lastName?: string | null;
+	} | null;
+};

@@ -1,6 +1,6 @@
 import { Route } from "react-router";
 import { RoleView } from "@/components/navigation/RoleView";
-import TeacherHub from "@/modules/grades/TeacherHub";
+import TeacherHub from "@/modules/grades/pages/teacher-home-page";
 import AdminDashboard from "./AdminDashboard";
 import CohortDashboard from "./CohortDashboard";
 import PerformanceDashboard from "./PerformanceDashboard";
