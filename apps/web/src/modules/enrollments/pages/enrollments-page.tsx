@@ -85,7 +85,8 @@ export default function EnrollmentsPage() {
 	return (
 		<ListLayout
 			header={
-				<>
+				// shrink-0: the filter card clips its content and would otherwise shrink
+				<div className="flex shrink-0 flex-col gap-4">
 					<EnrollmentFilters
 						filters={filters}
 						onChange={changeFilters}
@@ -105,7 +106,7 @@ export default function EnrollmentsPage() {
 						studentsCount={studentsCount}
 						coursesCount={classCoursesCount}
 					/>
-				</>
+				</div>
 			}
 			toolbar={
 				<>
