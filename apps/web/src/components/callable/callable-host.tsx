@@ -78,7 +78,7 @@ import { UeCourseFormDialog } from "@/modules/programs/TeachingUnitCoursesTable"
 import { TeachingUnitFormDialog } from "@/modules/programs/TeachingUnitFormDialog";
 import { ExecutionDetailsDialog } from "@/modules/promotion-rules/execution-history";
 import { PromotionRuleFormDialog } from "@/modules/promotion-rules/rules-list";
-import { AvatarCropModal } from "@/modules/settings/AccountTab";
+import { AvatarCropModal } from "@/modules/settings/components/avatar-crop-modal";
 import { CopyTimetableDialog } from "@/modules/timetable/CopyTimetableDialog";
 import { RoomFormDialog } from "@/modules/timetable/RoomFormDialog";
 import { TimetableImportDialog } from "@/modules/timetable/TimetableImportDialog";
