@@ -55,12 +55,16 @@ export function getCoursesColumns(
 			id: "teacher",
 			header: t("admin.courses.table.teacher"),
 			meta: { className: "w-[20%]" },
-			cell: ({ row }) => (
-				<span className="block truncate">
-					{teacherNames.get(row.original.defaultTeacher ?? "") ??
-						t("admin.courses.form.teacherPlaceholder")}
-				</span>
-			),
+			cell: ({ row }) => {
+				const name = teacherNames.get(row.original.defaultTeacher ?? "");
+				return name ? (
+					<span className="block truncate" title={name}>
+						{name}
+					</span>
+				) : (
+					<span className="text-muted-foreground">—</span>
+				);
+			},
 		},
 	];
 }
