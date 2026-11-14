@@ -66,7 +66,7 @@ export function getExamsColumns(
 		{
 			id: "percentage",
 			header: t("admin.exams.table.percentage"),
-			meta: { className: "w-16" },
+			meta: { className: "w-24" },
 			cell: ({ row }) => `${row.original.percentage}%`,
 		},
 		{
