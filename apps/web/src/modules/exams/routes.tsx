@@ -1,7 +1,7 @@
 import { Navigate, Route } from "react-router";
 import { RoleView } from "@/components/navigation/RoleView";
 import ClassDocumentTemplates from "@/modules/documents/pages/class-document-templates-page";
-import ExportTemplatesManagement from "@/modules/documents/ExportTemplatesManagement";
+import ExportTemplatesManagement from "@/modules/documents/pages/export-templates-page";
 import GradeAccessGrants from "@/modules/grades/GradeAccessGrants";
 import GradeExport from "@/modules/grades/GradeExport";
 import ExamCalendar from "./ExamCalendar";
