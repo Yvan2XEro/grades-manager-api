@@ -1,8 +1,8 @@
 import { Navigate, Route } from "react-router";
-import AccountSettings from "./AccountSettings";
-import AccountTab from "./AccountTab";
-import PreferencesTab from "./PreferencesTab";
-import ProfileTab from "./ProfileTab";
+import AccountTab from "./pages/settings-account";
+import AccountSettings from "./pages/settings-layout";
+import PreferencesTab from "./pages/settings-preferences";
+import ProfileTab from "./pages/settings-profile";
 
 export const settingsRoutes = (
 	<Route path="settings" element={<AccountSettings />}>

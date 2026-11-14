@@ -2,11 +2,9 @@ import { Confirm } from "@/components/callable/confirm";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { AcademicYearFormDialog } from "@/modules/academic-years/components/academic-year-form-dialog";
 import { AcademicYearSetupDialog } from "@/modules/academic-years/components/academic-year-setup-dialog";
-import {
-	CreateApiKeyDialog,
-	EditWebhookDialog,
-	RawApiKeyDialog,
-} from "@/modules/api-keys/ApiKeyDialogs";
+import { CreateApiKeyDialog } from "@/modules/api-keys/components/create-api-key-dialog";
+import { EditWebhookDialog } from "@/modules/api-keys/components/edit-webhook-dialog";
+import { RawApiKeyDialog } from "@/modules/api-keys/components/raw-api-key-dialog";
 import { CreateAttendanceSessionDialog } from "@/modules/attendance/components/create-attendance-session-dialog";
 import { ExcuseAbsenceDialog } from "@/modules/attendance/components/excuse-absence-dialog";
 import { CreateBatchJobDialog } from "@/modules/batch-jobs/components/create-batch-job-dialog";
@@ -21,10 +19,10 @@ import { DeliberationRuleFormDialog } from "@/modules/deliberations/Deliberation
 import { OverrideDecisionDialog } from "@/modules/deliberations/OverrideDecisionDialog";
 import { PromoteAdmittedDialog } from "@/modules/deliberations/PromoteAdmittedDialog";
 import { ResolveItemSheet } from "@/modules/deliberations/TransitionDetail";
-import { RenameTemplateDialog } from "@/modules/documents/components/rename-template-dialog";
 import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class-export-dialog";
 import { ExportStudentListDialog } from "@/modules/documents/components/export-student-list-dialog";
 import { GenerateDocumentDialog } from "@/modules/documents/components/generate-document-dialog";
+import { RenameTemplateDialog } from "@/modules/documents/components/rename-template-dialog";
 import {
 	BulkEnrollClassesDialog,
 	EnrollEntireClassDialog,
@@ -65,7 +63,7 @@ import {
 import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
 import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
 import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
-import { CreatePersonDialog } from "@/modules/people/PeopleManagement";
+import { CreatePersonDialog } from "@/modules/people/components/create-person-dialog";
 import { CourseFormDialog } from "@/modules/programs/components/course-form-dialog";
 import { DuplicateProgramsDialog } from "@/modules/programs/components/duplicate-programs-dialog";
 import { ProgramFormDialog } from "@/modules/programs/components/program-form-dialog";
@@ -74,7 +72,7 @@ import { TeachingUnitFormDialog } from "@/modules/programs/components/teaching-u
 import { UeCourseFormDialog } from "@/modules/programs/components/ue-course-form-dialog";
 import { ExecutionDetailsDialog } from "@/modules/promotion-rules/execution-history";
 import { PromotionRuleFormDialog } from "@/modules/promotion-rules/rules-list";
-import { AvatarCropModal } from "@/modules/settings/AccountTab";
+import { AvatarCropModal } from "@/modules/settings/components/avatar-crop-modal";
 import { CopyTimetableDialog } from "@/modules/timetable/components/copy-timetable-dialog";
 import { RoomFormDialog } from "@/modules/timetable/components/room-form-dialog";
 import { TimetableImportDialog } from "@/modules/timetable/components/timetable-import-dialog";
