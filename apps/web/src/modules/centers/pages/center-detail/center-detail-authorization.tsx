@@ -1,4 +1,4 @@
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,12 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { useCenterContext } from "./CenterContext";
+import { CenterSaveButton } from "../../components/center-save-button";
+import { useCenterContext } from "../../hooks/use-center-context";
 
-export default function CenterAuthorizationTab() {
+export default function CenterDetailAuthorization() {
 	const { t } = useTranslation();
-	const { form, isSaving, onSubmit } = useCenterContext();
+	const { form } = useCenterContext();
 
 	const legalTexts = useFieldArray({
 		control: form.control,
@@ -155,16 +156,7 @@ export default function CenterAuthorizationTab() {
 					</div>
 				</CardContent>
 			</Card>
-			<div className="flex justify-end">
-				<Button
-					type="button"
-					disabled={isSaving}
-					onClick={form.handleSubmit(onSubmit)}
-				>
-					<Save className="mr-2 h-4 w-4" />
-					{t("common.actions.save", { defaultValue: "Enregistrer" })}
-				</Button>
-			</div>
+			<CenterSaveButton />
 		</div>
 	);
 }

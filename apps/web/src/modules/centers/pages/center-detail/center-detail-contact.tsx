@@ -1,6 +1,4 @@
-import { Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	FormControl,
@@ -11,11 +9,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useCenterContext } from "./CenterContext";
+import { CenterSaveButton } from "../../components/center-save-button";
+import { useCenterContext } from "../../hooks/use-center-context";
 
-export default function CenterContactTab() {
+export default function CenterDetailContact() {
 	const { t } = useTranslation();
-	const { form, isSaving, onSubmit } = useCenterContext();
+	const { form } = useCenterContext();
 
 	return (
 		<div className="space-y-6 pt-6 pb-12">
@@ -136,16 +135,7 @@ export default function CenterContactTab() {
 					</div>
 				</CardContent>
 			</Card>
-			<div className="flex justify-end">
-				<Button
-					type="button"
-					disabled={isSaving}
-					onClick={form.handleSubmit(onSubmit)}
-				>
-					<Save className="mr-2 h-4 w-4" />
-					{t("common.actions.save", { defaultValue: "Enregistrer" })}
-				</Button>
-			</div>
+			<CenterSaveButton />
 		</div>
 	);
 }
