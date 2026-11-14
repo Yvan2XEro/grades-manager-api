@@ -10,7 +10,7 @@ export function useDeliberationRules() {
 		queryKey: deliberationRulesKey,
 		queryFn: () =>
 			trpcClient.deliberations.rules.list.query({
-				limit: 200,
+				limit: 100,
 				offset: 0,
 			}),
 	});
