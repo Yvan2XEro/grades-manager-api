@@ -7,7 +7,7 @@ import {
 	ACTIVITY_DAYS,
 	buildActivitySeries,
 } from "../services/activity-series";
-import type { ApiKey } from "../types";
+import type { ApiKey, ApiKeyStats } from "../types";
 
 export const API_KEYS_KEY = ["diplomation-api-keys"];
 
@@ -28,10 +28,13 @@ export function useApiKeyActivity() {
 		trpc.diplomationKeys.callStats.queryOptions({ days: ACTIVITY_DAYS }),
 	);
 	const activity = useMemo(
-		() => buildActivitySeries(activityData),
+		() => buildActivitySeries(activityData as ApiKeyStats | undefined),
 		[activityData],
 	);
-	const calls = useMemo(() => buildActivitySeries(callData), [callData]);
+	const calls = useMemo(
+		() => buildActivitySeries(callData as ApiKeyStats | undefined),
+		[callData],
+	);
 	return { activity, calls };
 }
 

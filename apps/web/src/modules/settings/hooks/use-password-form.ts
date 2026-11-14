@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -7,9 +8,7 @@ import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
 
-const buildPasswordSchema = (
-	t: (key: string, opts?: Record<string, unknown>) => string,
-) =>
+const buildPasswordSchema = (t: TFunction) =>
 	z
 		.object({
 			currentPassword: z

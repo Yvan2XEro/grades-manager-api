@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -15,9 +17,7 @@ const normalizeDate = (value?: string | null) => {
 	return date.toISOString().split("T")[0];
 };
 
-const buildProfileSchema = (
-	t: (key: string, opts?: Record<string, unknown>) => string,
-) =>
+const buildProfileSchema = (t: TFunction) =>
 	z.object({
 		firstName: z.string().min(1, t("settings.profile.validation.firstName")),
 		lastName: z.string().min(1, t("settings.profile.validation.lastName")),
@@ -52,9 +52,11 @@ export function useProfileForm() {
 		},
 	});
 
-	// Sync form with loaded profile
+	// Fill the form once the profile loads (and after refetches, unless edited).
+	// Done in an effect: resetting during render looped forever.
 	const { reset } = form;
-	if (profile && !form.formState.isDirty) {
+	useEffect(() => {
+		if (!profile || form.formState.isDirty) return;
 		reset({
 			firstName: profile.firstName ?? "",
 			lastName: profile.lastName ?? "",
@@ -64,7 +66,7 @@ export function useProfileForm() {
 			gender: profile.gender || "",
 			nationality: profile.nationality ?? "",
 		});
-	}
+	}, [profile, reset, form]);
 
 	const mutation = useMutation({
 		mutationFn: async (values: ProfileFormValues) =>

@@ -15,9 +15,10 @@ export function useSessions() {
 	const loadSessions = useCallback(async () => {
 		try {
 			const response = await authClient.listSessions();
-			const rawSessions = Array.isArray(response)
+			const rawSessions: SessionInfo[] = Array.isArray(response)
 				? response
-				: ((response as SessionResponse)?.sessions ?? []);
+				: ((response as Exclude<SessionResponse, SessionInfo[]>)?.sessions ??
+					[]);
 			const currentToken = resolveToken(
 				session?.session as Record<string, unknown>,
 			);

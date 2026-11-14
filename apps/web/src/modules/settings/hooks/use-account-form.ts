@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -8,9 +9,7 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
 import { useStore } from "@/store";
 
-const buildAccountSchema = (
-	t: (key: string, opts?: Record<string, unknown>) => string,
-) =>
+const buildAccountSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(1, t("settings.account.validation.name")),
 	});
