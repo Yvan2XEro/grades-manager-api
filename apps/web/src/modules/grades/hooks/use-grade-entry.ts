@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "@/lib/toast";
+import { useQueryErrorToast } from "@/hooks/useQueryErrorToast";
 import { useStore } from "@/store";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 import type {
@@ -98,11 +98,6 @@ export function useGradeEntry() {
 				teacherId: classCourse.teacher ?? null,
 			};
 		},
-		onError: (error: any) => {
-			toast.error(
-				error.message || t("teacher.gradeEntry.toast.fetchCourseError"),
-			);
-		},
 	});
 
 	const courseContext = courseContextQuery.data as
@@ -138,11 +133,6 @@ export function useGradeEntry() {
 			});
 			return students as RosterStudent[];
 		},
-		onError: (error: any) => {
-			toast.error(
-				error.message || t("teacher.gradeEntry.toast.fetchCourseError"),
-			);
-		},
 	});
 
 	const examsQuery = useQuery({
@@ -169,15 +159,8 @@ export function useGradeEntry() {
 				}),
 			);
 		},
-		onError: (error: any) => {
-			toast.error(
-				error.message || t("teacher.gradeEntry.toast.fetchCourseError"),
-			);
-		},
 	});
 
-	// `onError` is not a useQuery option in react-query v5, which breaks the
-	// inference of `data`: the casts restore it.
 	const exams = useMemo(
 		() => (examsQuery.data ?? []) as EntryExam[],
 		[examsQuery.data],
@@ -213,6 +196,11 @@ export function useGradeEntry() {
 		: false;
 	const inputsDisabled = isExamLocked || !canEditExam;
 
+	useQueryErrorToast(
+		courseContextQuery.error ?? rosterQuery.error ?? examsQuery.error,
+		t("teacher.gradeEntry.toast.fetchCourseError"),
+	);
+
 	const gradesQuery = useQuery({
 		queryKey: ["exam-grades", selectedExam],
 		enabled: Boolean(selectedExam),
@@ -222,12 +210,12 @@ export function useGradeEntry() {
 			});
 			return response.items;
 		},
-		onError: (error: any) => {
-			toast.error(
-				error.message || t("teacher.gradeEntry.toast.fetchGradesError"),
-			);
-		},
 	});
+
+	useQueryErrorToast(
+		gradesQuery.error,
+		t("teacher.gradeEntry.toast.fetchGradesError"),
+	);
 
 	const delegateQuery = useQuery({
 		queryKey: ["exam-grade-editors", selectedExam],
