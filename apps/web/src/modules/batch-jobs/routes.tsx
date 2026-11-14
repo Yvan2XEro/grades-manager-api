@@ -1,10 +1,10 @@
 import { Route } from "react-router";
-import BatchJobDetail from "./BatchJobDetail";
-import BatchJobsDashboard from "./BatchJobsDashboard";
+import BatchJobDetailPage from "./pages/batch-job-detail-page";
+import BatchJobsPage from "./pages/batch-jobs-page";
 
 export const batchJobsRoutes = (
 	<>
-		<Route path="batch-jobs" element={<BatchJobsDashboard />} />
-		<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
+		<Route path="batch-jobs" element={<BatchJobsPage />} />
+		<Route path="batch-jobs/:jobId" element={<BatchJobDetailPage />} />
 	</>
 );

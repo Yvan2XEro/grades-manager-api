@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-type PreviewRow = { row: number; col?: string; message: string };
+import type { PreviewRow } from "../types";
 
 interface Props {
 	rows: PreviewRow[];

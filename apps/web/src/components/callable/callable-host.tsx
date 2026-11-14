@@ -11,7 +11,7 @@ import {
 	CreateAttendanceSessionDialog,
 	ExcuseAbsenceDialog,
 } from "@/modules/attendance/AttendanceDialogs";
-import { CreateBatchJobDialog } from "@/modules/batch-jobs/CreateBatchJobDialog";
+import { CreateBatchJobDialog } from "@/modules/batch-jobs/components/create-batch-job-dialog";
 import { AssignTeachingUnitDialog } from "@/modules/classes/components/assign-teaching-unit-dialog";
 import { AutoEnrollClassDialog } from "@/modules/classes/components/auto-enroll-class-dialog";
 import { BulkGenerateClassesDialog } from "@/modules/classes/components/bulk-generate-classes-dialog";

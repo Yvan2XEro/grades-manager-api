@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImportSection } from "./ImportSection";
+import { ImportSection } from "../components/import-section";
 
 export default function DataImportHub() {
 	const { t } = useTranslation();
