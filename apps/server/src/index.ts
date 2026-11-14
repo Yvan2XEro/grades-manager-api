@@ -525,6 +525,7 @@ app.route("/api/diplomation", diplomationApi);
 
 // ── Import API ─────────────────────────────────────────────────────────
 
+import { ADMIN_ROLES, roleSatisfies } from "./modules/authz";
 import { saveImportFile } from "./modules/data-import/import-file-storage";
 import { generateImportTemplate } from "./modules/data-import/template-generator";
 
@@ -535,9 +536,18 @@ const VALID_TEMPLATE_TYPES = [
 	"grades-bulk",
 ] as const;
 
+/** Import files are admin-only (the session alone is not enough). */
+async function requireImportAdmin(
+	c: Parameters<typeof createContext>[0]["context"],
+) {
+	const ctx = await createContext({ context: c });
+	if (!ctx.session) return 401 as const;
+	return roleSatisfies(ctx.memberRole, ADMIN_ROLES) ? null : (403 as const);
+}
+
 app.post("/api/import/upload", async (c) => {
-	const session = await auth.api.getSession({ headers: c.req.raw.headers });
-	if (!session) return c.json({ error: "Unauthorized" }, 401);
+	const denied = await requireImportAdmin(c);
+	if (denied) return c.json({ error: "Forbidden" }, denied);
 
 	const body = await c.req.parseBody();
 	const file = body.file;
@@ -556,8 +566,8 @@ app.post("/api/import/upload", async (c) => {
 });
 
 app.get("/api/import/template/:type", async (c) => {
-	const session = await auth.api.getSession({ headers: c.req.raw.headers });
-	if (!session) return c.json({ error: "Unauthorized" }, 401);
+	const denied = await requireImportAdmin(c);
+	if (denied) return c.json({ error: "Forbidden" }, denied);
 
 	const type = c.req.param("type") as string;
 	if (

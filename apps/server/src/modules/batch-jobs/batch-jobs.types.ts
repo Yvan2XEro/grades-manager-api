@@ -12,6 +12,7 @@ export const BATCH_JOB_TYPES = [
 	"import.people",
 	"import.enrollments",
 	"import.gradesBulk",
+	"import.step",
 ] as const;
 
 export type BatchJobType = (typeof BATCH_JOB_TYPES)[number];

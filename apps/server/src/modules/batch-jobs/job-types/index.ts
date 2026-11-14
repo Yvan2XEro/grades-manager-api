@@ -6,6 +6,7 @@ import { importAcademicStructureJob } from "./import-academic-structure";
 import { importEnrollmentsJob } from "./import-enrollments";
 import { importGradesBulkJob } from "./import-grades-bulk";
 import { importPeopleJob } from "./import-people";
+import { importStepJob } from "./import-step";
 import { promotionApplyJob } from "./promotion-apply";
 import { studentFactsRefreshJob } from "./student-facts-refresh";
 import { timetableCopyJob } from "./timetable-copy";
@@ -21,4 +22,5 @@ export function registerAllJobTypes() {
 	registerJobType(importPeopleJob);
 	registerJobType(importEnrollmentsJob);
 	registerJobType(importGradesBulkJob);
+	registerJobType(importStepJob);
 }
