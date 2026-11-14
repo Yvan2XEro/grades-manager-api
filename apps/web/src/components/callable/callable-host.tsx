@@ -85,7 +85,7 @@ import { CopyTimetableDialog } from "@/modules/timetable/CopyTimetableDialog";
 import { RoomFormDialog } from "@/modules/timetable/RoomFormDialog";
 import { TimetableImportDialog } from "@/modules/timetable/TimetableImportDialog";
 import { TimetableSessionDialog } from "@/modules/timetable/TimetableSessionDialog";
-import { DeanRejectExamDialog } from "@/modules/workflows/ExamApprovals";
+import { DeanRejectExamDialog } from "@/modules/workflows/components/dean-reject-exam-dialog";
 
 /**
  * Mounts the single Root of every Callable. Rendered once inside the app

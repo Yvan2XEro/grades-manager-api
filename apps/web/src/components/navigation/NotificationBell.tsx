@@ -1,14 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	Bell,
-	CheckCircle2,
-	CreditCard,
-	FileText,
-	GraduationCap,
-	Inbox,
-	ServerCog,
-	XCircle,
-} from "lucide-react";
+import { Bell, Inbox } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
@@ -20,154 +10,26 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { trpc, trpcClient } from "@/utils/trpc";
-
-// ─── Type → display config ────────────────────────────────────────────────────
-
-type TFn = (key: string, opts?: Record<string, unknown>) => string;
-
-type NotifConfig = {
-	icon: React.ReactNode;
-	labelKey: string;
-	subtitleFn?: (payload: Record<string, unknown>, t: TFn) => string;
-	toFn?: (payload: Record<string, unknown>) => string | undefined;
-};
-
-const NOTIF_CONFIGS: Record<string, NotifConfig> = {
-	"fee.payment_confirmed": {
-		icon: <CreditCard className="h-3.5 w-3.5 text-emerald-600" />,
-		labelKey: "notifications.types.fee_payment_confirmed",
-		subtitleFn: (p) =>
-			p.amount && p.currency
-				? `${Number(p.amount).toLocaleString()} ${p.currency}`
-				: String(p.reference ?? ""),
-	},
-	"grade.approved": {
-		icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />,
-		labelKey: "notifications.types.grade_approved",
-		subtitleFn: (p) => String(p.examName ?? ""),
-		toFn: (p) => (p.classCourseId ? `/grades/${p.classCourseId}` : undefined),
-	},
-	"grade.rejected": {
-		icon: <XCircle className="h-3.5 w-3.5 text-destructive" />,
-		labelKey: "notifications.types.grade_rejected",
-		subtitleFn: (p) => (p.reason ? String(p.reason) : String(p.examName ?? "")),
-		toFn: (p) => (p.classCourseId ? `/grades/${p.classCourseId}` : undefined),
-	},
-	"deliberation.published": {
-		icon: <GraduationCap className="h-3.5 w-3.5 text-violet-600" />,
-		labelKey: "notifications.types.deliberation_published",
-		toFn: () => "/",
-	},
-	"payment.pending": {
-		icon: <CreditCard className="h-3.5 w-3.5 text-amber-500" />,
-		labelKey: "notifications.types.payment_pending",
-		toFn: () => "/fees",
-	},
-	"enrollment.window_open": {
-		icon: <GraduationCap className="h-3.5 w-3.5 text-emerald-600" />,
-		labelKey: "notifications.types.enrollment_window_open",
-		toFn: () => "/",
-	},
-	"batch_job.completed": {
-		icon: <ServerCog className="h-3.5 w-3.5 text-emerald-600" />,
-		labelKey: "notifications.types.batch_job_completed",
-		subtitleFn: (p, t) => {
-			const jobType = p.jobType
-				? t(`admin.batchJobs.types.${p.jobType}`, {
-						defaultValue: String(p.jobType),
-					})
-				: "";
-			return t("notifications.batchJob.completedSubtitle", {
-				jobType,
-				itemsProcessed: p.itemsProcessed ?? 0,
-			});
-		},
-		toFn: (p) => (p.jobId ? `/batch-jobs/${p.jobId}` : undefined),
-	},
-	"batch_job.failed": {
-		icon: <ServerCog className="h-3.5 w-3.5 text-destructive" />,
-		labelKey: "notifications.types.batch_job_failed",
-		subtitleFn: (p, t) => {
-			const jobType = p.jobType
-				? t(`admin.batchJobs.types.${p.jobType}`, {
-						defaultValue: String(p.jobType),
-					})
-				: "";
-			return t("notifications.batchJob.failedSubtitle", {
-				jobType,
-				error: p.error ? String(p.error) : "",
-			});
-		},
-		toFn: (p) => (p.jobId ? `/batch-jobs/${p.jobId}` : undefined),
-	},
-	"document.available": {
-		icon: <FileText className="h-3.5 w-3.5 text-sky-600" />,
-		labelKey: "notifications.types.document_available",
-		subtitleFn: (p) => String(p.documentKind ?? ""),
-		toFn: () => "/documents",
-	},
-};
-
-function getConfig(type: string): NotifConfig {
-	return (
-		NOTIF_CONFIGS[type] ?? {
-			icon: <Bell className="h-3.5 w-3.5 text-muted-foreground" />,
-			labelKey: "notifications.types.generic",
-		}
-	);
-}
-
-// ─── Time ago ─────────────────────────────────────────────────────────────────
-
-function timeAgo(
-	date: string | Date,
-	t: (k: string, o?: Record<string, unknown>) => string,
-) {
-	const diff = Date.now() - new Date(date).getTime();
-	const mins = Math.floor(diff / 60000);
-	if (mins < 1) return t("notifications.timeAgo.justNow");
-	if (mins < 60) return t("notifications.timeAgo.minutes", { count: mins });
-	const hours = Math.floor(mins / 60);
-	if (hours < 24) return t("notifications.timeAgo.hours", { count: hours });
-	return t("notifications.timeAgo.days", { count: Math.floor(hours / 24) });
-}
+import {
+	useMarkAllNotificationsRead,
+	useMarkNotificationRead,
+	useMyNotifications,
+} from "@/modules/notifications/hooks/use-my-notifications";
+import {
+	resolveNotification,
+	type TFn,
+	timeAgo,
+} from "@/modules/notifications/services/notification-types";
 
 // ─── NotificationBell ─────────────────────────────────────────────────────────
 
 export const NotificationBell: React.FC = () => {
 	const { t } = useTranslation();
-	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	const countQuery = useQuery(trpc.notifications.unreadCount.queryOptions());
-	const listQuery = useQuery(
-		trpc.notifications.myNotifications.queryOptions({ limit: 20 }),
-	);
-
-	const unread = countQuery.data ?? 0;
-	const items = listQuery.data?.items ?? [];
-
-	const markReadMut = useMutation({
-		mutationFn: (id: string) =>
-			trpcClient.notifications.markRead.mutate({ id }),
-		onSuccess: () => {
-			queryClient.invalidateQueries(
-				trpc.notifications.myNotifications.queryKey(),
-			);
-			queryClient.invalidateQueries(trpc.notifications.unreadCount.queryKey());
-		},
-	});
-
-	const markAllMut = useMutation({
-		mutationFn: () => trpcClient.notifications.markAllRead.mutate(),
-		onSuccess: () => {
-			queryClient.invalidateQueries(
-				trpc.notifications.myNotifications.queryKey(),
-			);
-			queryClient.invalidateQueries(trpc.notifications.unreadCount.queryKey());
-		},
-	});
+	const { listQuery, items, unread } = useMyNotifications(20);
+	const markReadMut = useMarkNotificationRead();
+	const markAllMut = useMarkAllNotificationsRead();
 
 	return (
 		<Popover>
@@ -234,26 +96,21 @@ export const NotificationBell: React.FC = () => {
 						<ul>
 							{items.map((item) => {
 								const isUnread = !item.readAt;
-								const cfg = getConfig(item.type);
-								const payload = (item.payload as Record<string, unknown>) ?? {};
-								const subtitle = cfg.subtitleFn
-									? cfg.subtitleFn(payload, t)
-									: "";
-								const to = cfg.toFn ? cfg.toFn(payload) : undefined;
+								const { icon, label, subtitle, to } = resolveNotification(
+									item,
+									t as unknown as TFn,
+									"h-3.5 w-3.5",
+								);
 
 								const innerContent = (
 									<>
 										<div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-background">
-											{cfg.icon}
+											{icon}
 										</div>
 										<div className="min-w-0 flex-1">
 											<div className="flex items-center gap-1.5">
 												<p className="truncate font-medium text-foreground text-xs">
-													{t(cfg.labelKey, {
-														defaultValue: item.type
-															.replace(/[._-]/g, " ")
-															.replace(/\b\w/g, (c) => c.toUpperCase()),
-													})}
+													{label}
 												</p>
 												{isUnread && (
 													<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
@@ -265,7 +122,7 @@ export const NotificationBell: React.FC = () => {
 												</p>
 											)}
 											<p className="mt-0.5 text-[10px] text-muted-foreground/70">
-												{timeAgo(item.createdAt, t)}
+												{timeAgo(item.createdAt, t as unknown as TFn)}
 											</p>
 										</div>
 									</>

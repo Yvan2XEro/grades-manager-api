@@ -1,8 +1,8 @@
 import { Route } from "react-router";
-import ForgotPassword from "./ForgotPassword";
-import Login from "./Login";
-import Register from "./Register";
-import ResetPassword from "./ResetPassword";
+import ForgotPassword from "./pages/forgot-password-page";
+import Login from "./pages/login-page";
+import Register from "./pages/register-page";
+import ResetPassword from "./pages/reset-password-page";
 
 /** Rendered inside AuthLayout. */
 export const authRoutes = (
