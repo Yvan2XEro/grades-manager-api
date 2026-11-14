@@ -39,11 +39,13 @@ export function useGradeExportData({
 			);
 			return classRes.items.map(
 				(cls: { id: string; name: string; program: string }) => {
-					const program = programMap.get(cls.program);
 					return {
 						id: cls.id,
 						name: cls.name,
-						program: { id: cls.program, name: program?.name ?? "" },
+						program: {
+							id: cls.program,
+							name: programMap.get(cls.program) ?? "",
+						},
 					};
 				},
 			) as ExportClass[];

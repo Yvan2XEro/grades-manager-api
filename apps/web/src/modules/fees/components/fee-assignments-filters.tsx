@@ -29,11 +29,12 @@ export function FeeAssignmentsFilters({
 	onChange: (patch: Partial<FeeAssignmentsFilterValues>) => void;
 }) {
 	const { t } = useTranslation();
-	const { data: classes } = useQuery(
+	const { data: classData } = useQuery(
 		trpc.classes.list.queryOptions(
 			value.yearId ? { academicYearId: value.yearId } : {},
 		),
 	);
+	const classes = classData?.items;
 
 	return (
 		<div className="flex flex-wrap gap-2">
