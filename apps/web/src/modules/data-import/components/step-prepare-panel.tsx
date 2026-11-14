@@ -1,7 +1,9 @@
 import { Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { G } from "../services/import-steps";
 import type { StepSheets } from "../types";
 import { FileDropArea } from "./file-drop-area";
 
@@ -21,15 +23,16 @@ export function StepPreparePanel({
 	isAnalyzing: boolean;
 	fileName: string | null;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="grid gap-6 lg:grid-cols-2">
 			<Card>
 				<CardHeader>
-					<CardTitle className="text-base">① Télécharger le modèle</CardTitle>
+					<CardTitle className="text-base">
+						{t(`${G}prepare.downloadTitle`)}
+					</CardTitle>
 					<p className="text-muted-foreground text-sm">
-						Le modèle contient déjà les données existantes : complétez-le,
-						corrigez-le si besoin, puis renvoyez-le. Les lignes existantes sont
-						mises à jour (repérées par leur code), les nouvelles sont créées.
+						{t(`${G}prepare.downloadText`)}
 					</p>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -39,12 +42,14 @@ export function StepPreparePanel({
 						) : (
 							<Download className="mr-2 h-4 w-4" />
 						)}
-						Télécharger le modèle pré-rempli
+						{t(`${G}prepare.download`)}
 					</Button>
 					<div className="space-y-3">
 						{sheets.map((sheet) => (
 							<div key={sheet.name} className="rounded-md border p-3">
-								<p className="font-medium text-sm">Feuille « {sheet.name} »</p>
+								<p className="font-medium text-sm">
+									{t(`${G}prepare.sheet`, { name: sheet.name })}
+								</p>
 								<p className="mb-2 text-muted-foreground text-xs">
 									{sheet.description}
 								</p>
@@ -69,8 +74,7 @@ export function StepPreparePanel({
 							</div>
 						))}
 						<p className="text-muted-foreground text-xs">
-							* obligatoire. Les listes déroulantes du modèle proposent les
-							codes déjà connus.
+							{t(`${G}prepare.requiredNote`)}
 						</p>
 					</div>
 				</CardContent>
@@ -78,11 +82,10 @@ export function StepPreparePanel({
 			<Card>
 				<CardHeader>
 					<CardTitle className="text-base">
-						② Envoyer le fichier rempli
+						{t(`${G}prepare.uploadTitle`)}
 					</CardTitle>
 					<p className="text-muted-foreground text-sm">
-						Rien n'est enregistré à cette étape : le fichier est d'abord vérifié
-						ligne par ligne, puis vous validez l'import.
+						{t(`${G}prepare.uploadText`)}
 					</p>
 				</CardHeader>
 				<CardContent>

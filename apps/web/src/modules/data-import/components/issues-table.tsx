@@ -1,5 +1,6 @@
 import { AlertCircle, AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -9,10 +10,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { G } from "../services/import-steps";
 import type { ImportIssue } from "../types";
 
 /** Row-level problems of the uploaded file, errors first. */
 export function IssuesTable({ issues }: { issues: ImportIssue[] }) {
+	const { t } = useTranslation();
 	const errors = issues.filter((i) => i.level === "error");
 	const warnings = issues.filter((i) => i.level === "warning");
 	const [level, setLevel] = useState<"error" | "warning">(
@@ -30,7 +33,7 @@ export function IssuesTable({ issues }: { issues: ImportIssue[] }) {
 					onClick={() => setLevel("error")}
 				>
 					<AlertCircle className="mr-1.5 h-4 w-4" />
-					Erreurs ({errors.length})
+					{t(`${G}issues.errors`, { count: errors.length })}
 				</Button>
 				<Button
 					size="sm"
@@ -38,17 +41,17 @@ export function IssuesTable({ issues }: { issues: ImportIssue[] }) {
 					onClick={() => setLevel("warning")}
 				>
 					<AlertTriangle className="mr-1.5 h-4 w-4" />
-					Avertissements ({warnings.length})
+					{t(`${G}issues.warnings`, { count: warnings.length })}
 				</Button>
 			</div>
 			<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead className="w-32">Feuille</TableHead>
-							<TableHead className="w-20">Ligne</TableHead>
-							<TableHead className="w-44">Colonne</TableHead>
-							<TableHead>Problème</TableHead>
+							<TableHead className="w-32">{t(`${G}issues.sheet`)}</TableHead>
+							<TableHead className="w-20">{t(`${G}issues.row`)}</TableHead>
+							<TableHead className="w-44">{t(`${G}issues.column`)}</TableHead>
+							<TableHead>{t(`${G}issues.problem`)}</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>

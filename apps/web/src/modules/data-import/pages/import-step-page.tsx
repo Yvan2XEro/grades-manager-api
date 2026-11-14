@@ -1,4 +1,5 @@
 import { ArrowLeft, PencilLine } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, Navigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,15 +10,17 @@ import { StepReviewPanel } from "../components/step-review-panel";
 import { StepStatusBadge } from "../components/step-status-badge";
 import { useImportOverview, useSkipStep } from "../hooks/use-import-overview";
 import { useImportStep } from "../hooks/use-import-step";
-import { FOUNDATION_META, foundationStatus } from "../services/import-steps";
+import {
+	FOUNDATION_META,
+	foundationStatus,
+	G,
+	stepLabel,
+} from "../services/import-steps";
 
-const PHASES = [
-	{ key: "prepare", label: "Préparer le fichier" },
-	{ key: "review", label: "Vérifier" },
-	{ key: "done", label: "Importé" },
-];
+const PHASES = ["prepare", "review", "done"] as const;
 
 export default function ImportStepPage() {
+	const { t } = useTranslation();
 	const { step = "" } = useParams<{ step: string }>();
 	const { data: overview } = useImportOverview();
 	const wizard = useImportStep(step);
@@ -39,37 +42,47 @@ export default function ImportStepPage() {
 				<Button asChild variant="ghost" size="sm" className="-ml-2">
 					<Link to="/import">
 						<ArrowLeft className="mr-1 h-4 w-4" />
-						Import des données
+						{t(`${G}stepPage.back`)}
 					</Link>
 				</Button>
 				<div className="flex flex-wrap items-start justify-between gap-4">
 					<div className="space-y-1">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
-							Fondations · étape {index + 1}/{steps.length || 3}
+							{t(`${G}stepPage.position`, {
+								index: index + 1,
+								total: steps.length || 3,
+							})}
 						</p>
 						<div className="flex items-center gap-2">
 							<h1 className="font-semibold text-2xl">
-								{current?.label ?? "…"}
+								{current ? stepLabel(current.key, t, current.label) : "…"}
 							</h1>
 							{current && (
 								<StepStatusBadge status={foundationStatus(current)} />
 							)}
 						</div>
 						<p className="max-w-2xl text-muted-foreground text-sm">
-							{meta?.description}
+							{t(`${G}stepDescriptions.${step}`, { defaultValue: "" })}
 						</p>
 					</div>
-					<StatusStepper steps={PHASES} currentStatus={wizard.phase} />
+					<StatusStepper
+						steps={PHASES.map((key) => ({
+							key,
+							label: t(`${G}phases.${key}`),
+						}))}
+						currentStatus={wizard.phase}
+					/>
 				</div>
 				{previous && wizard.phase === "prepare" && (
 					<p className="rounded-md bg-amber-500/10 px-3 py-2 text-amber-700 text-sm dark:text-amber-400">
-						L'étape « {previous.label} » n'est pas encore faite : les références
-						vers ses données seront signalées en erreur.{" "}
+						{t(`${G}stepPage.previousMissing`, {
+							label: stepLabel(previous.key, t, previous.label),
+						})}{" "}
 						<Link
 							to={`/import/${previous.key}`}
 							className="font-medium underline"
 						>
-							Y aller
+							{t(`${G}stepPage.goThere`)}
 						</Link>
 					</p>
 				)}
@@ -88,12 +101,14 @@ export default function ImportStepPage() {
 						fileName={wizard.fileName}
 					/>
 					<div className="flex flex-wrap items-center gap-2 text-sm">
-						<span className="text-muted-foreground">Autres options :</span>
+						<span className="text-muted-foreground">
+							{t(`${G}stepPage.otherOptions`)}
+						</span>
 						{meta && (
 							<Button asChild variant="link" size="sm" className="h-auto px-1">
 								<Link to={meta.manualPath}>
 									<PencilLine className="mr-1 h-3.5 w-3.5" />
-									Saisir manuellement
+									{t(`${G}stepPage.manual`)}
 								</Link>
 							</Button>
 						)}
@@ -106,8 +121,8 @@ export default function ImportStepPage() {
 								onClick={() => skip.mutate({ step, skipped: !current.skipped })}
 							>
 								{current.skipped
-									? "Réactiver cette étape"
-									: "Cette étape ne s'applique pas à mon institution"}
+									? t(`${G}stepPage.reactivate`)
+									: t(`${G}stepPage.notApplicable`)}
 							</Button>
 						)}
 					</div>

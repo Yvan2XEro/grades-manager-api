@@ -159,7 +159,8 @@
       "importLegacy": "Import avancé",
       "importCycles": "Cycles & niveaux",
       "importPrograms": "Programmes & options",
-      "importCurriculum": "UE & EC"
+      "importCurriculum": "UE & EC",
+      "setup": "Mise en route & import"
     },
     "command": {
       "placeholder": "Rechercher une page…",
@@ -237,7 +238,8 @@
         "timetable": "Emploi du temps",
         "admissions": "Admissions",
         "guardians": "Parents",
-        "academicResults": "Résultats & Promotion"
+        "academicResults": "Résultats & Promotion",
+        "setup": "Mise en route & import"
       },
       "groups": {
         "overview": "Vue d'ensemble",
@@ -3483,7 +3485,152 @@
         "enrollments": "Les étudiants et les classes doivent exister avant les inscriptions.",
         "grades": "Les examens doivent exister avant d'importer les notes."
       },
-      "newFile": "Nouveau fichier"
+      "newFile": "Nouveau fichier",
+      "guided": {
+        "title": "Mise en route & import des données",
+        "description": "Configurez votre institution étape par étape : son profil, sa structure académique, puis les données de chaque année. Chaque étape se fait par import Excel ou à la main.",
+        "legacyLink": "Import avancé (ancien format en un seul fichier)",
+        "how": {
+          "order": {
+            "title": "Dans l'ordre",
+            "text": "D'abord le profil et les fondations (une fois), puis chaque année, de la plus ancienne à la plus récente."
+          },
+          "template": {
+            "title": "Un modèle par étape",
+            "text": "Le modèle Excel est pré-rempli avec vos données et propose les codes connus en listes déroulantes."
+          },
+          "checked": {
+            "title": "Vérifié avant d'enregistrer",
+            "text": "Chaque fichier est contrôlé ligne par ligne ; vous voyez ce qui sera créé ou modifié avant de valider."
+          }
+        },
+        "status": {
+          "done": "Fait",
+          "skipped": "Passé",
+          "todo": "À faire"
+        },
+        "steps": {
+          "foundation": {
+            "cycles": "Cycles & niveaux",
+            "programs": "Programmes & options",
+            "curriculum": "UE & EC"
+          }
+        },
+        "stepDescriptions": {
+          "foundation": {
+            "cycles": "Les cycles de formation (Licence, Master, BTS…) et leurs niveaux (L1, L2, L3…). Tout le reste en dépend.",
+            "programs": "Les programmes (filières) rattachés à un cycle, et leurs options ou parcours.",
+            "curriculum": "La maquette pédagogique : les unités d'enseignement (UE) de chaque programme et leurs éléments constitutifs (EC)."
+          }
+        },
+        "yearSteps": {
+          "classes": "Classes",
+          "assignments": "Affectations",
+          "enrollments": "Inscriptions",
+          "exams": "Examens",
+          "grades": "Notes"
+        },
+        "progress": {
+          "title": "Mise en route : {{done}}/{{total}} étapes",
+          "ready": "Votre institution est prête",
+          "next": "Prochaine étape : {{label}}",
+          "readyHint": "Vous pouvez reprendre les années passées depuis l'import des données.",
+          "hide": "Masquer",
+          "continue": "Continuer",
+          "continueSetup": "Continuer la mise en route"
+        },
+        "milestones": {
+          "profile": "Profil de l'institution",
+          "year": "Année académique",
+          "classes": "Classes {{year}}",
+          "classesNoYear": "Classes de l'année",
+          "enrollments": "Inscriptions {{year}}",
+          "enrollmentsNoYear": "Inscriptions"
+        },
+        "profile": {
+          "title": "1. Profil de l'institution",
+          "text": "Le nom, le logo et les coordonnées figurent sur les relevés, les attestations et les listes. Les facultés et les centres se créent aussi depuis la page Institution.",
+          "name": "Nom",
+          "logo": "Logo",
+          "contact": "E-mail ou téléphone",
+          "address": "Adresse",
+          "complete": "Compléter le profil",
+          "edit": "Modifier"
+        },
+        "foundations": {
+          "title": "2. Fondations",
+          "text": "La structure académique de l'institution, à importer une seule fois et dans cet ordre. Chaque étape s'appuie sur la précédente.",
+          "start": "Commencer",
+          "review": "Revoir / compléter"
+        },
+        "years": {
+          "title": "3. Années académiques",
+          "text": "Les données de chaque année, de la plus ancienne à la plus récente : les promotions et les crédits d'une année dépendent des précédentes. L'import guidé de ces étapes arrive dans la prochaine version ; en attendant, chaque étape s'ouvre sur sa page de saisie.",
+          "add": "Ajouter une année",
+          "foundationsFirst": "Terminez d'abord les fondations : les classes d'une année s'appuient sur les programmes et les niveaux.",
+          "empty": "Aucune année académique. Créez la première pour commencer.",
+          "active": "Active"
+        },
+        "stepPage": {
+          "back": "Mise en route & import",
+          "position": "Fondations · étape {{index}}/{{total}}",
+          "previousMissing": "L'étape « {{label}} » n'est pas encore faite : les références vers ses données seront signalées en erreur.",
+          "goThere": "Y aller",
+          "otherOptions": "Autres options :",
+          "manual": "Saisir manuellement",
+          "reactivate": "Réactiver cette étape",
+          "notApplicable": "Cette étape ne s'applique pas à mon institution"
+        },
+        "phases": {
+          "prepare": "Préparer le fichier",
+          "review": "Vérifier",
+          "done": "Importé"
+        },
+        "prepare": {
+          "downloadTitle": "① Télécharger le modèle",
+          "downloadText": "Le modèle contient déjà les données existantes : complétez-le, corrigez-le si besoin, puis renvoyez-le. Les lignes existantes sont mises à jour (repérées par leur code), les nouvelles sont créées.",
+          "download": "Télécharger le modèle pré-rempli",
+          "sheet": "Feuille « {{name}} »",
+          "requiredNote": "* obligatoire. Les listes déroulantes du modèle proposent les codes déjà connus.",
+          "uploadTitle": "② Envoyer le fichier rempli",
+          "uploadText": "Rien n'est enregistré à cette étape : le fichier est d'abord vérifié ligne par ligne, puis vous validez l'import."
+        },
+        "drop": {
+          "checking": "Vérification de {{name}}…",
+          "hint": "Glissez le fichier rempli ici, ou cliquez pour le choisir",
+          "accept": "Excel (.xlsx), 10 Mo maximum"
+        },
+        "review": {
+          "create": "à créer",
+          "update": "à mettre à jour",
+          "unchanged": "inchangées",
+          "skipped": "ignorées (erreurs)",
+          "errorRows": "{{count}} ligne(s) contiennent des erreurs",
+          "errorRowsHint": "et ne seront pas importées. Corrigez-les dans {{file}} puis renvoyez-le, ou importez dès maintenant les lignes valides.",
+          "theFile": "le fichier",
+          "noError": "Le fichier ne contient aucune erreur.",
+          "another": "Envoyer un autre fichier",
+          "nothing": "Rien à importer",
+          "import": "Importer {{count}} ligne(s)"
+        },
+        "issues": {
+          "errors": "Erreurs ({{count}})",
+          "warnings": "Avertissements ({{count}})",
+          "sheet": "Feuille",
+          "row": "Ligne",
+          "column": "Colonne",
+          "problem": "Problème"
+        },
+        "done": {
+          "title": "Import terminé",
+          "sheet": "{{sheet}} : {{created}} créé(s), {{updated}} mis à jour",
+          "another": "Importer un autre fichier",
+          "log": "Voir le journal",
+          "next": "Étape suivante : {{label}}",
+          "back": "Retour à la mise en route"
+        },
+        "runFailed": "L'import ne s'est pas terminé correctement. Consultez le détail du traitement."
+      }
     }
   },
   "teacher": {

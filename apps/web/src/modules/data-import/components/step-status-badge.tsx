@@ -1,13 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { G } from "../services/import-steps";
 import type { StepStatus } from "../types";
 
-const LABELS: Record<StepStatus, string> = {
-	done: "Fait",
-	skipped: "Passé",
-	todo: "À faire",
-};
-
 export function StepStatusBadge({ status }: { status: StepStatus }) {
+	const { t } = useTranslation();
 	return (
 		<Badge
 			variant="outline"
@@ -19,7 +16,7 @@ export function StepStatusBadge({ status }: { status: StepStatus }) {
 						: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
 			}
 		>
-			{LABELS[status]}
+			{t(`${G}status.${status}`)}
 		</Badge>
 	);
 }

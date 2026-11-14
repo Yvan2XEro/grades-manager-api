@@ -4,51 +4,44 @@ import {
 	ListChecks,
 	ShieldCheck,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AcademicYearsCard } from "../components/academic-years-card";
 import { FoundationsCard } from "../components/foundations-card";
+import { ProfileCard } from "../components/profile-card";
+import { SetupProgress } from "../components/setup-progress";
 import { useImportOverview } from "../hooks/use-import-overview";
-import { foundationStatus } from "../services/import-steps";
+import { foundationStatus, G, setupMilestones } from "../services/import-steps";
 
 const HOW_IT_WORKS = [
-	{
-		icon: ListChecks,
-		title: "Dans l'ordre",
-		text: "D'abord les fondations (une fois), puis chaque année, de la plus ancienne à la plus récente.",
-	},
-	{
-		icon: FileSpreadsheet,
-		title: "Un modèle par étape",
-		text: "Le modèle Excel est pré-rempli avec vos données et propose les codes connus en listes déroulantes.",
-	},
-	{
-		icon: ShieldCheck,
-		title: "Vérifié avant d'enregistrer",
-		text: "Chaque fichier est contrôlé ligne par ligne ; vous voyez ce qui sera créé ou modifié avant de valider.",
-	},
+	{ icon: ListChecks, key: "order" },
+	{ icon: FileSpreadsheet, key: "template" },
+	{ icon: ShieldCheck, key: "checked" },
 ];
 
 export default function DataImportPage() {
+	const { t } = useTranslation();
 	const { data, isLoading } = useImportOverview();
 	const foundationsReady =
 		data?.foundations.every((s) => foundationStatus(s) !== "todo") ?? false;
 
 	return (
 		<div className="space-y-6">
-			<PageHeader
-				title="Import des données"
-				description="Reprenez l'historique de votre institution étape par étape : la structure académique, puis les données de chaque année."
-			/>
+			<PageHeader title={t(`${G}title`)} description={t(`${G}description`)} />
+
+			{data && <SetupProgress milestones={setupMilestones(data, t)} />}
 
 			<div className="grid gap-3 md:grid-cols-3">
-				{HOW_IT_WORKS.map(({ icon: Icon, title, text }) => (
-					<div key={title} className="flex gap-3 rounded-lg border bg-card p-4">
+				{HOW_IT_WORKS.map(({ icon: Icon, key }) => (
+					<div key={key} className="flex gap-3 rounded-lg border bg-card p-4">
 						<Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
 						<div>
-							<p className="font-medium text-sm">{title}</p>
-							<p className="text-muted-foreground text-xs">{text}</p>
+							<p className="font-medium text-sm">{t(`${G}how.${key}.title`)}</p>
+							<p className="text-muted-foreground text-xs">
+								{t(`${G}how.${key}.text`)}
+							</p>
 						</div>
 					</div>
 				))}
@@ -58,6 +51,7 @@ export default function DataImportPage() {
 				<Skeleton className="h-96 w-full" />
 			) : (
 				<>
+					<ProfileCard profile={data.profile} />
 					<FoundationsCard steps={data.foundations} />
 					<AcademicYearsCard
 						years={data.years}
@@ -70,7 +64,7 @@ export default function DataImportPage() {
 				to="/import/legacy"
 				className="inline-flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
 			>
-				Import avancé (ancien format en un seul fichier)
+				{t(`${G}legacyLink`)}
 				<ArrowRight className="h-3 w-3" />
 			</Link>
 		</div>

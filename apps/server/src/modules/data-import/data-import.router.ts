@@ -153,7 +153,15 @@ export const dataImportRouter = router({
 			skippedSteps(institutionId),
 			yearCounts(institutionId),
 		]);
+		const inst = ctx.institution;
 		return {
+			/** What the institution profile already has (first setup step). */
+			profile: {
+				name: inst.nameFr,
+				hasLogo: Boolean(inst.logoUrl || inst.logoSvg),
+				hasContact: Boolean(inst.contactEmail || inst.contactPhone),
+				hasAddress: Boolean(inst.addressFr),
+			},
 			foundations: FOUNDATION_STEPS.map((step) => ({
 				key: step.key,
 				label: step.label,

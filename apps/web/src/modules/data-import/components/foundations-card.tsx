@@ -1,14 +1,21 @@
 import { Check, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { FOUNDATION_META, foundationStatus } from "../services/import-steps";
+import {
+	FOUNDATION_META,
+	foundationStatus,
+	G,
+	stepLabel,
+} from "../services/import-steps";
 import type { FoundationStep } from "../types";
 import { StepStatusBadge } from "./step-status-badge";
 
 /** The foundation steps, in order, with what already exists for each. */
 export function FoundationsCard({ steps }: { steps: FoundationStep[] }) {
+	const { t } = useTranslation();
 	const statuses = steps.map(foundationStatus);
 	const done = statuses.filter((s) => s !== "todo").length;
 	const next = statuses.indexOf("todo");
@@ -17,10 +24,11 @@ export function FoundationsCard({ steps }: { steps: FoundationStep[] }) {
 		<Card>
 			<CardHeader className="flex flex-row items-start justify-between gap-4">
 				<div className="space-y-1">
-					<CardTitle className="text-base">1. Fondations</CardTitle>
+					<CardTitle className="text-base">
+						{t(`${G}foundations.title`)}
+					</CardTitle>
 					<p className="text-muted-foreground text-sm">
-						La structure académique de l'institution, à importer une seule fois
-						et dans cet ordre. Chaque étape s'appuie sur la précédente.
+						{t(`${G}foundations.text`)}
 					</p>
 				</div>
 				<span className="shrink-0 font-medium text-muted-foreground text-sm">
@@ -59,11 +67,15 @@ export function FoundationsCard({ steps }: { steps: FoundationStep[] }) {
 								<div className="min-w-0 flex-1 space-y-1">
 									<div className="flex flex-wrap items-center gap-2">
 										{Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-										<span className="font-medium">{step.label}</span>
+										<span className="font-medium">
+											{stepLabel(step.key, t, step.label)}
+										</span>
 										<StepStatusBadge status={status} />
 									</div>
 									<p className="text-muted-foreground text-sm">
-										{meta?.description}
+										{t(`${G}stepDescriptions.${step.key}`, {
+											defaultValue: "",
+										})}
 									</p>
 									<p className="text-muted-foreground text-xs">
 										{Object.entries(step.counts)
@@ -77,7 +89,9 @@ export function FoundationsCard({ steps }: { steps: FoundationStep[] }) {
 									size="sm"
 								>
 									<Link to={`/import/${step.key}`}>
-										{status === "todo" ? "Commencer" : "Revoir / compléter"}
+										{status === "todo"
+											? t(`${G}foundations.start`)
+											: t(`${G}foundations.review`)}
 										<ChevronRight className="ml-1 h-4 w-4" />
 									</Link>
 								</Button>

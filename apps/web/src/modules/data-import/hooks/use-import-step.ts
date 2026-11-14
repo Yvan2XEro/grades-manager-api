@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
+import { G } from "../services/import-steps";
 import type { StepPreview } from "../types";
 
 export type WizardPhase = "prepare" | "review" | "done";
@@ -21,6 +23,7 @@ const readAsBase64 = (file: File) =>
  */
 export function useImportStep(step: string) {
 	const queryClient = useQueryClient();
+	const { t } = useTranslation();
 	const [phase, setPhase] = useState<WizardPhase>("prepare");
 	const [fileName, setFileName] = useState<string | null>(null);
 	const [jobId, setJobId] = useState<string | null>(null);
@@ -58,9 +61,7 @@ export function useImportStep(step: string) {
 		mutationFn: () => trpcClient.batchJobs.run.mutate({ jobId: jobId! }),
 		onSuccess: (job) => {
 			if (job?.status !== "completed") {
-				toast.error(
-					"L'import ne s'est pas terminé correctement. Consultez le détail du traitement.",
-				);
+				toast.error(t(`${G}runFailed`));
 				return;
 			}
 			setPhase("done");

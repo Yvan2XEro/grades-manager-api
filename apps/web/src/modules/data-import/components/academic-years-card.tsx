@@ -1,10 +1,11 @@
 import { CalendarPlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { YEAR_STEPS, yearProgress } from "../services/import-steps";
+import { G, YEAR_STEPS, yearProgress } from "../services/import-steps";
 import type { ImportYear } from "../types";
 
 /** Each academic year with what it already contains, oldest first. */
@@ -15,35 +16,30 @@ export function AcademicYearsCard({
 	years: ImportYear[];
 	foundationsReady: boolean;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Card>
 			<CardHeader className="flex flex-row items-start justify-between gap-4">
 				<div className="space-y-1">
-					<CardTitle className="text-base">2. Années académiques</CardTitle>
-					<p className="text-muted-foreground text-sm">
-						Les données de chaque année, de la plus ancienne à la plus récente :
-						les promotions et les crédits d'une année dépendent des précédentes.
-						L'import guidé de ces étapes arrive dans la prochaine version ; en
-						attendant, chaque étape s'ouvre sur sa page de saisie.
-					</p>
+					<CardTitle className="text-base">{t(`${G}years.title`)}</CardTitle>
+					<p className="text-muted-foreground text-sm">{t(`${G}years.text`)}</p>
 				</div>
 				<Button asChild variant="outline" size="sm" className="shrink-0">
 					<Link to="/academic-years">
 						<CalendarPlus className="mr-2 h-4 w-4" />
-						Ajouter une année
+						{t(`${G}years.add`)}
 					</Link>
 				</Button>
 			</CardHeader>
 			<CardContent className="space-y-2">
 				{!foundationsReady && (
 					<p className="rounded-md bg-amber-500/10 px-3 py-2 text-amber-700 text-sm dark:text-amber-400">
-						Terminez d'abord les fondations : les classes d'une année s'appuient
-						sur les programmes et les niveaux.
+						{t(`${G}years.foundationsFirst`)}
 					</p>
 				)}
 				{years.length === 0 && (
 					<p className="py-6 text-center text-muted-foreground text-sm">
-						Aucune année académique. Créez la première pour commencer.
+						{t(`${G}years.empty`)}
 					</p>
 				)}
 				{years.map((year) => {
@@ -56,7 +52,9 @@ export function AcademicYearsCard({
 							<div className="w-32 shrink-0">
 								<p className="font-medium">{year.name}</p>
 								<div className="mt-1 flex items-center gap-2">
-									{year.isActive && <Badge variant="secondary">Active</Badge>}
+									{year.isActive && (
+										<Badge variant="secondary">{t(`${G}years.active`)}</Badge>
+									)}
 									<span className="text-muted-foreground text-xs">
 										{progress}/{YEAR_STEPS.length}
 									</span>
@@ -65,6 +63,7 @@ export function AcademicYearsCard({
 							<ol className="flex flex-1 flex-wrap gap-2">
 								{YEAR_STEPS.map((step, index) => {
 									const count = year.counts[step.count];
+									const label = t(`${G}yearSteps.${step.key}`);
 									return (
 										<li key={step.key}>
 											<Link
@@ -75,10 +74,10 @@ export function AcademicYearsCard({
 														? "border-primary/40 bg-primary/5 text-primary"
 														: "text-muted-foreground",
 												)}
-												title={`${step.label} : ${count}`}
+												title={`${label} : ${count}`}
 											>
 												<span className="font-semibold">{index + 1}</span>
-												{step.label}
+												{label}
 												<span className="tabular-nums opacity-70">{count}</span>
 											</Link>
 										</li>

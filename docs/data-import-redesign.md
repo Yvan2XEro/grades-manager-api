@@ -21,6 +21,11 @@ Grades standard (decided): **grid per EC like a PV** — one workbook per class,
 
 Optional "classeur annuel" (all sheets of a year in one file) validated/imported sheet by sheet.
 
+## Setup entry points (onboarding)
+- Sidebar: "Mise en route & import" right under the dashboard (admins).
+- `/import` starts with a progress bar of setup milestones (`setupMilestones`): institution profile → 3 foundation steps → academic year → classes and enrollments of the active year; a "1. Profil de l'institution" card links to `/institution/overview`.
+- Admin dashboard: `SetupProgressCard` shows the progress and the next step while setup is incomplete (dismissible, localStorage). On the first visit of an empty institution (no cycle, program, UE or year) it opens `/import` once.
+
 ## Server work
 - New import steps: faculties, study cycles & levels, programs & options, teaching units & courses; then academic year & semesters, class courses, exams; year-scoped grades.
 - Generic step definition (sheets, FR headers, required/enum/reference columns, DB resolution, plan, execute) on top of batch jobs; tag created rows with the import job id for rollback.
@@ -29,6 +34,6 @@ Optional "classeur annuel" (all sheets of a year in one file) validated/imported
 Uniqueness to upsert on: study_cycles (institution, code), cycle_levels (cycle, code), programs (institution, code), program_options (program, code), teaching_units (program, code), courses (program, code), semesters (code).
 
 ## Phases
-1. Hub + complete Fondations + step wizard (validation table, inline progress). **Done** — server: `modules/data-import/steps/*` (generic `ImportStepDef`, `workbook.ts` template/reader), `import.step` batch job, `dataImport.overview|step|template|upload|setStepSkipped`; web: `modules/data-import` (`/import`, `/import/:step`, old importers at `/import/legacy`). UI strings of the new pages are French only (EN translation pending).
+1. Hub + complete Fondations + step wizard (validation table, inline progress). **Done** — server: `modules/data-import/steps/*` (generic `ImportStepDef`, `workbook.ts` template/reader), `import.step` batch job, `dataImport.overview|step|template|upload|setStepSkipped`; web: `modules/data-import` (`/import`, `/import/:step`, old importers at `/import/legacy`). UI strings are translated (`admin.dataImport.guided.*`, FR/EN); server messages (sheet names, column headers, row issues) stay French because the templates are French.
 2. Per-year steps incl. class courses, exams, PV-grid grades. **Next.** The hub already lists each year with its counts; its chips link to the manual pages until the yearly steps exist.
 3. Rollback, annual workbook, fully dynamic templates.

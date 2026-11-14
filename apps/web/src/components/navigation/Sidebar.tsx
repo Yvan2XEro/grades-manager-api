@@ -11,7 +11,6 @@ import {
 	FileCog,
 	FileSpreadsheet,
 	FileText,
-	FileUp,
 	Gavel,
 	GraduationCap,
 	Heart,
@@ -19,6 +18,7 @@ import {
 	LayoutDashboard,
 	ListChecks,
 	PlayCircle,
+	Rocket,
 	School,
 	Search,
 	Settings2,
@@ -74,6 +74,12 @@ const Sidebar: React.FC = () => {
 						to: "/",
 						icon: <LayoutDashboard className={IC} />,
 						labelKey: "navigation.sidebar.admin.dashboard",
+					},
+					{
+						to: "/import",
+						icon: <Rocket className={IC} />,
+						labelKey: "navigation.sidebar.admin.setup",
+						badge: "new" as NavBadgeType,
 					},
 					{
 						to: "/academic-years",
@@ -200,11 +206,6 @@ const Sidebar: React.FC = () => {
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
 						badge: "new" as NavBadgeType,
-					},
-					{
-						to: "/import",
-						icon: <FileUp className={IC} />,
-						labelKey: "navigation.sidebar.admin.dataImport",
 					},
 					{
 						to: "/fee-clearance",

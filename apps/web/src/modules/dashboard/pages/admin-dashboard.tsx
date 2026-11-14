@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type React from "react";
+import { SetupProgressCard } from "@/modules/data-import/components/setup-progress-card";
 import { ActionNeededAlerts } from "../components/admin/action-needed-alerts";
 import { AdminDashboardHeader } from "../components/admin/admin-dashboard-header";
 import { DashboardSkeleton } from "../components/admin/admin-dashboard-skeleton";
@@ -25,6 +26,8 @@ const AdminDashboard: React.FC = () => {
 				yearId={d.yearId}
 				onYearChange={d.setYearId}
 			/>
+
+			<SetupProgressCard />
 
 			<ActionNeededAlerts
 				examsPending={ov?.examsPending ?? 0}

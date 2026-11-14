@@ -1,7 +1,9 @@
 import { FileSpreadsheet, Upload } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { G } from "../services/import-steps";
 
 /** Drop zone / picker for one .xlsx workbook. */
 export function FileDropArea({
@@ -14,6 +16,7 @@ export function FileDropArea({
 	fileName: string | null;
 }) {
 	const inputRef = useRef<HTMLInputElement>(null);
+	const { t } = useTranslation();
 	const [dragging, setDragging] = useState(false);
 	const pick = (file?: File) => file && !isBusy && onFile(file);
 
@@ -43,7 +46,7 @@ export function FileDropArea({
 				<>
 					<Spinner className="h-6 w-6" />
 					<span className="font-medium text-sm">
-						Vérification de {fileName}…
+						{t(`${G}drop.checking`, { name: fileName })}
 					</span>
 				</>
 			) : (
@@ -53,11 +56,9 @@ export function FileDropArea({
 					) : (
 						<Upload className="h-8 w-8 text-muted-foreground" />
 					)}
-					<span className="font-medium text-sm">
-						Glissez le fichier rempli ici, ou cliquez pour le choisir
-					</span>
+					<span className="font-medium text-sm">{t(`${G}drop.hint`)}</span>
 					<span className="text-muted-foreground text-xs">
-						Excel (.xlsx), 10 Mo maximum
+						{t(`${G}drop.accept`)}
 					</span>
 				</>
 			)}
