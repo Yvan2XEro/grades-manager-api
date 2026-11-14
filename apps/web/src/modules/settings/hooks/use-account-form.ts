@@ -36,8 +36,9 @@ export function useAccountForm() {
 	const mutation = useMutation({
 		mutationFn: async (values: AccountFormValues) =>
 			authClient.updateUser({ name: values.name.trim() }),
-		onSuccess: async (updated) => {
-			const name = updated?.user?.name ?? form.getValues("name");
+		onSuccess: async () => {
+			// updateUser resolves with `{ data: { status } }`, never the user: use the submitted name.
+			const name = form.getValues("name");
 			if (user && name) {
 				const [firstName, ...rest] = name.split(" ");
 				setUser({
