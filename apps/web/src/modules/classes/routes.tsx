@@ -1,5 +1,5 @@
 import { Navigate, Route } from "react-router";
-import EnrollmentManagement from "@/modules/enrollments/EnrollmentManagement";
+import EnrollmentsPage from "@/modules/enrollments/pages/enrollments-page";
 import ClassCoursesPage from "./pages/class-courses-page";
 import ClassDetailCourses from "./pages/class-detail/class-detail-courses";
 import ClassDetailDetails from "./pages/class-detail/class-detail-details";
@@ -14,7 +14,7 @@ export const classesRoutes = (
 			<Route index element={<Navigate to="classes" replace />} />
 			<Route path="classes" element={<ClassesPage />} />
 			<Route path="assignments" element={<ClassCoursesPage />} />
-			<Route path="enrollments" element={<EnrollmentManagement />} />
+			<Route path="enrollments" element={<EnrollmentsPage />} />
 		</Route>
 		<Route path=":classId" element={<ClassDetailLayout />}>
 			<Route index element={<Navigate to="details" replace />} />

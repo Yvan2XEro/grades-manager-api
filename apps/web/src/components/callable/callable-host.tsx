@@ -23,11 +23,9 @@ import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class
 import { ExportStudentListDialog } from "@/modules/documents/components/export-student-list-dialog";
 import { GenerateDocumentDialog } from "@/modules/documents/components/generate-document-dialog";
 import { RenameTemplateDialog } from "@/modules/documents/components/rename-template-dialog";
-import {
-	BulkEnrollClassesDialog,
-	EnrollEntireClassDialog,
-	StudentCourseRosterDialog,
-} from "@/modules/enrollments/EnrollmentManagement";
+import { BulkEnrollClassesDialog } from "@/modules/enrollments/components/bulk-enroll-classes-dialog";
+import { EnrollEntireClassDialog } from "@/modules/enrollments/components/enroll-entire-class-dialog";
+import { StudentCourseRosterDialog } from "@/modules/enrollments/components/student-course-roster-dialog";
 import { ExamFormDialog } from "@/modules/exams/components/exam-form-dialog";
 import { ExamTypeFormDialog } from "@/modules/exams/components/exam-type-form-dialog";
 import { ParticipationOverrideDialog } from "@/modules/exams/components/participation-override-dialog";
