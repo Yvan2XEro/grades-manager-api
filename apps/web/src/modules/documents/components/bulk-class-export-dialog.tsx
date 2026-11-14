@@ -1,14 +1,6 @@
-import {
-	AlertCircle,
-	CheckCircle2,
-	Download,
-	FileSpreadsheet,
-	FileText,
-	Loader2,
-} from "lucide-react";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { createCallable } from "react-call";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -20,7 +12,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import {
 	Select,
 	SelectContent,
@@ -43,6 +34,8 @@ import type {
 	BulkExportFormat as Format,
 	BulkExportMode as Mode,
 } from "../services/bulk-class-export";
+import { GenerationProgress } from "./generation-progress";
+import { GenerationStatusBadge } from "./generation-status-badge";
 
 interface Props {
 	/** Classes pre-filtered by the parent page (filters in effect). */
@@ -181,32 +174,7 @@ export const BulkClassExportDialog = createCallable<Props>(
 													{c.academicYear?.name ?? "—"}
 												</TableCell>
 												<TableCell>
-													{!s && (
-														<span className="text-muted-foreground text-xs">
-															—
-														</span>
-													)}
-													{s?.state === "pending" && (
-														<Badge variant="secondary">En attente</Badge>
-													)}
-													{s?.state === "running" && (
-														<Badge variant="secondary">
-															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
-															Génération
-														</Badge>
-													)}
-													{s?.state === "ok" && (
-														<Badge className="bg-emerald-600">
-															<CheckCircle2 className="mr-1 h-3 w-3" />
-															OK
-														</Badge>
-													)}
-													{s?.state === "error" && (
-														<Badge variant="destructive" title={s.error}>
-															<AlertCircle className="mr-1 h-3 w-3" />
-															Échec
-														</Badge>
-													)}
+													<GenerationStatusBadge status={s} />
 												</TableCell>
 											</TableRow>
 										);
@@ -217,23 +185,12 @@ export const BulkClassExportDialog = createCallable<Props>(
 					</div>
 
 					{isRunning && (
-						<div className="space-y-2 px-6">
-							<div className="flex items-center justify-between text-sm">
-								<span>
-									Export en cours… {progress.done} / {progress.total}
-								</span>
-								<span className="text-muted-foreground">
-									{summary.ok} OK · {summary.error} échec(s)
-								</span>
-							</div>
-							<Progress
-								value={
-									progress.total > 0
-										? (progress.done / progress.total) * 100
-										: 0
-								}
-							/>
-						</div>
+						<GenerationProgress
+							className="space-y-2 px-6"
+							label="Export en cours…"
+							progress={progress}
+							summary={summary}
+						/>
 					)}
 
 					<DialogFooter>

@@ -1,5 +1,5 @@
 import { Route } from "react-router";
-import BulkDocumentGeneration from "./BulkDocumentGeneration";
+import BulkDocumentGeneration from "./pages/bulk-document-generation-page";
 import DocumentsPage from "./pages/documents-page";
 import ExportTemplateEditor from "./pages/export-template-editor-page";
 
