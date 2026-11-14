@@ -1,6 +1,6 @@
 import { Navigate, Route } from "react-router";
 import { RoleView } from "@/components/navigation/RoleView";
-import CourseEnrollment from "./CourseEnrollment";
+import CourseEnrollmentPage from "./pages/course-enrollment-page";
 
 /** Students enroll in courses here; staff manage enrollments in the classes hub. */
 export const enrollmentsRoutes = (
@@ -9,7 +9,7 @@ export const enrollmentsRoutes = (
 		element={
 			<RoleView
 				fallback={<Navigate to="/classes/enrollments" replace />}
-				student={<CourseEnrollment />}
+				student={<CourseEnrollmentPage />}
 			/>
 		}
 	/>
