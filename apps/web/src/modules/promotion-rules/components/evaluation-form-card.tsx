@@ -29,16 +29,10 @@ export function EvaluationFormCard({
 		setSelectedSourceClassId,
 		selectedAcademicYearId,
 		setSelectedAcademicYearId,
-		selectedStudents,
-		evaluationResult,
 		isEvaluating,
 		isRefreshingFacts,
 		evaluate: handleEvaluate,
 		refreshFacts: handleRefreshFacts,
-		toggleStudent: handleToggleStudent,
-		selectAll: handleSelectAll,
-		deselectAll: handleDeselectAll,
-		proceed: handleProceed,
 	} = state;
 	return (
 		<Card className="border-0 shadow-sm">

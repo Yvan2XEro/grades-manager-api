@@ -18,19 +18,7 @@ export function EvaluationResults({
 }) {
 	const { t } = useTranslation();
 	const {
-		rules,
-		classes,
-		selectedRuleId,
-		setSelectedRuleId,
-		selectedSourceClassId,
-		setSelectedSourceClassId,
-		selectedAcademicYearId,
-		setSelectedAcademicYearId,
 		selectedStudents,
-		isEvaluating,
-		isRefreshingFacts,
-		evaluate: handleEvaluate,
-		refreshFacts: handleRefreshFacts,
 		toggleStudent: handleToggleStudent,
 		selectAll: handleSelectAll,
 		deselectAll: handleDeselectAll,
