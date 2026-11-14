@@ -31,7 +31,7 @@ export const deliberationsRoutes = (
 		</Route>
 		<Route path="deliberations/rules" element={<DeliberationRules />} />
 		<Route
-			path="deliberations/:deliberationId"
+			path="deliberations/:deliberationId/*"
 			element={<DeliberationLegacyRedirect />}
 		/>
 		<Route path="promotion/:id" element={<TransitionDetail />} />
