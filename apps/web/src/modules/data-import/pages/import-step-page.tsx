@@ -4,23 +4,20 @@ import { Link, Navigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusStepper } from "@/components/ui/status-stepper";
+import { hasManualEntry, useManualEntry } from "../components/manual-entry";
 import { StepDonePanel } from "../components/step-done-panel";
 import { StepPreparePanel } from "../components/step-prepare-panel";
 import { StepReviewPanel } from "../components/step-review-panel";
 import { StepStatusBadge } from "../components/step-status-badge";
 import { useImportOverview, useSkipStep } from "../hooks/use-import-overview";
 import { useImportStep } from "../hooks/use-import-step";
-import {
-	FOUNDATION_META,
-	foundationStatus,
-	G,
-	stepLabel,
-} from "../services/import-steps";
+import { foundationStatus, G, stepLabel } from "../services/import-steps";
 
 const PHASES = ["prepare", "review", "done"] as const;
 
 export default function ImportStepPage() {
 	const { t } = useTranslation();
+	const openManual = useManualEntry();
 	const { step = "" } = useParams<{ step: string }>();
 	const { data: overview } = useImportOverview();
 	const wizard = useImportStep(step);
@@ -30,7 +27,6 @@ export default function ImportStepPage() {
 	const index = steps.findIndex((s) => s.key === step);
 	const current = steps[index];
 	if (overview && !current) return <Navigate to="/import" replace />;
-	const meta = FOUNDATION_META[step];
 	const previous = steps
 		.slice(0, Math.max(index, 0))
 		.find((s) => foundationStatus(s) === "todo");
@@ -104,12 +100,15 @@ export default function ImportStepPage() {
 						<span className="text-muted-foreground">
 							{t(`${G}stepPage.otherOptions`)}
 						</span>
-						{meta && (
-							<Button asChild variant="link" size="sm" className="h-auto px-1">
-								<Link to={meta.manualPath}>
-									<PencilLine className="mr-1 h-3.5 w-3.5" />
-									{t(`${G}stepPage.manual`)}
-								</Link>
+						{hasManualEntry(step) && (
+							<Button
+								variant="link"
+								size="sm"
+								className="h-auto px-1"
+								onClick={() => openManual(step)}
+							>
+								<PencilLine className="mr-1 h-3.5 w-3.5" />
+								{t(`${G}stepPage.manual`)}
 							</Button>
 						)}
 						{current && (

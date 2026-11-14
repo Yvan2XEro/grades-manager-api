@@ -15,21 +15,15 @@ export const stepLabel = (key: string, t: TFunction, fallback?: string) =>
 	t(`${G}steps.${key}`, { defaultValue: fallback ?? key });
 
 /** What each foundation step is for, and where to do it by hand. */
-export const FOUNDATION_META: Record<
-	string,
-	{ icon: LucideIcon; manualPath: string }
-> = {
+export const FOUNDATION_META: Record<string, { icon: LucideIcon }> = {
 	"foundation.cycles": {
 		icon: Layers,
-		manualPath: "/institution/cycles",
 	},
 	"foundation.programs": {
 		icon: GraduationCap,
-		manualPath: "/programs/programs",
 	},
 	"foundation.curriculum": {
 		icon: BookOpen,
-		manualPath: "/programs/teaching-units",
 	},
 };
 
@@ -44,28 +38,23 @@ export const foundationStatus = (step: FoundationStep): StepStatus =>
 export const YEAR_STEPS: {
 	key: string;
 	count: keyof ImportYear["counts"];
-	manualPath: string;
 }[] = [
 	{
 		key: "classes",
 		count: "classes",
-		manualPath: "/classes/classes",
 	},
 	{
 		key: "assignments",
 		count: "classCourses",
-		manualPath: "/classes/assignments",
 	},
 	{
 		key: "enrollments",
 		count: "enrollments",
-		manualPath: "/classes/enrollments",
 	},
-	{ key: "exams", count: "exams", manualPath: "/exams/list" },
+	{ key: "exams", count: "exams" },
 	{
 		key: "grades",
 		count: "grades",
-		manualPath: "/exams/export",
 	},
 ];
 
@@ -77,7 +66,8 @@ export interface SetupMilestone {
 	key: string;
 	label: string;
 	done: boolean;
-	href: string;
+	/** Guided import step (`/import/<key>`); otherwise done by hand in a dialog. */
+	importStep?: boolean;
 }
 
 /**
@@ -96,19 +86,17 @@ export function setupMilestones(
 			key: "profile",
 			label: t(`${G}milestones.profile`),
 			done: profile.hasLogo && profile.hasContact,
-			href: "/institution/overview",
 		},
 		...foundations.map((step) => ({
 			key: step.key,
 			label: stepLabel(step.key, t),
 			done: foundationStatus(step) !== "todo",
-			href: `/import/${step.key}`,
+			importStep: true,
 		})),
 		{
 			key: "year",
 			label: t(`${G}milestones.year`),
 			done: years.length > 0,
-			href: "/academic-years",
 		},
 		{
 			key: "classes",
@@ -116,7 +104,6 @@ export function setupMilestones(
 				? t(`${G}milestones.classes`, { year: current.name })
 				: t(`${G}milestones.classesNoYear`),
 			done: (current?.counts.classes ?? 0) > 0,
-			href: "/classes/classes",
 		},
 		{
 			key: "enrollments",
@@ -124,7 +111,6 @@ export function setupMilestones(
 				? t(`${G}milestones.enrollments`, { year: current.name })
 				: t(`${G}milestones.enrollmentsNoYear`),
 			done: (current?.counts.enrollments ?? 0) > 0,
-			href: "/classes/enrollments",
 		},
 	];
 }

@@ -1,11 +1,14 @@
 import { Check, ChevronRight, Rocket } from "lucide-react";
+import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { ExternalLinkIcon } from "@/components/navigation/external-link-icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { G, type SetupMilestone } from "../services/import-steps";
+import { useManualEntry } from "./manual-entry";
 
 /**
  * Progress of the institution setup: a bar, the milestones in order and a
@@ -52,16 +55,21 @@ export function SetupProgress({
 								{t(`${G}progress.hide`)}
 							</Button>
 						)}
-						{next && (
-							<Button asChild size="sm">
-								<Link to={compact ? "/import" : next.href}>
-									{compact
-										? t(`${G}progress.continueSetup`)
-										: t(`${G}progress.continue`)}
+						{next &&
+							(compact ? (
+								// The dashboard card leads to the setup page: marked as leaving
+								<Button asChild size="sm">
+									<Link to="/import">
+										{t(`${G}progress.continueSetup`)}
+										<ExternalLinkIcon />
+									</Link>
+								</Button>
+							) : (
+								<MilestoneAction milestone={next} asButton>
+									{t(`${G}progress.continue`)}
 									<ChevronRight className="ml-1 h-4 w-4" />
-								</Link>
-							</Button>
-						)}
+								</MilestoneAction>
+							))}
 					</div>
 				</div>
 				<Progress value={percent} className="h-1.5" />
@@ -69,8 +77,8 @@ export function SetupProgress({
 					<ol className="flex flex-wrap gap-2">
 						{milestones.map((m, index) => (
 							<li key={m.key}>
-								<Link
-									to={m.href}
+								<MilestoneAction
+									milestone={m}
 									className={cn(
 										"flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted",
 										m.done
@@ -86,12 +94,54 @@ export function SetupProgress({
 										<span className="font-semibold">{index + 1}</span>
 									)}
 									{m.label}
-								</Link>
+								</MilestoneAction>
 							</li>
 						))}
 					</ol>
 				)}
 			</CardContent>
 		</Card>
+	);
+}
+
+/** A guided import step is a link to its wizard; the others open their page in a dialog. */
+function MilestoneAction({
+	milestone,
+	asButton,
+	className,
+	children,
+}: {
+	milestone: SetupMilestone;
+	asButton?: boolean;
+	className?: string;
+	children: React.ReactNode;
+}) {
+	const openManual = useManualEntry();
+	if (milestone.importStep) {
+		const link = (
+			<Link to={`/import/${milestone.key}`} className={className}>
+				{children}
+			</Link>
+		);
+		return asButton ? (
+			<Button asChild size="sm">
+				{link}
+			</Button>
+		) : (
+			link
+		);
+	}
+	return asButton ? (
+		<Button size="sm" onClick={() => openManual(milestone.key)}>
+			{children}
+		</Button>
+	) : (
+		<button
+			type="button"
+			className={className}
+			onClick={() => openManual(milestone.key)}
+		>
+			{children}
+		</button>
 	);
 }

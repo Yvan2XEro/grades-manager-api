@@ -3564,8 +3564,8 @@
         },
         "years": {
           "title": "3. Années académiques",
-          "text": "Les données de chaque année, de la plus ancienne à la plus récente : les promotions et les crédits d'une année dépendent des précédentes. L'import guidé de ces étapes arrive dans la prochaine version ; en attendant, chaque étape s'ouvre sur sa page de saisie.",
-          "add": "Ajouter une année",
+          "text": "Les données de chaque année, de la plus ancienne à la plus récente : les promotions et les crédits d'une année dépendent des précédentes. L'import guidé de ces étapes arrive dans la prochaine version ; en attendant, chaque étape ouvre ici sa page de saisie.",
+          "add": "Gérer les années",
           "foundationsFirst": "Terminez d'abord les fondations : les classes d'une année s'appuient sur les programmes et les niveaux.",
           "empty": "Aucune année académique. Créez la première pour commencer.",
           "active": "Active"
@@ -3628,7 +3628,21 @@
           "next": "Étape suivante : {{label}}",
           "back": "Retour à la mise en route"
         },
-        "runFailed": "L'import ne s'est pas terminé correctement. Consultez le détail du traitement."
+        "runFailed": "L'import ne s'est pas terminé correctement. Consultez le détail du traitement.",
+        "manualTitle": {
+          "profile": "Profil de l'institution",
+          "foundation": {
+            "cycles": "Cycles de formation",
+            "programs": "Programmes",
+            "curriculum": "Unités d'enseignement"
+          },
+          "year": "Années académiques",
+          "classes": "Classes",
+          "assignments": "Affectations des cours",
+          "enrollments": "Inscriptions",
+          "exams": "Examens",
+          "grades": "Export des notes"
+        }
       }
     }
   },

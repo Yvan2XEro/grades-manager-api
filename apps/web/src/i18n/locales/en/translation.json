@@ -4576,8 +4576,8 @@
         },
         "years": {
           "title": "3. Academic years",
-          "text": "The data of each year, from the oldest to the most recent: promotions and credits of a year depend on the previous ones. The guided import of these steps comes in the next version; meanwhile, each step opens its entry page.",
-          "add": "Add a year",
+          "text": "The data of each year, from the oldest to the most recent: promotions and credits of a year depend on the previous ones. The guided import of these steps comes in the next version; meanwhile, each step opens its entry page here.",
+          "add": "Manage years",
           "foundationsFirst": "Finish the foundations first: the classes of a year rely on programs and levels.",
           "empty": "No academic year. Create the first one to start.",
           "active": "Active"
@@ -4640,7 +4640,21 @@
           "next": "Next step: {{label}}",
           "back": "Back to the setup"
         },
-        "runFailed": "The import did not complete correctly. Check the job details."
+        "runFailed": "The import did not complete correctly. Check the job details.",
+        "manualTitle": {
+          "profile": "Institution profile",
+          "foundation": {
+            "cycles": "Study cycles",
+            "programs": "Programs",
+            "curriculum": "Teaching units"
+          },
+          "year": "Academic years",
+          "classes": "Classes",
+          "assignments": "Course assignments",
+          "enrollments": "Enrollments",
+          "exams": "Exams",
+          "grades": "Grade export"
+        }
       }
     }
   },

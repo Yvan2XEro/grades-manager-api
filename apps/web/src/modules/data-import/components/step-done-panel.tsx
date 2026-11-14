@@ -1,6 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { ExternalLinkIcon } from "@/components/navigation/external-link-icon";
 import { Button } from "@/components/ui/button";
 import { G, stepLabel } from "../services/import-steps";
 import type { StepPreview } from "../types";
@@ -41,7 +42,10 @@ export function StepDonePanel({
 				</Button>
 				{jobId && (
 					<Button asChild variant="outline">
-						<Link to={`/batch-jobs/${jobId}`}>{t(`${G}done.log`)}</Link>
+						<Link to={`/batch-jobs/${jobId}`}>
+							{t(`${G}done.log`)}
+							<ExternalLinkIcon />
+						</Link>
 					</Button>
 				)}
 				<Button asChild>

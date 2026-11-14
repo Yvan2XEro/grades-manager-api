@@ -1,5 +1,6 @@
 import { Confirm } from "@/components/callable/confirm";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
+import { PageDialog } from "@/components/callable/page-dialog";
 import { AcademicYearFormDialog } from "@/modules/academic-years/components/academic-year-form-dialog";
 import { AcademicYearSetupDialog } from "@/modules/academic-years/components/academic-year-setup-dialog";
 import { CreateApiKeyDialog } from "@/modules/api-keys/components/create-api-key-dialog";
@@ -78,6 +79,7 @@ export function CallableHost() {
 	return (
 		<>
 			<Confirm />
+			<PageDialog />
 			<StudyCycleFormDialog />
 			<ProgramFormDialog />
 			<DuplicateProgramsDialog />

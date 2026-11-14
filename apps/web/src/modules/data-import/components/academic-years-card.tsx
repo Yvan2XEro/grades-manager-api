@@ -1,12 +1,12 @@
 import { CalendarPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { G, YEAR_STEPS, yearProgress } from "../services/import-steps";
 import type { ImportYear } from "../types";
+import { useManualEntry } from "./manual-entry";
 
 /** Each academic year with what it already contains, oldest first. */
 export function AcademicYearsCard({
@@ -17,6 +17,7 @@ export function AcademicYearsCard({
 	foundationsReady: boolean;
 }) {
 	const { t } = useTranslation();
+	const openManual = useManualEntry();
 	return (
 		<Card>
 			<CardHeader className="flex flex-row items-start justify-between gap-4">
@@ -24,11 +25,14 @@ export function AcademicYearsCard({
 					<CardTitle className="text-base">{t(`${G}years.title`)}</CardTitle>
 					<p className="text-muted-foreground text-sm">{t(`${G}years.text`)}</p>
 				</div>
-				<Button asChild variant="outline" size="sm" className="shrink-0">
-					<Link to="/academic-years">
-						<CalendarPlus className="mr-2 h-4 w-4" />
-						{t(`${G}years.add`)}
-					</Link>
+				<Button
+					variant="outline"
+					size="sm"
+					className="shrink-0"
+					onClick={() => openManual("year")}
+				>
+					<CalendarPlus className="mr-2 h-4 w-4" />
+					{t(`${G}years.add`)}
 				</Button>
 			</CardHeader>
 			<CardContent className="space-y-2">
@@ -66,8 +70,9 @@ export function AcademicYearsCard({
 									const label = t(`${G}yearSteps.${step.key}`);
 									return (
 										<li key={step.key}>
-											<Link
-												to={step.manualPath}
+											<button
+												type="button"
+												onClick={() => openManual(step.key)}
 												className={cn(
 													"flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted",
 													count > 0
@@ -79,7 +84,7 @@ export function AcademicYearsCard({
 												<span className="font-semibold">{index + 1}</span>
 												{label}
 												<span className="tabular-nums opacity-70">{count}</span>
-											</Link>
+											</button>
 										</li>
 									);
 								})}

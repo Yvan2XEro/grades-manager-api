@@ -1,10 +1,10 @@
 import { Building2, Check, ChevronRight, Circle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { G } from "../services/import-steps";
 import type { ImportOverview } from "../types";
+import { useManualEntry } from "./manual-entry";
 
 /** First setup step: the identity shown on every document (name, logo, contact). */
 export function ProfileCard({
@@ -13,6 +13,7 @@ export function ProfileCard({
 	profile: ImportOverview["profile"];
 }) {
 	const { t } = useTranslation();
+	const openManual = useManualEntry();
 	const items = [
 		{ key: "name", done: Boolean(profile.name) },
 		{ key: "logo", done: profile.hasLogo },
@@ -34,15 +35,13 @@ export function ProfileCard({
 					</p>
 				</div>
 				<Button
-					asChild
 					size="sm"
 					variant={complete ? "outline" : "default"}
 					className="shrink-0"
+					onClick={() => openManual("profile")}
 				>
-					<Link to="/institution/overview">
-						{complete ? t(`${G}profile.edit`) : t(`${G}profile.complete`)}
-						<ChevronRight className="ml-1 h-4 w-4" />
-					</Link>
+					{complete ? t(`${G}profile.edit`) : t(`${G}profile.complete`)}
+					<ChevronRight className="ml-1 h-4 w-4" />
 				</Button>
 			</CardHeader>
 			<CardContent>
