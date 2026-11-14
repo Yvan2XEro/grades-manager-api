@@ -48,7 +48,7 @@ import {
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
-import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
+import { StudyCycleFormDialog } from "@/modules/institution/components/study-cycle-form-dialog";
 import { type RouterOutputs, trpcClient } from "@/utils/trpc";
 import {
 	fetchStudyCyclesSelect,

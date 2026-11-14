@@ -1,46 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "@/utils/trpc";
-import { CycleLevelFormDialog } from "./CycleLevelFormDialog";
+import { CycleLevelFormDialog } from "../../components/cycle-level-form-dialog";
+import {
+	useCycleLevels,
+	useDeleteCycleLevel,
+	useStudyCycle,
+} from "../../hooks/use-study-cycles";
+import type { CycleLevel } from "../../types";
 
-export default function StudyCycleLevelsTab() {
+export default function StudyCycleDetailLevels() {
 	const { cycleId } = useParams<{ cycleId: string }>();
 	const { t } = useTranslation();
-	const queryClient = useQueryClient();
-
-	const { data: cycle } = useQuery(
-		trpc.studyCycles.getCycle.queryOptions({ id: cycleId! }),
-	);
-
-	const levelsQuery = useQuery({
-		queryKey: ["cycleLevels", cycleId],
-		queryFn: () =>
-			trpcClient.studyCycles.listLevels.query({ cycleId: cycleId! }),
-		enabled: Boolean(cycleId),
-	});
-
-	const invalidateLevels = () => {
-		queryClient.invalidateQueries({ queryKey: ["cycleLevels", cycleId] });
-	};
-
-	const deleteMutation = useMutation({
-		mutationFn: (id: string) =>
-			trpcClient.studyCycles.deleteLevel.mutate({ id }),
-		onSuccess: () => {
-			toast.success(
-				t("admin.studyCycles.toast.levelDelete", {
-					defaultValue: "Level removed",
-				}),
-			);
-			invalidateLevels();
-		},
-		onError: (err: Error) => toast.error(err.message),
-	});
+	const { data: cycle } = useStudyCycle(cycleId!);
+	const levelsQuery = useCycleLevels(cycleId);
+	const deleteMutation = useDeleteCycleLevel(cycleId);
 
 	const openCreate = () => {
 		const nextNum = (levelsQuery.data?.length ?? 0) + 1;
@@ -53,12 +29,8 @@ export default function StudyCycleLevelsTab() {
 		});
 	};
 
-	const openEdit = (level: {
-		id: string;
-		code: string;
-		name: string;
-		minCredits: number;
-	}) => CycleLevelFormDialog.call({ cycleId: cycleId!, level });
+	const openEdit = (level: CycleLevel) =>
+		CycleLevelFormDialog.call({ cycleId: cycleId!, level });
 
 	return (
 		<Card>

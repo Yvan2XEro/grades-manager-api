@@ -8,7 +8,7 @@ import { z } from "zod";
 import { generateClassCode } from "@/lib/code-generator";
 import { upsertInList } from "@/lib/query-cache";
 import { AcademicYearFormDialog } from "@/modules/academic-years/AcademicYearFormDialog";
-import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
+import { CycleLevelFormDialog } from "@/modules/institution/components/cycle-level-form-dialog";
 import { ProgramFormDialog } from "@/modules/programs/ProgramFormDialog";
 import { ProgramOptionFormDialog } from "@/modules/programs/ProgramOptionFormDialog";
 import { trpc, trpcClient } from "@/utils/trpc";

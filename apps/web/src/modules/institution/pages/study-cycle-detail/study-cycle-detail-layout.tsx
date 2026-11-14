@@ -1,24 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Layers3 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { trpc } from "@/utils/trpc";
+import { useStudyCycle } from "../../hooks/use-study-cycles";
 
 const TABS = [
 	{ path: "details", labelKey: "admin.studyCycles.tabs.details" },
 	{ path: "levels", labelKey: "admin.studyCycles.tabs.levels" },
 ] as const;
 
-export default function StudyCycleDetail() {
+export default function StudyCycleDetailLayout() {
 	const { cycleId } = useParams<{ cycleId: string }>();
 	const { t } = useTranslation();
 
-	const { data: cycle, isLoading } = useQuery(
-		trpc.studyCycles.getCycle.queryOptions({ id: cycleId! }),
-	);
+	const { data: cycle, isLoading } = useStudyCycle(cycleId!);
 
 	if (isLoading) {
 		return (

@@ -68,9 +68,9 @@ import {
 	AddGuardianDialog,
 	GuardianPreferencesSheet,
 } from "@/modules/guardians/GuardianDirectory";
-import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
-import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
-import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
+import { CycleLevelFormDialog } from "@/modules/institution/components/cycle-level-form-dialog";
+import { InstitutionFormDialog } from "@/modules/institution/components/institution-form-dialog";
+import { StudyCycleFormDialog } from "@/modules/institution/components/study-cycle-form-dialog";
 import { CreatePersonDialog } from "@/modules/people/PeopleManagement";
 import { CourseFormDialog } from "@/modules/programs/CourseFormDialog";
 import { ProgramFormDialog } from "@/modules/programs/ProgramFormDialog";
