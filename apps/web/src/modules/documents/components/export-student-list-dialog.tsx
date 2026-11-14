@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
@@ -126,20 +127,7 @@ export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 					});
 					return;
 				}
-				const byteChars = atob(result.data);
-				const byteNumbers = new Array(byteChars.length);
-				for (let i = 0; i < byteChars.length; i++) {
-					byteNumbers[i] = byteChars.charCodeAt(i);
-				}
-				const blob = new Blob([new Uint8Array(byteNumbers)], {
-					type: result.mimeType,
-				});
-				const url = URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = result.filename;
-				a.click();
-				URL.revokeObjectURL(url);
+				downloadBase64(result.data, result.filename, result.mimeType);
 				call.end();
 			},
 			onError: (err: any) =>

@@ -21,7 +21,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
-import { BulkClassExportDialog } from "@/modules/documents/editor/BulkClassExportDialog";
+import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class-export-dialog";
 import { BulkGenerateClassesDialog } from "../components/bulk-generate-classes-dialog";
 
 import { ClassFormDialog } from "../components/class-form-dialog";

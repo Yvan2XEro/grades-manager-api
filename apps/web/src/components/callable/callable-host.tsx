@@ -24,9 +24,9 @@ import { OverrideDecisionDialog } from "@/modules/deliberations/OverrideDecision
 import { PromoteAdmittedDialog } from "@/modules/deliberations/PromoteAdmittedDialog";
 import { ResolveItemSheet } from "@/modules/deliberations/TransitionDetail";
 import { RenameTemplateDialog } from "@/modules/documents/ExportTemplatesManagement";
-import { BulkClassExportDialog } from "@/modules/documents/editor/BulkClassExportDialog";
-import { ExportStudentListDialog } from "@/modules/documents/editor/ExportStudentListButton";
-import { GenerateDocumentDialog } from "@/modules/documents/editor/GenerateDocumentButton";
+import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class-export-dialog";
+import { ExportStudentListDialog } from "@/modules/documents/components/export-student-list-dialog";
+import { GenerateDocumentDialog } from "@/modules/documents/components/generate-document-dialog";
 import {
 	BulkEnrollClassesDialog,
 	EnrollEntireClassDialog,
