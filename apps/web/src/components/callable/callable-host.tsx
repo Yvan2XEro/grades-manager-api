@@ -51,9 +51,9 @@ import {
 	EditInstallmentDialog,
 } from "@/modules/fees/FeeStructureInstallmentsTab";
 import { CreateStructureDialog } from "@/modules/fees/FeeStructuresList";
-import { AssignDelegateDialog } from "@/modules/grades/AssignDelegateDialog";
-import { GrantGradeAccessDialog } from "@/modules/grades/GradeAccessGrants";
-import { BulkExportReportDialog } from "@/modules/grades/GradeExport";
+import { AssignDelegateDialog } from "@/modules/grades/components/assign-delegate-dialog";
+import { BulkExportReportDialog } from "@/modules/grades/components/bulk-export-report-dialog";
+import { GrantGradeAccessDialog } from "@/modules/grades/components/grant-grade-access-dialog";
 import {
 	AddGuardianDialog,
 	GuardianPreferencesSheet,

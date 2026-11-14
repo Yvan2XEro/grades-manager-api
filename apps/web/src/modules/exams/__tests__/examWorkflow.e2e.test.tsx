@@ -395,7 +395,7 @@ vi.mock("@/utils/trpc", () => {
 });
 
 import AdminExamManagement from "@/modules/exams/pages/exams-page";
-import GradeEntry from "@/modules/grades/GradeEntry";
+import GradeEntry from "@/modules/grades/pages/grade-entry-page";
 import WorkflowApprovals from "@/modules/workflows/pages/workflow-approvals-page";
 import WorkflowManager from "@/modules/workflows/pages/workflow-manager-page";
 import { useStore } from "@/store";
