@@ -1,57 +1,78 @@
-import { useTranslation } from "react-i18next";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImportSection } from "../components/import-section";
+import {
+	ArrowRight,
+	FileSpreadsheet,
+	ListChecks,
+	ShieldCheck,
+} from "lucide-react";
+import { Link } from "react-router";
+import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AcademicYearsCard } from "../components/academic-years-card";
+import { FoundationsCard } from "../components/foundations-card";
+import { useImportOverview } from "../hooks/use-import-overview";
+import { foundationStatus } from "../services/import-steps";
 
-export default function DataImportHub() {
-	const { t } = useTranslation();
+const HOW_IT_WORKS = [
+	{
+		icon: ListChecks,
+		title: "Dans l'ordre",
+		text: "D'abord les fondations (une fois), puis chaque année, de la plus ancienne à la plus récente.",
+	},
+	{
+		icon: FileSpreadsheet,
+		title: "Un modèle par étape",
+		text: "Le modèle Excel est pré-rempli avec vos données et propose les codes connus en listes déroulantes.",
+	},
+	{
+		icon: ShieldCheck,
+		title: "Vérifié avant d'enregistrer",
+		text: "Chaque fichier est contrôlé ligne par ligne ; vous voyez ce qui sera créé ou modifié avant de valider.",
+	},
+];
+
+export default function DataImportPage() {
+	const { data, isLoading } = useImportOverview();
+	const foundationsReady =
+		data?.foundations.every((s) => foundationStatus(s) !== "todo") ?? false;
 
 	return (
-		<div className="container max-w-3xl py-8">
-			<div className="mb-6">
-				<h1 className="font-bold text-2xl">{t("admin.dataImport.title")}</h1>
-				<p className="mt-1 text-muted-foreground">
-					{t("admin.dataImport.subtitle")}
-				</p>
+		<div className="space-y-6">
+			<PageHeader
+				title="Import des données"
+				description="Reprenez l'historique de votre institution étape par étape : la structure académique, puis les données de chaque année."
+			/>
+
+			<div className="grid gap-3 md:grid-cols-3">
+				{HOW_IT_WORKS.map(({ icon: Icon, title, text }) => (
+					<div key={title} className="flex gap-3 rounded-lg border bg-card p-4">
+						<Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+						<div>
+							<p className="font-medium text-sm">{title}</p>
+							<p className="text-muted-foreground text-xs">{text}</p>
+						</div>
+					</div>
+				))}
 			</div>
 
-			<Tabs defaultValue="structure">
-				<TabsList className="mb-6 grid w-full grid-cols-4">
-					<TabsTrigger value="structure">
-						{t("admin.dataImport.tabs.structure")}
-					</TabsTrigger>
-					<TabsTrigger value="people">
-						{t("admin.dataImport.tabs.people")}
-					</TabsTrigger>
-					<TabsTrigger value="enrollments">
-						{t("admin.dataImport.tabs.enrollments")}
-					</TabsTrigger>
-					<TabsTrigger value="grades">
-						{t("admin.dataImport.tabs.grades")}
-					</TabsTrigger>
-				</TabsList>
+			{isLoading || !data ? (
+				<Skeleton className="h-96 w-full" />
+			) : (
+				<>
+					<FoundationsCard steps={data.foundations} />
+					<AcademicYearsCard
+						years={data.years}
+						foundationsReady={foundationsReady}
+					/>
+				</>
+			)}
 
-				<TabsContent value="structure">
-					<ImportSection type="academic-structure" />
-				</TabsContent>
-				<TabsContent value="people">
-					<ImportSection
-						type="people"
-						prereqHint={t("admin.dataImport.prereqHint.people")}
-					/>
-				</TabsContent>
-				<TabsContent value="enrollments">
-					<ImportSection
-						type="enrollments"
-						prereqHint={t("admin.dataImport.prereqHint.enrollments")}
-					/>
-				</TabsContent>
-				<TabsContent value="grades">
-					<ImportSection
-						type="grades-bulk"
-						prereqHint={t("admin.dataImport.prereqHint.grades")}
-					/>
-				</TabsContent>
-			</Tabs>
+			<Link
+				to="/import/legacy"
+				className="inline-flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
+			>
+				Import avancé (ancien format en un seul fichier)
+				<ArrowRight className="h-3 w-3" />
+			</Link>
 		</div>
 	);
 }

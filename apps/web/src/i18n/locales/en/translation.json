@@ -1164,7 +1164,11 @@
       "logos": "Logos",
       "authorization": "Authorization",
       "instances": "Instances",
-      "contact": "Contact"
+      "contact": "Contact",
+      "importLegacy": "Advanced import",
+      "importCycles": "Cycles & levels",
+      "importPrograms": "Programmes & options",
+      "importCurriculum": "UE & EC"
     },
     "command": {
       "placeholder": "Search a page…",

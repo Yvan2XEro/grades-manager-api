@@ -155,7 +155,11 @@
       "logos": "Logos",
       "authorization": "Autorisation",
       "instances": "Instances",
-      "contact": "Contact"
+      "contact": "Contact",
+      "importLegacy": "Import avancé",
+      "importCycles": "Cycles & niveaux",
+      "importPrograms": "Programmes & options",
+      "importCurriculum": "UE & EC"
     },
     "command": {
       "placeholder": "Rechercher une page…",

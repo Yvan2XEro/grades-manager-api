@@ -107,6 +107,11 @@ const segmentLabels: Record<string, string> = {
 	workflows: "navigation.sidebar.dean.workflows",
 	grades: "navigation.sidebar.teacher.grades",
 	fast: "teacher.courses.actions.fastEntry",
+	import: "admin.dataImport.title",
+	legacy: "navigation.breadcrumbs.importLegacy",
+	"foundation.cycles": "navigation.breadcrumbs.importCycles",
+	"foundation.programs": "navigation.breadcrumbs.importPrograms",
+	"foundation.curriculum": "navigation.breadcrumbs.importCurriculum",
 };
 
 export function useBreadcrumbs(): BreadcrumbItem[] {
