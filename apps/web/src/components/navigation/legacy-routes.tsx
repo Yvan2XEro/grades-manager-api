@@ -42,6 +42,12 @@ function TeachingUnitLegacyRedirect() {
 	);
 }
 
+/** Centres moved into the institution hub: `/centers/x` → `/institution/centers/x`. */
+function CentersLegacyRedirect() {
+	const { pathname, search } = useLocation();
+	return <Navigate to={`/institution${pathname}${search}`} replace />;
+}
+
 /** Paths renamed or merged into hubs over time, kept for bookmarks. */
 const RENAMED: [from: string, to: string][] = [
 	["guardians", "/users/guardians"],
@@ -76,6 +82,7 @@ export const legacyRoutes = (
 		{RENAMED.map(([from, to]) => (
 			<Route key={from} path={from} element={<Navigate to={to} replace />} />
 		))}
+		<Route path="centers/*" element={<CentersLegacyRedirect />} />
 		<Route
 			path="teaching-units/:teachingUnitId"
 			element={<TeachingUnitLegacyRedirect />}

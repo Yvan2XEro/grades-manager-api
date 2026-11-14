@@ -1,4 +1,5 @@
 import { Navigate, Route } from "react-router";
+import { centersDetailRoutes, centersTabRoute } from "@/modules/centers/routes";
 import FacultiesPage from "./pages/faculties-page";
 import InstitutionLayout from "./pages/institution-layout";
 import InstitutionSettingsPage from "./pages/institution-settings-page";
@@ -14,7 +15,9 @@ export const institutionRoutes = (
 			<Route path="overview" element={<InstitutionSettingsPage />} />
 			<Route path="faculties" element={<FacultiesPage />} />
 			<Route path="cycles" element={<StudyCyclesPage />} />
+			{centersTabRoute}
 		</Route>
+		{centersDetailRoutes}
 		<Route path="cycles/:cycleId" element={<StudyCycleDetailLayout />}>
 			<Route index element={<Navigate to="levels" replace />} />
 			<Route path="details" element={<StudyCycleDetailDetails />} />

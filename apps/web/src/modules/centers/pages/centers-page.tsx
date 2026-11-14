@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { useCenters, useDeleteCenter } from "../hooks/use-centers";
+import { CENTERS_PATH } from "../paths";
 import { getCentersColumns } from "../table/centers-columns";
 import type { CenterRow } from "../types";
 
@@ -20,7 +21,7 @@ export default function CentersPage() {
 	const deleteMutation = useDeleteCenter();
 	const columns = useMemo(() => getCentersColumns(t), [t]);
 
-	const openCreate = () => navigate("/centers/new");
+	const openCreate = () => navigate(`${CENTERS_PATH}/new`);
 
 	const confirmDelete = (center: CenterRow) =>
 		confirmAction({
@@ -39,7 +40,7 @@ export default function CentersPage() {
 		{
 			label: t("common.actions.edit"),
 			icon: Pencil,
-			onSelect: () => navigate(`/centers/${center.id}`),
+			onSelect: () => navigate(`${CENTERS_PATH}/${center.id}`),
 		},
 		{
 			label: t("common.actions.delete"),
@@ -76,7 +77,7 @@ export default function CentersPage() {
 				columns={columns}
 				data={centers}
 				isLoading={isLoading}
-				onRowClick={(center) => navigate(`/centers/${center.id}`)}
+				onRowClick={(center) => navigate(`${CENTERS_PATH}/${center.id}`)}
 				rowActions={rowActions}
 				empty={
 					<EmptyState

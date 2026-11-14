@@ -8,9 +8,14 @@ import CenterDetailLayout from "./pages/center-detail/center-detail-layout";
 import CenterDetailLogos from "./pages/center-detail/center-detail-logos";
 import CentersPage from "./pages/centers-page";
 
-export const centersRoutes = (
+/** The centres list, rendered as the "centers" tab of the institution hub. */
+export const centersTabRoute = (
+	<Route path="centers" element={<CentersPage />} />
+);
+
+/** Centre creation and detail pages, under `/institution`. */
+export const centersDetailRoutes = (
 	<>
-		<Route path="centers" element={<CentersPage />} />
 		<Route path="centers/new" element={<CenterCreatePage />} />
 		<Route path="centers/:centerId" element={<CenterDetailLayout />}>
 			<Route index element={<Navigate to="identity" replace />} />

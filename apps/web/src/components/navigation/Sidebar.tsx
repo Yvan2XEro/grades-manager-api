@@ -3,7 +3,6 @@ import {
 	BarChart3,
 	Bell,
 	BookOpen,
-	Building,
 	Building2,
 	Calendar,
 	CalendarClock,
@@ -91,11 +90,6 @@ const Sidebar: React.FC = () => {
 						to: "/institution",
 						icon: <Building2 className={IC} />,
 						labelKey: "navigation.sidebar.admin.institution",
-					},
-					{
-						to: "/centers",
-						icon: <Building className={IC} />,
-						labelKey: "navigation.sidebar.admin.centers",
 					},
 					{
 						to: "/programs",

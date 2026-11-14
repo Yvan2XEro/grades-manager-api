@@ -2501,7 +2501,8 @@
         "description": "Description",
         "credits": "ECTS",
         "programCycle": "Cycle : {{value}}",
-        "programFaculty": "Faculté : {{value}}"
+        "programFaculty": "Faculté : {{value}}",
+        "semester": "Semestre"
       },
       "semesters": {
         "annual": "Annuel",
@@ -5704,11 +5705,12 @@
   },
   "institutionHub": {
     "title": "Institution & Structure",
-    "description": "Gérez le profil de votre institution, les facultés et les cycles académiques",
+    "description": "Gérez le profil de votre institution, les facultés, les cycles académiques et les centres",
     "tabs": {
       "overview": "Institution",
       "faculties": "Facultés",
-      "cycles": "Cycles d'étude"
+      "cycles": "Cycles d'étude",
+      "centers": "Centres"
     }
   },
   "programsHub": {

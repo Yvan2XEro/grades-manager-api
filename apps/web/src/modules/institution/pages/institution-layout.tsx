@@ -7,6 +7,7 @@ const tabs = [
 	{ path: "overview", labelKey: "institutionHub.tabs.overview" },
 	{ path: "faculties", labelKey: "institutionHub.tabs.faculties" },
 	{ path: "cycles", labelKey: "institutionHub.tabs.cycles" },
+	{ path: "centers", labelKey: "institutionHub.tabs.centers" },
 ] as const;
 
 export default function InstitutionLayout() {

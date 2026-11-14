@@ -8,7 +8,6 @@ import {
 import { attendanceRoutes } from "@/modules/attendance/routes";
 import { authRoutes } from "@/modules/auth/routes";
 import { batchJobsRoutes } from "@/modules/batch-jobs/routes";
-import { centersRoutes } from "@/modules/centers/routes";
 import { classesRoutes } from "@/modules/classes/routes";
 import { configurationRoutes } from "@/modules/configuration/routes";
 import { dashboardRoutes } from "@/modules/dashboard/routes";
@@ -167,7 +166,6 @@ function App() {
 						{admissionsRoutes}
 						{attendanceRoutes}
 						{batchJobsRoutes}
-						{centersRoutes}
 						{classesRoutes}
 						{configurationRoutes}
 						{dashboardRoutes}

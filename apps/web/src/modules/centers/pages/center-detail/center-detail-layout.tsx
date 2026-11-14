@@ -8,6 +8,7 @@ import { Form } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
 import { CenterContext } from "../../hooks/use-center-context";
 import { useCenterForm } from "../../hooks/use-center-form";
+import { CENTERS_PATH } from "../../paths";
 
 const TABS = [
 	{ path: "identity", labelKey: "admin.centers.tabs.identity" },
@@ -51,7 +52,7 @@ export default function CenterDetailLayout() {
 						<Button
 							type="button"
 							variant="ghost"
-							onClick={() => navigate("/centers")}
+							onClick={() => navigate(CENTERS_PATH)}
 						>
 							<ArrowLeft className="mr-2 h-4 w-4" />
 							{t("admin.centers.detail.backToList", {
@@ -59,7 +60,7 @@ export default function CenterDetailLayout() {
 							})}
 						</Button>
 					</div>
-					<HubNav tabs={TABS} basePath={`/centers/${centerId}`} />
+					<HubNav tabs={TABS} basePath={`${CENTERS_PATH}/${centerId}`} />
 				</HubLayout>
 			</Form>
 		</CenterContext.Provider>

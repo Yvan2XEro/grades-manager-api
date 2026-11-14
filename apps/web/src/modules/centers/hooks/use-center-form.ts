@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 import { z } from "zod";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
+import { CENTERS_PATH } from "../paths";
 
 export const adminInstanceSchema = z.object({
 	id: z.string().optional(),
@@ -180,7 +181,7 @@ export function useCenterForm(centerId?: string) {
 						defaultValue: "Centre créé",
 					}),
 				);
-				navigate(`/centers/${(data as { id: string }).id}/identity`);
+				navigate(`${CENTERS_PATH}/${(data as { id: string }).id}/identity`);
 			} else {
 				toast.success(
 					t("admin.centers.toast.updateSuccess", {

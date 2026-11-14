@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { CenterIdentityFields } from "../components/center-identity-fields";
 import { useCenterForm } from "../hooks/use-center-form";
+import { CENTERS_PATH } from "../paths";
 
 /** Creates a center from its identity; the other tabs open once it is saved. */
 export default function CenterCreatePage() {
@@ -27,7 +28,7 @@ export default function CenterCreatePage() {
 						<Button
 							type="button"
 							variant="ghost"
-							onClick={() => navigate("/centers")}
+							onClick={() => navigate(CENTERS_PATH)}
 						>
 							<ArrowLeft className="mr-2 h-4 w-4" />
 							{t("admin.centers.detail.backToList", {
