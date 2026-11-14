@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { confirmAction } from "@/components/callable/confirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
-import { RejectExamDialog } from "@/modules/exams/ExamDialogs";
+import { RejectExamDialog } from "@/modules/exams/components/reject-exam-dialog";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type { PagedExam, PendingConfirm } from "../types";
 

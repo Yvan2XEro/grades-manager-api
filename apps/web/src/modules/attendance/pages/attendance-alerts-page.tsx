@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 
-const AttendanceAlerts = () => {
+const AttendanceAlertsPage = () => {
 	const { t } = useTranslation();
 	const [message, setMessage] = useState("");
 	const [selectedClassCourseId, setSelectedClassCourseId] = useState("");
@@ -168,4 +168,4 @@ const AttendanceAlerts = () => {
 	);
 };
 
-export default AttendanceAlerts;
+export default AttendanceAlertsPage;

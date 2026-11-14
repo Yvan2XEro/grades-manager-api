@@ -7,10 +7,8 @@ import {
 	EditWebhookDialog,
 	RawApiKeyDialog,
 } from "@/modules/api-keys/ApiKeyDialogs";
-import {
-	CreateAttendanceSessionDialog,
-	ExcuseAbsenceDialog,
-} from "@/modules/attendance/AttendanceDialogs";
+import { CreateAttendanceSessionDialog } from "@/modules/attendance/components/create-attendance-session-dialog";
+import { ExcuseAbsenceDialog } from "@/modules/attendance/components/excuse-absence-dialog";
 import { CreateBatchJobDialog } from "@/modules/batch-jobs/components/create-batch-job-dialog";
 import { AssignTeachingUnitDialog } from "@/modules/classes/components/assign-teaching-unit-dialog";
 import { AutoEnrollClassDialog } from "@/modules/classes/components/auto-enroll-class-dialog";
@@ -32,18 +30,14 @@ import {
 	EnrollEntireClassDialog,
 	StudentCourseRosterDialog,
 } from "@/modules/enrollments/EnrollmentManagement";
-import {
-	ExamFormDialog,
-	RejectExamDialog,
-	RetakeExamDialog,
-} from "@/modules/exams/ExamDialogs";
-import { ParticipationOverrideDialog } from "@/modules/exams/ExamParticipationRoster";
-import {
-	RunDetailsDialog,
-	ScheduleExamsDialog,
-} from "@/modules/exams/ExamScheduler";
-import { ExamTypeFormDialog } from "@/modules/exams/ExamTypeFormDialog";
-import { RetakeOverrideDialog } from "@/modules/exams/RetakeEligibility";
+import { ExamFormDialog } from "@/modules/exams/components/exam-form-dialog";
+import { ExamTypeFormDialog } from "@/modules/exams/components/exam-type-form-dialog";
+import { ParticipationOverrideDialog } from "@/modules/exams/components/participation-override-dialog";
+import { RejectExamDialog } from "@/modules/exams/components/reject-exam-dialog";
+import { RetakeExamDialog } from "@/modules/exams/components/retake-exam-dialog";
+import { RetakeOverrideDialog } from "@/modules/exams/components/retake-override-dialog";
+import { RunDetailsDialog } from "@/modules/exams/components/run-details-dialog";
+import { ScheduleExamsDialog } from "@/modules/exams/components/schedule-exams-dialog";
 import { BankImportDialog } from "@/modules/fees/BankImportDialog";
 import {
 	ConfirmOrderDialog,

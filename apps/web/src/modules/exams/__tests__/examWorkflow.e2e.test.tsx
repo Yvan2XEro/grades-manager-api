@@ -394,7 +394,7 @@ vi.mock("@/utils/trpc", () => {
 	return { trpcClient, trpc: trpcProxy, queryClient: {} };
 });
 
-import AdminExamManagement from "@/modules/exams/ExamManagement";
+import AdminExamManagement from "@/modules/exams/pages/exams-page";
 import GradeEntry from "@/modules/grades/GradeEntry";
 import WorkflowApprovals from "@/modules/workflows/pages/workflow-approvals-page";
 import WorkflowManager from "@/modules/workflows/pages/workflow-manager-page";

@@ -4,28 +4,30 @@ import ClassDocumentTemplates from "@/modules/documents/pages/class-document-tem
 import ExportTemplatesManagement from "@/modules/documents/pages/export-templates-page";
 import GradeAccessGrants from "@/modules/grades/GradeAccessGrants";
 import GradeExport from "@/modules/grades/GradeExport";
-import ExamCalendar from "./ExamCalendar";
-import ExamManagement from "./ExamManagement";
-import ExamParticipationRoster from "./ExamParticipationRoster";
-import ExamScheduler from "./ExamScheduler";
-import ExamsHub from "./ExamsHub";
-import ExamTypes from "./ExamTypes";
-import RetakeEligibility from "./RetakeEligibility";
+import ExamCalendarPage from "./pages/exam-calendar-page";
+import ExamParticipationPage from "./pages/exam-participation-page";
+import ExamSchedulerPage from "./pages/exam-scheduler-page";
+import ExamTypesPage from "./pages/exam-types-page";
+import ExamsLayout from "./pages/exams-layout";
+import ExamsPage from "./pages/exams-page";
+import RetakeEligibilityPage from "./pages/retake-eligibility-page";
 
 /** Exams hub (includes grade management); students get their exam calendar. */
 export const examsRoutes = (
 	<Route
 		path="exams"
-		element={<RoleView fallback={<ExamsHub />} student={<ExamCalendar />} />}
+		element={
+			<RoleView fallback={<ExamsLayout />} student={<ExamCalendarPage />} />
+		}
 	>
 		<Route index element={<Navigate to="list" replace />} />
-		<Route path="list" element={<ExamManagement />} />
-		<Route path="types" element={<ExamTypes />} />
-		<Route path="scheduler" element={<ExamScheduler />} />
-		<Route path="participation" element={<ExamParticipationRoster />} />
+		<Route path="list" element={<ExamsPage />} />
+		<Route path="types" element={<ExamTypesPage />} />
+		<Route path="scheduler" element={<ExamSchedulerPage />} />
+		<Route path="participation" element={<ExamParticipationPage />} />
 		<Route path="export" element={<GradeExport />} />
 		<Route path="access" element={<GradeAccessGrants />} />
-		<Route path="retakes" element={<RetakeEligibility />} />
+		<Route path="retakes" element={<RetakeEligibilityPage />} />
 		<Route path="templates" element={<ExportTemplatesManagement />} />
 		<Route path="class-documents" element={<ClassDocumentTemplates />} />
 	</Route>
