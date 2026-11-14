@@ -1,31 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "@/utils/trpc";
+import { useGatingRules, useToggleGate } from "../hooks/use-gating-rules";
 
 export default function FeeGatingSettingsPage() {
 	const { t } = useTranslation();
-	const queryClient = useQueryClient();
-
-	const { data: rules, isLoading } = useQuery(
-		trpc.feeClearance.listGatingRules.queryOptions(),
-	);
-
-	const toggleMut = useMutation({
-		mutationFn: ({ gate, isEnabled }: { gate: string; isEnabled: boolean }) =>
-			trpcClient.feeClearance.toggleGate.mutate({
-				gate: gate as never,
-				isEnabled,
-			}),
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: trpc.feeClearance.listGatingRules.queryKey(),
-			});
-			toast.success(t("common.saved"));
-		},
-	});
+	const { data: rules, isLoading } = useGatingRules();
+	const toggleMut = useToggleGate();
 
 	return (
 		<div className="space-y-4">

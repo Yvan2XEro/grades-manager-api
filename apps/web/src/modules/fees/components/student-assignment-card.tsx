@@ -62,19 +62,7 @@ export function StudentAssignmentCard({
 					)}
 				</div>
 				<div className="flex items-center gap-2">
-					<Badge
-						variant={
-							a.status === "paid"
-								? "default"
-								: a.status === "exempt"
-									? "secondary"
-									: a.status === "partial"
-										? "outline"
-										: "destructive"
-						}
-					>
-						{t(`feeClearance.assignments.status.${a.status}`)}
-					</Badge>
+					<AssignmentStatusBadge status={a.status} />
 				</div>
 			</div>
 			{canGenerateOrder && (
