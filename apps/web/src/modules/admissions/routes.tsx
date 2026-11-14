@@ -1,6 +1,6 @@
 import { Route } from "react-router";
-import AdmissionDetail from "./AdmissionDetail";
-import AdmissionsManagement from "./AdmissionsManagement";
+import AdmissionDetailPage from "./pages/admission-detail-page";
+import AdmissionsPage from "./pages/admissions-page";
 import ApplicationFormPage from "./pages/application-form-page";
 import ApplicationStatusPage from "./pages/application-status-page";
 
@@ -14,7 +14,7 @@ export const admissionsPublicRoutes = (
 
 export const admissionsRoutes = (
 	<>
-		<Route path="admissions" element={<AdmissionsManagement />} />
-		<Route path="admissions/:id" element={<AdmissionDetail />} />
+		<Route path="admissions" element={<AdmissionsPage />} />
+		<Route path="admissions/:id" element={<AdmissionDetailPage />} />
 	</>
 );
