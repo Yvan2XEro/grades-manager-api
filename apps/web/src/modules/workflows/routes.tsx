@@ -1,9 +1,9 @@
 import { Route } from "react-router";
 import { RoleView } from "@/components/navigation/RoleView";
-import ApprovalHistory from "./ApprovalHistory";
-import ExamApprovals from "./ExamApprovals";
-import WorkflowApprovals from "./WorkflowApprovals";
-import WorkflowManager from "./WorkflowManager";
+import ApprovalHistory from "./pages/approval-history-page";
+import ExamApprovals from "./pages/exam-approvals-page";
+import WorkflowApprovals from "./pages/workflow-approvals-page";
+import WorkflowManager from "./pages/workflow-manager-page";
 
 /** Grade approval workflows: deans approve, teachers follow their requests. */
 export const workflowsRoutes = (
