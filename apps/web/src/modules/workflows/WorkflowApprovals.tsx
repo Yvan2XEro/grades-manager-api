@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { toast } from "@/lib/toast";
-import { RejectExamDialog } from "@/modules/exams/ExamDialogs";
+import { RejectExamDialog } from "@/modules/exams/components/reject-exam-dialog";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 
 type ExamItem = RouterOutputs["exams"]["listPaged"]["items"][number];

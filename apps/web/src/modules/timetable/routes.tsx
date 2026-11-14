@@ -1,8 +1,8 @@
 import { Navigate, Route } from "react-router";
 import { RoleView } from "@/components/navigation/RoleView";
-import AttendanceManagement from "@/modules/attendance/AttendanceManagement";
-import AttendanceRates from "@/modules/attendance/AttendanceRates";
-import ClassAttendanceOverview from "@/modules/attendance/ClassAttendanceOverview";
+import AttendanceManagement from "@/modules/attendance/pages/attendance-page";
+import AttendanceRates from "@/modules/attendance/pages/attendance-rates-page";
+import ClassAttendanceOverview from "@/modules/attendance/pages/class-attendance-overview-page";
 import RoomsManagement from "./RoomsManagement";
 import StudentTimetable from "./StudentTimetable";
 import TeacherTimetable from "./TeacherTimetable";
