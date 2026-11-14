@@ -5,7 +5,7 @@ import {
 	fetchTeachers,
 	formatTeacherName,
 	TEACHERS_KEY,
-} from "@/modules/programs/CourseFormDialog";
+} from "@/modules/programs/hooks/use-teachers";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type { ClassCourseRow } from "../types";
 import {

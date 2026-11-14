@@ -1,7 +1,7 @@
 import { Confirm } from "@/components/callable/confirm";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
-import { AcademicYearFormDialog } from "@/modules/academic-years/AcademicYearFormDialog";
-import { AcademicYearSetupDialog } from "@/modules/academic-years/AcademicYearSetupDialog";
+import { AcademicYearFormDialog } from "@/modules/academic-years/components/academic-year-form-dialog";
+import { AcademicYearSetupDialog } from "@/modules/academic-years/components/academic-year-setup-dialog";
 import {
 	CreateApiKeyDialog,
 	EditWebhookDialog,
@@ -72,19 +72,19 @@ import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog
 import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
 import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
 import { CreatePersonDialog } from "@/modules/people/PeopleManagement";
-import { CourseFormDialog } from "@/modules/programs/CourseFormDialog";
-import { ProgramFormDialog } from "@/modules/programs/ProgramFormDialog";
-import { DuplicateProgramsDialog } from "@/modules/programs/ProgramManagement";
-import { ProgramOptionFormDialog } from "@/modules/programs/ProgramOptionFormDialog";
-import { UeCourseFormDialog } from "@/modules/programs/TeachingUnitCoursesTable";
-import { TeachingUnitFormDialog } from "@/modules/programs/TeachingUnitFormDialog";
+import { CourseFormDialog } from "@/modules/programs/components/course-form-dialog";
+import { DuplicateProgramsDialog } from "@/modules/programs/components/duplicate-programs-dialog";
+import { ProgramFormDialog } from "@/modules/programs/components/program-form-dialog";
+import { ProgramOptionFormDialog } from "@/modules/programs/components/program-option-form-dialog";
+import { TeachingUnitFormDialog } from "@/modules/programs/components/teaching-unit-form-dialog";
+import { UeCourseFormDialog } from "@/modules/programs/components/ue-course-form-dialog";
 import { ExecutionDetailsDialog } from "@/modules/promotion-rules/execution-history";
 import { PromotionRuleFormDialog } from "@/modules/promotion-rules/rules-list";
 import { AvatarCropModal } from "@/modules/settings/AccountTab";
-import { CopyTimetableDialog } from "@/modules/timetable/CopyTimetableDialog";
-import { RoomFormDialog } from "@/modules/timetable/RoomFormDialog";
-import { TimetableImportDialog } from "@/modules/timetable/TimetableImportDialog";
-import { TimetableSessionDialog } from "@/modules/timetable/TimetableSessionDialog";
+import { CopyTimetableDialog } from "@/modules/timetable/components/copy-timetable-dialog";
+import { RoomFormDialog } from "@/modules/timetable/components/room-form-dialog";
+import { TimetableImportDialog } from "@/modules/timetable/components/timetable-import-dialog";
+import { TimetableSessionDialog } from "@/modules/timetable/components/timetable-session-dialog";
 import { DeanRejectExamDialog } from "@/modules/workflows/components/dean-reject-exam-dialog";
 
 /**
