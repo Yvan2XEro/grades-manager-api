@@ -23,7 +23,7 @@ import {
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
-import { RoomFormDialog } from "./RoomFormDialog";
+import { RoomFormDialog } from "./room-form-dialog";
 
 type Session = RouterOutputs["timetable"]["list"][number];
 type Room = RouterOutputs["rooms"]["list"][number];

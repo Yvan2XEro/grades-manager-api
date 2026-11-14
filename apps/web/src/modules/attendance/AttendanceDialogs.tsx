@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
-import { TimetableSessionDialog } from "@/modules/timetable/TimetableSessionDialog";
+import { TimetableSessionDialog } from "@/modules/timetable/components/timetable-session-dialog";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 
 type TimetableSlot = RouterOutputs["timetable"]["list"][number];

@@ -30,7 +30,9 @@ export function useCourseProgramNames() {
 	});
 	return useMemo(
 		() =>
-			new Map((programs ?? []).map((program) => [program.id, program.name])),
+			new Map<string, string>(
+				(programs ?? []).map((program) => [program.id, program.name]),
+			),
 		[programs],
 	);
 }

@@ -29,8 +29,8 @@ export function useTeacherNames() {
 	const { data: teachers } = useTeachers();
 	return useMemo(
 		() =>
-			new Map(
-				(teachers ?? []).map((teacher) => [
+			new Map<string, string>(
+				(teachers ?? []).map((teacher: Teacher) => [
 					teacher.id,
 					formatTeacherName(teacher),
 				]),

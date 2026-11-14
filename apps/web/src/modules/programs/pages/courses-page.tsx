@@ -18,7 +18,7 @@ import {
 } from "../hooks/use-courses";
 import { useTeacherNames } from "../hooks/use-teachers";
 import { getCoursesColumns } from "../table/courses-columns";
-import type { CourseRow } from "../types";
+import type { CourseRow, EditableCourse } from "../types";
 
 export default function CoursesPage() {
 	const { t } = useTranslation();
@@ -36,7 +36,8 @@ export default function CoursesPage() {
 	);
 
 	const startCreate = () => CourseFormDialog.call({});
-	const startEdit = (course: CourseRow) => CourseFormDialog.call({ course });
+	const startEdit = (course: CourseRow) =>
+		CourseFormDialog.call({ course: course as EditableCourse });
 
 	const confirmDelete = (id: string) =>
 		confirmAction({

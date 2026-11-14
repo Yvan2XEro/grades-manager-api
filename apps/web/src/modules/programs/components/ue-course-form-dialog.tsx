@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { useEffect, useMemo } from "react";
 import { createCallable } from "react-call";
 import { useMutationFlow } from "react-call/mutation-flow";
@@ -30,13 +31,15 @@ import {
 import { generateCourseCode } from "@/lib/code-generator";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-import { formatTeacherName, useTeachers } from "../hooks/use-teachers";
+import {
+	formatTeacherName,
+	type Teacher,
+	useTeachers,
+} from "../hooks/use-teachers";
 import { teachingUnitCoursesKey } from "../hooks/use-teaching-unit-courses";
 import type { UeCourse } from "../types";
 
-const buildCourseSchema = (
-	t: (key: string, opts?: Record<string, any>) => string,
-) =>
+const buildCourseSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(
 			2,
@@ -290,7 +293,7 @@ export const UeCourseFormDialog = createCallable<
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
-											{teacherOptions.map((teacher) => (
+											{teacherOptions.map((teacher: Teacher) => (
 												<SelectItem key={teacher.id} value={teacher.id}>
 													{formatTeacherName(teacher)}
 												</SelectItem>
@@ -315,6 +318,7 @@ export const UeCourseFormDialog = createCallable<
 									<FormControl>
 										<Input
 											{...field}
+											value={field.value as number}
 											type="number"
 											step="0.01"
 											min="0.01"

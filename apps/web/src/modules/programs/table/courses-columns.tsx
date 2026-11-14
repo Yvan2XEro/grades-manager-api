@@ -57,7 +57,7 @@ export function getCoursesColumns(
 			meta: { className: "w-[20%]" },
 			cell: ({ row }) => (
 				<span className="block truncate">
-					{teacherNames.get(row.original.defaultTeacher) ??
+					{teacherNames.get(row.original.defaultTeacher ?? "") ??
 						t("admin.courses.form.teacherPlaceholder")}
 				</span>
 			),

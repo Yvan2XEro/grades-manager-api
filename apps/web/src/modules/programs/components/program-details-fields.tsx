@@ -22,14 +22,10 @@ import type {
 	ProgramDetailsFormData,
 } from "../hooks/use-program-details-form";
 
-type TextFieldName = {
-	[K in keyof ProgramDetailsFormData]: ProgramDetailsFormData[K] extends
-		| string
-		| null
-		| undefined
-		? K
-		: never;
-}[keyof ProgramDetailsFormData];
+type TextFieldName = Exclude<
+	keyof ProgramDetailsFormData,
+	"description" | "cycleId" | "centerId" | "isCenterProgram"
+>;
 
 /** `[field, label key, default label]` of the plain text inputs. */
 type TextFieldSpec = [TextFieldName, string, string];

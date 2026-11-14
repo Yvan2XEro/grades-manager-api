@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import Papa from "papaparse";
 import { useRef, useState } from "react";
 import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
@@ -33,34 +32,21 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-
-type ParsedRow = {
-	id?: string;
-	classCourseId: string;
-	dayOfWeek: string;
-	startTime: string;
-	endTime: string;
-	room?: string;
-	roomId?: string;
-	validFrom?: string;
-	validUntil?: string;
-};
+import {
+	downloadTimetableTemplate,
+	type ParsedRow,
+	parseTimetableCsv,
+} from "../services/timetable-import-csv";
+import type { TimetableClassCourse } from "../types";
 
 type PreviewResult = Awaited<
 	ReturnType<typeof trpcClient.timetable.previewBulkImport.mutate>
 >;
 
-type ClassCourse = {
-	id: string;
-	code: string;
-	courseRef: { name: string } | null;
-	classRef: { name: string } | null;
-};
-
 export const TimetableImportDialog = createCallable<
 	{
 		onImported: () => void;
-		classCourses?: ClassCourse[];
+		classCourses?: TimetableClassCourse[];
 	},
 	void
 >(({ call, onImported, classCourses = [] }) => {
@@ -105,28 +91,7 @@ export const TimetableImportDialog = createCallable<
 	function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		const clean = (value: string | undefined) => {
-			const trimmed = value?.trim();
-			return trimmed ? trimmed : undefined;
-		};
-		Papa.parse<Record<string, string>>(file, {
-			header: true,
-			skipEmptyLines: true,
-			complete: ({ data }) => {
-				const rows = data.map((r) => ({
-					id: clean(r.id),
-					classCourseId: clean(r.classCourseId) ?? "",
-					dayOfWeek: clean(r.dayOfWeek) ?? "",
-					startTime: clean(r.startTime) ?? "",
-					endTime: clean(r.endTime) ?? "",
-					room: clean(r.room),
-					roomId: clean(r.roomId),
-					validFrom: clean(r.validFrom),
-					validUntil: clean(r.validUntil),
-				}));
-				previewMut.mutate(rows);
-			},
-		});
+		parseTimetableCsv(file, (rows) => previewMut.mutate(rows));
 	}
 
 	function handleClose() {
@@ -135,33 +100,6 @@ export const TimetableImportDialog = createCallable<
 		setStep("upload");
 		setMode("create");
 		if (fileRef.current) fileRef.current.value = "";
-	}
-
-	function downloadTemplate() {
-		const header =
-			"id,courseName,className,classCourseId,dayOfWeek,startTime,endTime,room,roomId,validFrom,validUntil";
-		let rows: string;
-		if (classCourses.length > 0) {
-			rows = classCourses
-				.map((cc) => {
-					const course = cc.courseRef?.name ?? cc.code;
-					const klass = cc.classRef?.name ?? "";
-					return `,${course},${klass},${cc.id},mon,08:00,10:00,,,,`;
-				})
-				.join("\n");
-		} else {
-			rows = [
-				",Mathématiques,L1 Info,<id-class-course>,mon,08:00,10:00,Amphi A,,2026-09-01,2026-12-31",
-				"<session-id>,Anglais,L1 Info,<id-class-course>,tue,10:00,12:00,Salle 201,,2027-01-01,2027-06-30",
-			].join("\n");
-		}
-		const blob = new Blob([`${header}\n${rows}`], { type: "text/csv" });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = "timetable-import-template.csv";
-		a.click();
-		URL.revokeObjectURL(url);
 	}
 
 	return (
@@ -198,7 +136,11 @@ export const TimetableImportDialog = createCallable<
 									</SelectContent>
 								</Select>
 							</div>
-							<Button variant="outline" size="sm" onClick={downloadTemplate}>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => downloadTimetableTemplate(classCourses)}
+							>
 								{t("teacher.timetable.import.downloadTemplate")}
 							</Button>
 							<div className="space-y-1.5">
