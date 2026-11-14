@@ -1,6 +1,7 @@
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,7 @@ export default function DeliberationDetail() {
 				promoteAdmitted,
 			}}
 		>
-			<div className="space-y-4">
+			<HubLayout>
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-3">
 						<Button
@@ -124,7 +125,7 @@ export default function DeliberationDetail() {
 				</div>
 
 				<HubNav tabs={TABS} basePath={basePath} />
-			</div>
+			</HubLayout>
 		</DeliberationContext.Provider>
 	);
 }

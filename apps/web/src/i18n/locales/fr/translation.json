@@ -1073,7 +1073,7 @@
         "identity": "Identité & branding",
         "identityHint": "Les champs français et anglais alimentent les en-têtes bilingues (relevés, diplômes, etc.).",
         "code": "Sigle / Code",
-        "shortName": "Abréviation",
+        "shortName": "Nom court",
         "nameFr": "Nom officiel (FR)",
         "nameEn": "Nom officiel (EN)",
         "legalNameFr": "Dénomination légale (FR)",
@@ -3124,12 +3124,12 @@
       },
       "adminInstances": {
         "empty": "Aucune instance administrative — cliquez sur Ajouter pour en créer.",
-        "itemTitle": "itemTitle"
+        "itemTitle": "Instance n°{{n}}"
       },
       "legalTexts": {
         "title": "Textes Légaux (Vu les lois...)",
         "empty": "Aucun texte légal",
-        "itemTitle": "itemTitle"
+        "itemTitle": "Texte légal n°{{n}}"
       },
       "toast": {
         "deleteSuccess": "Centre supprimé",
@@ -3156,22 +3156,22 @@
       }
     },
     "graduation": {
-      "title": "title",
-      "subtitle": "subtitle",
-      "totalGraduates": "totalGraduates",
-      "searchPlaceholder": "searchPlaceholder",
+      "title": "Diplômés",
+      "subtitle": "Étudiants ayant terminé leur formation",
+      "totalGraduates": "Total des diplômés",
+      "searchPlaceholder": "Rechercher par nom ou matricule…",
       "table": {
-        "student": "student",
-        "registration": "registration",
-        "program": "program",
-        "level": "level",
-        "credits": "credits",
-        "graduatedAt": "graduatedAt"
+        "student": "Étudiant",
+        "registration": "Matricule",
+        "program": "Programme",
+        "level": "Niveau",
+        "credits": "Crédits",
+        "graduatedAt": "Diplômé le"
       },
-      "noResults": "noResults",
-      "empty": "empty",
-      "noResultsHint": "noResultsHint",
-      "emptyHint": "emptyHint"
+      "noResults": "Aucun diplômé ne correspond",
+      "empty": "Aucun diplômé pour le moment",
+      "noResultsHint": "Essayez une autre recherche.",
+      "emptyHint": "Les étudiants apparaissent ici une fois diplômés lors d'une délibération."
     },
     "academicYearTransitions": {
       "title": "Passage d'annee",

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
+import { useStore } from "@/store";
 import { trpc, trpcClient } from "@/utils/trpc";
 import { CreateAttendanceSessionDialog } from "../components/create-attendance-session-dialog";
 import { ExcuseAbsenceDialog } from "../components/excuse-absence-dialog";
@@ -48,12 +49,17 @@ export function useAttendanceSessions({
 	const [pendingSelectId, setPendingSelectId] = useState<string | null>(null);
 	const excusePolicy = useExcusePolicy();
 
-	const sessionsQuery = useQuery(
-		trpc.attendance.listSessions.queryOptions({
+	// Only catalog managers may list every session; others must pick a course
+	const canManageCatalog = useStore(
+		(state) => state.user?.permissions.canManageCatalog ?? false,
+	);
+	const sessionsQuery = useQuery({
+		...trpc.attendance.listSessions.queryOptions({
 			...(classCourseId ? { classCourseId } : {}),
 			...(academicYearId ? { academicYearId } : {}),
 		}),
-	);
+		enabled: canManageCatalog || Boolean(classCourseId),
+	});
 	const sessions = sessionsQuery.data ?? [];
 
 	// Auto-select newly created session once sessions list refreshes

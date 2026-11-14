@@ -1,5 +1,6 @@
 import { Settings as SettingsIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 
 const tabs = [
@@ -11,7 +12,7 @@ const tabs = [
 export default function AccountSettings() {
 	const { t } = useTranslation();
 	return (
-		<div className="space-y-6">
+		<HubLayout>
 			<div className="flex flex-col gap-2">
 				<div className="flex items-center gap-3">
 					<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -24,6 +25,6 @@ export default function AccountSettings() {
 				</div>
 			</div>
 			<HubNav tabs={tabs} basePath="/settings" />
-		</div>
+		</HubLayout>
 	);
 }

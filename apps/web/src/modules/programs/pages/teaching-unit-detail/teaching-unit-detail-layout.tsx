@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useParams } from "react-router";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -39,7 +40,7 @@ export default function TeachingUnitDetailLayout() {
 	}
 
 	return (
-		<div className="space-y-6">
+		<HubLayout>
 			<div className="flex items-start gap-4">
 				<Button variant="ghost" size="icon" asChild>
 					<Link to="/programs/teaching-units">
@@ -73,6 +74,6 @@ export default function TeachingUnitDetailLayout() {
 					basePath={`/programs/teaching-units/${teachingUnitId}`}
 				/>
 			)}
-		</div>
+		</HubLayout>
 	);
 }

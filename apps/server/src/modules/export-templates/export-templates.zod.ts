@@ -107,7 +107,13 @@ export const removeProgramTemplateAssignmentSchema = z.object({
 
 // --- Theme presets / defaults discovery ---
 export const getThemePresetsSchema = z.object({
-	kind: z.enum(["diploma", "transcript", "attestation"]),
+	kind: z.enum([
+		"diploma",
+		"transcript",
+		"attestation",
+		"enrollment_certificate",
+		"student_list",
+	]),
 });
 
 export type CreateExportTemplateInput = z.infer<

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export default function ProgramDetailLayout() {
 
 	return (
 		<ProgramContext.Provider value={{ program, refetch }}>
-			<div className="space-y-6">
+			<HubLayout>
 				<div className="flex items-start gap-4">
 					<Button variant="ghost" size="icon" asChild>
 						<Link to="/programs/programs">
@@ -64,7 +65,7 @@ export default function ProgramDetailLayout() {
 					</div>
 				</div>
 				<HubNav tabs={TABS} basePath={`/programs/${programId}`} />
-			</div>
+			</HubLayout>
 		</ProgramContext.Provider>
 	);
 }

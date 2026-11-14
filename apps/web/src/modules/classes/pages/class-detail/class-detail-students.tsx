@@ -34,7 +34,7 @@ export default function ClassDetailStudents() {
 	const students = data?.items ?? [];
 
 	return (
-		<Card>
+		<Card className="flex min-h-64 flex-1 flex-col">
 			<CardHeader>
 				<CardTitle>
 					{t("classes.hub.tabs.students", { defaultValue: "Students" })}
@@ -45,7 +45,7 @@ export default function ClassDetailStudents() {
 					)}
 				</CardTitle>
 			</CardHeader>
-			<CardContent>
+			<CardContent className="flex min-h-0 flex-1 flex-col">
 				{isLoading ? null : students.length === 0 ? (
 					<Empty>
 						<EmptyHeader>

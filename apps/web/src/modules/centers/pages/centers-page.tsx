@@ -76,6 +76,7 @@ export default function CentersPage() {
 				columns={columns}
 				data={centers}
 				isLoading={isLoading}
+				onRowClick={(center) => navigate(`/centers/${center.id}`)}
 				rowActions={rowActions}
 				empty={
 					<EmptyState

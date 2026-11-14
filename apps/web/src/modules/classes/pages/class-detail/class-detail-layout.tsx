@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export default function ClassDetailLayout() {
 
 	return (
 		<ClassContext.Provider value={{ cls, refetch }}>
-			<div className="space-y-6">
+			<HubLayout>
 				<div className="flex items-start gap-4">
 					<Button variant="ghost" size="icon" asChild>
 						<Link to="/classes/classes">
@@ -64,7 +65,7 @@ export default function ClassDetailLayout() {
 					</div>
 				</div>
 				<HubNav tabs={TABS} basePath={`/classes/${classId}`} />
-			</div>
+			</HubLayout>
 		</ClassContext.Provider>
 	);
 }

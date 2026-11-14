@@ -2128,7 +2128,7 @@
         "identity": "Identity & branding",
         "identityHint": "French and English fields are required to feed bilingual headers.",
         "code": "Sigle / Code",
-        "shortName": "Abbreviation",
+        "shortName": "Short name",
         "nameFr": "Official name (FR)",
         "nameEn": "Official name (EN)",
         "legalNameFr": "Legal name (FR)",
@@ -4136,12 +4136,12 @@
       },
       "adminInstances": {
         "empty": "No administrative instance — click Add to create one.",
-        "itemTitle": "itemTitle"
+        "itemTitle": "Instance #{{n}}"
       },
       "legalTexts": {
         "title": "Legal texts (Having regard to…)",
         "empty": "No legal text",
-        "itemTitle": "itemTitle"
+        "itemTitle": "Legal text #{{n}}"
       },
       "toast": {
         "deleteSuccess": "Centre supprimé",
@@ -4168,22 +4168,22 @@
       }
     },
     "graduation": {
-      "title": "title",
-      "subtitle": "subtitle",
-      "totalGraduates": "totalGraduates",
-      "searchPlaceholder": "searchPlaceholder",
+      "title": "Graduates",
+      "subtitle": "Students who completed their programme",
+      "totalGraduates": "Total graduates",
+      "searchPlaceholder": "Search by name or registration number…",
       "table": {
-        "student": "student",
-        "registration": "registration",
-        "program": "program",
-        "level": "level",
-        "credits": "credits",
-        "graduatedAt": "graduatedAt"
+        "student": "Student",
+        "registration": "Registration no.",
+        "program": "Programme",
+        "level": "Level",
+        "credits": "Credits",
+        "graduatedAt": "Graduated on"
       },
-      "noResults": "noResults",
-      "empty": "empty",
-      "noResultsHint": "noResultsHint",
-      "emptyHint": "emptyHint"
+      "noResults": "No matching graduates",
+      "empty": "No graduates yet",
+      "noResultsHint": "Try another search.",
+      "emptyHint": "Students appear here once a deliberation graduates them."
     },
     "academicYearTransitions": {
       "title": "Academic Year Transition",

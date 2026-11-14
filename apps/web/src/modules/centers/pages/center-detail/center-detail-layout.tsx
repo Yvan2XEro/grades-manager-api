@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -34,7 +35,7 @@ export default function CenterDetailLayout() {
 	return (
 		<CenterContext.Provider value={{ form, isSaving, onSubmit }}>
 			<Form {...form}>
-				<div className="space-y-4">
+				<HubLayout>
 					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 						<div>
 							<h1 className="text-foreground">
@@ -59,7 +60,7 @@ export default function CenterDetailLayout() {
 						</Button>
 					</div>
 					<HubNav tabs={TABS} basePath={`/centers/${centerId}`} />
-				</div>
+				</HubLayout>
 			</Form>
 		</CenterContext.Provider>
 	);

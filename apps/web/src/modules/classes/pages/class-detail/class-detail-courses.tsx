@@ -76,7 +76,7 @@ export default function ClassDetailCourses() {
 		});
 
 	return (
-		<Card>
+		<Card className="flex min-h-64 flex-1 flex-col">
 			<CardHeader className="flex flex-row items-center justify-between">
 				<CardTitle>
 					{t("classes.hub.tabs.courses", { defaultValue: "Courses" })}
@@ -89,7 +89,7 @@ export default function ClassDetailCourses() {
 					</Link>
 				</Button>
 			</CardHeader>
-			<CardContent>
+			<CardContent className="flex min-h-0 flex-1 flex-col">
 				{isLoading ? null : courses.length === 0 ? (
 					<Empty>
 						<EmptyHeader>

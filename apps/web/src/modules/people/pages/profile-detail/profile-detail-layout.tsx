@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ export default function ProfileHub() {
 		<ProfileContext.Provider
 			value={{ profileId: profileId!, profile, isStudent }}
 		>
-			<div className="space-y-6">
+			<HubLayout>
 				<div className="flex items-start gap-4">
 					<Button variant="ghost" size="icon" asChild>
 						<Link to="/users/people">
@@ -82,7 +83,7 @@ export default function ProfileHub() {
 					</div>
 				</div>
 				<HubNav tabs={visibleTabs} basePath={basePath} />
-			</div>
+			</HubLayout>
 		</ProfileContext.Provider>
 	);
 }
