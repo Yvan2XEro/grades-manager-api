@@ -16,6 +16,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { TemplateEditorSplit } from "../components/template-editor-split";
 import { useExportTemplateEditor } from "../hooks/use-export-template-editor";
+import { EXPORT_TYPES, getExportTypeLabel } from "../types";
 
 export default function ExportTemplateEditor() {
 	const { t } = useTranslation();
@@ -116,10 +117,18 @@ export default function ExportTemplateEditor() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="pv">PV (Procès-Verbal)</SelectItem>
-							<SelectItem value="evaluation">Evaluation</SelectItem>
-							<SelectItem value="ue">UE (Teaching Unit)</SelectItem>
-							<SelectItem value="deliberation">Délibération</SelectItem>
+							{EXPORT_TYPES.map((type) => (
+								<SelectItem key={type.value} value={type.value}>
+									{type.label}
+								</SelectItem>
+							))}
+							{/* Templates of other types (created elsewhere) keep their label */}
+							{templateType &&
+								!EXPORT_TYPES.some((type) => type.value === templateType) && (
+									<SelectItem value={templateType}>
+										{getExportTypeLabel(templateType)}
+									</SelectItem>
+								)}
 						</SelectContent>
 					</Select>
 					<p className="text-muted-foreground text-xs">
