@@ -14,7 +14,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 
 /** Dean rejects a submitted exam with a mandatory reason. */
 
@@ -31,7 +31,7 @@ export const DeanRejectExamDialog = createCallable<{
 			trpcClient.workflows.rejectGrades.mutate({ examId, reason }),
 		onSuccess: () => {
 			toast.success(t("dean.approvals.rejected"));
-			queryClient.invalidateQueries({ queryKey: ["dean-exams"] });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
 			call.end();
 			setReason("");
 		},
