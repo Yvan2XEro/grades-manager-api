@@ -16,7 +16,7 @@ import {
 	HBS_INLINE_HELPERS,
 	HBS_SNIPPETS,
 	HBS_VARIABLES,
-} from "./handlebars-catalog";
+} from "../services/handlebars-catalog";
 
 interface CodeEditorProps {
 	value: string;

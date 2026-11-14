@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,151 +9,14 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	detectFieldKind,
 	type FieldKind,
 	FONT_LIST,
 	fieldLabel,
-	GROUP_META,
-	TAB_GROUP_ORDER,
-	TAB_LABELS,
-	type ThemeTab,
-} from "./theme-fields";
+} from "../services/theme-fields";
 
-type ThemeValue = Record<string, unknown>;
-
-interface ThemeEditorProps {
-	/** Default theme used as the visual baseline (typically returned by `getThemePresets`). */
-	defaultTheme: ThemeValue;
-	/** Current value: only the fields the user has overridden. Empty `{}` = inherit defaults. */
-	value: Partial<ThemeValue>;
-	onChange: (next: Partial<ThemeValue>) => void;
-	/** When provided, shows a "preset" picker that pre-fills the override blob. */
-	presets?: Array<{ id: string; name: string; theme: ThemeValue }>;
-}
-
-function setIn(
-	obj: Record<string, unknown>,
-	path: string[],
-	val: unknown,
-): Record<string, unknown> {
-	if (path.length === 0) return obj;
-	const [head, ...rest] = path;
-	const current = (obj[head] ?? {}) as Record<string, unknown>;
-	return {
-		...obj,
-		[head]:
-			rest.length === 0
-				? val
-				: setIn(
-						typeof current === "object" && current !== null ? current : {},
-						rest,
-						val,
-					),
-	};
-}
-
-function getIn(obj: Record<string, unknown>, path: string[]): unknown {
-	let cur: unknown = obj;
-	for (const seg of path) {
-		if (cur && typeof cur === "object" && seg in (cur as object)) {
-			cur = (cur as Record<string, unknown>)[seg];
-		} else {
-			return undefined;
-		}
-	}
-	return cur;
-}
-
-export function ThemeEditor({
-	defaultTheme,
-	value,
-	onChange,
-	presets,
-}: ThemeEditorProps) {
-	const merged = useMemo(
-		() => deepMerge(defaultTheme, value),
-		[defaultTheme, value],
-	);
-
-	const tabs: ThemeTab[] = ["typography", "colors", "sizes", "options"];
-
-	const setField = (path: string[], v: unknown) => {
-		// Persist override (we always write into `value` even if v equals default —
-		// keeps round-trips stable; future: detect equality and prune).
-		onChange(setIn(value as Record<string, unknown>, path, v));
-	};
-
-	return (
-		<div className="space-y-4">
-			{presets && presets.length > 0 && (
-				<div className="flex items-center gap-2">
-					<Label className="text-muted-foreground text-xs">Préréglage:</Label>
-					<Select
-						onValueChange={(presetId) => {
-							const p = presets.find((x) => x.id === presetId);
-							if (!p) return;
-							onChange(p.theme);
-						}}
-					>
-						<SelectTrigger className="h-8 w-48">
-							<SelectValue placeholder="Appliquer un préréglage" />
-						</SelectTrigger>
-						<SelectContent>
-							{presets.map((p) => (
-								<SelectItem key={p.id} value={p.id}>
-									{p.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<button
-						type="button"
-						onClick={() => onChange({})}
-						className="text-muted-foreground text-xs underline hover:text-foreground"
-					>
-						Réinitialiser tout
-					</button>
-				</div>
-			)}
-			<Tabs defaultValue="typography">
-				<TabsList>
-					{tabs.map((tab) => (
-						<TabsTrigger key={tab} value={tab}>
-							{TAB_LABELS[tab]}
-						</TabsTrigger>
-					))}
-				</TabsList>
-				{tabs.map((tab) => (
-					<TabsContent key={tab} value={tab} className="space-y-4">
-						{TAB_GROUP_ORDER[tab].map((groupKey) => {
-							const group = (merged as Record<string, unknown>)[groupKey];
-							if (!group || typeof group !== "object") return null;
-							const meta = GROUP_META[groupKey];
-							return (
-								<GroupSection
-									key={groupKey}
-									title={meta?.label ?? groupKey}
-									description={meta?.description}
-									group={group as Record<string, unknown>}
-									path={[groupKey]}
-									setField={setField}
-									valueOverride={
-										(value[groupKey] as Record<string, unknown> | undefined) ??
-										null
-									}
-								/>
-							);
-						})}
-					</TabsContent>
-				))}
-			</Tabs>
-		</div>
-	);
-}
-
-function GroupSection({
+export function GroupSection({
 	title,
 	description,
 	group,
@@ -430,31 +292,3 @@ function inferMax(label: string, current: number): number {
 	const upper = current * 4;
 	return Math.max(20, Math.ceil(upper));
 }
-
-function deepMerge<T extends Record<string, unknown>>(
-	base: T,
-	override: Partial<T>,
-): T {
-	const out: Record<string, unknown> = { ...base };
-	for (const [k, v] of Object.entries(override ?? {})) {
-		const existing = (base as Record<string, unknown>)[k];
-		if (
-			v !== null &&
-			typeof v === "object" &&
-			!Array.isArray(v) &&
-			existing &&
-			typeof existing === "object" &&
-			!Array.isArray(existing)
-		) {
-			out[k] = deepMerge(
-				existing as Record<string, unknown>,
-				v as Record<string, unknown>,
-			);
-		} else {
-			out[k] = v;
-		}
-	}
-	return out as T;
-}
-
-export { deepMerge as deepMergeTheme };
