@@ -1,6 +1,6 @@
 import { Navigate, Route } from "react-router";
 import ApiKeysManagement from "@/modules/api-keys/pages/api-keys-page";
-import GuardianDirectory from "@/modules/guardians/GuardianDirectory";
+import GuardianDirectory from "@/modules/guardians/pages/guardian-directory-page";
 import AcademicTimeline from "./pages/academic-timeline-page";
 import PeopleManagement from "./pages/people-page";
 import ProfileAccessTab from "./pages/profile-detail/profile-detail-access";

@@ -34,30 +34,22 @@ import { RetakeExamDialog } from "@/modules/exams/components/retake-exam-dialog"
 import { RetakeOverrideDialog } from "@/modules/exams/components/retake-override-dialog";
 import { RunDetailsDialog } from "@/modules/exams/components/run-details-dialog";
 import { ScheduleExamsDialog } from "@/modules/exams/components/schedule-exams-dialog";
-import { BankImportDialog } from "@/modules/fees/BankImportDialog";
-import {
-	ConfirmOrderDialog,
-	CreateOrderDialog,
-	ExemptWithNotesDialog,
-	RecordPaymentDialog,
-	UpdateDiscountDialog,
-} from "@/modules/fees/FeeAssignmentDetail";
-import {
-	AssignStudentDialog,
-	BulkAssignDialog,
-} from "@/modules/fees/FeeAssignmentsList";
-import {
-	AddInstallmentDialog,
-	EditInstallmentDialog,
-} from "@/modules/fees/FeeStructureInstallmentsTab";
-import { CreateStructureDialog } from "@/modules/fees/FeeStructuresList";
+import { AddInstallmentDialog } from "@/modules/fees/components/add-installment-dialog";
+import { AssignStudentDialog } from "@/modules/fees/components/assign-student-dialog";
+import { BankImportDialog } from "@/modules/fees/components/bank-import-dialog";
+import { BulkAssignDialog } from "@/modules/fees/components/bulk-assign-dialog";
+import { ConfirmOrderDialog } from "@/modules/fees/components/confirm-order-dialog";
+import { CreateOrderDialog } from "@/modules/fees/components/create-order-dialog";
+import { CreateStructureDialog } from "@/modules/fees/components/create-structure-dialog";
+import { EditInstallmentDialog } from "@/modules/fees/components/edit-installment-dialog";
+import { ExemptWithNotesDialog } from "@/modules/fees/components/exempt-with-notes-dialog";
+import { RecordPaymentDialog } from "@/modules/fees/components/record-payment-dialog";
+import { UpdateDiscountDialog } from "@/modules/fees/components/update-discount-dialog";
 import { AssignDelegateDialog } from "@/modules/grades/components/assign-delegate-dialog";
 import { BulkExportReportDialog } from "@/modules/grades/components/bulk-export-report-dialog";
 import { GrantGradeAccessDialog } from "@/modules/grades/components/grant-grade-access-dialog";
-import {
-	AddGuardianDialog,
-	GuardianPreferencesSheet,
-} from "@/modules/guardians/GuardianDirectory";
+import { AddGuardianDialog } from "@/modules/guardians/components/add-guardian-dialog";
+import { GuardianPreferencesSheet } from "@/modules/guardians/components/guardian-preferences-sheet";
 import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
 import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
 import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
