@@ -39,7 +39,11 @@ export function useApplicationStatus(normalizedRef: string) {
 	const application = statusQuery.data?.application;
 	const checklist = statusQuery.data?.checklist;
 
-	const statusVariant = useMemo(() => {
+	const statusVariant = useMemo(():
+		| "success"
+		| "destructive"
+		| "warning"
+		| "info" => {
 		switch (application?.status) {
 			case "accepted":
 				return "success";

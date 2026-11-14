@@ -71,7 +71,11 @@ export function EnrollmentFilters({
 					<AcademicYearSelect
 						value={selectedAcademicYear || null}
 						onChange={(value) =>
-							onChange({ academicYearId: value, classId: "", semesterId: "" })
+							onChange({
+								academicYearId: value ?? "",
+								classId: "",
+								semesterId: "",
+							})
 						}
 						placeholder={t("admin.enrollments.selectYear", {
 							defaultValue: "Sélectionner une année",

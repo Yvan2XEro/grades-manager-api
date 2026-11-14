@@ -35,10 +35,6 @@ export function ApplicationStepProgramChoices({
 		name: "secondChoiceProgramId",
 	});
 	const programId = useWatch({ control: form.control, name: "programId" });
-	const thirdChoiceProgramId = useWatch({
-		control: form.control,
-		name: "thirdChoiceProgramId",
-	});
 	const personalStatement =
 		useWatch({ control: form.control, name: "personalStatement" }) ?? "";
 
