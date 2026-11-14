@@ -2463,7 +2463,8 @@
         "programFacultySummary": "Faculty: {{value}}",
         "teacherLabel": "Default teacher",
         "teacherPlaceholder": "Select a teacher",
-        "programCycleSummary": "Cycle : {{value}}"
+        "programCycleSummary": "Cycle : {{value}}",
+        "teachingUnitPlaceholder": "Select a teaching unit"
       },
       "toast": {
         "createSuccess": "Course created successfully",
@@ -3429,7 +3430,8 @@
         "name": "Unit name is required.",
         "code": "Unit code is required.",
         "credits": "Credits must be zero or positive.",
-        "program": "Program is required."
+        "program": "Program is required.",
+        "required": "Select a teaching unit"
       },
       "courses": {
         "title": "Constitutive elements",

@@ -1231,7 +1231,8 @@
         "programCycleSummary": "Cycle : {{value}}",
         "teacherLabel": "Enseignant par défaut",
         "teacherPlaceholder": "Sélectionner un enseignant",
-        "programFacultySummary": "Faculté : {{value}}"
+        "programFacultySummary": "Faculté : {{value}}",
+        "teachingUnitPlaceholder": "Sélectionner une unité d'enseignement"
       },
       "toast": {
         "createSuccess": "Cours créé avec succès",
@@ -2545,7 +2546,8 @@
         "name": "Le nom de l'unité est obligatoire.",
         "code": "Le code de l'unité est obligatoire.",
         "credits": "Les crédits doivent être positifs ou nuls.",
-        "program": "Le programme est obligatoire."
+        "program": "Le programme est obligatoire.",
+        "required": "Sélectionnez une unité d'enseignement"
       },
       "courses": {
         "title": "Éléments constitutifs",
