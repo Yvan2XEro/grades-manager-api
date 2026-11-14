@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -9,15 +10,15 @@ const tabs = [
 	{ path: "rules", labelKey: "configurationHub.tabs.rules" },
 ] as const;
 
-export default function ConfigurationHub() {
+export default function ConfigurationLayout() {
 	const { t } = useTranslation();
 	return (
-		<div className="space-y-6">
+		<HubLayout>
 			<PageHeader
 				title={t("configurationHub.title")}
 				description={t("configurationHub.description")}
 			/>
 			<HubNav tabs={tabs} basePath="/configuration" />
-		</div>
+		</HubLayout>
 	);
 }
