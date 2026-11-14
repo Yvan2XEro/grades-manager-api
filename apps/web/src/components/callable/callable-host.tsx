@@ -14,11 +14,11 @@ import { BulkGenerateClassesDialog } from "@/modules/classes/components/bulk-gen
 import { ClassCourseFormDialog } from "@/modules/classes/components/class-course-form-dialog";
 import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { CourseCatalogExportDialog } from "@/modules/classes/components/course-catalog-export-dialog";
-import { CreateDeliberationDialog } from "@/modules/deliberations/CreateDeliberationDialog";
-import { DeliberationRuleFormDialog } from "@/modules/deliberations/DeliberationRules";
-import { OverrideDecisionDialog } from "@/modules/deliberations/OverrideDecisionDialog";
-import { PromoteAdmittedDialog } from "@/modules/deliberations/PromoteAdmittedDialog";
-import { ResolveItemSheet } from "@/modules/deliberations/TransitionDetail";
+import { CreateDeliberationDialog } from "@/modules/deliberations/components/create-deliberation-dialog";
+import { DeliberationRuleFormDialog } from "@/modules/deliberations/components/deliberation-rule-form-dialog";
+import { OverrideDecisionDialog } from "@/modules/deliberations/components/override-decision-dialog";
+import { PromoteAdmittedDialog } from "@/modules/deliberations/components/promote-admitted-dialog";
+import { ResolveItemSheet } from "@/modules/deliberations/components/resolve-item-sheet";
 import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class-export-dialog";
 import { ExportStudentListDialog } from "@/modules/documents/components/export-student-list-dialog";
 import { GenerateDocumentDialog } from "@/modules/documents/components/generate-document-dialog";
@@ -60,8 +60,8 @@ import { ProgramFormDialog } from "@/modules/programs/components/program-form-di
 import { ProgramOptionFormDialog } from "@/modules/programs/components/program-option-form-dialog";
 import { TeachingUnitFormDialog } from "@/modules/programs/components/teaching-unit-form-dialog";
 import { UeCourseFormDialog } from "@/modules/programs/components/ue-course-form-dialog";
-import { ExecutionDetailsDialog } from "@/modules/promotion-rules/execution-history";
-import { PromotionRuleFormDialog } from "@/modules/promotion-rules/rules-list";
+import { ExecutionDetailsDialog } from "@/modules/promotion-rules/components/execution-details-dialog";
+import { PromotionRuleFormDialog } from "@/modules/promotion-rules/components/promotion-rule-form-dialog";
 import { AvatarCropModal } from "@/modules/settings/components/avatar-crop-modal";
 import { CopyTimetableDialog } from "@/modules/timetable/components/copy-timetable-dialog";
 import { RoomFormDialog } from "@/modules/timetable/components/room-form-dialog";

@@ -1,17 +1,15 @@
 import { Navigate, Route } from "react-router";
-import AcademicResultsHub from "./AcademicResultsHub";
-import AcademicYearTransitions from "./AcademicYearTransitions";
-import GraduatedStudents from "./GraduatedStudents";
-import {
-	DeliberationActivityTab,
-	DeliberationDetail,
-	DeliberationJuryTab,
-	DeliberationLegacyRedirect,
-	DeliberationResultsTab,
-	DeliberationRules,
-	DeliberationsList,
-} from "./index";
-import TransitionDetail from "./TransitionDetail";
+import AcademicResultsHub from "./pages/academic-results-layout";
+import AcademicYearTransitions from "./pages/academic-year-transitions-page";
+import DeliberationActivityTab from "./pages/deliberation-detail/deliberation-detail-activity";
+import DeliberationJuryTab from "./pages/deliberation-detail/deliberation-detail-jury";
+import DeliberationDetail from "./pages/deliberation-detail/deliberation-detail-layout";
+import DeliberationResultsTab from "./pages/deliberation-detail/deliberation-detail-results";
+import { DeliberationLegacyRedirect } from "./pages/deliberation-legacy-redirect";
+import DeliberationRules from "./pages/deliberation-rules-page";
+import DeliberationsList from "./pages/deliberations-page";
+import GraduatedStudents from "./pages/graduated-students-page";
+import TransitionDetail from "./pages/transition-detail-page";
 
 export const deliberationsRoutes = (
 	<>
