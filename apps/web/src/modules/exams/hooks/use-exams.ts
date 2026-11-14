@@ -11,8 +11,9 @@ export interface ExamFilters {
 	academicYearId: string | null;
 	classId: string | null;
 	semesterId: string | null;
-	dateFrom: Date | null;
-	dateTo: Date | null;
+	/** `YYYY-MM-DD` from the date picker. */
+	dateFrom: string | null;
+	dateTo: string | null;
 }
 
 const EMPTY_FILTERS: ExamFilters = {

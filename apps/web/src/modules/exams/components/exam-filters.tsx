@@ -77,16 +77,16 @@ export function ExamFilters({
 				</Field>
 				<Field label={t("admin.exams.filters.dateFrom")}>
 					<DatePicker
-						value={filters.dateFrom ?? undefined}
-						onChange={(d) => setFilter("dateFrom", d ?? null)}
+						value={filters.dateFrom ?? ""}
+						onChange={(d) => setFilter("dateFrom", d || null)}
 						placeholder={t("admin.exams.filters.dateFromPlaceholder")}
 						disabled={noYear}
 					/>
 				</Field>
 				<Field label={t("admin.exams.filters.dateTo")}>
 					<DatePicker
-						value={filters.dateTo ?? undefined}
-						onChange={(d) => setFilter("dateTo", d ?? null)}
+						value={filters.dateTo ?? ""}
+						onChange={(d) => setFilter("dateTo", d || null)}
 						placeholder={t("admin.exams.filters.dateToPlaceholder")}
 						disabled={noYear}
 					/>
