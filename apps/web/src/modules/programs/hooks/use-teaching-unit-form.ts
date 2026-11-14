@@ -26,17 +26,21 @@ const buildUnitSchema = (
 			}),
 		),
 		description: z.string().optional(),
-		credits: z.number().nonnegative(
-			t("admin.teachingUnits.validation.credits", {
-				defaultValue: "Credits must be positive",
-			}),
-		),
+		credits: z
+			.number()
+			.int()
+			.nonnegative(
+				t("admin.teachingUnits.validation.credits", {
+					defaultValue: "Credits must be positive",
+				}),
+			),
 		semester: z.enum(["fall", "spring", "annual"]),
-		programId: z.string({
-			required_error: t("admin.teachingUnits.validation.program", {
+		programId: z.string().min(
+			1,
+			t("admin.teachingUnits.validation.program", {
 				defaultValue: "Select a program",
 			}),
-		}),
+		),
 	});
 
 export type TeachingUnitFormData = z.infer<ReturnType<typeof buildUnitSchema>>;
@@ -50,6 +54,18 @@ const defaultValues: TeachingUnitFormData = {
 	programId: "",
 };
 
+/** Form state of a teaching unit, shared by the create dialog and the detail page. */
+export function useTeachingUnitFormState(
+	values?: Partial<TeachingUnitFormData>,
+) {
+	const { t } = useTranslation();
+	const schema = useMemo(() => buildUnitSchema(t), [t]);
+	return useForm<TeachingUnitFormData>({
+		resolver: zodResolver(schema),
+		defaultValues: { ...defaultValues, ...values },
+	});
+}
+
 /**
  * Form of the teaching unit detail page: creates the unit when
  * `teachingUnitId` is `"new"` (then opens it), updates it otherwise.
@@ -60,7 +76,6 @@ export function useTeachingUnitForm(teachingUnitId: string) {
 	const queryClient = useQueryClient();
 	const isCreateMode = teachingUnitId === "new";
 
-	const unitSchema = useMemo(() => buildUnitSchema(t), [t]);
 	const programs = useProgramList();
 
 	const { data: teachingUnit } = useQuery({
@@ -68,10 +83,7 @@ export function useTeachingUnitForm(teachingUnitId: string) {
 		enabled: !isCreateMode,
 	});
 
-	const form = useForm<TeachingUnitFormData>({
-		resolver: zodResolver(unitSchema),
-		defaultValues,
-	});
+	const form = useTeachingUnitFormState();
 
 	useEffect(() => {
 		if (teachingUnit) {

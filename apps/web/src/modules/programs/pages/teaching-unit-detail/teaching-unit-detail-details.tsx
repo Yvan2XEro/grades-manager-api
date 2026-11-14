@@ -11,14 +11,14 @@ export default function TeachingUnitDetailDetails() {
 	const navigate = useNavigate();
 	const { teachingUnitId } = useParams<{ teachingUnitId: string }>();
 	const controller = useTeachingUnitForm(teachingUnitId!);
-	const { form, isCreateMode, isPending, onSubmit } = controller;
+	const { form, programs, isCreateMode, isPending, onSubmit } = controller;
 
 	return (
 		<Card>
 			<CardContent>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<TeachingUnitFormFields controller={controller} />
+						<TeachingUnitFormFields form={form} programs={programs} />
 						<div className="flex justify-end gap-2 pt-2">
 							<Button
 								type="button"

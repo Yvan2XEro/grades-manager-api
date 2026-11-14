@@ -1,3 +1,4 @@
+import type { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
 	FormControl,
@@ -15,14 +16,19 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { TeachingUnitFormController } from "../hooks/use-teaching-unit-form";
+import type { TeachingUnitFormData } from "../hooks/use-teaching-unit-form";
 
-/** Fields of the teaching unit detail form. */
+interface TeachingUnitFormFieldsProps {
+	form: UseFormReturn<TeachingUnitFormData>;
+	/** Programs to choose from; omit when the program is fixed by the caller. */
+	programs?: { id: string; name: string }[];
+}
+
+/** Fields of a teaching unit, shared by the create dialog and the detail page. */
 export function TeachingUnitFormFields({
-	controller: { form, programs },
-}: {
-	controller: TeachingUnitFormController;
-}) {
+	form,
+	programs,
+}: TeachingUnitFormFieldsProps) {
 	const { t } = useTranslation();
 	return (
 		<>
@@ -31,7 +37,7 @@ export function TeachingUnitFormFields({
 				name="name"
 				render={({ field }) => (
 					<FormItem>
-						<FormLabel>
+						<FormLabel required>
 							{t("admin.teachingUnits.fields.name", {
 								defaultValue: "Unit name",
 							})}
@@ -49,7 +55,7 @@ export function TeachingUnitFormFields({
 				name="code"
 				render={({ field }) => (
 					<FormItem>
-						<FormLabel>
+						<FormLabel required>
 							{t("admin.teachingUnits.fields.code", {
 								defaultValue: "Code",
 							})}
@@ -115,7 +121,7 @@ export function TeachingUnitFormFields({
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>
-								{t("admin.teachingUnits.semesters.annual", {
+								{t("admin.teachingUnits.fields.semester", {
 									defaultValue: "Semester",
 								})}
 							</FormLabel>
@@ -149,39 +155,41 @@ export function TeachingUnitFormFields({
 				/>
 			</div>
 
-			<FormField
-				control={form.control}
-				name="programId"
-				render={({ field }) => (
-					<FormItem>
-						<FormLabel>
-							{t("admin.teachingUnits.selectProgram", {
-								defaultValue: "Select program",
-							})}
-						</FormLabel>
-						<Select
-							onValueChange={field.onChange}
-							value={field.value || undefined}
-						>
-							<FormControl>
-								<SelectTrigger>
-									<SelectValue
-										placeholder={t("admin.teachingUnits.selectProgram")}
-									/>
-								</SelectTrigger>
-							</FormControl>
-							<SelectContent>
-								{programs.map((program) => (
-									<SelectItem key={program.id} value={program.id}>
-										{program.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<FormMessage />
-					</FormItem>
-				)}
-			/>
+			{programs && (
+				<FormField
+					control={form.control}
+					name="programId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel required>
+								{t("admin.teachingUnits.selectProgram", {
+									defaultValue: "Select program",
+								})}
+							</FormLabel>
+							<Select
+								onValueChange={field.onChange}
+								value={field.value || undefined}
+							>
+								<FormControl>
+									<SelectTrigger>
+										<SelectValue
+											placeholder={t("admin.teachingUnits.selectProgram")}
+										/>
+									</SelectTrigger>
+								</FormControl>
+								<SelectContent>
+									{programs.map((program) => (
+										<SelectItem key={program.id} value={program.id}>
+											{program.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+			)}
 		</>
 	);
 }
