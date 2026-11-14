@@ -7,10 +7,10 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { generateClassCode } from "@/lib/code-generator";
 import { upsertInList } from "@/lib/query-cache";
-import { AcademicYearFormDialog } from "@/modules/academic-years/AcademicYearFormDialog";
+import { AcademicYearFormDialog } from "@/modules/academic-years/components/academic-year-form-dialog";
 import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog";
-import { ProgramFormDialog } from "@/modules/programs/ProgramFormDialog";
-import { ProgramOptionFormDialog } from "@/modules/programs/ProgramOptionFormDialog";
+import { ProgramFormDialog } from "@/modules/programs/components/program-form-dialog";
+import { ProgramOptionFormDialog } from "@/modules/programs/components/program-option-form-dialog";
 import { trpc, trpcClient } from "@/utils/trpc";
 
 export type CycleLevelOption = {

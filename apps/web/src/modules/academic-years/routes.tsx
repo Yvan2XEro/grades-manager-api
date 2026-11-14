@@ -1,6 +1,6 @@
 import { Route } from "react-router";
-import AcademicYearManagement from "./AcademicYearManagement";
+import AcademicYearsPage from "./pages/academic-years-page";
 
 export const academicYearsRoutes = (
-	<Route path="academic-years" element={<AcademicYearManagement />} />
+	<Route path="academic-years" element={<AcademicYearsPage />} />
 );

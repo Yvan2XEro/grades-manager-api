@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { createCallable } from "react-call";
 import { useMutationFlow } from "react-call/mutation-flow";
@@ -33,17 +33,13 @@ import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
 import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
 import { type RouterOutputs, trpcClient } from "@/utils/trpc";
+import {
+	STUDY_CYCLES_SELECT_KEY,
+	type StudyCyclesSelect,
+	useStudyCycles,
+} from "../hooks/use-study-cycles";
 
 const NONE = "__NONE__";
-
-/** Query key of the study cycles list shared by the program forms. */
-export const STUDY_CYCLES_SELECT_KEY = ["study-cycles-select"];
-
-export type StudyCycleOption = { id: string; code: string; name: string };
-export type StudyCyclesSelect = { items: StudyCycleOption[] };
-
-export const fetchStudyCyclesSelect = (): Promise<StudyCyclesSelect> =>
-	trpcClient.studyCycles.listCycles.query({});
 
 export type ProgramFormResult = RouterOutputs["programs"]["create"];
 
@@ -78,10 +74,7 @@ export const ProgramFormDialog = createCallable<
 	);
 	type ProgramFormData = z.infer<typeof schema>;
 
-	const { data: cycles } = useQuery({
-		queryKey: STUDY_CYCLES_SELECT_KEY,
-		queryFn: fetchStudyCyclesSelect,
-	});
+	const { data: cycles } = useStudyCycles();
 
 	const form = useForm<ProgramFormData>({
 		resolver: zodResolver(schema),

@@ -12,7 +12,7 @@ const TABS = [
 	{ path: "courses", labelKey: "admin.teachingUnits.tabs.courses" },
 ] as const;
 
-export default function TeachingUnitDetail() {
+export default function TeachingUnitDetailLayout() {
 	const { teachingUnitId } = useParams<{ teachingUnitId: string }>();
 	const { t } = useTranslation();
 	const isCreating = teachingUnitId === "new";

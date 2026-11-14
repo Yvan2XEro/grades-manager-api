@@ -33,7 +33,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
-import { AcademicYearFormDialog } from "@/modules/academic-years/AcademicYearFormDialog";
+import { AcademicYearFormDialog } from "@/modules/academic-years/components/academic-year-form-dialog";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
 

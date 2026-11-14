@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -8,15 +9,15 @@ const tabs = [
 	{ path: "courses", labelKey: "programsHub.tabs.courses" },
 ] as const;
 
-export default function ProgramsHub() {
+export default function ProgramsLayout() {
 	const { t } = useTranslation();
 	return (
-		<div className="space-y-6">
+		<HubLayout>
 			<PageHeader
 				title={t("programsHub.title")}
 				description={t("programsHub.description")}
 			/>
 			<HubNav tabs={tabs} basePath="/programs" />
-		</div>
+		</HubLayout>
 	);
 }

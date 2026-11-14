@@ -33,13 +33,13 @@ import { Switch } from "@/components/ui/switch";
 import { generateClassCourseCode } from "@/lib/code-generator";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
+import { CourseFormDialog } from "@/modules/programs/components/course-form-dialog";
 import {
-	CourseFormDialog,
 	fetchTeachers,
 	formatTeacherName,
 	TEACHERS_KEY,
 	type Teacher,
-} from "@/modules/programs/CourseFormDialog";
+} from "@/modules/programs/hooks/use-teachers";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 import {
 	COURSES_KEY,

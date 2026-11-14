@@ -1,7 +1,7 @@
 import { Confirm } from "@/components/callable/confirm";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
-import { AcademicYearFormDialog } from "@/modules/academic-years/AcademicYearFormDialog";
-import { AcademicYearSetupDialog } from "@/modules/academic-years/AcademicYearSetupDialog";
+import { AcademicYearFormDialog } from "@/modules/academic-years/components/academic-year-form-dialog";
+import { AcademicYearSetupDialog } from "@/modules/academic-years/components/academic-year-setup-dialog";
 import {
 	CreateApiKeyDialog,
 	EditWebhookDialog,
@@ -72,12 +72,12 @@ import { CycleLevelFormDialog } from "@/modules/institution/CycleLevelFormDialog
 import { InstitutionFormDialog } from "@/modules/institution/InstitutionFormDialog";
 import { StudyCycleFormDialog } from "@/modules/institution/StudyCycleFormDialog";
 import { CreatePersonDialog } from "@/modules/people/PeopleManagement";
-import { CourseFormDialog } from "@/modules/programs/CourseFormDialog";
-import { ProgramFormDialog } from "@/modules/programs/ProgramFormDialog";
-import { DuplicateProgramsDialog } from "@/modules/programs/ProgramManagement";
-import { ProgramOptionFormDialog } from "@/modules/programs/ProgramOptionFormDialog";
-import { UeCourseFormDialog } from "@/modules/programs/TeachingUnitCoursesTable";
-import { TeachingUnitFormDialog } from "@/modules/programs/TeachingUnitFormDialog";
+import { CourseFormDialog } from "@/modules/programs/components/course-form-dialog";
+import { ProgramFormDialog } from "@/modules/programs/components/program-form-dialog";
+import { DuplicateProgramsDialog } from "@/modules/programs/components/duplicate-programs-dialog";
+import { ProgramOptionFormDialog } from "@/modules/programs/components/program-option-form-dialog";
+import { UeCourseFormDialog } from "@/modules/programs/components/ue-course-form-dialog";
+import { TeachingUnitFormDialog } from "@/modules/programs/components/teaching-unit-form-dialog";
 import { ExecutionDetailsDialog } from "@/modules/promotion-rules/execution-history";
 import { PromotionRuleFormDialog } from "@/modules/promotion-rules/rules-list";
 import { AvatarCropModal } from "@/modules/settings/AccountTab";

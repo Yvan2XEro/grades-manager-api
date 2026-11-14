@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import type { RouterOutputs } from "@/utils/trpc";
+import type { ProgramData } from "../types";
 
-export type ProgramData = NonNullable<RouterOutputs["programs"]["getById"]>;
+export type { ProgramData } from "../types";
 
 export interface ProgramContextValue {
 	program: ProgramData;

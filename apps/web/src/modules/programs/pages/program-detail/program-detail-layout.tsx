@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { trpc } from "@/utils/trpc";
-import { ProgramContext } from "./ProgramContext";
+import { ProgramContext } from "../../hooks/use-program-context";
 
 const TABS = [
 	{ path: "details", labelKey: "programs.hub.tabs.details" },
@@ -15,7 +15,7 @@ const TABS = [
 	{ path: "templates", labelKey: "programs.hub.tabs.templates" },
 ] as const;
 
-export default function ProgramDetail() {
+export default function ProgramDetailLayout() {
 	const { programId } = useParams<{ programId: string }>();
 	const { t } = useTranslation();
 
