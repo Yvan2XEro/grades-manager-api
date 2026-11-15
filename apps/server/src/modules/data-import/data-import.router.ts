@@ -200,6 +200,13 @@ async function yearCounts(institutionId: string) {
 					grades: grades[0]?.n ?? 0,
 					deliberations: delibs.length,
 					teachers: assigned.length,
+					fees:
+						(
+							await db
+								.select({ n: count() })
+								.from(schema.studentFeeAssignments)
+								.where(eq(schema.studentFeeAssignments.academicYearId, year.id))
+						)[0]?.n ?? 0,
 					guardians: guardianLinks,
 					overrides,
 				},

@@ -18,6 +18,8 @@ const TABLES = {
 	deliberationStudentResults: schema.deliberationStudentResults,
 	guardians: schema.guardians,
 	studentGuardians: schema.studentGuardians,
+	studentFeeAssignments: schema.studentFeeAssignments,
+	feePayments: schema.feePayments,
 } as const;
 export type JournalTable = keyof typeof TABLES;
 
@@ -33,6 +35,7 @@ const DEPENDENTS: Partial<Record<JournalTable, [JournalTable, PgColumn][]>> = {
 		["classCourses", schema.classCourses.teacher],
 	],
 	guardians: [["studentGuardians", schema.studentGuardians.guardianId]],
+	studentFeeAssignments: [["feePayments", schema.feePayments.feeAssignmentId]],
 	students: [
 		["enrollments", schema.enrollments.studentId],
 		["studentCourseEnrollments", schema.studentCourseEnrollments.studentId],

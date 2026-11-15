@@ -694,3 +694,59 @@ describe("guided import — teachers and parents", () => {
 		]);
 	});
 });
+
+describe("guided import — fees", () => {
+	it("records what was due and paid, without paying twice on re-import", async () => {
+		const { ctx, caller } = await admin();
+		const { s, program, past } = await fixture(ctx.institution!.id);
+		await importStep(caller, "year.classes", past.id, {
+			Classes: [CLASS_HEADERS, [`F${s}`, `F ${s}`, program.code, "L1"]],
+		});
+		await importStep(caller, "year.students", past.id, {
+			Étudiants: [
+				STUDENT_HEADERS,
+				[`F${s}1`, "Ndi", "Rita", "", "", "", `F${s}`],
+				[`F${s}2`, "Eto", "Max", "", "", "", `F${s}`],
+			],
+		});
+		const sheets = {
+			Frais: [
+				[
+					"Matricule",
+					"Montant dû",
+					"Remise",
+					"Motif de la remise",
+					"Total payé",
+				],
+				[`F${s}1`, "300 000", "50000", "Bourse", "250000"],
+				[`F${s}2`, "300000", "", "", ""],
+			],
+			Paiements: [
+				["Matricule", "Montant", "Date", "Mode", "Référence"],
+				[`F${s}2`, "100000", "15/10/2022", "Espèces", "R-1"],
+			],
+		};
+		const first = await importStep(caller, "year.fees", past.id, sheets);
+		expect(first.sheets).toEqual([
+			expect.objectContaining({ create: 2 }),
+			expect.objectContaining({ create: 1 }),
+		]);
+		const again = await importStep(caller, "year.fees", past.id, sheets);
+		expect(again.sheets).toEqual([
+			expect.objectContaining({ create: 0, unchanged: 2 }),
+			expect.objectContaining({ create: 0, unchanged: 1 }),
+		]);
+		const assignments = await db.query.studentFeeAssignments.findMany({
+			where: eq(schema.studentFeeAssignments.academicYearId, past.id),
+			with: { payments: true },
+		});
+		const byStatus = assignments.map((a) => [
+			a.status,
+			a.payments.reduce((n, p) => n + Number(p.amount), 0),
+		]);
+		expect(byStatus.sort()).toEqual([
+			["paid", 250000],
+			["partial", 100000],
+		]);
+	});
+});

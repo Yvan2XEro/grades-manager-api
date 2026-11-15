@@ -3657,7 +3657,8 @@
             "close": "Clôture",
             "decisions": "Décisions officielles",
             "teachers": "Enseignants",
-            "guardians": "Parents"
+            "guardians": "Parents",
+            "fees": "Frais"
           }
         },
         "stepDescriptions": {
@@ -3675,7 +3676,8 @@
             "close": "Une fois les notes importées, clôturez l'année : les délibérations de chaque classe sont calculées et laissées ouvertes pour que vous les vérifiiez.",
             "decisions": "Facultatif : importez les décisions de jury des procès-verbaux. Les écarts avec les décisions calculées sont listés ; importer retient la décision officielle, tracée comme dérogation.",
             "teachers": "Facultatif : les enseignants, créés sans compte (un compte peut leur être donné ensuite depuis la page Utilisateurs). Ils sont ensuite retrouvés par leur e-mail pour l'attribution des cours.",
-            "guardians": "Facultatif : les parents et tuteurs des étudiants de l'année, une ligne par lien parent ↔ étudiant."
+            "guardians": "Facultatif : les parents et tuteurs des étudiants de l'année, une ligne par lien parent ↔ étudiant.",
+            "fees": "Facultatif : ce que chaque étudiant devait pour l'année et ce qu'il a payé, en total ou versement par versement. Les statuts (soldé, partiel, impayé) sont recalculés."
           }
         },
         "yearSteps": {
@@ -3823,7 +3825,9 @@
             "ambiguousTeacher": "Plusieurs enseignants s'appellent {{name}} : indiquez l'e-mail.",
             "studentNotInYear": "Aucun étudiant {{value}} inscrit en {{year}}.",
             "unknownRelationship": "« {{value}} » n'est pas un lien connu (Père, Mère, Tuteur, Oncle, Tante, Autre).",
-            "guardianContactMissing": "Un e-mail ou un numéro de téléphone est obligatoire."
+            "guardianContactMissing": "Un e-mail ou un numéro de téléphone est obligatoire.",
+            "invalidAmount": "« {{value}} » n'est pas un montant.",
+            "noFeeForStudent": "Aucun montant dû pour cet étudiant : ajoutez une ligne dans la feuille Frais."
           },
           "changes": "Modifications ({{count}})"
         },
@@ -3875,7 +3879,9 @@
               "teachers_one": "{{count}} enseignant affecté",
               "teachers_other": "{{count}} enseignants affectés",
               "guardians_one": "{{count}} lien parent",
-              "guardians_other": "{{count}} liens parents"
+              "guardians_other": "{{count}} liens parents",
+              "fees_one": "{{count}} dossier de frais",
+              "fees_other": "{{count}} dossiers de frais"
             }
           },
           "optional": "facultatif"
@@ -3907,6 +3913,10 @@
             },
             "guardians": {
               "0": "Facultatif : une ligne par lien parent ↔ étudiant. Un parent est retrouvé par son e-mail, sinon par son téléphone ; il faut l'un des deux."
+            },
+            "fees": {
+              "0": "Facultatif : une ligne par étudiant avec le montant dû pour l'année, la remise éventuelle et le total payé (si les paiements ne sont pas détaillés dans la feuille Paiements).",
+              "1": "Facultatif : le détail des paiements, une ligne par versement. Un versement déjà enregistré (même date, montant et référence) n'est pas recréé."
             }
           }
         },
@@ -3939,6 +3949,10 @@
             "guardians": {
               "relationship": "Père, Mère, Tuteur, Oncle, Tante, Autre",
               "primary": "« oui » pour le parent à contacter en premier."
+            },
+            "fees": {
+              "date": "jj/mm/aaaa",
+              "method": "Espèces, Virement, Mobile money, Chèque"
             }
           },
           "foundation": {

@@ -51,6 +51,7 @@ export const IMPORT_YEAR_STEPS: {
 	{ key: "year.grades", count: "grades" },
 	{ key: "year.close", count: "deliberations", action: true },
 	{ key: "year.decisions", count: "overrides", optional: true },
+	{ key: "year.fees", count: "fees", optional: true },
 ];
 
 /** A year that has ended is imported as history. */
