@@ -1,41 +1,41 @@
 /**
- * Flow 04 — Cycle de vie complet d'un examen
+ * Flow 04 — Full lifecycle of an exam
  *
- * Questions utilisateurs auxquelles ce flow répond :
- *  - "Comment créer un examen avec toutes ses options de configuration ?"
- *  - "Quelle est la différence entre CC, TP, TPE et FINAL ?"
- *  - "Comment planifier les examens dans le calendrier ?"
- *  - "Que se passe-t-il quand un examen est verrouillé — peut-on encore modifier ?"
- *  - "Comment l'admin approuve-t-il un examen et verrouille les notes définitivement ?"
- *  - "Comment gérer un workflow d'approbation des notes ?"
+ * User questions this flow answers:
+ *  - "How do I create an exam with all its configuration options?"
+ *  - "What is the difference between CC, TP, TPE and FINAL?"
+ *  - "How do I schedule exams in the calendar?"
+ *  - "What happens when an exam is locked — can it still be edited?"
+ *  - "How does the admin approve an exam and lock the grades for good?"
+ *  - "How do I run a grade approval workflow?"
  */
 import { test } from "@playwright/test";
 import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 1 : Explorer les examens existants et comprendre leur structure
-// Question : "Quels examens sont déjà configurés et dans quel état sont-ils ?"
+// SCENARIO 1: Explore existing exams and understand their structure
+// Question: "Which exams are already configured and what state are they in?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("08 - Liste des examens : états, types et actions disponibles", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Liste complète de tous les examens ──────────────────────────
+	// ── STEP 1: Full list of all exams ────────────────────────────────────────
 	await page.goto("/admin/exams");
 	await page.waitForLoadState("networkidle");
 	await pause(1400);
 	await capture(page, "04a-exams-liste-complete");
 
-	// ── ÉTAPE 2 : Scroll pour voir tous les examens ──────────────────────────
+	// ── STEP 2: Scroll to see all exams ───────────────────────────────────────
 	await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
 	await pause(800);
 	await capture(page, "04b-exams-liste-scrollee");
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 
-	// ── ÉTAPE 3 : Survoler un examen pour voir les actions disponibles ────────
-	// "Que puis-je faire sur un examen existant ?"
+	// ── STEP 3: Hover over an exam to see the available actions ───────────────
+	// "What can I do on an existing exam?"
 	const anatRow = page
 		.locator('tr:has-text("Anatomie"), [role="row"]:has-text("Anatomie")')
 		.first();
@@ -47,7 +47,7 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({
 		await pause(700);
 		await capture(page, "04c-exam-row-hover-actions");
 
-		// Ouvrir le menu actions
+		// Open the actions menu
 		const actionsBtn = examRow
 			.locator(
 				'button:has-text("Actions"), button[aria-label*="actions"], button[aria-haspopup]',
@@ -61,7 +61,7 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({
 			await pause(400);
 		}
 
-		// Ouvrir le détail de l'examen
+		// Open the exam's detail
 		await examRow.click();
 		await page.waitForLoadState("networkidle");
 		await pause(1200);
@@ -83,7 +83,7 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({
 		await pause(600);
 	}
 
-	// ── ÉTAPE 4 : Filtrer par classe INF25-BTS1A ─────────────────────────────
+	// ── STEP 4: Filter by class INF25-BTS1A ───────────────────────────────────
 	const classFilter = page.locator('[data-testid="class-select"]').first();
 	if (await classFilter.isVisible()) {
 		await classFilter.click();
@@ -103,8 +103,8 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({
 		}
 	}
 
-	// ── ÉTAPE 5 : Types d'examens (CC, TP, TPE, FINAL) ───────────────────────
-	// "Quelle est la pondération de chaque type d'examen ?"
+	// ── STEP 5: Exam types (CC, TP, TPE, FINAL) ───────────────────────────────
+	// "What is the weighting of each exam type?"
 	await page.goto("/admin/exam-types");
 	await page.waitForLoadState("networkidle");
 	await pause(1300);
@@ -118,7 +118,7 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({
 	}
 	await capture(page, "04k-types-examens-hover-detail");
 
-	// Ouvrir un type pour voir sa configuration
+	// Open a type to see its configuration
 	if (await typeRows.first().isVisible()) {
 		await typeRows.first().click();
 		await page.waitForLoadState("networkidle");
@@ -130,8 +130,8 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 2 : Créer un nouvel examen complet avec workflow d'approbation
-// Question : "Comment créer un examen Final pour Physiologie S1 ?"
+// SCENARIO 2: Create a complete new exam with an approval workflow
+// Question: "How do I create a Final exam for Physiology S1?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("09 - Création complète d'un examen Final Physiologie avec workflow", async ({
 	page,
@@ -141,7 +141,7 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 	await page.waitForLoadState("networkidle");
 	await pause(800);
 
-	// ── ÉTAPE 1 : Bouton Ajouter ──────────────────────────────────────────────
+	// ── STEP 1: Add button ────────────────────────────────────────────────────
 	const addBtn = page
 		.locator(
 			'[data-testid="add-exam-button"], [data-testid="add-exam-button-empty"]',
@@ -165,7 +165,7 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 	await pause(900);
 	await capture(page, "04n-formulaire-creation-exam-ouvert");
 
-	// ── ÉTAPE 2 : Sélection du cours Physiologie ──────────────────────────────
+	// ── STEP 2: Select the Physiology course ──────────────────────────────────
 	const coursSelect = page.locator('[data-testid="class-course-select"]');
 	if (await coursSelect.isVisible()) {
 		await coursSelect.click();
@@ -186,7 +186,7 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		await capture(page, "04p-cours-physiologie-selectionne");
 	}
 
-	// ── ÉTAPE 3 : Nom de l'examen ─────────────────────────────────────────────
+	// ── STEP 3: Exam name ─────────────────────────────────────────────────────
 	const nameInput = page
 		.locator(
 			'input[placeholder*="exam name"], input[placeholder*="nom"], input[name*="name"]',
@@ -201,8 +201,8 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		await capture(page, "04q-nom-examen-saisi");
 	}
 
-	// ── ÉTAPE 4 : Type d'examen : FINAL ──────────────────────────────────────
-	// Note : c'est un textbox libre avec autosuggestion
+	// ── STEP 4: Exam type: FINAL ──────────────────────────────────────────────
+	// Note: this is a free-text textbox with autosuggest
 	const typeInput = page
 		.locator(
 			'input[placeholder*="Midterm"], input[placeholder*="Final"], input[placeholder*="ype"]',
@@ -213,7 +213,7 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		await typeInput.type("FINAL", { delay: 80 });
 		await pause(600);
 		await capture(page, "04r-type-exam-saisi-final");
-		// Accepter l'autosuggestion si disponible
+		// Accept the autosuggestion if available
 		const suggestion = page
 			.locator('[role="option"]:has-text("FINAL")')
 			.first();
@@ -223,8 +223,8 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		await pause(400);
 	}
 
-	// ── ÉTAPE 5 : Date de l'examen ────────────────────────────────────────────
-	// "Quand aura lieu cet examen ?"
+	// ── STEP 5: Exam date ─────────────────────────────────────────────────────
+	// "When will this exam take place?"
 	const dateBtn = page
 		.locator(
 			'button:has-text("Choose a date"), button[aria-label*="date"], input[type="date"]',
@@ -235,7 +235,7 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		await pause(800);
 		await capture(page, "04s-selecteur-date-ouvert");
 
-		// Choisir le 20 du mois courant
+		// Pick the 20th of the current month
 		const day20 = page.locator('[role="gridcell"]:has-text("20")').first();
 		if (await day20.isVisible()) {
 			await day20.click();
@@ -246,8 +246,8 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		}
 	}
 
-	// ── ÉTAPE 6 : Poids (coefficient) — 60% de la note finale ────────────────
-	// "Quel est le poids de cet examen dans la note finale du cours ?"
+	// ── STEP 6: Weight (coefficient) — 60% of the final grade ─────────────────
+	// "What is the weight of this exam in the course's final grade?"
 	const weightInput = page
 		.locator(
 			'input[type="number"][name*="weight"], input[placeholder*="Weight"], spinbutton',
@@ -260,10 +260,10 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		await capture(page, "04u-poids-examen-60pct");
 	}
 
-	// ── ÉTAPE 7 : Formulaire complet — aperçu avant soumission ───────────────
+	// ── STEP 7: Completed form — preview before submission ────────────────────
 	await capture(page, "04v-formulaire-exam-complet");
 
-	// ── ÉTAPE 8 : Bouton de sauvegarde ───────────────────────────────────────
+	// ── STEP 8: Save button ───────────────────────────────────────────────────
 	const saveBtn = page
 		.locator(
 			'button:has-text("Save exam"), button:has-text("Enregistrer"), button:has-text("Créer"), button:has-text("Create")',
@@ -281,29 +281,29 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 3 : Le planificateur — organiser les examens dans le calendrier
-// Question : "Comment visualiser et organiser tous les examens dans le temps ?"
+// SCENARIO 3: The scheduler — organizing exams in the calendar
+// Question: "How do I view and organize all exams over time?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("10 - Planificateur d'examens : calendrier et gestion des conflits", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Vue calendrier mensuelle des examens ────────────────────────
+	// ── STEP 1: Monthly calendar view of exams ────────────────────────────────
 	await page.goto("/admin/exam-scheduler");
 	await page.waitForLoadState("networkidle");
 	await pause(1500);
 	await capture(page, "04x-planificateur-vue-mensuelle");
 
-	// ── ÉTAPE 2 : Scroll pour voir les examens planifiés ─────────────────────
+	// ── STEP 2: Scroll to see the scheduled exams ─────────────────────────────
 	await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
 	await pause(900);
 	await capture(page, "04y-planificateur-examens-planifies");
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 
-	// ── ÉTAPE 3 : Survoler un examen dans le calendrier ──────────────────────
-	// "Que se passe-t-il si je survole un examen dans le calendrier ?"
+	// ── STEP 3: Hover over an exam in the calendar ────────────────────────────
+	// "What happens if I hover over an exam in the calendar?"
 	const calendarEvent = page
 		.locator('[class*="event"], [class*="exam"], [data-testid*="exam"]')
 		.first();
@@ -313,7 +313,7 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 		await capture(page, "04z-planificateur-survol-examen");
 	}
 
-	// ── ÉTAPE 4 : Navigation vers le mois suivant ────────────────────────────
+	// ── STEP 4: Navigate to the next month ────────────────────────────────────
 	const nextBtn = page
 		.locator(
 			'button[aria-label*="next"], button[aria-label*="Next"], button[aria-label*="suivant"]',
@@ -324,7 +324,7 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 		await pause(900);
 		await capture(page, "05a-planificateur-mois-suivant");
 
-		// Revenir au mois courant
+		// Back to the current month
 		const prevBtn = page
 			.locator(
 				'button[aria-label*="prev"], button[aria-label*="Prev"], button[aria-label*="précédent"]',
@@ -337,7 +337,7 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 		}
 	}
 
-	// ── ÉTAPE 5 : Vue liste du planificateur (si disponible) ─────────────────
+	// ── STEP 5: Scheduler list view (if available) ────────────────────────────
 	const listViewBtn = page
 		.locator(
 			'button:has-text("Liste"), button:has-text("List"), [aria-label*="list"]',
@@ -349,13 +349,13 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 		await capture(page, "05c-planificateur-vue-liste");
 	}
 
-	// ── ÉTAPE 6 : Workflows d'approbation des examens ─────────────────────────
-	// "Comment soumettre un examen pour approbation ?"
+	// ── STEP 6: Exam approval workflows ───────────────────────────────────────
+	// "How do I submit an exam for approval?"
 	await page.goto("/admin/exams");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 
-	// Chercher les examens avec des workflows en attente
+	// Look for exams with pending workflows
 	const workflowBtn = page
 		.locator(
 			'button:has-text("Workflows"), button:has-text("Approbation"), a[href*="workflow"]',
@@ -373,7 +373,7 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 		await pause(700);
 		await capture(page, "05e-workflows-details");
 	} else {
-		// Essayer la page workflows directement
+		// Try the workflows page directly
 		await page.goto("/admin/workflows");
 		await page.waitForLoadState("networkidle");
 		await pause(1200);

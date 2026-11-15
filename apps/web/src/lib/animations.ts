@@ -1,12 +1,12 @@
 import type { Variants } from "framer-motion";
 
-/** Stagger container — utilisé pour animer des listes d'enfants en cascade */
+/** Stagger container — used to animate lists of children in cascade */
 export const staggerContainer: Variants = {
 	hidden: {},
 	visible: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
 };
 
-/** Item enfant d'un stagger container */
+/** Child item of a stagger container */
 export const staggerItem: Variants = {
 	hidden: { opacity: 0, y: 14 },
 	visible: {
@@ -16,7 +16,7 @@ export const staggerItem: Variants = {
 	},
 };
 
-/** Entrée simple fade + slide up */
+/** Simple fade + slide-up entrance */
 export const fadeUp: Variants = {
 	hidden: { opacity: 0, y: 18 },
 	visible: {
@@ -26,7 +26,7 @@ export const fadeUp: Variants = {
 	},
 };
 
-/** Entrée par zoom + fade */
+/** Zoom + fade entrance */
 export const scaleIn: Variants = {
 	hidden: { opacity: 0, scale: 0.94 },
 	visible: {
@@ -36,7 +36,7 @@ export const scaleIn: Variants = {
 	},
 };
 
-/** Message d'erreur de formulaire */
+/** Form error message */
 export const errorMsg: Variants = {
 	hidden: { opacity: 0, y: -4 },
 	visible: {

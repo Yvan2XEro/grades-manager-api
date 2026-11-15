@@ -61,7 +61,7 @@ import {
 } from "./lib/transitions";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Préchargement des assets pour un preview Studio sans freeze
+// Preload assets so the Studio preview does not freeze
 // ─────────────────────────────────────────────────────────────────────────────
 [
 	"audio/background.mp3",
@@ -85,10 +85,10 @@ import {
 
 const { width, height, fps } = VIDEO;
 
-// Durée de chaque transition (overlap entre scènes adjacentes)
+// Duration of each transition (overlap between adjacent scenes)
 const TRANS = 30;
 
-// TOTAL = somme des durées - overlaps (9 transitions entre 10 scènes)
+// TOTAL = sum of durations - overlaps (9 transitions between 10 scenes)
 const TOTAL =
 	DUR.intro +
 	DUR.hero +
@@ -102,7 +102,7 @@ const TOTAL =
 	DUR.outro -
 	9 * TRANS;
 
-// Positions absolues de début de chaque scène dans la timeline avec transitions
+// Absolute start position of each scene in the timeline, with transitions
 const S0 = 0;
 const S1 = S0 + DUR.intro - TRANS;
 const S2 = S1 + DUR.hero - TRANS;
@@ -115,7 +115,7 @@ const S8 = S7 + DUR.deliberation - TRANS;
 const S9 = S8 + DUR.techStack - TRANS;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Musique de fond — dynamique par scène
+// Background music — dynamic per scene
 // ─────────────────────────────────────────────────────────────────────────────
 const BackgroundMusic: React.FC = () => {
 	const frame = useCurrentFrame();
@@ -158,7 +158,7 @@ const BackgroundMusic: React.FC = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Composition principale avec transitions
+// Main composition with transitions
 // ─────────────────────────────────────────────────────────────────────────────
 export const GradesManagerPresentation: React.FC = () => (
 	<>
@@ -169,7 +169,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<IntroScene />
 			</TransitionSeries.Sequence>
 
-			{/* 00→01 : scale reveal — intro élégante vers hero */}
+			{/* 00→01 : scale reveal — elegant intro into the hero */}
 			<TransitionSeries.Transition
 				timing={springTiming({
 					durationInFrames: TRANS,
@@ -183,7 +183,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<HeroScene />
 			</TransitionSeries.Sequence>
 
-			{/* 01→02 : ZOOM BLUR — l'écran explose vers l'avant, plonge dans le problème */}
+			{/* 01→02 : ZOOM BLUR — the screen bursts forward, diving into the problem */}
 			<TransitionSeries.Transition
 				timing={springTiming({
 					durationInFrames: TRANS,
@@ -197,7 +197,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<ProblemScene />
 			</TransitionSeries.Sequence>
 
-			{/* 02→03 : curtain droite — rideau qui révèle la solution */}
+			{/* 02→03 : right curtain — a curtain that reveals the solution */}
 			<TransitionSeries.Transition
 				timing={linearTiming({ durationInFrames: TRANS })}
 				presentation={curtainSlide("right")}
@@ -208,7 +208,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<SolutionScene />
 			</TransitionSeries.Sequence>
 
-			{/* 03→04 : slide up — énergie montante vers les rôles */}
+			{/* 03→04 : slide up — rising energy toward the roles */}
 			<TransitionSeries.Transition
 				timing={springTiming({
 					durationInFrames: TRANS,
@@ -222,7 +222,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<RolesScene />
 			</TransitionSeries.Sequence>
 
-			{/* 04→05 : curtain gauche — direction inverse, dynamisme */}
+			{/* 04→05 : left curtain — reversed direction, dynamism */}
 			<TransitionSeries.Transition
 				timing={linearTiming({ durationInFrames: TRANS })}
 				presentation={curtainSlide("left")}
@@ -233,7 +233,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<GradeWorkflowScene />
 			</TransitionSeries.Sequence>
 
-			{/* 05→06 : zoom blur — plonge dans les captures produit */}
+			{/* 05→06 : zoom blur — dives into the product screenshots */}
 			<TransitionSeries.Transition
 				timing={springTiming({
 					durationInFrames: TRANS,
@@ -247,7 +247,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<ScreenshotsScene />
 			</TransitionSeries.Sequence>
 
-			{/* 06→07 : scale reveal — calme vers les résultats */}
+			{/* 06→07 : scale reveal — calm, toward the results */}
 			<TransitionSeries.Transition
 				timing={springTiming({
 					durationInFrames: TRANS,
@@ -261,7 +261,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<DeliberationScene />
 			</TransitionSeries.Sequence>
 
-			{/* 07→08 : curtain droite — net et décisif */}
+			{/* 07→08 : right curtain — crisp and decisive */}
 			<TransitionSeries.Transition
 				timing={linearTiming({ durationInFrames: TRANS })}
 				presentation={curtainSlide("right")}
@@ -272,7 +272,7 @@ export const GradesManagerPresentation: React.FC = () => (
 				<TechStackScene />
 			</TransitionSeries.Sequence>
 
-			{/* 08→09 : scale reveal — fermeture apaisée vers l'outro */}
+			{/* 08→09 : scale reveal — soothing close toward the outro */}
 			<TransitionSeries.Transition
 				timing={springTiming({
 					durationInFrames: TRANS,
@@ -290,11 +290,11 @@ export const GradesManagerPresentation: React.FC = () => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Enregistrement des compositions
+// Composition registration
 // ─────────────────────────────────────────────────────────────────────────────
 export const RemotionRoot: React.FC = () => (
 	<>
-		{/* Vidéo complète */}
+		{/* Full video */}
 		<Composition
 			id="GradesManagerPresentation"
 			component={GradesManagerPresentation}
@@ -304,7 +304,7 @@ export const RemotionRoot: React.FC = () => (
 			height={height}
 		/>
 
-		{/* Scènes individuelles — calculateMetadata adapte la durée au voiceover réel */}
+		{/* Individual scenes — calculateMetadata fits the duration to the actual voiceover */}
 		<Composition
 			id="00-Intro"
 			component={IntroScene}

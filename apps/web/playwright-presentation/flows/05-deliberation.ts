@@ -1,40 +1,40 @@
 /**
- * Flow 05 — Délibérations & Promotion : de la fin d'année à la décision
+ * Flow 05 — Deliberations & Promotion: from year end to the decision
  *
- * Questions utilisateurs auxquelles ce flow répond :
- *  - "Comment fonctionne le processus de délibération de fin d'année ?"
- *  - "Quelles règles de promotion sont appliquées — comment les configurer ?"
- *  - "Comment évaluer automatiquement si un étudiant passe en année suivante ?"
- *  - "Comment voir les résultats de délibération étudiant par étudiant ?"
- *  - "Que fait le système avec les étudiants en situation limite ?"
- *  - "Comment consulter l'historique des promotions passées ?"
+ * User questions this flow answers:
+ *  - "How does the end-of-year deliberation process work?"
+ *  - "Which promotion rules are applied — how do I configure them?"
+ *  - "How do I automatically assess whether a student moves up a year?"
+ *  - "How do I see deliberation results student by student?"
+ *  - "What does the system do with borderline students?"
+ *  - "How do I view the history of past promotions?"
  */
 import { test } from "@playwright/test";
 import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 1 : Consulter les délibérations existantes et leurs résultats
-// Question : "Les délibérations de l'année dernière — comment voir les résultats ?"
+// SCENARIO 1: View existing deliberations and their results
+// Question: "Last year's deliberations — how do I see the results?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("11 - Délibérations : liste, détail et résultats par étudiant", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Liste des délibérations ─────────────────────────────────────
+	// ── STEP 1: List of deliberations ─────────────────────────────────────────
 	await page.goto("/admin/deliberations");
 	await page.waitForLoadState("networkidle");
 	await pause(1500);
 	await capture(page, "05a-deliberations-liste-complete");
 
-	// ── ÉTAPE 2 : Scroll pour voir toutes les délibérations ──────────────────
+	// ── STEP 2: Scroll to see all deliberations ───────────────────────────────
 	await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
 	await pause(800);
 	await capture(page, "05b-deliberations-liste-scrollee");
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(600);
 
-	// ── ÉTAPE 3 : Survoler une délibération pour voir ses infos ──────────────
+	// ── STEP 3: Hover over a deliberation to see its info ─────────────────────
 	const deliRows = page.locator("table tbody tr, [class*='card']");
 	const count = await deliRows.count();
 	for (let i = 0; i < Math.min(count, 3); i++) {
@@ -43,7 +43,7 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 	}
 	await capture(page, "05c-deliberations-survol");
 
-	// ── ÉTAPE 4 : Ouvrir la première délibération — vue complète ─────────────
+	// ── STEP 4: Open the first deliberation — full view ───────────────────────
 	const firstDeli = deliRows.first();
 	if (await firstDeli.isVisible()) {
 		await firstDeli.click();
@@ -51,15 +51,15 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 		await pause(1400);
 		await capture(page, "05d-deliberation-detail-entete");
 
-		// ── ÉTAPE 5 : Voir les résultats par étudiant ─────────────────────────
-		// "Quel étudiant a été admis, refusé, ou doit repasser ?"
+		// ── STEP 5: See the results per student ───────────────────────────────
+		// "Which student passed, failed, or has to retake?"
 		await page.evaluate(() =>
 			window.scrollTo({ top: 400, behavior: "smooth" }),
 		);
 		await pause(1000);
 		await capture(page, "05e-deliberation-resultats-etudiants");
 
-		// Survoler les lignes d'étudiants pour voir leurs décisions individuelles
+		// Hover over the student rows to see their individual decisions
 		const studentRows = page.locator("table tbody tr");
 		const studCount = await studentRows.count();
 		for (let i = 0; i < Math.min(studCount, 5); i++) {
@@ -68,15 +68,15 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 		}
 		await capture(page, "05f-deliberation-survol-decisions");
 
-		// ── ÉTAPE 6 : Statistiques de la délibération ─────────────────────────
-		// "Quel est le taux de réussite de cette promotion ?"
+		// ── STEP 6: Deliberation statistics ───────────────────────────────────
+		// "What is the pass rate of this cohort?"
 		await page.evaluate(() =>
 			window.scrollTo({ top: 800, behavior: "smooth" }),
 		);
 		await pause(900);
 		await capture(page, "05g-deliberation-statistiques-taux");
 
-		// ── ÉTAPE 7 : Onglets supplémentaires ────────────────────────────────
+		// ── STEP 7: Additional tabs ──────────────────────────────────────────
 		await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 		await pause(500);
 		const tabs = page.locator('[role="tab"]');
@@ -97,15 +97,15 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 2 : Configurer les règles de promotion
-// Question : "Comment paramétrer les critères de passage en année supérieure ?"
+// SCENARIO 2: Configure the promotion rules
+// Question: "How do I set the criteria for moving up a year?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("12 - Règles de promotion : configuration et compréhension", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Vue d'ensemble des règles de promotion ─────────────────────
+	// ── STEP 1: Overview of the promotion rules ───────────────────────────────
 	await page.goto("/admin/promotion-rules");
 	await page.waitForLoadState("networkidle");
 	await pause(1300);
@@ -117,14 +117,14 @@ test("12 - Règles de promotion : configuration et compréhension", async ({
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 
-	// ── ÉTAPE 2 : Éditeur de règles — voir les critères configurés ───────────
-	// "Quels sont les critères exacts pour passer en BTS2 ?"
+	// ── STEP 2: Rule editor — see the configured criteria ─────────────────────
+	// "What are the exact criteria to move up to BTS2?"
 	await page.goto("/admin/promotion-rules/rules");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "05k-editeur-regles-liste");
 
-	// Survoler chaque règle pour voir sa description
+	// Hover over each rule to see its description
 	const rules = page.locator(
 		'[class*="card"], li[class*="rule"], table tbody tr',
 	);
@@ -135,8 +135,8 @@ test("12 - Règles de promotion : configuration et compréhension", async ({
 	}
 	if (ruleCount > 0) await capture(page, "05l-regles-survol-details");
 
-	// ── ÉTAPE 3 : Ouvrir une règle pour voir sa configuration complète ────────
-	// "Comment est définie la règle de moyenne minimale 10/20 ?"
+	// ── STEP 3: Open a rule to see its full configuration ─────────────────────
+	// "How is the 10/20 minimum average rule defined?"
 	const firstRule = rules.first();
 	if (await firstRule.isVisible()) {
 		await firstRule.click();
@@ -154,14 +154,14 @@ test("12 - Règles de promotion : configuration et compréhension", async ({
 		await pause(600);
 	}
 
-	// ── ÉTAPE 4 : Page d'évaluation — que se passerait-il pour INF25-BTS1A ? ──
-	// "Si la délibération avait lieu maintenant, combien d'étudiants passeraient ?"
+	// ── STEP 4: Evaluation page — what would happen for INF25-BTS1A? ──────────
+	// "If the deliberation took place now, how many students would pass?"
 	await page.goto("/admin/promotion-rules/evaluate");
 	await page.waitForLoadState("networkidle");
 	await pause(1300);
 	await capture(page, "05o-evaluation-page-landing");
 
-	// ── ÉTAPE 5 : Sélectionner la classe à évaluer ────────────────────────────
+	// ── STEP 5: Select the class to evaluate ──────────────────────────────────
 	const classSelect = page
 		.locator('[role="combobox"], [data-testid="class-select"]')
 		.first();
@@ -183,7 +183,7 @@ test("12 - Règles de promotion : configuration et compréhension", async ({
 		await capture(page, "05q-evaluation-classe-selectionnee");
 	}
 
-	// ── ÉTAPE 6 : Lancer l'évaluation pour voir les résultats prévisionnels ───
+	// ── STEP 6: Run the evaluation to see the projected results ───────────────
 	const evalBtn = page
 		.locator(
 			'button:has-text("Évaluer"), button:has-text("Evaluate"), button:has-text("Analyser"), button:has-text("Run"), button:has-text("Simuler")',
@@ -199,14 +199,14 @@ test("12 - Règles de promotion : configuration et compréhension", async ({
 		await pause(1800);
 		await capture(page, "05s-resultats-evaluation-previsionnel");
 
-		// Voir les résultats étudiant par étudiant
+		// See the results student by student
 		await page.evaluate(() =>
 			window.scrollTo({ top: 400, behavior: "smooth" }),
 		);
 		await pause(900);
 		await capture(page, "05t-resultats-par-etudiant");
 
-		// Survoler les étudiants en situation limite
+		// Hover over the borderline students
 		const limitRows = page.locator(
 			'tr:has-text("Limite"), tr:has-text("Borderline"), tr:has-text("Rattrapage")',
 		);
@@ -220,26 +220,26 @@ test("12 - Règles de promotion : configuration et compréhension", async ({
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 3 : Exécution officielle de la délibération et promotion
-// Question : "Comment lancer officiellement la délibération et valider les résultats ?"
+// SCENARIO 3: Official deliberation run and promotion
+// Question: "How do I officially run the deliberation and validate the results?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("13 - Exécution de la délibération et historique des promotions", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Page d'exécution officielle ────────────────────────────────
-	// "Quand je suis prêt, comment je lance la délibération officielle ?"
+	// ── STEP 1: Official run page ─────────────────────────────────────────────
+	// "When I am ready, how do I start the official deliberation?"
 	await page.goto("/admin/promotion-rules/execute");
 	await page.waitForLoadState("networkidle");
 	await pause(1400);
 	await capture(page, "05v-execution-deliberation-landing");
 
-	// Voir les options d'exécution
+	// See the run options
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(600);
 
-	// Sélectionner une classe pour exécution
+	// Select a class to run
 	const classSelect = page
 		.locator('[role="combobox"], [data-testid="class-select"]')
 		.first();
@@ -261,7 +261,7 @@ test("13 - Exécution de la délibération et historique des promotions", async 
 	await pause(800);
 	await capture(page, "05x-execution-resume-avant-validation");
 
-	// ── Bouton d'exécution (on survole seulement, on ne clique pas) ───────────
+	// ── Run button (hover only, no click) ─────────────────────────────────────
 	const execBtn = page
 		.locator(
 			'button:has-text("Exécuter"), button:has-text("Execute"), button:has-text("Valider"), button:has-text("Lancer")',
@@ -274,8 +274,8 @@ test("13 - Exécution de la délibération et historique des promotions", async 
 		await capture(page, "05y-bouton-execution-officielle-hover");
 	}
 
-	// ── ÉTAPE 2 : Historique des promotions passées ───────────────────────────
-	// "Quelles promotions ont été délibérées dans le passé ?"
+	// ── STEP 2: History of past promotions ────────────────────────────────────
+	// "Which cohorts have been deliberated in the past?"
 	await page.goto("/admin/promotion-rules/history");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
@@ -285,7 +285,7 @@ test("13 - Exécution de la délibération et historique des promotions", async 
 	await pause(800);
 	await capture(page, "06a-historique-promotions-detail");
 
-	// Ouvrir un enregistrement d'historique pour voir les décisions
+	// Open a history record to see the decisions
 	const historyRows = page.locator("table tbody tr, [class*='card']");
 	if (await historyRows.first().isVisible()) {
 		await historyRows.first().hover();
@@ -307,8 +307,8 @@ test("13 - Exécution de la délibération et historique des promotions", async 
 		await pause(600);
 	}
 
-	// ── ÉTAPE 3 : Règles de délibération (critères bruts) ────────────────────
-	// "Quels critères techniques sont utilisés dans les règles JSON ?"
+	// ── STEP 3: Deliberation rules (raw criteria) ─────────────────────────────
+	// "Which technical criteria are used in the JSON rules?"
 	await page.goto("/admin/deliberations/rules");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);

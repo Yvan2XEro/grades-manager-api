@@ -33,7 +33,7 @@ import { TextReveal } from "../components/TextReveal";
 import { AUDIO, C, DUR, F } from "../lib/theme";
 import { sceneOpacity } from "../lib/transition";
 
-// ── Neumorphic shadows (calibrés pour C.bg = #F7F4F0) ──────────────────────
+// ── Neumorphic shadows (calibrated for C.bg = #F7F4F0) ──────────────────────
 const NEU_RAISED =
 	"10px 10px 24px rgba(168,155,143,0.52), -10px -10px 24px rgba(255,255,255,0.86)";
 const NEU_GROOVE =
@@ -91,7 +91,7 @@ export const ProblemScene: React.FC = () => {
 			<Glow x="6%" y="12%" size={480} color={C.red} opacity={op * 0.06} />
 			<Glow x="94%" y="88%" size={420} color={C.amber} opacity={op * 0.05} />
 
-			{/* noise2D blob — forme organique qui respire en fond (remplace evolveSvgPath) */}
+			{/* noise2D blob — organic shape breathing in the background (replaces evolveSvgPath) */}
 			{(() => {
 				const POINTS = 10;
 				const cx = 960;
@@ -137,7 +137,7 @@ export const ProblemScene: React.FC = () => {
 					gap: 0,
 				}}
 			>
-				{/* En-tête */}
+				{/* Header */}
 				<div style={{ marginBottom: 44 }}>
 					<div style={{ overflow: "hidden", marginBottom: 12 }}>
 						<div
@@ -206,7 +206,7 @@ export const ProblemScene: React.FC = () => {
 					</TextReveal>
 				</div>
 
-				{/* Cards neo-brutales + neumorphiques */}
+				{/* Neo-brutalist + neumorphic cards */}
 				<div style={{ display: "flex", gap: 22, flex: 1 }}>
 					{PAINS.map(({ Icon, color, num, title, sub, desc }, i) => {
 						const prog = spring({
@@ -237,7 +237,7 @@ export const ProblemScene: React.FC = () => {
 										transformOrigin: "top center",
 									}}
 								>
-									{/* ── Header brutalist — fond couleur plein ── */}
+									{/* ── Brutalist header — solid color background ── */}
 									<div
 										style={{
 											background: color,
@@ -275,7 +275,7 @@ export const ProblemScene: React.FC = () => {
 										</span>
 									</div>
 
-									{/* ── Corps neumorphique ── */}
+									{/* ── Neumorphic body ── */}
 									<div
 										style={{
 											padding: "26px 26px",
@@ -312,7 +312,7 @@ export const ProblemScene: React.FC = () => {
 											</div>
 										</div>
 
-										{/* Séparateur neumorphique en creux */}
+										{/* Inset neumorphic separator */}
 										<div
 											style={{
 												height: 2,

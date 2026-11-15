@@ -45,8 +45,8 @@ export const generateDocumentSchema = z.object({
 	demoMode: z.boolean().default(false),
 	/**
 	 * Period selector for transcripts:
-	 *   - "semester" → semestriel (notes du semestre courant uniquement).
-	 *   - "annual"   → annuel (cumul des deux semestres de l'année).
+	 *   - "semester" → semester transcript (current semester grades only).
+	 *   - "annual"   → annual transcript (both semesters of the year combined).
 	 * Affects the document title and (future) the data filtering. Optional —
 	 * defaults to "annual" when omitted.
 	 */

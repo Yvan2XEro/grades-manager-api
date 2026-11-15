@@ -174,13 +174,13 @@ export function exportTranscriptExcel({
 
 	// Set column widths
 	ws["!cols"] = [
-		{ wch: 20 }, // Nom
-		{ wch: 20 }, // Prénom
-		{ wch: 15 }, // Matricule
-		{ wch: 12 }, // Date naissance
-		{ wch: 20 }, // Lieu naissance
-		{ wch: 10 }, // Sexe
-		...Array(range.e.c - 5).fill({ wch: 12 }), // Cours
+		{ wch: 20 }, // Last name
+		{ wch: 20 }, // First name
+		{ wch: 15 }, // Registration number
+		{ wch: 12 }, // Date of birth
+		{ wch: 20 }, // Place of birth
+		{ wch: 10 }, // Gender
+		...Array(range.e.c - 5).fill({ wch: 12 }), // Courses
 	];
 
 	// Merge cells for institution name and title

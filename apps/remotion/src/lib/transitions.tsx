@@ -1,6 +1,6 @@
 /**
- * Transitions personnalisées — Neo-Brutalisme + Motion Design
- * Utilisées dans Root.tsx via TransitionSeries de @remotion/transitions
+ * Custom transitions — Neo-Brutalism + Motion Design
+ * Used in Root.tsx via TransitionSeries from @remotion/transitions
  */
 
 import type {
@@ -11,8 +11,8 @@ import type React from "react";
 import { AbsoluteFill, interpolate } from "remotion";
 
 // ─── 1. Zoom + Blur ────────────────────────────────────────────────────────────
-// Transition principale (01→02) : la scène sortante explose vers l'avant,
-// la scène entrante surgit du centre — effet "plongée dans l'écran"
+// Main transition (01→02): the outgoing scene bursts forward,
+// the incoming scene springs from the center — a "dive into the screen" effect
 const ZoomBlurComponent: React.FC<
 	TransitionPresentationComponentProps<Record<string, never>>
 > = ({ children, presentationDirection, presentationProgress }) => {
@@ -63,7 +63,7 @@ export const zoomBlur = (): TransitionPresentation<Record<string, never>> => ({
 });
 
 // ─── 2. Curtain Slide ──────────────────────────────────────────────────────────
-// Rideau dur de côté — tranchant, brutaliste
+// Hard side curtain — sharp, brutalist
 type CurtainProps = { direction: "left" | "right" };
 
 const CurtainComponent: React.FC<
@@ -107,8 +107,8 @@ export const curtainSlide = (
 });
 
 // ─── 3. Scale Reveal ───────────────────────────────────────────────────────────
-// Scène sortante rétrécit, scène entrante grandit depuis le centre
-// Idéale pour les transitions calmes (intro, outro, sections informatives)
+// Outgoing scene shrinks, incoming scene grows from the center
+// Ideal for calm transitions (intro, outro, informational sections)
 const ScaleRevealComponent: React.FC<
 	TransitionPresentationComponentProps<Record<string, never>>
 > = ({ children, presentationDirection, presentationProgress }) => {
@@ -152,8 +152,8 @@ export const scaleReveal = (): TransitionPresentation<
 });
 
 // ─── 4. Slide Up ───────────────────────────────────────────────────────────────
-// La scène entrante monte depuis le bas — énergique, dynamique
-// Parfaite après les sections à contenu dense
+// The incoming scene rises from the bottom — energetic, dynamic
+// Ideal after content-dense sections
 const SlideUpComponent: React.FC<
 	TransitionPresentationComponentProps<Record<string, never>>
 > = ({ children, presentationDirection, presentationProgress }) => {

@@ -1,6 +1,6 @@
 /**
- * ParticleBurst — Explosion de particules depuis un point central.
- * S'anime automatiquement depuis frame=delay.
+ * ParticleBurst — Particle explosion from a central point.
+ * Animates automatically from frame=delay.
  */
 import type React from "react";
 import { interpolate, random, useCurrentFrame } from "remotion";
@@ -13,7 +13,7 @@ interface Props {
 	maxRadius?: number;
 	color?: string;
 	delay?: number;
-	/** Durée de l'animation en frames */
+	/** Animation duration in frames */
 	duration?: number;
 }
 
@@ -43,7 +43,7 @@ export const ParticleBurst: React.FC<Props> = ({
 		>
 			{Array.from({ length: count }).map((_, i) => {
 				const angle = (i / count) * Math.PI * 2;
-				// Vitesse et taille variables déterministes (random() = même résultat à chaque frame)
+				// Deterministic variable speed and size (random() = same result on every frame)
 				const speedMul = 0.6 + random(`particle-speed-${i}`) * 0.4;
 				const r = prog * maxRadius * speedMul;
 				const opacity = interpolate(prog, [0, 0.25, 0.7, 1], [0, 0.8, 0.3, 0]);

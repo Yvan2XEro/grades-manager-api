@@ -1,6 +1,6 @@
 /**
- * GlowBeam — Faisceau lumineux qui parcourt un chemin horizontal.
- * progress (0→1) contrôle la tête du faisceau.
+ * GlowBeam — Light beam travelling along a horizontal path.
+ * progress (0→1) controls the head of the beam.
  */
 import type React from "react";
 import { C } from "../lib/theme";
@@ -13,7 +13,7 @@ interface Props {
 	progress: number; // 0–1
 	color?: string;
 	width?: number;
-	trailRatio?: number; // longueur de la traîne (en % de la longueur totale)
+	trailRatio?: number; // trail length (as % of the total length)
 }
 
 export const GlowBeam: React.FC<Props> = ({
@@ -33,7 +33,7 @@ export const GlowBeam: React.FC<Props> = ({
 	const trailX1 = x1 + (x2 - x1) * trailStart;
 	const trailY1 = y1 + (y2 - y1) * trailStart;
 
-	// ID unique basé sur la position pour éviter les conflits SVG
+	// Unique ID based on position to avoid SVG conflicts
 	const uid = `gb_${Math.round(x1)}_${Math.round(y1)}`;
 
 	return (
@@ -63,7 +63,7 @@ export const GlowBeam: React.FC<Props> = ({
 				</linearGradient>
 			</defs>
 
-			{/* Ligne de fond (chemin complet, grisé) */}
+			{/* Background line (full path, greyed out) */}
 			<line
 				x1={x1}
 				y1={y1}
@@ -74,7 +74,7 @@ export const GlowBeam: React.FC<Props> = ({
 				opacity={0.15}
 			/>
 
-			{/* Traîne lumineuse */}
+			{/* Glowing trail */}
 			{progress > 0 && (
 				<line
 					x1={trailX1}
@@ -87,7 +87,7 @@ export const GlowBeam: React.FC<Props> = ({
 				/>
 			)}
 
-			{/* Tête : glow concentré */}
+			{/* Head: concentrated glow */}
 			{progress > 0 && (
 				<>
 					<circle

@@ -1,40 +1,40 @@
 /**
- * Flow 02 — Gestion complète des étudiants
+ * Flow 02 — Full student management
  *
- * Questions utilisateurs auxquelles ce flow répond :
- *  - "Comment retrouver rapidement un étudiant parmi des centaines ?"
- *  - "Comment consulter le dossier complet d'un étudiant (cours, notes, historique) ?"
- *  - "Comment créer un nouvel étudiant et l'inscrire dans la bonne classe ?"
- *  - "Comment vérifier les inscriptions aux cours d'un étudiant ?"
- *  - "Comment gérer un étudiant qui change de classe en cours d'année ?"
+ * User questions this flow answers:
+ *  - "How do I quickly find one student among hundreds?"
+ *  - "How do I view a student's full record (courses, grades, history)?"
+ *  - "How do I create a new student and enroll them in the right class?"
+ *  - "How do I check a student's course enrollments?"
+ *  - "How do I handle a student who changes class mid-year?"
  */
 import { test } from "@playwright/test";
 import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 1 : Retrouver un étudiant et consulter son dossier complet
-// Question : "Je cherche Ndong Alain — comment voir son parcours complet ?"
+// SCENARIO 1: Find a student and view their full record
+// Question: "I am looking for Ndong Alain — how do I see his full record?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("03 - Recherche d'un étudiant et consultation de son dossier académique", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Arriver sur la liste — vue d'ensemble ──────────────────────
+	// ── STEP 1: Land on the list — overview ───────────────────────────────────
 	await page.goto("/admin/students");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "02a-students-liste-complete");
 
-	// ── ÉTAPE 2 : Scroll pour voir toute la table — combien d'étudiants ? ────
+	// ── STEP 2: Scroll through the whole table — how many students? ──────────
 	await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
 	await pause(700);
 	await capture(page, "02b-students-liste-scrollee");
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 
-	// ── ÉTAPE 3 : Recherche par nom "Ndong" ──────────────────────────────────
-	// L'admin tape le nom de l'étudiant dans la barre de recherche
+	// ── STEP 3: Search by name "Ndong" ────────────────────────────────────────
+	// The admin types the student's name in the search bar
 	const searchInput = page
 		.locator(
 			'input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"], input[placeholder*="tudiant"]',
@@ -43,7 +43,7 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 	if (await searchInput.isVisible()) {
 		await searchInput.click();
 		await pause(300);
-		// Frappe lettre par lettre pour montrer l'autocomplétion
+		// Types letter by letter to show autocompletion
 		await searchInput.type("Nd", { delay: 150 });
 		await pause(600);
 		await capture(page, "02c-search-autocompletion-nd");
@@ -52,7 +52,7 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 		await pause(1000);
 		await capture(page, "02d-search-ndong-resultat");
 
-		// Hover sur le résultat trouvé
+		// Hover over the matching result
 		const ndongRow = page
 			.locator('tr:has-text("Ndong"), [role="row"]:has-text("Ndong")')
 			.first();
@@ -62,7 +62,7 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 			await capture(page, "02e-search-ndong-hover");
 		}
 
-		// Effacer et chercher "Eyebe" (autre étudiant)
+		// Clear and search for "Eyebe" (another student)
 		await searchInput.click({ clickCount: 3 });
 		await searchInput.fill("");
 		await pause(300);
@@ -73,8 +73,8 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 		await pause(500);
 	}
 
-	// ── ÉTAPE 4 : Filtre par classe INF25-BTS1A ───────────────────────────────
-	// "Je veux voir uniquement les étudiants de la promotion infirmiers A"
+	// ── STEP 4: Filter by class INF25-BTS1A ───────────────────────────────────
+	// "I only want to see the students of nursing cohort A"
 	const classFilter = page.locator('[data-testid="class-select"]');
 	if (await classFilter.isVisible()) {
 		await classFilter.click();
@@ -93,10 +93,10 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 		await pause(1000);
 		await capture(page, "02h-filtre-inf25-resultats");
 
-		// Compter les étudiants filtrés
+		// Count the filtered students
 		const filteredRows = page.locator("table tbody tr");
 		const count = await filteredRows.count();
-		// Survoler chaque étudiant filtré
+		// Hover over each filtered student
 		for (let i = 0; i < Math.min(count, 4); i++) {
 			await filteredRows.nth(i).hover();
 			await pause(300);
@@ -104,9 +104,9 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 		await capture(page, "02i-filtre-inf25-survol-etudiants");
 	}
 
-	// ── ÉTAPE 5 : Ouvrir le dossier complet de Ndong Alain ───────────────────
-	// "Montrez-moi tout ce qu'on sait sur cet étudiant"
-	// Reset filtre et chercher Ndong
+	// ── STEP 5: Open Ndong Alain's full record ────────────────────────────────
+	// "Show me everything we know about this student"
+	// Reset the filter and search for Ndong
 	const searchInput2 = page
 		.locator(
 			'input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"]',
@@ -131,29 +131,29 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 		await pause(1400);
 		await capture(page, "02j-dossier-ndong-identite");
 
-		// ── ÉTAPE 6 : Infos personnelles en haut de fiche ────────────────────
+		// ── STEP 6: Personal info at the top of the record ───────────────────
 		await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 		await pause(600);
 		await capture(page, "02k-ndong-infos-personnelles");
 
-		// ── ÉTAPE 7 : Section inscriptions aux cours ──────────────────────────
-		// "Dans quels cours est-il inscrit ?"
+		// ── STEP 7: Course enrollments section ────────────────────────────────
+		// "Which courses is he enrolled in?"
 		await page.evaluate(() =>
 			window.scrollTo({ top: 400, behavior: "smooth" }),
 		);
 		await pause(900);
 		await capture(page, "02l-ndong-inscriptions-cours");
 
-		// ── ÉTAPE 8 : Section notes et résultats ─────────────────────────────
-		// "Quelles sont ses notes dans chaque matière ?"
+		// ── STEP 8: Grades and results section ───────────────────────────────
+		// "What are his grades in each subject?"
 		await page.evaluate(() =>
 			window.scrollTo({ top: 800, behavior: "smooth" }),
 		);
 		await pause(900);
 		await capture(page, "02m-ndong-notes-resultats");
 
-		// ── ÉTAPE 9 : Onglets supplémentaires ────────────────────────────────
-		// Explorer chaque onglet du profil : Inscriptions, Notes, Historique...
+		// ── STEP 9: Additional tabs ──────────────────────────────────────────
+		// Explore each profile tab: Enrollments, Grades, History...
 		const tabs = page.locator('[role="tab"]');
 		const tabCount = await tabs.count();
 		for (let i = 0; i < Math.min(tabCount, 4); i++) {
@@ -170,7 +170,7 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 							i,
 					)}`,
 			);
-			// Scroll pour voir le contenu de l'onglet
+			// Scroll to see the tab's content
 			await page.evaluate(() =>
 				window.scrollTo({ top: 300, behavior: "smooth" }),
 			);
@@ -185,8 +185,8 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 2 : Créer un nouvel étudiant et l'inscrire
-// Question : "Comment ajouter un nouvel étudiant qui vient de s'inscrire ?"
+// SCENARIO 2: Create a new student and enroll them
+// Question: "How do I add a new student who has just registered?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("04 - Création d'un étudiant et inscription dans une classe", async ({
 	page,
@@ -196,7 +196,7 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 	await page.waitForLoadState("networkidle");
 	await pause(800);
 
-	// ── ÉTAPE 1 : Ouvrir le formulaire de création ────────────────────────────
+	// ── STEP 1: Open the creation form ────────────────────────────────────────
 	const addButton = page
 		.locator(
 			'button:has-text("Ajouter"), button:has-text("Add"), button:has-text("Nouvel étudiant"), button:has-text("New student")',
@@ -214,7 +214,7 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 	await pause(900);
 	await capture(page, "02q-formulaire-creation-vide");
 
-	// ── ÉTAPE 2 : Remplir le prénom ───────────────────────────────────────────
+	// ── STEP 2: Fill in the first name ────────────────────────────────────────
 	const firstInput = page
 		.locator(
 			'input[name*="first"], input[id*="first"], input[placeholder*="rénom"], input[placeholder*="irst name"]',
@@ -227,7 +227,7 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 		await capture(page, "02r-prenom-saisi");
 	}
 
-	// ── ÉTAPE 3 : Remplir le nom de famille ──────────────────────────────────
+	// ── STEP 3: Fill in the last name ─────────────────────────────────────────
 	const lastInput = page
 		.locator(
 			'input[name*="last"], input[id*="last"], input[placeholder*="om de famille"], input[placeholder*="ast name"]',
@@ -239,7 +239,7 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 		await pause(400);
 	}
 
-	// ── ÉTAPE 4 : Email ───────────────────────────────────────────────────────
+	// ── STEP 4: Email ─────────────────────────────────────────────────────────
 	const emailInput = page.locator('input[type="email"]').first();
 	if (await emailInput.isVisible()) {
 		await emailInput.click();
@@ -249,7 +249,7 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 
 	await capture(page, "02s-formulaire-identite-rempli");
 
-	// ── ÉTAPE 5 : Sélectionner le genre ──────────────────────────────────────
+	// ── STEP 5: Select the gender ─────────────────────────────────────────────
 	const genderSelect = page
 		.locator('[data-testid="gender-select"], [name*="gender"], [id*="gender"]')
 		.first();
@@ -261,8 +261,8 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 		await pause(400);
 	}
 
-	// ── ÉTAPE 6 : Sélectionner la classe INF25-BTS1A ──────────────────────────
-	// "Dans quelle classe inscrire ce nouvel étudiant ?"
+	// ── STEP 6: Select class INF25-BTS1A ──────────────────────────────────────
+	// "Which class should this new student be enrolled in?"
 	const classSelect = page
 		.locator('[data-testid="class-select"], [name*="class"], [id*="class"]')
 		.first();
@@ -282,10 +282,10 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 		await pause(500);
 	}
 
-	// ── ÉTAPE 7 : Formulaire complet avant soumission ─────────────────────────
+	// ── STEP 7: Completed form before submission ──────────────────────────────
 	await capture(page, "02v-formulaire-complet-pret");
 
-	// ── ÉTAPE 8 : Survol du bouton de soumission ──────────────────────────────
+	// ── STEP 8: Hover over the submit button ──────────────────────────────────
 	const submitBtn = page
 		.locator(
 			'button[type="submit"], button:has-text("Enregistrer"), button:has-text("Save"), button:has-text("Créer"), button:has-text("Create")',
@@ -298,22 +298,22 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({
 		await capture(page, "02w-bouton-soumettre-hover");
 	}
 
-	// ── ÉTAPE 9 : Fermer (on ne crée pas vraiment pour garder les données propres) ──
+	// ── STEP 9: Close (nothing is actually created, to keep the data clean) ──
 	await page.keyboard.press("Escape");
 	await pause(600);
 	await capture(page, "02x-formulaire-ferme-retour-liste");
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 3 : Vérifier et gérer les inscriptions aux cours d'un étudiant
-// Question : "Comment m'assurer qu'un étudiant est bien inscrit à tous ses cours ?"
+// SCENARIO 3: Check and manage a student's course enrollments
+// Question: "How do I make sure a student is enrolled in all their courses?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Aller directement sur le dossier de Ndong Alain ────────────
+	// ── STEP 1: Go straight to Ndong Alain's record ───────────────────────────
 	await page.goto("/admin/students");
 	await page.waitForLoadState("networkidle");
 	await pause(800);
@@ -338,8 +338,8 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({
 	await pause(1200);
 	await capture(page, "02y-ndong-dossier-inscriptions");
 
-	// ── ÉTAPE 2 : Onglet inscriptions aux cours ───────────────────────────────
-	// Chercher l'onglet "Inscriptions" ou "Courses"
+	// ── STEP 2: Course enrollments tab ────────────────────────────────────────
+	// Look for the "Inscriptions" or "Courses" tab
 	const enrollTab = page
 		.locator(
 			'[role="tab"]:has-text("Inscription"), [role="tab"]:has-text("Course"), [role="tab"]:has-text("Cours")',
@@ -350,7 +350,7 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({
 		await pause(1000);
 		await capture(page, "02z-ndong-onglet-inscriptions-cours");
 
-		// Voir tous les cours auxquels l'étudiant est inscrit
+		// See all the courses the student is enrolled in
 		await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 		await pause(600);
 		const courseRows = page.locator("table tbody tr");
@@ -368,8 +368,8 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({
 		await capture(page, "03b-ndong-cours-inscrits-suite");
 	}
 
-	// ── ÉTAPE 3 : Comparaison avec un autre étudiant — Eyebe Rachel ───────────
-	// "Est-ce que Eyebe est inscrite aux mêmes cours ?"
+	// ── STEP 3: Comparison with another student — Eyebe Rachel ────────────────
+	// "Is Eyebe enrolled in the same courses?"
 	await page.goto("/admin/students");
 	await page.waitForLoadState("networkidle");
 	await pause(700);
@@ -393,7 +393,7 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({
 		await pause(1200);
 		await capture(page, "03c-eyebe-dossier-compta");
 
-		// Voir ses cours — différente filière (Comptabilité)
+		// See her courses — different program (Accounting)
 		const coursesSection = page
 			.locator(
 				'[role="tab"]:has-text("Inscription"), [role="tab"]:has-text("Course"), [role="tab"]:has-text("Cours")',

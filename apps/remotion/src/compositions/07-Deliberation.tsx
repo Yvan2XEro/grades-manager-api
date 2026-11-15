@@ -1,6 +1,6 @@
 /**
  * 07-Deliberation — The Results (420 frames / 14 s)
- * Table web · arcs CircularProgress · interpolateColors fond · durée audio auto
+ * Web table · CircularProgress arcs · interpolateColors background · automatic audio duration
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -92,7 +92,7 @@ export const DeliberationScene: React.FC = () => {
 	const { fps } = useVideoConfig();
 	const op = sceneOpacity(frame, DUR.deliberation, 20, 24);
 
-	// interpolateColors — fond qui vire doucement vers un vert très léger au fil des résultats
+	// interpolateColors — background shifts gently toward a very light green as results come in
 	const bgColor = interpolateColors(
 		frame,
 		[0, DUR.deliberation * 0.8],
@@ -101,7 +101,7 @@ export const DeliberationScene: React.FC = () => {
 
 	return (
 		<AbsoluteFill style={{ background: bgColor, overflow: "hidden" }}>
-			{/* Son de transition */}
+			{/* Transition sound */}
 			{AUDIO.enabled && (
 				<Audio
 					src={staticFile("audio/transition.mp3")}
@@ -128,7 +128,7 @@ export const DeliberationScene: React.FC = () => {
 					height: "100%",
 				}}
 			>
-				{/* En-tête */}
+				{/* Header */}
 				<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 					<div style={{ overflow: "hidden" }}>
 						<div
@@ -192,7 +192,7 @@ export const DeliberationScene: React.FC = () => {
 				</div>
 
 				<div style={{ display: "flex", gap: 44, flex: 1, minHeight: 0 }}>
-					{/* ── Table étudiants ──────────────────────── */}
+					{/* ── Students table ──────────────────────── */}
 					{(() => {
 						const wrapProg = spring({
 							frame: frame - 18,
@@ -216,7 +216,7 @@ export const DeliberationScene: React.FC = () => {
 										"0 1px 3px rgba(28,20,16,0.05), 0 10px 30px rgba(28,20,16,0.08)",
 								}}
 							>
-								{/* Titre tableau */}
+								{/* Table title */}
 								<div
 									style={{
 										padding: "18px 24px 14px",
@@ -245,7 +245,7 @@ export const DeliberationScene: React.FC = () => {
 									</div>
 								</div>
 
-								{/* Header colonnes */}
+								{/* Column headers */}
 								<div
 									style={{
 										display: "grid",
@@ -272,7 +272,7 @@ export const DeliberationScene: React.FC = () => {
 									))}
 								</div>
 
-								{/* Lignes */}
+								{/* Rows */}
 								{STUDENTS.map(({ name, avg, status, Icon, color }, i) => {
 									const prog = spring({
 										frame: frame - 32 - i * 18,
@@ -300,7 +300,7 @@ export const DeliberationScene: React.FC = () => {
 													borderLeft: `3px solid ${color}`,
 												}}
 											>
-												{/* Nom */}
+												{/* Name */}
 												<div
 													style={{
 														display: "flex",
@@ -328,7 +328,7 @@ export const DeliberationScene: React.FC = () => {
 														{name}
 													</span>
 												</div>
-												{/* Moyenne */}
+												{/* Average */}
 												<span
 													style={{
 														fontFamily: F.mono,
@@ -339,7 +339,7 @@ export const DeliberationScene: React.FC = () => {
 												>
 													{avg} / 20
 												</span>
-												{/* Statut */}
+												{/* Status */}
 												<div
 													style={{
 														display: "inline-flex",
@@ -373,7 +373,7 @@ export const DeliberationScene: React.FC = () => {
 						);
 					})()}
 
-					{/* ── Arcs circulaires + règles ────────────── */}
+					{/* ── Circular arcs + rules ────────────── */}
 					<div
 						style={{
 							flex: "0 0 860px",
@@ -425,7 +425,7 @@ export const DeliberationScene: React.FC = () => {
 												trackColor={C.borderSub}
 												strokeWidth={10}
 											/>
-											{/* Valeur centrale */}
+											{/* Center value */}
 											<text
 												x={cx}
 												y={cy - 4}
@@ -437,7 +437,7 @@ export const DeliberationScene: React.FC = () => {
 											>
 												{numVal}%
 											</text>
-											{/* Label dessous */}
+											{/* Label below */}
 											<text
 												x={cx}
 												y={cy + 32}
@@ -454,7 +454,7 @@ export const DeliberationScene: React.FC = () => {
 							</svg>
 						</div>
 
-						{/* Règles de promotion */}
+						{/* Promotion rules */}
 						{(() => {
 							const prog = spring({
 								frame: frame - 168,

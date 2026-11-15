@@ -35,13 +35,13 @@ const BULK_KINDS: Array<{
 ];
 
 /**
- * Export massif : génère un ZIP côté serveur contenant tous les PDFs
- * (Évaluations, EC ou UE) classés par programme/classe. La portée est :
- *   • « Toutes classes » → l'institution entière, filtrée par les
- *     sélecteurs académie/semestre du haut de la page si renseignés.
- *   • « Classe sélectionnée » → uniquement la classe choisie.
- * Les ECs/UEs non éligibles (pondérations ≠ 100%) sont skippés
- * avec un compte-rendu en toast.
+ * Bulk export: builds a server-side ZIP holding every PDF
+ * (Evaluations, ECs or UEs) sorted by program/class. The scope is:
+ *   • "All classes" → the whole institution, filtered by the
+ *     academic-year/semester selectors at the top of the page when set.
+ *   • "Selected class" → only the chosen class.
+ * Ineligible ECs/UEs (weights ≠ 100%) are skipped, with a summary
+ * shown in a toast.
  */
 export function BulkZipExportCard({
 	exporting,

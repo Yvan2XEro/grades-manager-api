@@ -1,5 +1,5 @@
 /**
- * Halo de lumière douce — adapté au fond clair
+ * Soft light halo — suited to the light background
  */
 import type React from "react";
 import { C } from "../lib/theme";

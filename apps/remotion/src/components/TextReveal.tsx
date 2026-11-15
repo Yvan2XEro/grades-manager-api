@@ -1,7 +1,7 @@
 /**
- * TextReveal — Texte qui monte depuis l'invisible (overflow:hidden mask).
- * Technique utilisée dans les présentations Linear / Apple / Vercel.
- * Wrapper simple : met le contenu dans un overflow:hidden et l'anime en Y.
+ * TextReveal — Text rising out of invisibility (overflow:hidden mask).
+ * Technique used in Linear / Apple / Vercel presentations.
+ * Simple wrapper: puts the content in an overflow:hidden box and animates it on Y.
  */
 import type React from "react";
 import {
@@ -15,7 +15,7 @@ import {
 interface Props {
 	children: React.ReactNode;
 	delay?: number;
-	/** Distance de départ en % de la hauteur du conteneur */
+	/** Starting offset as % of the container height */
 	fromPercent?: number;
 	stiffness?: number;
 	damping?: number;
@@ -36,7 +36,7 @@ export const TextReveal: React.FC<Props> = ({
 	const { fps } = useVideoConfig();
 
 	const springConfig = { damping, stiffness, mass: 0.9 };
-	// measureSpring calcule la durée exacte du ressort — plus précis que durationInFrames: 50 en dur
+	// measureSpring computes the exact spring duration — more precise than a hard-coded durationInFrames: 50
 	const springDuration = measureSpring({
 		fps,
 		config: springConfig,

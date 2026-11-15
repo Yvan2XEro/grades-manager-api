@@ -31,7 +31,7 @@ async function run() {
 		);
 	}
 
-	// 3) Semesters (global, pas d'institutionId)
+	// 3) Semesters (global, no institutionId)
 	const semesters = await db
 		.select({
 			id: schema.semesters.id,

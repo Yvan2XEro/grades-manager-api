@@ -482,7 +482,7 @@ export function InstitutionBillingTab() {
 				</div>
 			)}
 
-			{/* Suspension rapide de l'établissement */}
+			{/* Quick suspension of the institution */}
 			<div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
 				<div className="flex items-start justify-between gap-4">
 					<div className="space-y-1">

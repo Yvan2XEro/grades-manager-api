@@ -1,6 +1,6 @@
 /**
  * 03-Solution — Architecture (390 frames / 13 s)
- * Neo-Brutalisme + Neumorphisme + interpolateColors fond
+ * Neo-Brutalism + Neumorphism + interpolateColors background
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -80,7 +80,7 @@ export const SolutionScene: React.FC = () => {
 		extrapolateRight: "clamp",
 	});
 
-	// interpolateColors — fond qui se chill vers un léger bleu-violet en fin de scène
+	// interpolateColors — background cools toward a light blue-violet at the end of the scene
 	const bgColor = interpolateColors(
 		frame,
 		[0, DUR.solution * 0.85],
@@ -116,7 +116,7 @@ export const SolutionScene: React.FC = () => {
 					gap: 0,
 				}}
 			>
-				{/* En-tête */}
+				{/* Header */}
 				<div style={{ marginBottom: 46 }}>
 					<div style={{ overflow: "hidden", marginBottom: 10 }}>
 						<div
@@ -180,7 +180,7 @@ export const SolutionScene: React.FC = () => {
 				</div>
 
 				<div style={{ display: "flex", gap: 64, flex: 1, minHeight: 0 }}>
-					{/* ── Couches architecture ── (colonne gauche fixe) */}
+					{/* ── Architecture layers ── (fixed left column) */}
 					<div
 						style={{
 							flex: "0 0 580px",
@@ -293,7 +293,7 @@ export const SolutionScene: React.FC = () => {
 							);
 						})}
 
-						{/* Bannière sécurité */}
+						{/* Security banner */}
 						{(() => {
 							const prog = spring({
 								frame: frame - 98,
@@ -334,7 +334,7 @@ export const SolutionScene: React.FC = () => {
 						})()}
 					</div>
 
-					{/* ── Features — grille 2×3 (droite) ── */}
+					{/* ── Features — 2×3 grid (right) ── */}
 					<div
 						style={{
 							flex: 1,

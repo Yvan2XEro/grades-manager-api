@@ -1,6 +1,6 @@
 /**
- * OrbitRing3D — Anneau en orbite incliné, simulé en SVG par une ellipse.
- * ry/rx < 1 → anneau vu en perspective (aplati). Rotation axiale via transform.
+ * OrbitRing3D — Tilted orbiting ring, simulated in SVG with an ellipse.
+ * ry/rx < 1 → ring seen in perspective (flattened). Axial rotation via transform.
  */
 import type React from "react";
 import { useCurrentFrame } from "remotion";
@@ -10,20 +10,20 @@ interface Props {
 	cx?: number;
 	cy?: number;
 	rx?: number;
-	/** Rapport d'aplatissement (0 = segment, 1 = cercle). < 0.35 = très incliné */
+	/** Flattening ratio (0 = segment, 1 = circle). < 0.35 = steeply tilted */
 	flatness?: number;
-	/** Rotation du plan de l'anneau en degrés (0 = horizontal, 90 = vertical) */
+	/** Rotation of the ring's plane in degrees (0 = horizontal, 90 = vertical) */
 	tiltDeg?: number;
 	color?: string;
 	opacity?: number;
 	strokeWidth?: number;
-	/** Nombre de points satellites en orbite */
+	/** Number of satellite dots in orbit */
 	dots?: number;
-	/** Vitesse de rotation (frames par tour) */
+	/** Rotation speed (frames per revolution) */
 	period?: number;
-	/** Phase initiale en radians */
+	/** Initial phase in radians */
 	phase?: number;
-	/** Désactiver le mouvement (statique) */
+	/** Disable motion (static) */
 	static?: boolean;
 }
 
@@ -60,9 +60,9 @@ export const OrbitRing3D: React.FC<Props> = ({
 			}}
 			viewBox="0 0 1920 1080"
 		>
-			{/* Anneau incliné */}
+			{/* Tilted ring */}
 			<g transform={`rotate(${tiltDeg}, ${cx}, ${cy})`}>
-				{/* Ombre/traîne */}
+				{/* Shadow/trail */}
 				<ellipse
 					cx={cx}
 					cy={cy}
@@ -73,7 +73,7 @@ export const OrbitRing3D: React.FC<Props> = ({
 					strokeWidth={strokeWidth + 6}
 					opacity={opacity * 0.06}
 				/>
-				{/* Anneau principal */}
+				{/* Main ring */}
 				<ellipse
 					cx={cx}
 					cy={cy}
@@ -85,16 +85,16 @@ export const OrbitRing3D: React.FC<Props> = ({
 					opacity={opacity}
 				/>
 
-				{/* Points satellites */}
+				{/* Satellite dots */}
 				{Array.from({ length: dots }).map((_, i) => {
 					const a = dotAngle + (i / dots) * Math.PI * 2;
 					const dx = cx + rx * Math.cos(a);
 					const dy = cy + ry * Math.sin(a);
 					return (
 						<g key={i}>
-							{/* Traîne lumineuse */}
+							{/* Glowing trail */}
 							<circle cx={dx} cy={dy} r={10} fill={color} opacity={0.12} />
-							{/* Point */}
+							{/* Dot */}
 							<circle cx={dx} cy={dy} r={4} fill={color} opacity={0.95} />
 							{/* Halo */}
 							<circle

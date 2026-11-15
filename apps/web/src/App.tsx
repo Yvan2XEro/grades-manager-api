@@ -115,7 +115,7 @@ function App() {
 				});
 				if (result.error) {
 					console.error("Failed to set active organization:", result.error);
-					return; // Ne pas marquer comme fait — permettre un retry
+					return; // Do not mark as done — allow a retry
 				}
 				if (!cancelled) {
 					activatedSlugRef.current = activeOrganizationSlug;

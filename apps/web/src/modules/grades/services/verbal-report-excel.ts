@@ -35,13 +35,13 @@ export function exportVerbalReportExcel({
 		}>;
 	}> = pvData.ues ?? [];
 
-	// Build column layout: Rang | Matricule | Nom | [per UE: per EC(CC,EX,Moy) | Moy UE | Crédits | Décision] | Moy Gén | Total Crédits | Décision
+	// Build column layout: Rank | Reg. no. | Name | [per UE: per EC(CC,EX,Avg) | UE avg | Credits | Decision] | Overall avg | Total credits | Decision
 	// First header row: UE names spanning their courses
 	// Second header row: EC names/details
 
 	// Count total columns per UE: each course has 3 cols (CC, EX, Moy) + 3 for UE summary (Avg, Credits, Decision)
-	const fixedCols = 3; // Rang, Matricule, Nom
-	const trailingCols = 3; // Moy Générale, Total Crédits, Décision
+	const fixedCols = 3; // Rank, registration number, name
+	const trailingCols = 3; // Overall average, total credits, decision
 
 	const firstHeaderRow: ExcelCell[] = [
 		t("admin.gradeExport.pv.table.rank"),
@@ -51,8 +51,8 @@ export function exportVerbalReportExcel({
 	const secondHeaderRow: ExcelCell[] = ["", "", ""];
 
 	for (const ue of ues) {
-		const courseCols = ue.courses.length * 3; // CC, EX, Moy per course
-		const ueTotalCols = courseCols + 3; // + Moy UE, Crédits, Décision
+		const courseCols = ue.courses.length * 3; // CC, EX, average per course
+		const ueTotalCols = courseCols + 3; // + UE average, credits, decision
 		firstHeaderRow.push(
 			`${ue.name} (${ue.code}) [${ue.credits} cr.]`,
 			...Array(ueTotalCols - 1).fill(""),
@@ -204,7 +204,7 @@ export function exportVerbalReportExcel({
 		});
 		colOffset += ueCols;
 	}
-	// Merge trailing columns (Moy Gén, Total Crédits, Décision)
+	// Merge trailing columns (overall average, total credits, decision)
 	for (let i = 0; i < trailingCols; i++) {
 		merges.push({
 			s: { r: headerRow1Index, c: colOffset + i },
@@ -338,13 +338,13 @@ export function exportVerbalReportExcel({
 
 	// Column widths
 	ws["!cols"] = [
-		{ wch: 6 }, // Rang
-		{ wch: 14 }, // Matricule
-		{ wch: 22 }, // Nom
+		{ wch: 6 }, // Rank
+		{ wch: 14 }, // Registration number
+		{ wch: 22 }, // Name
 		...Array(totalDataCols - fixedCols - trailingCols).fill({ wch: 8 }),
-		{ wch: 10 }, // Moy Gén
-		{ wch: 10 }, // Total Crédits
-		{ wch: 12 }, // Décision
+		{ wch: 10 }, // Overall average
+		{ wch: 10 }, // Total credits
+		{ wch: 12 }, // Decision
 	];
 
 	ws["!merges"] = merges;

@@ -1,5 +1,5 @@
 /**
- * Wrapper d'animation d'entrée réutilisable
+ * Reusable entrance animation wrapper
  * direction: "up" | "down" | "left" | "right" | "scale" | "fade"
  */
 import type React from "react";

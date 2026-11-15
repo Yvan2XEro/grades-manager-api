@@ -1,6 +1,6 @@
 /**
- * NoiseBackground — Blobs de lumière organique animés par noise2D.
- * Mouvement déterministe, fluide, cinématique — sans pattern périodique.
+ * NoiseBackground — Organic light blobs animated by noise2D.
+ * Deterministic, smooth, cinematic motion — no periodic pattern.
  */
 
 import { noise2D } from "@remotion/noise";

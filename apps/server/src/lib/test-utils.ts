@@ -319,7 +319,7 @@ export async function createFaculty(
 			nameFr: name ?? `Faculty-${randomUUID()}`,
 			nameEn: name ?? `Faculty-${randomUUID()}`,
 			descriptionFr: description ?? null,
-			// parentInstitutionId est optionnel - pas de hiérarchie obligatoire
+			// parentInstitutionId is optional - no hierarchy required
 			parentInstitutionId: resolvedParentInstitutionId,
 			organizationId: parentInstitution.organizationId,
 		})
@@ -379,7 +379,7 @@ export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 		description,
 		...rest
 	} = data;
-	// Utiliser l'institution de test par défaut si non spécifiée
+	// Use the default test institution when none is specified
 	const institutionId = providedInstitutionId ?? getTestInstitution().id;
 
 	const resolvedName = name ?? `Program-${randomUUID()}`;

@@ -1,5 +1,5 @@
 /**
- * AppMockup — Cadre navigateur light mode
+ * AppMockup — Light mode browser frame
  */
 import type React from "react";
 import { Img, staticFile } from "remotion";
@@ -41,7 +41,7 @@ export const AppMockup: React.FC<AppMockupProps> = ({
 				transformOrigin: tilt < 0 ? "right center" : "left center",
 			}}
 		>
-			{/* Barre navigateur light */}
+			{/* Light browser bar */}
 			<div
 				style={{
 					height: barH,

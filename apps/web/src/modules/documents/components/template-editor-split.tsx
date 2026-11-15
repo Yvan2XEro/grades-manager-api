@@ -46,7 +46,7 @@ export function TemplateEditorSplit({
 				direction={splitDirection}
 				className="h-full rounded-lg"
 			>
-				{/* Éditeur */}
+				{/* Editor */}
 				<ResizablePanel defaultSize={50} minSize={20}>
 					<Card className="flex h-full flex-col rounded-none border-0">
 						<CardHeader className="flex-shrink-0">

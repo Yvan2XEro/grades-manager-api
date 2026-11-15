@@ -398,7 +398,7 @@ export function ReportCardPreview() {
 				</Card>
 			)}
 
-			{/* Observations / Appréciations */}
+			{/* Observations / remarks */}
 			<Card>
 				<CardHeader className="pb-2">
 					<p className="font-semibold text-foreground">

@@ -65,7 +65,7 @@ export default function AdmissionDetailPage() {
 					</TabsTrigger>
 				</TabsList>
 
-				{/* ── Dossier complet ── */}
+				{/* ── Full application file ── */}
 				<TabsContent value="dossier" className="space-y-5 pt-4">
 					<AdmissionDossierGrid
 						sections={getDossierSections(app, programs, t)}

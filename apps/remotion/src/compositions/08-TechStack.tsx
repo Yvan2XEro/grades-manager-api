@@ -1,6 +1,6 @@
 /**
  * 08-TechStack — The Stack (390 frames / 13 s)
- * Grille 2×2 · @remotion/shapes décor · durée audio auto
+ * 2×2 grid · @remotion/shapes decor · automatic audio duration
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -143,7 +143,7 @@ export const TechStackScene: React.FC = () => {
 
 	return (
 		<AbsoluteFill style={{ background: C.bg, overflow: "hidden" }}>
-			{/* Son de transition */}
+			{/* Transition sound */}
 			{AUDIO.enabled && (
 				<Audio
 					src={staticFile("audio/transition.mp3")}
@@ -161,7 +161,7 @@ export const TechStackScene: React.FC = () => {
 			<Glow x="78%" y="28%" size={600} color={C.green} opacity={op * 0.06} />
 			<Glow x="90%" y="80%" size={500} color={C.amber} opacity={op * 0.04} />
 
-			{/* @remotion/shapes — formes décoratives très subtiles aux coins */}
+			{/* @remotion/shapes — very subtle decorative shapes in the corners */}
 			<div
 				style={{
 					position: "absolute",
@@ -204,7 +204,7 @@ export const TechStackScene: React.FC = () => {
 					height: "100%",
 				}}
 			>
-				{/* En-tête */}
+				{/* Header */}
 				<div
 					style={{
 						display: "flex",
@@ -316,7 +316,7 @@ export const TechStackScene: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Grille 2×2 */}
+				{/* 2×2 grid */}
 				<div
 					style={{
 						display: "grid",
@@ -357,7 +357,7 @@ export const TechStackScene: React.FC = () => {
 									overflow: "hidden",
 								}}
 							>
-								{/* Glow subtil coin */}
+								{/* Subtle corner glow */}
 								<div
 									style={{
 										position: "absolute",
@@ -371,7 +371,7 @@ export const TechStackScene: React.FC = () => {
 									}}
 								/>
 
-								{/* Header catégorie */}
+								{/* Category header */}
 								<div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 									<div
 										style={{

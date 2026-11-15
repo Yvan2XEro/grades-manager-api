@@ -46,7 +46,7 @@ export function initClickEffects() {
 	initCursorBurst();
 }
 
-/** Active le curseur wait sur toute la page (ex: pendant une mutation longue) */
+/** Enables the wait cursor on the whole page (e.g. during a long mutation) */
 export function setCursorWait(active: boolean) {
 	document.body.classList.toggle("cursor-wait", active);
 }

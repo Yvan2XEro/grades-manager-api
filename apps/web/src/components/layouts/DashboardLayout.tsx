@@ -25,9 +25,9 @@ const DashboardLayout: React.FC = () => {
 
 	return (
 		<div className="relative isolate flex h-dvh overflow-hidden bg-background">
-			{/* Définition du filtre SVG d'ondulation — doit précéder le motif */}
+			{/* SVG wave filter definition — must come before the pattern */}
 			<GridWaveFilter />
-			{/* Motif de fond — z:-1 pour rester strictement derrière le contenu */}
+			{/* Background pattern — z:-1 to stay strictly behind the content */}
 			<div className="-z-10 pointer-events-none absolute inset-0 bg-dot-pattern" />
 			<Sidebar />
 

@@ -20,7 +20,7 @@ export function useExportTemplateEditor(templateId: string | undefined) {
 	const [isSaving, setIsSaving] = useState(false);
 	const isNewTemplate = templateId === "new";
 
-	// État local
+	// Local state
 	const [templateBody, setTemplateBody] = useState<string>("");
 	const [templateName, setTemplateName] = useState<string>("");
 	const [templateType, setTemplateType] = useState<string>("pv");
@@ -28,7 +28,7 @@ export function useExportTemplateEditor(templateId: string | undefined) {
 	const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 	const [livePreview, setLivePreview] = useState<boolean>(false);
 
-	// Mutation de création
+	// Create mutation
 	const createMutation = useMutation({
 		mutationFn: async () => {
 			if (!templateName.trim()) {
@@ -56,7 +56,7 @@ export function useExportTemplateEditor(templateId: string | undefined) {
 		},
 	});
 
-	// Charger le template
+	// Load the template
 	const { data: template, isLoading } = useQuery({
 		queryKey: ["exportTemplate", templateId],
 		queryFn: async () => {
@@ -73,7 +73,7 @@ export function useExportTemplateEditor(templateId: string | undefined) {
 		enabled: !!templateId && templateId !== "new",
 	});
 
-	// Mutation de sauvegarde
+	// Save mutation
 	const updateMutation = useMutation({
 		mutationFn: async () => {
 			if (!templateId || templateId === "new")
@@ -98,7 +98,7 @@ export function useExportTemplateEditor(templateId: string | undefined) {
 		},
 	});
 
-	// Mutation pour générer le preview
+	// Mutation that generates the preview
 	const previewMutation = useMutation({
 		mutationFn: async () => {
 			const result = await trpcClient.exports.previewTemplate.mutate({

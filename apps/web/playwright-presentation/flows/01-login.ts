@@ -1,12 +1,12 @@
 /**
- * Flow 01 — Prise en main du système & rôles utilisateurs
+ * Flow 01 — Getting started with the system & user roles
  *
- * Questions utilisateurs auxquelles ce flow répond :
- *  - "Qu'est-ce que je peux faire en tant qu'admin sur ce système ?"
- *  - "Comment l'interface s'adapte-t-elle selon mon rôle ?"
- *  - "Où trouve-t-on les informations clés de l'institution ?"
- *  - "Comment un enseignant accède-t-il à ses cours et ses étudiants ?"
- *  - "En tant qu'étudiant, comment je consulte mes notes ?"
+ * User questions this flow answers:
+ *  - "What can I do as an admin on this system?"
+ *  - "How does the interface adapt to my role?"
+ *  - "Where do I find the institution's key information?"
+ *  - "How does a teacher access their courses and students?"
+ *  - "As a student, how do I check my grades?"
  */
 import { test } from "@playwright/test";
 import {
@@ -18,28 +18,28 @@ import {
 } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 1 : Connexion et découverte du tableau de bord administrateur
-// Question : "Qu'est-ce que l'admin voit dès qu'il se connecte ?"
+// SCENARIO 1: Sign-in and tour of the administrator dashboard
+// Question: "What does the admin see as soon as they sign in?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", async ({
 	page,
 }) => {
-	// ── ÉTAPE 1 : Page de connexion vierge ────────────────────────────────────
-	// L'admin ouvre l'application pour la première fois de la journée
+	// ── STEP 1: Blank sign-in page ────────────────────────────────────────────
+	// The admin opens the application for the first time today
 	await page.goto("/auth/login");
 	await page.waitForLoadState("networkidle");
 	await pause(800);
 	await capture(page, "01a-login-page-vierge");
 
-	// ── ÉTAPE 2 : Erreur de saisie — montre la validation du formulaire ───────
-	// L'admin tape par erreur un mauvais mot de passe
+	// ── STEP 2: Input error — shows form validation ───────────────────────────
+	// The admin mistakenly types a wrong password
 	await page.locator("#email").fill(CREDENTIALS.admin.email);
 	await page.locator("#password").fill("mauvais-motdepasse");
 	await page.locator('button[type="submit"]').click();
 	await pause(1800);
 	await capture(page, "01b-login-erreur-validation");
 
-	// ── ÉTAPE 3 : Connexion réussie ───────────────────────────────────────────
+	// ── STEP 3: Successful sign-in ────────────────────────────────────────────
 	await page.locator("#password").clear();
 	await page.locator("#password").fill(CREDENTIALS.admin.password);
 	await pause(400);
@@ -49,11 +49,11 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 	await page.waitForLoadState("networkidle");
 	await pause(1500);
 
-	// ── ÉTAPE 4 : Dashboard — première impression ─────────────────────────────
-	// L'admin découvre les KPIs : étudiants actifs, examens en cours, taux de réussite…
+	// ── STEP 4: Dashboard — first impression ──────────────────────────────────
+	// The admin discovers the KPIs: active students, ongoing exams, pass rate…
 	await capture(page, "01d-dashboard-admin-complet");
 
-	// ── ÉTAPE 5 : Survol des cartes statistiques pour voir les chiffres ───────
+	// ── STEP 5: Hover over the stat cards to see the figures ──────────────────
 	const statCards = page.locator(
 		'[class*="card"]:visible, [class*="Card"]:visible',
 	);
@@ -65,8 +65,8 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 	}
 	await capture(page, "01e-dashboard-stats-kpis");
 
-	// ── ÉTAPE 6 : Graphiques et tendances (bas de page) ───────────────────────
-	// L'admin fait défiler vers les graphiques de progression des notes
+	// ── STEP 6: Charts and trends (bottom of the page) ────────────────────────
+	// The admin scrolls down to the grade progression charts
 	await page.evaluate(() => window.scrollTo({ top: 500, behavior: "smooth" }));
 	await pause(1000);
 	await capture(page, "01f-dashboard-graphiques-tendances");
@@ -76,14 +76,14 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(600);
 
-	// ── ÉTAPE 7 : Années académiques — vérifier l'année active ───────────────
-	// "Quelle est l'année académique active ?"
+	// ── STEP 7: Academic years — check the active year ────────────────────────
+	// "Which academic year is active?"
 	await page.goto("/admin/academic-years");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "01h-annees-academiques-liste");
 
-	// Trouver et survoler l'année active 2025-2026
+	// Find and hover over the active year 2025-2026
 	const activeYearRow = page
 		.locator(
 			`tr:has-text("${SEED_DATA.academicYear.label}"), [class*="card"]:has-text("${SEED_DATA.academicYear.label}")`,
@@ -93,7 +93,7 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 		await activeYearRow.hover();
 		await pause(700);
 		await capture(page, "01i-annee-active-2025-2026-detail");
-		// Ouvrir son détail
+		// Open its detail
 		await activeYearRow.click();
 		await page.waitForLoadState("networkidle");
 		await pause(1000);
@@ -102,14 +102,14 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 		await pause(600);
 	}
 
-	// ── ÉTAPE 8 : Vue des facultés et programmes ──────────────────────────────
-	// "Quels programmes propose l'institution ?"
+	// ── STEP 8: Faculties and programs view ───────────────────────────────────
+	// "Which programs does the institution offer?"
 	await page.goto("/admin/faculties");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "01k-facultes-liste-complete");
 
-	// Survoler la première faculté pour voir ses programmes
+	// Hover over the first faculty to see its programs
 	const facultyRow = page.locator("table tbody tr, [class*='card']").first();
 	if (await facultyRow.isVisible()) {
 		await facultyRow.hover();
@@ -128,8 +128,8 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 		await pause(600);
 	}
 
-	// ── ÉTAPE 9 : Fiches des classes actives ────────────────────────────────
-	// "Combien de classes sont actives cette année ?"
+	// ── STEP 9: Active class cards ────────────────────────────────────────────
+	// "How many classes are active this year?"
 	await page.goto("/admin/classes");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
@@ -143,7 +143,7 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 	}
 	await capture(page, "01o-classes-hover-details");
 
-	// Ouvrir une classe pour voir sa composition
+	// Open a class to see its makeup
 	const firstClassRow = classRows.first();
 	if (await firstClassRow.isVisible()) {
 		await firstClassRow.click();
@@ -160,7 +160,7 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 		await pause(600);
 	}
 
-	// ── ÉTAPE 10 : Retour au dashboard, menu profil ───────────────────────────
+	// ── STEP 10: Back to the dashboard, profile menu ──────────────────────────
 	await page.goto("/admin");
 	await page.waitForLoadState("networkidle");
 	await pause(800);
@@ -168,18 +168,18 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 2 : Perspective enseignant — accès ciblé sur ses responsabilités
-// Question : "Comment un enseignant navigue-t-il ? Que peut-il voir ou faire ?"
+// SCENARIO 2: Teacher perspective — access focused on their responsibilities
+// Question: "How does a teacher navigate? What can they see or do?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilités", async ({
 	page,
 }) => {
-	// L'enseignant se connecte et voit son espace personnel
+	// The teacher signs in and sees their personal space
 	await loginAs(page, "teacher");
 	await pause(1400);
 	await capture(page, "01s-teacher-dashboard-mballa");
 
-	// ── Stats enseignant : mes cours, mes étudiants, mes examens en attente ───
+	// ── Teacher stats: my courses, my students, my pending exams ──────────────
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	const teacherStats = page.locator('[class*="card"]:visible').first();
 	if (await teacherStats.isVisible()) {
@@ -188,8 +188,8 @@ test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilité
 	}
 	await capture(page, "01t-teacher-stats-apercu");
 
-	// ── Ses cours assignés — Anatomie Humaine ────────────────────────────────
-	// L'enseignant survole la card de son cours pour voir le résumé
+	// ── Their assigned courses — Human Anatomy ────────────────────────────────
+	// The teacher hovers over their course card to see the summary
 	const anatCard = page
 		.locator('a:has-text("Anatomie"), [class*="card"]:has-text("Anatomie")')
 		.first();
@@ -199,13 +199,13 @@ test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilité
 		await capture(page, "01u-teacher-cours-anatomie-hover");
 	}
 
-	// ── Liste complète de ses cours ──────────────────────────────────────────
+	// ── Full list of their courses ────────────────────────────────────────────
 	await page.goto("/teacher/courses");
 	await page.waitForLoadState("networkidle");
 	await pause(1000);
 	await capture(page, "01v-teacher-liste-cours");
 
-	// Ouvrir le détail du premier cours
+	// Open the first course's detail
 	const firstCourse = page.locator("table tbody tr, [class*='card']").first();
 	if (await firstCourse.isVisible()) {
 		await firstCourse.hover();
@@ -215,14 +215,14 @@ test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilité
 		await pause(1200);
 		await capture(page, "01w-teacher-cours-detail");
 
-		// Voir les étudiants inscrits dans ce cours
+		// See the students enrolled in this course
 		await page.evaluate(() =>
 			window.scrollTo({ top: 400, behavior: "smooth" }),
 		);
 		await pause(800);
 		await capture(page, "01x-teacher-cours-etudiants-inscrits");
 
-		// Voir les examens associés à ce cours
+		// See the exams linked to this course
 		await page.evaluate(() =>
 			window.scrollTo({ top: 800, behavior: "smooth" }),
 		);
@@ -233,14 +233,14 @@ test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilité
 		await pause(600);
 	}
 
-	// ── Vue saisie des notes (accès rapide depuis le dashboard) ──────────────
-	// L'enseignant accède directement à la page de saisie
+	// ── Grade entry view (quick access from the dashboard) ────────────────────
+	// The teacher goes straight to the grade entry page
 	await page.goto("/teacher/grades");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "01z-teacher-saisie-notes-landing");
 
-	// ── Bas du dashboard — calendrier et notifications ───────────────────────
+	// ── Bottom of the dashboard — calendar and notifications ──────────────────
 	await page.goto("/teacher");
 	await page.waitForLoadState("networkidle");
 	await page.evaluate(() => window.scrollTo({ top: 600, behavior: "smooth" }));
