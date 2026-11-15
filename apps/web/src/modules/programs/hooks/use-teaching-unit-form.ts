@@ -35,6 +35,7 @@ const buildUnitSchema = (
 				}),
 			),
 		semester: z.enum(["fall", "spring", "annual"]),
+		cycleLevelId: z.string().nullable().optional(),
 		programId: z.string().min(
 			1,
 			t("admin.teachingUnits.validation.program", {
@@ -51,8 +52,22 @@ const defaultValues: TeachingUnitFormData = {
 	description: "",
 	credits: 0,
 	semester: "annual",
+	cycleLevelId: null,
 	programId: "",
 };
+
+/** Levels of the cycle of a program (where its units can be taught). */
+export function useProgramLevels(programId?: string) {
+	const { data: program } = useQuery({
+		...trpc.programs.getById.queryOptions({ id: programId ?? "" }),
+		enabled: Boolean(programId),
+	});
+	const { data: levels } = useQuery({
+		...trpc.cycleLevels.list.queryOptions({ cycleId: program?.cycleId ?? "" }),
+		enabled: Boolean(program?.cycleId),
+	});
+	return program?.cycleId ? (levels?.items ?? []) : [];
+}
 
 /** Form state of a teaching unit, shared by the create dialog and the detail page. */
 export function useTeachingUnitFormState(
@@ -93,6 +108,7 @@ export function useTeachingUnitForm(teachingUnitId: string) {
 				description: teachingUnit.description ?? "",
 				credits: teachingUnit.credits,
 				semester: teachingUnit.semester,
+				cycleLevelId: teachingUnit.cycleLevelId ?? null,
 				programId: teachingUnit.programId,
 			});
 		}

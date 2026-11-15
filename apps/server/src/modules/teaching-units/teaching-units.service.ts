@@ -20,11 +20,28 @@ async function ensureProgram(programId: string, institutionId: string) {
 	return program;
 }
 
+/** The level must belong to the cycle of the unit's program. */
+async function ensureLevel(
+	program: schema.Program,
+	cycleLevelId?: string | null,
+) {
+	if (!cycleLevelId) return;
+	const level = await db.query.cycleLevels.findFirst({
+		where: eq(schema.cycleLevels.id, cycleLevelId),
+	});
+	if (!level || level.cycleId !== program.cycleId)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "The level does not belong to the cycle of the program",
+		});
+}
+
 export async function createUnit(
 	data: schema.NewTeachingUnit,
 	institutionId: string,
 ) {
-	await ensureProgram(data.programId, institutionId);
+	const program = await ensureProgram(data.programId, institutionId);
+	await ensureLevel(program, data.cycleLevelId);
 	return repo.create(data);
 }
 
@@ -35,9 +52,11 @@ export async function updateUnit(
 ) {
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
-	if (data.programId && data.programId !== existing.programId) {
-		await ensureProgram(data.programId, institutionId);
-	}
+	const program =
+		data.programId && data.programId !== existing.programId
+			? await ensureProgram(data.programId, institutionId)
+			: await ensureProgram(existing.programId, institutionId);
+	await ensureLevel(program, data.cycleLevelId);
 	return repo.update(id, institutionId, data);
 }
 

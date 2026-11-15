@@ -1,7 +1,8 @@
-import type { UseFormReturn } from "react-hook-form";
+import { type UseFormReturn, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -16,7 +17,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { TeachingUnitFormData } from "../hooks/use-teaching-unit-form";
+import {
+	type TeachingUnitFormData,
+	useProgramLevels,
+} from "../hooks/use-teaching-unit-form";
+
+const NO_LEVEL = "__none";
 
 interface TeachingUnitFormFieldsProps {
 	form: UseFormReturn<TeachingUnitFormData>;
@@ -30,6 +36,9 @@ export function TeachingUnitFormFields({
 	programs,
 }: TeachingUnitFormFieldsProps) {
 	const { t } = useTranslation();
+	const levels = useProgramLevels(
+		useWatch({ control: form.control, name: "programId" }),
+	);
 	return (
 		<>
 			<FormField
@@ -110,6 +119,43 @@ export function TeachingUnitFormFields({
 									}
 								/>
 							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name="cycleLevelId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>{t("admin.teachingUnits.fields.level")}</FormLabel>
+							<Select
+								onValueChange={(value) =>
+									field.onChange(value === NO_LEVEL ? null : value)
+								}
+								value={field.value ?? NO_LEVEL}
+								disabled={!levels.length}
+							>
+								<FormControl>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+								</FormControl>
+								<SelectContent>
+									<SelectItem value={NO_LEVEL}>
+										{t("admin.teachingUnits.noLevel")}
+									</SelectItem>
+									{levels.map((level) => (
+										<SelectItem key={level.id} value={level.id}>
+											{level.code} — {level.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormDescription>
+								{t("admin.teachingUnits.levelHint")}
+							</FormDescription>
 							<FormMessage />
 						</FormItem>
 					)}

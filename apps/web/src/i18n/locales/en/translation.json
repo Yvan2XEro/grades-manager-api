@@ -3524,7 +3524,8 @@
         "credits": "ECTS",
         "programFaculty": "Faculty: {{value}}",
         "programCycle": "Cycle : {{value}}",
-        "semester": "Semester"
+        "semester": "Semester",
+        "level": "Level"
       },
       "semesters": {
         "annual": "Annual",
@@ -3621,7 +3622,9 @@
         "prereqSaved": "Prerequisites saved",
         "programRequired": "Select a program first"
       },
-      "programCycleSummary": "Cycle : {{value}}"
+      "programCycleSummary": "Cycle : {{value}}",
+      "noLevel": "Not set",
+      "levelHint": "Classes of this level receive the unit's courses when a year is imported."
     },
     "promotionRules": {
       "title": "Promotion Rules",

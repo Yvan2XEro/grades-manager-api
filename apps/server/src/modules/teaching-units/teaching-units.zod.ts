@@ -6,6 +6,8 @@ export const baseSchema = z.object({
 	description: z.string().optional(),
 	credits: z.number().int().nonnegative().default(0),
 	semester: z.enum(["fall", "spring", "annual"]).default("annual"),
+	/** Level of the program's cycle the unit is taught in. */
+	cycleLevelId: z.string().nullable().optional(),
 	programId: z.string(),
 });
 

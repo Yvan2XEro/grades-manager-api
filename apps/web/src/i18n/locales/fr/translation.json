@@ -2640,7 +2640,8 @@
         "credits": "ECTS",
         "programCycle": "Cycle : {{value}}",
         "programFaculty": "Faculté : {{value}}",
-        "semester": "Semestre"
+        "semester": "Semestre",
+        "level": "Niveau"
       },
       "semesters": {
         "annual": "Annuel",
@@ -2737,7 +2738,9 @@
         "prereqSaved": "Prérecquis enregistrés",
         "programRequired": "Sélectionnez d'abord un programme"
       },
-      "programFacultySummary": "Faculté : {{value}}"
+      "programFacultySummary": "Faculté : {{value}}",
+      "noLevel": "Non renseigné",
+      "levelHint": "Les classes de ce niveau reçoivent les EC de l'UE lors de l'import d'une année."
     },
     "promotionRules": {
       "title": "Règles de passage",
