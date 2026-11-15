@@ -1,9 +1,11 @@
 import { describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import {
 	asAdmin,
+	createAcademicYear,
 	createClass,
 	createClassCourse,
 	createCourse,
@@ -125,6 +127,34 @@ describe("studentCourseEnrollments router", () => {
 		const courseIds = roster.items.map((item) => item.classCourseId);
 		expect(courseIds).toContain(classCourse.id);
 		expect(courseIds).toContain(secondClassCourse.id);
+	});
+
+	it("auto enrolls the students enrolled in the class that year, not by current class", async () => {
+		const admin = createCaller(asAdmin());
+		const { klass, academicYear, program, classCourse } =
+			await createRecapFixture();
+		const student = await createStudent({ class: klass.id });
+		// The student has since moved on: their current class is another one
+		const laterYear = await createAcademicYear({});
+		const laterClass = await createClass({
+			program: program.id,
+			academicYear: laterYear.id,
+		});
+		await db
+			.update(schema.students)
+			.set({ class: laterClass.id })
+			.where(eq(schema.students.id, student.id));
+		const result = await admin.studentCourseEnrollments.autoEnrollClass({
+			classId: klass.id,
+			academicYearId: academicYear.id,
+		});
+		expect(result.createdCount).toBeGreaterThan(0);
+		const roster = await admin.studentCourseEnrollments.list({
+			studentId: student.id,
+		});
+		expect(roster.items.map((item) => item.classCourseId)).toContain(
+			classCourse.id,
+		);
 	});
 
 	it("includes warnings when mandatory prerequisites are missing", async () => {

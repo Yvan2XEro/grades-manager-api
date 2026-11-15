@@ -39,15 +39,6 @@ async function setupUeWithCourses(opts: {
 		institutionId: faculty.id,
 	});
 
-	// Create enrollment for the student
-	await db.insert(schema.enrollments).values({
-		studentId: student.id,
-		classId: klass.id,
-		academicYearId: academicYear.id,
-		institutionId: faculty.id,
-		status: "active",
-	});
-
 	const courses = [];
 	for (let i = 0; i < opts.courseCount; i++) {
 		const course = await createCourse({

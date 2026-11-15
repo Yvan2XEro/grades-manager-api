@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as repo from "./enrollments.repo";
@@ -65,6 +65,23 @@ export async function createEnrollment(
 		throw new TRPCError({ code: "NOT_FOUND" });
 	}
 	await ensureAcademicYear(data.academicYearId, institutionId);
+	const status = data.status ?? "pending";
+	if (status === "pending" || status === "active") {
+		const open = await db.query.enrollments.findFirst({
+			where: and(
+				eq(schema.enrollments.studentId, data.studentId),
+				eq(schema.enrollments.academicYearId, data.academicYearId),
+				inArray(schema.enrollments.status, ["pending", "active"]),
+			),
+		});
+		if (open) {
+			throw new TRPCError({
+				code: "CONFLICT",
+				message:
+					"Student already has an open enrollment for this academic year; transfer the student instead",
+			});
+		}
+	}
 	return repo.create({ ...data, institutionId });
 }
 

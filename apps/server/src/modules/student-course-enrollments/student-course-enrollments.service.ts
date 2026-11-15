@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as creditLedger from "../student-credit-ledger";
@@ -400,10 +400,18 @@ export async function autoEnrollClass(
 			message: "Class is not attached to the provided academic year",
 		});
 	}
+	// Students enrolled in the class that year — not their current class,
+	// which differs for any past year
 	const students = await db
-		.select({ id: schema.students.id })
-		.from(schema.students)
-		.where(eq(schema.students.class, klass.id));
+		.selectDistinct({ id: schema.enrollments.studentId })
+		.from(schema.enrollments)
+		.where(
+			and(
+				eq(schema.enrollments.classId, klass.id),
+				eq(schema.enrollments.academicYearId, input.academicYearId),
+				ne(schema.enrollments.status, "withdrawn"),
+			),
+		);
 	const baseCondition = eq(schema.classCourses.class, klass.id);
 	const classCourseCondition = input.semesterId
 		? and(baseCondition, eq(schema.classCourses.semesterId, input.semesterId))

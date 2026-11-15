@@ -1325,6 +1325,11 @@ export const enrollments = pgTable(
 		index("idx_enrollments_class_id").on(t.classId),
 		index("idx_enrollments_year_id").on(t.academicYearId),
 		index("idx_enrollments_admission_type").on(t.admissionType),
+		// A mid-year transfer closes the enrollment before opening another one,
+		// so only open enrollments are unique per student and year
+		uniqueIndex("uq_enrollments_open_student_year")
+			.on(t.studentId, t.academicYearId)
+			.where(sql`${t.status} in ('pending', 'active')`),
 	],
 );
 
