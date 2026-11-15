@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { NotifItem } from "../../types";
+import type { NotifItem, TFn } from "../../types";
 
 import { NOTIF_ACTION_CONFIGS } from "./notification-actions";
 import { ActionRow, InfoRow } from "./pending-action-rows";
@@ -19,6 +19,8 @@ export function PendingActionsCard({
 }) {
 	const { t } = useTranslation();
 	const MAX_SHOWN = 5;
+	// The rows resolve their keys from the notification type at runtime.
+	const tRow: TFn = (key, opts) => t(key, { defaultValue: key, ...opts });
 
 	const actionItems = items
 		.filter((i) => (NOTIF_ACTION_CONFIGS[i.type]?.kind ?? "info") === "action")
@@ -72,7 +74,7 @@ export function PendingActionsCard({
 										item={item}
 										onMarkRead={onMarkRead}
 										isMarkingRead={isMarkingRead}
-										t={t}
+										t={tRow}
 									/>
 								))}
 							</ul>
@@ -92,7 +94,7 @@ export function PendingActionsCard({
 										item={item}
 										onMarkRead={onMarkRead}
 										isMarkingRead={isMarkingRead}
-										t={t}
+										t={tRow}
 									/>
 								))}
 							</ul>

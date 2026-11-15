@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import {
 	ArrowLeft,
 	CheckCircle2,
@@ -31,6 +32,12 @@ import {
 	isPastYear,
 	stepLabel,
 } from "../services/import-steps";
+
+/** Plural count label of an import step (the step key is built at runtime). */
+type YearCountKey = Extract<
+	ParseKeys,
+	`admin.dataImport.guided.yearImport.count.${string}`
+>;
 
 const PHASES = ["prepare", "review", "done"] as const;
 
@@ -145,7 +152,9 @@ export default function YearImportPage() {
 										)}
 									</span>
 									<span className="text-muted-foreground text-xs">
-										{t(`${G}yearImport.count.${step.key}`, { count })}
+										{t(`${G}yearImport.count.${step.key}` as YearCountKey, {
+											count,
+										})}
 									</span>
 								</span>
 							</button>

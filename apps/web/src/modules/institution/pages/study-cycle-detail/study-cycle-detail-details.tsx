@@ -38,7 +38,9 @@ export default function StudyCycleDetailDetails() {
 			queryClient.invalidateQueries(
 				trpc.studyCycles.getCycle.queryOptions({ id: cycleId! }),
 			);
-			queryClient.invalidateQueries(trpc.studyCycles.listPaged.queryKey());
+			queryClient.invalidateQueries({
+				queryKey: trpc.studyCycles.listPaged.queryKey(),
+			});
 		},
 		onError: (err: Error) => toast.error(err.message),
 	});

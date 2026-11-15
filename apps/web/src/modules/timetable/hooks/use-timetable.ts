@@ -25,7 +25,16 @@ export function useTimetableClassCourses({
 				...(teacherId ? { teacherId } : {}),
 				limit: 500,
 			});
-			return items as TimetableClassCourse[];
+			// The list returns flat names; the timetable UI reads nested refs.
+			return items.map(
+				(cc): TimetableClassCourse => ({
+					id: cc.id,
+					code: cc.code,
+					teacher: cc.teacher,
+					courseRef: cc.courseName ? { name: cc.courseName } : null,
+					classRef: cc.className ? { name: cc.className } : null,
+				}),
+			);
 		},
 	});
 	return data ?? [];

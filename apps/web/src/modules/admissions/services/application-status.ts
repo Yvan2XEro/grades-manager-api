@@ -1,5 +1,17 @@
-/** Badge colors of the application statuses (`converted` = turned into a student). */
-export const APPLICATION_STATUS_COLORS: Record<string, string> = {
+/** Statuses shown by the badge (`converted` = turned into a student). */
+export type ApplicationBadgeStatus =
+	| "draft"
+	| "submitted"
+	| "under_review"
+	| "accepted"
+	| "rejected"
+	| "waitlisted"
+	| "converted";
+
+/** Badge colors of the application statuses. */
+export const APPLICATION_STATUS_COLORS: Partial<
+	Record<ApplicationBadgeStatus, string>
+> = {
 	submitted: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
 	under_review: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
 	accepted: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",

@@ -52,14 +52,14 @@ export function useExamApprovals() {
 		},
 		onSuccess: () => {
 			toast.success(t("dean.approvals.bulkApproved"));
-			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryFilter());
 			selection.clear();
 		},
 		onError: (e: Error) => toast.error(e.message),
 	});
 
 	const invalidateAndReset = () => {
-		queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
+		queryClient.invalidateQueries(trpc.exams.listPaged.queryFilter());
 		selection.clear();
 	};
 

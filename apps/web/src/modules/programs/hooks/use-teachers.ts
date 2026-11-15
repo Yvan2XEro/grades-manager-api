@@ -17,7 +17,9 @@ export const fetchTeachers = async () => {
 
 export const formatTeacherName = (teacher: Teacher) =>
 	[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
-	teacher.email;
+	teacher.primaryEmail ||
+	teacher.authUser?.email ||
+	"";
 
 /** Teachers feeding the course forms (shared cache key). */
 export function useTeachers() {

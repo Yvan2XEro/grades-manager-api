@@ -12,6 +12,14 @@ import { cn } from "@/lib/utils";
 
 import type { TransitionAudit } from "../types";
 
+/** Counts of the plan summary shown on the terminal event. */
+const SUMMARY_COUNTS = [
+	{ key: "promote", label: "admin.academicYearTransitions.outcome.promote" },
+	{ key: "graduate", label: "admin.academicYearTransitions.outcome.graduate" },
+	{ key: "repeat", label: "admin.academicYearTransitions.outcome.repeat" },
+	{ key: "failed", label: "admin.academicYearTransitions.itemStatus.failed" },
+] as const;
+
 /** Timeline of the actions taken on a transition plan. */
 export function TransitionAuditTimeline({
 	audit,
@@ -120,23 +128,18 @@ export function TransitionAuditTimeline({
 											audit.summary &&
 											Object.keys(audit.summary).length > 0 && (
 												<div className="mt-2 flex flex-wrap gap-2">
-													{["promote", "graduate", "repeat", "failed"].map(
-														(key) => {
-															const val = audit.summary?.[key] ?? 0;
-															if (val === 0) return null;
-															return (
-																<span
-																	key={key}
-																	className="rounded border px-2 py-0.5 text-xs"
-																>
-																	{t(
-																		`admin.academicYearTransitions.outcome.${key}`,
-																	)}
-																	: {val}
-																</span>
-															);
-														},
-													)}
+													{SUMMARY_COUNTS.map(({ key, label }) => {
+														const val = audit.summary?.[key] ?? 0;
+														if (val === 0) return null;
+														return (
+															<span
+																key={key}
+																className="rounded border px-2 py-0.5 text-xs"
+															>
+																{t(label)}: {val}
+															</span>
+														);
+													})}
 												</div>
 											)}
 									</div>

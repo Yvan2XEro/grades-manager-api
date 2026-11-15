@@ -12,9 +12,7 @@ export function useWorkflowManager() {
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 
-	const { data: semestersData } = useQuery(
-		trpc.semesters.list.queryOptions({}),
-	);
+	const { data: semestersData } = useQuery(trpc.semesters.list.queryOptions());
 	const filterUeSemester = useMemo(() => {
 		if (!filterSemester || !semestersData) return undefined;
 		const code =
@@ -48,7 +46,7 @@ export function useWorkflowManager() {
 				}),
 			);
 			queryClient.invalidateQueries(
-				trpc.exams.list.queryKey({
+				trpc.exams.list.queryFilter({
 					classCourseId: selectedClassCourse || undefined,
 				}),
 			);

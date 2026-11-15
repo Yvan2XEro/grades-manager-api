@@ -18,8 +18,14 @@ export default function ApplicationStatusPage() {
 		searchParams.get("ref") ?? "",
 	);
 	const normalizedRef = referenceCode.trim().toUpperCase();
-	const { statusQuery, application, checklist, statusVariant, submitDocument } =
-		useApplicationStatus(normalizedRef);
+	const {
+		statusQuery,
+		application,
+		checklist,
+		applicant,
+		statusVariant,
+		submitDocument,
+	} = useApplicationStatus(normalizedRef);
 
 	return (
 		<div className="min-h-dvh bg-dot-pattern px-4 py-10">
@@ -57,14 +63,13 @@ export default function ApplicationStatusPage() {
 					</Card>
 				)}
 
-				{application && checklist && (
+				{application && checklist && applicant && (
 					<>
 						<Card>
 							<CardHeader className="flex flex-row items-start justify-between gap-4">
 								<div>
 									<CardTitle>
-										{statusQuery.data.applicant.firstName}{" "}
-										{statusQuery.data.applicant.lastName}
+										{applicant.firstName} {applicant.lastName}
 									</CardTitle>
 									<p className="text-muted-foreground text-sm">
 										{application.program.name} · {application.academicYear.name}
@@ -85,7 +90,7 @@ export default function ApplicationStatusPage() {
 								/>
 								<StatusMetric
 									label={t("admissions.status.reference")}
-									value={statusQuery.data.applicant.referenceCode}
+									value={applicant.referenceCode}
 								/>
 							</CardContent>
 						</Card>

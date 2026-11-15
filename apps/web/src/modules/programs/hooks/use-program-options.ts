@@ -24,7 +24,7 @@ export function useDeleteProgramOption(programId: string) {
 				}),
 			);
 			queryClient.invalidateQueries(
-				trpc.programOptions.list.queryKey({ programId, limit: 100 }),
+				trpc.programOptions.list.queryFilter({ programId, limit: 100 }),
 			);
 		},
 		onError: (err: Error) => toast.error(err.message),

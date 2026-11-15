@@ -58,17 +58,19 @@ export const GuardianPreferencesSheet = createCallable<
 					</SheetTitle>
 				</SheetHeader>
 				<div className="space-y-4 px-1 pt-6">
-					{Object.entries(DEFAULT_PREFERENCES).map(([key]) => (
-						<label key={key} className="flex items-center gap-3 text-sm">
-							<Checkbox
-								checked={preferences[key as keyof PreferencesType] !== false}
-								onCheckedChange={(v) =>
-									setPreferences((prev) => ({ ...prev, [key]: v === true }))
-								}
-							/>
-							{t(`guardians.preferences.${key}`)}
-						</label>
-					))}
+					{(Object.keys(DEFAULT_PREFERENCES) as (keyof PreferencesType)[]).map(
+						(key) => (
+							<label key={key} className="flex items-center gap-3 text-sm">
+								<Checkbox
+									checked={preferences[key] !== false}
+									onCheckedChange={(v) =>
+										setPreferences((prev) => ({ ...prev, [key]: v === true }))
+									}
+								/>
+								{t(`guardians.preferences.${key}`)}
+							</label>
+						),
+					)}
 					<Button
 						className="mt-4 w-full"
 						disabled={save.pending}

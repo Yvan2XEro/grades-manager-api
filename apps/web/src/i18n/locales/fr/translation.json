@@ -149,7 +149,9 @@
       "previous": "Précédent",
       "next": "Suivant",
       "morePages": "Autres pages",
-      "loading": "Chargement"
+      "loading": "Chargement",
+      "hidePassword": "Masquer le mot de passe",
+      "showPassword": "Afficher le mot de passe"
     }
   },
   "navigation": {
@@ -2893,7 +2895,8 @@
         "active": "Actif",
         "pending": "En attente",
         "completed": "Terminé",
-        "withdrawn": "Retiré"
+        "withdrawn": "Retiré",
+        "graduated": "Diplômé"
       },
       "bulkEnroll": {
         "classesLabel": "Classes ({{n}} sélectionnées)",
@@ -3631,7 +3634,8 @@
           "completed": "Terminé avec succès",
           "completed_with_errors": "Terminé avec erreurs",
           "cancelled": "Annulé",
-          "stale": "Marqué obsolète"
+          "stale": "Marqué obsolète",
+          "override": "Décision modifiée"
         }
       },
       "toast": {

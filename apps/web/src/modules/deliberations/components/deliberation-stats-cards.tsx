@@ -57,7 +57,7 @@ export function DeliberationStatsCards({
 			/>
 			<StatCard
 				label={t("admin.deliberations.decision.admitted")}
-				value={stats.decisionCounts?.admitted ?? 0}
+				value={stats.admittedCount ?? 0}
 				accent
 			/>
 		</div>

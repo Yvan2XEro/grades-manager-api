@@ -1,10 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import type { AttendanceSessionsState } from "../hooks/use-attendance-session";
+import type {
+	AttendanceSessionsState,
+	MarkableStatus,
+} from "../hooks/use-attendance-session";
 import type { AttendanceStatusConfig } from "../hooks/use-attendance-status";
 import type { AttendanceStatus } from "../types";
 
-const MARKABLE: AttendanceStatus[] = ["present", "absent", "late"];
+const MARKABLE: MarkableStatus[] = ["present", "absent", "late"];
 
 /** "Mark all" buttons and the per-student marking sheet of a session. */
 export function AttendanceMarkingTable({

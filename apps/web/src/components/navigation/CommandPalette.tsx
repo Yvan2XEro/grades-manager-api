@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import {
 	BarChart2,
 	Bell,
@@ -16,7 +17,7 @@ import {
 	Settings,
 	Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import {
@@ -28,6 +29,18 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "@/components/ui/command";
+
+type CommandEntry = {
+	labelKey: ParseKeys;
+	icon: ReactNode;
+	href: string;
+	keywords: string;
+};
+
+type CommandSection = {
+	groupKey: "main" | "academic" | "tools";
+	items: CommandEntry[];
+};
 
 type Props = {
 	open: boolean;
@@ -50,9 +63,9 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 
 	const IC = "h-4 w-4";
 
-	const COMMANDS = [
+	const COMMANDS: CommandSection[] = [
 		{
-			groupKey: "main" as const,
+			groupKey: "main",
 			items: [
 				{
 					labelKey: "navigation.sidebar.admin.dashboard",
@@ -87,7 +100,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 			],
 		},
 		{
-			groupKey: "academic" as const,
+			groupKey: "academic",
 			items: [
 				{
 					labelKey: "navigation.sidebar.admin.academicYears",
@@ -134,7 +147,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 			],
 		},
 		{
-			groupKey: "tools" as const,
+			groupKey: "tools",
 			items: [
 				{
 					labelKey: "navigation.sidebar.admin.examScheduler",

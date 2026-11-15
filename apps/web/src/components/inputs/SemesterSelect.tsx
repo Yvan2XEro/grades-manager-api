@@ -24,7 +24,7 @@ export function SemesterSelect({
 }: SemesterSelectProps) {
 	const { t } = useTranslation();
 	const { data, isLoading } = useQuery({
-		...trpc.semesters.list.queryOptions({}),
+		...trpc.semesters.list.queryOptions(),
 	});
 	const options = data?.items ?? [];
 

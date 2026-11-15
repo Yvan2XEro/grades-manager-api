@@ -2,7 +2,11 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 import { create } from "zustand";
+import type Resources from "@/@types/resources";
 import { useRoleGroup } from "@/components/navigation/RoleView";
+
+/** Keys of `navigation.crumbs` in the translation files. */
+type CrumbKey = keyof Resources["translation"]["navigation"]["crumbs"];
 
 interface BreadcrumbItem {
 	label: string;
@@ -38,7 +42,7 @@ export function useBreadcrumbEntity(id?: string | null, name?: string | null) {
 }
 
 /** Label key (`navigation.crumbs.*`) of a segment; `<first>/<segment>` wins over `<segment>`. */
-const LABELS: Record<string, string> = {
+const LABELS: Record<string, CrumbKey> = {
 	"academic-years": "academicYears",
 	institution: "institution",
 	overview: "overview",
@@ -131,7 +135,7 @@ const LABELS: Record<string, string> = {
  * Routes outside the hub they belong to: their first segment is replaced by
  * the trail of that hub, so the user can always go back to the list.
  */
-const PARENTS: Record<string, { key: string; href: string }[]> = {
+const PARENTS: Record<string, { key: CrumbKey; href: string }[]> = {
 	profiles: [
 		{ key: "users", href: "/users" },
 		{ key: "people", href: "/users/people" },
@@ -161,7 +165,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 
 	const segments = pathname.split("/").filter(Boolean);
 	if (segments.length === 0) return [];
-	const crumb = (key: string) => String(t(`navigation.crumbs.${key}`));
+	const crumb = (key: CrumbKey) => String(t(`navigation.crumbs.${key}`));
 	// The home page (`/`) is the dashboard of the user's role group
 	const crumbs: BreadcrumbItem[] = [
 		{ label: t(`navigation.breadcrumbs.${roleGroup ?? "admin"}`), href: "/" },

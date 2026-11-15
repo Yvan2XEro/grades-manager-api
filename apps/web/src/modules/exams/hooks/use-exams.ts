@@ -104,7 +104,7 @@ export function useExams({
 		percentage: Number(exam.percentage),
 	}));
 
-	useQuery({ ...trpc.semesters.list.queryOptions({}) });
+	useQuery({ ...trpc.semesters.list.queryOptions() });
 	const { data: classCourses } = useQuery({
 		queryKey: examFormKeys.classCourses,
 		queryFn: fetchExamClassCourses,
@@ -152,7 +152,7 @@ const errorMessage = (error: unknown, fallback: string) =>
 	error instanceof Error && error.message ? error.message : fallback;
 
 const invalidateExams = (queryClient: ReturnType<typeof useQueryClient>) =>
-	queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
+	queryClient.invalidateQueries(trpc.exams.listPaged.queryFilter());
 
 /** Delete / bulk delete / submit / approve mutations of the exams list. */
 export function useExamMutations(onBulkDeleted: () => void) {

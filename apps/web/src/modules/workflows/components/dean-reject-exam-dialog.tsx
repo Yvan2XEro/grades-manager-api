@@ -31,7 +31,7 @@ export const DeanRejectExamDialog = createCallable<{
 			trpcClient.workflows.rejectGrades.mutate({ examId, reason }),
 		onSuccess: () => {
 			toast.success(t("dean.approvals.rejected"));
-			queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryFilter());
 			call.end();
 			setReason("");
 		},

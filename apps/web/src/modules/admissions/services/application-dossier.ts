@@ -1,5 +1,9 @@
-import type { TFunction } from "i18next";
+import type { ParseKeys, TFunction } from "i18next";
+import type Resources from "@/@types/resources";
 import type { ApplicationDetail, ProgramOption } from "../types";
+
+/** Field labels of `admissions.fields` in the translation files. */
+type FieldKey = keyof Resources["translation"]["admissions"]["fields"];
 
 export interface DossierField {
 	label: string;
@@ -38,9 +42,12 @@ export function getDossierSections(
 ): DossierSection[] {
 	const ap = app.applicant;
 	const option = (prefix: string, value?: string | null) =>
-		value ? t(`admissions.options.${prefix}.${value}`) : undefined;
+		// The value is free text stored by the wizard: its key is built at runtime
+		value
+			? String(t(`admissions.options.${prefix}.${value}` as ParseKeys))
+			: undefined;
 	const field = (
-		key: string,
+		key: FieldKey,
 		value?: string | null,
 		extra?: Partial<DossierField>,
 	): DossierField => ({

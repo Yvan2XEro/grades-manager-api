@@ -12,8 +12,7 @@ import { GridWaveFilter } from "../ui/grid-wave-filter";
 const AuthLayout: React.FC = () => {
 	const { user } = useStore();
 	const { t } = useTranslation();
-	const { institutionName, slogan, logoUrl, coverImageUrl, shortName } =
-		useBranding();
+	const { institutionName, slogan, logoUrl, shortName } = useBranding();
 
 	const [callbackURL] = useQueryState("return", {});
 	// Redirect if already authenticated with a real role (guest = no active org, show login form)

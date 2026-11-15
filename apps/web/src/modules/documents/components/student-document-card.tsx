@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
 import { Download, FileText, GraduationCap, IdCard, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,9 +13,9 @@ const DOC_CONFIG: Record<
 	DocKind,
 	{
 		icon: React.ReactNode;
-		labelKey: string;
-		descKey: string;
-		blockedKey: string;
+		labelKey: ParseKeys;
+		descKey: ParseKeys;
+		blockedKey: ParseKeys;
 	}
 > = {
 	transcript: {
@@ -68,16 +69,14 @@ export function DocumentCard({
 				</div>
 				<div className="min-w-0 flex-1">
 					<p className="font-semibold text-foreground text-sm">
-						{t(cfg.labelKey as Parameters<typeof t>[0])}
+						{t(cfg.labelKey)}
 					</p>
-					<p className="mt-1 text-muted-foreground text-xs">
-						{t(cfg.descKey as Parameters<typeof t>[0])}
-					</p>
+					<p className="mt-1 text-muted-foreground text-xs">{t(cfg.descKey)}</p>
 
 					{isGated && !isCleared && (
 						<div className="mt-3 flex items-center gap-1.5 text-amber-700 text-xs dark:text-amber-400">
 							<Lock className="h-3.5 w-3.5" />
-							<span>{t(cfg.blockedKey as Parameters<typeof t>[0])}</span>
+							<span>{t(cfg.blockedKey)}</span>
 						</div>
 					)}
 

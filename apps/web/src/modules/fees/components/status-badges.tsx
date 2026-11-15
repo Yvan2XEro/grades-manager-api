@@ -19,6 +19,19 @@ const assignmentStatusIcons: Record<string, ReactNode> = {
 	exempt: <CheckCircle2 className="mr-1 h-3 w-3" />,
 };
 
+const assignmentStatusKeys = {
+	unpaid: "feeClearance.assignments.status.unpaid",
+	partial: "feeClearance.assignments.status.partial",
+	paid: "feeClearance.assignments.status.paid",
+	exempt: "feeClearance.assignments.status.exempt",
+} as const;
+
+const orderStatusKeys = {
+	pending: "feeClearance.orders.status.pending",
+	confirmed: "feeClearance.orders.status.confirmed",
+	cancelled: "feeClearance.orders.status.cancelled",
+} as const;
+
 /** Payment status of a fee assignment (unpaid, partial, paid, exempt). */
 export function AssignmentStatusBadge({
 	status,
@@ -31,7 +44,9 @@ export function AssignmentStatusBadge({
 	return (
 		<Badge variant={assignmentStatusVariants[status]}>
 			{withIcon && assignmentStatusIcons[status]}
-			{t(`feeClearance.assignments.status.${status}`)}
+			{status in assignmentStatusKeys
+				? t(assignmentStatusKeys[status as keyof typeof assignmentStatusKeys])
+				: status}
 		</Badge>
 	);
 }
@@ -48,7 +63,9 @@ export function OrderStatusBadge({ status }: { status: string }) {
 	const { t } = useTranslation();
 	return (
 		<Badge variant={orderStatusVariant(status)}>
-			{t(`feeClearance.orders.status.${status}`)}
+			{status in orderStatusKeys
+				? t(orderStatusKeys[status as keyof typeof orderStatusKeys])
+				: status}
 		</Badge>
 	);
 }

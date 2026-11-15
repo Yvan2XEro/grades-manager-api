@@ -82,7 +82,7 @@ export function useProgramExportTemplates(
 		onSuccess: () => {
 			toast.success(t("admin.programs.toast.updateSuccess"));
 			queryClient.invalidateQueries(
-				trpc.programs.listExportTemplates.queryKey({ programId }),
+				trpc.programs.listExportTemplates.queryFilter({ programId }),
 			);
 			refetch();
 		},

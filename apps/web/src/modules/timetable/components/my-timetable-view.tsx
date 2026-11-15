@@ -54,7 +54,6 @@ export function MyTimetableView({
 							{t("teacher.timetable.filterBySemester")}
 						</Label>
 						<SemesterSelect
-							academicYearId={period.academicYearId}
 							value={period.semesterId}
 							onChange={period.changeSemester}
 						/>

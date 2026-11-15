@@ -82,7 +82,7 @@ export const AssignStudentDialog = createCallable<
 						<AcademicYearSelect
 							value={yearId || null}
 							onChange={(v) => {
-								setYearId(v);
+								setYearId(v ?? "");
 								setStructureId("");
 							}}
 							autoSelectActive

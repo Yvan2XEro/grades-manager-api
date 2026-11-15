@@ -66,7 +66,7 @@ export function useDeleteClasses() {
 		mutationFn: (ids: string[]) =>
 			Promise.all(ids.map((id) => trpcClient.classes.delete.mutate({ id }))),
 		onSuccess: (_, ids) => {
-			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryFilter());
 			toast.success(
 				ids.length === 1
 					? t("admin.classes.toast.deleteSuccess")

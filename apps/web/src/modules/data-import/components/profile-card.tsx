@@ -19,7 +19,7 @@ export function ProfileCard({
 		{ key: "logo", done: profile.hasLogo },
 		{ key: "contact", done: profile.hasContact },
 		{ key: "address", done: profile.hasAddress },
-	];
+	] as const;
 	const complete = profile.hasLogo && profile.hasContact;
 
 	return (

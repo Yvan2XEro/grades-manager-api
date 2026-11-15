@@ -46,7 +46,7 @@ export function SelfEnrollCourseCard({
 			<div className="min-w-0 flex-1">
 				<div className="flex flex-wrap items-center gap-2">
 					<span className="font-semibold text-foreground text-sm">
-						{course.name}
+						{course.courseName}
 					</span>
 					{course.code && (
 						<span className="font-mono text-muted-foreground text-xs">

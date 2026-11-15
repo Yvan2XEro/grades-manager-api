@@ -56,7 +56,7 @@ export function useNotificationsCenter() {
 				}),
 			);
 			invalidateList();
-			queryClient.invalidateQueries(trpc.notifications.stats.queryKey());
+			queryClient.invalidateQueries(trpc.notifications.stats.queryFilter());
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});

@@ -5,7 +5,7 @@
 		"useDefineForClassFields": true,
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
-		"types": ["vite/client"],
+		"types": ["vite/client", "bun"],
 		"skipLibCheck": true,
 		/* Bundler mode */
 		"moduleResolution": "bundler",
@@ -23,7 +23,9 @@
 		"noUncheckedSideEffectImports": true,
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			// Server files are compiled too (for the tRPC AppRouter type); their
+			// own "@/..." imports fall back to apps/server/src.
+			"@/*": ["./src/*", "../server/src/*"]
 		}
 	},
 	"include": ["src"],

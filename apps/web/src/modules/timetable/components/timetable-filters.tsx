@@ -39,7 +39,6 @@ export function TimetableFilters({ filters, teachers, classCourses }: Props) {
 			{filters.academicYearId && (
 				<div className="w-44">
 					<SemesterSelect
-						academicYearId={filters.academicYearId}
 						value={filters.semesterId}
 						onChange={filters.changeSemester}
 					/>

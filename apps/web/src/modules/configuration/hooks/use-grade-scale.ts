@@ -46,7 +46,7 @@ export function useGradeScale() {
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries(
-				trpc.gradeScales.get.queryKey({ programId }),
+				trpc.gradeScales.get.queryFilter({ programId }),
 			);
 		},
 	});

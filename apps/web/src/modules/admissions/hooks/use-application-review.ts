@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
 import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -41,7 +40,7 @@ export function useApplicationReview(id: string | null | undefined) {
 	);
 
 	// Creates the missing class of the application's program and year in place,
-	// inserts it into the options cache feeding the select, then selects it.
+	// refreshes the options feeding the select, then selects it.
 	const createClass = async () => {
 		if (!app) return;
 		const { programId, academicYearId } = app as {
@@ -53,8 +52,10 @@ export function useApplicationReview(id: string | null | undefined) {
 			lockAcademicYear: true,
 		});
 		if (!created) return;
-		queryClient.setQueryData(trpc.admissions.publicOptions.queryKey(), (old) =>
-			old ? { ...old, classes: upsertInList(old.classes, created) } : old,
+		// The options carry the class cycle level, which the dialog does not
+		// return: refetch them so the new class shows up in the select.
+		await queryClient.invalidateQueries(
+			trpc.admissions.publicOptions.queryFilter(),
 		);
 		setTargetClassId(created.id);
 	};

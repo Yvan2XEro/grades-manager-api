@@ -108,7 +108,11 @@ export default function FeeStructureDetailDetails() {
 				<p className="text-muted-foreground text-xs">
 					{t("feeClearance.structures.fields.program")}
 				</p>
-				<p className="font-medium">{structure.program?.shortName ?? "—"}</p>
+				<p className="font-medium">
+					{structure.program
+						? (structure.program.abbreviation ?? structure.program.name)
+						: "—"}
+				</p>
 			</div>
 		</div>
 	);

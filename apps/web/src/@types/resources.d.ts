@@ -151,6 +151,8 @@ interface Resources {
 				next: "Next";
 				morePages: "More pages";
 				loading: "Loading";
+				hidePassword: "Hide password";
+				showPassword: "Show password";
 			};
 		};
 		teacher: {
@@ -3834,6 +3836,7 @@ interface Resources {
 					pending: "Pending";
 					completed: "Completed";
 					withdrawn: "Withdrawn";
+					graduated: "Graduated";
 				};
 				bulkEnroll: {
 					classesLabel: "Classes ({{n}} selected)";
@@ -4654,6 +4657,7 @@ interface Resources {
 						completed_with_errors: "Completed with errors";
 						cancelled: "Cancelled";
 						stale: "Marked stale";
+						override: "Decision overridden";
 					};
 				};
 				toast: {

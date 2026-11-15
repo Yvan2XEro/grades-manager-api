@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import { CheckCircle2, Lock } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,7 +13,7 @@ const STATUS_BADGES: Record<
 	{
 		variant: "success" | "warning" | "outline" | "destructive";
 		icon?: ReactNode;
-		labelKey: string;
+		labelKey: ParseKeys;
 	}
 > = {
 	approved: {

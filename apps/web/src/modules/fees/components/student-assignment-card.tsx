@@ -12,6 +12,7 @@ import {
 import { formatMoney } from "../services/fee-format";
 import type { PayableInstallment, StudentFeeAssignment } from "../types";
 import { GenerateOrderPanel } from "./generate-order-panel";
+import { AssignmentStatusBadge } from "./status-badges";
 import {
 	DownloadOrderButton,
 	DownloadReceiptButton,

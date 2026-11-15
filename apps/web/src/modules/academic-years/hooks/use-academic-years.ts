@@ -23,7 +23,9 @@ export function useAcademicYears({
 function useInvalidateAcademicYears() {
 	const queryClient = useQueryClient();
 	return () =>
-		queryClient.invalidateQueries(trpc.academicYears.listPaged.queryKey());
+		queryClient.invalidateQueries({
+			queryKey: trpc.academicYears.listPaged.queryKey(),
+		});
 }
 
 /** Deletes one or several academic years and refreshes the list. */

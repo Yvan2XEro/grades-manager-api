@@ -21,7 +21,9 @@ export function useDeleteStudyCycles() {
 				ids.map((id) => trpcClient.studyCycles.deleteCycle.mutate({ id })),
 			),
 		onSuccess: (_, ids) => {
-			queryClient.invalidateQueries(trpc.studyCycles.listPaged.queryKey());
+			queryClient.invalidateQueries({
+				queryKey: trpc.studyCycles.listPaged.queryKey(),
+			});
 			toast.success(
 				ids.length === 1
 					? t("admin.studyCycles.toast.deleteSuccess", {

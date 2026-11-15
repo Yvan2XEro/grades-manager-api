@@ -120,7 +120,7 @@ export const BulkAssignDialog = createCallable<
 							<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
 							<AcademicYearSelect
 								value={scope.yearId || null}
-								onChange={(v) => reset({ yearId: v })}
+								onChange={(v) => reset({ yearId: v ?? "" })}
 								autoSelectActive
 							/>
 						</div>

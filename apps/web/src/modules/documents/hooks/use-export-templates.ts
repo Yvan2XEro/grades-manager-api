@@ -40,7 +40,9 @@ export function useExportTemplateMutations() {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.exportTemplates.toast.deleteSuccess"));
-			queryClient.invalidateQueries(trpc.exportTemplates.listPaged.queryKey());
+			queryClient.invalidateQueries(
+				trpc.exportTemplates.listPaged.queryFilter(),
+			);
 		},
 		onError: (error: any) => {
 			toast.error(
@@ -59,7 +61,9 @@ export function useExportTemplateMutations() {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.exportTemplates.toast.setDefaultSuccess"));
-			queryClient.invalidateQueries(trpc.exportTemplates.listPaged.queryKey());
+			queryClient.invalidateQueries(
+				trpc.exportTemplates.listPaged.queryFilter(),
+			);
 		},
 		onError: (error: any) => {
 			toast.error(
@@ -76,7 +80,9 @@ export function useExportTemplateMutations() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.exportTemplates.listPaged.queryKey());
+			queryClient.invalidateQueries(
+				trpc.exportTemplates.listPaged.queryFilter(),
+			);
 			toast.success(t("common.bulkActions.deleteSuccess"));
 		},
 		onError: () => toast.error(t("common.bulkActions.deleteError")),
@@ -106,7 +112,9 @@ export function useSystemTemplates() {
 				reason: string;
 			}>;
 		}) => {
-			queryClient.invalidateQueries(trpc.exportTemplates.listPaged.queryKey());
+			queryClient.invalidateQueries(
+				trpc.exportTemplates.listPaged.queryFilter(),
+			);
 			const failed = result.failed ?? [];
 			if (failed.length > 0) {
 				toast.error(

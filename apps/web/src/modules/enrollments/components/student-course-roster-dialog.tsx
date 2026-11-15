@@ -160,7 +160,7 @@ export const StudentCourseRosterDialog = createCallable<{
 															<div className="flex flex-wrap gap-2">
 																<Button
 																	type="button"
-																	size="xs"
+																	size="sm"
 																	variant="outline"
 																	disabled={enrollDisabled}
 																	onClick={handlePrimaryAction}
@@ -181,7 +181,7 @@ export const StudentCourseRosterDialog = createCallable<{
 																</Button>
 																<Button
 																	type="button"
-																	size="xs"
+																	size="sm"
 																	variant="secondary"
 																	disabled={
 																		!enrollment || withdrawCourse.isPending
@@ -203,7 +203,7 @@ export const StudentCourseRosterDialog = createCallable<{
 																</Button>
 																<Button
 																	type="button"
-																	size="xs"
+																	size="sm"
 																	variant="ghost"
 																	disabled={!studentId}
 																	onClick={() => assignCourse.mutate(course.id)}

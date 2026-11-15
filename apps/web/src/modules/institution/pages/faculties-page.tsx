@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { trpc } from "@/utils/trpc";
 import { InstitutionFormDialog } from "../components/institution-form-dialog";
+import { toInstitutions } from "../hooks/use-institution-form";
 import { useDeleteInstitutions } from "../hooks/use-institutions";
 import { getInstitutionsColumns } from "../table/institutions-columns";
 import type { Institution } from "../types";
@@ -19,7 +20,7 @@ import type { Institution } from "../types";
 export default function FacultiesPage() {
 	const { t } = useTranslation();
 	const { data, isLoading } = useQuery(trpc.institutions.list.queryOptions());
-	const institutions = useMemo(() => (data ?? []) as Institution[], [data]);
+	const institutions = useMemo(() => toInstitutions(data), [data]);
 	const selection = useRowSelection(institutions);
 	const deleteInstitutions = useDeleteInstitutions();
 	const columns = useMemo(() => getInstitutionsColumns(t), [t]);

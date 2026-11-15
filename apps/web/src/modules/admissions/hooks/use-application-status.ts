@@ -30,7 +30,7 @@ export function useApplicationStatus(normalizedRef: string) {
 		onSuccess: () => {
 			toast.success(t("admissions.status.documentSubmitted"));
 			queryClient.invalidateQueries(
-				trpc.admissions.getStatus.queryKey({ referenceCode: normalizedRef }),
+				trpc.admissions.getStatus.queryFilter({ referenceCode: normalizedRef }),
 			);
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -38,6 +38,7 @@ export function useApplicationStatus(normalizedRef: string) {
 
 	const application = statusQuery.data?.application;
 	const checklist = statusQuery.data?.checklist;
+	const applicant = statusQuery.data?.applicant;
 
 	const statusVariant = useMemo(():
 		| "success"
@@ -56,5 +57,12 @@ export function useApplicationStatus(normalizedRef: string) {
 		}
 	}, [application?.status]);
 
-	return { statusQuery, application, checklist, statusVariant, submitDocument };
+	return {
+		statusQuery,
+		application,
+		checklist,
+		applicant,
+		statusVariant,
+		submitDocument,
+	};
 }

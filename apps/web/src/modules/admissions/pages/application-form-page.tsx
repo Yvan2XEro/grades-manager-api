@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -51,8 +52,13 @@ export default function ApplicationFormPage() {
 		);
 	}
 
+	// The step components build some keys at runtime (option lists). With a key
+	// that is not a literal, the typed `t` only accepts options carrying a
+	// `defaultValue`: the key itself, which is what i18next shows when missing.
+	const tStep = (k: string, options?: Record<string, unknown>) =>
+		String(t(k as ParseKeys, { ...options, defaultValue: k }));
 	const stepTitles = Array.from({ length: TOTAL_STEPS }, (_, i) =>
-		t(`admissions.steps.${i + 1}.title`),
+		String(t(`admissions.steps.${i + 1}.title` as ParseKeys)),
 	);
 
 	return (
@@ -79,36 +85,36 @@ export default function ApplicationFormPage() {
 			<div ref={contentRef} className="mx-auto max-w-3xl px-4 pt-6">
 				<div className="mb-4 space-y-0.5">
 					<h2 className="font-bold text-2xl">
-						{t(`admissions.steps.${step}.title`)}
+						{t(`admissions.steps.${step}.title` as ParseKeys)}
 					</h2>
 					<p className="text-muted-foreground">
-						{t(`admissions.steps.${step}.subtitle`)}
+						{t(`admissions.steps.${step}.subtitle` as ParseKeys)}
 					</p>
 				</div>
 
 				<Form {...form}>
 					<Card className="shadow-sm">
 						<CardContent className="pt-6 pb-4">
-							{step === 1 && <ApplicationStepIdentity form={form} t={t} />}
-							{step === 2 && <ApplicationStepContact form={form} t={t} />}
-							{step === 3 && <ApplicationStepBac form={form} t={t} />}
+							{step === 1 && <ApplicationStepIdentity form={form} t={tStep} />}
+							{step === 2 && <ApplicationStepContact form={form} t={tStep} />}
+							{step === 3 && <ApplicationStepBac form={form} t={tStep} />}
 							{step === 4 && (
-								<ApplicationStepPriorEducation form={form} t={t} />
+								<ApplicationStepPriorEducation form={form} t={tStep} />
 							)}
 							{step === 5 && (
 								<ApplicationStepProgramChoices
 									form={form}
-									t={t}
+									t={tStep}
 									programs={programs}
 									academicYears={academicYears}
 								/>
 							)}
-							{step === 6 && <ApplicationStepFamily form={form} t={t} />}
-							{step === 7 && <ApplicationStepDocuments t={t} />}
+							{step === 6 && <ApplicationStepFamily form={form} t={tStep} />}
+							{step === 7 && <ApplicationStepDocuments t={tStep} />}
 							{step === 8 && (
 								<ApplicationStepRecap
 									form={form}
-									t={t}
+									t={tStep}
 									programs={programs}
 									academicYears={academicYears}
 									goToStep={goToStep}

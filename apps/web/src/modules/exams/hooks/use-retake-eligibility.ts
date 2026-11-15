@@ -13,9 +13,7 @@ export function useRetakeExamSelection() {
 	const [semesterId, setSemesterIdState] = useState<string | null>(null);
 	const [examId, setExamId] = useState<string | null>(null);
 
-	const { data: semestersData } = useQuery(
-		trpc.semesters.list.queryOptions({}),
-	);
+	const { data: semestersData } = useQuery(trpc.semesters.list.queryOptions());
 	const ueSemester = useMemo(() => {
 		if (!semesterId || !semestersData) return undefined;
 		const code =

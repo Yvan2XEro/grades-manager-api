@@ -62,12 +62,10 @@ export default function ProfileResultsTab() {
 					{results.map((result) => (
 						<TableRow key={result.id}>
 							<TableCell className="font-medium">
-								{result.course?.nameFr ?? result.course?.nameEn ?? "—"}
+								{result.course?.name ?? "—"}
 							</TableCell>
 							<TableCell className="text-muted-foreground text-sm">
-								{result.course?.teachingUnit?.nameFr ??
-									result.course?.teachingUnit?.nameEn ??
-									"—"}
+								{result.course?.teachingUnit?.name ?? "—"}
 							</TableCell>
 							<TableCell>{result.academicYear?.name ?? "—"}</TableCell>
 							<TableCell className="text-right">

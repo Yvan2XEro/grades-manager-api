@@ -36,7 +36,7 @@ export function useBranding() {
 	const { i18n } = useTranslation();
 	const lang = i18n.language?.startsWith("fr") ? "fr" : "en";
 
-	let slug: string | null = null;
+	let slug: string | undefined;
 	try {
 		slug = detectOrganizationSlug();
 	} catch {

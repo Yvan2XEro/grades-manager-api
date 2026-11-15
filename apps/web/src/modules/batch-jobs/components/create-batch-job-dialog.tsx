@@ -146,7 +146,7 @@ export const CreateBatchJobDialog = createCallable<void, void>(({ call }) => {
 									<Label>{t("admin.batchJobs.fields.academicYear")}</Label>
 									<AcademicYearSelect
 										value={academicYearId || null}
-										onChange={setAcademicYearId}
+										onChange={(value) => setAcademicYearId(value ?? "")}
 										autoSelectActive
 									/>
 								</div>

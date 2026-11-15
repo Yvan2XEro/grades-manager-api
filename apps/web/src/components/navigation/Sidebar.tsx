@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import type { ParseKeys } from "i18next";
 import {
 	BarChart3,
 	Bell,
@@ -41,6 +42,21 @@ const ROOT_PATHS = new Set(["/"]);
 
 type NavBadgeType = "new" | "updated";
 
+type NavItem = {
+	to: string;
+	icon: React.ReactNode;
+	labelKey: ParseKeys;
+	badge?: NavBadgeType;
+	/** The link is not active when the path starts with this prefix. */
+	excludePrefix?: string;
+};
+
+type NavGroup = {
+	key: string;
+	titleKey: ParseKeys;
+	items: NavItem[];
+};
+
 function NavBadge({ type }: { type: NavBadgeType }) {
 	return (
 		<span
@@ -64,7 +80,7 @@ const Sidebar: React.FC = () => {
 
 	const IC = "size-[15px] shrink-0";
 
-	const adminGroups = useMemo(
+	const adminGroups = useMemo<NavGroup[]>(
 		() => [
 			{
 				key: "overview",
@@ -79,7 +95,7 @@ const Sidebar: React.FC = () => {
 						to: "/import",
 						icon: <Rocket className={IC} />,
 						labelKey: "navigation.sidebar.admin.setup",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 					{
 						to: "/academic-years",
@@ -111,7 +127,7 @@ const Sidebar: React.FC = () => {
 						to: "/timetable",
 						icon: <CalendarClock className={IC} />,
 						labelKey: "navigation.sidebar.admin.timetable",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 				],
 			},
@@ -128,7 +144,7 @@ const Sidebar: React.FC = () => {
 						to: "/admissions",
 						icon: <ClipboardList className={IC} />,
 						labelKey: "navigation.sidebar.admin.admissions",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 					{
 						to: "/users/guardians",
@@ -183,7 +199,7 @@ const Sidebar: React.FC = () => {
 						to: "/statistics",
 						icon: <BarChart3 className={IC} />,
 						labelKey: "navigation.sidebar.admin.statistics",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 				],
 			},
@@ -205,13 +221,13 @@ const Sidebar: React.FC = () => {
 						to: "/batch-jobs",
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 					{
 						to: "/fee-clearance",
 						icon: <CreditCard className={IC} />,
 						labelKey: "navigation.sidebar.admin.feeClearance",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 					{
 						to: "/notifications/center",
@@ -224,7 +240,7 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const teacherLinks = useMemo(
+	const teacherLinks = useMemo<NavItem[]>(
 		() => [
 			{
 				to: "/",
@@ -255,7 +271,7 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const deanLinks = useMemo(
+	const deanLinks = useMemo<NavItem[]>(
 		() => [
 			{
 				to: "/",
@@ -281,7 +297,7 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const gradeEditorLinks = useMemo(
+	const gradeEditorLinks = useMemo<NavItem[]>(
 		() => [
 			{
 				to: "/",
@@ -297,7 +313,7 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const studentLinks = useMemo(
+	const studentLinks = useMemo<NavItem[]>(
 		() => [
 			{
 				to: "/",
@@ -360,7 +376,7 @@ const Sidebar: React.FC = () => {
 		studentLinks,
 	]);
 
-	const allLinks = useMemo(
+	const allLinks = useMemo<NavItem[]>(
 		() =>
 			menuContent.type === "grouped"
 				? menuContent.groups.flatMap((g) => g.items)

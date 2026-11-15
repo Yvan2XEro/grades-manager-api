@@ -40,12 +40,24 @@ function RowContent({
 	);
 }
 
+type QuickActionKey =
+	| "title"
+	| "addStudent"
+	| "exams"
+	| "enrollments"
+	| "academicYears"
+	| "statistics";
+
 /** Shortcuts: they open a dialog over the dashboard; statistics is a page of its own. */
 export function QuickActionsCard() {
 	const { t } = useTranslation();
 	const openPage = useDashboardPages();
-	const k = (key: string) => t(`admin.dashboard.quickActions.${key}`);
-	const actions = [
+	const k = (key: QuickActionKey) => t(`admin.dashboard.quickActions.${key}`);
+	const actions: {
+		key: QuickActionKey;
+		icon: React.ReactNode;
+		onClick: () => void;
+	}[] = [
 		{
 			key: "addStudent",
 			icon: <UserPlus className="h-4 w-4" />,

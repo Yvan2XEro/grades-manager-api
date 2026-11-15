@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,7 @@ import { useTeachers } from "./use-teachers";
 
 type TeachingUnitOption = { id: string; code: string; name: string };
 
-const buildCourseSchema = (t: (key: string, options?: any) => string) =>
+const buildCourseSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("admin.courses.validation.name")),
 		hours: z.coerce.number().min(1, t("admin.courses.validation.hours")),

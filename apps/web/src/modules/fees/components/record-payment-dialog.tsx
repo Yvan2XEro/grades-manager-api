@@ -31,14 +31,15 @@ import { type InstallmentOption, PAYMENT_METHODS } from "../types";
 const NO_INSTALLMENT_VALUE = "__none__";
 
 const paymentSchema = z.object({
-	amount: z.coerce.number({ invalid_type_error: "Required" }).positive(),
+	amount: z.coerce.number({ error: "Required" }).positive(),
 	paymentDate: z.string().min(1, "Required"),
 	paymentMethod: z.enum(PAYMENT_METHODS),
 	reference: z.string().optional(),
 	notes: z.string().optional(),
 	installmentId: z.string().optional(),
 });
-type PaymentForm = z.infer<typeof paymentSchema>;
+type PaymentFormInput = z.input<typeof paymentSchema>;
+type PaymentForm = z.output<typeof paymentSchema>;
 
 export const RecordPaymentDialog = createCallable<
 	{
@@ -50,7 +51,7 @@ export const RecordPaymentDialog = createCallable<
 >(({ call, feeAssignmentId, installments, onRecorded }) => {
 	const { t } = useTranslation();
 
-	const form = useForm<PaymentForm>({
+	const form = useForm<PaymentFormInput, unknown, PaymentForm>({
 		resolver: zodResolver(paymentSchema),
 		defaultValues: {
 			amount: undefined,

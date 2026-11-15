@@ -13,6 +13,19 @@ const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = {
 	student: "outline",
 };
 
+const enrollmentStatusKeys = {
+	active: "admin.enrollments.status.active",
+	pending: "admin.enrollments.status.pending",
+	completed: "admin.enrollments.status.completed",
+	withdrawn: "admin.enrollments.status.withdrawn",
+	graduated: "admin.enrollments.status.graduated",
+} as const;
+
+function enrollmentStatusLabel(t: TFunction, status: string) {
+	const key = enrollmentStatusKeys[status as keyof typeof enrollmentStatusKeys];
+	return key ? t(key) : status;
+}
+
 const dash = <span className="text-muted-foreground text-sm">—</span>;
 
 /** Columns of the people table; students get class / reg. number / enrollment instead of email. */
@@ -44,9 +57,7 @@ export function getPeopleColumns(
 				"currentEnrollmentStatus" in person &&
 				person.currentEnrollmentStatus ? (
 					<Badge variant="outline">
-						{t(`enrollments.status.${person.currentEnrollmentStatus}`, {
-							defaultValue: person.currentEnrollmentStatus,
-						})}
+						{enrollmentStatusLabel(t, String(person.currentEnrollmentStatus))}
 					</Badge>
 				) : (
 					dash

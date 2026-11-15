@@ -98,7 +98,15 @@ export function useStudentDashboard() {
 		openWindow,
 		decisionsPending: decisionsQuery.isPending,
 		decisions: (decisionsQuery.data ?? []) as DecisionResult[],
-		upcomingExams: (upcomingExamsQuery.data ?? []) as UpcomingExam[],
+		upcomingExams: (upcomingExamsQuery.data ?? []).map(
+			(exam): UpcomingExam => ({
+				id: exam.id,
+				courseName: exam.courseName ?? exam.name,
+				examTypeName: exam.type || null,
+				scheduledAt: exam.date,
+				duration: null,
+			}),
+		),
 		latestFeeAssignment,
 		feeNotCleared,
 		overallAvg,

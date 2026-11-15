@@ -1,12 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { APPLICATION_STATUS_COLORS } from "../services/application-status";
+import {
+	APPLICATION_STATUS_COLORS,
+	type ApplicationBadgeStatus,
+} from "../services/application-status";
 
 export function ApplicationStatusBadge({
 	status,
 	className,
 }: {
-	status: string;
+	status: ApplicationBadgeStatus;
 	className?: string;
 }) {
 	const { t } = useTranslation();

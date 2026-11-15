@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
 import { z } from "zod";
-import { trpc } from "@/utils/trpc";
+import { type RouterOutputs, trpc } from "@/utils/trpc";
 import type { Institution, InstitutionType } from "../types";
 
 export const NO_SELECTION = "__NONE__";
@@ -118,10 +118,32 @@ export const toInstitutionPayload = (values: InstitutionFormValues) => ({
 	institutionId: values.institutionId || undefined,
 });
 
+/** An institution as the API returns it. */
+export type InstitutionRecord = NonNullable<
+	RouterOutputs["institutions"]["get"]
+>;
+
+/**
+ * Client-side view of an institution. The server stores no supervising
+ * faculty (`institutionId`), so it is always empty here.
+ */
+export function toInstitution(record: InstitutionRecord): Institution {
+	return { ...record, institutionId: null };
+}
+
+/** Institutions of a list response, without the null entries. */
+export function toInstitutions(
+	records: readonly (InstitutionRecord | null)[] | undefined,
+): Institution[] {
+	return (records ?? [])
+		.filter((record): record is InstitutionRecord => record !== null)
+		.map(toInstitution);
+}
+
 /** Every institution, feeding the parent / supervising faculty selects. */
 export function useInstitutionsList() {
 	const { data } = useQuery(trpc.institutions.list.queryOptions());
-	return useMemo(() => (data ?? []) as Institution[], [data]);
+	return useMemo(() => toInstitutions(data), [data]);
 }
 
 interface Options {

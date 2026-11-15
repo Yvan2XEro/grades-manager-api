@@ -11,18 +11,21 @@ import { trpc } from "@/utils/trpc";
 import { G } from "../services/import-steps";
 
 /** Page where each setup step can be done by hand. */
-const MANUAL_PAGES: Record<string, React.ComponentType> = {
+const MANUAL_PAGES = {
 	profile: InstitutionSettingsPage,
 	"foundation.cycles": StudyCyclesPage,
 	"foundation.programs": ProgramsPage,
 	"foundation.curriculum": TeachingUnitsPage,
 	year: AcademicYearsPage,
-};
+} satisfies Record<string, React.ComponentType>;
+
+type ManualKey = keyof typeof MANUAL_PAGES;
 
 /** Tab pages whose title is in their hub header: the dialog shows it. */
 const UNTITLED = new Set(["foundation.cycles", "enrollments", "grades"]);
 
-export const hasManualEntry = (key: string) => key in MANUAL_PAGES;
+export const hasManualEntry = (key: string): key is ManualKey =>
+	key in MANUAL_PAGES;
 
 /**
  * Opens the manual entry page of a step in a large dialog over the import,
@@ -32,8 +35,8 @@ export function useManualEntry() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	return async (key: string) => {
+		if (!hasManualEntry(key)) return;
 		const Page = MANUAL_PAGES[key];
-		if (!Page) return;
 		await PageDialog.call({
 			title: t(`${G}manualTitle.${key}`),
 			content: <Page />,

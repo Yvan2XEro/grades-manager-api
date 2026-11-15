@@ -38,8 +38,8 @@ export function useBulkDocumentGeneration() {
 	const { data: semesters } = useQuery({
 		queryKey: ["bulk-semesters"],
 		queryFn: async () => {
-			const res = await trpcClient.semesters.list.query({ limit: 50 });
-			return (res as { items: Array<{ id: string; name: string }> }).items;
+			const res = await trpcClient.semesters.list.query();
+			return res.items;
 		},
 		enabled: kind === "transcript" && period === "semester",
 	});

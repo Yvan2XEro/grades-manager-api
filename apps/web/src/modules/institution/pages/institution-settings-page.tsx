@@ -12,17 +12,14 @@ import {
 	type InstitutionFormValues,
 	institutionDefaultValues,
 	institutionToFormValues,
+	toInstitution,
 	useInstitutionForm,
 } from "../hooks/use-institution-form";
 import {
 	useCurrentInstitution,
 	useUpsertInstitution,
 } from "../hooks/use-institution-settings";
-import type {
-	AttendanceExcusePolicy,
-	DocumentParams,
-	Institution,
-} from "../types";
+import type { AttendanceExcusePolicy, DocumentParams } from "../types";
 
 const defaultValues: InstitutionFormValues = {
 	...institutionDefaultValues,
@@ -38,7 +35,7 @@ export default function InstitutionSettingsPage() {
 
 	useEffect(() => {
 		if (institution) {
-			form.reset(institutionToFormValues(institution as Institution));
+			form.reset(institutionToFormValues(toInstitution(institution)));
 		}
 	}, [institution, form]);
 

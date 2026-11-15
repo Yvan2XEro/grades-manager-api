@@ -42,23 +42,20 @@ export function BatchJobSteps({ steps }: { steps: BatchJob["steps"] }) {
 								<div className="mt-1 flex gap-3 text-muted-foreground text-xs">
 									<span>
 										{t("admin.batchJobs.detail.processed", {
-											count: step.itemsProcessed,
-											defaultValue: `Processed: ${step.itemsProcessed}`,
+											count: step.itemsProcessed ?? 0,
 										})}
 									</span>
 									{(step.itemsSkipped ?? 0) > 0 && (
 										<span>
 											{t("admin.batchJobs.detail.skipped", {
-												count: step.itemsSkipped,
-												defaultValue: `Skipped: ${step.itemsSkipped}`,
+												count: step.itemsSkipped ?? 0,
 											})}
 										</span>
 									)}
 									{(step.itemsFailed ?? 0) > 0 && (
 										<span className="text-red-500">
 											{t("admin.batchJobs.detail.failed", {
-												count: step.itemsFailed,
-												defaultValue: `Failed: ${step.itemsFailed}`,
+												count: step.itemsFailed ?? 0,
 											})}
 										</span>
 									)}

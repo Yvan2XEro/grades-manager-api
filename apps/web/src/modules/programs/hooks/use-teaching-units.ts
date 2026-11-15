@@ -35,7 +35,7 @@ export function useDeleteTeachingUnits() {
 				ids.map((id) => trpcClient.teachingUnits.delete.mutate({ id })),
 			),
 		onSuccess: (_, ids) => {
-			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryFilter());
 			toast.success(
 				ids.length === 1
 					? t("admin.teachingUnits.toast.deleted", {

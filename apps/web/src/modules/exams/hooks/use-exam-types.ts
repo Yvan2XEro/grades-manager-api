@@ -36,7 +36,7 @@ export function useDeleteExamTypes(onBulkDeleted: () => void) {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.examTypes.toast.deleteSuccess"));
-			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryFilter());
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -54,7 +54,7 @@ export function useDeleteExamTypes(onBulkDeleted: () => void) {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryFilter());
 			onBulkDeleted();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {

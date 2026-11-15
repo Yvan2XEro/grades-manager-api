@@ -8,11 +8,7 @@ export const deliberationRulesKey = ["deliberation-rules"];
 export function useDeliberationRules() {
 	const query = useQuery({
 		queryKey: deliberationRulesKey,
-		queryFn: () =>
-			trpcClient.deliberations.rules.list.query({
-				limit: 100,
-				offset: 0,
-			}),
+		queryFn: () => trpcClient.deliberations.rules.list.query({ limit: 100 }),
 	});
 	return { ...query, rules: query.data?.items ?? [] };
 }

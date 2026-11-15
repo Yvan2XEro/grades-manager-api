@@ -61,7 +61,6 @@ export function useClassCourses({
 			coefficient: Number(cc.coefficient) || 1,
 			courseName: cc.courseName,
 			courseCode: cc.courseCode,
-			ueSemester: cc.ueSemester ?? null,
 			className: cls?.name,
 			programName: cls ? programs.get(cls.program)?.name : undefined,
 			teacherName: teacher ? formatTeacherName(teacher) : undefined,
@@ -80,7 +79,7 @@ export function useDeleteClassCourses() {
 				ids.map((id) => trpcClient.classCourses.delete.mutate({ id })),
 			),
 		onSuccess: (_, ids) => {
-			queryClient.invalidateQueries(trpc.classCourses.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.classCourses.listPaged.queryFilter());
 			toast.success(
 				ids.length === 1
 					? t("admin.classCourses.toast.deleteSuccess")

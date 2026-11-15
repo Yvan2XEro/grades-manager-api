@@ -62,9 +62,9 @@ export const BankImportDialog = createCallable<Props, void>(
 			mutationFn: () =>
 				trpcClient.feeClearance.applyBankImport.mutate({
 					rows,
-					paymentMethod: paymentMethod as never,
+					paymentMethod,
 					forceMatchRefs: [...forceMatchRefs],
-					batchNotes: batchNotes || undefined,
+					notes: batchNotes || undefined,
 				}),
 			onSuccess: (data) => {
 				toast.success(

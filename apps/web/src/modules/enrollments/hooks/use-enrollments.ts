@@ -21,7 +21,7 @@ export function useEnrollments(
 	{ academicYearId, classId, semesterId, status }: EnrollmentFilters,
 	{ page, pageSize }: { page: number; pageSize: number },
 ) {
-	useQuery(trpc.semesters.list.queryOptions({ limit: 100 }));
+	useQuery(trpc.semesters.list.queryOptions());
 
 	const classesQuery = useQuery(
 		trpc.classes.list.queryOptions({
@@ -120,7 +120,7 @@ export function useToggleEnrollmentWindow(
 				}),
 			);
 			queryClient.invalidateQueries(
-				trpc.workflows.enrollmentWindows.queryKey(),
+				trpc.workflows.enrollmentWindows.queryFilter(),
 			);
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -138,7 +138,7 @@ export function useDeleteEnrollments() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries(trpc.enrollments.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.enrollments.listPaged.queryFilter());
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
 					defaultValue: "Items deleted successfully",

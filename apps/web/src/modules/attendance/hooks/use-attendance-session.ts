@@ -8,6 +8,9 @@ import { CreateAttendanceSessionDialog } from "../components/create-attendance-s
 import { ExcuseAbsenceDialog } from "../components/excuse-absence-dialog";
 import type { AttendanceSession, AttendanceStatus } from "../types";
 
+/** Statuses a teacher sets directly; `excused` goes through the excuse dialog. */
+export type MarkableStatus = Exclude<AttendanceStatus, "excused">;
+
 type ExcusePolicy = {
 	acceptedCategories?: string[];
 	requiresDocument?: boolean;
@@ -102,7 +105,7 @@ export function useAttendanceSessions({
 	};
 
 	const bulkMark = useMutation({
-		mutationFn: (records: { studentId: string; status: AttendanceStatus }[]) =>
+		mutationFn: (records: { studentId: string; status: MarkableStatus }[]) =>
 			trpcClient.attendance.bulkMark.mutate({
 				attendanceSessionId: selectedSession!.id,
 				records,
@@ -121,7 +124,7 @@ export function useAttendanceSessions({
 			status,
 		}: {
 			studentId: string;
-			status: AttendanceStatus;
+			status: MarkableStatus;
 		}) =>
 			trpcClient.attendance.updateRecord.mutate({
 				attendanceSessionId: selectedSession!.id,
@@ -142,7 +145,7 @@ export function useAttendanceSessions({
 		(sessionDetail?.records ?? []).map((r) => [r.studentId, r]),
 	);
 
-	const markAll = (status: AttendanceStatus) =>
+	const markAll = (status: MarkableStatus) =>
 		bulkMark.mutate(roster.map((r) => ({ studentId: r.studentId, status })));
 
 	const openExcuse = (recordId: string, studentName: string) =>

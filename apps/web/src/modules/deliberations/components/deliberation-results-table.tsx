@@ -25,6 +25,8 @@ function StudentResultRow({
 	onOverride: () => void;
 }) {
 	const { t } = useTranslation();
+	// Results not computed yet have no decision
+	const decision = r.finalDecision ?? "pending";
 
 	return (
 		<TableRow>
@@ -59,10 +61,8 @@ function StudentResultRow({
 			</TableCell>
 			<TableCell>
 				<div className="flex items-center gap-1.5">
-					<Badge variant={decisionVariants[r.finalDecision] ?? "outline"}>
-						{t(`admin.deliberations.decision.${r.finalDecision}`, {
-							defaultValue: r.finalDecision,
-						})}
+					<Badge variant={decisionVariants[decision] ?? "outline"}>
+						{t(`admin.deliberations.decision.${decision}`)}
 					</Badge>
 					{r.isOverridden && <Pen className="h-3 w-3 text-amber-500" />}
 				</div>
@@ -145,7 +145,7 @@ export function DeliberationResultsTable({
 										studentResultId: r.id,
 										studentName:
 											`${r.student?.profile?.firstName ?? ""} ${r.student?.profile?.lastName ?? ""}`.trim(),
-										currentDecision: r.finalDecision,
+										currentDecision: r.finalDecision ?? "pending",
 									})
 								}
 							/>

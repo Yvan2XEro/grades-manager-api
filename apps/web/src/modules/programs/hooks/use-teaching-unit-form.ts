@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -9,9 +10,7 @@ import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 import { useProgramList } from "./use-programs";
 
-const buildUnitSchema = (
-	t: (key: string, options?: Record<string, unknown>) => string,
-) =>
+const buildUnitSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(
 			2,
@@ -115,7 +114,7 @@ export function useTeachingUnitForm(teachingUnitId: string) {
 	}, [teachingUnit, form]);
 
 	const invalidateLists = () => {
-		queryClient.invalidateQueries(trpc.teachingUnits.list.queryKey({}));
+		queryClient.invalidateQueries(trpc.teachingUnits.list.queryFilter());
 		if (!isCreateMode) {
 			queryClient.invalidateQueries(
 				trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId }),

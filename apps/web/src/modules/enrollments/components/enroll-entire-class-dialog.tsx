@@ -62,7 +62,8 @@ export const EnrollEntireClassDialog = createCallable<{
 				queryClient.invalidateQueries({
 					queryKey: trpc.studentCourseEnrollments.list.queryKey(),
 				});
-				if (result.warnings?.length) setAutoEnrollWarnings(result.warnings);
+				if ("warnings" in result && result.warnings.length)
+					setAutoEnrollWarnings(result.warnings);
 				else call.end();
 			},
 			onError: (error: Error) => toast.error(error.message),

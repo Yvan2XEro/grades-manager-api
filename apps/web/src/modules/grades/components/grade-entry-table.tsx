@@ -57,7 +57,9 @@ export function GradeEntryTable({
 						<TableBody>
 							{students.map((student) => {
 								const fieldName = `student_${student.id}` as const;
-								const fieldError = errors[fieldName]?.message;
+								const message = errors[fieldName]?.message;
+								const fieldError =
+									typeof message === "string" ? message : undefined;
 								return (
 									<TableRow key={student.id}>
 										<TableCell>{student.registrationNumber}</TableCell>

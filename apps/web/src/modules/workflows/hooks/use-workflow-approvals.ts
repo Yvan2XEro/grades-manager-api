@@ -52,7 +52,7 @@ export function useWorkflowApprovals() {
 	};
 
 	const invalidateExams = () =>
-		queryClient.invalidateQueries(trpc.exams.listPaged.queryKey());
+		queryClient.invalidateQueries(trpc.exams.listPaged.queryFilter());
 
 	const validateExam = useMutation({
 		mutationFn: (examId: string) =>

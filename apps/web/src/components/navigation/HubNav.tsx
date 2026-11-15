@@ -1,10 +1,11 @@
+import type { ParseKeys } from "i18next";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet } from "react-router";
 import { cn } from "@/lib/utils";
 
 interface HubNavTab {
 	readonly path: string;
-	readonly labelKey: string;
+	readonly labelKey: ParseKeys;
 }
 
 interface HubNavProps {

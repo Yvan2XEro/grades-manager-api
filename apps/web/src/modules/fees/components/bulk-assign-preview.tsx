@@ -6,7 +6,7 @@ import type { BulkAssignPreview } from "../types";
 export function BulkAssignPreviewPanel({
 	preview,
 }: {
-	preview: BulkAssignPreview;
+	preview: Pick<BulkAssignPreview, "toAssign" | "alreadyAssignedCount">;
 }) {
 	const { t } = useTranslation();
 	const hasNew = preview.toAssign.length > 0;

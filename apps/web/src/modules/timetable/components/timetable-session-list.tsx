@@ -42,11 +42,7 @@ export function TimetableSessionList({
 					<span className="font-medium tabular-nums">
 						{s.startTime} – {s.endTime}
 					</span>
-					{(s.roomRef?.name ?? s.room) && (
-						<span className="text-muted-foreground">
-							{s.roomRef?.name ?? s.room}
-						</span>
-					)}
+					{s.room && <span className="text-muted-foreground">{s.room}</span>}
 					{(s.validFrom || s.validUntil) && (
 						<span className="ml-auto shrink-0 text-muted-foreground text-xs">
 							{t("teacher.timetable.validity")}: {s.validFrom ?? "…"} →{" "}

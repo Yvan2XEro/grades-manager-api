@@ -30,7 +30,7 @@ const ForgotPassword: React.FC = () => {
 	} = useForm<ForgotPasswordFormData>({ resolver: zodResolver(schema) });
 
 	const onSubmit = async (data: ForgotPasswordFormData) => {
-		const result = await authClient.forgetPassword({
+		const result = await authClient.requestPasswordReset({
 			email: data.email,
 			redirectTo: `${window.location.origin}/auth/reset?return=${callbackURL}`,
 		});

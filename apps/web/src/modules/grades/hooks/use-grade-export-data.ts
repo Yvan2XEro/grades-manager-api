@@ -57,8 +57,8 @@ export function useGradeExportData({
 		queryKey: ["semesters", "items"],
 		queryFn: async () => {
 			try {
-				const result = await trpcClient.semesters.list.query({});
-				return (result?.items || []) as { id: string; name: string }[];
+				const result = await trpcClient.semesters.list.query();
+				return result.items;
 			} catch (error) {
 				console.error("Error fetching semesters:", error);
 				toast.error(

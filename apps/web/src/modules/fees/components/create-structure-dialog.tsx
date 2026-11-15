@@ -106,7 +106,9 @@ export const CreateStructureDialog = createCallable<
 						<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
 						<AcademicYearSelect
 							value={form.academicYearId || null}
-							onChange={(v) => setForm((f) => ({ ...f, academicYearId: v }))}
+							onChange={(v) =>
+								setForm((f) => ({ ...f, academicYearId: v ?? "" }))
+							}
 							autoSelectActive
 						/>
 					</div>
@@ -161,7 +163,7 @@ export const CreateStructureDialog = createCallable<
 								<SelectItem value="_none_">{t("common.none")}</SelectItem>
 								{programs?.items?.map((p) => (
 									<SelectItem key={p.id} value={p.id}>
-										{p.shortName ?? p.name}
+										{p.abbreviation ?? p.name}
 									</SelectItem>
 								))}
 							</SelectContent>

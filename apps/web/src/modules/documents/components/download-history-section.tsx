@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
 import { Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,8 @@ export function DownloadHistorySection() {
 	const rows = historyQuery.data ?? [];
 
 	const kindLabel = (kind: string) => {
-		const key = `student.documents.${kind}.title` as Parameters<typeof t>[0];
+		// Kinds come from the server log: unknown ones fall back to the raw kind
+		const key = `student.documents.${kind}.title` as ParseKeys;
 		return t(key, { defaultValue: kind });
 	};
 

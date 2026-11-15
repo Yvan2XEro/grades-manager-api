@@ -65,7 +65,7 @@ export default function TeacherGradeExport() {
 					<AcademicYearSelect
 						value={selectedYear || null}
 						onChange={(value) => {
-							setSelectedYear(value);
+							setSelectedYear(value ?? "");
 							setSelectedClass("");
 							setSelectedExams([]);
 						}}

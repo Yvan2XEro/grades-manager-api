@@ -10,12 +10,12 @@ const STATUS_CONFIG = {
 	approved: {
 		icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />,
 		variant: "success" as const,
-		labelKey: "exam.status.approved",
+		labelKey: "exam.status.approved" as const,
 	},
 	rejected: {
 		icon: <XCircle className="h-4 w-4 text-destructive" />,
 		variant: "destructive" as const,
-		labelKey: "exam.status.rejected",
+		labelKey: "exam.status.rejected" as const,
 	},
 };
 

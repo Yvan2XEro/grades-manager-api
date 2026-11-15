@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import type { TFunction } from "i18next";
+import type { ParseKeys, TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
 import type { ExamRow } from "../types";
 
@@ -81,7 +81,7 @@ export function getExamsColumns(
 							STATUS_CLASSES[exam.status ?? ""] ?? DEFAULT_STATUS_CLASS
 						}
 					>
-						{t(`admin.exams.status.${exam.status || "draft"}`)}
+						{t(`admin.exams.status.${exam.status || "draft"}` as ParseKeys)}
 					</Badge>
 					{exam.isLocked && (
 						<Badge

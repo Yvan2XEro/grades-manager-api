@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import type { ParseKeys } from "i18next";
 import { Award, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,7 +10,12 @@ import type { DecisionResult } from "../../types";
 
 const DECISION_CONFIG: Record<
 	string,
-	{ code: string; labelKey: string; isSuccess: boolean; isPending?: boolean }
+	{
+		code: string;
+		labelKey: ParseKeys;
+		isSuccess: boolean;
+		isPending?: boolean;
+	}
 > = {
 	admitted: {
 		code: "ADM",

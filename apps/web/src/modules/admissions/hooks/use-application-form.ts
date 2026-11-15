@@ -54,7 +54,8 @@ export function useApplicationForm() {
 	const resumeDraft = () => {
 		const draft = readDraft();
 		if (!draft) return;
-		form.reset(draft.form);
+		// Drafts saved by an older form version may miss newer fields
+		form.reset({ ...DEFAULT_VALUES, ...draft.form });
 		setStep(draft.step);
 		setHasDraft(false);
 	};

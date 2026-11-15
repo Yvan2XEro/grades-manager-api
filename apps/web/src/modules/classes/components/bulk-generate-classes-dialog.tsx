@@ -41,7 +41,7 @@ export const BulkGenerateClassesDialog = createCallable<
 				academicYearId: yearId,
 				sourceAcademicYearId: sourceYearId ?? undefined,
 			});
-			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
+			queryClient.invalidateQueries(trpc.classes.listPaged.queryFilter());
 			toast.success(
 				t("admin.classes.toast.bulkGenerateResult", {
 					created: result.created,

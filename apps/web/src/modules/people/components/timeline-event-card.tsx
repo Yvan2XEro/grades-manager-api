@@ -14,6 +14,15 @@ import type { TimelineEvent } from "../types";
 
 // ── Icon & colour per event type ──────────────────────────────────────────────
 
+const DECISION_LABEL_KEYS = {
+	admitted: "student.timeline.decision.admitted",
+	compensated: "student.timeline.decision.compensated",
+	deferred: "student.timeline.decision.deferred",
+	repeat: "student.timeline.decision.repeat",
+	excluded: "student.timeline.decision.excluded",
+	pending: "student.timeline.decision.pending",
+} as const;
+
 const DECISION_CONFIG: Record<
 	string,
 	{ variant: "success" | "destructive" | "secondary" | "outline" }
@@ -119,12 +128,13 @@ export function TimelineEventCard({ event }: { event: TimelineEvent }) {
 							}
 							className="text-xs"
 						>
-							{t(
-								`student.timeline.decision.${event.finalDecision}` as Parameters<
-									typeof t
-								>[0],
-								{ defaultValue: event.finalDecision },
-							)}
+							{event.finalDecision in DECISION_LABEL_KEYS
+								? t(
+										DECISION_LABEL_KEYS[
+											event.finalDecision as keyof typeof DECISION_LABEL_KEYS
+										],
+									)
+								: event.finalDecision}
 						</Badge>
 					)}
 				</div>

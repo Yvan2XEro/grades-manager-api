@@ -13,7 +13,7 @@ const HOW_IT_WORKS = [
 	{ icon: ListChecks, key: "order" },
 	{ icon: FileSpreadsheet, key: "template" },
 	{ icon: ShieldCheck, key: "checked" },
-];
+] as const;
 
 export default function DataImportPage() {
 	const { t } = useTranslation();

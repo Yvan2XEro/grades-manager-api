@@ -18,9 +18,9 @@ function useInvalidateMyNotifications() {
 	const queryClient = useQueryClient();
 	return () => {
 		queryClient.invalidateQueries(
-			trpc.notifications.myNotifications.queryKey(),
+			trpc.notifications.myNotifications.queryFilter(),
 		);
-		queryClient.invalidateQueries(trpc.notifications.unreadCount.queryKey());
+		queryClient.invalidateQueries(trpc.notifications.unreadCount.queryFilter());
 	};
 }
 

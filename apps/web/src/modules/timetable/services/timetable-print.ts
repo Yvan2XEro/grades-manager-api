@@ -99,7 +99,7 @@ export function printTimetable(
 							const teacher = tr
 								? `${tr.firstName ?? ""} ${tr.lastName ?? ""}`.trim()
 								: "";
-							const room = s.roomRef?.name ?? s.room ?? "";
+							const room = s.room ?? "";
 							return `<div class="card">
   <div class="course">${course}</div>
   ${cls ? `<div class="meta">${cls}</div>` : ""}

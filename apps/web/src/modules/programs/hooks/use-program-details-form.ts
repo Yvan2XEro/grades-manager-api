@@ -9,20 +9,21 @@ import { trpc, trpcClient } from "@/utils/trpc";
 import type { ProgramData } from "../types";
 import { useStudyCycles } from "./use-study-cycles";
 
+// Mirrors the server update schema: these text fields are not nullable there
 const schema = z.object({
 	name: z.string().min(1, "Name is required"),
 	nameEn: z.string().optional().nullable(),
 	code: z.string().min(1, "Code is required"),
 	abbreviation: z.string().optional().nullable(),
-	description: z.string().optional().nullable(),
+	description: z.string().optional(),
 	domainFr: z.string().optional().nullable(),
 	domainEn: z.string().optional().nullable(),
 	specialiteFr: z.string().optional().nullable(),
 	specialiteEn: z.string().optional().nullable(),
-	diplomaTitleFr: z.string().optional().nullable(),
-	diplomaTitleEn: z.string().optional().nullable(),
-	attestationValidityFr: z.string().optional().nullable(),
-	attestationValidityEn: z.string().optional().nullable(),
+	diplomaTitleFr: z.string().optional(),
+	diplomaTitleEn: z.string().optional(),
+	attestationValidityFr: z.string().optional(),
+	attestationValidityEn: z.string().optional(),
 	cycleId: z.string().nullable().optional(),
 	centerId: z.string().nullable().optional(),
 	isCenterProgram: z.boolean().optional(),

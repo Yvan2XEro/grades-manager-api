@@ -29,7 +29,7 @@ export default function AcademicTimeline() {
 			/>
 			<div className="w-64">
 				<AcademicYearSelect
-					value={academicYearId ?? undefined}
+					value={academicYearId}
 					onChange={setAcademicYearId}
 					placeholder={t("student.timeline.allAcademicYears")}
 				/>

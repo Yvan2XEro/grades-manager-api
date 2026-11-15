@@ -74,7 +74,7 @@ export function useStudentCourseRoster({
 				});
 			}
 			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
+				trpc.studentCourseEnrollments.list.queryFilter(),
 			);
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -90,7 +90,7 @@ export function useStudentCourseRoster({
 				}),
 			);
 			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
+				trpc.studentCourseEnrollments.list.queryFilter(),
 			);
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -109,7 +109,7 @@ export function useStudentCourseRoster({
 				}),
 			);
 			queryClient.invalidateQueries(
-				trpc.studentCourseEnrollments.list.queryKey(),
+				trpc.studentCourseEnrollments.list.queryFilter(),
 			);
 		},
 		onError: (error: Error) => toast.error(error.message),

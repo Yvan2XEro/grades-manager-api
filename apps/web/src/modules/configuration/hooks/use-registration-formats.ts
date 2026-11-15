@@ -17,7 +17,7 @@ export function useInvalidateRegistrationFormats() {
 	const queryClient = useQueryClient();
 	return () =>
 		queryClient.invalidateQueries(
-			trpc.registrationNumbers.list.queryKey(listInput),
+			trpc.registrationNumbers.list.queryFilter(listInput),
 		);
 }
 

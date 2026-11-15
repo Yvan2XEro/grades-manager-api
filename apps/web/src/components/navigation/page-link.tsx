@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -14,7 +15,7 @@ export function useOpenPage() {
 		if (!entry) return false;
 		const Page = entry.page;
 		PageDialog.call({
-			title: t(`navigation.pages.${entry.key}`),
+			title: t(`navigation.pages.${entry.key}` as ParseKeys),
 			content: <Page />,
 			showTitle: entry.untitled,
 		});
