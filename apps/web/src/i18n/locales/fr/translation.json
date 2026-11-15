@@ -138,7 +138,19 @@
       "deleting": "Suppression...",
       "deleteAll": "Tout supprimer"
     },
-    "logo": "Logo"
+    "logo": "Logo",
+    "a11y": {
+      "breadcrumb": "Fil d'Ariane",
+      "more": "Plus",
+      "close": "Fermer",
+      "pagination": "Pagination",
+      "previousPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "morePages": "Autres pages",
+      "loading": "Chargement"
+    }
   },
   "navigation": {
     "breadcrumbs": {
@@ -4145,7 +4157,9 @@
           "undone": "Import annulé",
           "undoneBadge": "Annulé",
           "blocked": "Des données ajoutées depuis dépendent de cet import : annulez d'abord les imports plus récents.",
-          "notUndoable": "Non annulable"
+          "notUndoable": "Non annulable",
+          "undoConfirm": "Annuler l'import",
+          "keep": "Le conserver"
         },
         "workbook": {
           "title": "Toute l'année dans un seul classeur",

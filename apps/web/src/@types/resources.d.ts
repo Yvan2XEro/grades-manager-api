@@ -140,6 +140,18 @@ interface Resources {
 				deleteAll: "Delete all";
 			};
 			logo: "Logo";
+			a11y: {
+				breadcrumb: "Breadcrumb";
+				more: "More";
+				close: "Close";
+				pagination: "Pagination";
+				previousPage: "Go to previous page";
+				nextPage: "Go to next page";
+				previous: "Previous";
+				next: "Next";
+				morePages: "More pages";
+				loading: "Loading";
+			};
 		};
 		teacher: {
 			courses: {
@@ -5168,6 +5180,8 @@ interface Resources {
 						undoneBadge: "Undone";
 						blocked: "Data added since depends on this import: undo the later imports first.";
 						notUndoable: "Cannot be undone";
+						undoConfirm: "Undo the import";
+						keep: "Keep it";
 					};
 					workbook: {
 						title: "All of the year in one workbook";

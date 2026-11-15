@@ -33,7 +33,8 @@ export function YearHistoryCard({
 				created: job.created,
 				updated: job.updated,
 			}),
-			confirmLabel: t(`${G}history.undo`),
+			confirmLabel: t(`${G}history.undoConfirm`),
+			cancelLabel: t(`${G}history.keep`),
 			mutationFn: async (call) => {
 				const result = await trpcClient.batchJobs.rollback.mutate({
 					jobId: job.id,
