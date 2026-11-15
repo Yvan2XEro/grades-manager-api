@@ -94,13 +94,7 @@ async function setupPVFixture(opts?: {
 
 	// Create student
 	const student = await createStudent({ class: klass.id });
-	await db.insert(schema.enrollments).values({
-		studentId: student.id,
-		classId: klass.id,
-		academicYearId: academicYear.id,
-		institutionId: klass.institutionId,
-		status: "active",
-	});
+	// createStudent already enrolls the student in the class
 
 	// Enroll in all class courses
 	for (const cc of [cc1a, cc1b, cc2a, cc2b]) {
@@ -354,13 +348,7 @@ describe("exports.getPVData", () => {
 
 		// Student 2
 		const student2 = await createStudent({ class: klass.id });
-		await db.insert(schema.enrollments).values({
-			studentId: student2.id,
-			classId: klass.id,
-			academicYearId: academicYear.id,
-			institutionId: instId,
-			status: "active",
-		});
+		// createStudent already enrolls the student in the class
 		for (const cc of [cc1a, cc1b, cc2a, cc2b]) {
 			await ensureStudentCourseEnrollment(student2.id, cc.id, "active");
 		}
