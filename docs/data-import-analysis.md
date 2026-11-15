@@ -1,207 +1,199 @@
-# Import des données — analyse (à valider avant tout code)
+# Data import — year import wizard (spec)
 
-> Remplace la partie « années » de `data-import-redesign.md`. Rien de ce qui suit n'est implémenté, sauf les 3 étapes « Fondations ».
+> Replaces the "years" part of `data-import-redesign.md`. Status: decided, in implementation. Only the three "Foundations" steps are shipped so far.
 
-## 1. Pour qui, pour quoi
+## 1. Who and why
 
-Le client type arrive avec **toutes ses données dans des fichiers** (Excel exportés d'un autre logiciel, PV de délibération, listes de classes) et plusieurs années d'historique. Il veut :
+The typical client arrives with **all its data in files** (Excel exports from another software, deliberation reports, class lists) and several years of history. They want to:
 
-- importer **en masse**, année par année, sans ressaisir quoi que ce soit ;
-- ne **jamais se perdre** : savoir à tout moment ce qui est fait, ce qui reste, ce qui bloque et pourquoi ;
-- **voir avant d'enregistrer** ce qui sera créé, modifié ou rejeté, ligne par ligne ;
-- pouvoir **corriger et réimporter** sans créer de doublons, et **annuler** un import raté.
+- import **in bulk**, year by year, without retyping anything;
+- **never get lost**: know at any time what is done, what is left, what is blocking and why;
+- **see before saving** what will be created, updated or rejected, row by row;
+- **fix and reimport** without creating duplicates, and **undo** a failed import.
 
-La saisie manuelle n'a pas sa place dans ce parcours : elle existe déjà dans l'application.
+Manual entry has no place in this flow: it already exists elsewhere in the application.
 
-## 2. Parcours proposé
+## 2. Flow
 
 ```
-Mise en route
-├── 1. Profil de l'institution            (formulaire, une fois)
-├── 2. Fondations                          (une fois, assistant en 3 étapes — existe)
-│      Cycles & niveaux → Programmes & options → UE & EC
-└── 3. Années académiques
-       [ + Importer une année ]  → assistant d'import de l'année
-       2023-2024  ██████████ terminée      [Reprendre] [Rapport]
-       2024-2025  ██████░░░░ 6/9 étapes    [Reprendre]
-       2025-2026  ░░░░░░░░░░ à faire       [Importer]
+Getting started
+├── 1. Institution profile                 (form, once)
+├── 2. Foundations                         (once, 3-step wizard — shipped)
+│      Cycles & levels → Programs & options → Teaching units & courses
+└── 3. Academic years
+       [ + Import a year ]  → year import wizard
+       2023-2024  ██████████ done          [Resume] [Report]
+       2024-2025  ██████░░░░ 6/9 steps     [Resume]
+       2025-2026  ░░░░░░░░░░ to do         [Import]
 ```
 
-### 2.1 « Importer une année » — l'assistant
+### 2.1 "Import a year" — the wizard
 
-Un seul assistant plein écran par année, qui **range tout ce qui est importable en étapes**, dans l'ordre des dépendances. À gauche, la liste des étapes avec leur statut ; à droite, l'étape en cours.
+One full-screen wizard per year that **lays out everything importable as steps**, in dependency order. Left: the list of steps with their status; right: the current step.
 
-**Étape 0 — Cadrage de l'année**
+**Step 0 — Year framing**
 
-- Choisir l'année (existante) ou la créer : nom (2024-2025), dates, semestres.
-- Type d'année :
-  - **Année passée (historique)** : examens clos et verrouillés après import, aucune notification envoyée, la classe actuelle des étudiants n'est pas modifiée.
-  - **Année en cours** : examens ouverts, workflow normal.
-- Façon d'apporter les fichiers :
-  - **un classeur par étape** (modèles pré-remplis à télécharger), ou
-  - **un classeur unique de l'année** : le client dépose un seul fichier contenant toutes ses feuilles. L'assistant reconnaît chaque feuille par ses colonnes et la range dans la bonne étape. Les étapes déjà couvertes passent directement en « à vérifier ».
+- Pick an existing year or create it: name (2024-2025), dates, semesters.
+- The year kind is **derived, not asked**: a year whose end date is in the past is historical (exams closed and locked after import, no notifications, students' current class untouched unless it is their latest year); otherwise it is a current year (exams open, normal workflow).
+- Files can be brought either as **one workbook per step** (pre-filled templates to download) or as **a single workbook for the year**: the wizard recognises each sheet by its headers and routes it to the right step. Steps already covered go straight to "to review". Both work at any time; there is no mode to choose.
 
-**Étapes 1 à 8 — même mécanique pour chacune**
+**Steps 1 to 8 — same mechanics for each**
 
-1. **Ce que fait l'étape** : 2 lignes d'explication, plus ce qui existe déjà pour cette année (ex. « 12 classes déjà présentes »).
-2. **Modèle** à télécharger, **pré-rempli** :
-   - données existantes de l'année ;
-   - listes déroulantes alimentées par les étapes précédentes (codes de classe, matricules, EC) ;
-   - colonnes obligatoires marquées.
-3. **Dépôt du fichier**, puis **prévisualisation dans une grande modale** :
-   - tableau de toutes les lignes, avec un statut par ligne : *créer*, *mettre à jour*, *inchangée*, *erreur*, *avertissement* ;
-   - filtres par statut et recherche ;
-   - erreurs affichées sur la cellule fautive, avec le correctif attendu ;
-   - pour une mise à jour, les valeurs avant et après ;
-   - « Télécharger le fichier annoté » : le fichier du client, avec les erreurs en commentaires sur les cellules.
-4. **Valider l'étape**. Seules les lignes valides sont enregistrées, et l'étape suivante devient disponible.
+1. **What the step does**: two lines of explanation, plus what already exists for this year (e.g. "12 classes already present").
+2. **Template** to download, **pre-filled** with:
+   - the year's existing data;
+   - dropdown lists fed by previous steps (class codes, registration numbers, courses);
+   - required columns marked.
+3. **File upload**, then a **preview in a large dialog**:
+   - every row with a status: *create*, *update*, *unchanged*, *error*, *warning*;
+   - filters by status and search;
+   - errors shown on the faulty cell, with the expected fix;
+   - for an update, the values before and after;
+   - "Download annotated file": the client's file with errors as cell comments.
+4. **Validate the step**. Only valid rows are saved, and the next step becomes available.
 
-Une étape optionnelle peut être marquée « ne s'applique pas ». L'assistant **se reprend où on l'a laissé** : l'état est enregistré côté serveur.
+An optional step can be marked "not applicable". The wizard **resumes where it was left**: its state is stored server-side.
 
-**Étape finale — Clôture de l'année**
+**Final step — Closing the year**
 
-- Récapitulatif : nombre d'objets créés et mis à jour par étape, lignes rejetées, avec un lien vers chaque rapport.
-- Traitements de fin, proposés et lancés en un clic :
-  - calcul des crédits ;
-  - bilans étudiants ;
-  - pour une année passée : création des délibérations de chaque classe, calculées à partir des notes importées et laissées en brouillon pour vérification.
-- **Comparaison avec les décisions officielles** (optionnelle) : si le client fournit les décisions de ses PV (admis, ajourné, redouble…), l'assistant liste les étudiants dont la décision calculée diffère. Les écarts révèlent une note manquante ou une règle mal configurée. Rien n'est écrasé en silence.
+- Summary: number of records created and updated per step, rejected rows, with a link to each report.
+- End-of-year processing, offered and started in one click:
+  - credit computation;
+  - student summaries;
+  - for a historical year: one deliberation per class, computed from the imported grades and left as draft for review.
+- **Comparison with official decisions**: when the file carries jury decisions (passed, failed, repeat…), the wizard lists the students whose computed decision differs. Gaps reveal a missing grade or a misconfigured rule. Nothing is overwritten silently.
 
-### 2.2 Les étapes d'une année
+### 2.2 The steps of a year
 
-| # | Étape | Obligatoire | Le client fournit | Ce que l'assistant peut générer seul |
-|---|-------|-------------|-------------------|--------------------------------------|
-| 1 | Classes | oui | code, nom, programme, option, niveau | proposition : une classe par programme × niveau (comme « Génération en masse ») ; le client complète ou corrige |
-| 2 | Enseignants | non | nom, e-mail, téléphone | — |
-| 3 | Étudiants & inscriptions | oui | matricule, identité, classe de l'année, statut | — |
-| 4 | Parents / tuteurs | non | étudiant (matricule), parent, lien | — |
-| 5 | Cours des classes (affectations) | oui | exceptions seulement | **tous les EC de la maquette** pour chaque classe (programme, niveau, semestre de l'UE), coefficient par défaut ; le fichier sert seulement à donner les enseignants et à corriger des coefficients |
-| 6 | Inscriptions aux cours | non | exceptions seulement (dispenses, rattrapages d'un EC d'une autre année) | **tous les étudiants inscrits × tous les cours de leur classe** |
-| 7 | Examens | oui | exceptions seulement | à partir d'un **modèle d'évaluation** choisi une fois (ex. CC 40 % + Examen 60 % + Rattrapage qui remplace) : appliqué à tous les cours ; dates facultatives |
-| 8 | Notes | oui | les notes | modèle en **grille façon PV** (voir 2.3), pré-rempli avec les étudiants et les examens des étapes 3 et 7 |
+| # | Step | Required | Client provides | What the wizard generates on its own |
+|---|------|----------|-----------------|---------------------------------------|
+| 1 | Classes | yes | code, name, program, option, level | proposal: one class per program × level (like "Bulk generation"); the client completes or fixes it |
+| 2 | Teachers | no | name, email, phone | — |
+| 3 | Students & enrollments | yes | registration number, identity, class of the year, status | — |
+| 4 | Parents / guardians | no | student (registration number), parent, relationship | — |
+| 5 | Class courses (assignments) | yes | exceptions only | **every course of the curriculum** for each class (program, level, teaching-unit semester), default coefficient; the file only gives teachers and coefficient fixes |
+| 6 | Course enrollments | no | exceptions only (exemptions, retakes of a course from another year) | **every enrolled student × every course of their class** |
+| 7 | Exams | yes | exceptions only | from an **evaluation model** chosen once (e.g. CA 40 % + Exam 60 % + Retake that replaces), applied to every course; dates optional |
+| 8 | Grades | yes | the grades | **report-style grid** template (see 2.3), pre-filled with the students and exams of steps 3 and 7 |
 
-L'essentiel est là : pour une année standard, **le client fournit 3 fichiers** (classes, étudiants, notes) **et fait 2 choix** (modèle d'évaluation, maquette appliquée). Tout le reste est déduit, et reste modifiable par fichier.
+For a standard year **the client provides 3 files** (classes, students, grades) **and makes 2 choices** (evaluation model, applied curriculum). Everything else is derived and stays editable by file.
 
-### 2.3 Les notes : la grille PV
+### 2.3 Grades: the report grid
 
-- **Un classeur par classe** (ou un seul classeur avec une feuille par couple classe/EC, au choix).
-- Feuille « EC — Algorithmique (INF111) » :
-  - lignes : les étudiants inscrits, pré-remplis (matricule, nom) ;
-  - colonnes : les examens (CC, Examen, Rattrapage), avec leur pondération en en-tête.
-- Valeurs acceptées :
-  - une note de 0 au maximum du barème (virgule ou point) ;
-  - `ABS` pour un absent (traité comme 0 ou ignoré, selon la règle d'absence de l'institution) ;
-  - vide = pas de note.
-- **Format long** aussi accepté, pour les exports d'autres logiciels : `matricule | classe | code EC | examen | note`.
-- Rattachement d'une note : année + classe + EC + type d'examen. Jamais par le nom de l'examen seul.
+- **One workbook per class**, or a single workbook with one sheet per class/course pair — both are accepted.
+- Sheet "Course — Algorithms (INF111)":
+  - rows: the enrolled students, pre-filled (registration number, name);
+  - columns: the exams (CA, Exam, Retake), with their weight in the header.
+- Accepted values:
+  - a grade from 0 to the scale maximum (comma or dot);
+  - `ABS` for an absent student;
+  - empty = no grade.
+- **Long format** also accepted, for exports from other software: `registration number | class | course code | exam | grade`.
+- A grade is attached by year + class + course + exam type, never by exam name alone.
 
-## 3. Liaisons entre les données
+## 3. Links between data
 
-### 3.1 Clés de rattachement (ce qui identifie une ligne dans un fichier)
+### 3.1 Natural keys (what identifies a row in a file)
 
-| Donnée | Clé naturelle | Référence vers | Unicité en base |
-|--------|---------------|----------------|-----------------|
+| Data | Natural key | References | Uniqueness in DB |
+|------|-------------|------------|------------------|
 | Cycle | code | — | (institution, code) |
-| Niveau | code cycle + code niveau | cycle | (cycle, code) |
-| Programme | code | cycle | (institution, code) |
-| Option | code programme + code option | programme | (programme, code) |
-| UE | code programme + code UE | programme | (programme, code) |
-| EC (cours) | code programme + code EC | programme, UE | (programme, code) |
-| Année | nom (2024-2025) | — | (institution, nom) |
-| Classe | code + année | programme, option, niveau, année | (code, année) |
-| Enseignant | e-mail | — | **aucune** (à garantir par l'import) |
-| Étudiant | **matricule** | personne | matricule unique (global) |
-| Inscription | matricule + année | étudiant, classe, année | **aucune** (à ajouter : étudiant + année) |
-| Cours de classe | code classe + code EC (+ année) | classe, EC, enseignant | (classe, EC) |
-| Inscription au cours | matricule + EC + année + tentative | étudiant, cours de classe | (étudiant, EC, année, tentative) |
-| Examen | classe + EC + type (+ année) | cours de classe, examen parent si rattrapage | **aucune** (à garantir par l'import : un type par cours) |
-| Note | matricule + examen | étudiant, examen | (étudiant, examen) |
+| Level | cycle code + level code | cycle | (cycle, code) |
+| Program | code | cycle | (institution, code) |
+| Option | program code + option code | program | (program, code) |
+| Teaching unit | program code + unit code | program | (program, code) |
+| Course | program code + course code | program, teaching unit | (program, code) |
+| Year | name (2024-2025) | — | (institution, name) |
+| Class | code + year | program, option, level, year | (code, year) |
+| Teacher | email | — | **none** (guaranteed by the import) |
+| Student | **registration number** | person | registration number (global) |
+| Enrollment | registration number + year | student, class, year | (student, year) — added |
+| Class course | class code + course code (+ year) | class, course, teacher | (class, course) |
+| Course enrollment | registration number + course + year + attempt | student, class course | (student, course, year, attempt) |
+| Exam | class + course + type (+ year) | class course, parent exam for a retake | **none** (guaranteed by the import: one exam per type per course) |
+| Grade | registration number + exam | student, exam | (student, exam) |
 
-### 3.2 Règles de résolution
+### 3.2 Resolution rules
 
-- **Les codes sont normalisés** (majuscules, sans espaces, sans accents) avant comparaison. Les en-têtes de colonnes sont reconnus sans tenir compte de la casse ni des accents.
-- **Une référence est résolue d'abord dans le fichier**, parmi les lignes valides d'une étape précédente du même assistant, **puis en base**. On peut donc tout déposer d'un coup dans le classeur unique : une classe créée dans la feuille « Classes » est reconnue par la feuille « Étudiants » avant même d'être enregistrée.
-- **Référence introuvable** : erreur sur la cellule, avec la correction attendue (« Classe IGL-BTS1 inconnue pour 2024-2025 : ajoutez-la dans la feuille Classes »). La ligne est rejetée, les autres continuent.
-- **Référence ambiguë** (ex. deux personnes avec le même nom et sans matricule) : erreur, jamais de choix arbitraire.
-- **Rejet en cascade, mais visible** : si une classe est rejetée, ses étudiants sont rejetés avec le message « classe rejetée à la ligne 12 de la feuille Classes ». Le client remonte à la cause en un clic.
-- **Réimport = mise à jour, jamais doublon** : la clé naturelle retrouve la ligne existante. Une ligne absente du fichier n'est **jamais supprimée**.
+- **Codes are normalised** (upper case, no spaces, no accents) before comparison. Column headers are matched ignoring case and accents.
+- **A reference is resolved first in the file**, among the valid rows of an earlier step of the same wizard, **then in the database**. Everything can therefore be dropped at once in the single workbook: a class created in the "Classes" sheet is known to the "Students" sheet before it is even saved.
+- **Unknown reference**: error on the cell, with the expected fix ("Class IGL-BTS1 unknown for 2024-2025: add it to the Classes sheet"). The row is rejected; the others go on.
+- **Ambiguous reference** (e.g. two people with the same name and no registration number): error, never an arbitrary pick.
+- **Cascading rejection, but visible**: if a class is rejected, its students are rejected with "class rejected at row 12 of the Classes sheet". The client reaches the cause in one click.
+- **Reimport = update, never a duplicate**: the natural key finds the existing row. A row missing from the file is **never deleted**.
 
-### 3.3 Principe : s'adapter au fichier, ligne par ligne
+### 3.3 Principle: adapt to the file, row by row
 
-L'assistant ne fait jamais choisir un mode global. **Chaque ligne est traitée selon ce qu'elle contient**, et un même fichier peut mélanger les situations.
+The wizard never asks for a global mode. **Each row is handled according to what it contains**, and one file may mix situations.
 
-- **Matricule** :
-  - fourni : il est conservé et sert de clé ;
-  - absent : il est généré selon le format de matricule de l'institution ;
-  - pour retrouver une personne déjà connue, l'assistant essaie dans l'ordre le matricule, l'e-mail, puis nom + prénom + date de naissance ;
-  - en cas de doute (deux personnes possibles), la ligne passe en erreur avec les candidats proposés.
-- **En-têtes** : synonymes reconnus (« Matricule », « N° matricule », « Registration number », « Mat. »…), sans tenir compte de la casse ni des accents. Les colonnes inconnues sont ignorées et signalées.
-- **Valeurs** :
-  - dates en `jj/mm/aaaa`, `aaaa-mm-jj` ou date Excel ;
-  - notes avec virgule ou point, sur 20 ou sur le barème de l'institution (détecté) ;
-  - codes tolérants aux espaces et à la casse.
-- **Absences** : `ABS`, `Abs`, `absent` ou `AJ` sont reconnus. Ils sont enregistrés comme une absence (participation) et non comme une note. Le calcul suit ensuite la règle d'absence déjà configurée pour l'institution.
-- **Décisions de jury des années passées** :
-  - si le fichier en contient (colonne « Décision » ou feuille du PV), elles sont comparées aux décisions recalculées ; chaque écart peut être retenu comme décision officielle, ce qui crée une dérogation tracée ;
-  - sinon, les décisions sont simplement calculées.
-- **Enseignants** :
-  - une fiche est créée, retrouvée par e-mail, ou par nom si l'e-mail manque ;
-  - créer un compte reste une action séparée (« Inviter les enseignants importés »), jamais imposée.
-- **Étudiant présent sur plusieurs années** : une seule personne et un seul dossier étudiant, avec une inscription par année. La classe actuelle n'est mise à jour que si l'année importée est la plus récente.
-- **Redoublant ou transfert** : il s'agit simplement de deux inscriptions sur deux années. L'origine d'un transfert (établissement, crédits) se renseigne dans des colonnes facultatives.
-- **Rattrapage** : il est rattaché à l'examen principal du même cours. La politique de calcul (remplace, meilleure note, moyenne) vient du modèle d'évaluation, et peut être précisée par cours.
-- **Somme des pondérations** des examens d'un cours différente de 100 % : avertissement, pas une erreur.
-- **Note sur un examen verrouillé** (réimport d'une année close) : refusée, sauf si l'admin rouvre explicitement l'année pour correction.
+- **Registration number**:
+  - provided: kept and used as key;
+  - missing: generated with the institution's registration number format;
+  - to find an already known person, the wizard tries, in order, registration number, email, then last name + first name + date of birth;
+  - when in doubt (two possible people), the row is an error listing the candidates.
+- **Headers**: synonyms recognised ("Matricule", "N° matricule", "Registration number", "Mat."…), ignoring case and accents. Unknown columns are ignored and reported.
+- **Values**:
+  - dates as `dd/mm/yyyy`, `yyyy-mm-dd` or Excel dates;
+  - grades with comma or dot, out of 20 or the institution's scale (detected);
+  - codes tolerant to spaces and case.
+- **Absences**: `ABS`, `Abs`, `absent` and `AJ` are recognised. They are stored as an absence (participation), not as a grade, and computed with the absence rule already configured for the institution.
+- **Jury decisions of past years**:
+  - when the file has them (a "Decision" column or report sheet), they are compared with the recomputed decisions; each gap can be kept as the official decision, which creates a traced override;
+  - otherwise decisions are simply computed.
+- **Teachers**:
+  - a profile is created, or found by email, or by name when the email is missing;
+  - creating an account stays a separate action ("Invite imported teachers"), never forced.
+- **Student present over several years**: one person and one student record, with one enrollment per year. The current class is only updated when the imported year is the most recent one.
+- **Repeaters and transfers**: simply two enrollments over two years. The origin of a transfer (institution, credits) goes in optional columns.
+- **Retake**: attached to the main exam of the same course. The scoring policy (replace, best, average) comes from the evaluation model and can be set per course.
+- **Exam weights of a course not summing to 100 %**: warning, not an error.
+- **Grade on a locked exam** (reimport of a closed year): refused, unless an administrator explicitly reopens the year for correction.
 
-## 4. Ce que l'import fait autour (et ce qu'il ne fait pas)
+## 4. What the import does around it (and what it does not)
 
-- **Il écrit directement**, sans passer par le workflow de saisie (soumission puis approbation par le doyen). Les règles de validation restent les mêmes :
-  - note dans le barème ;
-  - étudiant inscrit au cours ;
-  - pas d'examen verrouillé.
-- **Année passée** : à la clôture, les examens passent en *approuvé + verrouillé* et aucune notification n'est envoyée.
-- **Ne calcule pas** les décisions de jury à l'import. Elles sont recalculées par les délibérations, en fin d'assistant.
-- **Ne lance pas** le passage d'année (promotion vers l'année suivante) : quand on importe l'historique, les inscriptions de l'année suivante viennent du fichier, pas d'une promotion calculée.
-- **Les frais** (barèmes, paiements) : hors périmètre de la première version, à ajouter ensuite comme étape optionnelle.
+- **It writes directly**, without the grade-entry workflow (submission then approval by the dean). The validation rules stay the same:
+  - grade within the scale;
+  - student enrolled in the course;
+  - no locked exam.
+- **Historical year**: on closing, exams become *approved + locked* and no notification is sent.
+- **Does not compute** jury decisions at import time. They are computed by the deliberations at the end of the wizard.
+- **Does not run** the year transition (promotion to the next year): when importing history, next year's enrollments come from the file, not from a computed promotion.
+- **Fees** (fee structures, payments): an optional step delivered after grades (delivery 5).
 
-## 5. Annuler un import
+## 5. Undoing an import
 
-Chaque validation d'étape crée un **lot d'import**, qui garde la trace de chaque ligne créée et de chaque valeur modifiée (avec sa valeur d'avant). « Annuler ce lot » :
+Each validated step creates an **import batch** that records every created row and every changed value (with its previous value). "Undo this batch":
 
-- supprime ce qu'il a créé ;
-- restaure ce qu'il a modifié ;
-- refuse si des données créées ensuite en dépendent (ex. annuler les classes alors que des notes y sont rattachées), en listant ces dépendances.
+- deletes what it created;
+- restores what it changed;
+- refuses when data created later depends on it (e.g. undoing classes that already have grades), listing those dependencies.
 
-## 6. Écarts du code actuel à corriger pour que ça marche
+## 6. Gaps in the current code
 
-| Constat | Conséquence | Correction |
-|---------|-------------|------------|
-| `autoEnrollClass` prend les étudiants par `students.class` (classe actuelle) | inscriptions aux cours fausses pour une année passée | se baser sur `enrollments` de l'année |
-| `enrollments` sans unicité (étudiant, année) | doublons possibles à l'import | contrainte unique + migration de nettoyage |
-| `grades.upsertNote` exige les droits du workflow d'examen | inutilisable en masse | service d'écriture de notes en lot (mêmes contrôles, sans le workflow) |
-| examens sans unicité (cours, type) | rattachement des notes ambigu | l'import garantit un examen par type et par cours |
-| enseignants : aucune unicité sur l'e-mail | doublons de personnes | rattachement par e-mail normalisé dans l'import |
-| `semesters` globaux (S1/S2 pour toutes les institutions) | à vérifier avec la notion de semestre de l'année | utiliser les semestres existants, ne pas en créer à l'import |
-| anciens imports (`import.people`, `import.gradesBulk`…) | rattachement par nom d'examen, lignes ignorées en silence | remplacés par l'assistant, puis supprimés |
+| Finding | Consequence | Fix |
+|---------|-------------|-----|
+| `autoEnrollClass` selects students by `students.class` (current class) | wrong course enrollments for a past year | select by the year's `enrollments` |
+| `enrollments` has no (student, year) uniqueness | duplicates possible on import | unique constraint + cleanup migration |
+| `grades.upsertNote` requires exam-workflow rights | unusable in bulk | bulk grade-writing service (same checks, no workflow) |
+| exams have no (course, type) uniqueness | ambiguous grade attachment | the import guarantees one exam per type per course |
+| teachers: no email uniqueness | duplicate people | match by normalised email in the import |
+| `semesters` are global (S1/S2 for every institution) | — | use existing semesters, never create any on import |
+| legacy importers (`import.people`, `import.gradesBulk`…) | match by exam name, rows silently skipped | replaced by the wizard, then removed |
 
-## 7. Volumes et performance
+## 7. Volumes and performance
 
-Pour une institution moyenne sur une année : environ 2 000 étudiants, 60 classes, 1 500 cours de classe, 4 500 examens et 150 000 notes.
+For an average institution over one year: about 2,000 students, 60 classes, 1,500 class courses, 4,500 exams and 150,000 grades.
 
-- **Prévisualisation** : calculée côté serveur, avec un tableau paginé et filtré. On n'envoie jamais 150 000 lignes au navigateur.
-- **Validation** : traitement par lots en arrière-plan, avec avancement affiché dans l'assistant, par blocs de 500 lignes.
-- **Notes** : écriture en masse, puis un seul recalcul des crédits par étudiant à la clôture, et pas un par note.
+- **Preview**: computed server-side, shown as a paginated, filtered table. 150,000 rows are never sent to the browser.
+- **Validation**: background batch processing in chunks of 500 rows, with progress shown in the wizard.
+- **Grades**: bulk write, then a single credit recompute per student at closing, not one per grade.
 
-## 8. Livraison proposée
+## 8. Delivery plan
 
-1. **Assistant d'année** (cadrage, liste des étapes, reprise) + **Classes** + **Étudiants & inscriptions**, avec prévisualisation en modale et fichier annoté.
-2. **Cours des classes générés depuis la maquette** + **modèle d'évaluation** (examens générés) + **inscriptions aux cours générées**.
-3. **Notes en grille PV** et format long, puis **clôture** : crédits, verrouillage, délibérations en brouillon.
-4. **Classeur unique de l'année** (reconnaissance automatique des feuilles), **comparaison des décisions officielles**, **annulation d'un lot**.
-5. Enseignants, parents, puis frais.
+1. **Year wizard** (framing, step list, resume) + **Classes** + **Students & enrollments**, with preview dialog and annotated file.
+2. **Class courses generated from the curriculum** + **evaluation model** (generated exams) + **generated course enrollments**.
+3. **Grades** as report grid and long format, then **closing**: credits, locking, draft deliberations.
+4. **Single workbook for the year** (automatic sheet recognition), **comparison with official decisions**, **batch undo**.
+5. Teachers, parents, then fees.
 
-Chaque livraison est testée de bout en bout avec un jeu de fichiers réaliste : 3 années, 2 000 étudiants, avec redoublants, transferts et rattrapages.
-
-## 9. Reste ouvert
-
-- **Frais et paiements historiques** : prévus en étape optionnelle, livrés après les notes (livraison 5).
+Each delivery is tested end to end with a realistic file set: 3 years, 2,000 students, with repeaters, transfers and retakes.
