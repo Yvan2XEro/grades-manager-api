@@ -1,71 +1,71 @@
-# Guide des Règles de Passage et Admission d'Étudiants Externes
+# Guide to Promotion Rules and External Student Admission
 
-## Vue d'ensemble du système
+## System overview
 
-Le système utilise **json-rules-engine** pour évaluer automatiquement les étudiants selon des critères configurables. Chaque règle est définie en JSON et peut combiner plusieurs conditions.
+The system uses **json-rules-engine** to evaluate students automatically against configurable criteria. Each rule is defined in JSON and can combine several conditions.
 
-## Facts disponibles pour l'évaluation
+## Facts available for evaluation
 
-Chaque étudiant est évalué avec les données suivantes:
+Each student is evaluated with the following data:
 
 ### Identification
-- `studentId`: ID unique de l'étudiant
-- `registrationNumber`: Numéro de matricule
-- `classId`: Classe actuelle
-- `programCode`: Code du programme
-- `academicYearId`: Année académique
+- `studentId`: Unique ID of the student
+- `registrationNumber`: Registration number
+- `classId`: Current class
+- `programCode`: Program code
+- `academicYearId`: Academic year
 
-### Moyennes académiques
-- `overallAverage`: Moyenne générale pondérée (0-20)
-- `overallAverageUnweighted`: Moyenne non pondérée
-- `lowestScore`: Note la plus basse
-- `highestScore`: Note la plus haute
-- `lowestUnitAverage`: Moyenne UE la plus basse
+### Academic averages
+- `overallAverage`: Weighted overall average (0-20)
+- `overallAverageUnweighted`: Unweighted average
+- `lowestScore`: Lowest score
+- `highestScore`: Highest score
+- `lowestUnitAverage`: Lowest teaching unit (UE) average
 
-### Répartition des notes
-- `scoresAbove10`: Nombre de cours réussis (≥10)
-- `scoresBelow10`: Nombre d'échecs (<10)
-- `scoresBelow8`: Nombre d'échecs éliminatoires (<8)
-- `failedCoursesCount`: Total de cours échoués
-- `validatedCoursesCount`: Total de cours validés
+### Score distribution
+- `scoresAbove10`: Number of courses passed (≥10)
+- `scoresBelow10`: Number of failures (<10)
+- `scoresBelow8`: Number of eliminatory failures (<8)
+- `failedCoursesCount`: Total failed courses
+- `validatedCoursesCount`: Total validated courses
 
-### Crédits ECTS
-- `creditsEarned`: Crédits acquis (total)
-- `creditsEarnedThisYear`: Crédits acquis cette année
-- `creditsInProgress`: Crédits en cours
-- `requiredCredits`: Crédits requis pour le cycle
-- `creditDeficit`: Déficit de crédits
-- `creditCompletionRate`: Taux de complétion (0-1)
+### ECTS credits
+- `creditsEarned`: Credits earned (total)
+- `creditsEarnedThisYear`: Credits earned this year
+- `creditsInProgress`: Credits in progress
+- `requiredCredits`: Credits required for the cycle
+- `creditDeficit`: Credit deficit
+- `creditCompletionRate`: Completion rate (0-1)
 
-### Taux de réussite
-- `successRate`: Taux de réussite global (0-1)
-- `unitValidationRate`: Taux de validation des UE (0-1)
-- `firstAttemptSuccessRate`: Réussite en première tentative
-- `performanceIndex`: Indice de performance composite (0-100)
+### Success rates
+- `successRate`: Overall success rate (0-1)
+- `unitValidationRate`: Teaching unit validation rate (0-1)
+- `firstAttemptSuccessRate`: First-attempt success rate
+- `performanceIndex`: Composite performance index (0-100)
 
-### Échecs et compensation
-- `compensableFailures`: Échecs compensables (8-10)
-- `eliminatoryFailures`: Échecs éliminatoires (<8)
-- `failedTeachingUnitsCount`: Nombre d'UE échouées
+### Failures and compensation
+- `compensableFailures`: Compensable failures (8-10)
+- `eliminatoryFailures`: Eliminatory failures (<8)
+- `failedTeachingUnitsCount`: Number of failed teaching units
 
-### Tentatives et parcours
-- `coursesWithMultipleAttempts`: Cours avec plusieurs tentatives
-- `maxAttemptCount`: Nombre max de tentatives
-- `previousEnrollmentsCount`: Nombre d'inscriptions précédentes
-- `completedYears`: Années complétées
-- `isOnTrack`: Étudiant dans les temps (boolean)
+### Attempts and academic path
+- `coursesWithMultipleAttempts`: Courses with several attempts
+- `maxAttemptCount`: Maximum number of attempts
+- `previousEnrollmentsCount`: Number of previous enrollments
+- `completedYears`: Completed years
+- `isOnTrack`: Student on schedule (boolean)
 
 ---
 
-## Exemples de Règles Standard
+## Standard Rule Examples
 
-### 1. Règle de Passage Standard (Licence 1 → Licence 2)
+### 1. Standard Promotion Rule (Licence 1 → Licence 2)
 
-**Critères:**
-- Moyenne générale ≥ 10
-- Taux de réussite ≥ 70%
-- Maximum 2 UE échouées
-- Pas d'échec éliminatoire (<8)
+**Criteria:**
+- Overall average ≥ 10
+- Success rate ≥ 70%
+- At most 2 failed teaching units
+- No eliminatory failure (<8)
 
 ```json
 {
@@ -102,13 +102,13 @@ Chaque étudiant est évalué avec les données suivantes:
 }
 ```
 
-### 2. Règle avec Compensation (Passage avec dettes)
+### 2. Rule with Compensation (Promotion with carried-over debts)
 
-**Critères:**
-- Moyenne ≥ 10
-- Maximum 15 crédits de déficit
-- Pas plus de 1 échec éliminatoire
-- Taux de complétion ≥ 75%
+**Criteria:**
+- Average ≥ 10
+- At most 15 credits of deficit
+- No more than 1 eliminatory failure
+- Completion rate ≥ 75%
 
 ```json
 {
@@ -145,12 +145,12 @@ Chaque étudiant est évalué avec les données suivantes:
 }
 ```
 
-### 3. Règle Excellence (Passage avec Mention)
+### 3. Excellence Rule (Promotion with Honors)
 
-**Critères:**
-- Moyenne ≥ 14
-- Taux de réussite = 100%
-- Tous les crédits acquis
+**Criteria:**
+- Average ≥ 14
+- Success rate = 100%
+- All credits earned
 - Performance index ≥ 80
 
 ```json
@@ -188,13 +188,13 @@ Chaque étudiant est évalué avec les données suivantes:
 }
 ```
 
-### 4. Règle de Redoublement Autorisé
+### 4. Authorized Repeat-Year Rule
 
-**Critères:**
-- Moyenne entre 8 et 10
-- Maximum 2 redoublements précédents
-- Pas d'abandon de cours
-- Déficit de crédits < 30
+**Criteria:**
+- Average between 8 and 10
+- At most 2 previous repeated years
+- No dropped courses
+- Credit deficit < 30
 
 ```json
 {
@@ -231,12 +231,12 @@ Chaque étudiant est évalué avec les données suivantes:
 }
 ```
 
-### 5. Règle Basée sur les Crédits (Système LMD)
+### 5. Credit-Based Rule (LMD System)
 
-**Critères:**
-- Au moins 45 crédits acquis (sur 60)
-- Moyenne ≥ 10
-- Maximum 1 UE échouée
+**Criteria:**
+- At least 45 credits earned (out of 60)
+- Average ≥ 10
+- At most 1 failed teaching unit
 
 ```json
 {
@@ -270,55 +270,55 @@ Chaque étudiant est évalué avec les données suivantes:
 
 ---
 
-## Gestion des Étudiants Externes (Admission directe)
+## Handling External Students (Direct Admission)
 
-### Problématique
+### Problem
 
-Les étudiants venant d'autres établissements:
-- N'ont pas d'historique de notes dans le système
-- N'ont pas de crédits enregistrés
-- Sont admis directement à un niveau spécifique
-- Ne doivent pas être bloqués par les règles de passage standard
+Students coming from other institutions:
+- Have no grade history in the system
+- Have no recorded credits
+- Are admitted directly to a specific level
+- Must not be blocked by the standard promotion rules
 
-### Solution 1: Champ de Transfert (Recommandé)
+### Solution 1: Transfer Field (Recommended)
 
-**Modification nécessaire au schéma:**
+**Required schema change:**
 
-Ajouter un champ `isTransferStudent` ou `admissionType` à la table `students`:
+Add an `isTransferStudent` or `admissionType` field to the `students` table:
 
 ```typescript
-// Dans apps/server/src/db/schema/app-schema.ts
+// In apps/server/src/db/schema/app-schema.ts
 export const students = pgTable("students", {
-  // ... autres champs
+  // ... other fields
   admissionType: text("admission_type").default("normal"), // "normal", "transfer", "direct"
-  transferInstitution: text("transfer_institution"), // Nom de l'établissement d'origine
-  transferCredits: integer("transfer_credits").default(0), // Crédits transférés
-  transferLevel: text("transfer_level"), // Niveau d'admission (L1, L2, M1, etc.)
+  transferInstitution: text("transfer_institution"), // Name of the institution of origin
+  transferCredits: integer("transfer_credits").default(0), // Transferred credits
+  transferLevel: text("transfer_level"), // Admission level (L1, L2, M1, etc.)
 });
 ```
 
-**Modifier le service de facts:**
+**Update the facts service:**
 
 ```typescript
-// Dans student-facts.service.ts, ajouter au début de computeStudentFacts:
+// In student-facts.service.ts, add at the start of computeStudentFacts:
 const student = await db.query.students.findFirst({
   where: eq(schema.students.id, studentId),
   // ...
 });
 
-// Ajouter aux facts:
+// Add to the facts:
 const facts: StudentPromotionFacts = {
-  // ... autres facts
+  // ... other facts
 
-  // Nouveaux champs pour étudiants externes
+  // New fields for external students
   isTransferStudent: student.admissionType === "transfer",
   admissionType: student.admissionType,
   transferCredits: student.transferCredits ?? 0,
-  hasAcademicHistory: transcript.overallAverage > 0, // Indicateur si l'étudiant a des notes
+  hasAcademicHistory: transcript.overallAverage > 0, // Indicates whether the student has grades
 };
 ```
 
-**Règle spéciale pour étudiants externes:**
+**Special rule for external students:**
 
 ```json
 {
@@ -358,19 +358,19 @@ const facts: StudentPromotionFacts = {
 }
 ```
 
-### Solution 2: Inscription Manuelle Sans Règle
+### Solution 2: Manual Enrollment Without a Rule
 
-Pour les admissions exceptionnelles, créer une procédure administrative:
+For exceptional admissions, set up an administrative procedure:
 
-1. **Créer l'étudiant** avec `admissionType = "direct"`
-2. **L'inscrire directement** dans la classe cible
-3. **Enregistrer les crédits transférés** manuellement
-4. **Ne pas utiliser** le système de promotion automatique
+1. **Create the student** with `admissionType = "direct"`
+2. **Enroll them directly** in the target class
+3. **Record the transferred credits** manually
+4. **Do not use** the automatic promotion system
 
-**Code exemple:**
+**Example code:**
 
 ```typescript
-// Endpoint spécial pour admission directe
+// Special endpoint for direct admission
 admitExternalStudent: adminProcedure
   .input(z.object({
     studentData: z.object({
@@ -385,7 +385,7 @@ admitExternalStudent: adminProcedure
   }))
   .mutation(async ({ input, ctx }) => {
     return db.transaction(async (tx) => {
-      // Créer l'étudiant
+      // Create the student
       const student = await tx.insert(schema.students).values({
         ...input.studentData,
         admissionType: "direct",
@@ -394,7 +394,7 @@ admitExternalStudent: adminProcedure
         class: input.targetClassId,
       }).returning();
 
-      // Créer l'inscription directement
+      // Create the enrollment directly
       await tx.insert(schema.enrollments).values({
         studentId: student[0].id,
         classId: input.targetClassId,
@@ -411,9 +411,9 @@ admitExternalStudent: adminProcedure
   })
 ```
 
-### Solution 3: Règle de Passage "Bypass" pour Admissions Directes
+### Solution 3: "Bypass" Promotion Rule for Direct Admissions
 
-Créer une règle spéciale qui s'applique uniquement aux étudiants sans historique:
+Create a special rule that applies only to students without history:
 
 ```json
 {
@@ -441,17 +441,17 @@ Créer une règle spéciale qui s'applique uniquement aux étudiants sans histor
 }
 ```
 
-**Note:** Cette règle doit avoir une priorité élevée pour être évaluée en premier.
+**Note:** This rule must have a high priority so that it is evaluated first.
 
 ---
 
-## Règles Complexes avec Conditions Multiples
+## Complex Rules with Multiple Conditions
 
-### Règle avec Conditions OU (ANY)
+### Rule with OR Conditions (ANY)
 
-Admettre si l'une des conditions suivantes est remplie:
-- Moyenne ≥ 12 ET aucun échec
-- OU Crédits acquis ≥ 55/60 ET moyenne ≥ 10
+Admit if one of the following conditions is met:
+- Average ≥ 12 AND no failure
+- OR Credits earned ≥ 55/60 AND average ≥ 10
 
 ```json
 {
@@ -498,74 +498,74 @@ Admettre si l'une des conditions suivantes est remplie:
 
 ---
 
-## Recommandations d'Implémentation
+## Implementation Recommendations
 
-### 1. Hiérarchie des Règles
+### 1. Rule Hierarchy
 
-Créer plusieurs règles avec différentes priorités:
+Create several rules with different priorities:
 
-1. **Règle d'excellence** (priority: 100) - Pour les meilleurs étudiants
-2. **Règle standard** (priority: 50) - Passage normal
-3. **Règle avec dette** (priority: 30) - Passage conditionnel
-4. **Règle externe** (priority: 90) - Admissions directes
-5. **Règle de redoublement** (priority: 10) - Dernière chance
+1. **Excellence rule** (priority: 100) - For the best students
+2. **Standard rule** (priority: 50) - Normal promotion
+3. **Debt rule** (priority: 30) - Conditional promotion
+4. **External rule** (priority: 90) - Direct admissions
+5. **Repeat-year rule** (priority: 10) - Last resort
 
-### 2. Workflow Suggéré
+### 2. Suggested Workflow
 
 ```
-1. Évaluer l'étudiant avec toutes les règles actives
-2. Appliquer la règle de priorité la plus élevée qui match
-3. Enregistrer l'exécution avec justification
-4. Créer la nouvelle inscription
-5. Notifier l'étudiant et l'administration
+1. Evaluate the student against all active rules
+2. Apply the highest-priority rule that matches
+3. Record the execution with a justification
+4. Create the new enrollment
+5. Notify the student and the administration
 ```
 
-### 3. Interface Utilisateur
+### 3. User Interface
 
-Ajouter dans la page `/admin/promotion-rules`:
+Add to the `/admin/promotion-rules` page:
 
-- ✅ **Liste des règles** avec statut actif/inactif
-- ✅ **Éditeur JSON** avec validation en temps réel
-- ✅ **Testeur de règle** avec simulation sur un étudiant
-- ✅ **Templates** de règles pré-configurées
-- ✅ **Filtre par type** d'admission (normale, externe, excellence)
+- ✅ **Rule list** with active/inactive status
+- ✅ **JSON editor** with real-time validation
+- ✅ **Rule tester** with a simulation on one student
+- ✅ **Templates** of preconfigured rules
+- ✅ **Filter by admission type** (normal, external, excellence)
 
-### 4. Audit et Traçabilité
+### 4. Audit and Traceability
 
-Toutes les promotions doivent enregistrer:
-- La règle appliquée
-- Les facts de l'étudiant au moment de l'évaluation
-- L'utilisateur qui a déclenché l'action
-- La date et l'heure
-- Les étudiants concernés
+Every promotion must record:
+- The rule applied
+- The student's facts at the time of evaluation
+- The user who triggered the action
+- The date and time
+- The students concerned
 
 ---
 
 ## FAQ
 
-**Q: Comment tester une règle avant de l'appliquer?**
+**Q: How do I test a rule before applying it?**
 
-R: Utiliser l'endpoint `evaluateClassForPromotion` qui retourne les étudiants éligibles sans les promouvoir.
+A: Use the `evaluateClassForPromotion` endpoint, which returns the eligible students without promoting them.
 
-**Q: Peut-on combiner plusieurs règles?**
+**Q: Can several rules be combined?**
 
-R: Oui, le système évalue toutes les règles actives et applique celle avec la priorité la plus élevée.
+A: Yes, the system evaluates all active rules and applies the one with the highest priority.
 
-**Q: Comment gérer les cas particuliers?**
+**Q: How do I handle special cases?**
 
-R: Créer une règle spécifique avec une priorité élevée ou utiliser l'admission manuelle directe.
+A: Create a specific rule with a high priority, or use direct manual admission.
 
-**Q: Les crédits transférés sont-ils pris en compte?**
+**Q: Are transferred credits taken into account?**
 
-R: Oui, si vous ajoutez le champ `transferCredits` aux facts et l'additionnez à `creditsEarned`.
+A: Yes, if you add the `transferCredits` field to the facts and add it to `creditsEarned`.
 
 ---
 
-## Prochaines Étapes
+## Next Steps
 
-1. ✅ Ajouter les champs `admissionType` et `transferCredits` au schéma
-2. ✅ Mettre à jour le service de facts
-3. ✅ Créer les règles standard dans l'interface
-4. ✅ Tester avec des données réelles
-5. ✅ Former les administrateurs
-6. ✅ Documenter les règles spécifiques à votre établissement
+1. ✅ Add the `admissionType` and `transferCredits` fields to the schema
+2. ✅ Update the facts service
+3. ✅ Create the standard rules in the interface
+4. ✅ Test with real data
+5. ✅ Train the administrators
+6. ✅ Document the rules specific to your institution

@@ -12,8 +12,8 @@ Status: phase 1 done (hub, foundation steps, step wizard). The yearly import is 
 
 ## Target UX
 Hub `/import`:
-1. **Fondations** (once): Cycles & niveaux → Programmes & options → UE & EC. (Faculties are institutions of type `faculty`, created from the institution hub — not imported.)
-2. **Années académiques** (repeatable, oldest first): Année & semestres → Classes → Affectations (cours/enseignants) → Étudiants & inscriptions → Examens → Notes. Decisions/credits of past years are **recalculated** through deliberations (not imported).
+1. **Foundations** (once): Cycles & levels → Programs & options → UE & EC. (Faculties are institutions of type `faculty`, created from the institution hub — not imported.)
+2. **Academic years** (repeatable, oldest first): Year & semesters → Classes → Assignments (courses/teachers) → Students & enrollments → Exams → Grades. Decisions/credits of past years are **recalculated** through deliberations (not imported).
 
 Each step = wizard: explanation + automatic prerequisite check → year-specific pre-filled template with Excel dropdowns from the DB (existing rows included so re-import updates) → upload → row-level validation table (row, column, issue, fix) + create/update/unchanged/skipped summary + annotated error file → import with inline progress → result, "annuler cet import", next step. Also "Passer" and "Saisir manuellement" (links to the existing pages). Step status derived from data counts; skips stored per institution.
 

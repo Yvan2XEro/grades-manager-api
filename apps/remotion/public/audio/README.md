@@ -1,21 +1,21 @@
-# Audio files requis
+# Required audio files
 
-Placer les 3 fichiers MP3 dans ce dossier avant de lancer `bun run render`.
+Place the 3 MP3 files in this folder before running `bun run render`.
 
 ---
 
 ## background.mp3
-Musique de fond instrumentale — joue pendant toute la vidéo (fade in/out automatique).
+Instrumental background music — plays throughout the whole video (automatic fade in/out).
 
-**Style recommandé :** Corporate ambient, cinematic minimal, lo-fi instrumental.
-**Durée recommandée :** 2–5 min (la piste est en loop automatique).
+**Recommended style:** Corporate ambient, cinematic minimal, lo-fi instrumental.
+**Recommended length:** 2–5 min (the track loops automatically).
 
-Sources gratuites :
+Free sources:
 - https://pixabay.com/music/search/corporate/
 - https://freemusicarchive.org
 - https://musopen.org
 
-Suggestions Pixabay (rechercher) :
+Pixabay suggestions (search for):
 - "Corporate Inspiration" 
 - "Motivational Ambient"
 - "Professional Background"
@@ -23,37 +23,37 @@ Suggestions Pixabay (rechercher) :
 ---
 
 ## transition.mp3
-Son court joué au début de chaque scène (0.6–1 s).
+Short sound played at the start of each scene (0.6–1 s).
 
-**Style :** Whoosh subtil, swoosh léger, UI sound.
-**Volume appliqué :** 14% (déjà réduit dans le code).
+**Style:** Subtle whoosh, light swoosh, UI sound.
+**Applied volume:** 14% (already reduced in the code).
 
-Sources gratuites :
-- https://freesound.org (rechercher "whoosh" ou "swoosh")
+Free sources:
+- https://freesound.org (search for "whoosh" or "swoosh")
 - https://pixabay.com/sound-effects/search/whoosh/
 
 ---
 
 ## reveal.mp3  
-Chime discret pour les révélations d'éléments clés (optionnel, 0.3–0.5 s).
+Discreet chime for key element reveals (optional, 0.3–0.5 s).
 
-**Style :** Ting, chime, soft notification.
-**Volume appliqué :** 10%.
+**Style:** Ting, chime, soft notification.
+**Applied volume:** 10%.
 
-Sources gratuites :
-- https://freesound.org (rechercher "chime" ou "ding")
+Free sources:
+- https://freesound.org (search for "chime" or "ding")
 
 ---
 
-## Désactiver l'audio temporairement
+## Disabling audio temporarily
 
-Dans `src/lib/theme.ts`, mettre `enabled: false` dans le bloc `AUDIO` :
+In `src/lib/theme.ts`, set `enabled: false` in the `AUDIO` block:
 
 ```ts
 export const AUDIO = {
-  enabled: false,   // ← changer ici
+  enabled: false,   // ← change here
   ...
 } as const;
 ```
 
-Cela empêche toute erreur au render si les fichiers ne sont pas encore présents.
+This prevents any render error if the files are not present yet.

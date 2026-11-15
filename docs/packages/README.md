@@ -1,15 +1,15 @@
-# Packages commerciaux
+# Commercial packages
 
-Ce dossier contient les sources LaTeX de la proposition de forfaits de licences.
+This folder contains the LaTeX sources for the license packages proposal.
 
-## Fichiers
+## Files
 
-- `forfaits_licences.tex` : document principal
-- `package_variables.tex` : noms commerciaux et tarifs modifiables
+- `forfaits_licences.tex`: main document
+- `package_variables.tex`: editable product names and prices
 
-## Compilation
+## Build
 
-Depuis la racine du dépôt :
+From the repository root:
 
 ```bash
 cd docs/packages
@@ -20,4 +20,4 @@ pdflatex forfaits_licences.tex
 docker run --rm -v "$PWD/docs/packages:/work" -w /work ghcr.io/xu-cheng/texlive-small:latest sh -lc 'tlmgr install enumitem titlesec tcolorbox booktabs tabularx && pdflatex -interaction=nonstopmode -halt-on-error forfaits_licences.tex
 ```
 
-Pour changer les noms des logiciels ou les prix, modifier uniquement `package_variables.tex`.
+To change the software names or the prices, edit only `package_variables.tex`.

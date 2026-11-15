@@ -1,49 +1,49 @@
-# Résumé des Modifications : Support des Étudiants Externes
+# Summary of Changes: Support for External Students
 
-## ✅ Modifications Implémentées
+## ✅ Implemented Changes
 
-### 1. Migration de Base de Données ✅
+### 1. Database Migration ✅
 
-**Fichier créé:** `apps/server/src/db/migrations/0003_add_external_students_support.sql`
+**File created:** `apps/server/src/db/migrations/0003_add_external_students_support.sql`
 
-**Modifications à la table `students`:**
+**Changes to the `students` table:**
 - ✅ `admission_type` TEXT NOT NULL DEFAULT 'normal'
 - ✅ `transfer_institution` TEXT
 - ✅ `transfer_credits` INTEGER DEFAULT 0
 - ✅ `transfer_level` TEXT
 - ✅ `admission_justification` TEXT
 - ✅ `admission_date` TIMESTAMP WITH TIME ZONE
-- ✅ Index créé sur `admission_type`
-- ✅ Contrainte CHECK pour valeurs valides
+- ✅ Index created on `admission_type`
+- ✅ CHECK constraint for valid values
 
-**Modifications à la table `enrollments`:**
+**Changes to the `enrollments` table:**
 - ✅ `admission_metadata` JSONB DEFAULT '{}'
 
-**Journal de migration:**
-- ✅ Mis à jour `meta/_journal.json` avec la nouvelle migration
+**Migration journal:**
+- ✅ Updated `meta/_journal.json` with the new migration
 
-### 2. Schéma Drizzle ✅
+### 2. Drizzle Schema ✅
 
-**Fichier:** `apps/server/src/db/schema/app-schema.ts`
+**File:** `apps/server/src/db/schema/app-schema.ts`
 
-**Types ajoutés:**
+**Types added:**
 ```typescript
 export const admissionTypes = ["normal", "transfer", "direct", "equivalence"];
 export type AdmissionType = (typeof admissionTypes)[number];
 ```
 
-**Table `students` mise à jour (lignes 503-538):**
-- ✅ Tous les nouveaux champs ajoutés
-- ✅ Index créé sur `admissionType`
+**`students` table updated (lines 503-538):**
+- ✅ All new fields added
+- ✅ Index created on `admissionType`
 
-**Table `enrollments` mise à jour (ligne 744):**
-- ✅ Champ `admissionMetadata` ajouté
+**`enrollments` table updated (line 744):**
+- ✅ `admissionMetadata` field added
 
-### 3. Types de Promotion ✅
+### 3. Promotion Types ✅
 
-**Fichier:** `apps/server/src/modules/promotion-rules/promotion-rules.types.ts`
+**File:** `apps/server/src/modules/promotion-rules/promotion-rules.types.ts`
 
-**Nouveaux champs dans `StudentPromotionFacts` (lignes 96-103):**
+**New fields in `StudentPromotionFacts` (lines 96-103):**
 ```typescript
 admissionType: "normal" | "transfer" | "direct" | "equivalence";
 isTransferStudent: boolean;
@@ -54,22 +54,22 @@ transferInstitution: string | null;
 transferLevel: string | null;
 ```
 
-### 4. Service de Calcul des Facts ✅
+### 4. Facts Computation Service ✅
 
-**Fichier:** `apps/server/src/modules/promotion-rules/student-facts.service.ts`
+**File:** `apps/server/src/modules/promotion-rules/student-facts.service.ts`
 
-**Modifications (lignes 93-167):**
-- ✅ Les crédits transférés sont ajoutés aux `creditsEarned`
-- ✅ Le `creditDeficit` prend en compte les crédits transférés
-- ✅ Le `creditCompletionRate` inclut les crédits transférés
-- ✅ Tous les indicateurs avancés recalculés avec crédits transférés
-- ✅ Nouveaux champs externes calculés et retournés
+**Changes (lines 93-167):**
+- ✅ Transferred credits are added to `creditsEarned`
+- ✅ `creditDeficit` takes transferred credits into account
+- ✅ `creditCompletionRate` includes transferred credits
+- ✅ All advanced indicators recomputed with transferred credits
+- ✅ New external fields computed and returned
 
-### 5. Module Students - Schémas Zod ✅
+### 5. Students Module - Zod Schemas ✅
 
-**Fichier:** `apps/server/src/modules/students/students.zod.ts`
+**File:** `apps/server/src/modules/students/students.zod.ts`
 
-**Nouveaux schémas (lignes 28-65):**
+**New schemas (lines 28-65):**
 ```typescript
 const externalAdmissionFieldsSchema = z.object({
   admissionType: admissionTypeEnum.optional().default("normal"),
@@ -98,15 +98,15 @@ export const externalAdmissionSchema = profileSchema.merge(
 ).strict();
 ```
 
-- ✅ `baseSchema` mis à jour pour inclure les champs externes
-- ✅ `updateSchema` mis à jour pour supporter les champs externes
-- ✅ Nouveau `externalAdmissionSchema` créé
+- ✅ `baseSchema` updated to include the external fields
+- ✅ `updateSchema` updated to support the external fields
+- ✅ New `externalAdmissionSchema` created
 
-### 6. Module Students - Service ✅
+### 6. Students Module - Service ✅
 
-**Fichier:** `apps/server/src/modules/students/students.service.ts`
+**File:** `apps/server/src/modules/students/students.service.ts`
 
-**Type `CreateStudentInput` étendu (lignes 24-35):**
+**`CreateStudentInput` type extended (lines 24-35):**
 ```typescript
 type CreateStudentInput = {
   classId: string;
@@ -122,11 +122,11 @@ type CreateStudentInput = {
 };
 ```
 
-**Fonction `createStudent` mise à jour (lignes 105-136):**
-- ✅ Tous les champs externes ajoutés lors de la création
-- ✅ Métadonnées d'admission ajoutées à l'enrollment si type ≠ normal
+**`createStudent` function updated (lines 105-136):**
+- ✅ All external fields added on creation
+- ✅ Admission metadata added to the enrollment if type ≠ normal
 
-**Nouvelle fonction `admitExternalStudent` (lignes 317-357):**
+**New `admitExternalStudent` function (lines 317-357):**
 ```typescript
 export async function admitExternalStudent(
   data: {
@@ -144,22 +144,22 @@ export async function admitExternalStudent(
   institutionId: string,
 )
 ```
-- ✅ Validation que le type n'est pas "normal"
-- ✅ Utilise `createStudent` avec les champs externes
+- ✅ Validates that the type is not "normal"
+- ✅ Uses `createStudent` with the external fields
 
-### 7. Module Students - Router ✅
+### 7. Students Module - Router ✅
 
-**Fichier:** `apps/server/src/modules/students/students.router.ts`
+**File:** `apps/server/src/modules/students/students.router.ts`
 
-**Import ajouté (ligne 10):**
+**Import added (line 10):**
 ```typescript
 import { externalAdmissionSchema } from "./students.zod";
 ```
 
-**Endpoint `create` mis à jour (lignes 42-58):**
-- ✅ Tous les champs d'admission passés au service
+**`create` endpoint updated (lines 42-58):**
+- ✅ All admission fields passed to the service
 
-**Nouvel endpoint `admitExternal` (lignes 59-77):**
+**New `admitExternal` endpoint (lines 59-77):**
 ```typescript
 admitExternal: tenantAdminProcedure
   .input(externalAdmissionSchema)
@@ -184,29 +184,29 @@ admitExternal: tenantAdminProcedure
 
 ---
 
-## 📋 Prochaines Étapes
+## 📋 Next Steps
 
-### 1. Exécuter la Migration
+### 1. Run the Migration
 
 ```bash
 cd apps/server
 bun db:migrate
 ```
 
-### 2. Tester les Endpoints
+### 2. Test the Endpoints
 
-**Test 1: Créer un étudiant normal**
+**Test 1: Create a normal student**
 ```typescript
 await trpcClient.students.create.mutate({
   firstName: "Test",
   lastName: "Student",
   email: "test@example.com",
   classId: "class-id",
-  admissionType: "normal", // Optionnel, par défaut
+  admissionType: "normal", // Optional, default
 });
 ```
 
-**Test 2: Admettre un étudiant externe**
+**Test 2: Admit an external student**
 ```typescript
 await trpcClient.students.admitExternal.mutate({
   firstName: "Jean",
@@ -222,7 +222,7 @@ await trpcClient.students.admitExternal.mutate({
 });
 ```
 
-**Test 3: Évaluer un étudiant externe avec règle de promotion**
+**Test 3: Evaluate an external student with a promotion rule**
 ```typescript
 const evaluation = await trpcClient.promotionRules.evaluateClass.query({
   ruleId: "rule-id",
@@ -230,16 +230,16 @@ const evaluation = await trpcClient.promotionRules.evaluateClass.query({
   academicYearId: "year-2024-2025",
 });
 
-// L'étudiant externe devrait apparaître dans evaluation.eligible
-// si une règle de bypass est configurée
+// The external student should appear in evaluation.eligible
+// if a bypass rule is configured
 ```
 
-### 3. Créer des Règles de Promotion
+### 3. Create Promotion Rules
 
-Dans l'interface admin (`/admin/promotion-rules`), créer une règle de bypass:
+In the admin interface (`/admin/promotion-rules`), create a bypass rule:
 
-**Nom:** "Admission Directe - Étudiants Externes"
-**Priorité:** 100
+**Name:** "Admission Directe - Étudiants Externes" (Direct Admission - External Students)
+**Priority:** 100
 
 **JSON:**
 ```json
@@ -277,70 +277,70 @@ Dans l'interface admin (`/admin/promotion-rules`), créer une règle de bypass:
 }
 ```
 
-### 4. Interface Utilisateur (Optionnel)
+### 4. User Interface (Optional)
 
-Créer un formulaire dans `apps/web/src/pages/admin/StudentManagement.tsx` pour l'admission d'étudiants externes avec:
+Create a form in `apps/web/src/pages/admin/StudentManagement.tsx` for admitting external students, with:
 
-- ✅ Champs de profil standard (nom, prénom, email, etc.)
-- ✅ Sélection du type d'admission (transfert, direct, équivalence)
-- ✅ Champ établissement d'origine
-- ✅ Saisie des crédits transférés
-- ✅ Niveau d'admission (L1, L2, M1, etc.)
-- ✅ Zone de texte pour justification
-- ✅ Sélection de date d'admission
-
----
-
-## 🎯 Avantages de cette Implémentation
-
-1. **Traçabilité Complète**
-   - Chaque admission externe est justifiée et datée
-   - Métadonnées stockées dans l'enrollment
-   - Audit trail complet
-
-2. **Flexibilité**
-   - Supporte 4 types d'admission (normal, transfer, direct, equivalence)
-   - Crédits transférés automatiquement pris en compte
-   - Règles de promotion adaptables
-
-3. **Intégration Transparente**
-   - Les étudiants externes sont traités normalement après admission
-   - Les crédits transférés comptent dans tous les calculs
-   - Compatible avec le système de promotion existant
-
-4. **Pas de Breaking Changes**
-   - Les étudiants existants ont `admissionType = "normal"`
-   - L'endpoint `create` fonctionne toujours normalement
-   - Rétrocompatibilité totale
-
-5. **Système de Règles Puissant**
-   - Bypass automatique pour admissions directes
-   - Règles spécifiques pour transferts avec crédits
-   - Priorités configurables
+- ✅ Standard profile fields (last name, first name, email, etc.)
+- ✅ Admission type selection (transfer, direct, equivalence)
+- ✅ Institution of origin field
+- ✅ Input for transferred credits
+- ✅ Admission level (L1, L2, M1, etc.)
+- ✅ Text area for the justification
+- ✅ Admission date picker
 
 ---
 
-## 📊 Statistiques
+## 🎯 Benefits of This Implementation
 
-- **7 fichiers modifiés**
-- **1 fichier de migration créé**
-- **2 nouveaux types TypeScript**
-- **1 nouvel endpoint API**
-- **7 nouveaux champs en base de données**
-- **1 nouvelle fonction de service**
+1. **Full Traceability**
+   - Every external admission is justified and dated
+   - Metadata stored in the enrollment
+   - Complete audit trail
+
+2. **Flexibility**
+   - Supports 4 admission types (normal, transfer, direct, equivalence)
+   - Transferred credits automatically taken into account
+   - Adaptable promotion rules
+
+3. **Seamless Integration**
+   - External students are treated normally after admission
+   - Transferred credits count in all calculations
+   - Compatible with the existing promotion system
+
+4. **No Breaking Changes**
+   - Existing students have `admissionType = "normal"`
+   - The `create` endpoint still works normally
+   - Full backward compatibility
+
+5. **Powerful Rules System**
+   - Automatic bypass for direct admissions
+   - Specific rules for transfers with credits
+   - Configurable priorities
+
+---
+
+## 📊 Statistics
+
+- **7 files changed**
+- **1 migration file created**
+- **2 new TypeScript types**
+- **1 new API endpoint**
+- **7 new database fields**
+- **1 new service function**
 
 ---
 
 ## ⚠️ Important
 
-**Avant de mettre en production:**
-1. ✅ Exécuter la migration sur un environnement de test
-2. ✅ Tester tous les scénarios d'admission
-3. ✅ Vérifier que les crédits transférés sont correctement comptabilisés
-4. ✅ S'assurer que les règles de promotion fonctionnent
-5. ✅ Former les administrateurs au nouveau processus
-6. ✅ Documenter les procédures d'admission externe
+**Before going to production:**
+1. ✅ Run the migration on a test environment
+2. ✅ Test all admission scenarios
+3. ✅ Check that transferred credits are counted correctly
+4. ✅ Make sure the promotion rules work
+5. ✅ Train administrators on the new process
+6. ✅ Document the external admission procedures
 
-**Documentation à consulter:**
-- `/docs/PROMOTION_RULES_EXAMPLES.md` - Exemples de règles
-- `/docs/EXTERNAL_STUDENTS_IMPLEMENTATION.md` - Guide détaillé
+**Documentation to consult:**
+- `/docs/PROMOTION_RULES_EXAMPLES.md` - Rule examples
+- `/docs/EXTERNAL_STUDENTS_IMPLEMENTATION.md` - Detailed guide

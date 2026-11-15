@@ -1,505 +1,505 @@
-# Audit complet — Fonctionnalités manquantes et incomplètes
+# Full Audit — Missing and Incomplete Features
 
-## Résumé exécutif
+## Executive Summary
 
-L'application grades-manager-api dispose d'une base solide (architecture modulaire, schéma DB riche, exports PDF existants, gestion des rattrapages), mais présente **des lacunes significatives** pour un système de gestion des notes complet. Ce document inventorie tout ce qui manque, est incomplet ou nécessite une correction.
+The grades-manager-api application has a solid foundation (modular architecture, rich DB schema, existing PDF exports, retake handling), but has **significant gaps** for a complete grades management system. This document inventories everything that is missing, incomplete, or needs fixing.
 
-### Tableau de synthèse
+### Summary Table
 
-| Sévérité | Nombre | Description |
+| Severity | Count | Description |
 |----------|--------|-------------|
-| 🔴 Critique | 6 | Fonctions de base absentes ou cassées |
-| 🟠 Important | 11 | Fonctions attendues incomplètes |
-| 🟡 Moyen | 10 | Améliorations significatives manquantes |
-| 🔵 Mineur | 8 | Nice-to-have et polish |
+| 🔴 Critical | 6 | Core features missing or broken |
+| 🟠 Important | 11 | Expected features incomplete |
+| 🟡 Medium | 10 | Significant improvements missing |
+| 🔵 Minor | 8 | Nice-to-have and polish |
 
-> **Note** : La génération de documents académiques officiels (relevés de notes, attestations de réussite, diplômes) est gérée par l'application **DIPLOMATION** (système externe). grades-manager-api fournit uniquement les données via des exports Excel. Voir `docs/integration-diplomation.md` pour les détails.
+> **Note**: The generation of official academic documents (transcripts, certificates of completion, diplomas) is handled by the **DIPLOMATION** application (external system). grades-manager-api only supplies the data via Excel exports. See `docs/integration-diplomation.md` for details.
 
 ---
 
-## Table des matières
+## Table of Contents
 
-1. [Backend — Modules manquants](#1-backend--modules-manquants)
-2. [Backend — Modules incomplets](#2-backend--modules-incomplets)
-3. [Backend — Problèmes de schéma DB](#3-backend--problèmes-de-schéma-db)
-4. [Backend — Logique métier manquante](#4-backend--logique-métier-manquante)
+1. [Backend — Missing modules](#1-backend--missing-modules)
+2. [Backend — Incomplete modules](#2-backend--incomplete-modules)
+3. [Backend — DB schema issues](#3-backend--db-schema-issues)
+4. [Backend — Missing business logic](#4-backend--missing-business-logic)
 5. [Backend — Tests](#5-backend--tests)
-6. [Backend — Code à corriger](#6-backend--code-à-corriger)
-7. [Frontend — Pages manquantes](#7-frontend--pages-manquantes)
-8. [Frontend — Pages incomplètes](#8-frontend--pages-incomplètes)
-9. [Configuration et infrastructure](#9-configuration-et-infrastructure)
-10. [Sécurité et autorisations](#10-sécurité-et-autorisations)
+6. [Backend — Code to fix](#6-backend--code-to-fix)
+7. [Frontend — Missing pages](#7-frontend--missing-pages)
+8. [Frontend — Incomplete pages](#8-frontend--incomplete-pages)
+9. [Configuration and infrastructure](#9-configuration-and-infrastructure)
+10. [Security and authorization](#10-security-and-authorization)
 11. [Performance](#11-performance)
-12. [Plan de résolution priorisé](#12-plan-de-résolution-priorisé)
+12. [Prioritized resolution plan](#12-prioritized-resolution-plan)
 
 ---
 
-## 1. Backend — Modules manquants
+## 1. Backend — Missing modules
 
-### 1.1 🔴 Module Délibérations — ABSENT
+### 1.1 🔴 Deliberations module — MISSING
 
-**Statut** : Non implémenté
-**Impact** : Critique — C'est le processus central de validation officielle des résultats
+**Status**: Not implemented
+**Impact**: Critical — This is the central process for officially validating results
 
-Le système ne dispose d'aucun mécanisme de délibération. Les PV sont générés directement depuis les notes brutes sans passage par un jury.
+The system has no deliberation mechanism at all. PVs (official results minutes) are generated directly from raw grades without going through a jury.
 
-**Ce qui manque** :
-- Pas de table `deliberations` ni de gestion du cycle de vie (draft → open → closed → signed)
-- Pas de décisions officielles par étudiant (admis, ajourné, redoublant, exclu)
-- Pas de décisions par UE avec validation/compensation du jury
-- Pas de composition du jury ni de signatures
-- Pas d'audit trail des surcharges manuelles
-- Pas de mentions officielles validées par le jury
+**What is missing**:
+- No `deliberations` table and no lifecycle management (draft → open → closed → signed)
+- No official per-student decisions (passed, deferred, repeating, excluded)
+- No per-UE (teaching unit) decisions with jury validation/compensation
+- No jury composition or signatures
+- No audit trail of manual overrides
+- No official honors validated by the jury
 
-**Référence** : Un design complet existe dans `docs/deliberations-design.md`
-
----
-
-### 1.2 🔴 Module Présence/Assiduité — ABSENT
-
-**Statut** : Stub frontend uniquement
-**Fichier frontend** : `apps/web/src/pages/teacher/AttendanceAlerts.tsx`
-
-**Ce qui existe** :
-- Un endpoint `workflows.attendanceAlert` dans le router (envoi d'alertes)
-- Une page frontend basique qui appelle cet endpoint
-
-**Ce qui manque** :
-- Aucune table `student_attendance` dans le schéma
-- Aucun enregistrement de présence/absence par séance
-- Aucun calcul de taux de présence
-- Aucun impact de l'assiduité sur les notes ou la validation
-- Aucune feuille d'appel ou émargement
-- Le frontend utilise un `classCourseId` hardcodé à `""` (cassé)
+**Reference**: A complete design exists in `docs/deliberations-design.md`
 
 ---
 
-### 1.3 ℹ️ Documents académiques officiels — HORS PÉRIMÈTRE
+### 1.2 🔴 Attendance module — MISSING
 
-> **Relevés de notes, attestations de réussite, diplômes** : Ces documents sont générés par l'application externe **DIPLOMATION** (SGN-Notes). grades-manager-api exporte les données au format Excel attendu par DIPLOMATION.
+**Status**: Frontend stub only
+**Frontend file**: `apps/web/src/pages/teacher/AttendanceAlerts.tsx`
+
+**What exists**:
+- A `workflows.attendanceAlert` endpoint in the router (sends alerts)
+- A basic frontend page that calls this endpoint
+
+**What is missing**:
+- No `student_attendance` table in the schema
+- No recording of presence/absence per session
+- No attendance rate calculation
+- No impact of attendance on grades or validation
+- No roll call or attendance sign-in sheet
+- The frontend uses a `classCourseId` hardcoded to `""` (broken)
+
+---
+
+### 1.3 ℹ️ Official academic documents — OUT OF SCOPE
+
+> **Transcripts, certificates of completion, diplomas**: These documents are generated by the external **DIPLOMATION** application (SGN-Notes). grades-manager-api exports the data in the Excel format expected by DIPLOMATION.
 >
-> Voir `docs/integration-diplomation.md` pour le mapping complet des colonnes et le plan d'export.
+> See `docs/integration-diplomation.md` for the full column mapping and the export plan.
 >
-> La fonction `grades.service.getStudentTranscript()` reste utile pour **l'affichage interne** des notes dans le frontend (dashboard étudiant), mais la génération de PDF officiels n'est pas dans le périmètre de cette application.
+> The `grades.service.getStudentTranscript()` function remains useful for **internal display** of grades in the frontend (student dashboard), but generating official PDFs is not within the scope of this application.
 
 ---
 
-### 1.4 🔴 Module Statistiques et Analytiques — ABSENT
+### 1.4 🔴 Statistics and Analytics module — MISSING
 
-**Statut** : Non implémenté
-**Impact** : Pas de visibilité sur les performances des classes/programmes
+**Status**: Not implemented
+**Impact**: No visibility into class/program performance
 
-**Ce qui manque** :
-- Pas de calcul de moyenne de classe
-- Pas de distribution des notes (histogramme)
-- Pas de classement des étudiants (rang)
-- Pas de taux de réussite par cours/UE/classe
-- Pas de comparaison inter-classes ou inter-années
-- Pas de tableau de bord analytique
-- Pas d'indicateurs de performance clés (KPI) par programme
-
----
-
-### 1.5 🟠 Module Prérequis de cours — TABLE INUTILISÉE
-
-**Statut** : Table DB définie, aucune implémentation
-**Fichier** : `apps/server/src/db/schema/app-schema.ts` (lignes 728-751)
-
-**Ce qui existe** :
-- Table `coursePrerequisites` avec champs `courseId`, `prerequisiteCourseId`, `type`, `minGrade`
-
-**Ce qui manque** :
-- Aucun router, service, ou repo
-- Aucune validation lors de l'inscription aux cours
-- Aucune vérification que l'étudiant a validé le prérequis avant de s'inscrire
-- Aucune UI pour configurer les prérequis
+**What is missing**:
+- No class average calculation
+- No grade distribution (histogram)
+- No student ranking
+- No pass rate per course/UE/class
+- No cross-class or cross-year comparison
+- No analytics dashboard
+- No key performance indicators (KPIs) per program
 
 ---
 
-### 1.6 🟠 Module Calendrier académique — MINIMAL
+### 1.5 🟠 Course prerequisites module — UNUSED TABLE
 
-**Statut** : Seules les dates start/end des années académiques existent
+**Status**: DB table defined, no implementation
+**File**: `apps/server/src/db/schema/app-schema.ts` (lines 728-751)
 
-**Ce qui manque** :
-- Pas de périodes d'examens définies
-- Pas de jours fériés/vacances
-- Pas d'événements académiques (rentrée, fin de cours, délibérations)
-- Pas de coordination des plannings d'examens (conflits horaires)
-- Pas de gestion des salles/lieux d'examen
+**What exists**:
+- `coursePrerequisites` table with fields `courseId`, `prerequisiteCourseId`, `type`, `minGrade`
 
----
-
-## 2. Backend — Modules incomplets
-
-### 2.1 🔴 `domain-users` — Service et router manquants
-
-**Statut** : Seul le `.repo.ts` existe
-**Fichier** : `apps/server/src/modules/domain-users/`
-
-**Ce qui existe** :
-- `domain-users.repo.ts` — Requêtes DB de base
-
-**Ce qui manque** :
-- `domain-users.router.ts` — Aucun endpoint API
-- `domain-users.service.ts` — Aucune logique métier
-- `domain-users.zod.ts` — Aucune validation
-- Conséquence : la gestion des profils utilisateurs (enseignants, étudiants, personnel) n'a pas d'API complète
+**What is missing**:
+- No router, service, or repo
+- No validation during course enrollment
+- No check that the student has passed the prerequisite before enrolling
+- No UI to configure prerequisites
 
 ---
 
-### 2.2 🔴 `grades` — Transcript incomplet
+### 1.6 🟠 Academic calendar module — MINIMAL
 
-**Fichier** : `apps/server/src/modules/grades/grades.service.ts` (ligne 381+)
+**Status**: Only the start/end dates of academic years exist
 
-**Problème** : La fonction `getStudentTranscript()` est coupée/incomplète dans le code source.
-
-**Ce qui manque dans le service grades** :
-- Calcul de GPA (Grade Point Average) non pondéré et pondéré
-- Validation des plages de notes (devrait être 0-20 mais pas vérifié partout)
-- Arrondi/précision des notes non standardisé
-- Pas de statut "Incomplet" pour une note (seulement `null` ou valeur numérique)
+**What is missing**:
+- No defined exam periods
+- No public holidays/vacations
+- No academic events (start of the year, end of classes, deliberations)
+- No coordination of exam schedules (time conflicts)
+- No management of exam rooms/venues
 
 ---
 
-### 2.3 🟠 `exams` — Politiques académiques hardcodées
+## 2. Backend — Incomplete modules
 
-**Fichier** : `apps/server/src/modules/exams/exams.service.ts` (ligne 367)
+### 2.1 🔴 `domain-users` — Service and router missing
 
-**TODO dans le code** :
+**Status**: Only the `.repo.ts` exists
+**File**: `apps/server/src/modules/domain-users/`
+
+**What exists**:
+- `domain-users.repo.ts` — Basic DB queries
+
+**What is missing**:
+- `domain-users.router.ts` — No API endpoints
+- `domain-users.service.ts` — No business logic
+- `domain-users.zod.ts` — No validation
+- Consequence: user profile management (teachers, students, staff) has no complete API
+
+---
+
+### 2.2 🔴 `grades` — Incomplete transcript
+
+**File**: `apps/server/src/modules/grades/grades.service.ts` (line 381+)
+
+**Problem**: The `getStudentTranscript()` function is truncated/incomplete in the source code.
+
+**What is missing in the grades service**:
+- Unweighted and weighted GPA (Grade Point Average) calculation
+- Grade range validation (should be 0-20 but not checked everywhere)
+- Non-standardized grade rounding/precision
+- No "Incomplete" status for a grade (only `null` or a numeric value)
+
+---
+
+### 2.3 🟠 `exams` — Hardcoded academic policies
+
+**File**: `apps/server/src/modules/exams/exams.service.ts` (line 367)
+
+**TODO in the code**:
 ```typescript
 // TODO(INST-SETTINGS): centralize academic policy resolution
 // (passing threshold, retake attempts, etc.)
 ```
 
-**Problème** : Les valeurs sont hardcodées :
-- `DEFAULT_PASSING_GRADE = 10` — utilisé partout au lieu de lire la config institution
-- `DEFAULT_REQUIRED_CREDITS = 60` — devrait dépendre du cycle/niveau
-- Nombre max de tentatives de rattrapage — hardcodé à 2
-- Pas de configuration par programme ou par cycle
+**Problem**: The values are hardcoded:
+- `DEFAULT_PASSING_GRADE = 10` — used everywhere instead of reading the institution config
+- `DEFAULT_REQUIRED_CREDITS = 60` — should depend on the cycle/level
+- Maximum number of retake attempts — hardcoded to 2
+- No per-program or per-cycle configuration
 
 ---
 
-### 2.4 🟠 `workflows` — Flux de validation incomplet
+### 2.4 🟠 `workflows` — Incomplete validation flow
 
-**Fichier** : `apps/server/src/modules/workflows/`
+**File**: `apps/server/src/modules/workflows/`
 
-**Ce qui existe** :
-- `validateGrades` — Approuve un examen et le verrouille
-- `enrollmentWindow` — Ouvre/ferme les inscriptions
-- `attendanceAlert` — Envoie une alerte (stub)
+**What exists**:
+- `validateGrades` — Approves an exam and locks it
+- `enrollmentWindow` — Opens/closes enrollments
+- `attendanceAlert` — Sends an alert (stub)
 
-**Ce qui manque** :
-- Pas de workflow multi-niveaux (enseignant → chef de département → doyen → registraire)
-- Pas de rejet avec commentaire/feedback
-- Pas de cycle de révision (soumission → rejet → correction → re-soumission)
-- Pas de suivi de l'état du workflow
-- Pas d'escalade automatique (timeout)
-
----
-
-### 2.5 🟠 `notifications` — N'envoie rien
-
-**Fichier** : `apps/server/src/modules/notifications/`
-
-**Ce qui existe** :
-- Table `notifications` dans le schéma
-- File d'attente (`sendPending()` toutes les 1 minute dans les background jobs)
-- Statut `pending` → `sent`
-
-**Ce qui manque** :
-- **Aucun envoi réel d'email** — le statut passe à "sent" sans rien envoyer
-- Pas de configuration SMTP
-- Pas d'envoi de SMS ou webhook
-- Pas de templates d'email
-- Pas de retry en cas d'échec
-- Pas d'historique de délivrance
-- Pas de préférences de notification par utilisateur
+**What is missing**:
+- No multi-level workflow (teacher → head of department → dean → registrar)
+- No rejection with comment/feedback
+- No revision cycle (submission → rejection → correction → resubmission)
+- No workflow state tracking
+- No automatic escalation (timeout)
 
 ---
 
-### 2.6 🟠 `export-templates` — Pas de validation des templates
+### 2.5 🟠 `notifications` — Sends nothing
 
-**Ce qui existe** :
-- CRUD complet pour les templates Handlebars
-- Templates par défaut pour PV, Evaluation, UE
+**File**: `apps/server/src/modules/notifications/`
 
-**Ce qui manque** :
-- Aucune validation syntaxique du Handlebars à la sauvegarde
-- Pas de preview avec données de test avant activation
-- Pas d'export Excel (seulement PDF/HTML)
+**What exists**:
+- `notifications` table in the schema
+- Queue (`sendPending()` every 1 minute in the background jobs)
+- Status `pending` → `sent`
 
-> Note : Les templates pour bulletins individuels, attestations et diplômes ne sont pas dans le périmètre — ces documents sont générés par DIPLOMATION.
-
----
-
-### 2.7 🟠 `batch-jobs` — Framework incomplet
-
-**Ce qui existe** :
-- Infrastructure de jobs avec création, exécution, rollback
-- 2 types de jobs : `credit-ledger-recompute`, `student-facts-refresh`
-
-**Ce qui manque** :
-- Pas d'interface pour voir la progression des jobs
-- Pas de planification automatique (cron)
-- Pas de retry en cas d'échec
-- Pas de timeout des jobs bloqués
-- Pas de notifications de fin/échec de job
+**What is missing**:
+- **No actual email sending** — the status switches to "sent" without sending anything
+- No SMTP configuration
+- No SMS or webhook sending
+- No email templates
+- No retry on failure
+- No delivery history
+- No per-user notification preferences
 
 ---
 
-### 2.8 🟡 `registration-numbers` — Risque de race condition
+### 2.6 🟠 `export-templates` — No template validation
 
-**Fichier** : `apps/server/src/modules/registration-numbers/`
+**What exists**:
+- Full CRUD for Handlebars templates
+- Default templates for PV, Evaluation, UE
 
-**Problème** : L'incrémentation du compteur (`registrationNumberCounters`) n'est pas protégée contre les accès concurrents. Deux inscriptions simultanées pourraient obtenir le même numéro.
+**What is missing**:
+- No Handlebars syntax validation on save
+- No preview with test data before activation
+- No Excel export (only PDF/HTML)
 
-**Ce qui manque** :
-- Lock optimiste ou `SELECT ... FOR UPDATE`
-- Pas de régénération en lot si le format change
-- Pas de validation que les numéros existants respectent le format
-
----
-
-### 2.9 🟡 `student-promotion-summaries` — Pas de mise à jour automatique
-
-**Problème** : Les résumés de promotion (`studentPromotionSummaries`) ne sont **pas recalculés automatiquement** quand une note change. Il faut un refresh manuel via `refreshClassSummaries`.
-
-**Impact** :
-- Les données de promotion peuvent être obsolètes
-- Les exports DIPLOMATION utilisent des données potentiellement périmées
-- Le calcul de crédits peut ne pas refléter les dernières notes
-
-**Ce qui manque** :
-- Trigger automatique après modification de note
-- Invalidation du cache quand une note change
-- Indicateur de fraîcheur des données
+> Note: Templates for individual report cards, certificates and diplomas are out of scope — these documents are generated by DIPLOMATION.
 
 ---
 
-### 2.10 🟡 `rules-engine` — Implémentation minimale
+### 2.7 🟠 `batch-jobs` — Incomplete framework
 
-**Fichier** : `apps/server/src/modules/rules-engine/` (3 fichiers, ~382 lignes)
+**What exists**:
+- Job infrastructure with creation, execution, rollback
+- 2 job types: `credit-ledger-recompute`, `student-facts-refresh`
 
-**Ce qui existe** :
-- Wrapper basique autour de json-rules-engine
-- Quelques règles d'exemple
-
-**Ce qui manque** :
-- Pas d'interface pour créer des règles personnalisées
-- Pas de validation complète des rulesets
-- Pas de simulation/test de règles avec des données fictives
-- Pas de documentation des facts disponibles
+**What is missing**:
+- No interface to view job progress
+- No automatic scheduling (cron)
+- No retry on failure
+- No timeout for stuck jobs
+- No job completion/failure notifications
 
 ---
 
-## 3. Backend — Problèmes de schéma DB
+### 2.8 🟡 `registration-numbers` — Race condition risk
 
-### 3.1 Tables définies mais inutilisées
+**File**: `apps/server/src/modules/registration-numbers/`
 
-| Table | Localisation dans le schéma | Problème |
+**Problem**: Incrementing the counter (`registrationNumberCounters`) is not protected against concurrent access. Two simultaneous enrollments could get the same number.
+
+**What is missing**:
+- Optimistic locking or `SELECT ... FOR UPDATE`
+- No bulk regeneration if the format changes
+- No validation that existing numbers match the format
+
+---
+
+### 2.9 🟡 `student-promotion-summaries` — No automatic update
+
+**Problem**: Promotion summaries (`studentPromotionSummaries`) are **not recalculated automatically** when a grade changes. A manual refresh via `refreshClassSummaries` is required.
+
+**Impact**:
+- Promotion data can be stale
+- DIPLOMATION exports use potentially outdated data
+- The credit calculation may not reflect the latest grades
+
+**What is missing**:
+- Automatic trigger after a grade change
+- Cache invalidation when a grade changes
+- Data freshness indicator
+
+---
+
+### 2.10 🟡 `rules-engine` — Minimal implementation
+
+**File**: `apps/server/src/modules/rules-engine/` (3 files, ~382 lines)
+
+**What exists**:
+- Basic wrapper around json-rules-engine
+- A few example rules
+
+**What is missing**:
+- No interface to create custom rules
+- No complete validation of rulesets
+- No simulation/testing of rules with mock data
+- No documentation of the available facts
+
+---
+
+## 3. Backend — DB schema issues
+
+### 3.1 Tables defined but unused
+
+| Table | Location in the schema | Problem |
 |-------|---------------------------|----------|
-| `coursePrerequisites` | lignes 728-751 | Aucun module ne l'utilise |
-| `classCourseAccessLogs` | — | Logging minimal, pas exploité |
+| `coursePrerequisites` | lines 728-751 | No module uses it |
+| `classCourseAccessLogs` | — | Minimal logging, not used |
 
-### 3.2 Champs manquants dans les tables existantes
+### 3.2 Missing fields in existing tables
 
-| Table | Champ manquant | Raison |
+| Table | Missing field | Reason |
 |-------|---------------|--------|
-| `courses` | `isActive` (boolean) | Impossible de désactiver un cours sans le supprimer |
-| `courses` | `nameEn` (text) | Pas de traduction anglaise pour l'export DIPLOMATION |
-| `programs` | `nameEn` (text) | Idem |
-| `programOptions` | `nameEn` (text) | Idem |
-| `studyCycles` | `nameEn` (text) | Idem |
-| `classes` | `capacity` (integer) | Pas de limite d'inscription par classe |
-| `classes` | `status` (text) | Pas de statut ouvert/fermé/archivé |
-| `domainUsers` | `middleName` (text) | Pas de deuxième prénom |
-| `students` | `photoUrl` (text) | Pas de photo d'étudiant |
-| `enrollmentWindows` | `notes` (text) | Pas de raison pour l'ouverture/fermeture |
-| `exams` | `room` (text) | Pas de salle d'examen |
-| `exams` | `duration` (integer) | Pas de durée d'examen (seulement dans la config institution) |
+| `courses` | `isActive` (boolean) | Impossible to deactivate a course without deleting it |
+| `courses` | `nameEn` (text) | No English translation for the DIPLOMATION export |
+| `programs` | `nameEn` (text) | Same |
+| `programOptions` | `nameEn` (text) | Same |
+| `studyCycles` | `nameEn` (text) | Same |
+| `classes` | `capacity` (integer) | No enrollment limit per class |
+| `classes` | `status` (text) | No open/closed/archived status |
+| `domainUsers` | `middleName` (text) | No middle name |
+| `students` | `photoUrl` (text) | No student photo |
+| `enrollmentWindows` | `notes` (text) | No reason for opening/closing |
+| `exams` | `room` (text) | No exam room |
+| `exams` | `duration` (integer) | No exam duration (only in the institution config) |
 
-### 3.3 Index manquants
+### 3.3 Missing indexes
 
-| Table | Index manquant | Impact |
+| Table | Missing index | Impact |
 |-------|---------------|--------|
-| `students` | `registrationNumber` | Recherche lente par matricule |
-| `grades` | `(student, exam, createdAt)` | Performance des requêtes de notes |
-| `enrollments` | `(classId, academicYearId, status)` | Filtrage des inscriptions actives |
-| `classCourses` | `(classId, semesterId)` | Requêtes fréquentes dans les exports |
+| `students` | `registrationNumber` | Slow lookup by registration number |
+| `grades` | `(student, exam, createdAt)` | Grade query performance |
+| `enrollments` | `(classId, academicYearId, status)` | Filtering active enrollments |
+| `classCourses` | `(classId, semesterId)` | Frequent queries in exports |
 
-### 3.4 Données redondantes
+### 3.4 Redundant data
 
-| Redondance | Tables impliquées | Problème |
+| Redundancy | Tables involved | Problem |
 |-----------|-------------------|----------|
-| Données d'admission | `enrollments.admissionType` + `enrollments.admissionMetadata` | Les mêmes infos sont stockées en colonne ET en JSONB |
-| Nom de classe | `studentPromotionSummaries.className` + `classes.name` | Snapshot dupliqué qui peut diverger |
-| Code programme | `studentPromotionSummaries.programCode` + `programs.code` | Idem |
+| Admission data | `enrollments.admissionType` + `enrollments.admissionMetadata` | The same info is stored in a column AND in JSONB |
+| Class name | `studentPromotionSummaries.className` + `classes.name` | Duplicated snapshot that can diverge |
+| Program code | `studentPromotionSummaries.programCode` + `programs.code` | Same |
 
-### 3.5 Champs JSONB non typés/non indexés
+### 3.5 Untyped/unindexed JSONB fields
 
-| Table | Champ JSONB | Problème |
+| Table | JSONB field | Problem |
 |-------|-------------|----------|
-| `studentPromotionSummaries.facts` | Blob de 50+ KB par enregistrement | Pas d'index GIN, requêtes lentes |
-| `studentPromotionSummaries.averagesByTeachingUnit` | Record non indexé | Impossible de filtrer par UE |
-| `examScheduleRuns.classIds` | Array de class IDs | Pas d'intégrité référentielle |
-| `promotionExecutionResults.rulesMatched` | Array de strings | Pas de validation |
-| `batchJobs.metadata` | Arbitraire | Pas de typage |
+| `studentPromotionSummaries.facts` | 50+ KB blob per record | No GIN index, slow queries |
+| `studentPromotionSummaries.averagesByTeachingUnit` | Unindexed record | Impossible to filter by UE |
+| `examScheduleRuns.classIds` | Array of class IDs | No referential integrity |
+| `promotionExecutionResults.rulesMatched` | Array of strings | No validation |
+| `batchJobs.metadata` | Arbitrary | No typing |
 
 ---
 
-## 4. Backend — Logique métier manquante
+## 4. Backend — Missing business logic
 
-### 4.1 🔴 Accès étudiant à ses propres notes
+### 4.1 🔴 Student access to their own grades
 
-**Statut** : Non implémenté
+**Status**: Not implemented
 
-Aucun endpoint ne permet à un étudiant de :
-- Voir ses notes par examen
-- Voir ses moyennes par cours et par UE
-- Voir son relevé de notes
-- Voir son classement dans la classe
-- Voir ses crédits obtenus et restants
+No endpoint lets a student:
+- See their grades per exam
+- See their averages per course and per UE
+- See their transcript
+- See their rank in the class
+- See their earned and remaining credits
 
-Le frontend a un `PerformanceDashboard` mais il utilise des données de placeholder.
-
----
-
-### 4.2 🟠 Calcul de moyennes incomplet
-
-**Ce qui existe** :
-- Moyenne par UE dans `student-facts.service` (pondérée par coefficients)
-- Moyenne générale dans `studentPromotionSummaries` (pondérée par crédits)
-
-**Ce qui manque** :
-- Pas de moyenne semestrielle explicite
-- Pas de moyenne annuelle distincte (combinant S1 + S2)
-- Pas de GPA cumulatif sur plusieurs années
-- Pas de distinction moyenne pondérée / non pondérée dans les exports
-- Pas de gestion des bonus/malus (assiduité, projet, etc.)
+The frontend has a `PerformanceDashboard` but it uses placeholder data.
 
 ---
 
-### 4.3 🟠 Compensation entre UE — Non implémenté
+### 4.2 🟠 Incomplete average calculation
 
-**Contexte** : Dans le système LMD, une UE avec une moyenne < 10 peut être "compensée" si la moyenne générale est ≥ 10 et que la note de l'UE est au-dessus d'un seuil minimum (ex: 8/20).
+**What exists**:
+- Per-UE average in `student-facts.service` (weighted by coefficients)
+- Overall average in `studentPromotionSummaries` (weighted by credits)
 
-**Statut** : Le concept existe dans le design des délibérations mais pas dans le code actuel. Les exports PV marquent simplement "Nac" sans vérifier si une compensation est possible.
-
----
-
-### 4.4 🟡 Gestion des examens de substitution/report
-
-**Ce qui manque** :
-- Pas de notion d'examen reporté (étudiant absent pour raison valable)
-- Pas de distinction entre absence justifiée et injustifiée
-- Pas de note "ABI" (Absent Injustifié = 0) vs "ABJ" (Absent Justifié = report)
+**What is missing**:
+- No explicit semester average
+- No separate annual average (combining S1 + S2)
+- No cumulative GPA across several years
+- No weighted / unweighted average distinction in exports
+- No handling of bonuses/penalties (attendance, project, etc.)
 
 ---
 
-### 4.5 🟡 Validation des notes à la saisie
+### 4.3 🟠 Compensation between UEs — Not implemented
 
-**Ce qui manque** :
-- Pas de vérification que la note est dans l'échelle de l'institution (0-20 par défaut, mais certains cours pourraient être sur 40 ou 100)
-- Pas de vérification de cohérence (un CC à 18 et un examen à 2 est suspect)
-- Pas d'alerte pour les notes anormalement hautes ou basses
-- Pas de blocage de saisie après la date limite
+**Context**: In the LMD system, a UE with an average < 10 can be "compensated" if the overall average is ≥ 10 and the UE grade is above a minimum threshold (e.g. 8/20).
+
+**Status**: The concept exists in the deliberations design but not in the current code. PV exports simply mark "Nac" without checking whether compensation is possible.
 
 ---
 
-### 4.6 🟡 Gestion du redoublement
+### 4.4 🟡 Handling of substitute/deferred exams
 
-**Ce qui manque** :
-- Pas de suivi du nombre de redoublements consécutifs
-- Pas de règle d'exclusion automatique après N redoublements
-- Pas de report des UE validées d'une année précédente (capitalisation)
-- Pas de gestion des dettes (UE à repasser)
+**What is missing**:
+- No notion of a deferred exam (student absent for a valid reason)
+- No distinction between excused and unexcused absence
+- No "ABI" grade (Absent Injustifié — unexcused absence = 0) vs "ABJ" (Absent Justifié — excused absence = deferral)
 
 ---
 
-### 4.7 🟡 Capitalisation des UE
+### 4.5 🟡 Grade validation on entry
 
-**Contexte** : Dans le LMD, un étudiant qui redouble conserve les UE déjà validées. Il ne repasse que les UE non acquises.
+**What is missing**:
+- No check that the grade is within the institution's scale (0-20 by default, but some courses could be out of 40 or 100)
+- No consistency check (a continuous assessment at 18 and an exam at 2 is suspicious)
+- No alert for abnormally high or low grades
+- No entry lock after the deadline
 
-**Statut** : Non implémenté. Aucun mécanisme ne permet de :
-- Marquer une UE comme "capitalisée" (validée l'année précédente)
-- Exclure les UE capitalisées du calcul de la moyenne de l'année en cours
-- Reporter automatiquement les crédits capitalisés
+---
+
+### 4.6 🟡 Handling of repeated years
+
+**What is missing**:
+- No tracking of the number of consecutive repeated years
+- No automatic exclusion rule after N repeated years
+- No carry-over of UEs passed in a previous year (capitalization)
+- No handling of outstanding debts (UEs to retake)
+
+---
+
+### 4.7 🟡 UE capitalization
+
+**Context**: In the LMD system, a student who repeats a year keeps the UEs already passed. They only retake the UEs not yet acquired.
+
+**Status**: Not implemented. No mechanism allows:
+- Marking a UE as "capitalized" (passed the previous year)
+- Excluding capitalized UEs from the current year's average calculation
+- Automatically carrying over capitalized credits
 
 ---
 
 ## 5. Backend — Tests
 
-### 5.1 Modules sans aucun test
+### 5.1 Modules without any tests
 
-Les modules suivants n'ont **aucun fichier de test** :
+The following modules have **no test file**:
 
-| Module | Criticité | Impact |
+| Module | Criticality | Impact |
 |--------|-----------|--------|
-| `cycle-levels` | 🟡 | CRUD basique, risque faible |
-| `domain-users` | 🟠 | Module incomplet de toute façon |
-| `institutions` | 🟠 | Config critique (export_config) |
-| `notifications` | 🟠 | Aucune vérification du système de notification |
-| `program-options` | 🟡 | CRUD basique |
-| `promotion-rules` | 🔴 | Logique complexe de promotion non testée |
-| `rules-engine` | 🟠 | Moteur de règles non testé |
-| `student-credit-ledger` | 🔴 | Calcul de crédits non testé |
-| `study-cycles` | 🟡 | CRUD basique |
-| `workflows` | 🟠 | Flux de validation non testé |
-| `batch-jobs` | 🟡 | Framework de jobs non testé |
-| `export-templates` | 🟡 | Gestion de templates non testée |
-| `exam-scheduler` | 🟠 | Planification non testée |
-| `exam-types` | 🟡 | CRUD basique |
-| `files` | 🟡 | Gestion de fichiers non testée |
+| `cycle-levels` | 🟡 | Basic CRUD, low risk |
+| `domain-users` | 🟠 | Incomplete module anyway |
+| `institutions` | 🟠 | Critical config (export_config) |
+| `notifications` | 🟠 | No verification of the notification system |
+| `program-options` | 🟡 | Basic CRUD |
+| `promotion-rules` | 🔴 | Complex promotion logic untested |
+| `rules-engine` | 🟠 | Rules engine untested |
+| `student-credit-ledger` | 🔴 | Credit calculation untested |
+| `study-cycles` | 🟡 | Basic CRUD |
+| `workflows` | 🟠 | Validation flow untested |
+| `batch-jobs` | 🟡 | Job framework untested |
+| `export-templates` | 🟡 | Template management untested |
+| `exam-scheduler` | 🟠 | Scheduling untested |
+| `exam-types` | 🟡 | Basic CRUD |
+| `files` | 🟡 | File management untested |
 
-### 5.2 Tests manquants critiques
+### 5.2 Critical missing tests
 
-| Scénario non testé | Module | Risque |
+| Untested scenario | Module | Risk |
 |-------------------|--------|--------|
-| Soumission de notes concurrentes | `grades` | Données corrompues |
-| Import CSV avec données invalides | `grades` | Erreurs silencieuses |
-| Transition de statut d'examen invalide | `exams` | État incohérent |
-| Calcul de crédits avec rattrapages | `student-credit-ledger` | Crédits erronés |
-| Évaluation de règle avec edge cases | `promotion-rules` | Mauvaises décisions de promotion |
-| Rollback de job en erreur | `batch-jobs` | Jobs bloqués |
-| Race condition sur les numéros d'inscription | `registration-numbers` | Doublons |
-| Export PV avec notes manquantes | `exports` | PDF incorrect |
+| Concurrent grade submissions | `grades` | Corrupted data |
+| CSV import with invalid data | `grades` | Silent errors |
+| Invalid exam status transition | `exams` | Inconsistent state |
+| Credit calculation with retakes | `student-credit-ledger` | Wrong credits |
+| Rule evaluation with edge cases | `promotion-rules` | Wrong promotion decisions |
+| Rollback of a failed job | `batch-jobs` | Stuck jobs |
+| Race condition on registration numbers | `registration-numbers` | Duplicates |
+| PV export with missing grades | `exports` | Incorrect PDF |
 
 ---
 
-## 6. Backend — Code à corriger
+## 6. Backend — Code to fix
 
-### 6.1 🔴 Console.log de debug en production
+### 6.1 🔴 Debug console.log in production
 
-**Fichier** : `apps/server/src/modules/exam-scheduler/exam-scheduler.service.ts`
-**Lignes** : 46, 52
+**File**: `apps/server/src/modules/exam-scheduler/exam-scheduler.service.ts`
+**Lines**: 46, 52
 
 ```typescript
 console.log("[DEBUG preview] input:", input, "institutionId:", institutionId);
 console.log("[DEBUG preview] Found classes:", classes.length);
 ```
 
-**Action** : Supprimer ces lignes ou les remplacer par un logger structuré.
+**Action**: Remove these lines or replace them with a structured logger.
 
 ---
 
-### 6.2 🟠 TODO non résolu — Politique académique centralisée
+### 6.2 🟠 Unresolved TODO — Centralized academic policy
 
-**Fichier** : `apps/server/src/modules/exams/exams.service.ts`
-**Ligne** : 367
+**File**: `apps/server/src/modules/exams/exams.service.ts`
+**Line**: 367
 
 ```typescript
 // TODO(INST-SETTINGS): centralize academic policy resolution
 // (passing threshold, retake attempts, etc.)
 ```
 
-**Impact** : Les seuils de réussite et limites de tentatives sont hardcodés dans tout le codebase au lieu d'utiliser la config institution.
+**Impact**: Passing thresholds and attempt limits are hardcoded throughout the codebase instead of using the institution config.
 
 ---
 
-### 6.3 🟠 TODO non résolu — Seed et organisations
+### 6.3 🟠 Unresolved TODO — Seed and organizations
 
-**Fichier** : `apps/server/src/seed/runner.ts`
-**Ligne** : 439
+**File**: `apps/server/src/seed/runner.ts`
+**Line**: 439
 
 ```typescript
 // TODO (Phase 3b): This should eventually require organizations
@@ -508,9 +508,9 @@ console.log("[DEBUG preview] Found classes:", classes.length);
 
 ---
 
-### 6.4 🟡 Frontend — classCourseId hardcodé
+### 6.4 🟡 Frontend — Hardcoded classCourseId
 
-**Fichier** : `apps/web/src/pages/teacher/AttendanceAlerts.tsx`
+**File**: `apps/web/src/pages/teacher/AttendanceAlerts.tsx`
 
 ```typescript
 classCourseId: "" // hardcodé vide, ne fonctionnera jamais
@@ -518,31 +518,31 @@ classCourseId: "" // hardcodé vide, ne fonctionnera jamais
 
 ---
 
-## 7. Frontend — Pages manquantes
+## 7. Frontend — Missing pages
 
-### 7.1 Pages qui n'existent pas
+### 7.1 Pages that do not exist
 
-| Page manquante | Pour qui | Criticité | Description |
+| Missing page | For whom | Criticality | Description |
 |---------------|----------|-----------|-------------|
-| **Dashboard notes étudiant** | Étudiant | 🔴 | Voir ses notes, moyennes, crédits par semestre/année (affichage interne, pas de PDF — les documents officiels sont gérés par DIPLOMATION) |
-| **Statistiques de classe** | Admin/Enseignant | 🟠 | Moyennes, distributions, taux de réussite |
-| **Gestion de présence** | Enseignant | 🟠 | Saisie de présence, émargement |
-| **Prérequis de cours** | Admin | 🟠 | Configuration des prérequis |
-| **Calendrier académique** | Tous | 🟡 | Vue calendrier des événements |
-| **Délibérations** | Admin/Jury | 🔴 | Tout le module (voir `docs/deliberations-design.md`) |
-| **Gestion des facultés complète** | Admin | 🟠 | Le frontend existe mais pas le backend complet |
-| **Page de profil utilisateur** | Tous | 🟡 | Modification du profil, photo, mot de passe |
-| **Historique des modifications de notes** | Admin | 🟡 | Audit trail visuel |
+| **Student grades dashboard** | Student | 🔴 | See their grades, averages, credits per semester/year (internal display, no PDF — official documents are handled by DIPLOMATION) |
+| **Class statistics** | Admin/Teacher | 🟠 | Averages, distributions, pass rates |
+| **Attendance management** | Teacher | 🟠 | Attendance entry, sign-in sheets |
+| **Course prerequisites** | Admin | 🟠 | Prerequisite configuration |
+| **Academic calendar** | Everyone | 🟡 | Calendar view of events |
+| **Deliberations** | Admin/Jury | 🔴 | The whole module (see `docs/deliberations-design.md`) |
+| **Complete faculty management** | Admin | 🟠 | The frontend exists but not the complete backend |
+| **User profile page** | Everyone | 🟡 | Edit profile, photo, password |
+| **Grade change history** | Admin | 🟡 | Visual audit trail |
 
 ---
 
-## 8. Frontend — Pages incomplètes
+## 8. Frontend — Incomplete pages
 
-### 8.1 🟠 Dashboard Étudiant — Placeholder
+### 8.1 🟠 Student dashboard — Placeholder
 
-**Fichier** : `apps/web/src/pages/student/PerformanceDashboard.tsx` (lignes 172-201)
+**File**: `apps/web/src/pages/student/PerformanceDashboard.tsx` (lines 172-201)
 
-**Problème** : La section "Moyennes par cours" affiche un cadre en pointillés avec un message statique au lieu de données réelles.
+**Problem**: The "Course averages" section displays a dashed box with a static message instead of real data.
 
 ```
 ┌ - - - - - - - - - - - - - - - ┐
@@ -552,47 +552,47 @@ classCourseId: "" // hardcodé vide, ne fonctionnera jamais
 └ - - - - - - - - - - - - - - - ┘
 ```
 
-**Ce qui manque** :
-- Appel tRPC pour récupérer les notes de l'étudiant connecté
-- Affichage des moyennes par cours, par UE, par semestre
-- Graphique de progression
+**What is missing**:
+- tRPC call to fetch the logged-in student's grades
+- Display of averages per course, per UE, per semester
+- Progress chart
 
 ---
 
-### 8.2 🟠 Dashboard Monitoring — Données fictives
+### 8.2 🟠 Monitoring dashboard — Fake data
 
-**Fichier** : `apps/web/src/pages/admin/MonitoringDashboard.tsx`
+**File**: `apps/web/src/pages/admin/MonitoringDashboard.tsx`
 
-**Problème** : Les métriques affichées sont hardcodées ("3", "5") au lieu d'être récupérées depuis le backend.
+**Problem**: The displayed metrics are hardcoded ("3", "5") instead of being fetched from the backend.
 
 ---
 
-### 8.3 🟡 Gestion des classes — N+1 Query
+### 8.3 🟡 Class management — N+1 query
 
-**Fichier** : `apps/web/src/pages/admin/ClassManagement.tsx`
+**File**: `apps/web/src/pages/admin/ClassManagement.tsx`
 
-**TODO dans le code** :
+**TODO in the code**:
 ```
 TODO: N+1 Query Problem - This fetches students for each class separately
 ```
 
-**Impact** : Performance dégradée quand il y a beaucoup de classes.
+**Impact**: Degraded performance when there are many classes.
 
 ---
 
-### 8.4 🟡 Export de notes (GradeExport) — Texte français hardcodé
+### 8.4 🟡 Grade export (GradeExport) — Hardcoded French text
 
-**Fichier** : `apps/web/src/pages/admin/GradeExport.tsx` (2135 lignes)
+**File**: `apps/web/src/pages/admin/GradeExport.tsx` (2135 lines)
 
-**Problème** : Du texte en français est hardcodé dans le composant au lieu d'utiliser le système i18n. Exemples : "Procès-Verbal", "Relevé de Notes", noms de colonnes dans les exports Excel.
+**Problem**: French text is hardcoded in the component instead of using the i18n system. Examples: "Procès-Verbal", "Relevé de Notes", column names in the Excel exports.
 
 ---
 
-## 9. Configuration et infrastructure
+## 9. Configuration and infrastructure
 
-### 9.1 🟠 Variables d'environnement manquantes
+### 9.1 🟠 Missing environment variables
 
-Le fichier `.env` actuel ne contient que le minimum :
+The current `.env` file contains only the bare minimum:
 
 ```env
 CORS_ORIGINS=
@@ -600,178 +600,178 @@ BETTER_AUTH_SECRET=
 DATABASE_URL=
 ```
 
-**Configurations manquantes** :
+**Missing configuration**:
 
 | Variable | Usage | Impact |
 |----------|-------|--------|
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | Envoi d'emails | Les notifications ne sont jamais envoyées |
-| `LOG_LEVEL` | Niveau de logging | Pas de contrôle sur les logs |
-| `REDIS_URL` | Cache | Pas de cache, tout frappe la DB |
-| `PDF_TIMEOUT_MS` | Timeout Puppeteer | Risque de timeout sur gros PV |
-| `MAX_UPLOAD_SIZE_MB` | Limite upload | Pas de protection |
-| `RATE_LIMIT_*` | Rate limiting | Pas de protection contre les abus |
-| `DEFAULT_LOCALE` | Langue par défaut | Hardcodé |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | Sending emails | Notifications are never sent |
+| `LOG_LEVEL` | Logging level | No control over logs |
+| `REDIS_URL` | Cache | No cache, everything hits the DB |
+| `PDF_TIMEOUT_MS` | Puppeteer timeout | Timeout risk on large PVs |
+| `MAX_UPLOAD_SIZE_MB` | Upload limit | No protection |
+| `RATE_LIMIT_*` | Rate limiting | No protection against abuse |
+| `DEFAULT_LOCALE` | Default language | Hardcoded |
 
-### 9.2 🟡 Valeurs hardcodées à externaliser
+### 9.2 🟡 Hardcoded values to externalize
 
-| Valeur | Localisation | Valeur actuelle | Devrait être |
+| Value | Location | Current value | Should be |
 |--------|-------------|-----------------|-------------|
-| Note de passage | Multiples fichiers | `10` | `institution.metadata.export_config.grading.passing_grade` |
-| Crédits requis | `student-credit-ledger` | `60` | `studyCycles.totalCreditsRequired` |
-| Pagination par défaut | Multiples routers | `50` | Variable d'environnement |
-| Max tentatives rattrapage | `exams.service.ts` | `2` | Config institution |
-| Intervalle jobs de fond | `lib/jobs.ts` | `5 min` / `1 min` | Variables d'environnement |
+| Passing grade | Multiple files | `10` | `institution.metadata.export_config.grading.passing_grade` |
+| Required credits | `student-credit-ledger` | `60` | `studyCycles.totalCreditsRequired` |
+| Default pagination | Multiple routers | `50` | Environment variable |
+| Max retake attempts | `exams.service.ts` | `2` | Institution config |
+| Background job interval | `lib/jobs.ts` | `5 min` / `1 min` | Environment variables |
 
-### 9.3 🟡 Feature flags manquants
+### 9.3 🟡 Missing feature flags
 
-Seul le feature flag "retakes" existe (`isRetakesFeatureEnabled()`). Il manque :
+Only the "retakes" feature flag exists (`isRetakesFeatureEnabled()`). Missing:
 
 | Feature flag | Usage |
 |-------------|-------|
-| `ENABLE_BATCH_JOBS` | Activer/désactiver les jobs de fond |
-| `ENABLE_NOTIFICATIONS` | Activer/désactiver les notifications |
-| `ENABLE_PREREQUISITES` | Activer la vérification des prérequis |
-| `ENABLE_ATTENDANCE` | Activer le module présence |
-| `ENABLE_ANALYTICS` | Activer les statistiques avancées |
-| `ENABLE_DELIBERATIONS` | Activer le module délibérations |
+| `ENABLE_BATCH_JOBS` | Enable/disable background jobs |
+| `ENABLE_NOTIFICATIONS` | Enable/disable notifications |
+| `ENABLE_PREREQUISITES` | Enable prerequisite checks |
+| `ENABLE_ATTENDANCE` | Enable the attendance module |
+| `ENABLE_ANALYTICS` | Enable advanced statistics |
+| `ENABLE_DELIBERATIONS` | Enable the deliberations module |
 
 ---
 
-## 10. Sécurité et autorisations
+## 10. Security and authorization
 
-### 10.1 🟠 Scope des délégués non limité
+### 10.1 🟠 Delegate scope not restricted
 
-**Problème** : Un délégué (`examGradeEditors`) qui a accès à un examen peut potentiellement accéder à des données d'autres examens du même cours si le contrôle de scope est insuffisant.
+**Problem**: A delegate (`examGradeEditors`) who has access to one exam can potentially access data from other exams of the same course if the scope check is insufficient.
 
-**Ce qui manque** :
-- Vérification que le délégué n'accède qu'aux examens qui lui sont explicitement attribués
-- Audit des accès délégués
+**What is missing**:
+- A check that the delegate only accesses the exams explicitly assigned to them
+- Auditing of delegate access
 
-### 10.2 🟡 Filtrage institution incomplet
+### 10.2 🟡 Incomplete institution filtering
 
-**Problème** : Certaines requêtes ne filtrent pas systématiquement par `institutionId`, ce qui pourrait exposer des données d'autres institutions en contexte multi-tenant.
+**Problem**: Some queries do not systematically filter by `institutionId`, which could expose data from other institutions in a multi-tenant context.
 
-### 10.3 🟡 Pas de validation de rôle par classe/cours
+### 10.3 🟡 No role validation per class/course
 
-**Problème** : Un enseignant avec `canGrade` peut potentiellement voir les notes de cours qui ne lui sont pas assignés. Le filtrage par `classCourses.teacher` existe dans le listing mais pas dans tous les endpoints de détail.
+**Problem**: A teacher with `canGrade` can potentially see grades for courses not assigned to them. Filtering by `classCourses.teacher` exists in the listing but not in all detail endpoints.
 
 ---
 
 ## 11. Performance
 
-### 11.1 🟡 `studentPromotionSummaries.facts` — JSONB massif
+### 11.1 🟡 `studentPromotionSummaries.facts` — Massive JSONB
 
-**Problème** : Le champ `facts` stocke un objet JSON de 50+ KB par étudiant par année. Pour une classe de 100 étudiants, c'est ~5 MB chargé en mémoire à chaque requête de promotion.
+**Problem**: The `facts` field stores a 50+ KB JSON object per student per year. For a class of 100 students, that is ~5 MB loaded into memory on every promotion query.
 
-**Solution** : Indexer les champs les plus requêtés ou séparer les facts dans une table dédiée.
+**Solution**: Index the most queried fields or move the facts into a dedicated table.
 
-### 11.2 🟡 Pas de couche de cache
+### 11.2 🟡 No cache layer
 
-**Problème** : Toutes les requêtes frappent directement PostgreSQL. Les données rarement modifiées (programmes, cours, UE) pourraient être cachées.
+**Problem**: All queries hit PostgreSQL directly. Rarely modified data (programs, courses, UEs) could be cached.
 
 ### 11.3 🟡 N+1 queries
 
-**Localisations identifiées** :
-- `ClassManagement.tsx` — Charge les étudiants par classe individuellement
-- `exports.service.ts` — Charge les examens par cours individuellement dans la boucle PV
-- `student-facts.service.ts` — Charge le transcript par étudiant dans la boucle de refresh
+**Identified locations**:
+- `ClassManagement.tsx` — Loads students for each class individually
+- `exports.service.ts` — Loads exams for each course individually in the PV loop
+- `student-facts.service.ts` — Loads the transcript for each student in the refresh loop
 
 ---
 
-## 12. Plan de résolution priorisé
+## 12. Prioritized resolution plan
 
-### Priorité 1 — Corrections immédiates (bugs/sécurité)
+### Priority 1 — Immediate fixes (bugs/security)
 
-| # | Action | Fichier | Effort |
+| # | Action | File | Effort |
 |---|--------|---------|--------|
-| 1.1 | Supprimer les `console.log` de debug | `exam-scheduler.service.ts` | 5 min |
-| 1.2 | Fixer le `classCourseId` hardcodé | `AttendanceAlerts.tsx` | 15 min |
-| 1.3 | Ajouter les index DB manquants | `app-schema.ts` | 30 min |
-| 1.4 | Centraliser `DEFAULT_PASSING_GRADE` depuis la config institution | Multiples fichiers | 2h |
+| 1.1 | Remove the debug `console.log` calls | `exam-scheduler.service.ts` | 5 min |
+| 1.2 | Fix the hardcoded `classCourseId` | `AttendanceAlerts.tsx` | 15 min |
+| 1.3 | Add the missing DB indexes | `app-schema.ts` | 30 min |
+| 1.4 | Centralize `DEFAULT_PASSING_GRADE` from the institution config | Multiple files | 2h |
 
-### Priorité 2 — Fonctionnalités critiques manquantes
-
-| # | Action | Module | Effort |
-|---|--------|--------|--------|
-| 2.1 | Implémenter le module Délibérations | Nouveau module | 5-7 jours |
-| 2.2 | Implémenter l'accès étudiant à ses notes (dashboard interne) | `grades` + frontend | 2-3 jours |
-| 2.3 | Compléter `domain-users` (service + router) | `domain-users` | 1 jour |
-| 2.4 | Implémenter l'export Excel pour DIPLOMATION | `diplomation-export` (nouveau) | 2-3 jours |
-| 2.5 | Implémenter les statistiques de classe | Nouveau module ou extension `exports` | 2-3 jours |
-
-### Priorité 3 — Modules à compléter
+### Priority 2 — Missing critical features
 
 | # | Action | Module | Effort |
 |---|--------|--------|--------|
-| 3.1 | Ajouter les champs `nameEn` aux tables programmes/options/cycles | Schéma + migration | 1 jour |
-| 3.2 | Implémenter la compensation entre UE | `exports` + `student-credit-ledger` | 2 jours |
-| 3.3 | Activer l'envoi réel de notifications (email) | `notifications` | 2 jours |
-| 3.4 | Implémenter le module présence/assiduité | Nouveau module | 3-4 jours |
-| 3.5 | Activer les prérequis de cours | `coursePrerequisites` | 2 jours |
-| 3.6 | Protéger les numéros d'inscription contre les race conditions | `registration-numbers` | 1 jour |
-| 3.7 | Mettre à jour automatiquement les summaries après modification de note | `student-promotion-summaries` | 1 jour |
+| 2.1 | Implement the Deliberations module | New module | 5-7 days |
+| 2.2 | Implement student access to their grades (internal dashboard) | `grades` + frontend | 2-3 days |
+| 2.3 | Complete `domain-users` (service + router) | `domain-users` | 1 day |
+| 2.4 | Implement the Excel export for DIPLOMATION | `diplomation-export` (new) | 2-3 days |
+| 2.5 | Implement class statistics | New module or `exports` extension | 2-3 days |
 
-### Priorité 4 — Tests et qualité
+### Priority 3 — Modules to complete
+
+| # | Action | Module | Effort |
+|---|--------|--------|--------|
+| 3.1 | Add `nameEn` fields to the programs/options/cycles tables | Schema + migration | 1 day |
+| 3.2 | Implement compensation between UEs | `exports` + `student-credit-ledger` | 2 days |
+| 3.3 | Enable actual notification sending (email) | `notifications` | 2 days |
+| 3.4 | Implement the attendance module | New module | 3-4 days |
+| 3.5 | Enable course prerequisites | `coursePrerequisites` | 2 days |
+| 3.6 | Protect registration numbers against race conditions | `registration-numbers` | 1 day |
+| 3.7 | Automatically update summaries after a grade change | `student-promotion-summaries` | 1 day |
+
+### Priority 4 — Tests and quality
 
 | # | Action | Effort |
 |---|--------|--------|
-| 4.1 | Tests pour `promotion-rules` (logique critique) | 1 jour |
-| 4.2 | Tests pour `student-credit-ledger` (calculs critiques) | 1 jour |
-| 4.3 | Tests pour `exports` (PV avec edge cases) | 1 jour |
-| 4.4 | Tests pour `workflows` | 0.5 jour |
-| 4.5 | Tests pour `notifications` | 0.5 jour |
+| 4.1 | Tests for `promotion-rules` (critical logic) | 1 day |
+| 4.2 | Tests for `student-credit-ledger` (critical calculations) | 1 day |
+| 4.3 | Tests for `exports` (PV with edge cases) | 1 day |
+| 4.4 | Tests for `workflows` | 0.5 day |
+| 4.5 | Tests for `notifications` | 0.5 day |
 
-### Priorité 5 — Améliorations
+### Priority 5 — Improvements
 
 | # | Action | Effort |
 |---|--------|--------|
-| 5.1 | Ajouter le feature flag system | 1 jour |
-| 5.2 | Externaliser les valeurs hardcodées | 1 jour |
-| 5.3 | Ajouter un layer de cache (Redis) | 2 jours |
-| 5.4 | Workflow multi-niveaux de validation | 3-4 jours |
-| 5.5 | Calendrier académique | 2-3 jours |
-| 5.6 | Capitalisation des UE (redoublants) | 2 jours |
-| 5.7 | Gestion du redoublement et exclusion | 2 jours |
+| 5.1 | Add the feature flag system | 1 day |
+| 5.2 | Externalize hardcoded values | 1 day |
+| 5.3 | Add a cache layer (Redis) | 2 days |
+| 5.4 | Multi-level validation workflow | 3-4 days |
+| 5.5 | Academic calendar | 2-3 days |
+| 5.6 | UE capitalization (repeating students) | 2 days |
+| 5.7 | Handling of repeated years and exclusion | 2 days |
 
 ---
 
-## Annexe — Tableau récapitulatif par module
+## Appendix — Summary table by module
 
-| Module | Router | Service | Repo | Zod | Tests | Statut |
+| Module | Router | Service | Repo | Zod | Tests | Status |
 |--------|--------|---------|------|-----|-------|--------|
-| `academic-years` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `authz` | ✅ | ✅ | — | — | — | Complet (middleware) |
-| `batch-jobs` | ✅ | ✅ | ✅ | ✅ | ❌ | Incomplet |
-| `classes` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `courses` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `cycle-levels` | ✅ | ✅ | ✅ | ✅ | ❌ | Complet (non testé) |
-| `domain-users` | ❌ | ❌ | ✅ | ❌ | ❌ | **Incomplet** |
-| `enrollments` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `exam-scheduler` | ✅ | ✅ | ✅ | ✅ | ❌ | Fonctionnel (debug logs) |
-| `exam-types` | ✅ | ✅ | ✅ | ✅ | ❌ | Complet (non testé) |
-| `exams` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet (TODO hardcoded) |
-| `export-templates` | ✅ | ✅ | ✅ | ✅ | ❌ | Fonctionnel |
-| `exports` | ✅ | ✅ | ✅ | ✅ | ❌ | Fonctionnel (pas d'Excel) |
-| `faculties` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `files` | ✅ | ✅ | — | — | ❌ | Fonctionnel |
-| `grades` | ✅ | ✅ | ✅ | ✅ | ✅ | **Transcript incomplet** |
-| `institutions` | ✅ | ✅ | ✅ | ✅ | ❌ | Complet (non testé) |
-| `notifications` | ✅ | ✅ | ✅ | ✅ | ❌ | **N'envoie rien** |
-| `program-options` | ✅ | ✅ | ✅ | ✅ | ❌ | Complet (non testé) |
-| `programs` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `promotion-rules` | ✅ | ✅ | ✅ | ✅ | ❌ | Fonctionnel (non testé) |
+| `academic-years` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `authz` | ✅ | ✅ | — | — | — | Complete (middleware) |
+| `batch-jobs` | ✅ | ✅ | ✅ | ✅ | ❌ | Incomplete |
+| `classes` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `courses` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `cycle-levels` | ✅ | ✅ | ✅ | ✅ | ❌ | Complete (untested) |
+| `domain-users` | ❌ | ❌ | ✅ | ❌ | ❌ | **Incomplete** |
+| `enrollments` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `exam-scheduler` | ✅ | ✅ | ✅ | ✅ | ❌ | Functional (debug logs) |
+| `exam-types` | ✅ | ✅ | ✅ | ✅ | ❌ | Complete (untested) |
+| `exams` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete (TODO hardcoded) |
+| `export-templates` | ✅ | ✅ | ✅ | ✅ | ❌ | Functional |
+| `exports` | ✅ | ✅ | ✅ | ✅ | ❌ | Functional (no Excel) |
+| `faculties` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `files` | ✅ | ✅ | — | — | ❌ | Functional |
+| `grades` | ✅ | ✅ | ✅ | ✅ | ✅ | **Incomplete transcript** |
+| `institutions` | ✅ | ✅ | ✅ | ✅ | ❌ | Complete (untested) |
+| `notifications` | ✅ | ✅ | ✅ | ✅ | ❌ | **Sends nothing** |
+| `program-options` | ✅ | ✅ | ✅ | ✅ | ❌ | Complete (untested) |
+| `programs` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `promotion-rules` | ✅ | ✅ | ✅ | ✅ | ❌ | Functional (untested) |
 | `registration-numbers` | ✅ | ✅ | ✅ | ✅ | ✅ | **Race condition** |
 | `rules-engine` | — | ✅ | — | — | ❌ | Minimal |
-| `semesters` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `student-course-enrollments` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `student-credit-ledger` | ✅ | ✅ | ✅ | — | ❌ | Fonctionnel (non testé) |
-| `student-promotion-summaries` | ✅ | ✅ | ✅ | — | ❌ | **Pas de refresh auto** |
-| `students` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `study-cycles` | ✅ | ✅ | ✅ | ✅ | ❌ | Complet (non testé) |
-| `teaching-units` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `users` | ✅ | ✅ | ✅ | ✅ | ✅ | Complet |
-| `workflows` | ✅ | ✅ | ✅ | ✅ | ❌ | **Incomplet** |
-| **deliberations** | ❌ | ❌ | ❌ | ❌ | ❌ | **ABSENT** |
-| **attendance** | ❌ | ❌ | ❌ | ❌ | ❌ | **ABSENT** |
-| **statistics** | ❌ | ❌ | ❌ | ❌ | ❌ | **ABSENT** |
-| **bulletin** | — | — | — | — | — | Hors périmètre (DIPLOMATION) |
+| `semesters` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `student-course-enrollments` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `student-credit-ledger` | ✅ | ✅ | ✅ | — | ❌ | Functional (untested) |
+| `student-promotion-summaries` | ✅ | ✅ | ✅ | — | ❌ | **No auto refresh** |
+| `students` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `study-cycles` | ✅ | ✅ | ✅ | ✅ | ❌ | Complete (untested) |
+| `teaching-units` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `users` | ✅ | ✅ | ✅ | ✅ | ✅ | Complete |
+| `workflows` | ✅ | ✅ | ✅ | ✅ | ❌ | **Incomplete** |
+| **deliberations** | ❌ | ❌ | ❌ | ❌ | ❌ | **MISSING** |
+| **attendance** | ❌ | ❌ | ❌ | ❌ | ❌ | **MISSING** |
+| **statistics** | ❌ | ❌ | ❌ | ❌ | ❌ | **MISSING** |
+| **bulletin** | — | — | — | — | — | Out of scope (DIPLOMATION) |

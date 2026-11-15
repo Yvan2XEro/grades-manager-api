@@ -27,10 +27,10 @@ File upload stores the file server-side and returns a `fileId`. A batch job rece
 Imports must respect the following dependency graph. The UI presents them as 4 tabs in this order:
 
 ```
-1. Structure académique   →  programmes, UEs, cours, classes
-2. Personnes              →  enseignants, étudiants
-3. Inscriptions           →  étudiant → classe × année académique
-4. Notes (bulk)           →  notes multi-examens
+1. Academic structure     →  programs, UEs, courses, classes
+2. People                 →  teachers, students
+3. Enrollments            →  student → class × academic year
+4. Grades (bulk)          →  multi-exam grades
 ```
 
 Multi-year: every template has an `academicYearCode` column. One file can mix multiple years.
@@ -136,13 +136,13 @@ Stored path: `imports/<institutionId>/<uuid>.<ext>`
 
 | Entity | Critical errors (block) | Warnings (allow with log) |
 |---|---|---|
-| Programme | Missing `code` or `nameFr` | `studyCycleCode` not found → skip row |
-| Cours | Missing `code`, `teachingUnitCode` unknown | `coefficient` missing → default 1 |
-| Classe | `programCode` unknown, `academicYearCode` unknown | `semesterCode` missing → null |
-| Étudiant | Missing `firstName`/`lastName`/`email`, duplicate email | `registrationNumber` already exists → skip |
-| Enseignant | Missing `email` | `specialty` missing → null |
-| Inscription | `registrationNumber` unknown, `classCode` unknown | duplicate enrollment → skip |
-| Note | `examCode` unknown, `registrationNumber` unknown | score out of range → clamp + warn |
+| Program | Missing `code` or `nameFr` | `studyCycleCode` not found → skip row |
+| Course | Missing `code`, `teachingUnitCode` unknown | `coefficient` missing → default 1 |
+| Class | `programCode` unknown, `academicYearCode` unknown | `semesterCode` missing → null |
+| Student | Missing `firstName`/`lastName`/`email`, duplicate email | `registrationNumber` already exists → skip |
+| Teacher | Missing `email` | `specialty` missing → null |
+| Enrollment | `registrationNumber` unknown, `classCode` unknown | duplicate enrollment → skip |
+| Grade | `examCode` unknown, `registrationNumber` unknown | score out of range → clamp + warn |
 
 **Idempotency:** all imports skip (not error) on existing records (matched by code/email/registrationNumber).
 

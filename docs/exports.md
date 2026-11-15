@@ -1,38 +1,38 @@
-# Système d'Export de Notes et PV
+# Grade and PV Export System
 
-## Vue d'ensemble
+## Overview
 
-Le système d'export permet de générer des documents PDF et HTML pour :
-- **PV (Procès-Verbal)** : Relevé de notes complet pour une classe/semestre
-- **Publication d'Évaluation** : Résultats d'un examen spécifique
-- **Publication UE** : Résultats d'une Unité d'Enseignement
+The export system generates PDF and HTML documents for:
+- **PV (Procès-Verbal, official minutes)**: Full grade report for a class/semester
+- **Evaluation publication**: Results of a specific exam
+- **UE publication**: Results of a Teaching Unit (UE)
 
 ## Architecture
 
-### Structure des fichiers
+### File structure
 
 ```
 apps/server/src/
 ├── modules/exports/
-│   ├── index.ts                  # Point d'entrée du module
-│   ├── exports.router.ts         # Routes tRPC
-│   ├── exports.service.ts        # Logique métier
-│   ├── exports.repo.ts           # Accès aux données
-│   ├── exports.zod.ts            # Schémas de validation
-│   └── template-helper.ts        # Helpers pour templates
+│   ├── index.ts                  # Module entry point
+│   ├── exports.router.ts         # tRPC routes
+│   ├── exports.service.ts        # Business logic
+│   ├── exports.repo.ts           # Data access
+│   ├── exports.zod.ts            # Validation schemas
+│   └── template-helper.ts        # Template helpers
 ├── config/
-│   └── export-config.json        # Configuration institutionnelle
+│   └── export-config.json        # Institutional configuration
 └── modules/exports/templates/
     ├── pv-template.html           # Template PV
-    ├── evaluation-publication.html # Template évaluation
-    └── teaching-unit-publication.html # Template UE
+    ├── evaluation-publication.html # Evaluation template
+    └── teaching-unit-publication.html # UE template
 ```
 
 ## Configuration
 
-### Fichier `export-config.json`
+### `export-config.json` file
 
-Ce fichier contient toutes les informations institutionnelles et de configuration :
+This file contains all institutional and configuration information:
 
 ```json
 {
@@ -66,11 +66,11 @@ Ce fichier contient toutes les informations institutionnelles et de configuratio
 }
 ```
 
-**Pour personnaliser** : Modifiez les valeurs dans ce fichier JSON.
+**To customize**: Edit the values in this JSON file.
 
-## Utilisation via tRPC
+## Usage via tRPC
 
-### 1. Prévisualiser un PV (HTML)
+### 1. Preview a PV (HTML)
 
 ```typescript
 const html = await trpc.exports.previewPV.query({
@@ -80,7 +80,7 @@ const html = await trpc.exports.previewPV.query({
 });
 ```
 
-### 2. Générer un PV (PDF)
+### 2. Generate a PV (PDF)
 
 ```typescript
 const result = await trpc.exports.generatePV.mutate({
@@ -90,14 +90,14 @@ const result = await trpc.exports.generatePV.mutate({
   format: "pdf"
 });
 
-// result.content contient le PDF en base64
+// result.content contains the PDF as base64
 const pdfBlob = new Blob(
   [Buffer.from(result.content, 'base64')],
   { type: 'application/pdf' }
 );
 ```
 
-### 3. Prévisualiser une évaluation (HTML)
+### 3. Preview an evaluation (HTML)
 
 ```typescript
 const html = await trpc.exports.previewEvaluation.query({
@@ -106,7 +106,7 @@ const html = await trpc.exports.previewEvaluation.query({
 });
 ```
 
-### 4. Générer une évaluation (PDF)
+### 4. Generate an evaluation (PDF)
 
 ```typescript
 const result = await trpc.exports.generateEvaluation.mutate({
@@ -116,7 +116,7 @@ const result = await trpc.exports.generateEvaluation.mutate({
 });
 ```
 
-### 5. Prévisualiser une UE (HTML)
+### 5. Preview a UE (HTML)
 
 ```typescript
 const html = await trpc.exports.previewUE.query({
@@ -127,7 +127,7 @@ const html = await trpc.exports.previewUE.query({
 });
 ```
 
-### 6. Générer une UE (PDF)
+### 6. Generate a UE (PDF)
 
 ```typescript
 const result = await trpc.exports.generateUE.mutate({
@@ -139,41 +139,41 @@ const result = await trpc.exports.generateUE.mutate({
 });
 ```
 
-## Données calculées automatiquement
+## Automatically computed data
 
-Le système calcule automatiquement :
+The system automatically computes:
 
-### Pour chaque étudiant
-- **Moyennes CC et EX** : Calculées à partir des notes d'examen
-- **Moyenne par EC** : Pondération CC/EX selon pourcentage
-- **Moyenne par UE** : Moyenne des EC de l'UE
-- **Décision** : "Ac" (Acquis) si moyenne ≥ 10, sinon "Nac"
-- **Crédits obtenus** : Crédits de l'UE si acquise, 0 sinon
-- **Moyenne générale** : Moyenne de toutes les UEs
-- **Décision finale** : "VALIDÉ" (tous les crédits du semestre acquis) ou "NON VALIDÉ"
+### For each student
+- **CC and EX averages**: Computed from the exam grades
+- **Average per EC**: CC/EX weighting by percentage
+- **Average per UE**: Average of the UE's ECs
+- **Decision**: "Ac" (Acquis, passed) if average ≥ 10, otherwise "Nac"
+- **Credits earned**: The UE's credits if passed, 0 otherwise
+- **Overall average**: Average of all UEs
+- **Final decision**: "VALIDÉ" (all semester credits earned) or "NON VALIDÉ"
 
-### Statistiques globales
-- **Taux de réussite** : Pourcentage d'étudiants ayant réussi
-- **Présents/Absents** : Comptage automatique
-- **Note la plus haute/basse** : Pour les évaluations
-- **Moyenne générale** : Pour les évaluations
+### Overall statistics
+- **Success rate**: Percentage of students who passed
+- **Present/Absent**: Automatic count
+- **Highest/lowest grade**: For evaluations
+- **Overall average**: For evaluations
 
-### Appréciations
-Basées sur les seuils configurés :
-- Excellent : ≥ 16
-- Très Bien : 14-15.99
-- Bien : 12-13.99
-- Assez Bien : 10-11.99
-- Passable : 8-9.99
-- Insuffisant : < 8
+### Appreciations
+Based on the configured thresholds:
+- "Excellent" (excellent): ≥ 16
+- "Très Bien" (very good): 14-15.99
+- "Bien" (good): 12-13.99
+- "Assez Bien" (fairly good): 10-11.99
+- "Passable" (pass): 8-9.99
+- "Insuffisant" (insufficient): < 8
 
 ## Permissions
 
-Les endpoints d'export utilisent `gradingProcedure`, donc accessible aux :
-- Enseignants (teachers)
-- Administrateurs (administrator, dean, super_admin)
+The export endpoints use `gradingProcedure`, so they are accessible to:
+- Teachers (teachers)
+- Administrators (administrator, dean, super_admin)
 
-## Flux de données
+## Data flow
 
 ```
 ┌─────────────────┐
@@ -216,11 +216,11 @@ Les endpoints d'export utilisent `gradingProcedure`, donc accessible aux :
          └─────────────────┘
 ```
 
-## Adaptation des templates HTML
+## Adapting the HTML templates
 
-Les templates HTML utilisent Handlebars comme moteur de template.
+The HTML templates use Handlebars as their template engine.
 
-### Variables disponibles dans les templates
+### Variables available in the templates
 
 #### Template PV (`pv template.html`)
 ```handlebars
@@ -248,7 +248,7 @@ Les templates HTML utilisent Handlebars comme moteur de template.
 {{globalSuccessRate}}%
 ```
 
-#### Template Évaluation (`publication_evaluation.html`)
+#### Evaluation template (`publication_evaluation.html`)
 ```handlebars
 {{evaluationType}}
 {{course.code}} - {{course.name}}
@@ -272,25 +272,25 @@ Les templates HTML utilisent Handlebars comme moteur de template.
 {{stats.successRate}}%
 ```
 
-## Prochaines étapes
+## Next steps
 
-Pour finaliser le système :
+To finalize the system:
 
-1. **Adapter les templates HTML** : Remplacer les placeholders `[XXX]` par les variables Handlebars
-2. **Ajouter les logos** : Placer les logos dans un dossier accessible
-3. **Tester avec des données réelles** : Créer des tests d'intégration
-4. **Interface frontend** : Créer les composants React pour la prévisualisation et l'export
+1. **Adapt the HTML templates**: Replace the `[XXX]` placeholders with Handlebars variables
+2. **Add the logos**: Put the logos in an accessible folder
+3. **Test with real data**: Write integration tests
+4. **Frontend UI**: Build the React components for preview and export
 
-## Dépannage
+## Troubleshooting
 
-### PDF ne se génère pas
-- Vérifier que Puppeteer est installé : `bun pm ls | grep puppeteer`
-- Sur certains systèmes, des dépendances système peuvent être nécessaires
+### PDF is not generated
+- Check that Puppeteer is installed: `bun pm ls | grep puppeteer`
+- Some systems may need additional system dependencies
 
-### Template ne s'affiche pas correctement
-- Vérifier que les chemins des templates sont corrects
-- Vérifier les logs pour les erreurs Handlebars
+### Template does not render correctly
+- Check that the template paths are correct
+- Check the logs for Handlebars errors
 
-### Données manquantes
-- Vérifier que les relations Drizzle sont bien définies
-- Vérifier que les données existent en BD pour l'ID fourni
+### Missing data
+- Check that the Drizzle relations are properly defined
+- Check that the data exists in the DB for the given ID

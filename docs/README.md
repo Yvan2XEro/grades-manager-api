@@ -1,105 +1,105 @@
 # Documentation - TKAMS
 
-Ce dossier contient toute la documentation de **TKAMS (Tefoye and Kana Academic Management System)**.
+This folder contains all the documentation for **TKAMS (Tefoye and Kana Academic Management System)**.
 
-TKAMS est un système de gestion académique pour institutions d'enseignement supérieur (facultés, universités, instituts).
+TKAMS is an academic management system for higher education institutions (faculties, universities, institutes).
 
 ## Structure
 
 ```
 docs/
-├── README.md                # Ce fichier
-└── guide/                   # Guide d'utilisation complet
-    ├── README.md           # Instructions de compilation
+├── README.md                # This file
+└── guide/                   # Complete user guide
+    ├── README.md           # Build instructions
     ├── LISTE_CAPTURES_ECRAN.md
-    ├── guide_principal.tex # Fichier principal LaTeX
-    ├── guide_sections/     # Sections du guide (12 fichiers .tex)
-    └── images/             # Images et captures d'écran
+    ├── guide_principal.tex # Main LaTeX file
+    ├── guide_sections/     # Guide sections (12 .tex files)
+    └── images/             # Images and screenshots
 ```
 
-## Documents disponibles
+## Available documents
 
-### Guide d'utilisation (LaTeX)
+### User guide (LaTeX)
 
-**Emplacement** : `docs/guide/`
+**Location**: `docs/guide/`
 
-Guide complet pour les utilisateurs finaux couvrant :
-- Installation et configuration
-- Gestion de la structure académique
-- Gestion des étudiants et inscriptions
-- Saisie et validation des notes
-- Exports et publications
-- Administration système
-- Dépannage
-- Cas d'usage pratiques
+Complete guide for end users covering:
+- Installation and configuration
+- Managing the academic structure
+- Managing students and enrollments
+- Grade entry and validation
+- Exports and publications
+- System administration
+- Troubleshooting
+- Practical use cases
 
-**Format** : LaTeX (.tex) compilable en PDF
+**Format**: LaTeX (.tex), compilable to PDF
 
-**Voir** : `docs/guide/README.md` pour les instructions de compilation
+**See**: `docs/guide/README.md` for build instructions
 
-### Documentation technique
+### Technical documentation
 
-**Emplacement** : `CLAUDE.md` (racine du projet)
+**Location**: `CLAUDE.md` (project root)
 
-Documentation technique pour les développeurs contenant :
-- Architecture du projet
-- Structure du monorepo
-- Patterns de développement
-- Commandes courantes
+Technical documentation for developers, covering:
+- Project architecture
+- Monorepo structure
+- Development patterns
+- Common commands
 - Configuration
 
-## Générer la documentation
+## Generating the documentation
 
-### Guide utilisateur PDF
+### PDF user guide
 
 ```bash
 cd docs/guide
 pdflatex guide_principal.tex
 ```
 
-Voir `docs/guide/README.md` pour plus de détails.
+See `docs/guide/README.md` for more details.
 
-## Documentation additionnelle
+## Additional documentation
 
-Autres fichiers de documentation dans le projet :
+Other documentation files in the project:
 
-- **README.md** (racine) : Vue d'ensemble du projet
-- **CLAUDE.md** : Documentation technique détaillée
-- **apps/server/README.md** : Documentation du backend
-- **apps/web/README.md** : Documentation du frontend (si existe)
+- **README.md** (root): Project overview
+- **CLAUDE.md**: Detailed technical documentation
+- **apps/server/README.md**: Backend documentation
+- **apps/web/README.md**: Frontend documentation (if it exists)
 
-## Contribuer à la documentation
+## Contributing to the documentation
 
-### Guide utilisateur
+### User guide
 
-1. Éditez les fichiers `.tex` dans `docs/guide/guide_sections/`
-2. Testez la compilation : `pdflatex guide_principal.tex`
-3. Ajoutez les captures d'écran dans `docs/guide/images/`
-4. Mettez à jour `LISTE_CAPTURES_ECRAN.md` si nécessaire
+1. Edit the `.tex` files in `docs/guide/guide_sections/`
+2. Test the build: `pdflatex guide_principal.tex`
+3. Add screenshots to `docs/guide/images/`
+4. Update `LISTE_CAPTURES_ECRAN.md` if needed
 
-### Documentation technique
+### Technical documentation
 
-Mettez à jour `CLAUDE.md` pour :
-- Nouveaux modules
-- Changements d'architecture
-- Nouvelles commandes
-- Patterns de développement
+Update `CLAUDE.md` for:
+- New modules
+- Architecture changes
+- New commands
+- Development patterns
 
-## Captures d'écran
+## Screenshots
 
-Pour compléter le guide utilisateur, consultez :
+To complete the user guide, see:
 `docs/guide/LISTE_CAPTURES_ECRAN.md`
 
-Ce fichier liste les 32 captures d'écran à réaliser pour illustrer le guide.
+This file lists the 32 screenshots to take to illustrate the guide.
 
-## Versions et langues
+## Versions and languages
 
-**Version actuelle** : 1.0.0
+**Current version**: 1.0.0
 
-**Langues** : Français (principale)
+**Languages**: French (primary)
 
-Des versions en anglais peuvent être ajoutées ultérieurement en dupliquant la structure.
+English versions may be added later by duplicating the structure.
 
-## Licence
+## License
 
-© 2025 Faculté de Médecine et Sciences Pharmaceutiques. Tous droits réservés.
+© 2025 Faculté de Médecine et Sciences Pharmaceutiques. All rights reserved.

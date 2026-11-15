@@ -1,44 +1,44 @@
-# Système de Templates d'Export Personnalisables
+# Customizable Export Templates System
 
 Date: 2025-12-22
 
-## Vue d'ensemble
+## Overview
 
-Le système de templates d'export permet de personnaliser complètement les entêtes, colonnes et styles des documents générés (PDF et Excel) pour les exports de notes.
+The export templates system makes it possible to fully customize the headers, columns and styles of the documents generated (PDF and Excel) for grade exports.
 
-## Types de Templates Supportés
+## Supported Template Types
 
-1. **`pv`** - Procès-Verbal (PDF/HTML)
-2. **`evaluation`** - Publication d'évaluation (PDF/HTML)
-3. **`ue`** - Publication d'UE (PDF/HTML)
-4. **`excel_combined`** - Export Excel combiné
-5. **`excel_pv`** - Procès-Verbal Excel
-6. **`excel_individual`** - Export Excel individuel par examen
+1. **`pv`** - Minutes (Procès-Verbal) (PDF/HTML)
+2. **`evaluation`** - Evaluation publication (PDF/HTML)
+3. **`ue`** - Teaching unit (UE) publication (PDF/HTML)
+4. **`excel_combined`** - Combined Excel export
+5. **`excel_pv`** - Excel minutes (Procès-Verbal)
+6. **`excel_individual`** - Individual Excel export per exam
 
-## Structure d'un Template
+## Template Structure
 
-Chaque template contient :
+Each template contains:
 
-### 1. Configuration des Colonnes (`columns`)
+### 1. Column Configuration (`columns`)
 
 ```typescript
 {
-  id: string;              // Identifiant unique de la colonne
-  key: string;             // Clé pour accéder aux données
-  label: string;           // Label par défaut
-  labelFr?: string;        // Label en français
-  labelEn?: string;        // Label en anglais
-  width?: number;          // Largeur de la colonne (pixels ou caractères)
-  visible: boolean;        // Visibilité de la colonne
-  order: number;           // Ordre d'affichage
+  id: string;              // Unique column identifier
+  key: string;             // Key used to access the data
+  label: string;           // Default label
+  labelFr?: string;        // Label in French
+  labelEn?: string;        // Label in English
+  width?: number;          // Column width (pixels or characters)
+  visible: boolean;        // Column visibility
+  order: number;           // Display order
   dataType?: "text" | "number" | "date" | "formula";
-  formula?: string;        // Formule pour colonnes calculées (ex: "CC * 0.4 + EXAM * 0.6")
-  format?: string;         // Format d'affichage (ex: "0.00", "DD/MM/YYYY")
+  formula?: string;        // Formula for computed columns (e.g. "CC * 0.4 + EXAM * 0.6")
+  format?: string;         // Display format (e.g. "0.00", "DD/MM/YYYY")
   alignment?: "left" | "center" | "right";
 }
 ```
 
-### 2. Configuration de l'Entête (`headerConfig`)
+### 2. Header Configuration (`headerConfig`)
 
 ```typescript
 {
@@ -67,22 +67,22 @@ Chaque template contient :
 }
 ```
 
-### 3. Configuration du Style (`styleConfig`)
+### 3. Style Configuration (`styleConfig`)
 
 ```typescript
 {
-  // Police
+  // Font
   fontFamily?: string;
   fontSize?: number;
   headerFontSize?: number;
 
-  // Couleurs
+  // Colors
   primaryColor?: string;
   secondaryColor?: string;
   headerBackgroundColor?: string;
   headerTextColor?: string;
 
-  // Tableau
+  // Table
   tableBorderColor?: string;
   tableBorderWidth?: number;
   alternateRowColor?: string;
@@ -97,7 +97,7 @@ Chaque template contient :
     left: number;
   };
 
-  // Filigrane
+  // Watermark
   watermark?: {
     enabled: boolean;
     text: string;
@@ -108,26 +108,26 @@ Chaque template contient :
 }
 ```
 
-## API tRPC
+## tRPC API
 
-### 1. Lister les Templates
+### 1. List Templates
 
 ```typescript
-// Tous les templates de l'institution
+// All templates of the institution
 const templates = await trpc.exportTemplates.list.query({});
 
-// Templates d'un type spécifique
+// Templates of a specific type
 const pvTemplates = await trpc.exportTemplates.list.query({
   type: "pv"
 });
 
-// Seulement les templates par défaut
+// Default templates only
 const defaults = await trpc.exportTemplates.list.query({
   isDefault: true
 });
 ```
 
-### 2. Obtenir un Template Spécifique
+### 2. Get a Specific Template
 
 ```typescript
 const template = await trpc.exportTemplates.getById.query({
@@ -135,7 +135,7 @@ const template = await trpc.exportTemplates.getById.query({
 });
 ```
 
-### 3. Obtenir le Template par Défaut
+### 3. Get the Default Template
 
 ```typescript
 const defaultPVTemplate = await trpc.exportTemplates.getDefault.query({
@@ -143,7 +143,7 @@ const defaultPVTemplate = await trpc.exportTemplates.getDefault.query({
 });
 ```
 
-### 4. Créer un Template
+### 4. Create a Template
 
 ```typescript
 const newTemplate = await trpc.exportTemplates.create.mutate({
@@ -175,7 +175,7 @@ const newTemplate = await trpc.exportTemplates.create.mutate({
       dataType: "text",
       alignment: "left"
     },
-    // ... autres colonnes
+    // ... other columns
   ],
   headerConfig: {
     showLogo: true,
@@ -203,18 +203,18 @@ const newTemplate = await trpc.exportTemplates.create.mutate({
 });
 ```
 
-### 5. Mettre à Jour un Template
+### 5. Update a Template
 
 ```typescript
 const updated = await trpc.exportTemplates.update.mutate({
   id: "template-id",
   name: "Nouveau Nom",
-  columns: [/* nouvelles colonnes */],
-  headerConfig: {/* nouvelle config */}
+  columns: [/* new columns */],
+  headerConfig: {/* new config */}
 });
 ```
 
-### 6. Définir un Template par Défaut
+### 6. Set a Default Template
 
 ```typescript
 await trpc.exportTemplates.setDefault.mutate({
@@ -223,7 +223,7 @@ await trpc.exportTemplates.setDefault.mutate({
 });
 ```
 
-### 7. Supprimer un Template
+### 7. Delete a Template
 
 ```typescript
 await trpc.exportTemplates.delete.mutate({
@@ -231,9 +231,9 @@ await trpc.exportTemplates.delete.mutate({
 });
 ```
 
-## Exemples de Colonnes Prédéfinies
+## Predefined Column Examples
 
-### Pour un PV (Procès-Verbal)
+### For a PV (Minutes)
 
 ```typescript
 const pvColumns = [
@@ -257,7 +257,7 @@ const pvColumns = [
 ];
 ```
 
-### Pour un Export Excel Individuel
+### For an Individual Excel Export
 
 ```typescript
 const excelColumns = [
@@ -270,34 +270,34 @@ const excelColumns = [
 ];
 ```
 
-## Utilisation dans le Service d'Export
+## Use in the Export Service
 
-Le service d'export va automatiquement :
+The export service will automatically:
 
-1. Récupérer le template par défaut pour le type d'export demandé
-2. Appliquer la configuration des colonnes
-3. Appliquer la configuration de l'entête
-4. Appliquer les styles définis
-5. Générer le document selon ces paramètres
+1. Fetch the default template for the requested export type
+2. Apply the column configuration
+3. Apply the header configuration
+4. Apply the defined styles
+5. Generate the document according to these settings
 
-### Exemple d'intégration
+### Integration example
 
 ```typescript
-// Dans exports.service.ts
+// In exports.service.ts
 export async function generatePV(input, ctx) {
-  // 1. Récupérer le template
+  // 1. Fetch the template
   const template = await exportTemplatesService.getDefaultTemplate(
     ctx.db,
     institutionId,
     "pv"
   );
 
-  // 2. Utiliser la configuration du template
+  // 2. Use the template configuration
   const columns = template?.columns || getDefaultPVColumns();
   const headerConfig = template?.headerConfig || getDefaultHeader();
   const styleConfig = template?.styleConfig || getDefaultStyles();
 
-  // 3. Générer le document avec ces configurations
+  // 3. Generate the document with these configurations
   const html = await renderTemplate({
     templatePath: "pv-template.html",
     data: processedData,
@@ -306,7 +306,7 @@ export async function generatePV(input, ctx) {
     styleConfig
   });
 
-  // 4. Convertir en PDF si nécessaire
+  // 4. Convert to PDF if needed
   if (format === "pdf") {
     return await htmlToPdf(html, styleConfig.pageSize, styleConfig.pageOrientation);
   }
@@ -315,62 +315,62 @@ export async function generatePV(input, ctx) {
 }
 ```
 
-## Migration depuis l'Ancien Système
+## Migration from the Old System
 
-L'ancien système utilise un fichier `export-config.json` statique. Pour migrer :
+The old system uses a static `export-config.json` file. To migrate:
 
-1. **Créer des templates pour chaque type d'export**
-2. **Importer les configurations existantes** depuis `export-config.json`
-3. **Définir les templates comme par défaut**
-4. **Tester** chaque type d'export
-5. **Déprécier** progressivement `export-config.json`
+1. **Create templates for each export type**
+2. **Import the existing configurations** from `export-config.json`
+3. **Set the templates as default**
+4. **Test** each export type
+5. **Gradually deprecate** `export-config.json`
 
-## Permissions Requises
+## Required Permissions
 
-- **Lister et consulter** : `canManageCatalog` (tous les administrateurs)
-- **Créer, modifier, supprimer** : `adminProcedure` (administrateurs seulement)
-- **Définir template par défaut** : `adminProcedure`
+- **List and view**: `canManageCatalog` (all administrators)
+- **Create, edit, delete**: `adminProcedure` (administrators only)
+- **Set default template**: `adminProcedure`
 
-## Base de Données
+## Database
 
-La table `export_templates` stocke désormais uniquement :
+The `export_templates` table now stores only:
 
-- `id` : Identifiant unique
-- `institution_id` : Institution propriétaire
-- `name` : Nom du template
-- `type` : Type d'export (`pv`, `evaluation`, `ue`)
-- `is_default` : Indique si le template est celui utilisé par défaut
-- `template_body` : Contenu Handlebars complet (.hbs) fourni par l'utilisateur
-- `created_at`, `updated_at`, `created_by`, `updated_by` : Audit
+- `id`: Unique identifier
+- `institution_id`: Owning institution
+- `name`: Template name
+- `type`: Export type (`pv`, `evaluation`, `ue`)
+- `is_default`: Whether the template is the one used by default
+- `template_body`: Full Handlebars content (.hbs) supplied by the user
+- `created_at`, `updated_at`, `created_by`, `updated_by`: Audit
 
-### Contraintes
+### Constraints
 
-- **Unicité** : `(institution_id, name)` doit être unique
-- **Default** : Un seul template `isDefault=true` par `(institution_id, type)`
-- **Cascade** : Suppression en cascade si l'institution est supprimée
+- **Uniqueness**: `(institution_id, name)` must be unique
+- **Default**: Only one `isDefault=true` template per `(institution_id, type)`
+- **Cascade**: Cascade delete if the institution is deleted
 
-## Avantages du Système
+## System Benefits
 
-1. **Flexibilité totale** : l'utilisateur colle son Handlebars complet (entêtes, logos, styles)
-2. **Déploiement rapide** : pas d'éditeur graphique complexe ni de configuration de colonnes
-3. **Compatibilité** : toujours rendu avec les helpers existants (`formatNumber`, `getObservation`, etc.)
-4. **Personnalisation par institution** : chaque établissement peut conserver ses propres PDF statiques
-5. **Versioning** : Plusieurs versions de templates possibles
-6. **Audit** : Suivi de création/modification
-7. **Réutilisabilité** : Templates partagés entre exports similaires
+1. **Full flexibility**: the user pastes their complete Handlebars template (headers, logos, styles)
+2. **Fast rollout**: no complex graphical editor or column configuration
+3. **Compatibility**: always rendered with the existing helpers (`formatNumber`, `getObservation`, etc.)
+4. **Per-institution customization**: each institution can keep its own static PDFs
+5. **Versioning**: Several template versions possible
+6. **Audit**: Creation/modification tracking
+7. **Reusability**: Templates shared between similar exports
 
-## Prochaines Étapes
+## Next Steps
 
-1. ✅ Créer le schéma de base de données
-2. ✅ Créer le module CRUD complet
-3. ⏳ Adapter le service d'export pour utiliser les templates
-4. ⏳ Créer l'interface UI pour gérer les templates
-5. ⏳ Implémenter l'import/export de templates
-6. ⏳ Créer des templates par défaut pour chaque type
+1. ✅ Create the database schema
+2. ✅ Create the complete CRUD module
+3. ⏳ Adapt the export service to use the templates
+4. ⏳ Create the UI to manage templates
+5. ⏳ Implement template import/export
+6. ⏳ Create default templates for each type
 
 ## Support
 
-Pour toute question ou problème, consultez :
-- [Documentation de l'API tRPC](#api-trpc)
-- [Exemples de Templates](#exemples-de-colonnes-prédéfinies)
-- Code source : `apps/server/src/modules/export-templates/`
+For any question or issue, see:
+- [tRPC API documentation](#trpc-api)
+- [Template examples](#predefined-column-examples)
+- Source code: `apps/server/src/modules/export-templates/`

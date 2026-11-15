@@ -1,14 +1,14 @@
-# Implémentation du Support des Étudiants Externes
+# Implementing Support for External Students
 
-## Vue d'ensemble
+## Overview
 
-Ce guide explique comment modifier le système pour gérer les étudiants admis directement d'autres établissements, sans historique académique interne.
+This guide explains how to modify the system to handle students admitted directly from other institutions, with no internal academic history.
 
-## Modifications Requises
+## Required Changes
 
-### 1. Migration de la Base de Données
+### 1. Database Migration
 
-Créer le fichier: `apps/server/src/db/migrations/0003_add_external_students_support.sql`
+Create the file: `apps/server/src/db/migrations/0003_add_external_students_support.sql`
 
 ```sql
 -- Add admission type and transfer fields to students table
@@ -37,12 +37,12 @@ COMMENT ON COLUMN students.admission_justification IS 'Justification de l''admis
 COMMENT ON COLUMN students.admission_date IS 'Date de la décision d''admission';
 ```
 
-### 2. Mise à Jour du Schéma Drizzle
+### 2. Updating the Drizzle Schema
 
-**Fichier:** `apps/server/src/db/schema/app-schema.ts`
+**File:** `apps/server/src/db/schema/app-schema.ts`
 
 ```typescript
-// Ajouter les types d'admission
+// Add the admission types
 export const admissionTypes = [
 	"normal",
 	"transfer",
@@ -51,7 +51,7 @@ export const admissionTypes = [
 ] as const;
 export type AdmissionType = (typeof admissionTypes)[number];
 
-// Mettre à jour la définition de la table students (ligne ~494)
+// Update the students table definition (line ~494)
 export const students = pgTable(
 	"students",
 	{
@@ -67,7 +67,7 @@ export const students = pgTable(
 			.notNull()
 			.references(() => classes.id, { onDelete: "restrict" }),
 
-		// Nouveaux champs pour étudiants externes
+		// New fields for external students
 		admissionType: text("admission_type")
 			.$type<AdmissionType>()
 			.notNull()
@@ -88,23 +88,23 @@ export const students = pgTable(
 		index("idx_students_institution_id").on(t.institutionId),
 		index("idx_students_class_id").on(t.class),
 		index("idx_students_domain_user_id").on(t.domainUserId),
-		index("idx_students_admission_type").on(t.admissionType), // Nouvel index
+		index("idx_students_admission_type").on(t.admissionType), // New index
 	],
 );
 ```
 
-### 3. Mise à Jour des Types de Facts
+### 3. Updating the Facts Types
 
-**Fichier:** `apps/server/src/modules/promotion-rules/promotion-rules.types.ts`
+**File:** `apps/server/src/modules/promotion-rules/promotion-rules.types.ts`
 
 ```typescript
 export interface StudentPromotionFacts {
 	// Existing fields...
 	studentId: string;
 	registrationNumber: string;
-	// ... tous les champs existants
+	// ... all the existing fields
 
-	// Nouveaux champs pour étudiants externes
+	// New fields for external students
 	admissionType: "normal" | "transfer" | "direct" | "equivalence";
 	isTransferStudent: boolean;
 	isDirectAdmission: boolean;
@@ -115,21 +115,21 @@ export interface StudentPromotionFacts {
 }
 ```
 
-### 4. Mise à Jour du Service de Calcul des Facts
+### 4. Updating the Facts Computation Service
 
-**Fichier:** `apps/server/src/modules/promotion-rules/student-facts.service.ts`
+**File:** `apps/server/src/modules/promotion-rules/student-facts.service.ts`
 
-Dans la fonction `computeStudentFacts`, ajouter après la ligne 28:
+In the `computeStudentFacts` function, add after line 28:
 
 ```typescript
-// Ligne ~50, dans l'objet facts
+// Line ~50, in the facts object
 const facts: StudentPromotionFacts = {
 	// Existing fields...
 	studentId: student.id,
 	registrationNumber: student.registrationNumber,
-	// ... (garder tous les champs existants)
+	// ... (keep all the existing fields)
 
-	// Nouveaux champs pour étudiants externes (ajouter à la fin)
+	// New fields for external students (add at the end)
 	admissionType: student.admissionType,
 	isTransferStudent: student.admissionType === "transfer",
 	isDirectAdmission: student.admissionType === "direct" || student.admissionType === "equivalence",
@@ -140,14 +140,14 @@ const facts: StudentPromotionFacts = {
 };
 ```
 
-### 5. Mise à Jour du Module Students - Schémas Zod
+### 5. Updating the Students Module - Zod Schemas
 
-**Fichier:** `apps/server/src/modules/students/students.zod.ts`
+**File:** `apps/server/src/modules/students/students.zod.ts`
 
 ```typescript
 import { z } from "zod";
 
-// Ajouter le schéma pour le type d'admission
+// Add the schema for the admission type
 export const admissionTypeSchema = z.enum([
 	"normal",
 	"transfer",
@@ -155,7 +155,7 @@ export const admissionTypeSchema = z.enum([
 	"equivalence",
 ]);
 
-// Mettre à jour createSchema
+// Update createSchema
 export const createSchema = z.object({
 	firstName: z.string().min(1),
 	lastName: z.string().min(1),
@@ -168,7 +168,7 @@ export const createSchema = z.object({
 	registrationNumber: z.string().optional(),
 	formatId: z.string().optional(),
 
-	// Nouveaux champs optionnels
+	// New optional fields
 	admissionType: admissionTypeSchema.optional().default("normal"),
 	transferInstitution: z.string().optional(),
 	transferCredits: z.number().int().min(0).max(180).optional(),
@@ -177,7 +177,7 @@ export const createSchema = z.object({
 	admissionDate: z.date().optional(),
 });
 
-// Schéma spécifique pour admission externe
+// Dedicated schema for external admission
 export const externalAdmissionSchema = z.object({
 	firstName: z.string().min(1),
 	lastName: z.string().min(1),
@@ -199,17 +199,17 @@ export const externalAdmissionSchema = z.object({
 });
 ```
 
-### 6. Nouveau Router pour Admissions Externes
+### 6. New Router for External Admissions
 
-**Fichier:** `apps/server/src/modules/students/students.router.ts`
+**File:** `apps/server/src/modules/students/students.router.ts`
 
-Ajouter cette nouvelle procédure:
+Add this new procedure:
 
 ```typescript
 import { adminProcedure } from "../../lib/trpc";
 import { externalAdmissionSchema } from "./students.zod";
 
-// Ajouter dans le router:
+// Add in the router:
 admitExternal: adminProcedure
 	.input(externalAdmissionSchema)
 	.mutation(async ({ ctx, input }) => {
@@ -217,11 +217,11 @@ admitExternal: adminProcedure
 	}),
 ```
 
-### 7. Service pour Admission Externe
+### 7. Service for External Admission
 
-**Fichier:** `apps/server/src/modules/students/students.service.ts`
+**File:** `apps/server/src/modules/students/students.service.ts`
 
-Ajouter cette nouvelle fonction:
+Add this new function:
 
 ```typescript
 import type { externalAdmissionSchema } from "./students.zod";
@@ -234,7 +234,7 @@ export async function admitExternalStudent(
 	institutionId: string,
 ) {
 	return db.transaction(async (tx) => {
-		// 1. Créer le profil utilisateur
+		// 1. Create the user profile
 		const [profile] = await tx
 			.insert(schema.domainUsers)
 			.values({
@@ -249,7 +249,7 @@ export async function admitExternalStudent(
 			})
 			.returning();
 
-		// 2. Générer le matricule si nécessaire
+		// 2. Generate the registration number if needed
 		let registrationNumber = data.registrationNumber;
 		if (!registrationNumber) {
 			const classData = await tx.query.classes.findFirst({
@@ -264,11 +264,11 @@ export async function admitExternalStudent(
 					lastName: data.lastName,
 					nationality: data.nationality,
 				},
-				null, // Utiliser le format actif
+				null, // Use the active format
 			);
 		}
 
-		// 3. Créer l'étudiant avec type d'admission externe
+		// 3. Create the student with an external admission type
 		const [student] = await tx
 			.insert(schema.students)
 			.values({
@@ -285,7 +285,7 @@ export async function admitExternalStudent(
 			})
 			.returning();
 
-		// 4. Créer l'inscription active
+		// 4. Create the active enrollment
 		const currentYear = await tx.query.academicYears.findFirst({
 			where: eq(schema.academicYears.isActive, true),
 		});
@@ -299,14 +299,14 @@ export async function admitExternalStudent(
 			});
 		}
 
-		// 5. Créer un ledger de crédits si des crédits sont transférés
+		// 5. Create a credit ledger if credits are transferred
 		if (data.transferCredits && data.transferCredits > 0 && currentYear) {
 			await tx.insert(schema.studentCreditLedgers).values({
 				studentId: student.id,
 				academicYearId: currentYear.id,
 				creditsEarned: data.transferCredits,
 				creditsInProgress: 0,
-				requiredCredits: 60, // Valeur par défaut
+				requiredCredits: 60, // Default value
 			});
 		}
 
@@ -315,22 +315,22 @@ export async function admitExternalStudent(
 }
 ```
 
-### 8. Interface Utilisateur - Formulaire d'Admission
+### 8. User Interface - Admission Form
 
-**Fichier:** `apps/web/src/pages/admin/StudentManagement.tsx`
+**File:** `apps/web/src/pages/admin/StudentManagement.tsx`
 
-Ajouter un bouton et un modal pour les admissions externes:
+Add a button and a modal for external admissions:
 
 ```typescript
-// Dans le composant StudentManagement, ajouter:
+// In the StudentManagement component, add:
 const [isExternalAdmissionOpen, setIsExternalAdmissionOpen] = useState(false);
 
-// Formulaire d'admission externe
+// External admission form
 const externalAdmissionForm = useForm({
 	resolver: zodResolver(z.object({
 		firstName: z.string().min(1),
 		lastName: z.string().min(1),
-		// ... autres champs
+		// ... other fields
 		admissionType: z.enum(["transfer", "direct", "equivalence"]),
 		transferInstitution: z.string().min(1),
 		transferCredits: z.number().min(0),
@@ -339,7 +339,7 @@ const externalAdmissionForm = useForm({
 	})),
 });
 
-// Mutation pour admission externe
+// Mutation for external admission
 const externalAdmissionMutation = useMutation({
 	mutationFn: async (data) => {
 		return trpcClient.students.admitExternal.mutate({
@@ -354,20 +354,20 @@ const externalAdmissionMutation = useMutation({
 	},
 });
 
-// Bouton dans l'interface
+// Button in the interface
 <Button onClick={() => setIsExternalAdmissionOpen(true)}>
   <UserPlus className="mr-2 h-4 w-4" />
   Admettre un étudiant externe
 </Button>
 ```
 
-### 9. Règles de Promotion pour Étudiants Externes
+### 9. Promotion Rules for External Students
 
-Créer dans l'interface admin une règle de "bypass" pour étudiants externes:
+In the admin interface, create a "bypass" rule for external students:
 
-**Nom:** Admission Directe - Étudiants Externes
+**Name:** Direct Admission - External Students
 
-**Règle JSON:**
+**JSON rule:**
 ```json
 {
   "conditions": {
@@ -405,7 +405,7 @@ Créer dans l'interface admin une règle de "bypass" pour étudiants externes:
 
 ## Tests
 
-### Test 1: Créer un étudiant en transfert
+### Test 1: Create a transfer student
 
 ```typescript
 const result = await trpcClient.students.admitExternal.mutate({
@@ -421,7 +421,7 @@ const result = await trpcClient.students.admitExternal.mutate({
 });
 ```
 
-### Test 2: Évaluer avec la règle externe
+### Test 2: Evaluate with the external rule
 
 ```typescript
 const evaluation = await trpcClient.promotionRules.evaluateClass.query({
@@ -430,43 +430,43 @@ const evaluation = await trpcClient.promotionRules.evaluateClass.query({
 	academicYearId: "year-2024-2025",
 });
 
-// L'étudiant externe devrait être marqué comme éligible
-console.log(evaluation.eligible); // Devrait contenir Jean Dupont
+// The external student should be marked as eligible
+console.log(evaluation.eligible); // Should contain Jean Dupont
 ```
 
-## Migration de Données Existantes
+## Migrating Existing Data
 
-Si vous avez des étudiants existants à marquer comme externes:
+If you have existing students to mark as external:
 
 ```sql
--- Identifier manuellement les étudiants externes
+-- Manually identify the external students
 UPDATE students
 SET
   admission_type = 'transfer',
   transfer_institution = 'À compléter',
   admission_date = created_at
-WHERE id IN ('id1', 'id2', 'id3'); -- Remplacer par les IDs réels
+WHERE id IN ('id1', 'id2', 'id3'); -- Replace with the real IDs
 ```
 
-## Checklist d'Implémentation
+## Implementation Checklist
 
-- [ ] Créer et exécuter la migration SQL
-- [ ] Mettre à jour le schéma Drizzle
-- [ ] Mettre à jour les types de facts
-- [ ] Mettre à jour le service de calcul des facts
-- [ ] Ajouter les schémas Zod
-- [ ] Créer le endpoint d'admission externe
-- [ ] Créer le service d'admission
-- [ ] Ajouter l'interface utilisateur
-- [ ] Créer les règles de promotion pour externes
-- [ ] Tester l'admission d'un étudiant externe
-- [ ] Tester l'évaluation avec les règles
-- [ ] Documenter le processus pour les administrateurs
+- [ ] Create and run the SQL migration
+- [ ] Update the Drizzle schema
+- [ ] Update the facts types
+- [ ] Update the facts computation service
+- [ ] Add the Zod schemas
+- [ ] Create the external admission endpoint
+- [ ] Create the admission service
+- [ ] Add the user interface
+- [ ] Create the promotion rules for external students
+- [ ] Test the admission of an external student
+- [ ] Test the evaluation with the rules
+- [ ] Document the process for administrators
 
-## Avantages de cette Approche
+## Benefits of This Approach
 
-1. **Traçabilité complète**: Chaque admission externe est justifiée et datée
-2. **Flexibilité**: Supporte différents types d'admission (transfert, équivalence, direct)
-3. **Intégration transparente**: Les étudiants externes sont traités normalement une fois admis
-4. **Respect des règles**: Bypass automatique pour la promotion initiale
-5. **Audit**: Possibilité de générer des rapports sur les admissions externes
+1. **Full traceability**: Every external admission is justified and dated
+2. **Flexibility**: Supports different admission types (transfer, equivalence, direct)
+3. **Seamless integration**: External students are treated normally once admitted
+4. **Rule compliance**: Automatic bypass for the initial promotion
+5. **Audit**: Ability to generate reports on external admissions

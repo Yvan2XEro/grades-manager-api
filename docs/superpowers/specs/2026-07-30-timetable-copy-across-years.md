@@ -536,21 +536,21 @@ Same keys in English:
 
 ## Error Cases
 
-| Situation | Comportement |
+| Situation | Behavior |
 |---|---|
-| Source = cible | Erreur dans `preview()` : "Source and target must be different" |
-| Aucune séance dans la source | Erreur dans `preview()` : "No sessions found in source year" |
-| Classe cible absente (setup non fait) | Sessions concernées → `notMatched`, loguées, job continue |
-| ClassCourse cible absent | Idem |
-| Session déjà existante (même slot) | `skipped`, job continue |
-| `currentYearId` null | Bouton désactivé dans l'UI |
+| Source = target | Error in `preview()`: "Source and target must be different" |
+| No sessions in the source | Error in `preview()`: "No sessions found in source year" |
+| Target class missing (setup not done) | Affected sessions → `notMatched`, logged, job continues |
+| Target ClassCourse missing | Same |
+| Session already exists (same slot) | `skipped`, job continues |
+| `currentYearId` null | Button disabled in the UI |
 
 ---
 
-## Scope Hors Spec
+## Out of Scope
 
-Les éléments suivants ne font **pas** partie de cette spec :
-- Copie des présences (`attendance_sessions`)
-- Synchronisation automatique au changement d'année active
-- Interface de diff avant/après copie
-- Gestion des conflits de salles
+The following items are **not** part of this spec:
+- Copying attendance (`attendance_sessions`)
+- Automatic sync when the active year changes
+- Before/after copy diff interface
+- Room conflict handling
