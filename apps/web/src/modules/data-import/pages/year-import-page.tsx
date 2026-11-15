@@ -12,6 +12,7 @@ import { StepDonePanel } from "../components/step-done-panel";
 import { StepPreparePanel } from "../components/step-prepare-panel";
 import { StepReviewPanel } from "../components/step-review-panel";
 import { YearClosePanel } from "../components/year-close-panel";
+import { YearHistoryCard } from "../components/year-history-card";
 import { useImportOverview } from "../hooks/use-import-overview";
 import { useImportStep } from "../hooks/use-import-step";
 import {
@@ -149,6 +150,7 @@ export default function YearImportPage() {
 					)
 				)}
 			</div>
+			{year && <YearHistoryCard academicYearId={year.id} />}
 		</div>
 	);
 }

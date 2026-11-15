@@ -131,6 +131,12 @@ export async function undoImport(jobId: string, academicYearId?: string) {
 		where: eq(schema.importJournalEntries.jobId, jobId),
 		orderBy: asc(schema.importJournalEntries.seq),
 	});
+	if (!entries.length)
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message:
+				"Cannot undo: this import has no journal (made before undo existed, or it changed nothing).",
+		});
 	const createdBy = new Map<JournalTable, Set<string>>();
 	for (const e of entries)
 		if (e.action === "create") {

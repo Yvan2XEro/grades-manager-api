@@ -3947,6 +3947,18 @@
           "create": "Création",
           "update": "Mise à jour",
           "truncated": "Les {{shown}} premières modifications sur {{total}} sont affichées."
+        },
+        "history": {
+          "title": "Imports de cette année",
+          "counts": "{{created}} créé(s), {{updated}} mis à jour",
+          "undo": "Annuler",
+          "undoTitle": "Annuler l'import « {{step}} » ?",
+          "undoText": "Ce qu'il a créé ({{created}}) est supprimé et ce qu'il a modifié ({{updated}}) retrouve sa valeur d'avant. C'est refusé tant qu'un import plus récent en dépend.",
+          "undoFailed": "L'import n'a pas pu être annulé.",
+          "undone": "Import annulé",
+          "undoneBadge": "Annulé",
+          "blocked": "Des données ajoutées depuis dépendent de cet import : annulez d'abord les imports plus récents.",
+          "notUndoable": "Non annulable"
         }
       }
     }

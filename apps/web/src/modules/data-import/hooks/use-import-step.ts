@@ -70,6 +70,7 @@ export function useImportStep(step: string, academicYearId?: string) {
 			}
 			setPhase("done");
 			queryClient.invalidateQueries(trpc.dataImport.overview.queryFilter());
+			queryClient.invalidateQueries(trpc.dataImport.history.queryFilter());
 		},
 		onError: (error) => toast.error(error.message),
 	});

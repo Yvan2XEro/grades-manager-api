@@ -4959,6 +4959,18 @@
           "create": "Create",
           "update": "Update",
           "truncated": "The first {{shown}} of {{total}} changes are shown."
+        },
+        "history": {
+          "title": "Imports of this year",
+          "counts": "{{created}} created, {{updated}} updated",
+          "undo": "Undo",
+          "undoTitle": "Undo the import « {{step}} »?",
+          "undoText": "What it created ({{created}}) is deleted and what it changed ({{updated}}) gets its former value back. It is refused while a later import depends on it.",
+          "undoFailed": "The import could not be undone.",
+          "undone": "Import undone",
+          "undoneBadge": "Undone",
+          "blocked": "Data added since depends on this import: undo the later imports first.",
+          "notUndoable": "Cannot be undone"
         }
       }
     }

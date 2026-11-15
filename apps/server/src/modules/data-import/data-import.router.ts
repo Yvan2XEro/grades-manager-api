@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -303,6 +303,57 @@ export const dataImportRouter = router({
 				mimeType:
 					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			};
+		}),
+
+	/** Imports of a year, latest first, with what they did (for undo). */
+	history: tenantAdminProcedure
+		.input(z.object({ academicYearId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const jobs = await db.query.batchJobs.findMany({
+				where: and(
+					eq(schema.batchJobs.institutionId, ctx.institution.id),
+					eq(schema.batchJobs.type, "import.step"),
+					inArray(schema.batchJobs.status, ["completed", "rolled_back"]),
+					sql`${schema.batchJobs.params}->>'academicYearId' = ${input.academicYearId}`,
+					isNull(schema.batchJobs.parentJobId),
+				),
+				orderBy: desc(schema.batchJobs.completedAt),
+				with: { createdByRef: true },
+			});
+			// Imports made before the journal existed cannot be undone
+			const journaled = jobs.length
+				? new Set(
+						(
+							await db
+								.selectDistinct({ jobId: schema.importJournalEntries.jobId })
+								.from(schema.importJournalEntries)
+								.where(
+									inArray(
+										schema.importJournalEntries.jobId,
+										jobs.map((j) => j.id),
+									),
+								)
+						).map((e) => e.jobId),
+					)
+				: new Set<string>();
+			return jobs.map((job) => {
+				const preview = (job.previewResult ?? {}) as {
+					sheets?: { create: number; update: number }[];
+				};
+				return {
+					id: job.id,
+					step: (job.params as { step: string }).step,
+					status: job.status,
+					completedAt: job.completedAt,
+					rolledBackAt: job.rolledBackAt,
+					undoable: journaled.has(job.id),
+					created: (preview.sheets ?? []).reduce((n, s) => n + s.create, 0),
+					updated: (preview.sheets ?? []).reduce((n, s) => n + s.update, 0),
+					by: job.createdByRef
+						? `${job.createdByRef.firstName} ${job.createdByRef.lastName}`
+						: null,
+				};
+			});
 		}),
 
 	/** Marks a step as not applicable (or applicable again). */
