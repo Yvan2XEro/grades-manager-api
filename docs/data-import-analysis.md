@@ -126,14 +126,32 @@ L'essentiel est là : pour une année standard, **le client fournit 3 fichiers**
 - **Rejet en cascade, mais visible** : si une classe est rejetée, ses étudiants sont rejetés avec le message « classe rejetée à la ligne 12 de la feuille Classes ». Le client remonte à la cause en un clic.
 - **Réimport = mise à jour, jamais doublon** : la clé naturelle retrouve la ligne existante. Une ligne absente du fichier n'est **jamais supprimée**.
 
-### 3.3 Cas particuliers à trancher dans le code
+### 3.3 Principe : s'adapter au fichier, ligne par ligne
 
-- **Matricule absent du fichier** : le générer selon le format de matricule configuré. Pour retrouver la personne au réimport, se rabattre sur e-mail, puis nom + date de naissance ; en cas de doute, erreur.
-- **Étudiant présent sur plusieurs années** : une seule personne, un seul étudiant, une inscription par année. La classe actuelle (`students.class`) n'est mise à jour que si l'année importée est la plus récente.
-- **Redoublant ou transfert** : il s'agit simplement de deux inscriptions sur deux années, rien de spécial. L'origine d'un transfert (établissement, crédits) est prise en colonnes facultatives.
-- **Rattrapage** : un examen de type rattrapage est rattaché à l'examen principal du même cours. La politique (remplace, meilleure note, moyenne) vient du modèle d'évaluation.
-- **Somme des pondérations** des examens normaux d'un cours différente de 100 % : avertissement, pas une erreur.
-- **Note sur un examen verrouillé** (réimport d'une année close) : refusé, sauf si l'admin choisit explicitement « rouvrir l'année pour correction ».
+L'assistant ne fait jamais choisir un mode global. **Chaque ligne est traitée selon ce qu'elle contient**, et un même fichier peut mélanger les situations.
+
+- **Matricule** :
+  - fourni : il est conservé et sert de clé ;
+  - absent : il est généré selon le format de matricule de l'institution ;
+  - pour retrouver une personne déjà connue, l'assistant essaie dans l'ordre le matricule, l'e-mail, puis nom + prénom + date de naissance ;
+  - en cas de doute (deux personnes possibles), la ligne passe en erreur avec les candidats proposés.
+- **En-têtes** : synonymes reconnus (« Matricule », « N° matricule », « Registration number », « Mat. »…), sans tenir compte de la casse ni des accents. Les colonnes inconnues sont ignorées et signalées.
+- **Valeurs** :
+  - dates en `jj/mm/aaaa`, `aaaa-mm-jj` ou date Excel ;
+  - notes avec virgule ou point, sur 20 ou sur le barème de l'institution (détecté) ;
+  - codes tolérants aux espaces et à la casse.
+- **Absences** : `ABS`, `Abs`, `absent` ou `AJ` sont reconnus. Ils sont enregistrés comme une absence (participation) et non comme une note. Le calcul suit ensuite la règle d'absence déjà configurée pour l'institution.
+- **Décisions de jury des années passées** :
+  - si le fichier en contient (colonne « Décision » ou feuille du PV), elles sont comparées aux décisions recalculées ; chaque écart peut être retenu comme décision officielle, ce qui crée une dérogation tracée ;
+  - sinon, les décisions sont simplement calculées.
+- **Enseignants** :
+  - une fiche est créée, retrouvée par e-mail, ou par nom si l'e-mail manque ;
+  - créer un compte reste une action séparée (« Inviter les enseignants importés »), jamais imposée.
+- **Étudiant présent sur plusieurs années** : une seule personne et un seul dossier étudiant, avec une inscription par année. La classe actuelle n'est mise à jour que si l'année importée est la plus récente.
+- **Redoublant ou transfert** : il s'agit simplement de deux inscriptions sur deux années. L'origine d'un transfert (établissement, crédits) se renseigne dans des colonnes facultatives.
+- **Rattrapage** : il est rattaché à l'examen principal du même cours. La politique de calcul (remplace, meilleure note, moyenne) vient du modèle d'évaluation, et peut être précisée par cours.
+- **Somme des pondérations** des examens d'un cours différente de 100 % : avertissement, pas une erreur.
+- **Note sur un examen verrouillé** (réimport d'une année close) : refusée, sauf si l'admin rouvre explicitement l'année pour correction.
 
 ## 4. Ce que l'import fait autour (et ce qu'il ne fait pas)
 
@@ -184,10 +202,6 @@ Pour une institution moyenne sur une année : environ 2 000 étudiants, 60 class
 
 Chaque livraison est testée de bout en bout avec un jeu de fichiers réaliste : 3 années, 2 000 étudiants, avec redoublants, transferts et rattrapages.
 
-## 9. Décisions à prendre
+## 9. Reste ouvert
 
-1. **Matricules** : vos clients en ont-ils toujours un ? Si non, on génère selon le format configuré (proposé).
-2. **Enseignants importés** : simple fiche sans compte (proposé), ou invitation par e-mail pour créer leur compte ?
-3. **Décisions de jury des années passées** : recalculées puis comparées au PV officiel (proposé), ou importées telles quelles ?
-4. **Absences (`ABS`)** : comptées comme 0, ou laissées sans note ?
-5. **Frais et paiements historiques** : dans la première version, ou plus tard ?
+- **Frais et paiements historiques** : prévus en étape optionnelle, livrés après les notes (livraison 5).
