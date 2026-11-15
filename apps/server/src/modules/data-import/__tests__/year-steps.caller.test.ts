@@ -533,3 +533,80 @@ describe("guided import — class courses and exams", () => {
 		expect(again.sheets[0]).toMatchObject({ create: 1, unchanged: 5 });
 	});
 });
+
+describe("guided import — undo", () => {
+	it("undoes an import, refusing while later imports depend on it", async () => {
+		const { ctx, caller } = await admin();
+		const { s, program, past } = await fixture(ctx.institution!.id);
+		const run = async (step: string, sheets: Record<string, string[][]>) => {
+			const fileId = await upload(caller, sheets);
+			const job = await caller.batchJobs.preview({
+				type: "import.step",
+				params: { step, fileId, academicYearId: past.id },
+			});
+			await caller.batchJobs.run({ jobId: job.id });
+			return job.id;
+		};
+		const classesJob = await run("year.classes", {
+			Classes: [CLASS_HEADERS, [`U${s}`, `U ${s}`, program.code, "L1"]],
+		});
+		const studentsJob = await run("year.students", {
+			Étudiants: [
+				STUDENT_HEADERS,
+				[`V${s}1`, "Nana", "Lea", "", "", "", `U${s}`],
+			],
+		});
+		// Renaming the class is undone with its import, back to the old name
+		await run("year.classes", {
+			Classes: [CLASS_HEADERS, [`U${s}`, `U renamed ${s}`, program.code, "L1"]],
+		});
+
+		const refused = await caller.batchJobs.rollback({ jobId: classesJob });
+		expect(refused?.status).toBe("failed");
+		expect(
+			(
+				await db.query.batchJobs.findFirst({
+					where: eq(schema.batchJobs.id, classesJob),
+				})
+			)?.status,
+		).toBe("completed");
+
+		const undone = await caller.batchJobs.rollback({ jobId: studentsJob });
+		expect(undone?.status).toBe("completed");
+		expect(
+			await db.query.students.findFirst({
+				where: eq(schema.students.registrationNumber, `V${s}1`),
+			}),
+		).toBeUndefined();
+
+		// The rename (third job) is undone, then the creation
+		const jobs = await db.query.batchJobs.findMany({
+			where: and(
+				eq(schema.batchJobs.type, "import.step"),
+				eq(schema.batchJobs.status, "completed"),
+			),
+		});
+		const rename = jobs.find(
+			(j) =>
+				j.id !== classesJob &&
+				(j.params as { step: string }).step === "year.classes" &&
+				(j.params as { academicYearId: string }).academicYearId === past.id,
+		)!;
+		await caller.batchJobs.rollback({ jobId: rename.id });
+		expect(
+			(
+				await db.query.classes.findFirst({
+					where: eq(schema.classes.code, `U${s}`),
+				})
+			)?.name,
+		).toBe(`U ${s}`);
+		expect(
+			(await caller.batchJobs.rollback({ jobId: classesJob }))?.status,
+		).toBe("completed");
+		expect(
+			await db.query.classes.findFirst({
+				where: eq(schema.classes.code, `U${s}`),
+			}),
+		).toBeUndefined();
+	});
+});

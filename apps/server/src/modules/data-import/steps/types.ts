@@ -1,3 +1,5 @@
+import type { ImportJournal } from "../import-journal";
+
 /** One column of an import sheet, identified in the file by its French header. */
 export interface ColumnDef {
 	key: string;
@@ -68,8 +70,12 @@ export interface ImportPlan {
 	issues: ImportIssue[];
 	/** Detail of the creations and updates (shown in the review). */
 	changes?: RowChange[];
-	/** Applies the valid rows; rows with errors are left out. */
-	apply: (log: (message: string) => Promise<void>) => Promise<void>;
+	/** Applies the valid rows; rows with errors are left out. What it creates
+	 * and changes is recorded in the journal, so the import can be undone. */
+	apply: (
+		log: (message: string) => Promise<void>,
+		journal: ImportJournal,
+	) => Promise<void>;
 }
 
 export interface StepContext {

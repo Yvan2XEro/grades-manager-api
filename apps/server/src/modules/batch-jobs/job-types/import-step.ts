@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { readImportFile } from "../../data-import/import-file-storage";
+import { ImportJournal, undoImport } from "../../data-import/import-journal";
 import { getImportStep } from "../../data-import/steps";
 import { readWorkbook } from "../../data-import/steps/workbook";
 import type { BatchJobDefinition, PreviewResult } from "../batch-jobs.types";
@@ -63,12 +64,29 @@ export const importStepJob: BatchJobDefinition<Params> = {
 
 	async executeStep(params, step, ctx) {
 		const { plan } = await planStep(params, ctx.institutionId, ctx.jobId);
-		await plan.apply((message) => ctx.log("info", message));
+		const journal = new ImportJournal(ctx.jobId);
+		try {
+			await plan.apply((message) => ctx.log("info", message), journal);
+		} finally {
+			// Even a partial import stays undoable
+			await journal.flush();
+		}
 		const done = plan.sheets.reduce((n, s) => n + s.create + s.update, 0);
 		const skipped = plan.sheets.reduce((n, s) => n + s.skipped, 0);
 		await ctx.reportStepProgress(step.id, {
 			itemsProcessed: done,
 			itemsSkipped: skipped,
 		});
+	},
+
+	/** Undo: deletes what the import created and restores what it changed. */
+	async rollback(params, ctx) {
+		const job = await db.query.batchJobs.findFirst({
+			where: eq(schema.batchJobs.id, ctx.jobId),
+			columns: { parentJobId: true },
+		});
+		if (!job?.parentJobId) throw new Error("Original import job not found");
+		const { undone } = await undoImport(job.parentJobId, params.academicYearId);
+		await ctx.log("info", `Import undone: ${undone} change(s) reverted.`);
 	},
 };

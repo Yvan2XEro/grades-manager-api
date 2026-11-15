@@ -301,17 +301,20 @@ export const classesStep: ImportStepDef = {
 					before: c.before && diff(c.before, c.after),
 					after: c.before ? diff(c.after, c.before) : c.after,
 				})),
-			async apply(log) {
+			async apply(log, journal) {
+				const byId = new Map(existing.map((c) => [c.id, c]));
 				for (const change of changes) {
 					if (!change.changed) continue;
 					if (change.id) {
 						const { programOptionId, ...rest } = change.data;
+						const set = programOptionId ? { ...rest, programOptionId } : rest;
+						journal.updated("classes", change.id, byId.get(change.id)!, set);
 						await db
 							.update(schema.classes)
 							.set(programOptionId ? { ...rest, programOptionId } : rest)
 							.where(eq(schema.classes.id, change.id));
-					} else
-						await createClass(
+					} else {
+						const created = await createClass(
 							{
 								...change.data,
 								code: change.code,
@@ -320,6 +323,8 @@ export const classesStep: ImportStepDef = {
 							},
 							ctx.institutionId,
 						);
+						journal.created("classes", [created.id]);
+					}
 				}
 				await log(
 					`Classes: ${summary.create} created, ${summary.update} updated.`,

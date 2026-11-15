@@ -348,6 +348,12 @@ export async function rollbackJob(
 			failedAt: new Date(),
 		});
 		await ctx.log("error", `Rollback failed: ${msg}`);
+		// Nothing was undone: the original job stays completed
+		await repo.updateJob(job.id, {
+			rollbackJobId: null,
+			status: "completed" as BatchJobStatus,
+			rolledBackAt: null,
+		});
 	}
 
 	return repo.findJobWithLogs(rollbackJobRecord.id);

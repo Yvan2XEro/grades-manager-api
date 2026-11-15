@@ -346,36 +346,50 @@ export const coursesStep: ImportStepDef = {
 		return {
 			sheets: [summary],
 			issues,
-			async apply(log) {
+			async apply(log, journal) {
+				const byId = new Map(classCourses.map((cc) => [cc.id, cc]));
 				const placeholder = withoutTeacher
 					? await unassignedTeacher(ctx.institutionId)
 					: undefined;
 				const klassById = new Map(classes.map((c) => [c.id, c]));
 				for (const change of changes) {
-					if (change.id)
+					if (change.id) {
+						const set = {
+							coefficient: change.coefficient,
+							...(change.teacher ? { teacher: change.teacher } : {}),
+						};
+						journal.updated(
+							"classCourses",
+							change.id,
+							byId.get(change.id)!,
+							set,
+						);
 						await db
 							.update(schema.classCourses)
-							.set({
-								coefficient: change.coefficient,
-								...(change.teacher ? { teacher: change.teacher } : {}),
-							})
+							.set(set)
 							.where(eq(schema.classCourses.id, change.id));
-					else
-						await db
-							.insert(schema.classCourses)
-							.values({
-								institutionId: ctx.institutionId,
-								class: change.classId,
-								course: change.courseId,
-								code: normalizeCode(change.code),
-								teacher: change.teacher ?? placeholder!,
-								coefficient: change.coefficient,
-								semesterId:
-									change.semesterId ??
-									klassById.get(change.classId)?.semesterId ??
-									null,
-							})
-							.onConflictDoNothing();
+						continue;
+					}
+					const inserted = await db
+						.insert(schema.classCourses)
+						.values({
+							institutionId: ctx.institutionId,
+							class: change.classId,
+							course: change.courseId,
+							code: normalizeCode(change.code),
+							teacher: change.teacher ?? placeholder!,
+							coefficient: change.coefficient,
+							semesterId:
+								change.semesterId ??
+								klassById.get(change.classId)?.semesterId ??
+								null,
+						})
+						.onConflictDoNothing()
+						.returning({ id: schema.classCourses.id });
+					journal.created(
+						"classCourses",
+						inserted.map((row) => row.id),
+					);
 				}
 				await log(
 					`Class courses: ${summary.create} created, ${summary.update} updated.`,
@@ -383,6 +397,7 @@ export const coursesStep: ImportStepDef = {
 				const enrolled = await syncCourseEnrollments(
 					year.id,
 					classes.map((c) => c.id),
+					journal,
 				);
 				await log(`Course enrollments: ${enrolled} created.`);
 			},

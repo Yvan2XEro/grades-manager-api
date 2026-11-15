@@ -439,7 +439,7 @@ export const examsStep: ImportStepDef = {
 		return {
 			sheets: [summary],
 			issues,
-			async apply(log) {
+			async apply(log, journal) {
 				// Exam types of the model that the institution does not have yet
 				const types = await db.query.examTypes.findMany({
 					where: eq(schema.examTypes.institutionId, ctx.institutionId),
@@ -486,6 +486,12 @@ export const examsStep: ImportStepDef = {
 						? replaced.percentage.toFixed(2)
 						: change.percentage;
 					if (change.id) {
+						journal.updated(
+							"exams",
+							change.id,
+							exams.find((e) => e.id === change.id)!,
+							{ percentage, date: change.date },
+						);
 						await db
 							.update(schema.exams)
 							.set({ percentage, date: change.date })
@@ -507,6 +513,7 @@ export const examsStep: ImportStepDef = {
 							scoringPolicy: component.policy,
 						})
 						.returning({ id: schema.exams.id });
+					journal.created("exams", [created.id]);
 					examId.set(
 						`${change.classCourseId}|${normalize(component.type)}`,
 						created.id,

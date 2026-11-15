@@ -2971,6 +2971,28 @@ export const batchJobs = pgTable(
 	],
 );
 
+/**
+ * What a guided-import job created or changed, row by row, so the import can
+ * be undone: created rows are deleted, changed rows get their `before`
+ * values back (latest entries first).
+ */
+export const importJournalEntries = pgTable(
+	"import_journal_entries",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		jobId: text("job_id")
+			.notNull()
+			.references(() => batchJobs.id, { onDelete: "cascade" }),
+		seq: integer("seq").notNull(),
+		tableName: text("table_name").notNull(),
+		rowId: text("row_id").notNull(),
+		action: text("action").$type<"create" | "update">().notNull(),
+		/** Changed fields before the import (updates only). */
+		before: jsonb("before").$type<Record<string, unknown>>(),
+	},
+	(t) => [index("idx_import_journal_job").on(t.jobId, t.seq)],
+);
+
 export const batchJobSteps = pgTable(
 	"batch_job_steps",
 	{

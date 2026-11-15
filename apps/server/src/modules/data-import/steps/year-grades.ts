@@ -535,10 +535,13 @@ export const gradesStep: ImportStepDef = {
 			sheets,
 			issues,
 			changes,
-			async apply(log) {
+			async apply(log, journal) {
 				const list = [...writes.values()];
+				const existingByKey = new Map(
+					existing.map((g) => [`${g.student}|${g.exam}`, g]),
+				);
 				for (let i = 0; i < list.length; i += 500) {
-					await db
+					const saved = await db
 						.insert(schema.grades)
 						.values(
 							list.slice(i, i + 500).map((w) => ({
@@ -553,7 +556,18 @@ export const gradesStep: ImportStepDef = {
 								score: sql`excluded.score`,
 								updatedAt: new Date(),
 							},
+						})
+						.returning({
+							id: schema.grades.id,
+							student: schema.grades.student,
+							exam: schema.grades.exam,
 						});
+					for (const row of saved) {
+						const before = existingByKey.get(`${row.student}|${row.exam}`);
+						if (before)
+							journal.updated("grades", row.id, before, { score: true });
+						else journal.created("grades", [row.id]);
+					}
 					await log(
 						`Grades: ${Math.min(i + 500, list.length)}/${list.length} saved.`,
 					);

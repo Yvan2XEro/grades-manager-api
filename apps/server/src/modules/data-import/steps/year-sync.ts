@@ -1,6 +1,7 @@
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import type { ImportJournal } from "../import-journal";
 
 const UNASSIGNED_TEACHER_EMAIL = (institutionId: string) =>
 	`unassigned-teacher@${institutionId}.invalid`;
@@ -39,6 +40,7 @@ export async function unassignedTeacher(institutionId: string) {
 export async function syncCourseEnrollments(
 	academicYearId: string,
 	classIds: string[],
+	journal: ImportJournal,
 ) {
 	if (!classIds.length) return 0;
 	const [enrollments, classCourses] = await Promise.all([
@@ -91,6 +93,10 @@ export async function syncCourseEnrollments(
 			.onConflictDoNothing()
 			.returning({ id: schema.studentCourseEnrollments.id });
 		created += inserted.length;
+		journal.created(
+			"studentCourseEnrollments",
+			inserted.map((row) => row.id),
+		);
 	}
 	return created;
 }

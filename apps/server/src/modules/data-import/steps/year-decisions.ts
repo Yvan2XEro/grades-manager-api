@@ -50,6 +50,9 @@ async function loadResults(institutionId: string, academicYearId: string) {
 			deliberationId: schema.deliberationStudentResults.deliberationId,
 			finalDecision: schema.deliberationStudentResults.finalDecision,
 			autoDecision: schema.deliberationStudentResults.autoDecision,
+			isOverridden: schema.deliberationStudentResults.isOverridden,
+			overrideReason: schema.deliberationStudentResults.overrideReason,
+			overriddenBy: schema.deliberationStudentResults.overriddenBy,
 			registrationNumber: schema.students.registrationNumber,
 		})
 		.from(schema.deliberationStudentResults)
@@ -227,9 +230,21 @@ export const decisionsStep: ImportStepDef = {
 		return {
 			sheets: [summary],
 			issues,
-			async apply(log) {
+			async apply(log, journal) {
 				if (!ctx.actorId) throw new Error("An actor is required to override");
-				for (const change of changes)
+				const resultById = new Map(results.map((r) => [r.id, r]));
+				for (const change of changes) {
+					journal.updated(
+						"deliberationStudentResults",
+						change.resultId,
+						resultById.get(change.resultId)!,
+						{
+							finalDecision: true,
+							isOverridden: true,
+							overrideReason: true,
+							overriddenBy: true,
+						},
+					);
 					await overrideDecision(
 						{
 							deliberationId: change.deliberationId,
@@ -240,6 +255,7 @@ export const decisionsStep: ImportStepDef = {
 						ctx.institutionId,
 						ctx.actorId,
 					);
+				}
 				await log(`Decisions: ${changes.length} official decision(s) kept.`);
 			},
 		};

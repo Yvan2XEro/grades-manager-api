@@ -492,7 +492,7 @@ export const studentsStep: ImportStepDef = {
 			sheets: [summary],
 			issues,
 			changes: rowChanges,
-			async apply(log) {
+			async apply(log, journal) {
 				const klassRecords = new Map<string, classesRepo.KlassRecord>();
 				const klassRecord = async (id: string) => {
 					let record = klassRecords.get(id);
@@ -533,6 +533,7 @@ export const studentsStep: ImportStepDef = {
 									institutionId: ctx.institutionId,
 								})
 								.returning();
+							journal.created("domainUsers", [profile.id]);
 							const [created] = await tx
 								.insert(schema.students)
 								.values({
@@ -543,12 +544,19 @@ export const studentsStep: ImportStepDef = {
 								})
 								.returning();
 							studentId = created.id;
+							journal.created("students", [created.id]);
 						} else {
 							if (change.profileChanged) {
 								const set = Object.fromEntries(
 									Object.entries(change.profile).filter(
 										([, value]) => value !== undefined,
 									),
+								);
+								journal.updated(
+									"domainUsers",
+									change.student.domainUserId,
+									change.student.profile,
+									set,
 								);
 								await tx
 									.update(schema.domainUsers)
@@ -557,32 +565,50 @@ export const studentsStep: ImportStepDef = {
 										eq(schema.domainUsers.id, change.student.domainUserId),
 									);
 							}
-							if (change.moveCurrentClass)
+							if (change.moveCurrentClass) {
+								journal.updated("students", change.student.id, change.student, {
+									class: change.classId,
+								});
 								await tx
 									.update(schema.students)
 									.set({ class: change.classId })
 									.where(eq(schema.students.id, change.student.id));
+							}
 						}
 						if (!studentId) return;
 						if (change.enrollment) {
-							if (change.enrollmentChanged)
+							if (change.enrollmentChanged) {
+								journal.updated(
+									"enrollments",
+									change.enrollment.id,
+									change.enrollment,
+									{
+										classId: change.classId,
+									},
+								);
 								await tx
 									.update(schema.enrollments)
 									.set({ classId: change.classId })
 									.where(eq(schema.enrollments.id, change.enrollment.id));
-						} else
-							await tx.insert(schema.enrollments).values({
-								studentId,
-								classId: change.classId,
-								academicYearId: year.id,
-								institutionId: ctx.institutionId,
-								status: enrollmentStatus,
-								enrolledAt: new Date(year.startDate),
-								exitedAt:
-									enrollmentStatus === "completed"
-										? new Date(year.endDate)
-										: null,
-							});
+							}
+						} else {
+							const [enrollment] = await tx
+								.insert(schema.enrollments)
+								.values({
+									studentId,
+									classId: change.classId,
+									academicYearId: year.id,
+									institutionId: ctx.institutionId,
+									status: enrollmentStatus,
+									enrolledAt: new Date(year.startDate),
+									exitedAt:
+										enrollmentStatus === "completed"
+											? new Date(year.endDate)
+											: null,
+								})
+								.returning({ id: schema.enrollments.id });
+							journal.created("enrollments", [enrollment.id]);
+						}
 					});
 					done++;
 					if (done % 200 === 0)
@@ -592,9 +618,11 @@ export const studentsStep: ImportStepDef = {
 					`Students: ${summary.create} created, ${summary.update} updated.`,
 				);
 				// Students join the courses of their class when they already exist
-				const enrolled = await syncCourseEnrollments(year.id, [
-					...new Set(changes.map((c) => c.classId)),
-				]);
+				const enrolled = await syncCourseEnrollments(
+					year.id,
+					[...new Set(changes.map((c) => c.classId))],
+					journal,
+				);
 				if (enrolled) await log(`Course enrollments: ${enrolled} created.`);
 			},
 		};
