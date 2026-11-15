@@ -8,6 +8,7 @@ export const BATCH_JOB_TYPES = [
 	"academicYear.setup",
 	"documents.generateBulk",
 	"timetable.copyFromYear",
+	// Former single-file importers: no longer run, kept so past jobs display
 	"import.academicStructure",
 	"import.people",
 	"import.enrollments",

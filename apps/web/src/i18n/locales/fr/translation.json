@@ -3584,42 +3584,6 @@
       }
     },
     "dataImport": {
-      "title": "Import de données",
-      "subtitle": "Importez vos données depuis un fichier Excel ou CSV",
-      "tabs": {
-        "structure": "Structure académique",
-        "people": "Personnes",
-        "enrollments": "Inscriptions",
-        "grades": "Notes"
-      },
-      "downloadTemplate": "Télécharger le modèle",
-      "uploadZone": "Glissez votre fichier ici ou cliquez pour sélectionner",
-      "uploadZoneAccept": "Excel (.xlsx) ou CSV (.csv) · max 10 Mo",
-      "preview": {
-        "valid": "{{count}} ligne(s) valide(s)",
-        "skipped": "{{count}} ligne(s) ignorée(s) (déjà existantes)",
-        "errors": "{{count}} erreur(s)",
-        "warnings": "{{count}} avertissement(s)",
-        "row": "Ligne",
-        "column": "Colonne",
-        "message": "Message",
-        "noErrors": "Aucune erreur"
-      },
-      "confirm": "Lancer l'import",
-      "uploading": "Téléversement…",
-      "previewing": "Analyse du fichier…",
-      "noFile": "Aucun fichier sélectionné",
-      "errorBlocker": "Corrigez les erreurs avant de confirmer l'import",
-      "toast": {
-        "uploadOk": "Fichier reçu",
-        "importStarted": "Import lancé"
-      },
-      "prereqHint": {
-        "people": "Importez d'abord la structure académique si les classes n'existent pas encore.",
-        "enrollments": "Les étudiants et les classes doivent exister avant les inscriptions.",
-        "grades": "Les examens doivent exister avant d'importer les notes."
-      },
-      "newFile": "Nouveau fichier",
       "guided": {
         "title": "Mise en route & import des données",
         "description": "Configurez votre institution étape par étape : son profil, sa structure académique, puis les données de chaque année. Chaque étape se fait par import Excel ou à la main.",

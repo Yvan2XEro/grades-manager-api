@@ -2,10 +2,6 @@ import { registerJobType } from "../batch-jobs.registry";
 import { academicYearSetupJob } from "./academic-year-setup";
 import { bulkDocumentGenerationJob } from "./bulk-document-generation";
 import { creditLedgerRecomputeJob } from "./credit-ledger-recompute";
-import { importAcademicStructureJob } from "./import-academic-structure";
-import { importEnrollmentsJob } from "./import-enrollments";
-import { importGradesBulkJob } from "./import-grades-bulk";
-import { importPeopleJob } from "./import-people";
 import { importStepJob } from "./import-step";
 import { promotionApplyJob } from "./promotion-apply";
 import { studentFactsRefreshJob } from "./student-facts-refresh";
@@ -18,9 +14,5 @@ export function registerAllJobTypes() {
 	registerJobType(academicYearSetupJob);
 	registerJobType(bulkDocumentGenerationJob);
 	registerJobType(timetableCopyJob);
-	registerJobType(importAcademicStructureJob);
-	registerJobType(importPeopleJob);
-	registerJobType(importEnrollmentsJob);
-	registerJobType(importGradesBulkJob);
 	registerJobType(importStepJob);
 }

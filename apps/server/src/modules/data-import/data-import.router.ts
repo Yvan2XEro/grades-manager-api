@@ -4,7 +4,7 @@ import ExcelJS from "exceljs";
 import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
-import { adminProcedure, router, tenantAdminProcedure } from "@/lib/trpc";
+import { router, tenantAdminProcedure } from "@/lib/trpc";
 import { readImportFile, saveImportFile } from "./import-file-storage";
 import {
 	FOUNDATION_STEPS,
@@ -15,13 +15,6 @@ import {
 import { annotateWorkbook, buildTemplate, normalize } from "./steps/workbook";
 import { requireYear } from "./steps/year-context";
 import { closeImportedYear } from "./year-closing";
-
-const TEMPLATE_TYPES = [
-	"academic-structure",
-	"people",
-	"enrollments",
-	"grades-bulk",
-] as const;
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
@@ -216,13 +209,6 @@ async function yearCounts(institutionId: string) {
 }
 
 export const dataImportRouter = router({
-	getTemplateUrl: adminProcedure
-		.input(z.object({ type: z.enum(TEMPLATE_TYPES) }))
-		.query(({ input }) => {
-			const base = process.env.SERVER_PUBLIC_URL ?? "";
-			return { url: `${base}/api/import/template/${input.type}` };
-		}),
-
 	/** Progress of the guided import: foundation steps and academic years. */
 	overview: tenantAdminProcedure.query(async ({ ctx }) => {
 		const institutionId = ctx.institution.id;
