@@ -4667,7 +4667,9 @@
             "exams": "Exams",
             "grades": "Grades",
             "close": "Closing",
-            "decisions": "Official decisions"
+            "decisions": "Official decisions",
+            "teachers": "Teachers",
+            "guardians": "Parents"
           }
         },
         "stepDescriptions": {
@@ -4683,7 +4685,9 @@
             "exams": "Describe the evaluation model once (e.g. CA 40 %, Exam 60 %, Retake replacing the Exam): it creates the exams of every course. The Exceptions sheet adjusts one course.",
             "grades": "The template has one sheet per class, like a results report: one row per student, one column per course and exam, already filled with the known grades.",
             "close": "Once the grades are in, close the year: the deliberations of each class are computed and left open so you can review them.",
-            "decisions": "Optional: import the jury decisions of the results reports. Gaps with the computed decisions are listed; importing keeps the official decision, traced as an override."
+            "decisions": "Optional: import the jury decisions of the results reports. Gaps with the computed decisions are listed; importing keeps the official decision, traced as an override.",
+            "teachers": "Optional: the teachers, created without an account (one can be given later from the users page). They are then found by email when assigning courses.",
+            "guardians": "Optional: the parents and guardians of the students of the year, one row per parent ↔ student link."
           }
         },
         "yearSteps": {
@@ -4827,7 +4831,11 @@
             "unknownDecision": "\"{{value}}\" is not a known jury decision.",
             "noDeliberationResult": "No deliberation result for {{value}} in {{year}}.",
             "deliberationNotOpen": "The deliberation of this student is closed: it cannot be changed.",
-            "decisionGap": "Official decision \"{{value}}\" differs from the computed one ({{computed}})."
+            "decisionGap": "Official decision \"{{value}}\" differs from the computed one ({{computed}}).",
+            "ambiguousTeacher": "Several teachers are named {{name}}: give the email.",
+            "studentNotInYear": "No student {{value}} enrolled in {{year}}.",
+            "unknownRelationship": "\"{{value}}\" is not a known relationship (Father, Mother, Guardian, Uncle, Aunt, Other).",
+            "guardianContactMissing": "An email or a phone number is required."
           },
           "changes": "Changes ({{count}})"
         },
@@ -4875,7 +4883,11 @@
               "close_one": "{{count}} deliberation",
               "close_other": "{{count}} deliberations",
               "decisions_one": "{{count}} official decision",
-              "decisions_other": "{{count}} official decisions"
+              "decisions_other": "{{count}} official decisions",
+              "teachers_one": "{{count}} teacher assigned",
+              "teachers_other": "{{count}} teachers assigned",
+              "guardians_one": "{{count}} parent link",
+              "guardians_other": "{{count}} parent links"
             }
           },
           "optional": "optional"
@@ -4901,6 +4913,12 @@
             },
             "decisions": {
               "0": "Optional, after closing the year: the jury decision of each student as written in the results report. Gaps with the computed decisions are reported; importing keeps the official decision."
+            },
+            "teachers": {
+              "0": "Optional: one teacher per row. Found again by email, else by last and first name; created without an account (one can be given later)."
+            },
+            "guardians": {
+              "0": "Optional: one row per parent ↔ student link. A parent is found again by email, else by phone; one of the two is required."
             }
           }
         },
@@ -4929,6 +4947,10 @@
             },
             "decisions": {
               "decision": "Passed, Passed by compensation, Deferred, Repeat, Excluded (or ADM, ADC, AJ, RED, EXC)."
+            },
+            "guardians": {
+              "relationship": "Father, Mother, Guardian, Uncle, Aunt, Other",
+              "primary": "\"yes\" for the parent to contact first."
             }
           },
           "foundation": {

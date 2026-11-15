@@ -3655,7 +3655,9 @@
             "exams": "Examens",
             "grades": "Notes",
             "close": "Clôture",
-            "decisions": "Décisions officielles"
+            "decisions": "Décisions officielles",
+            "teachers": "Enseignants",
+            "guardians": "Parents"
           }
         },
         "stepDescriptions": {
@@ -3671,7 +3673,9 @@
             "exams": "Décrivez une fois le modèle d'évaluation (ex. CC 40 %, Examen 60 %, Rattrapage qui remplace l'Examen) : il crée les examens de tous les cours. La feuille Exceptions ajuste un cours en particulier.",
             "grades": "Le modèle contient une feuille par classe, comme un procès-verbal : une ligne par étudiant, une colonne par EC et examen, déjà remplie avec les notes connues.",
             "close": "Une fois les notes importées, clôturez l'année : les délibérations de chaque classe sont calculées et laissées ouvertes pour que vous les vérifiiez.",
-            "decisions": "Facultatif : importez les décisions de jury des procès-verbaux. Les écarts avec les décisions calculées sont listés ; importer retient la décision officielle, tracée comme dérogation."
+            "decisions": "Facultatif : importez les décisions de jury des procès-verbaux. Les écarts avec les décisions calculées sont listés ; importer retient la décision officielle, tracée comme dérogation.",
+            "teachers": "Facultatif : les enseignants, créés sans compte (un compte peut leur être donné ensuite depuis la page Utilisateurs). Ils sont ensuite retrouvés par leur e-mail pour l'attribution des cours.",
+            "guardians": "Facultatif : les parents et tuteurs des étudiants de l'année, une ligne par lien parent ↔ étudiant."
           }
         },
         "yearSteps": {
@@ -3815,7 +3819,11 @@
             "unknownDecision": "« {{value}} » n'est pas une décision de jury connue.",
             "noDeliberationResult": "Aucun résultat de délibération pour {{value}} en {{year}}.",
             "deliberationNotOpen": "La délibération de cet étudiant est close : elle ne peut plus être modifiée.",
-            "decisionGap": "La décision officielle « {{value}} » diffère de la décision calculée ({{computed}})."
+            "decisionGap": "La décision officielle « {{value}} » diffère de la décision calculée ({{computed}}).",
+            "ambiguousTeacher": "Plusieurs enseignants s'appellent {{name}} : indiquez l'e-mail.",
+            "studentNotInYear": "Aucun étudiant {{value}} inscrit en {{year}}.",
+            "unknownRelationship": "« {{value}} » n'est pas un lien connu (Père, Mère, Tuteur, Oncle, Tante, Autre).",
+            "guardianContactMissing": "Un e-mail ou un numéro de téléphone est obligatoire."
           },
           "changes": "Modifications ({{count}})"
         },
@@ -3863,7 +3871,11 @@
               "close_one": "{{count}} délibération",
               "close_other": "{{count}} délibérations",
               "decisions_one": "{{count}} décision officielle",
-              "decisions_other": "{{count}} décisions officielles"
+              "decisions_other": "{{count}} décisions officielles",
+              "teachers_one": "{{count}} enseignant affecté",
+              "teachers_other": "{{count}} enseignants affectés",
+              "guardians_one": "{{count}} lien parent",
+              "guardians_other": "{{count}} liens parents"
             }
           },
           "optional": "facultatif"
@@ -3889,6 +3901,12 @@
             },
             "decisions": {
               "0": "Facultatif, après la clôture de l'année : la décision du jury de chaque étudiant, telle qu'elle figure au procès-verbal. Les écarts avec les décisions calculées sont signalés ; importer retient la décision officielle."
+            },
+            "teachers": {
+              "0": "Facultatif : un enseignant par ligne. Il est retrouvé par son e-mail, sinon par ses nom et prénom ; il est créé sans compte (un compte peut lui être donné ensuite)."
+            },
+            "guardians": {
+              "0": "Facultatif : une ligne par lien parent ↔ étudiant. Un parent est retrouvé par son e-mail, sinon par son téléphone ; il faut l'un des deux."
             }
           }
         },
@@ -3917,6 +3935,10 @@
             },
             "decisions": {
               "decision": "Admis, Admis par compensation, Ajourné, Redouble, Exclu (ou ADM, ADC, AJ, RED, EXC)."
+            },
+            "guardians": {
+              "relationship": "Père, Mère, Tuteur, Oncle, Tante, Autre",
+              "primary": "« oui » pour le parent à contacter en premier."
             }
           },
           "foundation": {

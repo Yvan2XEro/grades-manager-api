@@ -7,7 +7,9 @@ import { coursesStep } from "./year-courses";
 import { decisionsStep } from "./year-decisions";
 import { examsStep } from "./year-exams";
 import { gradesStep } from "./year-grades";
+import { guardiansStep } from "./year-guardians";
 import { studentsStep } from "./year-students";
+import { teachersStep } from "./year-teachers";
 
 /** Steps of the guided import, in the order they must be done. */
 export const FOUNDATION_STEPS: ImportStepDef[] = [
@@ -19,7 +21,9 @@ export const FOUNDATION_STEPS: ImportStepDef[] = [
 /** Steps of the import of one academic year, in dependency order. */
 export const YEAR_STEPS: ImportStepDef[] = [
 	classesStep,
+	teachersStep,
 	studentsStep,
+	guardiansStep,
 	coursesStep,
 	examsStep,
 	gradesStep,

@@ -43,7 +43,9 @@ export const IMPORT_YEAR_STEPS: {
 	optional?: boolean;
 }[] = [
 	{ key: "year.classes", count: "classes" },
+	{ key: "year.teachers", count: "teachers", optional: true },
 	{ key: "year.students", count: "enrollments" },
+	{ key: "year.guardians", count: "guardians", optional: true },
 	{ key: "year.courses", count: "classCourses" },
 	{ key: "year.exams", count: "exams" },
 	{ key: "year.grades", count: "grades" },

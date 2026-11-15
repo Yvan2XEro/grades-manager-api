@@ -139,6 +139,41 @@ async function yearCounts(institutionId: string) {
 							)
 					)[0]?.n ?? 0)
 				: 0;
+			const assigned = classIds.length
+				? await db
+						.selectDistinct({ teacher: schema.classCourses.teacher })
+						.from(schema.classCourses)
+						.innerJoin(
+							schema.domainUsers,
+							eq(schema.domainUsers.id, schema.classCourses.teacher),
+						)
+						.where(
+							and(
+								inArray(schema.classCourses.class, classIds),
+								sql`${schema.domainUsers.primaryEmail} not like '%.invalid'`,
+							),
+						)
+				: [];
+			const guardianLinks = classIds.length
+				? ((
+						await db
+							.select({ n: count() })
+							.from(schema.studentGuardians)
+							.innerJoin(
+								schema.enrollments,
+								eq(
+									schema.enrollments.studentId,
+									schema.studentGuardians.studentId,
+								),
+							)
+							.where(
+								and(
+									eq(schema.enrollments.academicYearId, year.id),
+									inArray(schema.enrollments.classId, classIds),
+								),
+							)
+					)[0]?.n ?? 0)
+				: 0;
 			const [enrollments, grades] = await Promise.all([
 				db
 					.select({ n: count() })
@@ -164,6 +199,8 @@ async function yearCounts(institutionId: string) {
 					exams: examIds.length,
 					grades: grades[0]?.n ?? 0,
 					deliberations: delibs.length,
+					teachers: assigned.length,
+					guardians: guardianLinks,
 					overrides,
 				},
 			};

@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { member } from "@/db/schema/auth";
@@ -23,22 +23,46 @@ const SEMESTERS = { S1: "fall", S2: "spring", Annuel: "annual" } as const;
 const semesterLabel = (value: string) =>
 	Object.entries(SEMESTERS).find(([, v]) => v === value)?.[0] ?? "Annuel";
 
-/** Teachers of the institution, by lower-cased e-mail. */
+/**
+ * Teachers of the institution, by lower-cased e-mail: profiles with an
+ * account in the institution, and profiles created without account (e.g.
+ * imported teachers) — never students.
+ */
 export async function teachersByEmail(institutionId: string) {
 	const institution = await db.query.institutions.findFirst({
 		where: eq(schema.institutions.id, institutionId),
 	});
-	if (!institution?.organizationId) return new Map<string, string>();
-	const rows = await db
+	const withAccount = institution?.organizationId
+		? await db
+				.select({
+					id: schema.domainUsers.id,
+					email: schema.domainUsers.primaryEmail,
+				})
+				.from(schema.domainUsers)
+				.innerJoin(member, eq(member.id, schema.domainUsers.memberId))
+				.where(eq(member.organizationId, institution.organizationId))
+		: [];
+	const withoutAccount = await db
 		.select({
 			id: schema.domainUsers.id,
 			email: schema.domainUsers.primaryEmail,
 		})
 		.from(schema.domainUsers)
-		.innerJoin(member, eq(member.id, schema.domainUsers.memberId))
-		.where(eq(member.organizationId, institution.organizationId));
+		.leftJoin(
+			schema.students,
+			eq(schema.students.domainUserId, schema.domainUsers.id),
+		)
+		.where(
+			and(
+				eq(schema.domainUsers.institutionId, institutionId),
+				isNull(schema.domainUsers.memberId),
+				isNull(schema.students.id),
+			),
+		);
 	return new Map(
-		rows.filter((r) => r.email).map((r) => [r.email!.toLowerCase(), r.id]),
+		[...withAccount, ...withoutAccount]
+			.filter((r) => r.email && !r.email.endsWith(".invalid"))
+			.map((r) => [r.email!.toLowerCase(), r.id]),
 	);
 }
 

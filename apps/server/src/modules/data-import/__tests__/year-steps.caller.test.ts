@@ -610,3 +610,87 @@ describe("guided import — undo", () => {
 		).toBeUndefined();
 	});
 });
+
+describe("guided import — teachers and parents", () => {
+	it("creates teachers without account, assigns them to courses, links parents", async () => {
+		const { ctx, caller } = await admin();
+		const { s, program, past } = await fixture(ctx.institution!.id);
+		const teachers = await importStep(caller, "year.teachers", past.id, {
+			Enseignants: [
+				["Nom", "Prénom", "E-mail", "Téléphone", "Sexe"],
+				["Owona", "Jean", `owona${s}@x.cm`, "", "M"],
+			],
+		});
+		expect(teachers.sheets[0]).toMatchObject({ create: 1 });
+		const again = await importStep(caller, "year.teachers", past.id, {
+			Enseignants: [
+				["Nom", "Prénom", "E-mail", "Téléphone", "Sexe"],
+				["Owona", "Jean", `OWONA${s}@x.cm`, "699000000", "M"],
+			],
+		});
+		expect(again.sheets[0]).toMatchObject({ create: 0, update: 1 });
+
+		const [unit] = await db
+			.insert(schema.teachingUnits)
+			.values({ programId: program.id, code: `T${s}`, name: "T", credits: 3 })
+			.returning();
+		await db.insert(schema.courses).values({
+			program: program.id,
+			teachingUnitId: unit.id,
+			code: `TC${s}`,
+			name: "Cours T",
+			hours: 20,
+		});
+		await importStep(caller, "year.classes", past.id, {
+			Classes: [CLASS_HEADERS, [`P${s}`, `P ${s}`, program.code, "L1"]],
+		});
+		const courses = await importStep(caller, "year.courses", past.id, {
+			Cours: [
+				["Code classe", "Code EC", "E-mail enseignant"],
+				[`P${s}`, `TC${s}`, `owona${s}@x.cm`],
+			],
+		});
+		expect(
+			courses.issues.filter((i) => i.code === "unknownTeacher"),
+		).toHaveLength(0);
+		const teacher = await db.query.domainUsers.findFirst({
+			where: eq(
+				schema.domainUsers.primaryEmail,
+				`owona${s}@x.cm`.toLowerCase(),
+			),
+		});
+		expect(teacher?.phone).toBe("699000000");
+		const klass = await db.query.classes.findFirst({
+			where: eq(schema.classes.code, `P${s}`),
+		});
+		const cc = await db.query.classCourses.findFirst({
+			where: eq(schema.classCourses.class, klass!.id),
+		});
+		expect(cc?.teacher).toBe(teacher!.id);
+
+		await importStep(caller, "year.students", past.id, {
+			Étudiants: [
+				STUDENT_HEADERS,
+				[`Q${s}1`, "Bella", "Zoe", "", "", "", `P${s}`],
+			],
+		});
+		const parents = await importStep(caller, "year.guardians", past.id, {
+			Parents: [
+				[
+					"Matricule",
+					"Nom du parent",
+					"Prénom du parent",
+					"Lien",
+					"E-mail",
+					"Téléphone",
+				],
+				[`Q${s}1`, "Bella", "Paul", "Père", "", "677 11 22 33"],
+				[`Q${s}1`, "Bella", "Anne", "Cousine", `anne${s}@x.cm`, ""],
+			],
+		});
+		expect(parents.sheets[0]).toMatchObject({ create: 1, skipped: 1 });
+		expect(parents.issues).toEqual([
+			expect.objectContaining({ code: "unknownRelationship" }),
+		]);
+	});
+});
