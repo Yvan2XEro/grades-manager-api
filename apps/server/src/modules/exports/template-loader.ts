@@ -394,19 +394,6 @@ export type TemplateConfiguration = {
 };
 
 /**
- * Get default template configuration for a type
- */
-function getDefaultTemplateConfig(
-	type: ExportTemplateType,
-): TemplateConfiguration {
-	return {
-		templateBody: loadTemplate(type),
-		headerConfig: getDefaultHeaderConfig(type),
-		styleConfig: getDefaultStyleConfig(type),
-	};
-}
-
-/**
  * Default header configuration
  */
 function getDefaultHeaderConfig(type: ExportTemplateType): ExportHeaderConfig {

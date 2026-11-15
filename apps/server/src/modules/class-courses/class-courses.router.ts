@@ -21,10 +21,6 @@ import {
 	updateSchema,
 } from "./class-courses.zod";
 
-type ClassCourseListItem = Awaited<
-	ReturnType<typeof service.searchClassCourses>
->[number] & { isDelegated?: boolean };
-
 const markItems = <T extends { id: string }>(
 	items: T[],
 	isDelegated: boolean,

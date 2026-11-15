@@ -218,7 +218,10 @@ export class ExportsService {
 	private repo: ExportsRepo;
 	private config: ReturnType<typeof loadExportConfig> = loadExportConfig();
 
-	constructor(private readonly institutionId: string) {
+	private readonly institutionId: string;
+
+	constructor(institutionId: string) {
+		this.institutionId = institutionId;
 		this.repo = new ExportsRepo(this.institutionId);
 
 		// Register Handlebars helpers

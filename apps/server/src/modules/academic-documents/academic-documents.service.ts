@@ -725,6 +725,7 @@ export async function buildRenderData(args: {
 				scale: 20,
 			};
 		})(),
+		document,
 		summary,
 		semesters,
 	};

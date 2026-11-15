@@ -82,7 +82,11 @@ export class ImportJournal {
 	private entries: (typeof schema.importJournalEntries.$inferInsert)[] = [];
 	private seq = 0;
 
-	constructor(private readonly jobId: string) {}
+	private readonly jobId: string;
+
+	constructor(jobId: string) {
+		this.jobId = jobId;
+	}
 
 	created(table: JournalTable, ids: string[]) {
 		for (const rowId of ids)

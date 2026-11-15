@@ -623,7 +623,6 @@ export async function setLock(
 	return { ...result, rosterWarning };
 }
 
-const DEFAULT_PASSING_GRADE = 10;
 const RETAKE_ATTEMPT_LIMIT = 2;
 
 export type RetakeEligibilityReason =
@@ -716,9 +715,6 @@ export async function listRetakeEligibility(
 		where: eq(schema.classes.id, classCourse.class),
 	});
 	if (!klass) throw notFound("Class context not found");
-	const institution = await db.query.institutions.findFirst({
-		where: eq(schema.institutions.id, klass.institutionId),
-	});
 	const gradeScale = await gradeScalesService.getForInstitution(
 		klass.institutionId,
 	);

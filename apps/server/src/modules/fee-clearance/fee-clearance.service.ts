@@ -511,8 +511,8 @@ async function executeBulkAssign(
 	createdBy: string | null,
 	mode: FeeAssignmentBatchMode,
 	scopeId: string | null,
-	skipExisting: boolean,
 ) {
+	// Existing assignments are always kept: one assignment per student and year
 	let assigned = 0;
 	let skipped = 0;
 
@@ -618,7 +618,6 @@ export async function bulkAssignProgram(
 		createdBy,
 		"program",
 		input.programId,
-		input.skipExisting,
 	);
 }
 
@@ -739,7 +738,6 @@ export async function bulkAssignYear(
 		createdBy,
 		"year",
 		input.academicYearId,
-		input.skipExisting,
 	);
 }
 
@@ -794,7 +792,6 @@ export async function bulkAssignStudents(
 		createdBy,
 		"students",
 		null,
-		input.skipExisting,
 	);
 }
 

@@ -61,7 +61,7 @@ export async function listEnrollments(
 
 export async function listCourseResults(
 	studentId: string,
-	institutionId: string,
+	_institutionId: string,
 	academicYearId?: string,
 ) {
 	return db.query.studentCourseEnrollments.findMany({

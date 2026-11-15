@@ -43,22 +43,6 @@ import type {
 	UpdateDeliberationRuleInput,
 } from "./deliberations.zod";
 
-const MENTION_TO_GRADE: Record<string, string> = {
-	passable: "E",
-	assez_bien: "D",
-	bien: "C",
-	tres_bien: "B",
-	excellent: "A",
-};
-
-const MENTION_TO_EN: Record<string, string> = {
-	passable: "Satisfactory",
-	assez_bien: "Fair",
-	bien: "Good",
-	tres_bien: "Very Good",
-	excellent: "Excellent",
-};
-
 // ---------------------------------------------------------------------------
 // State machine transitions
 // ---------------------------------------------------------------------------

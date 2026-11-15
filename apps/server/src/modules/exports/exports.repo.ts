@@ -17,7 +17,11 @@ import {
 export class ExportsRepo {
 	private db = db;
 
-	constructor(private readonly institutionId: string) {}
+	private readonly institutionId: string;
+
+	constructor(institutionId: string) {
+		this.institutionId = institutionId;
+	}
 
 	/** Lookup the parent class_course of an exam (used by eligibility checks) */
 	async getExamMeta(examId: string) {
