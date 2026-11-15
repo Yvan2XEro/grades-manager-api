@@ -7,6 +7,7 @@ import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { trpc } from "@/utils/trpc";
 import { ProgramContext } from "../../hooks/use-program-context";
 
@@ -25,6 +26,7 @@ export default function ProgramDetailLayout() {
 		isLoading,
 		refetch,
 	} = useQuery(trpc.programs.getById.queryOptions({ id: programId! }));
+	useBreadcrumbEntity(programId, program?.name);
 
 	if (isLoading) {
 		return (

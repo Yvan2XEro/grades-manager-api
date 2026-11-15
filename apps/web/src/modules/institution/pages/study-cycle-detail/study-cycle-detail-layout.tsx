@@ -5,6 +5,7 @@ import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { useStudyCycle } from "../../hooks/use-study-cycles";
 
 const TABS = [
@@ -17,6 +18,7 @@ export default function StudyCycleDetailLayout() {
 	const { t } = useTranslation();
 
 	const { data: cycle, isLoading } = useStudyCycle(cycleId!);
+	useBreadcrumbEntity(cycleId, cycle?.name);
 
 	if (isLoading) {
 		return (

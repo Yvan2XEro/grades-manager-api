@@ -6,6 +6,7 @@ import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { trpcClient } from "@/utils/trpc";
 import { ProfileContext } from "../../hooks/use-profile-context";
 
@@ -27,6 +28,10 @@ export default function ProfileHub() {
 		queryFn: () => trpcClient.profiles.get.query({ profileId: profileId! }),
 		enabled: !!profileId,
 	});
+	useBreadcrumbEntity(
+		profileId,
+		profile ? `${profile.firstName} ${profile.lastName}` : null,
+	);
 
 	if (isLoading) {
 		return (

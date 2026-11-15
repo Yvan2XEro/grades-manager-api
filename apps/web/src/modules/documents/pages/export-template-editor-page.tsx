@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { TemplateEditorSplit } from "../components/template-editor-split";
 import { useExportTemplateEditor } from "../hooks/use-export-template-editor";
 import { EXPORT_TYPES, getExportTypeLabel } from "../types";
@@ -37,6 +38,7 @@ export default function ExportTemplateEditor() {
 		isPreviewPending,
 		handleSave,
 	} = editor;
+	useBreadcrumbEntity(templateId, template?.name);
 	// Vertical layout for the editor/preview split (allows the user to put
 	// preview on top of editor on small screens, or side-by-side on big ones).
 	const [splitDirection, setSplitDirection] = useState<

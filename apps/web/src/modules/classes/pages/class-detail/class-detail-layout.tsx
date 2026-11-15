@@ -7,6 +7,7 @@ import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { trpc } from "@/utils/trpc";
 import { ClassContext } from "../../hooks/use-class-context";
 
@@ -25,6 +26,7 @@ export default function ClassDetailLayout() {
 		isLoading,
 		refetch,
 	} = useQuery(trpc.classes.getById.queryOptions({ id: classId! }));
+	useBreadcrumbEntity(classId, cls?.name ?? cls?.code);
 
 	if (isLoading) {
 		return (

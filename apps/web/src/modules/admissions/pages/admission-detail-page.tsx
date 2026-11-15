@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { AdmissionDecisionTab } from "../components/admission-decision-tab";
 import { AdmissionDetailHeader } from "../components/admission-detail-header";
 import { AdmissionDocumentsCard } from "../components/admission-documents-card";
@@ -18,6 +19,7 @@ export default function AdmissionDetailPage() {
 	const review = useApplicationReview(id);
 	const { app, isLoading, checklist, programs } = review;
 	const ap = app?.applicant;
+	useBreadcrumbEntity(id, ap ? `${ap.lastName} ${ap.firstName}` : null);
 
 	if (isLoading) {
 		return (

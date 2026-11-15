@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { BatchJobFailureSummary } from "../components/batch-job-failure-summary";
 import { BatchJobLogs } from "../components/batch-job-logs";
 import { BatchJobOverview } from "../components/batch-job-overview";
@@ -15,6 +16,12 @@ export default function BatchJobDetailPage() {
 	const { jobId } = useParams<{ jobId: string }>();
 	const navigate = useNavigate();
 	const { job, isLoading } = useBatchJob(jobId);
+	useBreadcrumbEntity(
+		jobId,
+		job
+			? t(`admin.batchJobs.types.${job.type}`, { defaultValue: job.type })
+			: null,
+	);
 	const { runMutation, cancelMutation, rollbackMutation, confirmJobAction } =
 		useBatchJobActions(jobId);
 

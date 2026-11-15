@@ -2,6 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { CourseSelectCard } from "../components/course-select-card";
 import { ExamDelegatesCard } from "../components/exam-delegates-card";
 import { ExamToolbarCard } from "../components/exam-toolbar-card";
@@ -16,6 +17,12 @@ export default function GradeEntry() {
 	const entry = useGradeEntry();
 	const form = useGradeEntryForm(entry);
 	const lockExam = useLockExam(entry.selectedExam, entry.courseId);
+	useBreadcrumbEntity(
+		entry.courseId,
+		entry.courseInfo
+			? `${entry.courseInfo.course_name} · ${entry.courseInfo.class_name}`
+			: null,
+	);
 	const { courseId, selectedExam, rosterStudents } = entry;
 
 	if (entry.isInitialLoading) {

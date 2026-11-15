@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { GradeSpreadsheetGrid } from "../components/grade-spreadsheet-grid";
 import { SpreadsheetHeader } from "../components/spreadsheet-header";
@@ -28,6 +29,10 @@ export default function GradeSpreadsheet() {
 
 	const { courseInfo, students, exams, grades, isLoading } =
 		useSpreadsheetData(courseId);
+	useBreadcrumbEntity(
+		courseId,
+		courseInfo ? `${courseInfo.courseName} · ${courseInfo.className}` : null,
+	);
 	const cells = useSpreadsheetCells(grades);
 	const { values, states } = cells;
 

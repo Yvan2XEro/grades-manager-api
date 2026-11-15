@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { FormatGeneralCard } from "../components/format-general-card";
 import { FormatPreviewCard } from "../components/format-preview-card";
 import { FormatSegmentsCard } from "../components/format-segments-card";
@@ -26,6 +27,7 @@ export default function RegistrationFormatDetailPage() {
 		remove,
 		isDeleting,
 	} = useRegistrationFormatDraft(formatId);
+	useBreadcrumbEntity(formatId, draft.id ? draft.name : null);
 
 	const backToList = () => navigate("/configuration/reg-numbers");
 	const backLabel = t("common.actions.back", { defaultValue: "Back" });

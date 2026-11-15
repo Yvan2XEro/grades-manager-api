@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { ResolveItemSheet } from "../components/resolve-item-sheet";
 import { TransitionAuditTimeline } from "../components/transition-audit-timeline";
 import { TransitionHeader } from "../components/transition-header";
@@ -28,6 +29,12 @@ export default function TransitionDetail() {
 		actionMutation,
 	} = useTransitionDetail(id);
 	const transition = transitionQuery.data ?? null;
+	useBreadcrumbEntity(
+		id,
+		transition?.sourceYear?.name && transition.targetYear?.name
+			? `${transition.sourceYear.name} → ${transition.targetYear.name}`
+			: null,
+	);
 
 	if (transitionQuery.isLoading) {
 		return (

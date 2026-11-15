@@ -6,6 +6,7 @@ import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import {
 	useFeeStructure,
 	useUpdateStructure,
@@ -28,6 +29,7 @@ export default function FeeStructureDetailLayout() {
 	const { id } = useParams<{ id: string }>();
 	const { t } = useTranslation();
 	const { structure, isLoading } = useFeeStructure(id!);
+	useBreadcrumbEntity(id, structure?.name);
 	const updateMut = useUpdateStructure(id!);
 
 	if (isLoading) {

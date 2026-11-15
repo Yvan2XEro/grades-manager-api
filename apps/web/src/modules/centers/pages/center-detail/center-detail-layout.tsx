@@ -6,6 +6,7 @@ import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { CenterContext } from "../../hooks/use-center-context";
 import { useCenterForm } from "../../hooks/use-center-form";
 import { CENTERS_PATH } from "../../paths";
@@ -24,6 +25,7 @@ export default function CenterDetailLayout() {
 	const navigate = useNavigate();
 	const { centerId } = useParams<{ centerId: string }>();
 	const { form, centerQuery, isSaving, onSubmit } = useCenterForm(centerId);
+	useBreadcrumbEntity(centerId, centerQuery.data?.name);
 
 	if (centerQuery.isLoading) {
 		return (

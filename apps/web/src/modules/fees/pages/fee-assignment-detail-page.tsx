@@ -5,6 +5,7 @@ import { useParams } from "react-router";
 import { confirmAction } from "@/components/callable/confirm";
 import { DataTable, type RowAction } from "@/components/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { trpcClient } from "@/utils/trpc";
 import { AssignmentBalanceSummary } from "../components/assignment-balance-summary";
 import { AssignmentDetailHeader } from "../components/assignment-detail-header";
@@ -15,6 +16,7 @@ import {
 	useFeeAssignment,
 	usePdfDownload,
 } from "../hooks/use-fee-assignment";
+import { getStudentName } from "../services/fee-format";
 import { getPaymentOrdersColumns } from "../table/payment-orders-columns";
 import { getPaymentsColumns } from "../table/payments-columns";
 import type { FeePayment, PaymentOrder } from "../types";
@@ -24,6 +26,10 @@ export default function FeeAssignmentDetailPage() {
 	const { t } = useTranslation();
 	const { assignment, isLoading, payments, orders, invalidate } =
 		useFeeAssignment(id!);
+	useBreadcrumbEntity(
+		id,
+		assignment?.student?.profile ? getStudentName(assignment) : null,
+	);
 	const cancelOrder = useCancelOrder(invalidate);
 	const deletePayment = useDeletePayment(invalidate);
 	const orderPdf = usePdfDownload((orderId) =>

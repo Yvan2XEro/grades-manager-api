@@ -6,6 +6,7 @@ import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { trpc } from "@/utils/trpc";
 
 const TABS = [
@@ -22,6 +23,10 @@ export default function TeachingUnitDetailLayout() {
 		...trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId! }),
 		enabled: !isCreating,
 	});
+	useBreadcrumbEntity(
+		teachingUnitId,
+		teachingUnit ? `${teachingUnit.code} · ${teachingUnit.name}` : null,
+	);
 
 	if (!isCreating && isLoading) {
 		return (

@@ -5,6 +5,7 @@ import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { DeliberationDetailActions } from "../../components/deliberation-detail-actions";
 import { OverrideDecisionDialog } from "../../components/override-decision-dialog";
 import { PromoteAdmittedDialog } from "../../components/promote-admitted-dialog";
@@ -33,6 +34,7 @@ export default function DeliberationDetail() {
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const { deliberationQuery, logsQuery } = useDeliberation(deliberationId);
+	useBreadcrumbEntity(deliberationId, deliberationQuery.data?.classRef?.name);
 
 	if (deliberationQuery.isLoading) {
 		return (
