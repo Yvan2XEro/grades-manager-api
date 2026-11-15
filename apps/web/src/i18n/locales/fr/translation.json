@@ -396,7 +396,8 @@
       "timeline": "Historique",
       "workflows": "Workflows",
       "details": "Détails",
-      "myCourses": "Mes cours"
+      "myCourses": "Mes cours",
+      "importYears": "Années académiques"
     }
   },
   "auth": {
@@ -3643,6 +3644,10 @@
             "cycles": "Cycles & niveaux",
             "programs": "Programmes & options",
             "curriculum": "UE & EC"
+          },
+          "year": {
+            "classes": "Classes",
+            "students": "Étudiants & inscriptions"
           }
         },
         "stepDescriptions": {
@@ -3650,6 +3655,10 @@
             "cycles": "Les cycles de formation (Licence, Master, BTS…) et leurs niveaux (L1, L2, L3…). Tout le reste en dépend.",
             "programs": "Les programmes (filières) rattachés à un cycle, et leurs options ou parcours.",
             "curriculum": "La maquette pédagogique : les unités d'enseignement (UE) de chaque programme et leurs éléments constitutifs (EC)."
+          },
+          "year": {
+            "classes": "Les classes (promotions) de l'année : chacune appartient à un programme, une option et un niveau de son cycle.",
+            "students": "Les étudiants de l'année et leur classe. Un étudiant déjà connu d'une autre année est retrouvé par son matricule, son e-mail, ou ses nom et date de naissance : une seule fiche par personne, une inscription par année."
           }
         },
         "yearSteps": {
@@ -3698,7 +3707,9 @@
           "add": "Gérer les années",
           "foundationsFirst": "Terminez d'abord les fondations : les classes d'une année s'appuient sur les programmes et les niveaux.",
           "empty": "Aucune année académique. Créez la première pour commencer.",
-          "active": "Active"
+          "active": "Active",
+          "import": "Importer",
+          "resume": "Reprendre"
         },
         "stepPage": {
           "back": "Mise en route & import",
@@ -3748,7 +3759,28 @@
           "sheet": "Feuille",
           "row": "Ligne",
           "column": "Colonne",
-          "problem": "Problème"
+          "problem": "Problème",
+          "codes": {
+            "missingSheet": "Feuille « {{sheet}} » absente du fichier : rien n'y sera importé.",
+            "missingColumn": "Colonne obligatoire « {{column}} » introuvable dans l'en-tête.",
+            "required": "Valeur obligatoire manquante.",
+            "enum": "« {{value}} » n'est pas permis ({{allowed}}).",
+            "integer": "« {{value}} » doit être un nombre entier.",
+            "number": "« {{value}} » doit être un nombre.",
+            "email": "« {{value}} » n'est pas une adresse e-mail valide.",
+            "date": "« {{value}} » n'est pas une date (jj/mm/aaaa ou aaaa-mm-jj).",
+            "duplicate": "Doublon : déjà présent ligne {{row}}.",
+            "unknownProgram": "Programme « {{value}} » inconnu : importez-le d'abord dans les Fondations.",
+            "programWithoutCycle": "Le programme {{value}} n'a pas de cycle, ses niveaux sont donc inconnus : renseignez son cycle dans les Fondations.",
+            "unknownLevel": "Le niveau « {{value}} » n'existe pas dans le cycle {{cycle}} ({{allowed}}).",
+            "unknownOption": "L'option « {{value}} » n'existe pas dans le programme {{program}}.",
+            "classNameTaken": "Ce nom est déjà utilisé par la classe {{code}} dans ce programme et cette année.",
+            "unknownClass": "Classe {{value}} inconnue pour {{year}} : importez-la à l'étape Classes.",
+            "unknownGender": "« {{value}} » n'est ni M ni F : laissé vide.",
+            "ambiguousStudent": "Plusieurs étudiants connus correspondent à cette ligne ({{candidates}}) : indiquez le matricule.",
+            "registrationMismatch": "Cette personne est déjà connue sous {{student}} : le matricule {{value}} ne correspond pas.",
+            "noRegistrationFormat": "Aucun matricule fourni et aucun format de matricule actif pour en générer un."
+          }
         },
         "done": {
           "title": "Import terminé",
@@ -3767,6 +3799,51 @@
             "curriculum": "Unités d'enseignement"
           },
           "year": "Années académiques"
+        },
+        "yearImport": {
+          "title": "Importer {{year}}",
+          "steps": "Étapes de l'année",
+          "kind": {
+            "past": "Année passée",
+            "current": "Année en cours"
+          },
+          "kindText": {
+            "past": "Cette année est terminée : elle est importée comme historique. Les inscriptions sont closes et les étudiants gardent leur classe actuelle, sauf si cette année est leur plus récente.",
+            "current": "Cette année est en cours : les inscriptions sont actives et les étudiants sont placés dans la classe importée."
+          },
+          "count": {
+            "year": {
+              "classes_one": "{{count}} classe",
+              "classes_other": "{{count}} classes",
+              "students_one": "{{count}} inscription",
+              "students_other": "{{count}} inscriptions"
+            }
+          }
+        },
+        "sheetHelp": {
+          "year": {
+            "classes": {
+              "0": "Une classe par ligne, pour l'année importée."
+            },
+            "students": {
+              "0": "Un étudiant par ligne, avec sa classe de l'année. Un étudiant déjà connu est retrouvé par son matricule, son e-mail ou ses nom, prénom et date de naissance."
+            }
+          }
+        },
+        "columnHelp": {
+          "year": {
+            "classes": {
+              "code": "Ex. IGL-L1. Unique dans l'année.",
+              "optionCode": "Vide : option par défaut du programme.",
+              "levelCode": "Niveau du cycle du programme (ex. L1, M2)."
+            },
+            "students": {
+              "registrationNumber": "Vide : généré selon le format de matricule de l'institution.",
+              "dateOfBirth": "jj/mm/aaaa",
+              "gender": "M ou F",
+              "classCode": "Classe de l'étudiant pour l'année importée."
+            }
+          }
         }
       }
     }

@@ -33,7 +33,10 @@ export interface ImportIssue {
 	row: number;
 	column?: string;
 	level: "error" | "warning";
+	/** Fallback text; `code` + `params` are translated (`issues.codes.*`). */
 	message: string;
+	code?: string;
+	params?: Record<string, string | number>;
 }
 
 export interface SheetSummary {

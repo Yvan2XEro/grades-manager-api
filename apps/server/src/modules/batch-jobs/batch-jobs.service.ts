@@ -27,6 +27,11 @@ export async function previewJob(
 		});
 	}
 
+	// Jobs that opt in: a preview never run is superseded by a new one (the
+	// user fixed the file and sends it again); a running job still blocks
+	if (definition.supersedePreview)
+		await repo.cancelPreviewedJobs(institutionId, type);
+
 	// Scope lock: reject if another active job of the same type exists
 	const existing = await repo.findActiveJob(institutionId, type);
 	if (existing) {

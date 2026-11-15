@@ -60,6 +60,8 @@ export interface BatchJobDefinition<TParams = Record<string, unknown>> {
 	type: BatchJobType;
 	/** Human-readable label for the job type. */
 	label: string;
+	/** A new preview cancels a previewed job of this type that was never run. */
+	supersedePreview?: boolean;
 	/** Validate and parse raw params. Throws on invalid. */
 	parseParams: (raw: unknown) => TParams;
 	/** Dry-run: compute what would happen without mutating data. */

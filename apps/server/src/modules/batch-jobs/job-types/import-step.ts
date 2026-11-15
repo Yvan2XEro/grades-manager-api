@@ -28,6 +28,7 @@ async function planStep(params: Params, institutionId: string) {
 export const importStepJob: BatchJobDefinition<Params> = {
 	type: "import.step",
 	label: "Guided import step",
+	supersedePreview: true,
 	parseParams: (raw) => paramsSchema.parse(raw),
 
 	async preview(params, ctx) {

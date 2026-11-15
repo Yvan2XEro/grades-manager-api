@@ -445,13 +445,19 @@ export const studentsStep: ImportStepDef = {
 				let done = 0;
 				for (const change of changes) {
 					if (!isChanged(change) && change.student) continue;
+					// Loaded before the transaction: inside it, only `tx` may query
+					const klass =
+						change.student || change.registrationNumber
+							? undefined
+							: await klassRecord(change.classId);
 					await transaction(async (tx) => {
 						let studentId = change.student?.id;
 						if (!change.student) {
 							const registrationNumber =
 								change.registrationNumber ??
 								(await issueRegistrationNumber({
-									klass: await klassRecord(change.classId),
+									// biome-ignore lint/style/noNonNullAssertion: loaded above when no number is given
+									klass: klass!,
 									profile: {
 										firstName: change.profile.firstName,
 										lastName: change.profile.lastName,

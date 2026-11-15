@@ -1,5 +1,6 @@
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,6 +88,24 @@ export function AcademicYearsCard({
 									);
 								})}
 							</ol>
+							{foundationsReady ? (
+								<Button
+									asChild
+									size="sm"
+									variant={progress > 0 ? "outline" : "default"}
+									className="shrink-0"
+								>
+									<Link to={`/import/years/${year.id}`}>
+										<Upload className="mr-2 h-4 w-4" />
+										{t(`${G}years.${progress > 0 ? "resume" : "import"}`)}
+									</Link>
+								</Button>
+							) : (
+								<Button size="sm" className="shrink-0" disabled>
+									<Upload className="mr-2 h-4 w-4" />
+									{t(`${G}years.import`)}
+								</Button>
+							)}
 						</div>
 					);
 				})}

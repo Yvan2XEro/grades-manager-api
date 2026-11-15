@@ -21,7 +21,7 @@ const readAsBase64 = (file: File) =>
  * One step of the guided import: download the pre-filled template, upload the
  * filled workbook, review the validation, then import the valid rows.
  */
-export function useImportStep(step: string) {
+export function useImportStep(step: string, academicYearId?: string) {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const [phase, setPhase] = useState<WizardPhase>("prepare");
@@ -32,7 +32,8 @@ export function useImportStep(step: string) {
 	const definition = useQuery(trpc.dataImport.step.queryOptions({ step }));
 
 	const template = useMutation({
-		mutationFn: () => trpcClient.dataImport.template.query({ step }),
+		mutationFn: () =>
+			trpcClient.dataImport.template.query({ step, academicYearId }),
 		onSuccess: (file) =>
 			downloadBase64(file.data, file.filename, file.mimeType),
 		onError: (error) => toast.error(error.message),
@@ -46,7 +47,7 @@ export function useImportStep(step: string) {
 			});
 			return trpcClient.batchJobs.preview.mutate({
 				type: "import.step",
-				params: { step, fileId },
+				params: { step, fileId, academicYearId },
 			});
 		},
 		onSuccess: (job) => {

@@ -230,3 +230,47 @@ describe("guided import — academic year steps", () => {
 		]);
 	});
 });
+
+describe("guided import — sending a fixed file again", () => {
+	it("supersedes the previous analysis that was never imported", async () => {
+		const { ctx, caller } = await admin();
+		const { s, program, past } = await fixture(ctx.institution!.id);
+		const sheets = {
+			Classes: [CLASS_HEADERS, [`D${s}`, `D ${s}`, program.code, "L1"]],
+		};
+		await importStep(caller, "year.classes", past.id, sheets, false);
+		const again = await importStep(caller, "year.classes", past.id, sheets);
+		expect(again.sheets[0]).toMatchObject({ create: 1 });
+	});
+});
+
+describe("guided import — generated registration numbers", () => {
+	it("issues a registration number when the row has none", async () => {
+		const { ctx, caller } = await admin();
+		const { s, program, past } = await fixture(ctx.institution!.id);
+		await caller.registrationNumbers.create({
+			name: `Import ${s}`,
+			definition: {
+				segments: [
+					{ kind: "literal", value: `G${s}-` },
+					{ kind: "counter", width: 3, scope: ["class"] },
+				],
+			},
+			isActive: true,
+		});
+		await importStep(caller, "year.classes", past.id, {
+			Classes: [CLASS_HEADERS, [`G${s}`, `G ${s}`, program.code, "L1"]],
+		});
+		const summary = await importStep(caller, "year.students", past.id, {
+			Étudiants: [STUDENT_HEADERS, ["", "Abena", "Rose", "", "", "", `G${s}`]],
+		});
+		expect(summary.sheets[0]).toMatchObject({ create: 1 });
+		const klass = await db.query.classes.findFirst({
+			where: eq(schema.classes.code, `G${s}`),
+		});
+		const student = await db.query.students.findFirst({
+			where: eq(schema.students.class, klass!.id),
+		});
+		expect(student?.registrationNumber).toStartWith(`G${s}-`);
+	});
+});

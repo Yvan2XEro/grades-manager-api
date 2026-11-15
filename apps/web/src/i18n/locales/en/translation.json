@@ -1405,7 +1405,8 @@
       "timeline": "History",
       "workflows": "Workflows",
       "details": "Details",
-      "myCourses": "My courses"
+      "myCourses": "My courses",
+      "importYears": "Academic years"
     }
   },
   "auth": {
@@ -4655,6 +4656,10 @@
             "cycles": "Cycles & levels",
             "programs": "Programs & options",
             "curriculum": "Teaching units & courses"
+          },
+          "year": {
+            "classes": "Classes",
+            "students": "Students & enrollments"
           }
         },
         "stepDescriptions": {
@@ -4662,6 +4667,10 @@
             "cycles": "Study cycles (Bachelor, Master, BTS…) and their levels (L1, L2, L3…). Everything else depends on them.",
             "programs": "Programs attached to a cycle, and their options or tracks.",
             "curriculum": "The curriculum: the teaching units of each program and their courses."
+          },
+          "year": {
+            "classes": "The classes (cohorts) of the year: each one belongs to a program, an option and a level of its cycle.",
+            "students": "The students of the year and their class. A student already known from another year is found again by registration number, email, or name and date of birth: one record per person, one enrollment per year."
           }
         },
         "yearSteps": {
@@ -4710,7 +4719,9 @@
           "add": "Manage years",
           "foundationsFirst": "Finish the foundations first: the classes of a year rely on programs and levels.",
           "empty": "No academic year. Create the first one to start.",
-          "active": "Active"
+          "active": "Active",
+          "import": "Import",
+          "resume": "Resume"
         },
         "stepPage": {
           "back": "Setup & data import",
@@ -4760,7 +4771,28 @@
           "sheet": "Sheet",
           "row": "Row",
           "column": "Column",
-          "problem": "Problem"
+          "problem": "Problem",
+          "codes": {
+            "missingSheet": "Sheet \"{{sheet}}\" is missing from the file: nothing is imported from it.",
+            "missingColumn": "Required column \"{{column}}\" not found in the header.",
+            "required": "Required value missing.",
+            "enum": "\"{{value}}\" is not allowed ({{allowed}}).",
+            "integer": "\"{{value}}\" must be a whole number.",
+            "number": "\"{{value}}\" must be a number.",
+            "email": "\"{{value}}\" is not a valid email address.",
+            "date": "\"{{value}}\" is not a date (dd/mm/yyyy or yyyy-mm-dd).",
+            "duplicate": "Duplicate: already on row {{row}}.",
+            "unknownProgram": "Unknown program \"{{value}}\": import it in the Foundations first.",
+            "programWithoutCycle": "Program {{value}} has no cycle, so its levels are unknown: set its cycle in the Foundations.",
+            "unknownLevel": "Level \"{{value}}\" is not a level of cycle {{cycle}} ({{allowed}}).",
+            "unknownOption": "Option \"{{value}}\" does not exist in program {{program}}.",
+            "classNameTaken": "Name already used by class {{code}} in this program and year.",
+            "unknownClass": "Class {{value}} unknown for {{year}}: import it at the Classes step.",
+            "unknownGender": "\"{{value}}\" is not M or F: left empty.",
+            "ambiguousStudent": "Several known students match this row ({{candidates}}): give the registration number.",
+            "registrationMismatch": "This person is already known as {{student}}: registration number {{value}} does not match.",
+            "noRegistrationFormat": "No registration number given, and no active registration number format to generate one."
+          }
         },
         "done": {
           "title": "Import complete",
@@ -4779,6 +4811,51 @@
             "curriculum": "Teaching units"
           },
           "year": "Academic years"
+        },
+        "yearImport": {
+          "title": "Import {{year}}",
+          "steps": "Steps of the year",
+          "kind": {
+            "past": "Past year",
+            "current": "Current year"
+          },
+          "kindText": {
+            "past": "This year is over: it is imported as history. Enrollments are closed and students keep their current class unless this year is their most recent one.",
+            "current": "This year is in progress: enrollments are active and students are placed in the imported class."
+          },
+          "count": {
+            "year": {
+              "classes_one": "{{count}} class",
+              "classes_other": "{{count}} classes",
+              "students_one": "{{count}} enrollment",
+              "students_other": "{{count}} enrollments"
+            }
+          }
+        },
+        "sheetHelp": {
+          "year": {
+            "classes": {
+              "0": "One class per row, for the imported year."
+            },
+            "students": {
+              "0": "One student per row, with their class of the year. A known student is found by registration number, email, or name, first name and date of birth."
+            }
+          }
+        },
+        "columnHelp": {
+          "year": {
+            "classes": {
+              "code": "E.g. IGL-L1. Unique within the year.",
+              "optionCode": "Empty: the program's default option.",
+              "levelCode": "Level of the program's cycle (e.g. L1, M2)."
+            },
+            "students": {
+              "registrationNumber": "Empty: generated with the institution's registration number format.",
+              "dateOfBirth": "dd/mm/yyyy",
+              "gender": "M or F",
+              "classCode": "Class of the student for the imported year."
+            }
+          }
         }
       }
     }

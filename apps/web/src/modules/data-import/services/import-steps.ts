@@ -58,6 +58,19 @@ export const YEAR_STEPS: {
 	},
 ];
 
+/** Importable steps of an academic year (`/import/years/:id`), in order. */
+export const IMPORT_YEAR_STEPS: {
+	key: string;
+	count: keyof ImportYear["counts"];
+}[] = [
+	{ key: "year.classes", count: "classes" },
+	{ key: "year.students", count: "enrollments" },
+];
+
+/** A year that has ended is imported as history. */
+export const isPastYear = (year: Pick<ImportYear, "endDate">) =>
+	new Date(year.endDate).getTime() < Date.now();
+
 export const yearProgress = (year: ImportYear) =>
 	YEAR_STEPS.filter((step) => year.counts[step.count] > 0).length;
 

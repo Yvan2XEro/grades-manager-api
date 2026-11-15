@@ -89,6 +89,7 @@ export default function ImportStepPage() {
 			) : wizard.phase === "prepare" ? (
 				<>
 					<StepPreparePanel
+						step={step}
 						sheets={wizard.definition.sheets}
 						onDownload={wizard.downloadTemplate}
 						isDownloading={wizard.isDownloading}
@@ -140,7 +141,16 @@ export default function ImportStepPage() {
 				<StepDonePanel
 					preview={wizard.preview}
 					jobId={wizard.jobId}
-					nextStep={next}
+					next={
+						next
+							? {
+									label: t(`${G}done.next`, {
+										label: stepLabel(next.key, t, next.label),
+									}),
+									to: `/import/${next.key}`,
+								}
+							: { label: t(`${G}done.back`), to: "/import" }
+					}
 					onRestart={wizard.restart}
 				/>
 			) : null}

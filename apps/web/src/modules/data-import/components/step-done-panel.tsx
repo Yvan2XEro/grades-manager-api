@@ -3,19 +3,20 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { ExternalLinkIcon } from "@/components/navigation/external-link-icon";
 import { Button } from "@/components/ui/button";
-import { G, stepLabel } from "../services/import-steps";
+import { G } from "../services/import-steps";
 import type { StepPreview } from "../types";
 
 /** Result of the import, with the way forward. */
 export function StepDonePanel({
 	preview,
 	jobId,
-	nextStep,
+	next,
 	onRestart,
 }: {
 	preview: StepPreview;
 	jobId: string | null;
-	nextStep?: { key: string; label: string };
+	/** Where to go once the step is done (next step, or back to the setup). */
+	next: { label: string; to: string };
 	onRestart: () => void;
 }) {
 	const { t } = useTranslation();
@@ -49,13 +50,7 @@ export function StepDonePanel({
 					</Button>
 				)}
 				<Button asChild>
-					<Link to={nextStep ? `/import/${nextStep.key}` : "/import"}>
-						{nextStep
-							? t(`${G}done.next`, {
-									label: stepLabel(nextStep.key, t, nextStep.label),
-								})
-							: t(`${G}done.back`)}
-					</Link>
+					<Link to={next.to}>{next.label}</Link>
 				</Button>
 			</div>
 		</div>

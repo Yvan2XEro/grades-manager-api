@@ -71,7 +71,12 @@ export function IssuesTable({ issues }: { issues: ImportIssue[] }) {
 											: "text-amber-700 dark:text-amber-400"
 									}
 								>
-									{issue.message}
+									{issue.code
+										? t(`${G}issues.codes.${issue.code}`, {
+												...issue.params,
+												defaultValue: issue.message,
+											})
+										: issue.message}
 								</TableCell>
 							</TableRow>
 						))}

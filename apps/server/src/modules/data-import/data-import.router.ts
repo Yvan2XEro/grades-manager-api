@@ -126,6 +126,7 @@ async function yearCounts(institutionId: string) {
 				name: year.name,
 				isActive: year.isActive,
 				startDate: year.startDate,
+				endDate: year.endDate,
 				counts: {
 					classes: classIds.length,
 					classCourses: classCourseIds.length,

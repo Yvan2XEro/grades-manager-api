@@ -106,6 +106,7 @@ const LABELS: Record<string, string> = {
 	center: "notificationCenter",
 	admissions: "admissions",
 	import: "setup",
+	"import/years": "importYears",
 	"foundation.cycles": "importCycles",
 	"foundation.programs": "importPrograms",
 	"foundation.curriculum": "importCurriculum",
@@ -150,7 +151,7 @@ const PARENTS: Record<string, { key: string; href: string }[]> = {
 };
 
 /** Intermediate paths that are not pages: shown without a link. */
-const NOT_PAGES = new Set(["/fee-clearance/students"]);
+const NOT_PAGES = new Set(["/fee-clearance/students", "/import/years"]);
 
 export function useBreadcrumbs(): BreadcrumbItem[] {
 	const { t } = useTranslation();

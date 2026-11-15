@@ -9,6 +9,7 @@ import { FileDropArea } from "./file-drop-area";
 
 /** Explains the step's sheets, gives the pre-filled template and takes the file. */
 export function StepPreparePanel({
+	step,
 	sheets,
 	onDownload,
 	isDownloading,
@@ -16,6 +17,8 @@ export function StepPreparePanel({
 	isAnalyzing,
 	fileName,
 }: {
+	/** Step key: its sheet and column help texts are translated by it. */
+	step: string;
 	sheets: StepSheets;
 	onDownload: () => void;
 	isDownloading: boolean;
@@ -45,19 +48,27 @@ export function StepPreparePanel({
 						{t(`${G}prepare.download`)}
 					</Button>
 					<div className="space-y-3">
-						{sheets.map((sheet) => (
+						{sheets.map((sheet, sheetIndex) => (
 							<div key={sheet.name} className="rounded-md border p-3">
 								<p className="font-medium text-sm">
 									{t(`${G}prepare.sheet`, { name: sheet.name })}
 								</p>
 								<p className="mb-2 text-muted-foreground text-xs">
-									{sheet.description}
+									{t(`${G}sheetHelp.${step}.${sheetIndex}`, {
+										defaultValue: sheet.description,
+									})}
 								</p>
 								<div className="flex flex-wrap gap-1.5">
 									{sheet.columns.map((col) => (
 										<span
 											key={col.key}
-											title={[col.hint, col.enum?.join(" / ")]
+											title={[
+												col.hint &&
+													t(`${G}columnHelp.${step}.${col.key}`, {
+														defaultValue: col.hint,
+													}),
+												col.enum?.join(" / "),
+											]
 												.filter(Boolean)
 												.join(" — ")}
 											className={
