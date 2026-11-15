@@ -4,6 +4,7 @@ import { programsStep } from "./foundation-programs";
 import type { ImportStepDef } from "./types";
 import { classesStep } from "./year-classes";
 import { coursesStep } from "./year-courses";
+import { decisionsStep } from "./year-decisions";
 import { examsStep } from "./year-exams";
 import { gradesStep } from "./year-grades";
 import { studentsStep } from "./year-students";
@@ -22,6 +23,7 @@ export const YEAR_STEPS: ImportStepDef[] = [
 	coursesStep,
 	examsStep,
 	gradesStep,
+	decisionsStep,
 ];
 
 const ALL_STEPS = [...FOUNDATION_STEPS, ...YEAR_STEPS];

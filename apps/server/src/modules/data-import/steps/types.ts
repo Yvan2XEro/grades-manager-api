@@ -62,6 +62,8 @@ export interface StepContext {
 	institutionId: string;
 	/** Set for the steps of an academic year (`scope: "year"`). */
 	academicYearId?: string;
+	/** Profile running the import (traced on overrides). */
+	actorId?: string;
 }
 
 /** A step of the guided import: its sheets, its pre-filled template and its plan. */

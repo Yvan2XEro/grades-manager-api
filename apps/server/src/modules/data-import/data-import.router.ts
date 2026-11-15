@@ -8,6 +8,7 @@ import { saveImportFile } from "./import-file-storage";
 import { FOUNDATION_STEPS, getImportStep, IMPORT_STEP_KEYS } from "./steps";
 import { buildTemplate } from "./steps/workbook";
 import { requireYear } from "./steps/year-context";
+import { closeImportedYear } from "./year-closing";
 
 const TEMPLATE_TYPES = [
 	"academic-structure",
@@ -230,6 +231,22 @@ export const dataImportRouter = router({
 					message: "Le fichier dépasse 10 Mo.",
 				});
 			return { fileId: await saveImportFile(buffer, ".xlsx") };
+		}),
+
+	/** End of the import of a year: lock (past year), credits, deliberations. */
+	closeYear: tenantAdminProcedure
+		.input(z.object({ academicYearId: z.string() }))
+		.mutation(({ ctx, input }) => {
+			if (!ctx.profile)
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: "A profile is required to compute deliberations",
+				});
+			return closeImportedYear({
+				institutionId: ctx.institution.id,
+				academicYearId: input.academicYearId,
+				actorId: ctx.profile.id,
+			});
 		}),
 
 	/** Marks a step as not applicable (or applicable again). */

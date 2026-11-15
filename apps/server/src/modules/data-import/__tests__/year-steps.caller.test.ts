@@ -466,6 +466,55 @@ describe("guided import — class courses and exams", () => {
 		});
 		expect(anaGrades.map((g) => g.score).sort()).toEqual(["12.50", "14.00"]);
 
+		// Closing: exams locked, one annual deliberation computed per class
+		const closing = await caller.dataImport.closeYear({
+			academicYearId: past.id,
+		});
+		expect(closing.lockedExams).toBe(5);
+		expect(closing.deliberations.created).toBe(1);
+		const delib = await db.query.deliberations.findFirst({
+			where: eq(schema.deliberations.classId, klass!.id),
+		});
+		expect(delib).toMatchObject({ type: "annual", status: "open" });
+		const locked = await caller.batchJobs.preview({
+			type: "import.step",
+			params: { step: "year.grades", fileId, academicYearId: past.id },
+		});
+		expect(
+			(locked.previewResult as unknown as Summary).issues.some(
+				(i) => i.code === "examLocked",
+			),
+		).toBe(true);
+
+		// Official decisions: a gap is reported, then kept as an override
+		const decisions = await importStep(caller, "year.decisions", past.id, {
+			Décisions: [
+				["Matricule", "Décision", "Motif"],
+				[`S${s}1`, "Exclu", "PV du 12/07"],
+				[`S${s}9`, "Admis", ""],
+			],
+		});
+		expect(decisions.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ code: "decisionGap", level: "warning" }),
+				expect.objectContaining({
+					code: "noDeliberationResult",
+					level: "error",
+				}),
+			]),
+		);
+		const result = await db.query.deliberationStudentResults.findFirst({
+			where: and(
+				eq(schema.deliberationStudentResults.deliberationId, delib!.id),
+				eq(schema.deliberationStudentResults.studentId, ana!.id),
+			),
+		});
+		expect(result).toMatchObject({
+			finalDecision: "excluded",
+			isOverridden: true,
+			overrideReason: "PV du 12/07",
+		});
+
 		// Same file again: nothing to do
 		const again = await importStep(
 			caller,

@@ -385,6 +385,25 @@ export const examsStep: ImportStepDef = {
 						e.classCourse === cc.id &&
 						normalize(e.type) === normalize(component.type),
 				);
+				const differs =
+					current &&
+					((!component.retakeOf &&
+						Number(current.percentage) !== Number(percentage)) ||
+						(exception?.date &&
+							current.date.toISOString().slice(0, 10) !== exception.date));
+				if (current?.isLocked && differs) {
+					summary.skipped++;
+					push(
+						MODEL,
+						0,
+						undefined,
+						"warning",
+						"examLocked",
+						{ course: cc.courseCode, type: current.type },
+						`The ${current.type} exam of ${cc.courseCode} is locked: left unchanged.`,
+					);
+					continue;
+				}
 				if (!current) summary.create++;
 				else if (
 					(!component.retakeOf &&

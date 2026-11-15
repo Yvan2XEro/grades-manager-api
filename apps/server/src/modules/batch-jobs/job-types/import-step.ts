@@ -1,4 +1,7 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import { readImportFile } from "../../data-import/import-file-storage";
 import { getImportStep } from "../../data-import/steps";
 import { readWorkbook } from "../../data-import/steps/workbook";
@@ -13,10 +16,18 @@ const paramsSchema = z.object({
 type Params = z.infer<typeof paramsSchema>;
 
 /** Plans a guided-import step from its uploaded workbook. */
-async function planStep(params: Params, institutionId: string) {
+async function planStep(params: Params, institutionId: string, jobId: string) {
 	const step = getImportStep(params.step);
 	const buffer = await readImportFile(params.fileId);
-	const ctx = { institutionId, academicYearId: params.academicYearId };
+	const job = await db.query.batchJobs.findFirst({
+		where: eq(schema.batchJobs.id, jobId),
+		columns: { createdBy: true },
+	});
+	const ctx = {
+		institutionId,
+		academicYearId: params.academicYearId,
+		actorId: job?.createdBy ?? undefined,
+	};
 	const { rows, issues } = step.read
 		? await step.read(buffer, ctx)
 		: await readWorkbook(step, buffer);
@@ -32,7 +43,7 @@ export const importStepJob: BatchJobDefinition<Params> = {
 	parseParams: (raw) => paramsSchema.parse(raw),
 
 	async preview(params, ctx) {
-		const { step, plan } = await planStep(params, ctx.institutionId);
+		const { step, plan } = await planStep(params, ctx.institutionId, ctx.jobId);
 		const total = plan.sheets.reduce((n, s) => n + s.create + s.update, 0);
 		return {
 			steps: [{ name: step.label, estimatedItems: total }],
@@ -48,7 +59,7 @@ export const importStepJob: BatchJobDefinition<Params> = {
 	},
 
 	async executeStep(params, step, ctx) {
-		const { plan } = await planStep(params, ctx.institutionId);
+		const { plan } = await planStep(params, ctx.institutionId, ctx.jobId);
 		await plan.apply((message) => ctx.log("info", message));
 		const done = plan.sheets.reduce((n, s) => n + s.create + s.update, 0);
 		const skipped = plan.sheets.reduce((n, s) => n + s.skipped, 0);
