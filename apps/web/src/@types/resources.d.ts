@@ -13,9 +13,29 @@ interface Resources {
 			filterBar: {
 				label: "Filters";
 				reset: "Reset";
+				activeCount_one: "{{count}} active";
+				activeCount_other: "{{count}} active";
 			};
 			datePicker: {
 				placeholder: "Choose a date";
+			};
+			gradingProgress: {
+				missing_one: "{{count}} missing";
+				missing_other: "{{count}} missing";
+			};
+			weeklyGrid: {
+				days: {
+					mon: "Mon";
+					tue: "Tue";
+					wed: "Wed";
+					thu: "Thu";
+					fri: "Fri";
+					sat: "Sat";
+					sun: "Sun";
+				};
+			};
+			loadingScreen: {
+				label: "Loading";
 			};
 		};
 		common: {
@@ -72,6 +92,8 @@ interface Resources {
 				next: "Next";
 				previous: "Previous";
 				page: "Page";
+				showing: "Showing {{start}}–{{end}} of {{total}}";
+				perPage: "{{count}} / page";
 			};
 			errors: {
 				unknown: "Unknown error";
@@ -153,6 +175,13 @@ interface Resources {
 				loading: "Loading";
 				hidePassword: "Hide password";
 				showPassword: "Show password";
+				selectRow: "Select row";
+				clearSearch: "Clear search";
+			};
+			itemCount_one: "{{count}} item";
+			itemCount_other: "{{count}} items";
+			validation: {
+				required: "Required";
 			};
 		};
 		teacher: {
@@ -189,12 +218,26 @@ interface Resources {
 				};
 				noMatch: "No matching course";
 				noMatchHint: "Try another search or clear the filters.";
-				searchPlaceholder: "Search Placeholder";
+				searchPlaceholder: "Search for a course or a class…";
 				summary: "Summary";
 				noExams: "No exam for this course";
 				hubTitle: "My courses & grades";
 				hubDescription: "Grade entry, locking and submission per course";
 				noSearchMatch: "No course matches your search.";
+				examRow: {
+					submit: "Submit";
+					enter: "Enter grades";
+					view: "View";
+					average: "avg {{value}}";
+				};
+				toolbar: {
+					actionRequired: "Action required";
+					sort: {
+						relevance: "Relevance";
+						name: "Name A→Z";
+						class: "Class";
+					};
+				};
 			};
 			"courses.manage": {
 				title: "Course Management";
@@ -460,6 +503,14 @@ interface Resources {
 					importSuccess: "Imported {{count}} grades successfully";
 					importError: "Failed to import grades";
 				};
+				template: {
+					registrationNumber: "Registration Number";
+					firstName: "First Name";
+					lastName: "Last Name";
+					score: "Score";
+					sheetName: "Grades";
+					filePrefix: "grades";
+				};
 			};
 			attendance: {
 				title: "Attendance alerts";
@@ -564,6 +615,8 @@ interface Resources {
 				};
 				errors: {
 					endBeforeStart: "End time must be after start time.";
+					timeFormat: "Time must be in HH:MM format";
+					validUntilBeforeValidFrom: "Valid until must be after valid from";
 				};
 				importDialog: {
 					description: "Description";
@@ -1472,6 +1525,10 @@ interface Resources {
 				myCourses: "My courses";
 				importYears: "Academic years";
 			};
+			badges: {
+				new: "New";
+				updated: "Updated";
+			};
 		};
 		auth: {
 			layout: {
@@ -1911,6 +1968,10 @@ interface Resources {
 					retried: "Notification requeued";
 				};
 				flushConfirmDesc: "This will immediately attempt delivery of all pending notifications. Continue?";
+				channels: {
+					email: "Email";
+					webhook: "Webhook";
+				};
 			};
 			apiKeys: {
 				title: "API Keys";
@@ -1980,6 +2041,8 @@ interface Resources {
 					jobType: "Job type";
 					academicYear: "Academic year";
 					class: "Class";
+					jobTypePlaceholder: "Select a job type...";
+					classPlaceholder: "Select class...";
 				};
 				actions: {
 					create: "New batch job";
@@ -2450,6 +2513,7 @@ interface Resources {
 					logoSvgHint: "If set, the SVG takes priority over the PNG/URL logo in exports.";
 					logoSvgAlternative: "…or SVG code (takes priority in exports)";
 					signatoryTitlePlaceholder: "Director General";
+					readFileError: "Failed to read file";
 				};
 				sections: {
 					contact: "Contact & location";
@@ -2506,6 +2570,7 @@ interface Resources {
 					minCredits: "Minimum credits";
 					autoLevelsPreview: "Auto-generated levels preview";
 					nameEn: "Name (English)";
+					creditsShort: "{{value}} cr";
 				};
 				toast: {
 					createSuccess: "Study cycle created";
@@ -2620,7 +2685,7 @@ interface Resources {
 					submitWithClone: "Create and clone";
 					nameEnLabel: "Name (English)";
 					abbreviationLabel: "Abbreviation";
-					domainFrLabel: "Domaine (FR)";
+					domainFrLabel: "Domain (FR)";
 					domainEnLabel: "Domain (EN)";
 					specialiteFrLabel: "Specialty (FR)";
 					specialiteEnLabel: "Specialization (EN)";
@@ -2628,21 +2693,22 @@ interface Resources {
 					diplomaTitleEnLabel: "Diploma title (EN)";
 					attestationValidityFrLabel: "Attestation validity (FR)";
 					attestationValidityEnLabel: "Attestation validity (EN)";
-					centerLabel: "Centre";
-					centerPlaceholder: "Aucun centre";
+					centerLabel: "Center";
+					centerPlaceholder: "No center";
 					centerNone: "None (general program)";
 					isCenterProgramLabel: "Center program";
 					isCenterProgramHint: "Mark this program as belonging to a center.";
 					exportTemplatesLabel: "Export templates";
 					exportTemplatesHint: "Choose the default template for each document type.";
 					exportTemplatePlaceholder: "No template";
-					exportTemplateNone: "Aucun";
+					exportTemplateNone: "None";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
 					code: "Code is required";
 					faculty: "Please select a faculty";
 					cycle: "Please select a study cycle";
+					nameRequired: "Name is required";
 				};
 				toast: {
 					createSuccess: "Program created successfully";
@@ -2715,6 +2781,18 @@ interface Resources {
 					cycle: "Cycle";
 					description: "Description";
 					isCenterProgram: "Center program";
+					name: "Name (FR)";
+					nameEn: "Name (EN)";
+					code: "Code";
+					abbreviation: "Abbreviation";
+					domainFr: "Domain (FR)";
+					domainEn: "Domain (EN)";
+					specialiteFr: "Speciality (FR)";
+					specialiteEn: "Speciality (EN)";
+					diplomaTitleFr: "Diploma title (FR)";
+					diplomaTitleEn: "Diploma title (EN)";
+					attestationValidityFr: "Attestation validity (FR)";
+					attestationValidityEn: "Attestation validity (EN)";
 				};
 				templateTypes: {
 					diploma: "Diploma";
@@ -3440,6 +3518,7 @@ interface Resources {
 					publicationTitle: "GRADE PUBLICATION - {{course}} ({{type}})";
 					dateLine: "Date: {{date}}";
 				};
+				contextTitle: "Context";
 			};
 			students: {
 				title: "Student management";
@@ -4026,6 +4105,7 @@ interface Resources {
 					removeError: "Could not remove override";
 					removeSuccess: "Override removed";
 				};
+				searchPlaceholder: "Name or registration number…";
 			};
 			deliberations: {
 				title: "Deliberations";
@@ -4150,6 +4230,7 @@ interface Resources {
 					signedBy: "Signed by";
 					notYet: "Not yet";
 					juryNumber: "N° jury";
+					fallbackTitle: "Deliberation";
 				};
 				override: {
 					title: "Override decision";
@@ -4298,6 +4379,7 @@ interface Resources {
 					mention: "Mention";
 					stats: "Success rate: {{rate}}% | Admitted: {{admitted}} | Compensated: {{compensated}} | Deferred: {{deferred}}";
 					sheetName: "Deliberation";
+					filePrefix: "Deliberation";
 				};
 			};
 			gradeAccessGrants: {
@@ -5646,6 +5728,9 @@ interface Resources {
 				noDeliberation: "No deliberation yet";
 				avgGeneral: "Gen. avg.";
 				successRate: "Success rate";
+				totalExams: "{{count}} total";
+				submittedExams_one: "{{count}} exam pending";
+				submittedExams_other: "{{count}} exams pending";
 			};
 			approvals: {
 				title: "Pending approvals";
@@ -5671,6 +5756,9 @@ interface Resources {
 				searchPlaceholder: "Search exams...";
 				allClasses: "All classes";
 				allYears: "All years";
+				minMax: "min {{min}} · max {{max}}";
+				selectAllExams: "Select all exams";
+				selectExam: "Select {{name}}";
 			};
 			history: {
 				title: "Approval history";
@@ -5771,6 +5859,7 @@ interface Resources {
 				unenroll: "Withdraw";
 				enroll: "Enroll";
 				selected: "{{count}} course(s) selected of {{total}}";
+				coefficient: "Coef. {{value}}";
 			};
 			dashboard: {
 				title: "My Space";
@@ -6043,6 +6132,8 @@ interface Resources {
 					revokedAll: "Other sessions revoked";
 					error: "Unable to load sessions";
 				};
+				unknownBrowser: "Unknown browser";
+				otherBrowser: "Browser";
 			};
 			preferences: {
 				title: "Preferences";
@@ -6266,6 +6357,8 @@ interface Resources {
 					reenrollment: "Re-enrollment";
 					document_generation: "Document generation";
 				};
+				enabledHint: "Students must be cleared to perform this action";
+				disabledHint: "Gate disabled — all students have access";
 			};
 			orders: {
 				title: "Payment orders";
@@ -6821,6 +6914,10 @@ interface Resources {
 					documentReviewed: "Document reviewed";
 					converted: "Application converted to student record";
 				};
+				totalCount_one: "{{count}} application in total";
+				totalCount_other: "{{count}} applications in total";
+				filteredCount_one: "{{count}} application matching the filters";
+				filteredCount_other: "{{count}} applications matching the filters";
 			};
 			sections: {
 				father: "Father";

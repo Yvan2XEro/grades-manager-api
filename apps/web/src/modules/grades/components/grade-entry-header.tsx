@@ -16,7 +16,7 @@ export function GradeEntryHeader({
 		<div className="flex items-center gap-4">
 			<Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
 				<ArrowLeft className="h-5 w-5" />
-				<span className="sr-only">Back</span>
+				<span className="sr-only">{t("common.actions.back")}</span>
 			</Button>
 			<div>
 				<h2 className="text-foreground">{t("teacher.gradeEntry.title")}</h2>

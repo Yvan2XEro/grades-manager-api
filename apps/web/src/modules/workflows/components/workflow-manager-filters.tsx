@@ -34,15 +34,13 @@ export function WorkflowManagerFilters({
 			<div className="flex flex-wrap items-end gap-4">
 				<div className="w-56">
 					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.academicYear", {
-							defaultValue: "Academic Year",
-						})}
+						{t("admin.classes.filters.academicYear")}
 					</Label>
 					<AcademicYearSelect value={filterYear} onChange={onYearChange} />
 				</div>
 				<div className="w-56">
 					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.semester", { defaultValue: "Semester" })}
+						{t("admin.classes.filters.semester")}
 					</Label>
 					<SemesterSelect value={filterSemester} onChange={onSemesterChange} />
 				</div>
@@ -50,20 +48,14 @@ export function WorkflowManagerFilters({
 
 			<div className="space-y-2">
 				<Label htmlFor="class-course">
-					{t("teacher.workflow.selectCourse", {
-						defaultValue: "Select class course",
-					})}
+					{t("teacher.workflow.selectCourse")}
 				</Label>
 				<Select
 					value={selectedClassCourse || undefined}
 					onValueChange={onClassCourseChange}
 				>
 					<SelectTrigger id="class-course">
-						<SelectValue
-							placeholder={t("teacher.workflow.selectCourse", {
-								defaultValue: "Select class course",
-							})}
-						/>
+						<SelectValue placeholder={t("teacher.workflow.selectCourse")} />
 					</SelectTrigger>
 					<SelectContent>
 						{classCourses.map((cc) => (

@@ -43,16 +43,10 @@ export function ApprovalHistoryFilters({ history }: { history: History }) {
 				onValueChange={history.setTeacherFilter}
 			>
 				<SelectTrigger className="w-[170px]">
-					<SelectValue
-						placeholder={t("dean.history.teacherFilter", {
-							defaultValue: "All teachers",
-						})}
-					/>
+					<SelectValue placeholder={t("dean.history.teacherFilter")} />
 				</SelectTrigger>
 				<SelectContent>
-					<SelectItem value="all">
-						{t("dean.history.allTeachers", { defaultValue: "All teachers" })}
-					</SelectItem>
+					<SelectItem value="all">{t("dean.history.allTeachers")}</SelectItem>
 					{history.teachers.map((u) => (
 						<SelectItem key={u.id} value={u.id}>
 							{u.firstName} {u.lastName}
@@ -69,7 +63,7 @@ export function ApprovalHistoryFilters({ history }: { history: History }) {
 					value={history.dateFrom}
 					onChange={(e) => history.setDateFrom(e.target.value)}
 					className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-					title={t("dean.history.dateFrom", { defaultValue: "From" })}
+					title={t("dean.history.dateFrom")}
 				/>
 				<span className="text-muted-foreground text-xs">—</span>
 				<input
@@ -77,7 +71,7 @@ export function ApprovalHistoryFilters({ history }: { history: History }) {
 					value={history.dateTo}
 					onChange={(e) => history.setDateTo(e.target.value)}
 					className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-					title={t("dean.history.dateTo", { defaultValue: "To" })}
+					title={t("dean.history.dateTo")}
 				/>
 			</div>
 		</ExamFilters>

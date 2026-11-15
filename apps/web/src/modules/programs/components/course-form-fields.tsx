@@ -66,15 +66,11 @@ export function CourseFormFields({
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel required>
-								{t("admin.courses.form.codeLabel", {
-									defaultValue: "Code",
-								})}
+								{t("admin.courses.form.codeLabel")}
 							</FormLabel>
 							<FormControl>
 								<Input
-									placeholder={t("admin.courses.form.codePlaceholder", {
-										defaultValue: "INF111",
-									})}
+									placeholder={t("admin.courses.form.codePlaceholder")}
 									{...field}
 								/>
 							</FormControl>
@@ -164,16 +160,10 @@ export function CourseFormFields({
 				name="teachingUnitId"
 				render={({ field }) => (
 					<FormItem>
-						<FormLabel required>
-							{t("admin.teachingUnits.list", {
-								defaultValue: "Teaching unit",
-							})}
-						</FormLabel>
+						<FormLabel required>{t("admin.teachingUnits.list")}</FormLabel>
 						<QuickCreate
 							onCreate={createTeachingUnit}
-							label={t("admin.teachingUnits.actions.create", {
-								defaultValue: "Create UE",
-							})}
+							label={t("admin.teachingUnits.actions.create")}
 							disabled={!selectedProgramId}
 						>
 							<Select
@@ -186,9 +176,7 @@ export function CourseFormFields({
 										<SelectValue
 											placeholder={t(
 												"admin.courses.form.teachingUnitPlaceholder",
-												{
-													defaultValue: "Select a teaching unit",
-												},
+												{},
 											)}
 										/>
 									</SelectTrigger>

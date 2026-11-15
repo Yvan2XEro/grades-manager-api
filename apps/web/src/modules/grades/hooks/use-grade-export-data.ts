@@ -61,11 +61,7 @@ export function useGradeExportData({
 				return result.items;
 			} catch (error) {
 				console.error("Error fetching semesters:", error);
-				toast.error(
-					t("admin.gradeExport.toast.semestersFetchError", {
-						defaultValue: "Could not load semesters",
-					}),
-				);
+				toast.error(t("admin.gradeExport.toast.semestersFetchError"));
 				return [];
 			}
 		},

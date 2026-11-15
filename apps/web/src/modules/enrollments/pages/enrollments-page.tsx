@@ -69,12 +69,8 @@ export default function EnrollmentsPage() {
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteEnrollments.mutate([...selection.selectedIds], {
@@ -111,9 +107,7 @@ export default function EnrollmentsPage() {
 			toolbar={
 				<>
 					<h2 className="font-semibold text-foreground text-lg">
-						{t("admin.enrollments.listTitle", {
-							defaultValue: "Enrollments",
-						})}
+						{t("admin.enrollments.listTitle")}
 					</h2>
 					<BulkActionBar
 						selectedCount={selection.selectedCount}
@@ -152,9 +146,7 @@ export default function EnrollmentsPage() {
 				selection={selection}
 				empty={
 					<p className="p-4 text-muted-foreground text-xs">
-						{t("admin.enrollments.empty", {
-							defaultValue: "No enrollments found for the selected filters.",
-						})}
+						{t("admin.enrollments.empty")}
 					</p>
 				}
 			/>

@@ -20,6 +20,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import i18n from "@/i18n";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
@@ -31,21 +32,22 @@ type Room = RouterOutputs["rooms"]["list"][number];
 const NO_ROOM_SENTINEL = "__none__";
 
 const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
+const timeFormatError = () => i18n.t("teacher.timetable.errors.timeFormat");
 const sessionSchema = z
 	.object({
 		dayOfWeek: z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
-		startTime: z.string().regex(timeRe, "HH:MM required"),
-		endTime: z.string().regex(timeRe, "HH:MM required"),
+		startTime: z.string().regex(timeRe, { error: timeFormatError }),
+		endTime: z.string().regex(timeRe, { error: timeFormatError }),
 		roomId: z.string(),
 		validFrom: z.string(),
 		validUntil: z.string(),
 	})
 	.refine((d) => d.startTime < d.endTime, {
-		message: "End time must be after start time",
+		error: () => i18n.t("teacher.timetable.errors.endBeforeStart"),
 		path: ["endTime"],
 	})
 	.refine((d) => !d.validFrom || !d.validUntil || d.validFrom <= d.validUntil, {
-		message: "Valid until must be after valid from",
+		error: () => i18n.t("teacher.timetable.errors.validUntilBeforeValidFrom"),
 		path: ["validUntil"],
 	});
 export type SessionForm = z.infer<typeof sessionSchema>;

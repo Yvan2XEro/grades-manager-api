@@ -40,11 +40,7 @@ export function useDeleteTeachingUnitCourse(teachingUnitId: string) {
 	return useMutation({
 		mutationFn: (id: string) => trpcClient.courses.delete.mutate({ id }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.teachingUnits.courses.toast.deleteSuccess", {
-					defaultValue: "Element deleted",
-				}),
-			);
+			toast.success(t("admin.teachingUnits.courses.toast.deleteSuccess"));
 			queryClient.invalidateQueries({
 				queryKey: teachingUnitCoursesKey(teachingUnitId),
 			});

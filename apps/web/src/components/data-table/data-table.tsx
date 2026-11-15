@@ -6,6 +6,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Table,
@@ -56,6 +57,7 @@ export function DataTable<T extends { id: string }>({
 	empty,
 	className,
 }: DataTableProps<T>) {
+	const { t } = useTranslation();
 	const table = useReactTable({
 		data,
 		columns,
@@ -80,7 +82,7 @@ export function DataTable<T extends { id: string }>({
 								<Checkbox
 									checked={selection.isAllSelected}
 									onCheckedChange={(checked) => selection.toggleAll(!!checked)}
-									aria-label="Select all"
+									aria-label={t("common.selectAll")}
 								/>
 							</TableHead>
 						)}
@@ -126,7 +128,7 @@ export function DataTable<T extends { id: string }>({
 									<Checkbox
 										checked={selection.isSelected(row.id)}
 										onCheckedChange={() => selection.toggle(row.id)}
-										aria-label="Select row"
+										aria-label={t("common.a11y.selectRow")}
 									/>
 								</TableCell>
 							)}

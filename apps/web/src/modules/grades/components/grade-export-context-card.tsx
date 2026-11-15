@@ -35,7 +35,7 @@ export function GradeExportContextCard({
 			<CardHeader className="pb-3">
 				<CardTitle className="flex items-center gap-3 text-base">
 					<StepBadge step={1} />
-					Contexte
+					{t("admin.gradeExport.contextTitle")}
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="grid gap-4 md:grid-cols-2">

@@ -38,8 +38,8 @@ export default function FeeGatingSettingsPage() {
 									</p>
 									<p className="text-muted-foreground text-xs">
 										{rule.isEnabled
-											? "Students must be cleared to perform this action"
-											: "Gate disabled — all students have access"}
+											? t("feeClearance.gating.enabledHint")
+											: t("feeClearance.gating.disabledHint")}
 									</p>
 								</div>
 								<Switch

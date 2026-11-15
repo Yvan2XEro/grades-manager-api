@@ -41,9 +41,7 @@ export default function ExamSchedulerPage() {
 								onClick={() => ScheduleExamsDialog.call({ mode: "retake" })}
 							>
 								<Zap className="mr-2 h-4 w-4" />
-								{t("admin.examScheduler.actions.quickRetakes", {
-									defaultValue: "Rattrapages rapides",
-								})}
+								{t("admin.examScheduler.actions.quickRetakes")}
 							</Button>
 							<Button
 								onClick={() => ScheduleExamsDialog.call({ mode: "normal" })}

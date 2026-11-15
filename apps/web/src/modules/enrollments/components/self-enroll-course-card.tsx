@@ -61,7 +61,9 @@ export function SelfEnrollCourseCard({
 				</div>
 				{course.coefficient !== undefined && (
 					<p className="mt-0.5 text-muted-foreground text-xs">
-						Coeff. {course.coefficient}
+						{t("student.enrollments.coefficient", {
+							value: course.coefficient,
+						})}
 					</p>
 				)}
 			</div>

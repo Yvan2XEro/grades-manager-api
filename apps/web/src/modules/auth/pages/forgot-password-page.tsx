@@ -47,10 +47,7 @@ const ForgotPassword: React.FC = () => {
 			<AuthIconHeader
 				icon={Mail}
 				title={t("auth.forgot.title")}
-				subtitle={t("auth.forgot.subtitle", {
-					defaultValue:
-						"Enter your email and we'll send you a link to reset your password.",
-				})}
+				subtitle={t("auth.forgot.subtitle")}
 			/>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

@@ -26,21 +26,13 @@ export function useDeleteStudyCycles() {
 			});
 			toast.success(
 				ids.length === 1
-					? t("admin.studyCycles.toast.deleteSuccess", {
-							defaultValue: "Study cycle deleted",
-						})
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					? t("admin.studyCycles.toast.deleteSuccess")
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) =>
 			toast.error(
-				ids.length === 1
-					? error.message
-					: t("common.bulkActions.deleteError", {
-							defaultValue: "Failed to delete items",
-						}),
+				ids.length === 1 ? error.message : t("common.bulkActions.deleteError"),
 			),
 	});
 }
@@ -71,11 +63,7 @@ export function useDeleteCycleLevel(cycleId: string | undefined) {
 		mutationFn: (id: string) =>
 			trpcClient.studyCycles.deleteLevel.mutate({ id }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.studyCycles.toast.levelDelete", {
-					defaultValue: "Level removed",
-				}),
-			);
+			toast.success(t("admin.studyCycles.toast.levelDelete"));
 			queryClient.invalidateQueries({ queryKey: cycleLevelsKey(cycleId) });
 		},
 		onError: (err: Error) => toast.error(err.message),

@@ -19,11 +19,7 @@ export function FormatGeneralCard({ draft, onChange }: Props) {
 			<CardContent className="space-y-4 pt-6">
 				<div className="grid gap-4 md:grid-cols-2">
 					<div className="space-y-2">
-						<Label>
-							{t("admin.registrationNumbers.form.name", {
-								defaultValue: "Format name",
-							})}
-						</Label>
+						<Label>{t("admin.registrationNumbers.form.name")}</Label>
 						<Input
 							value={draft.name}
 							onChange={(event) => onChange({ name: event.target.value })}
@@ -32,14 +28,10 @@ export function FormatGeneralCard({ draft, onChange }: Props) {
 					<div className="flex items-center justify-between rounded-lg border px-4 py-2">
 						<div>
 							<p className="font-medium text-foreground text-sm">
-								{t("admin.registrationNumbers.form.activeLabel", {
-									defaultValue: "Activate on save",
-								})}
+								{t("admin.registrationNumbers.form.activeLabel")}
 							</p>
 							<p className="text-muted-foreground text-xs">
-								{t("admin.registrationNumbers.form.activeHelp", {
-									defaultValue: "Switching on will deactivate other templates.",
-								})}
+								{t("admin.registrationNumbers.form.activeHelp")}
 							</p>
 						</div>
 						<Switch
@@ -49,11 +41,7 @@ export function FormatGeneralCard({ draft, onChange }: Props) {
 					</div>
 				</div>
 				<div className="space-y-2">
-					<Label>
-						{t("admin.registrationNumbers.form.description", {
-							defaultValue: "Description",
-						})}
-					</Label>
+					<Label>{t("admin.registrationNumbers.form.description")}</Label>
 					<Textarea
 						value={draft.description ?? ""}
 						rows={3}

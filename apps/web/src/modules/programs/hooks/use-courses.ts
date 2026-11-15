@@ -49,18 +49,14 @@ export function useDeleteCourses() {
 			toast.success(
 				ids.length === 1
 					? t("admin.courses.toast.deleteSuccess")
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) =>
 			toast.error(
 				ids.length === 1
 					? (error as Error).message || t("admin.courses.toast.deleteError")
-					: t("common.bulkActions.deleteError", {
-							defaultValue: "Failed to delete items",
-						}),
+					: t("common.bulkActions.deleteError"),
 			),
 	});
 }

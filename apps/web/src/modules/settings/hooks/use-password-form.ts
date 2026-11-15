@@ -56,7 +56,7 @@ export function usePasswordForm() {
 			) {
 				const error = (response as { error?: { message?: string } | null })
 					.error;
-				throw new Error(error?.message ?? "Password update failed");
+				throw new Error(error?.message ?? t("settings.password.toast.error"));
 			}
 			return response;
 		},

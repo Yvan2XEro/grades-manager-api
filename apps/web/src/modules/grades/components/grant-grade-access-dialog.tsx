@@ -67,9 +67,7 @@ export const GrantGradeAccessDialog = createCallable<void, boolean>(
 						onValueChange={setSelectedProfileId}
 						disabled={candidatesQuery.isLoading}
 						placeholder={t("admin.gradeAccessGrants.dialog.selectPlaceholder")}
-						searchPlaceholder={t("common.search", {
-							defaultValue: "Rechercher...",
-						})}
+						searchPlaceholder={t("common.search")}
 						options={
 							candidatesQuery.data?.map(
 								(user: {

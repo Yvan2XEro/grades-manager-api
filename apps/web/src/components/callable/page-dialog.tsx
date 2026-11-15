@@ -60,7 +60,7 @@ export const PageDialog = createCallable<PageDialogProps, void>(
 					<button
 						type="button"
 						onClick={() => call.end()}
-						aria-label={t("common.actions.close", { defaultValue: "Close" })}
+						aria-label={t("common.actions.close")}
 						className="absolute top-3 right-3 z-10 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 					>
 						<X className="h-4 w-4" />

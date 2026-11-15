@@ -42,11 +42,7 @@ export const TeachingUnitFormDialog = createCallable<
 					queryKey: trpc.teachingUnits.listPaged.queryKey(),
 				});
 				queryClient.invalidateQueries({ queryKey: ["teachingUnits"] });
-				toast.success(
-					t("admin.teachingUnits.toast.created", {
-						defaultValue: "Teaching unit created",
-					}),
-				);
+				toast.success(t("admin.teachingUnits.toast.created"));
 				call.end(unit);
 			} catch (error) {
 				toast.error((error as Error).message);
@@ -60,9 +56,7 @@ export const TeachingUnitFormDialog = createCallable<
 			dismissValue={undefined}
 			preventDismiss={submit.pending}
 			className="sm:max-w-lg"
-			title={t("admin.teachingUnits.actions.create", {
-				defaultValue: "Create UE",
-			})}
+			title={t("admin.teachingUnits.actions.create")}
 		>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(submit)} className="space-y-4">
@@ -80,7 +74,7 @@ export const TeachingUnitFormDialog = createCallable<
 							{submit.pending ? (
 								<Spinner className="mr-2 h-4 w-4" />
 							) : (
-								t("common.actions.create", { defaultValue: "Create" })
+								t("common.actions.create")
 							)}
 						</Button>
 					</div>

@@ -86,7 +86,9 @@ export function CohortCard({ cohort }: { cohort: CohortData }) {
 								{cohort.submittedExams} {t("dean.cohort.submitted")}
 							</span>
 						)}
-						<span>{cohort.totalExams} total</span>
+						<span>
+							{t("dean.cohort.totalExams", { count: cohort.totalExams })}
+						</span>
 					</div>
 				</div>
 
@@ -119,9 +121,9 @@ export function CohortCard({ cohort }: { cohort: CohortData }) {
 				{cohort.submittedExams > 0 && (
 					<div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950/30">
 						<span className="text-amber-700 text-xs dark:text-amber-400">
-							{cohort.submittedExams} examen
-							{cohort.submittedExams > 1 ? "s" : ""}{" "}
-							{t("dean.cohort.submitted")}
+							{t("dean.cohort.submittedExams", {
+								count: cohort.submittedExams,
+							})}
 						</span>
 						<Badge variant="warning" className="text-xs">
 							{t("dean.cohort.actionRequired")}

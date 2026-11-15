@@ -31,11 +31,7 @@ export function useRegistrationFormatPreview(draft: DraftFormat) {
 	const previewMutation = useMutation({
 		mutationFn: async () => {
 			if (!classId) {
-				throw new Error(
-					t("admin.registrationNumbers.errors.previewClass", {
-						defaultValue: "Select a class to preview",
-					}),
-				);
+				throw new Error(t("admin.registrationNumbers.errors.previewClass"));
 			}
 			const response = await trpcClient.registrationNumbers.preview.mutate({
 				classId,

@@ -15,7 +15,7 @@ export function getTeachingUnitsColumns(
 			cell: ({ row }) => (
 				<ClipboardCopy
 					value={row.original.code}
-					label={t("admin.teachingUnits.table.code", { defaultValue: "Code" })}
+					label={t("admin.teachingUnits.table.code")}
 				/>
 			),
 		},
@@ -40,7 +40,7 @@ export function getTeachingUnitsColumns(
 						{name}
 					</p>
 				) : (
-					t("common.labels.notAvailable", { defaultValue: "N/A" })
+					t("common.labels.notAvailable")
 				);
 			},
 		},

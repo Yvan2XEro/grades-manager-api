@@ -53,7 +53,7 @@ export function ExamAuditTimeline({ examId }: { examId: string }) {
 		return (
 			<div className="mt-3 flex items-center gap-2 text-muted-foreground text-xs">
 				<RefreshCw className="h-3 w-3 animate-spin" />
-				{t("common.loading", { defaultValue: "Loading…" })}
+				{t("common.loading")}
 			</div>
 		);
 	}
@@ -61,7 +61,7 @@ export function ExamAuditTimeline({ examId }: { examId: string }) {
 	if (!events || events.length === 0) {
 		return (
 			<p className="mt-3 text-muted-foreground text-xs italic">
-				{t("dean.auditHistory.empty", { defaultValue: "No events recorded." })}
+				{t("dean.auditHistory.empty")}
 			</p>
 		);
 	}
@@ -70,14 +70,14 @@ export function ExamAuditTimeline({ examId }: { examId: string }) {
 		<div className="mt-3 space-y-2 border-t pt-3">
 			<p className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
 				<History className="h-3 w-3" />
-				{t("dean.auditHistory.title", { defaultValue: "Audit trail" })}
+				{t("dean.auditHistory.title")}
 			</p>
 			<ol className="relative ml-1.5 space-y-3 border-muted border-l pl-4">
 				{events.map((ev: AuditEvent) => {
 					const cfg = AUDIT_ACTION_CONFIG[ev.action];
 					const actorName = ev.actor
 						? `${ev.actor.firstName} ${ev.actor.lastName}`
-						: t("dean.auditHistory.system", { defaultValue: "System" });
+						: t("dean.auditHistory.system");
 					return (
 						<li key={ev.id} className="relative">
 							<span className="-left-[1.4rem] absolute flex h-5 w-5 items-center justify-center rounded-full border bg-background">
@@ -89,8 +89,7 @@ export function ExamAuditTimeline({ examId }: { examId: string }) {
 								<p className="font-medium text-foreground text-xs">
 									{t(cfg?.labelKey ?? ev.action, { defaultValue: ev.action })}{" "}
 									<span className="font-normal text-muted-foreground">
-										{t("dean.auditHistory.by", { defaultValue: "by" })}{" "}
-										{actorName}
+										{t("dean.auditHistory.by")} {actorName}
 									</span>
 								</p>
 								{ev.reason && (

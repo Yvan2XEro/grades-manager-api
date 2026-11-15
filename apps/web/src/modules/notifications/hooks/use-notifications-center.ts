@@ -50,11 +50,7 @@ export function useNotificationsCenter() {
 	const retryMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.notifications.retry.mutate({ id }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.notifications.toast.retried", {
-					defaultValue: "Notification requeued",
-				}),
-			);
+			toast.success(t("admin.notifications.toast.retried"));
 			invalidateList();
 			queryClient.invalidateQueries(trpc.notifications.stats.queryFilter());
 		},
@@ -64,11 +60,7 @@ export function useNotificationsCenter() {
 	const flushMutation = useMutation({
 		mutationFn: () => trpcClient.notifications.flush.mutate(),
 		onSuccess: () => {
-			toast.success(
-				t("admin.notifications.toast.flushed", {
-					defaultValue: "Pending notifications flushed",
-				}),
-			);
+			toast.success(t("admin.notifications.toast.flushed"));
 			invalidateList();
 			selection.clear();
 		},
@@ -77,16 +69,9 @@ export function useNotificationsCenter() {
 
 	const confirmFlush = () =>
 		Confirm.call({
-			title: t("admin.notifications.actions.flush", {
-				defaultValue: "Flush pending",
-			}),
-			description: t("admin.notifications.flushConfirmDesc", {
-				defaultValue:
-					"This will immediately attempt delivery of all pending notifications. Continue?",
-			}),
-			confirmLabel: t("admin.notifications.actions.flush", {
-				defaultValue: "Flush",
-			}),
+			title: t("admin.notifications.actions.flush"),
+			description: t("admin.notifications.flushConfirmDesc"),
+			confirmLabel: t("admin.notifications.actions.flush"),
 			cancelLabel: t("common.cancel"),
 			destructive: false,
 			mutationFn: async (call) => {

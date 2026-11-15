@@ -55,15 +55,13 @@ export const EnrollEntireClassDialog = createCallable<{
 			onSuccess: (result) => {
 				toast.success(
 					t("admin.enrollments.toast.autoEnrollSuccess", {
-						defaultValue: "Class roster synced ({{count}} records)",
 						count: result.createdCount,
 					}),
 				);
 				queryClient.invalidateQueries({
 					queryKey: trpc.studentCourseEnrollments.list.queryKey(),
 				});
-				if ("warnings" in result && result.warnings.length)
-					setAutoEnrollWarnings(result.warnings);
+				if (result.warnings.length) setAutoEnrollWarnings(result.warnings);
 				else call.end();
 			},
 			onError: (error: Error) => toast.error(error.message),
@@ -84,14 +82,10 @@ export const EnrollEntireClassDialog = createCallable<{
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							{t("admin.enrollments.autoEnroll.title", {
-								defaultValue: "Enroll every student?",
-							})}
+							{t("admin.enrollments.autoEnroll.title")}
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							{t("admin.enrollments.autoEnroll.description", {
-								defaultValue:
-									"This action enrolls {{students}} students into {{courses}} courses. Existing enrollments remain untouched.",
 								students: studentsCount,
 								courses: classCoursesCount,
 							})}
@@ -104,7 +98,7 @@ export const EnrollEntireClassDialog = createCallable<{
 					) : null}
 					<AlertDialogFooter>
 						<AlertDialogCancel disabled={autoEnrollMutation.isPending}>
-							{t("common.actions.cancel", { defaultValue: "Cancel" })}
+							{t("common.actions.cancel")}
 						</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleAutoEnrollConfirm}
@@ -113,9 +107,7 @@ export const EnrollEntireClassDialog = createCallable<{
 							{autoEnrollMutation.isPending && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							)}
-							{t("admin.enrollments.autoEnroll.confirm", {
-								defaultValue: "Confirm enrollment",
-							})}
+							{t("admin.enrollments.autoEnroll.confirm")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

@@ -76,22 +76,12 @@ export function useBatchJobActions(jobId: string | undefined) {
 		Confirm.call({
 			title:
 				action === "cancel"
-					? t("admin.batchJobs.confirm.cancelTitle", {
-							defaultValue: "Cancel job?",
-						})
-					: t("admin.batchJobs.confirm.rollbackTitle", {
-							defaultValue: "Rollback job?",
-						}),
+					? t("admin.batchJobs.confirm.cancelTitle")
+					: t("admin.batchJobs.confirm.rollbackTitle"),
 			description:
 				action === "cancel"
-					? t("admin.batchJobs.confirm.cancelMessage", {
-							defaultValue:
-								"Cancelling will stop the job immediately. Partially processed data will not be reverted.",
-						})
-					: t("admin.batchJobs.confirm.rollbackMessage", {
-							defaultValue:
-								"A new rollback job will be created to undo the changes made by this job. This action cannot itself be undone.",
-						}),
+					? t("admin.batchJobs.confirm.cancelMessage")
+					: t("admin.batchJobs.confirm.rollbackMessage"),
 			confirmLabel:
 				action === "cancel"
 					? t("admin.batchJobs.actions.cancel")

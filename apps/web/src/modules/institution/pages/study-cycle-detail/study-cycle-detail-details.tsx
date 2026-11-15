@@ -30,11 +30,7 @@ export default function StudyCycleDetailDetails() {
 		mutationFn: (data: StudyCycleFormData) =>
 			trpcClient.studyCycles.updateCycle.mutate({ id: cycleId!, ...data }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.studyCycles.toast.updateSuccess", {
-					defaultValue: "Study cycle updated",
-				}),
-			);
+			toast.success(t("admin.studyCycles.toast.updateSuccess"));
 			queryClient.invalidateQueries(
 				trpc.studyCycles.getCycle.queryOptions({ id: cycleId! }),
 			);
@@ -57,7 +53,7 @@ export default function StudyCycleDetailDetails() {
 						<div className="flex justify-end pt-2">
 							<Button type="submit" disabled={updateMutation.isPending}>
 								{updateMutation.isPending
-									? t("common.actions.saving", { defaultValue: "Saving..." })
+									? t("common.actions.saving")
 									: t("common.actions.saveChanges")}
 							</Button>
 						</div>

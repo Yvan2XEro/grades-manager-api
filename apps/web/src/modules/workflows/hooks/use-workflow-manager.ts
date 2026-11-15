@@ -40,11 +40,7 @@ export function useWorkflowManager() {
 	const submitExam = useMutation({
 		mutationFn: (examId: string) => trpcClient.exams.submit.mutate({ examId }),
 		onSuccess: () => {
-			toast.success(
-				t("teacher.workflow.toast.submitted", {
-					defaultValue: "Exam submitted",
-				}),
-			);
+			toast.success(t("teacher.workflow.toast.submitted"));
 			queryClient.invalidateQueries(
 				trpc.exams.list.queryFilter({
 					classCourseId: selectedClassCourse || undefined,

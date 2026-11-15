@@ -103,7 +103,8 @@ export default function DeliberationDetail() {
 						<div>
 							<div className="flex items-center gap-2">
 								<h1 className="text-foreground">
-									{delib.classRef?.name ?? "Deliberation"}
+									{delib.classRef?.name ??
+										t("admin.deliberations.detail.fallbackTitle")}
 								</h1>
 								<Badge variant={statusVariants[status] ?? "outline"}>
 									{t(`admin.deliberations.status.${status}`)}

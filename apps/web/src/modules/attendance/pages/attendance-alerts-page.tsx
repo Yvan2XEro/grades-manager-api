@@ -39,11 +39,7 @@ const AttendanceAlertsPage = () => {
 				message,
 			}),
 		onSuccess: () => {
-			toast.success(
-				t("teacher.attendance.toast.sent", {
-					defaultValue: "Alert queued",
-				}),
-			);
+			toast.success(t("teacher.attendance.toast.sent"));
 			setMessage("");
 			setSelectedClassCourseId("");
 		},
@@ -72,13 +68,11 @@ const AttendanceAlertsPage = () => {
 						{classCoursesQuery.isLoading ? (
 							<div className="flex items-center gap-2 text-muted-foreground text-sm">
 								<Loader2 className="h-4 w-4 animate-spin" />
-								{t("common.loading", { defaultValue: "Loading..." })}
+								{t("common.loading")}
 							</div>
 						) : classCoursesQuery.isError ? (
 							<p className="text-destructive text-xs">
-								{t("teacher.attendance.error", {
-									defaultValue: "Could not load class courses",
-								})}
+								{t("teacher.attendance.error")}
 							</p>
 						) : classCourses.length ? (
 							classCourses.map((classCourse) => (
@@ -101,9 +95,7 @@ const AttendanceAlertsPage = () => {
 							))
 						) : (
 							<p className="text-muted-foreground text-xs">
-								{t("teacher.attendance.none", {
-									defaultValue: "No class course assigned yet.",
-								})}
+								{t("teacher.attendance.none")}
 							</p>
 						)}
 					</CardContent>
@@ -119,9 +111,7 @@ const AttendanceAlertsPage = () => {
 					<CardContent className="space-y-3">
 						<div className="space-y-2">
 							<Label htmlFor="teacher-attendance-class-course">
-								{t("teacher.workflow.selectCourse", {
-									defaultValue: "Select class course",
-								})}
+								{t("teacher.workflow.selectCourse")}
 							</Label>
 							<Select
 								value={selectedClassCourseId || undefined}
@@ -129,9 +119,7 @@ const AttendanceAlertsPage = () => {
 							>
 								<SelectTrigger id="teacher-attendance-class-course">
 									<SelectValue
-										placeholder={t("teacher.workflow.selectCourse", {
-											defaultValue: "Select class course",
-										})}
+										placeholder={t("teacher.workflow.selectCourse")}
 									/>
 								</SelectTrigger>
 								<SelectContent>
@@ -144,9 +132,7 @@ const AttendanceAlertsPage = () => {
 							</Select>
 						</div>
 						<Textarea
-							placeholder={t("teacher.attendance.placeholder", {
-								defaultValue: "Message",
-							})}
+							placeholder={t("teacher.attendance.placeholder")}
 							value={message}
 							onChange={(event) => setMessage(event.target.value)}
 						/>
@@ -157,9 +143,7 @@ const AttendanceAlertsPage = () => {
 							onClick={() => sendAlert.mutate()}
 						>
 							<BellRing className="mr-2 h-4 w-4" />
-							{t("teacher.attendance.send", {
-								defaultValue: "Send alert",
-							})}
+							{t("teacher.attendance.send")}
 						</Button>
 					</CardContent>
 				</Card>

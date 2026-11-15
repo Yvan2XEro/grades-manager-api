@@ -68,12 +68,8 @@ export const CycleLevelFormDialog = createCallable<
 					});
 			toast.success(
 				level
-					? t("admin.studyCycles.toast.levelUpdate", {
-							defaultValue: "Level updated",
-						})
-					: t("admin.studyCycles.toast.levelCreate", {
-							defaultValue: "Level created",
-						}),
+					? t("admin.studyCycles.toast.levelUpdate")
+					: t("admin.studyCycles.toast.levelCreate"),
 			);
 			queryClient.invalidateQueries({ queryKey: ["cycleLevels"] });
 			queryClient.invalidateQueries({ queryKey: ["cycleLevelsByProgram"] });
@@ -91,12 +87,8 @@ export const CycleLevelFormDialog = createCallable<
 			className="sm:max-w-md"
 			title={
 				level
-					? t("admin.studyCycles.actions.updateLevel", {
-							defaultValue: "Update level",
-						})
-					: t("admin.studyCycles.actions.addLevel", {
-							defaultValue: "Add level",
-						})
+					? t("admin.studyCycles.actions.updateLevel")
+					: t("admin.studyCycles.actions.addLevel")
 			}
 		>
 			<Form {...form}>
@@ -108,12 +100,15 @@ export const CycleLevelFormDialog = createCallable<
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel required>
-										{t("admin.studyCycles.form.name", {
-											defaultValue: "Name",
-										})}
+										{t("admin.studyCycles.form.name")}
 									</FormLabel>
 									<FormControl>
-										<Input {...field} placeholder="Level 1" />
+										<Input
+											{...field}
+											placeholder={t("admin.studyCycles.levels.defaultName", {
+												value: 1,
+											})}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -125,9 +120,7 @@ export const CycleLevelFormDialog = createCallable<
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel required>
-										{t("admin.studyCycles.form.code", {
-											defaultValue: "Code",
-										})}
+										{t("admin.studyCycles.form.code")}
 									</FormLabel>
 									<FormControl>
 										<Input {...field} placeholder="L1" />
@@ -143,9 +136,7 @@ export const CycleLevelFormDialog = createCallable<
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel required>
-									{t("admin.studyCycles.form.minCredits", {
-										defaultValue: "Minimum credits",
-									})}
+									{t("admin.studyCycles.form.minCredits")}
 								</FormLabel>
 								<FormControl>
 									<Input

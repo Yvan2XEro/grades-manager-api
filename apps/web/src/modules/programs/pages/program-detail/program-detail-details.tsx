@@ -26,7 +26,7 @@ export default function ProgramDetailDetails() {
 						<div className="flex justify-end pt-2">
 							<Button type="submit" disabled={update.isPending}>
 								{update.isPending
-									? t("common.actions.saving", { defaultValue: "Saving..." })
+									? t("common.actions.saving")
 									: t("common.actions.saveChanges")}
 							</Button>
 						</div>

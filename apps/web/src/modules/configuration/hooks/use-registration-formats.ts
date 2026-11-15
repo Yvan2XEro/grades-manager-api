@@ -29,11 +29,7 @@ export function useActivateRegistrationFormat() {
 		mutationFn: (id: string) =>
 			trpcClient.registrationNumbers.update.mutate({ id, isActive: true }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.registrationNumbers.toast.activated", {
-					defaultValue: "Format activated",
-				}),
-			);
+			toast.success(t("admin.registrationNumbers.toast.activated"));
 			invalidate();
 		},
 		onError: (error) => toast.error(error.message),
@@ -53,21 +49,13 @@ export function useDeleteRegistrationFormats() {
 			invalidate();
 			toast.success(
 				ids.length === 1
-					? t("admin.registrationNumbers.toast.deleted", {
-							defaultValue: "Format deleted",
-						})
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					? t("admin.registrationNumbers.toast.deleted")
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) =>
 			toast.error(
-				ids.length === 1
-					? error.message
-					: t("common.bulkActions.deleteError", {
-							defaultValue: "Failed to delete items",
-						}),
+				ids.length === 1 ? error.message : t("common.bulkActions.deleteError"),
 			),
 	});
 }

@@ -46,7 +46,7 @@ export default function RoomsPage() {
 
 	const rowActions = (room: Room): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Pencil,
 			onSelect: () => openEdit(room),
 		},

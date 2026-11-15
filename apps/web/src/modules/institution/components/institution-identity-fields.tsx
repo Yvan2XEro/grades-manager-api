@@ -25,7 +25,7 @@ import { InstitutionTextField } from "./institution-form-section";
 
 interface Props {
 	form: InstitutionForm;
-	/** Candidates of the parent / supervising faculty selects. */
+	/** Candidates of the parent select. */
 	institutions: Institution[];
 	/** The institution being edited, left out of its own parent candidates. */
 	currentId?: string;
@@ -33,7 +33,7 @@ interface Props {
 	onCreateParent?: () => Promise<void>;
 }
 
-/** Code, names, type and hierarchy (parent institution, supervising faculty). */
+/** Code, names, type and hierarchy (parent institution). */
 export function InstitutionIdentityFields({
 	form,
 	institutions,
@@ -47,9 +47,7 @@ export function InstitutionIdentityFields({
 		onCreateParent ? (
 			<QuickCreate
 				onCreate={onCreateParent}
-				label={t("admin.institutions.actions.add", {
-					defaultValue: "Add institution",
-				})}
+				label={t("admin.institutions.actions.add")}
 			>
 				{select}
 			</QuickCreate>
@@ -64,56 +62,42 @@ export function InstitutionIdentityFields({
 					form={form}
 					name="code"
 					required
-					label={t("admin.institution.form.code", { defaultValue: "Code" })}
+					label={t("admin.institution.form.code")}
 				/>
 				<InstitutionTextField
 					form={form}
 					name="shortName"
-					label={t("admin.institution.form.shortName", {
-						defaultValue: "Short name",
-					})}
+					label={t("admin.institution.form.shortName")}
 				/>
 				<InstitutionTextField
 					form={form}
 					name="abbreviation"
 					placeholder="ex: UYI"
-					label={t("admin.institution.form.abbreviation", {
-						defaultValue: "Abbreviation",
-					})}
+					label={t("admin.institution.form.abbreviation")}
 				/>
 				<FormField
 					control={form.control}
 					name="type"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.institution.form.type", { defaultValue: "Type" })}
-							</FormLabel>
+							<FormLabel>{t("admin.institution.form.type")}</FormLabel>
 							<Select value={field.value} onValueChange={field.onChange}>
 								<FormControl>
 									<SelectTrigger>
 										<SelectValue
-											placeholder={t("admin.institution.form.typePlaceholder", {
-												defaultValue: "Select type",
-											})}
+											placeholder={t("admin.institution.form.typePlaceholder")}
 										/>
 									</SelectTrigger>
 								</FormControl>
 								<SelectContent>
 									<SelectItem value="university">
-										{t("admin.institution.form.typeUniversity", {
-											defaultValue: "University",
-										})}
+										{t("admin.institution.form.typeUniversity")}
 									</SelectItem>
 									<SelectItem value="faculty">
-										{t("admin.institution.form.typeFaculty", {
-											defaultValue: "Faculty/School",
-										})}
+										{t("admin.institution.form.typeFaculty")}
 									</SelectItem>
 									<SelectItem value="institution">
-										{t("admin.institution.form.typeInstitution", {
-											defaultValue: "Institution/Institute",
-										})}
+										{t("admin.institution.form.typeInstitution")}
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -129,9 +113,7 @@ export function InstitutionIdentityFields({
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>
-								{t("admin.institution.form.parentInstitution", {
-									defaultValue: "Parent Institution (University)",
-								})}
+								{t("admin.institution.form.parentInstitution")}
 							</FormLabel>
 							{withQuickCreate(
 								<Select
@@ -145,16 +127,13 @@ export function InstitutionIdentityFields({
 											<SelectValue
 												placeholder={t(
 													"admin.institution.form.parentInstitutionPlaceholder",
-													{ defaultValue: "Select parent institution" },
 												)}
 											/>
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
 										<SelectItem value={NO_SELECTION}>
-											{t("admin.institution.form.noParentInstitution", {
-												defaultValue: "None (Top-level)",
-											})}
+											{t("admin.institution.form.noParentInstitution")}
 										</SelectItem>
 										{others.map((inst) => (
 											<SelectItem key={inst.id} value={inst.id}>
@@ -164,51 +143,6 @@ export function InstitutionIdentityFields({
 									</SelectContent>
 								</Select>,
 							)}
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
-					name="institutionId"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>
-								{t("admin.institution.form.supervisingFaculty", {
-									defaultValue: "Supervising Faculty/School",
-								})}
-							</FormLabel>
-							<Select
-								value={field.value ?? NO_SELECTION}
-								onValueChange={(value) =>
-									field.onChange(value === NO_SELECTION ? undefined : value)
-								}
-							>
-								<FormControl>
-									<SelectTrigger>
-										<SelectValue
-											placeholder={t(
-												"admin.institution.form.supervisingFacultyPlaceholder",
-												{ defaultValue: "Select supervising faculty" },
-											)}
-										/>
-									</SelectTrigger>
-								</FormControl>
-								<SelectContent>
-									<SelectItem value={NO_SELECTION}>
-										{t("admin.institution.form.noSupervisingFaculty", {
-											defaultValue: "None",
-										})}
-									</SelectItem>
-									{others
-										.filter((inst) => inst.type === "faculty")
-										.map((inst) => (
-											<SelectItem key={inst.id} value={inst.id}>
-												{inst.nameFr}
-											</SelectItem>
-										))}
-								</SelectContent>
-							</Select>
 							<FormMessage />
 						</FormItem>
 					)}
@@ -228,49 +162,37 @@ export function InstitutionNamesFields({ form }: { form: InstitutionForm }) {
 					form={form}
 					name="nameFr"
 					required
-					label={t("admin.institution.form.nameFr", {
-						defaultValue: "Name (French)",
-					})}
+					label={t("admin.institution.form.nameFr")}
 				/>
 				<InstitutionTextField
 					form={form}
 					name="nameEn"
 					required
-					label={t("admin.institution.form.nameEn", {
-						defaultValue: "Name (English)",
-					})}
+					label={t("admin.institution.form.nameEn")}
 				/>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2">
 				<InstitutionTextField
 					form={form}
 					name="legalNameFr"
-					label={t("admin.institution.form.legalNameFr", {
-						defaultValue: "Legal name (French)",
-					})}
+					label={t("admin.institution.form.legalNameFr")}
 				/>
 				<InstitutionTextField
 					form={form}
 					name="legalNameEn"
-					label={t("admin.institution.form.legalNameEn", {
-						defaultValue: "Legal name (English)",
-					})}
+					label={t("admin.institution.form.legalNameEn")}
 				/>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2">
 				<InstitutionTextField
 					form={form}
 					name="sloganFr"
-					label={t("admin.institution.form.sloganFr", {
-						defaultValue: "Slogan (French)",
-					})}
+					label={t("admin.institution.form.sloganFr")}
 				/>
 				<InstitutionTextField
 					form={form}
 					name="sloganEn"
-					label={t("admin.institution.form.sloganEn", {
-						defaultValue: "Slogan (English)",
-					})}
+					label={t("admin.institution.form.sloganEn")}
 				/>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2">
@@ -278,17 +200,13 @@ export function InstitutionNamesFields({ form }: { form: InstitutionForm }) {
 					form={form}
 					name="descriptionFr"
 					rows={3}
-					label={t("admin.institution.form.descriptionFr", {
-						defaultValue: "Description (French)",
-					})}
+					label={t("admin.institution.form.descriptionFr")}
 				/>
 				<InstitutionTextField
 					form={form}
 					name="descriptionEn"
 					rows={3}
-					label={t("admin.institution.form.descriptionEn", {
-						defaultValue: "Description (English)",
-					})}
+					label={t("admin.institution.form.descriptionEn")}
 				/>
 			</div>
 		</>

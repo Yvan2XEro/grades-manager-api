@@ -133,21 +133,13 @@ export const AddGuardianDialog = createCallable<
 						/>
 					</div>
 					<div className="space-y-2 md:col-span-2">
-						<Label>
-							{t("guardians.admin.students", {
-								defaultValue: "Link to student",
-							})}
-						</Label>
+						<Label>{t("guardians.admin.students")}</Label>
 						<Select
 							value={form.studentId}
 							onValueChange={(v) => setForm((f) => ({ ...f, studentId: v }))}
 						>
 							<SelectTrigger>
-								<SelectValue
-									placeholder={t("guardians.admin.selectStudent", {
-										defaultValue: "Select student…",
-									})}
-								/>
+								<SelectValue placeholder={t("guardians.admin.selectStudent")} />
 							</SelectTrigger>
 							<SelectContent>
 								{(students?.items ?? []).map((s) => (

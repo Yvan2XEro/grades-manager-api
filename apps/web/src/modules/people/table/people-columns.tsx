@@ -36,13 +36,13 @@ export function getPeopleColumns(
 	const studentColumns: ColumnDef<PersonRow>[] = [
 		{
 			id: "class",
-			header: t("usersHub.people.class", { defaultValue: "Class" }),
+			header: t("usersHub.people.class"),
 			cell: ({ row: { original: person } }) =>
 				"currentClassName" in person ? (person.currentClassName ?? "—") : "—",
 		},
 		{
 			id: "registrationNumber",
-			header: t("usersHub.people.regNumber", { defaultValue: "Reg. number" }),
+			header: t("usersHub.people.regNumber"),
 			cell: ({ row: { original: person } }) =>
 				"registrationNumber" in person
 					? (person.registrationNumber ?? "—")
@@ -50,9 +50,7 @@ export function getPeopleColumns(
 		},
 		{
 			id: "enrollmentStatus",
-			header: t("usersHub.people.enrollmentStatus", {
-				defaultValue: "Enrollment",
-			}),
+			header: t("usersHub.people.enrollmentStatus"),
 			cell: ({ row: { original: person } }) =>
 				"currentEnrollmentStatus" in person &&
 				person.currentEnrollmentStatus ? (
@@ -67,7 +65,7 @@ export function getPeopleColumns(
 
 	const emailColumn: ColumnDef<PersonRow> = {
 		id: "email",
-		header: t("common.fields.email", { defaultValue: "Email" }),
+		header: t("common.fields.email"),
 		cell: ({ row }) => (
 			<span className="text-muted-foreground text-sm">
 				{row.original.primaryEmail}

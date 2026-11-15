@@ -51,10 +51,7 @@ export const GuardianPreferencesSheet = createCallable<
 			<SheetContent>
 				<SheetHeader>
 					<SheetTitle>
-						{t("guardians.admin.editPreferences", {
-							defaultValue: "Edit preferences",
-						})}{" "}
-						— {name}
+						{t("guardians.admin.editPreferences")} — {name}
 					</SheetTitle>
 				</SheetHeader>
 				<div className="space-y-4 px-1 pt-6">

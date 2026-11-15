@@ -32,10 +32,7 @@ export const institutionSchema = z.object({
 	logoSvg: z.string().optional().or(z.literal("")),
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
-	institutionId: z.string().optional(),
 	timezone: z.string().optional(),
-	defaultAcademicYearId: z.string().optional(),
-	registrationFormatId: z.string().optional(),
 });
 
 export type InstitutionFormValues = z.infer<typeof institutionSchema>;
@@ -65,10 +62,7 @@ export const institutionDefaultValues: InstitutionFormValues = {
 	logoSvg: "",
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
-	institutionId: undefined,
 	timezone: "UTC",
-	defaultAcademicYearId: undefined,
-	registrationFormatId: undefined,
 };
 
 /** Form values of a saved institution (nulls become empty strings / undefined). */
@@ -99,10 +93,7 @@ export function institutionToFormValues(
 		logoSvg: institution.logoSvg ?? "",
 		coverImageUrl: institution.coverImageUrl ?? "",
 		parentInstitutionId: institution.parentInstitutionId ?? undefined,
-		institutionId: institution.institutionId ?? undefined,
 		timezone: institution.timezone ?? "UTC",
-		defaultAcademicYearId: institution.defaultAcademicYearId ?? undefined,
-		registrationFormatId: institution.registrationFormatId ?? undefined,
 	};
 }
 
@@ -115,7 +106,6 @@ export const toInstitutionPayload = (values: InstitutionFormValues) => ({
 	logoSvg: values.logoSvg || undefined,
 	coverImageUrl: values.coverImageUrl || undefined,
 	parentInstitutionId: values.parentInstitutionId || undefined,
-	institutionId: values.institutionId || undefined,
 });
 
 /** An institution as the API returns it. */
@@ -123,12 +113,9 @@ export type InstitutionRecord = NonNullable<
 	RouterOutputs["institutions"]["get"]
 >;
 
-/**
- * Client-side view of an institution. The server stores no supervising
- * faculty (`institutionId`), so it is always empty here.
- */
+/** Client-side view of an institution. */
 export function toInstitution(record: InstitutionRecord): Institution {
-	return { ...record, institutionId: null };
+	return record;
 }
 
 /** Institutions of a list response, without the null entries. */
@@ -140,7 +127,7 @@ export function toInstitutions(
 		.map(toInstitution);
 }
 
-/** Every institution, feeding the parent / supervising faculty selects. */
+/** Every institution, feeding the parent select. */
 export function useInstitutionsList() {
 	const { data } = useQuery(trpc.institutions.list.queryOptions());
 	return useMemo(() => toInstitutions(data), [data]);

@@ -6,15 +6,15 @@ import type { ClassCourseRow } from "../types";
 export function getClassCoursesColumns(
 	t: TFunction,
 ): ColumnDef<ClassCourseRow>[] {
-	const notAvailable = t("common.labels.notAvailable", { defaultValue: "N/A" });
+	const notAvailable = t("common.labels.notAvailable");
 	return [
 		{
 			id: "code",
-			header: t("admin.classCourses.table.code", { defaultValue: "Code" }),
+			header: t("admin.classCourses.table.code"),
 			cell: ({ row }) => (
 				<ClipboardCopy
 					value={row.original.code}
-					label={t("admin.classCourses.table.code", { defaultValue: "Code" })}
+					label={t("admin.classCourses.table.code")}
 				/>
 			),
 		},
@@ -47,9 +47,7 @@ export function getClassCoursesColumns(
 		},
 		{
 			id: "semester",
-			header: t("admin.classCourses.table.semester", {
-				defaultValue: "Semester",
-			}),
+			header: t("admin.classCourses.table.semester"),
 			cell: ({ row: { original: cc } }) =>
 				cc.ueSemester
 					? t(`admin.teachingUnits.semesters.${cc.ueSemester}`, {

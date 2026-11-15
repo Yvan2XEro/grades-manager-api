@@ -12,7 +12,7 @@ export function EnrollmentWindowsPanel({
 	return (
 		<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
 			<h2 className="mb-3 font-heading font-semibold text-foreground text-lg">
-				{t("dean.workflows.windows", { defaultValue: "Enrollment windows" })}
+				{t("dean.workflows.windows")}
 			</h2>
 			<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
 				{windows?.map((window) => (

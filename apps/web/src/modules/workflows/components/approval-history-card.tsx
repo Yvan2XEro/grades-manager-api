@@ -64,10 +64,7 @@ export function ApprovalHistoryCard({
 				{exam.status === "rejected" && exam.rejectionReason && (
 					<p className="mt-1.5 rounded-md bg-destructive/8 px-2.5 py-1 text-destructive text-xs">
 						<span className="font-semibold">
-							{t("dean.history.rejectionReason", {
-								defaultValue: "Reason",
-							})}
-							:{" "}
+							{t("dean.history.rejectionReason")}:{" "}
 						</span>
 						{exam.rejectionReason}
 					</p>
@@ -83,9 +80,7 @@ export function ApprovalHistoryCard({
 					) : (
 						<ChevronDown className="h-3 w-3" />
 					)}
-					{t("dean.auditHistory.toggle", {
-						defaultValue: "Audit trail",
-					})}
+					{t("dean.auditHistory.toggle")}
 				</button>
 
 				{expanded && <ExamAuditTimeline examId={exam.id} />}

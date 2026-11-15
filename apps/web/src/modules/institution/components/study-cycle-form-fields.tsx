@@ -21,9 +21,7 @@ export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
 					name="name"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel required>
-								{t("admin.studyCycles.form.name", { defaultValue: "Name" })}
-							</FormLabel>
+							<FormLabel required>{t("admin.studyCycles.form.name")}</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="Licence" />
 							</FormControl>
@@ -36,11 +34,7 @@ export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
 					name="nameEn"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.studyCycles.form.nameEn", {
-									defaultValue: "Name (English)",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.studyCycles.form.nameEn")}</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="Bachelor of Science" />
 							</FormControl>
@@ -55,9 +49,7 @@ export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
 					name="code"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel required>
-								{t("admin.studyCycles.form.code", { defaultValue: "Code" })}
-							</FormLabel>
+							<FormLabel required>{t("admin.studyCycles.form.code")}</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="BSC" />
 							</FormControl>
@@ -71,11 +63,7 @@ export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
 				name="description"
 				render={({ field }) => (
 					<FormItem>
-						<FormLabel>
-							{t("admin.studyCycles.form.description", {
-								defaultValue: "Description",
-							})}
-						</FormLabel>
+						<FormLabel>{t("admin.studyCycles.form.description")}</FormLabel>
 						<FormControl>
 							<Textarea {...field} rows={3} />
 						</FormControl>
@@ -89,11 +77,7 @@ export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
 					name="totalCreditsRequired"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.studyCycles.form.credits", {
-									defaultValue: "Credits",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.studyCycles.form.credits")}</FormLabel>
 							<FormControl>
 								<Input
 									type="number"
@@ -111,11 +95,7 @@ export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
 					name="durationYears"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.studyCycles.form.duration", {
-									defaultValue: "Years",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.studyCycles.form.duration")}</FormLabel>
 							<FormControl>
 								<Input
 									type="number"

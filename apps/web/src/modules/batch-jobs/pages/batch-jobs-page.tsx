@@ -40,7 +40,7 @@ export default function BatchJobsPage() {
 
 	const rowActions = (job: BatchJobRow): RowAction[] => [
 		{
-			label: t("common.actions.open", { defaultValue: "Open" }),
+			label: t("common.actions.open"),
 			icon: ExternalLink,
 			onSelect: () => openJob(job),
 		},
@@ -95,7 +95,9 @@ export default function BatchJobsPage() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All statuses</SelectItem>
+							<SelectItem value="all">
+								{t("common.filters.allStatuses")}
+							</SelectItem>
 							{BATCH_JOB_STATUSES.map((s) => (
 								<SelectItem key={s} value={s}>
 									{t(`admin.batchJobs.status.${s}`)}

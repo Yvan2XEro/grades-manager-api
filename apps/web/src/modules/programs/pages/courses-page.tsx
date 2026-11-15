@@ -49,12 +49,8 @@ export default function CoursesPage() {
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteCourses.mutate([...selection.selectedIds], {
@@ -64,7 +60,7 @@ export default function CoursesPage() {
 
 	const rowActions = (course: CourseRow): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Pencil,
 			onSelect: () => startEdit(course),
 		},
@@ -81,12 +77,8 @@ export default function CoursesPage() {
 		<ListLayout
 			header={
 				<PageHeader
-					title={t("admin.courses.title", {
-						defaultValue: "Course management",
-					})}
-					description={t("admin.courses.subtitle", {
-						defaultValue: "Manage courses, workloads, and default teachers.",
-					})}
+					title={t("admin.courses.title")}
+					description={t("admin.courses.subtitle")}
 					actions={
 						<Button onClick={startCreate}>
 							<PlusIcon className="mr-2 h-4 w-4" />
@@ -136,12 +128,8 @@ export default function CoursesPage() {
 					<EmptyState
 						className="m-4"
 						icon={<BookOpen className="h-6 w-6" />}
-						title={t("admin.courses.empty.title", {
-							defaultValue: "No courses available",
-						})}
-						description={t("admin.courses.empty.description", {
-							defaultValue: "Create a course to populate the catalog.",
-						})}
+						title={t("admin.courses.empty.title")}
+						description={t("admin.courses.empty.description")}
 						cta={{
 							label: t("admin.courses.actions.add"),
 							onClick: startCreate,

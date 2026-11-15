@@ -24,6 +24,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { type InstallmentOption, PAYMENT_METHODS } from "../types";
@@ -31,8 +32,12 @@ import { type InstallmentOption, PAYMENT_METHODS } from "../types";
 const NO_INSTALLMENT_VALUE = "__none__";
 
 const paymentSchema = z.object({
-	amount: z.coerce.number({ error: "Required" }).positive(),
-	paymentDate: z.string().min(1, "Required"),
+	amount: z.coerce
+		.number({ error: () => i18n.t("common.validation.required") })
+		.positive(),
+	paymentDate: z
+		.string()
+		.min(1, { error: () => i18n.t("common.validation.required") }),
 	paymentMethod: z.enum(PAYMENT_METHODS),
 	reference: z.string().optional(),
 	notes: z.string().optional(),

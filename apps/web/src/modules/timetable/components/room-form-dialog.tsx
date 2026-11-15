@@ -19,14 +19,20 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 
 type Room = RouterOutputs["rooms"]["list"][number];
 
 const roomSchema = z.object({
-	code: z.string().min(1, "Required").max(20),
-	name: z.string().min(1, "Required"),
+	code: z
+		.string()
+		.min(1, { error: () => i18n.t("common.validation.required") })
+		.max(20),
+	name: z
+		.string()
+		.min(1, { error: () => i18n.t("common.validation.required") }),
 	capacity: z.preprocess(
 		(v) => (v === "" || v === undefined ? undefined : Number(v)),
 		z.number().int().positive().optional(),

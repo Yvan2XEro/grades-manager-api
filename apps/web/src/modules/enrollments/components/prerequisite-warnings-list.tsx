@@ -24,17 +24,12 @@ export const PrerequisiteWarningsList = ({
 	return (
 		<Alert className={alertClass}>
 			<AlertTitle className="font-semibold text-sm">
-				{t("admin.enrollments.warnings.title", {
-					defaultValue: "Prerequisite warnings",
-				})}
+				{t("admin.enrollments.warnings.title")}
 			</AlertTitle>
 			<AlertDescription className="grid gap-2">
 				{showDescription ? (
 					<p className="text-muted-foreground text-xs sm:text-sm">
-						{t("admin.enrollments.warnings.description", {
-							defaultValue:
-								"Review these unmet prerequisites before confirming next steps.",
-						})}
+						{t("admin.enrollments.warnings.description")}
 					</p>
 				) : null}
 				{warnings.map((warning, index) => {
@@ -67,7 +62,6 @@ export const PrerequisiteWarningsList = ({
 							</div>
 							<p className="text-muted-foreground text-xs sm:text-sm">
 								{t("admin.enrollments.warnings.appliesTo", {
-									defaultValue: "Required for {{course}}",
 									course: targetLabel,
 								})}
 							</p>

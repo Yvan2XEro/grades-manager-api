@@ -70,9 +70,7 @@ export function useDeleteClasses() {
 			toast.success(
 				ids.length === 1
 					? t("admin.classes.toast.deleteSuccess")
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) => {
@@ -81,9 +79,7 @@ export function useDeleteClasses() {
 					? error.message
 					: ids.length === 1
 						? t("admin.classes.toast.deleteError")
-						: t("common.bulkActions.deleteError", {
-								defaultValue: "Failed to delete items",
-							}),
+						: t("common.bulkActions.deleteError"),
 			);
 		},
 	});

@@ -38,9 +38,7 @@ export default function BatchJobDetailPage() {
 			<Empty>
 				<EmptyHeader>
 					<EmptyDescription>
-						{t("admin.batchJobs.detail.notFound", {
-							defaultValue: "Job not found",
-						})}
+						{t("admin.batchJobs.detail.notFound")}
 					</EmptyDescription>
 				</EmptyHeader>
 			</Empty>
@@ -123,9 +121,7 @@ export default function BatchJobDetailPage() {
 							className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-sm hover:bg-muted/50"
 						>
 							<ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-							{t("admin.batchJobs.detail.originalJob", {
-								defaultValue: "View original job",
-							})}
+							{t("admin.batchJobs.detail.originalJob")}
 						</Link>
 					)}
 					{job.rollbackJobId && (
@@ -134,9 +130,7 @@ export default function BatchJobDetailPage() {
 							className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-sm hover:bg-muted/50"
 						>
 							<RotateCcw className="h-3.5 w-3.5 text-muted-foreground" />
-							{t("admin.batchJobs.detail.rollbackJob", {
-								defaultValue: "View rollback job",
-							})}
+							{t("admin.batchJobs.detail.rollbackJob")}
 						</Link>
 					)}
 				</div>

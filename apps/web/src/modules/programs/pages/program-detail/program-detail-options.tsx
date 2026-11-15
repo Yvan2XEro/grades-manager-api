@@ -32,18 +32,18 @@ export default function ProgramDetailOptions() {
 		confirmAction({
 			title: t("admin.programs.options.deleteConfirm.title"),
 			message: t("admin.programs.options.deleteConfirm.description"),
-			confirmText: t("common.actions.delete", { defaultValue: "Delete" }),
+			confirmText: t("common.actions.delete"),
 			onConfirm: () => deleteOption.mutateAsync(id),
 		});
 
 	const rowActions = (option: ProgramOption): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Pencil,
 			onSelect: () => openEdit(option),
 		},
 		{
-			label: t("common.actions.delete", { defaultValue: "Delete" }),
+			label: t("common.actions.delete"),
 			icon: Trash2,
 			destructive: true,
 			separator: true,
@@ -54,11 +54,7 @@ export default function ProgramDetailOptions() {
 	return (
 		<Card>
 			<CardHeader className="flex flex-row items-center justify-between">
-				<CardTitle>
-					{t("admin.programs.options.title", {
-						defaultValue: "Program Options",
-					})}
-				</CardTitle>
+				<CardTitle>{t("admin.programs.options.title")}</CardTitle>
 				<Button size="sm" onClick={openCreate}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.programs.options.add")}

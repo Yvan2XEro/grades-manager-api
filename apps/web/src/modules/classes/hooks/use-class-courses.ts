@@ -61,6 +61,7 @@ export function useClassCourses({
 			coefficient: Number(cc.coefficient) || 1,
 			courseName: cc.courseName,
 			courseCode: cc.courseCode,
+			ueSemester: cc.ueSemester ?? null,
 			className: cls?.name,
 			programName: cls ? programs.get(cls.program)?.name : undefined,
 			teacherName: teacher ? formatTeacherName(teacher) : undefined,
@@ -83,9 +84,7 @@ export function useDeleteClassCourses() {
 			toast.success(
 				ids.length === 1
 					? t("admin.classCourses.toast.deleteSuccess")
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) => {
@@ -94,9 +93,7 @@ export function useDeleteClassCourses() {
 					? error.message
 					: ids.length === 1
 						? t("admin.classCourses.toast.deleteError")
-						: t("common.bulkActions.deleteError", {
-								defaultValue: "Failed to delete items",
-							}),
+						: t("common.bulkActions.deleteError"),
 			);
 		},
 	});

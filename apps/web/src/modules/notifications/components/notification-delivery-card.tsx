@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
-	channelLabels,
+	channelLabelKeys,
 	formatDeliveryDate,
 	statusConfig,
 } from "../services/delivery-status";
@@ -76,7 +76,9 @@ export function NotificationDeliveryCard({
 					)}
 					{item.channel && (
 						<span className="rounded border bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-							{channelLabels[item.channel] ?? item.channel}
+							{channelLabelKeys[item.channel]
+								? t(channelLabelKeys[item.channel])
+								: item.channel}
 						</span>
 					)}
 				</div>

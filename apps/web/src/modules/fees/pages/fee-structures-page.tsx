@@ -39,7 +39,7 @@ export default function FeeStructuresPage() {
 
 	const rowActions = (s: FeeStructureRow): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Edit2,
 			onSelect: () => openDetail(s),
 		},

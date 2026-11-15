@@ -62,24 +62,16 @@ export default function TeachingUnitsPage() {
 
 	const confirmDelete = (id: string) =>
 		confirmAction({
-			title: t("admin.teachingUnits.deleteTitle", {
-				defaultValue: "Delete teaching unit",
-			}),
-			message: t("admin.teachingUnits.deleteMessage", {
-				defaultValue: "Are you sure you want to remove this unit?",
-			}),
+			title: t("admin.teachingUnits.deleteTitle"),
+			message: t("admin.teachingUnits.deleteMessage"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () => deleteUnits.mutateAsync([id]).catch(() => undefined),
 		});
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteUnits.mutate([...selection.selectedIds], {
@@ -89,7 +81,7 @@ export default function TeachingUnitsPage() {
 
 	const rowActions = (unit: TeachingUnitRow): RowAction[] => [
 		{
-			label: t("common.actions.open", { defaultValue: "Open" }),
+			label: t("common.actions.open"),
 			icon: FolderOpen,
 			onSelect: () => openDetail(unit),
 		},
@@ -106,16 +98,12 @@ export default function TeachingUnitsPage() {
 		<ListLayout
 			header={
 				<PageHeader
-					title={t("admin.teachingUnits.list", { defaultValue: "Units list" })}
-					description={t("admin.teachingUnits.listDescription", {
-						defaultValue: "Browse teaching units and open them to manage ECs.",
-					})}
+					title={t("admin.teachingUnits.list")}
+					description={t("admin.teachingUnits.listDescription")}
 					actions={
 						<Button onClick={openCreate}>
 							<Plus className="mr-2 h-4 w-4" />
-							{t("admin.teachingUnits.actions.create", {
-								defaultValue: "Create UE",
-							})}
+							{t("admin.teachingUnits.actions.create")}
 						</Button>
 					}
 				/>
@@ -129,9 +117,7 @@ export default function TeachingUnitsPage() {
 						>
 							<SelectTrigger className="min-w-48">
 								<SelectValue
-									placeholder={t("admin.teachingUnits.selectProgram", {
-										defaultValue: "Select program",
-									})}
+									placeholder={t("admin.teachingUnits.selectProgram")}
 								/>
 							</SelectTrigger>
 							<SelectContent>
@@ -147,7 +133,7 @@ export default function TeachingUnitsPage() {
 							onClick={() => changeProgram("")}
 							disabled={!selectedProgramId}
 						>
-							{t("common.actions.reset", { defaultValue: "Reset" })}
+							{t("common.actions.reset")}
 						</Button>
 					</div>
 					<BulkActionBar
@@ -193,16 +179,10 @@ export default function TeachingUnitsPage() {
 					<EmptyState
 						className="m-4"
 						icon={<Plus className="h-6 w-6" />}
-						title={t("admin.teachingUnits.empty", {
-							defaultValue: "No units yet for this program.",
-						})}
-						description={t("admin.teachingUnits.emptyDescription", {
-							defaultValue: "Create a teaching unit to start managing ECs.",
-						})}
+						title={t("admin.teachingUnits.empty")}
+						description={t("admin.teachingUnits.emptyDescription")}
 						cta={{
-							label: t("admin.teachingUnits.actions.create", {
-								defaultValue: "Create UE",
-							}),
+							label: t("admin.teachingUnits.actions.create"),
 							onClick: openCreate,
 							icon: <Plus className="h-4 w-4" />,
 						}}

@@ -158,7 +158,7 @@ export const AcademicYearSetupDialog = createCallable<
 											{i + 1}. {step.name}
 										</span>
 										<span className="text-muted-foreground text-xs">
-											{step.itemsTotal} items
+											{t("common.itemCount", { count: step.itemsTotal })}
 										</span>
 									</div>
 								))}

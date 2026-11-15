@@ -1,7 +1,8 @@
+import i18n from "@/i18n";
 import type { SessionInfo } from "../types";
 
 export function getBrowserLabel(userAgent?: string | null) {
-	if (!userAgent) return "Unknown";
+	if (!userAgent) return i18n.t("settings.sessions.unknownBrowser");
 	const normalized = userAgent.toLowerCase();
 	if (normalized.includes("edg")) return "Edge";
 	if (normalized.includes("chrome")) return "Chrome";
@@ -9,7 +10,7 @@ export function getBrowserLabel(userAgent?: string | null) {
 	if (normalized.includes("safari")) return "Safari";
 	if (normalized.includes("opera") || normalized.includes("opr"))
 		return "Opera";
-	return "Browser";
+	return i18n.t("settings.sessions.otherBrowser");
 }
 
 export const resolveToken = (

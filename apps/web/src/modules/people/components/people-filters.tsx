@@ -31,9 +31,7 @@ export function PeopleFilters({ filters, onChange }: PeopleFiltersProps) {
 					<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 					<Input
 						className="pl-9"
-						placeholder={t("usersHub.people.searchPlaceholder", {
-							defaultValue: "Search by name or email…",
-						})}
+						placeholder={t("usersHub.people.searchPlaceholder")}
 						value={filters.search}
 						onChange={(e) => onChange({ search: e.target.value })}
 					/>
@@ -49,12 +47,8 @@ export function PeopleFilters({ filters, onChange }: PeopleFiltersProps) {
 						<SelectItem value="all">
 							{t("common.filters.allStatuses")}
 						</SelectItem>
-						<SelectItem value="active">
-							{t("common.active", { defaultValue: "Active" })}
-						</SelectItem>
-						<SelectItem value="inactive">
-							{t("common.inactive", { defaultValue: "Inactive" })}
-						</SelectItem>
+						<SelectItem value="active">{t("common.active")}</SelectItem>
+						<SelectItem value="inactive">{t("common.inactive")}</SelectItem>
 						<SelectItem value="suspended">{t("common.suspended")}</SelectItem>
 					</SelectContent>
 				</Select>

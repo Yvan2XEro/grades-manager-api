@@ -104,10 +104,7 @@ export function ExamDelegatesCard({
 										!canManageDelegates &&
 										!isSelfDelegate ? (
 											<p className="text-muted-foreground text-xs">
-												{t("teacher.gradeEntry.delegates.manageRestriction", {
-													defaultValue:
-														"Only the course owner can manage other delegates.",
-												})}
+												{t("teacher.gradeEntry.delegates.manageRestriction")}
 											</p>
 										) : null}
 									</div>
@@ -121,9 +118,7 @@ export function ExamDelegatesCard({
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
 											{isSelfDelegate && !canManageDelegates
-												? t("teacher.gradeEntry.delegates.revokeSelf", {
-														defaultValue: "Leave delegation",
-													})
+												? t("teacher.gradeEntry.delegates.revokeSelf")
 												: t("teacher.gradeEntry.delegates.revoke")}
 										</Button>
 									) : null}

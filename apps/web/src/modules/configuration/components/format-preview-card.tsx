@@ -21,52 +21,34 @@ export function FormatPreviewCard({ draft }: { draft: DraftFormat }) {
 	const profileFields: { key: keyof PreviewProfile; label: string }[] = [
 		{
 			key: "firstName",
-			label: t("admin.registrationNumbers.preview.firstName", {
-				defaultValue: "First name",
-			}),
+			label: t("admin.registrationNumbers.preview.firstName"),
 		},
 		{
 			key: "lastName",
-			label: t("admin.registrationNumbers.preview.lastName", {
-				defaultValue: "Last name",
-			}),
+			label: t("admin.registrationNumbers.preview.lastName"),
 		},
 		{
 			key: "nationality",
-			label: t("admin.registrationNumbers.preview.nationality", {
-				defaultValue: "Nationality",
-			}),
+			label: t("admin.registrationNumbers.preview.nationality"),
 		},
 	];
 
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>
-					{t("admin.registrationNumbers.preview.title", {
-						defaultValue: "Preview",
-					})}
-				</CardTitle>
+				<CardTitle>{t("admin.registrationNumbers.preview.title")}</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<p className="text-muted-foreground text-xs">
-					{t("admin.registrationNumbers.preview.subtitle", {
-						defaultValue:
-							"Select a class and optional student info to test the pattern.",
-					})}
+					{t("admin.registrationNumbers.preview.subtitle")}
 				</p>
 				<div className="space-y-2">
-					<Label>
-						{t("admin.registrationNumbers.preview.class", {
-							defaultValue: "Class",
-						})}
-					</Label>
+					<Label>{t("admin.registrationNumbers.preview.class")}</Label>
 					<Select value={preview.classId} onValueChange={preview.setClassId}>
 						<SelectTrigger>
 							<SelectValue
 								placeholder={t(
 									"admin.registrationNumbers.preview.classPlaceholder",
-									{ defaultValue: "Select class" },
 								)}
 							/>
 						</SelectTrigger>
@@ -100,16 +82,12 @@ export function FormatPreviewCard({ draft }: { draft: DraftFormat }) {
 						draft.definition.segments.length === 0
 					}
 				>
-					{t("admin.registrationNumbers.preview.run", {
-						defaultValue: "Generate preview",
-					})}
+					{t("admin.registrationNumbers.preview.run")}
 				</Button>
 				{preview.result && (
 					<div className="rounded-lg border bg-card p-4">
 						<p className="font-medium text-foreground text-sm">
-							{t("admin.registrationNumbers.preview.result", {
-								defaultValue: "Preview result",
-							})}
+							{t("admin.registrationNumbers.preview.result")}
 						</p>
 						<p className="font-semibold text-2xl text-foreground">
 							{preview.result}

@@ -31,25 +31,16 @@ export default function FacultiesPage() {
 
 	const confirmDelete = (institution: Institution) =>
 		confirmAction({
-			title: t("admin.institutions.delete.title", {
-				defaultValue: "Delete institution",
-			}),
-			message: t("admin.institutions.delete.message", {
-				defaultValue:
-					"Are you sure you want to delete this institution? This action cannot be undone.",
-			}),
+			title: t("admin.institutions.delete.title"),
+			message: t("admin.institutions.delete.message"),
 			onConfirm: () =>
 				deleteInstitutions.mutateAsync([institution.id]).catch(() => undefined),
 		});
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteInstitutions.mutate([...selection.selectedIds], {
@@ -59,7 +50,7 @@ export default function FacultiesPage() {
 
 	const rowActions = (institution: Institution): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Pencil,
 			onSelect: () => openEdit(institution),
 		},
@@ -72,20 +63,14 @@ export default function FacultiesPage() {
 		},
 	];
 
-	const addLabel = t("admin.institutions.actions.add", {
-		defaultValue: "Add institution",
-	});
+	const addLabel = t("admin.institutions.actions.add");
 
 	return (
 		<ListLayout
 			header={
 				<PageHeader
-					title={t("admin.institutions.title", {
-						defaultValue: "Institutions",
-					})}
-					description={t("admin.institutions.subtitle", {
-						defaultValue: "Manage universities, faculties and schools.",
-					})}
+					title={t("admin.institutions.title")}
+					description={t("admin.institutions.subtitle")}
 					actions={
 						<Button onClick={openCreate}>
 							<Plus className="mr-2 h-4 w-4" />
@@ -121,13 +106,8 @@ export default function FacultiesPage() {
 					<EmptyState
 						className="m-4"
 						icon={<Building2 className="h-6 w-6" />}
-						title={t("admin.institutions.empty.title", {
-							defaultValue: "No institutions yet",
-						})}
-						description={t("admin.institutions.empty.description", {
-							defaultValue:
-								"Create your first institution to start organizing your academic structure.",
-						})}
+						title={t("admin.institutions.empty.title")}
+						description={t("admin.institutions.empty.description")}
 						cta={{
 							label: addLabel,
 							onClick: openCreate,

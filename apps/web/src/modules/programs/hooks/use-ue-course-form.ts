@@ -12,24 +12,9 @@ import { useTeachers } from "./use-teachers";
 
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
-		name: z.string().min(
-			2,
-			t("admin.teachingUnits.courses.validation.name", {
-				defaultValue: "Name is required",
-			}),
-		),
-		hours: z.number().min(
-			1,
-			t("admin.teachingUnits.courses.validation.hours", {
-				defaultValue: "Hours must be positive",
-			}),
-		),
-		code: z.string().min(
-			3,
-			t("admin.teachingUnits.courses.validation.code", {
-				defaultValue: "Code is required",
-			}),
-		),
+		name: z.string().min(2, t("admin.teachingUnits.courses.validation.name")),
+		hours: z.number().min(1, t("admin.teachingUnits.courses.validation.hours")),
+		code: z.string().min(3, t("admin.teachingUnits.courses.validation.code")),
 		defaultTeacher: z.string().optional(),
 		defaultCoefficient: z.coerce.number().positive().default(1),
 	});

@@ -10,17 +10,13 @@ export function getRegistrationFormatsColumns(
 	return [
 		{
 			id: "name",
-			header: t("admin.registrationNumbers.table.name", {
-				defaultValue: "Name",
-			}),
+			header: t("admin.registrationNumbers.table.name"),
 			cell: ({ row: { original: format } }) => (
 				<div className="flex items-center gap-2 font-medium">
 					{format.name}
 					{format.isActive && (
 						<Badge variant="secondary">
-							{t("admin.registrationNumbers.list.active", {
-								defaultValue: "Active",
-							})}
+							{t("admin.registrationNumbers.list.active")}
 						</Badge>
 					)}
 				</div>
@@ -28,16 +24,12 @@ export function getRegistrationFormatsColumns(
 		},
 		{
 			id: "description",
-			header: t("admin.registrationNumbers.table.description", {
-				defaultValue: "Description",
-			}),
+			header: t("admin.registrationNumbers.table.description"),
 			cell: ({ row }) => row.original.description || "-",
 		},
 		{
 			id: "pattern",
-			header: t("admin.registrationNumbers.table.pattern", {
-				defaultValue: "Pattern",
-			}),
+			header: t("admin.registrationNumbers.table.pattern"),
 			cell: ({ row: { original: format } }) => (
 				<div className="flex flex-wrap gap-2 text-foreground text-xs">
 					{format.definition.segments.map((segment, idx) => (

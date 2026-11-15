@@ -47,9 +47,7 @@ export function TeachingUnitFormFields({
 				render={({ field }) => (
 					<FormItem>
 						<FormLabel required>
-							{t("admin.teachingUnits.fields.name", {
-								defaultValue: "Unit name",
-							})}
+							{t("admin.teachingUnits.fields.name")}
 						</FormLabel>
 						<FormControl>
 							<Input {...field} />
@@ -65,9 +63,7 @@ export function TeachingUnitFormFields({
 				render={({ field }) => (
 					<FormItem>
 						<FormLabel required>
-							{t("admin.teachingUnits.fields.code", {
-								defaultValue: "Code",
-							})}
+							{t("admin.teachingUnits.fields.code")}
 						</FormLabel>
 						<FormControl>
 							<Input {...field} />
@@ -82,11 +78,7 @@ export function TeachingUnitFormFields({
 				name="description"
 				render={({ field }) => (
 					<FormItem>
-						<FormLabel>
-							{t("admin.teachingUnits.fields.description", {
-								defaultValue: "Description",
-							})}
-						</FormLabel>
+						<FormLabel>{t("admin.teachingUnits.fields.description")}</FormLabel>
 						<FormControl>
 							<Textarea {...field} rows={4} />
 						</FormControl>
@@ -101,11 +93,7 @@ export function TeachingUnitFormFields({
 					name="credits"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.teachingUnits.fields.credits", {
-									defaultValue: "ECTS",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.teachingUnits.fields.credits")}</FormLabel>
 							<FormControl>
 								<Input
 									type="number"
@@ -166,11 +154,7 @@ export function TeachingUnitFormFields({
 					name="semester"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.teachingUnits.fields.semester", {
-									defaultValue: "Semester",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.teachingUnits.fields.semester")}</FormLabel>
 							<Select onValueChange={field.onChange} value={field.value}>
 								<FormControl>
 									<SelectTrigger>
@@ -179,19 +163,13 @@ export function TeachingUnitFormFields({
 								</FormControl>
 								<SelectContent>
 									<SelectItem value="annual">
-										{t("admin.teachingUnits.semesters.annual", {
-											defaultValue: "Annual",
-										})}
+										{t("admin.teachingUnits.semesters.annual")}
 									</SelectItem>
 									<SelectItem value="fall">
-										{t("admin.teachingUnits.semesters.fall", {
-											defaultValue: "Fall",
-										})}
+										{t("admin.teachingUnits.semesters.fall")}
 									</SelectItem>
 									<SelectItem value="spring">
-										{t("admin.teachingUnits.semesters.spring", {
-											defaultValue: "Spring",
-										})}
+										{t("admin.teachingUnits.semesters.spring")}
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -208,9 +186,7 @@ export function TeachingUnitFormFields({
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel required>
-								{t("admin.teachingUnits.selectProgram", {
-									defaultValue: "Select program",
-								})}
+								{t("admin.teachingUnits.selectProgram")}
 							</FormLabel>
 							<Select
 								onValueChange={field.onChange}

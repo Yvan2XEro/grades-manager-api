@@ -65,22 +65,14 @@ export const UeCourseFormDialog = createCallable<
 							program: programId,
 							teachingUnitId,
 						});
-						toast.success(
-							t("admin.teachingUnits.courses.toast.updateSuccess", {
-								defaultValue: "Element updated",
-							}),
-						);
+						toast.success(t("admin.teachingUnits.courses.toast.updateSuccess"));
 					} else {
 						await trpcClient.courses.create.mutate({
 							...data,
 							program: programId,
 							teachingUnitId,
 						});
-						toast.success(
-							t("admin.teachingUnits.courses.toast.createSuccess", {
-								defaultValue: "Element created",
-							}),
-						);
+						toast.success(t("admin.teachingUnits.courses.toast.createSuccess"));
 					}
 					queryClient.invalidateQueries({
 						queryKey: teachingUnitCoursesKey(teachingUnitId),
@@ -101,12 +93,8 @@ export const UeCourseFormDialog = createCallable<
 				preventDismiss={submit.pending}
 				title={
 					course
-						? t("admin.teachingUnits.courses.form.editTitle", {
-								defaultValue: "Edit element",
-							})
-						: t("admin.teachingUnits.courses.form.createTitle", {
-								defaultValue: "Add element",
-							})
+						? t("admin.teachingUnits.courses.form.editTitle")
+						: t("admin.teachingUnits.courses.form.createTitle")
 				}
 			>
 				<Form {...form}>
@@ -124,9 +112,7 @@ export const UeCourseFormDialog = createCallable<
 							</Button>
 							<Button type="submit" disabled={submit.pending}>
 								{submit.pending
-									? t("common.actions.saving", {
-											defaultValue: "Saving...",
-										})
+									? t("common.actions.saving")
 									: course
 										? t("common.actions.saveChanges")
 										: t("admin.teachingUnits.courses.form.submit")}

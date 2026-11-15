@@ -17,32 +17,22 @@ export function FormatSegmentsCard({ segments, actions }: Props) {
 	const addButtons = [
 		{
 			kind: "literal",
-			label: t("admin.registrationNumbers.segments.addLiteral", {
-				defaultValue: "Add literal",
-			}),
+			label: t("admin.registrationNumbers.segments.addLiteral"),
 		},
 		{
 			kind: "field",
-			label: t("admin.registrationNumbers.segments.addField", {
-				defaultValue: "Add field",
-			}),
+			label: t("admin.registrationNumbers.segments.addField"),
 		},
 		{
 			kind: "counter",
-			label: t("admin.registrationNumbers.segments.addCounter", {
-				defaultValue: "Add counter",
-			}),
+			label: t("admin.registrationNumbers.segments.addCounter"),
 		},
 	] as const;
 
 	return (
 		<Card>
 			<CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-				<CardTitle>
-					{t("admin.registrationNumbers.segments.title", {
-						defaultValue: "Segments",
-					})}
-				</CardTitle>
+				<CardTitle>{t("admin.registrationNumbers.segments.title")}</CardTitle>
 				<div className="flex flex-wrap gap-2">
 					{addButtons.map(({ kind, label }) => (
 						<Button
@@ -61,10 +51,7 @@ export function FormatSegmentsCard({ segments, actions }: Props) {
 			<CardContent className="space-y-4">
 				{segments.length === 0 && (
 					<p className="text-muted-foreground text-xs">
-						{t("admin.registrationNumbers.segments.empty", {
-							defaultValue:
-								"Combine literals, fields, and counters to craft a pattern.",
-						})}
+						{t("admin.registrationNumbers.segments.empty")}
 					</p>
 				)}
 				{segments.map((segment, index) => (

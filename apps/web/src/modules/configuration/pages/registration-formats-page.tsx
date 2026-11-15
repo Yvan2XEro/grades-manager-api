@@ -30,30 +30,20 @@ export default function RegistrationFormatsPage() {
 
 	const openFormat = (format: FormatRecord) =>
 		navigate(`/registration-numbers/${format.id}`);
-	const deleteLabel = t("admin.registrationNumbers.list.delete", {
-		defaultValue: "Delete",
-	});
+	const deleteLabel = t("admin.registrationNumbers.list.delete");
 
 	const confirmDelete = (format: FormatRecord) =>
 		confirmAction({
-			title: t("admin.registrationNumbers.list.confirmDeleteTitle", {
-				defaultValue: "Delete format?",
-			}),
-			message: t("admin.registrationNumbers.list.confirmDelete", {
-				defaultValue: "Delete this format permanently?",
-			}),
+			title: t("admin.registrationNumbers.list.confirmDeleteTitle"),
+			message: t("admin.registrationNumbers.list.confirmDelete"),
 			confirmText: deleteLabel,
 			onConfirm: () => deleteFormats.mutate([format.id]),
 		});
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteFormats.mutate([...selection.selectedIds], {
@@ -63,16 +53,12 @@ export default function RegistrationFormatsPage() {
 
 	const rowActions = (format: FormatRecord): RowAction[] => [
 		{
-			label: t("admin.registrationNumbers.list.edit", {
-				defaultValue: "Edit",
-			}),
+			label: t("admin.registrationNumbers.list.edit"),
 			icon: Pencil,
 			onSelect: () => openFormat(format),
 		},
 		{
-			label: t("admin.registrationNumbers.list.activate", {
-				defaultValue: "Activate",
-			}),
+			label: t("admin.registrationNumbers.list.activate"),
 			icon: CheckCircle2,
 			disabled: format.isActive || activateMutation.isPending,
 			onSelect: () => activateMutation.mutate(format.id),
@@ -87,22 +73,15 @@ export default function RegistrationFormatsPage() {
 		},
 	];
 
-	const newLabel = t("admin.registrationNumbers.actions.new", {
-		defaultValue: "New format",
-	});
+	const newLabel = t("admin.registrationNumbers.actions.new");
 	const openCreate = () => navigate("/registration-numbers/new");
 
 	return (
 		<ListLayout
 			header={
 				<PageHeader
-					title={t("admin.registrationNumbers.title", {
-						defaultValue: "Registration number formats",
-					})}
-					description={t("admin.registrationNumbers.subtitle", {
-						defaultValue:
-							"Design templates for automatic matricule generation.",
-					})}
+					title={t("admin.registrationNumbers.title")}
+					description={t("admin.registrationNumbers.subtitle")}
 					actions={
 						<Button onClick={openCreate}>
 							<PlusCircle className="mr-2 h-4 w-4" />
@@ -138,9 +117,7 @@ export default function RegistrationFormatsPage() {
 					<EmptyState
 						className="m-4"
 						icon={<Hash className="h-6 w-6" />}
-						title={t("admin.registrationNumbers.list.empty", {
-							defaultValue: "No formats yet. Create your first one.",
-						})}
+						title={t("admin.registrationNumbers.list.empty")}
 						cta={{
 							label: newLabel,
 							onClick: openCreate,

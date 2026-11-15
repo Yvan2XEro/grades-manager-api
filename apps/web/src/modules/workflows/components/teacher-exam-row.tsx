@@ -37,9 +37,7 @@ export function TeacherExamRow({
 						disabled={exam.status !== "draft" && exam.status !== "scheduled"}
 					>
 						<Send className="mr-1 h-4 w-4" />
-						{t("teacher.workflow.actions.submit", {
-							defaultValue: "Submit",
-						})}
+						{t("teacher.workflow.actions.submit")}
 					</Button>
 					<Badge
 						variant={
@@ -62,9 +60,7 @@ export function TeacherExamRow({
 					<XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
 					<span>
 						<span className="font-semibold">
-							{t("teacher.workflow.rejectionReason", {
-								defaultValue: "Rejection reason",
-							})}
+							{t("teacher.workflow.rejectionReason")}
 							{": "}
 						</span>
 						{rejectionReason}

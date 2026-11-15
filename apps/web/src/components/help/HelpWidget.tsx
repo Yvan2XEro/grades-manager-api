@@ -81,6 +81,7 @@ export function HelpWidget() {
 					<button
 						type="button"
 						onClick={() => setOpen(false)}
+						aria-label={t("common.a11y.close")}
 						className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 					>
 						<X className="h-4 w-4" />

@@ -27,15 +27,10 @@ export default function DeliberationResultsTab() {
 						<CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
 						<div>
 							<p className="font-semibold text-emerald-900 text-sm dark:text-emerald-200">
-								{t("admin.deliberations.promote.ctaTitle", {
-									defaultValue: "Promote admitted students",
-								})}
+								{t("admin.deliberations.promote.ctaTitle")}
 							</p>
 							<p className="mt-0.5 text-emerald-700 text-xs dark:text-emerald-300">
-								{t("admin.deliberations.promote.ctaDesc", {
-									defaultValue:
-										"Students with an 'Admitted' decision can be promoted to the next academic level.",
-								})}
+								{t("admin.deliberations.promote.ctaDesc")}
 							</p>
 						</div>
 					</div>

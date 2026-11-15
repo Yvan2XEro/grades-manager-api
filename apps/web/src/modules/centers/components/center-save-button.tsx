@@ -15,7 +15,7 @@ export function CenterSaveButton() {
 				onClick={form.handleSubmit(onSubmit)}
 			>
 				<Save className="mr-2 h-4 w-4" />
-				{t("common.actions.save", { defaultValue: "Enregistrer" })}
+				{t("common.actions.save")}
 			</Button>
 		</div>
 	);

@@ -57,9 +57,7 @@ export default function TeachingUnitDetailLayout() {
 					<div>
 						<h1 className="font-semibold text-xl">
 							{isCreating
-								? t("admin.teachingUnits.actions.create", {
-										defaultValue: "Create UE",
-									})
+								? t("admin.teachingUnits.actions.create")
 								: teachingUnit!.name}
 						</h1>
 						{!isCreating && (

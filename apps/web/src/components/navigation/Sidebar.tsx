@@ -58,6 +58,7 @@ type NavGroup = {
 };
 
 function NavBadge({ type }: { type: NavBadgeType }) {
+	const { t } = useTranslation();
 	return (
 		<span
 			className={cn(
@@ -67,7 +68,9 @@ function NavBadge({ type }: { type: NavBadgeType }) {
 					: "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400",
 			)}
 		>
-			{type === "new" ? "New" : "Upd"}
+			{type === "new"
+				? t("navigation.badges.new")
+				: t("navigation.badges.updated")}
 		</span>
 	);
 }

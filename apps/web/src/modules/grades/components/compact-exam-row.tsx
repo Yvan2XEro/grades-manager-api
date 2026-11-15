@@ -1,4 +1,6 @@
+import type { ParseKeys } from "i18next";
 import { Check, Eye, Lock, Send } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ export function CompactExamRow({
 	studentCount: number;
 	classCourseId: string;
 }) {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const gradesQuery = useExamGradesSummary(exam.id);
 	const submitMutation = useSubmitExam(exam.id);
@@ -50,7 +53,7 @@ export function CompactExamRow({
 					disabled={submitMutation.isPending}
 				>
 					<Send className="mr-1 h-3 w-3" />
-					Soumettre
+					{t("teacher.courses.examRow.submit")}
 				</Button>
 			);
 		if (canEnter)
@@ -61,7 +64,7 @@ export function CompactExamRow({
 					className="h-7 px-2.5 text-xs"
 					onClick={goToGradeEntry}
 				>
-					Saisir
+					{t("teacher.courses.examRow.enter")}
 				</Button>
 			);
 		return (
@@ -72,7 +75,7 @@ export function CompactExamRow({
 				onClick={goToGradeEntry}
 			>
 				<Eye className="mr-1 h-3 w-3" />
-				Voir
+				{t("teacher.courses.examRow.view")}
 			</Button>
 		);
 	};
@@ -101,7 +104,7 @@ export function CompactExamRow({
 			</div>
 
 			<span className="w-14 shrink-0 text-right text-muted-foreground text-xs tabular-nums">
-				{avg ? `moy ${avg}` : ""}
+				{avg ? t("teacher.courses.examRow.average", { value: avg }) : ""}
 			</span>
 
 			<div className="flex shrink-0 items-center gap-2">
@@ -112,7 +115,9 @@ export function CompactExamRow({
 					variant={examStatusVariant(exam.status)}
 					className="hidden text-xs sm:flex"
 				>
-					{exam.status}
+					{t(`teacher.exams.status.${exam.status}` as ParseKeys, {
+						defaultValue: exam.status,
+					})}
 				</Badge>
 				{actionButton()}
 			</div>

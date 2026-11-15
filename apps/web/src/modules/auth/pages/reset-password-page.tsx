@@ -56,9 +56,7 @@ const ResetPassword: React.FC = () => {
 			<AuthIconHeader
 				icon={KeyRound}
 				title={t("auth.reset.title")}
-				subtitle={t("auth.reset.subtitle", {
-					defaultValue: "Choose a strong password for your account.",
-				})}
+				subtitle={t("auth.reset.subtitle")}
 			/>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

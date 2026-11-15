@@ -20,7 +20,7 @@ export function WorkflowExamQueue({ workflow }: { workflow: Workflow }) {
 	return (
 		<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
 			<h2 className="font-heading font-semibold text-foreground text-lg">
-				{t("dean.workflows.queue", { defaultValue: "Submitted exams" })}
+				{t("dean.workflows.queue")}
 			</h2>
 
 			{/* Filters */}
@@ -40,9 +40,7 @@ export function WorkflowExamQueue({ workflow }: { workflow: Workflow }) {
 					value={filters.dateFrom}
 					onChange={(e) => filters.onDateFromChange(e.target.value)}
 					className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-					title={t("dean.workflows.dateFrom", {
-						defaultValue: "Submitted from",
-					})}
+					title={t("dean.workflows.dateFrom")}
 				/>
 			</div>
 
@@ -64,9 +62,7 @@ export function WorkflowExamQueue({ workflow }: { workflow: Workflow }) {
 					}
 				>
 					<ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-					{t("dean.workflows.actions.bulkValidate", {
-						defaultValue: "Approve all selected",
-					})}
+					{t("dean.workflows.actions.bulkValidate")}
 				</Button>
 			</BulkActionBar>
 
@@ -79,12 +75,10 @@ export function WorkflowExamQueue({ workflow }: { workflow: Workflow }) {
 								onCheckedChange={(checked) =>
 									selection.toggleAll(Boolean(checked))
 								}
-								aria-label="Select all exams"
+								aria-label={t("dean.approvals.selectAllExams")}
 							/>
 							<span className="text-muted-foreground text-xs">
-								{t("common.bulkActions.selectAll", {
-									defaultValue: "Select all",
-								})}
+								{t("common.bulkActions.selectAll")}
 							</span>
 						</div>
 						{pendingExams.map((exam) => (
@@ -107,9 +101,7 @@ export function WorkflowExamQueue({ workflow }: { workflow: Workflow }) {
 					</>
 				) : (
 					<p className="text-muted-foreground text-xs">
-						{t("dean.workflows.empty", {
-							defaultValue: "No pending exams.",
-						})}
+						{t("dean.workflows.empty")}
 					</p>
 				)}
 			</div>

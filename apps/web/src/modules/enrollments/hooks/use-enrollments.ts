@@ -114,11 +114,7 @@ export function useToggleEnrollmentWindow(
 				action,
 			}),
 		onSuccess: () => {
-			toast.success(
-				t("admin.enrollments.toast.updated", {
-					defaultValue: "Window updated",
-				}),
-			);
+			toast.success(t("admin.enrollments.toast.updated"));
 			queryClient.invalidateQueries(
 				trpc.workflows.enrollmentWindows.queryFilter(),
 			);
@@ -139,17 +135,8 @@ export function useDeleteEnrollments() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.enrollments.listPaged.queryFilter());
-			toast.success(
-				t("common.bulkActions.deleteSuccess", {
-					defaultValue: "Items deleted successfully",
-				}),
-			);
+			toast.success(t("common.bulkActions.deleteSuccess"));
 		},
-		onError: () =>
-			toast.error(
-				t("common.bulkActions.deleteError", {
-					defaultValue: "Failed to delete items",
-				}),
-			),
+		onError: () => toast.error(t("common.bulkActions.deleteError")),
 	});
 }

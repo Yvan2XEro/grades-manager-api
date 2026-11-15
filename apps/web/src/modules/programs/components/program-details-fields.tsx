@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import type { Control } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
@@ -27,44 +28,28 @@ type TextFieldName = Exclude<
 	"description" | "cycleId" | "centerId" | "isCenterProgram"
 >;
 
-/** `[field, label key, default label]` of the plain text inputs. */
-type TextFieldSpec = [TextFieldName, string, string];
+/** `[field, label key]` of the plain text inputs. */
+type TextFieldSpec = [TextFieldName, ParseKeys];
 
 const IDENTITY_FIELDS: TextFieldSpec[] = [
-	["name", "admin.programs.fields.name", "Name (FR)"],
-	["nameEn", "admin.programs.fields.nameEn", "Name (EN)"],
-	["code", "admin.programs.fields.code", "Code"],
-	["abbreviation", "admin.programs.fields.abbreviation", "Abbreviation"],
+	["name", "admin.programs.fields.name"],
+	["nameEn", "admin.programs.fields.nameEn"],
+	["code", "admin.programs.fields.code"],
+	["abbreviation", "admin.programs.fields.abbreviation"],
 ];
 
 const ACADEMIC_FIELDS: TextFieldSpec[] = [
-	["domainFr", "admin.programs.fields.domainFr", "Domain (FR)"],
-	["domainEn", "admin.programs.fields.domainEn", "Domain (EN)"],
-	["specialiteFr", "admin.programs.fields.specialiteFr", "Speciality (FR)"],
-	["specialiteEn", "admin.programs.fields.specialiteEn", "Speciality (EN)"],
+	["domainFr", "admin.programs.fields.domainFr"],
+	["domainEn", "admin.programs.fields.domainEn"],
+	["specialiteFr", "admin.programs.fields.specialiteFr"],
+	["specialiteEn", "admin.programs.fields.specialiteEn"],
 ];
 
 const DOCUMENT_FIELDS: TextFieldSpec[] = [
-	[
-		"diplomaTitleFr",
-		"admin.programs.fields.diplomaTitleFr",
-		"Diploma title (FR)",
-	],
-	[
-		"diplomaTitleEn",
-		"admin.programs.fields.diplomaTitleEn",
-		"Diploma title (EN)",
-	],
-	[
-		"attestationValidityFr",
-		"admin.programs.fields.attestationValidityFr",
-		"Attestation validity (FR)",
-	],
-	[
-		"attestationValidityEn",
-		"admin.programs.fields.attestationValidityEn",
-		"Attestation validity (EN)",
-	],
+	["diplomaTitleFr", "admin.programs.fields.diplomaTitleFr"],
+	["diplomaTitleEn", "admin.programs.fields.diplomaTitleEn"],
+	["attestationValidityFr", "admin.programs.fields.attestationValidityFr"],
+	["attestationValidityEn", "admin.programs.fields.attestationValidityEn"],
 ];
 
 function TextFields({
@@ -75,14 +60,14 @@ function TextFields({
 	fields: TextFieldSpec[];
 }) {
 	const { t } = useTranslation();
-	return fields.map(([name, labelKey, defaultValue]) => (
+	return fields.map(([name, labelKey]) => (
 		<FormField
 			key={name}
 			control={control}
 			name={name}
 			render={({ field }) => (
 				<FormItem>
-					<FormLabel>{t(labelKey, { defaultValue })}</FormLabel>
+					<FormLabel>{t(labelKey)}</FormLabel>
 					<FormControl>
 						<Input {...field} value={field.value ?? ""} />
 					</FormControl>
@@ -118,15 +103,11 @@ function NullableSelectField({
 					>
 						<FormControl>
 							<SelectTrigger>
-								<SelectValue
-									placeholder={t("common.none", { defaultValue: "None" })}
-								/>
+								<SelectValue placeholder={t("common.none")} />
 							</SelectTrigger>
 						</FormControl>
 						<SelectContent>
-							<SelectItem value="none">
-								{t("common.none", { defaultValue: "None" })}
-							</SelectItem>
+							<SelectItem value="none">{t("common.none")}</SelectItem>
 							{items.map((item) => (
 								<SelectItem key={item.id} value={item.id}>
 									{item.name}

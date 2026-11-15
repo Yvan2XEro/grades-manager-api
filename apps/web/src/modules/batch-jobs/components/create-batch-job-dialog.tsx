@@ -126,7 +126,11 @@ export const CreateBatchJobDialog = createCallable<void, void>(({ call }) => {
 								<Label>{t("admin.batchJobs.fields.jobType")}</Label>
 								<Select value={jobType} onValueChange={setJobType}>
 									<SelectTrigger>
-										<SelectValue placeholder="Select a job type..." />
+										<SelectValue
+											placeholder={t(
+												"admin.batchJobs.fields.jobTypePlaceholder",
+											)}
+										/>
 									</SelectTrigger>
 									<SelectContent>
 										{JOB_TYPES.map((type) => (
@@ -162,7 +166,11 @@ export const CreateBatchJobDialog = createCallable<void, void>(({ call }) => {
 									</Label>
 									<Select value={classId} onValueChange={setClassId}>
 										<SelectTrigger>
-											<SelectValue placeholder="Select class..." />
+											<SelectValue
+												placeholder={t(
+													"admin.batchJobs.fields.classPlaceholder",
+												)}
+											/>
 										</SelectTrigger>
 										<SelectContent>
 											{classes.map((c) => (
@@ -210,7 +218,7 @@ export const CreateBatchJobDialog = createCallable<void, void>(({ call }) => {
 												{i + 1}. {step.name}
 											</span>
 											<span className="text-muted-foreground text-xs">
-												{step.itemsTotal} items
+												{t("common.itemCount", { count: step.itemsTotal })}
 											</span>
 										</div>
 									))}

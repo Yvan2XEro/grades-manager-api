@@ -36,25 +36,16 @@ export default function StudyCyclesPage() {
 
 	const confirmDelete = (cycle: StudyCycleRow) =>
 		confirmAction({
-			title: t("admin.studyCycles.delete.title", {
-				defaultValue: "Delete study cycle",
-			}),
-			message: t("admin.studyCycles.delete.message", {
-				defaultValue:
-					"Deleting a cycle does not remove existing classes or programs, but they will require reassignment.",
-			}),
+			title: t("admin.studyCycles.delete.title"),
+			message: t("admin.studyCycles.delete.message"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () => deleteCycles.mutateAsync([cycle.id]),
 		});
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteCycles.mutate([...selection.selectedIds], {
@@ -64,9 +55,7 @@ export default function StudyCyclesPage() {
 
 	const rowActions = (cycle: StudyCycleRow): RowAction[] => [
 		{
-			label: t("admin.studyCycles.actions.manageLevels", {
-				defaultValue: "Manage levels",
-			}),
+			label: t("admin.studyCycles.actions.manageLevels"),
 			icon: Layers3,
 			onSelect: () => openLevels(cycle),
 		},
@@ -92,7 +81,7 @@ export default function StudyCyclesPage() {
 				<div className="flex justify-end">
 					<Button type="button" onClick={addCycle}>
 						<Plus className="mr-2 h-4 w-4" />
-						{t("admin.studyCycles.actions.add", { defaultValue: "Add cycle" })}
+						{t("admin.studyCycles.actions.add")}
 					</Button>
 				</div>
 			}
@@ -137,9 +126,7 @@ export default function StudyCyclesPage() {
 					<EmptyState
 						className="m-4"
 						icon={<Layers3 className="h-6 w-6" />}
-						title={t("admin.studyCycles.empty", {
-							defaultValue: "No study cycles yet.",
-						})}
+						title={t("admin.studyCycles.empty")}
 					/>
 				}
 			/>

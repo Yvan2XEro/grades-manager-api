@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { MoreHorizontal } from "lucide-react";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import { ExternalLinkIcon } from "@/components/navigation/external-link-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ export interface RowAction {
 }
 
 export function RowActionsDropdown({ actions }: { actions: RowAction[] }) {
+	const { t } = useTranslation();
 	if (actions.length === 0) return null;
 	return (
 		<DropdownMenu>
@@ -37,7 +39,7 @@ export function RowActionsDropdown({ actions }: { actions: RowAction[] }) {
 					variant="ghost"
 					size="icon"
 					className="h-8 w-8"
-					aria-label="Actions"
+					aria-label={t("common.table.actions")}
 				>
 					<MoreHorizontal className="h-4 w-4" />
 				</Button>

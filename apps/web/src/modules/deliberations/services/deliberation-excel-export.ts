@@ -105,5 +105,8 @@ export function exportDeliberationExcel(data: any) {
 		ws,
 		t("admin.deliberations.excel.sheetName"),
 	);
-	XLSX.writeFile(wb, `Deliberation_${fileDateStamp()}.xlsx`);
+	XLSX.writeFile(
+		wb,
+		`${t("admin.deliberations.excel.filePrefix")}_${fileDateStamp()}.xlsx`,
+	);
 }

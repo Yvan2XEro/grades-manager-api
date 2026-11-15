@@ -289,13 +289,7 @@ getByCode: publicProcedure
 
 ## Complete Examples
 
-See `coded-entity-select.examples.tsx` for complete examples with:
-- Program select (with faculty as subtitle)
-- Class select (with cycle/level badges)
-- Course select (with hours and teacher)
-- Faculty select (simple)
-- Disabled state
-- Full form with validation
+Real usages live in the module forms: search for `CodedEntitySelect` under `apps/web/src/modules`.
 
 ## Performance
 

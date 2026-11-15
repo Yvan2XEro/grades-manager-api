@@ -52,10 +52,7 @@ export default function GuardianDirectoryPage() {
 	const confirmDelete = (guardianId: string) =>
 		confirmAction({
 			title: t("common.confirmDelete"),
-			message: t("guardians.admin.deleteConfirm", {
-				defaultValue:
-					"This will permanently delete the guardian and all student links.",
-			}),
+			message: t("guardians.admin.deleteConfirm"),
 			confirmText: t("common.delete"),
 			cancelText: t("common.cancel"),
 			onConfirm: () =>
@@ -73,9 +70,7 @@ export default function GuardianDirectoryPage() {
 							onClick={() => AddGuardianDialog.call({ onCreated: refresh })}
 						>
 							<Plus className="mr-2 h-4 w-4" />
-							{t("guardians.admin.addGuardian", {
-								defaultValue: "Add guardian",
-							})}
+							{t("guardians.admin.addGuardian")}
 						</Button>
 					}
 				/>
@@ -85,9 +80,7 @@ export default function GuardianDirectoryPage() {
 					<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 					<Input
 						className="pl-9"
-						placeholder={t("guardians.admin.searchPlaceholder", {
-							defaultValue: "Search by name or email…",
-						})}
+						placeholder={t("guardians.admin.searchPlaceholder")}
 						value={search}
 						onChange={(e) => {
 							setSearch(e.target.value);

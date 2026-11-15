@@ -171,8 +171,11 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 		{ label: t(`navigation.breadcrumbs.${roleGroup ?? "admin"}`), href: "/" },
 	];
 	const push = (item: BreadcrumbItem) => {
-		// A hub and its default tab often share a label (Classes › Classes)
-		if (crumbs.at(-1)?.label === item.label) crumbs[crumbs.length - 1] = item;
+		// A hub and its default tab often share a label (Classes › Classes);
+		// the teacher's courses are their home page (same link)
+		const last = crumbs.at(-1);
+		if (last?.label === item.label || (item.href && last?.href === item.href))
+			crumbs[crumbs.length - 1] = item;
 		else crumbs.push(item);
 	};
 

@@ -180,18 +180,9 @@ export function useExamMutations(onBulkDeleted: () => void) {
 		onSuccess: () => {
 			invalidateExams(queryClient);
 			onBulkDeleted();
-			toast.success(
-				t("common.bulkActions.deleteSuccess", {
-					defaultValue: "Items deleted successfully",
-				}),
-			);
+			toast.success(t("common.bulkActions.deleteSuccess"));
 		},
-		onError: () =>
-			toast.error(
-				t("common.bulkActions.deleteError", {
-					defaultValue: "Failed to delete items",
-				}),
-			),
+		onError: () => toast.error(t("common.bulkActions.deleteError")),
 	});
 
 	const submitExam = useMutation({

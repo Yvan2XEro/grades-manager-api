@@ -26,9 +26,7 @@ export function AdminDashboardHeader({
 					{t("admin.dashboard.title")}
 				</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
-					{t("admin.dashboard.subtitle", {
-						defaultValue: "Vue d'ensemble de l'institution",
-					})}
+					{t("admin.dashboard.subtitle")}
 				</p>
 			</div>
 			<div className="flex items-center gap-3">
@@ -47,7 +45,7 @@ export function AdminDashboardHeader({
 						value={yearId}
 						onChange={onYearChange}
 						allowAll
-						allLabel={t("common.allYears", { defaultValue: "Toutes" })}
+						allLabel={t("common.allYears")}
 						autoSelectActive={false}
 					/>
 				</div>

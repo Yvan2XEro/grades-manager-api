@@ -58,7 +58,7 @@ export function ExamApprovalCard({
 							<strong className="text-foreground">{avg}</strong>
 						</span>
 						<span className="text-muted-foreground">
-							min {min} · max {max}
+							{t("dean.approvals.minMax", { min, max })}
 						</span>
 						{below10 > 0 && (
 							<span className="text-destructive">{below10} &lt; 10</span>
@@ -124,7 +124,7 @@ export function ExamApprovalCard({
 										<strong className="text-foreground">{avg}</strong>
 									</span>
 									<span className="text-muted-foreground text-xs">
-										min {min} · max {max}
+										{t("dean.approvals.minMax", { min, max })}
 									</span>
 								</div>
 							)}

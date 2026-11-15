@@ -28,7 +28,7 @@ export function SpreadsheetHeader({
 					<Button variant="ghost" size="sm" asChild>
 						<Link to="/">
 							<ArrowLeft className="mr-1 h-4 w-4" />
-							{t("common.actions.back", { defaultValue: "Retour" })}
+							{t("common.actions.back")}
 						</Link>
 					</Button>
 				</div>
@@ -39,25 +39,22 @@ export function SpreadsheetHeader({
 			</div>
 			<div className="flex flex-wrap items-center gap-2">
 				<Badge variant="outline">
-					{filledCells} / {totalCells}{" "}
-					{t("teacher.spreadsheet.filled", { defaultValue: "remplies" })}
+					{filledCells} / {totalCells} {t("teacher.spreadsheet.filled")}
 				</Badge>
 				{dirtyCount > 0 && (
 					<Badge variant="secondary" className="gap-1">
 						<Save className="h-3 w-3" /> {dirtyCount}{" "}
-						{t("teacher.spreadsheet.pending", { defaultValue: "en cours" })}
+						{t("teacher.spreadsheet.pending")}
 					</Badge>
 				)}
 				{errorCount > 0 && (
 					<Badge variant="destructive" className="gap-1">
 						<AlertCircle className="h-3 w-3" /> {errorCount}{" "}
-						{t("teacher.spreadsheet.errors", { defaultValue: "erreurs" })}
+						{t("teacher.spreadsheet.errors")}
 					</Badge>
 				)}
 				<Button variant="outline" size="sm" onClick={onPerExamMode}>
-					{t("teacher.spreadsheet.perExamMode", {
-						defaultValue: "Mode examen unique",
-					})}
+					{t("teacher.spreadsheet.perExamMode")}
 				</Button>
 			</div>
 		</div>

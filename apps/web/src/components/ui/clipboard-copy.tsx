@@ -22,20 +22,13 @@ export function ClipboardCopy({ value, label, className }: ClipboardCopyProps) {
 			toast.success(
 				label
 					? t("common.clipboard.copiedValue", {
-							defaultValue: "{{value}} copied",
 							value: label,
 						})
-					: t("common.clipboard.copied", {
-							defaultValue: "Copied to clipboard",
-						}),
+					: t("common.clipboard.copied"),
 			);
 			setTimeout(() => setCopied(false), 1500);
 		} catch (_error) {
-			toast.error(
-				t("common.clipboard.failed", {
-					defaultValue: "Unable to copy",
-				}),
-			);
+			toast.error(t("common.clipboard.failed"));
 		}
 	};
 
@@ -58,7 +51,6 @@ export function ClipboardCopy({ value, label, className }: ClipboardCopyProps) {
 			)}
 			<span className="sr-only">
 				{t("common.clipboard.copyAria", {
-					defaultValue: "Copy {{value}}",
 					value: label ?? value,
 				})}
 			</span>

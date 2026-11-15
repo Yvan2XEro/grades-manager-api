@@ -57,11 +57,7 @@ export function useStudentCourseRoster({
 				status: "active",
 			}),
 		onSuccess: (result, classCourseIdParam) => {
-			toast.success(
-				t("admin.enrollments.toast.courseEnrolled", {
-					defaultValue: "Student enrolled in course",
-				}),
-			);
+			toast.success(t("admin.enrollments.toast.courseEnrolled"));
 			if (classCourseIdParam) {
 				setCourseWarnings((prev) => {
 					const next = { ...prev };
@@ -84,11 +80,7 @@ export function useStudentCourseRoster({
 		mutationFn: (payload: { id: string; status: "withdrawn" | "completed" }) =>
 			trpcClient.studentCourseEnrollments.updateStatus.mutate(payload),
 		onSuccess: () => {
-			toast.success(
-				t("admin.enrollments.toast.courseWithdrawn", {
-					defaultValue: "Enrollment updated",
-				}),
-			);
+			toast.success(t("admin.enrollments.toast.courseWithdrawn"));
 			queryClient.invalidateQueries(
 				trpc.studentCourseEnrollments.list.queryFilter(),
 			);
@@ -103,11 +95,7 @@ export function useStudentCourseRoster({
 				status: "active",
 			}),
 		onSuccess: () => {
-			toast.success(
-				t("admin.enrollments.toast.courseReactivated", {
-					defaultValue: "Enrollment restored",
-				}),
-			);
+			toast.success(t("admin.enrollments.toast.courseReactivated"));
 			queryClient.invalidateQueries(
 				trpc.studentCourseEnrollments.list.queryFilter(),
 			);

@@ -114,11 +114,7 @@ export function ClassFormFields({
 					name="semesterId"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.classes.form.semesterLabel", {
-									defaultValue: "Semester",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.classes.form.semesterLabel")}</FormLabel>
 							<Select
 								onValueChange={(value) =>
 									field.onChange(value === "none" ? "" : value)
@@ -129,16 +125,12 @@ export function ClassFormFields({
 								<FormControl>
 									<SelectTrigger>
 										<SelectValue
-											placeholder={t("admin.classes.form.semesterPlaceholder", {
-												defaultValue: "Select a semester",
-											})}
+											placeholder={t("admin.classes.form.semesterPlaceholder")}
 										/>
 									</SelectTrigger>
 								</FormControl>
 								<SelectContent>
-									<SelectItem value="none">
-										{t("common.none", { defaultValue: "None" })}
-									</SelectItem>
+									<SelectItem value="none">{t("common.none")}</SelectItem>
 									{semesters.map((semester) => (
 										<SelectItem key={semester.id} value={semester.id}>
 											{semester.name} ({semester.code})
@@ -159,12 +151,8 @@ export function ClassFormFields({
 				onChange={(code) =>
 					pick("cycleLevelId", cycleLevels.find((l) => l.code === code)?.id)
 				}
-				label={t("admin.classes.form.cycleLevelLabel", {
-					defaultValue: "Cycle level",
-				})}
-				placeholder={t("admin.classes.form.cycleLevelPlaceholder", {
-					defaultValue: "Select cycle level",
-				})}
+				label={t("admin.classes.form.cycleLevelLabel")}
+				placeholder={t("admin.classes.form.cycleLevelPlaceholder")}
 				error={errors.cycleLevelId?.message}
 				searchMode="hybrid"
 				getItemSubtitle={(level) =>
@@ -173,19 +161,12 @@ export function ClassFormFields({
 				disabled={!program?.cycleId}
 				emptyMessage={
 					!program
-						? t("admin.classes.form.selectProgramFirst", {
-								defaultValue: "Select a program to load its cycle levels.",
-							})
-						: t("admin.classes.form.emptyCycleLevels", {
-								defaultValue:
-									"No cycle levels available for the selected program's institution.",
-							})
+						? t("admin.classes.form.selectProgramFirst")
+						: t("admin.classes.form.emptyCycleLevels")
 				}
 				required
 				onCreate={controller.create.cycleLevel}
-				createLabel={t("admin.studyCycles.actions.addLevel", {
-					defaultValue: "Add level",
-				})}
+				createLabel={t("admin.studyCycles.actions.addLevel")}
 			/>
 
 			<CodedEntitySelect
@@ -198,23 +179,15 @@ export function ClassFormFields({
 						programOptions.find((o) => o.code === code)?.id,
 					)
 				}
-				label={t("admin.classes.form.programOptionLabel", {
-					defaultValue: "Program option",
-				})}
-				placeholder={t("admin.classes.form.programOptionPlaceholder", {
-					defaultValue: "Select option",
-				})}
+				label={t("admin.classes.form.programOptionLabel")}
+				placeholder={t("admin.classes.form.programOptionPlaceholder")}
 				error={errors.programOptionId?.message}
 				searchMode="hybrid"
 				disabled={!program}
 				emptyMessage={
 					!program
-						? t("admin.classes.form.selectProgramFirst", {
-								defaultValue: "Select a program to load its options.",
-							})
-						: t("admin.classes.form.emptyProgramOptions", {
-								defaultValue: "No options available",
-							})
+						? t("admin.classes.form.selectProgramFirst")
+						: t("admin.classes.form.emptyProgramOptions")
 				}
 				required
 				onCreate={controller.create.programOption}
@@ -228,14 +201,12 @@ export function ClassFormFields({
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel required>
-								{t("admin.classes.form.codeLabel", { defaultValue: "Code" })}
+								{t("admin.classes.form.codeLabel")}
 							</FormLabel>
 							<FormControl>
 								<Input
 									{...field}
-									placeholder={t("admin.classes.form.codePlaceholder", {
-										defaultValue: "INF11-01",
-									})}
+									placeholder={t("admin.classes.form.codePlaceholder")}
 								/>
 							</FormControl>
 							<FormMessage />
@@ -261,20 +232,14 @@ export function ClassFormFields({
 					name="totalCredits"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.classes.form.totalCreditsLabel", {
-									defaultValue: "Total credits",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.classes.form.totalCreditsLabel")}</FormLabel>
 							<FormControl>
 								<Input
 									{...field}
 									value={field.value as number}
 									type="number"
 									min={0}
-									placeholder={t("admin.classes.form.totalCreditsPlaceholder", {
-										defaultValue: "e.g. 30",
-									})}
+									placeholder={t("admin.classes.form.totalCreditsPlaceholder")}
 								/>
 							</FormControl>
 							<FormMessage />

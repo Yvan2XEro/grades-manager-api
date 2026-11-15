@@ -42,13 +42,8 @@ export function InstitutionFormFields({
 		<>
 			<InstitutionFormSection
 				variant={variant}
-				title={t("admin.institution.form.identity", {
-					defaultValue: "Identity",
-				})}
-				hint={t("admin.institution.form.identityHint", {
-					defaultValue:
-						"These values appear on document headers and diplomas in French and English.",
-				})}
+				title={t("admin.institution.form.identity")}
+				hint={t("admin.institution.form.identityHint")}
 			>
 				<InstitutionIdentityFields
 					form={form}
@@ -60,51 +55,32 @@ export function InstitutionFormFields({
 
 			<InstitutionFormSection
 				variant={variant}
-				title={t("admin.institution.sections.names", {
-					defaultValue: "Names & Legal Identity",
-				})}
-				hint={t("admin.institution.sections.namesHint", {
-					defaultValue:
-						"Official names as they appear on documents, diplomas, and legal paperwork.",
-				})}
+				title={t("admin.institution.sections.names")}
+				hint={t("admin.institution.sections.namesHint")}
 			>
 				<InstitutionNamesFields form={form} />
 			</InstitutionFormSection>
 
 			<InstitutionFormSection
 				variant={variant}
-				title={t("admin.institution.sections.contact", {
-					defaultValue: "Contact & Location",
-				})}
-				hint={t("admin.institution.sections.contactHint", {
-					defaultValue: "Address, phone, email, and other contact details.",
-				})}
+				title={t("admin.institution.sections.contact")}
+				hint={t("admin.institution.sections.contactHint")}
 			>
 				<InstitutionContactFields form={form} />
 			</InstitutionFormSection>
 
 			<InstitutionFormSection
 				variant={variant}
-				title={t("admin.institution.sections.media", {
-					defaultValue: "Media & Branding",
-				})}
-				hint={t("admin.institution.sections.mediaHint", {
-					defaultValue:
-						"Logo and cover image used on documents and the platform.",
-				})}
+				title={t("admin.institution.sections.media")}
+				hint={t("admin.institution.sections.mediaHint")}
 			>
 				<InstitutionMediaFields form={form} variant={variant} />
 			</InstitutionFormSection>
 
 			<InstitutionFormSection
 				variant={variant}
-				title={t("admin.institution.sections.system", {
-					defaultValue: "System Configuration",
-				})}
-				hint={t("admin.institution.sections.systemHint", {
-					defaultValue:
-						"Active academic year and registration number format are managed in their dedicated modules.",
-				})}
+				title={t("admin.institution.sections.system")}
+				hint={t("admin.institution.sections.systemHint")}
 			>
 				{system}
 			</InstitutionFormSection>

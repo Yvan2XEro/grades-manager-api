@@ -103,9 +103,7 @@ export const CreateAttendanceSessionDialog = createCallable<
 				{!isExceptional && (
 					<div>
 						<Label className="mb-1 block">
-							{t("teacher.attendanceManagement.timetableSlot", {
-								defaultValue: "Timetable slot",
-							})}
+							{t("teacher.attendanceManagement.timetableSlot")}
 						</Label>
 						<QuickCreate
 							onCreate={createSlot}
@@ -119,18 +117,14 @@ export const CreateAttendanceSessionDialog = createCallable<
 									<SelectValue
 										placeholder={t(
 											"teacher.attendanceManagement.timetableSlotPlaceholder",
-											{
-												defaultValue: "Select a timetable slot",
-											},
+											{},
 										)}
 									/>
 								</SelectTrigger>
 								<SelectContent>
 									{slots.length === 0 ? (
 										<div className="px-3 py-2 text-muted-foreground text-sm">
-											{t("teacher.attendanceManagement.noSlots", {
-												defaultValue: "No timetable slot for this course",
-											})}
+											{t("teacher.attendanceManagement.noSlots")}
 										</div>
 									) : (
 										slots.map((slot) => (
@@ -157,9 +151,7 @@ export const CreateAttendanceSessionDialog = createCallable<
 						}}
 					/>
 					<label htmlFor="isExceptional" className="cursor-pointer text-sm">
-						{t("teacher.attendanceManagement.isExceptional", {
-							defaultValue: "Exceptional session (outside the timetable)",
-						})}
+						{t("teacher.attendanceManagement.isExceptional")}
 					</label>
 				</div>
 			</div>

@@ -51,15 +51,12 @@ export default function StudyCycleDetailLayout() {
 						<p className="text-muted-foreground text-sm">
 							{cycle.code} · {cycle.durationYears}{" "}
 							{t("admin.studyCycles.table.years", {
-								defaultValue: "{{value}} years",
 								value: "",
 							})
 								.replace("{{value}} ", "")
 								.trim()}{" "}
 							· {cycle.totalCreditsRequired}{" "}
-							{t("admin.studyCycles.table.credits", {
-								defaultValue: "credits",
-							}).toLowerCase()}
+							{t("admin.studyCycles.table.credits").toLowerCase()}
 						</p>
 					</div>
 				</div>

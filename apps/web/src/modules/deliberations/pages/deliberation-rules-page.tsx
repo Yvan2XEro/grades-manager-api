@@ -28,13 +28,9 @@ export default function DeliberationRules() {
 
 	const confirmDelete = (rule: { id: string; name: string }) =>
 		confirmAction({
-			title: t("admin.deliberations.rules.confirmDelete.title", {
-				defaultValue: "Delete this rule?",
-			}),
+			title: t("admin.deliberations.rules.confirmDelete.title"),
 			message: t("admin.deliberations.rules.confirmDelete.message", {
 				name: rule.name,
-				defaultValue:
-					'You are about to delete the rule "{{name}}". This cannot be undone.',
 			}),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () => remove.mutateAsync(rule.id).catch(() => undefined),

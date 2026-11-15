@@ -18,21 +18,13 @@ export function useDeleteInstitutions() {
 			});
 			toast.success(
 				ids.length === 1
-					? t("admin.institutions.toast.deleteSuccess", {
-							defaultValue: "Institution deleted",
-						})
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					? t("admin.institutions.toast.deleteSuccess")
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) =>
 			toast.error(
-				ids.length === 1
-					? error.message
-					: t("common.bulkActions.deleteError", {
-							defaultValue: "Failed to delete items",
-						}),
+				ids.length === 1 ? error.message : t("common.bulkActions.deleteError"),
 			),
 	});
 }

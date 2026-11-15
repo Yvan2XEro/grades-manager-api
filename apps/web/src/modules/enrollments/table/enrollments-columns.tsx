@@ -6,9 +6,7 @@ import type { EnrollmentRow } from "../types";
 export const enrollmentStudentName = (row: EnrollmentRow, t: TFunction) =>
 	row.student
 		? `${row.student.profile.firstName} ${row.student.profile.lastName}`
-		: t("admin.enrollments.fields.unknownStudent", {
-				defaultValue: "Unknown student",
-			});
+		: t("admin.enrollments.fields.unknownStudent");
 
 export function getEnrollmentsColumns(
 	t: TFunction,
@@ -17,9 +15,7 @@ export function getEnrollmentsColumns(
 	return [
 		{
 			id: "student",
-			header: t("admin.enrollments.fields.student", {
-				defaultValue: "Student",
-			}),
+			header: t("admin.enrollments.fields.student"),
 			cell: ({ row: { original: enrollment } }) => (
 				<div className="space-y-0.5">
 					<p className="font-semibold text-foreground">
@@ -28,7 +24,6 @@ export function getEnrollmentsColumns(
 					<p className="text-muted-foreground text-xs">
 						{enrollment.student?.registrationNumber ??
 							t("admin.enrollments.fields.registrationFallback", {
-								defaultValue: "ID: {{value}}",
 								value: enrollment.studentId,
 							})}
 					</p>
@@ -37,13 +32,10 @@ export function getEnrollmentsColumns(
 		},
 		{
 			id: "status",
-			header: t("admin.enrollments.fields.status", {
-				defaultValue: "Status",
-			}),
+			header: t("admin.enrollments.fields.status"),
 			cell: ({ row }) => (
 				<span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 font-medium text-foreground text-xs">
 					{t("admin.enrollments.fields.statusValue", {
-						defaultValue: "{{value}}",
 						value: row.original.status,
 					})}
 				</span>
@@ -51,25 +43,19 @@ export function getEnrollmentsColumns(
 		},
 		{
 			id: "dates",
-			header: t("admin.enrollments.fields.dates", {
-				defaultValue: "Dates",
-			}),
+			header: t("admin.enrollments.fields.dates"),
 			cell: ({ row: { original: enrollment } }) => (
 				<div className="text-muted-foreground text-sm">
 					<p>
 						{t("admin.enrollments.fields.enrolledAt", {
-							defaultValue: "Enrolled: {{value}}",
 							value: enrollment.enrolledAt
 								? new Date(enrollment.enrolledAt).toLocaleDateString()
-								: t("common.labels.notAvailable", {
-										defaultValue: "N/A",
-									}),
+								: t("common.labels.notAvailable"),
 						})}
 					</p>
 					{enrollment.exitedAt && (
 						<p>
 							{t("admin.enrollments.fields.exitedAt", {
-								defaultValue: "Exited: {{value}}",
 								value: new Date(enrollment.exitedAt).toLocaleDateString(),
 							})}
 						</p>
@@ -81,9 +67,7 @@ export function getEnrollmentsColumns(
 			id: "actions",
 			header: () => (
 				<div className="text-right">
-					{t("admin.enrollments.fields.actions", {
-						defaultValue: "Actions",
-					})}
+					{t("admin.enrollments.fields.actions")}
 				</div>
 			),
 			cell: ({ row }) => (
@@ -94,9 +78,7 @@ export function getEnrollmentsColumns(
 						variant="secondary"
 						onClick={() => onOpenRoster(row.original)}
 					>
-						{t("admin.enrollments.courseRoster.openModalBtn", {
-							defaultValue: "View roster",
-						})}
+						{t("admin.enrollments.courseRoster.openModalBtn")}
 					</Button>
 				</div>
 			),

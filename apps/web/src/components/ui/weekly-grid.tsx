@@ -1,3 +1,5 @@
+import type { ParseKeys } from "i18next";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
@@ -13,14 +15,14 @@ export interface GridSession {
 	color?: string;
 }
 
-const DAY_LABELS: Record<DayOfWeek, string> = {
-	mon: "Lun",
-	tue: "Mar",
-	wed: "Mer",
-	thu: "Jeu",
-	fri: "Ven",
-	sat: "Sam",
-	sun: "Dim",
+const DAY_LABEL_KEYS: Record<DayOfWeek, ParseKeys> = {
+	mon: "components.weeklyGrid.days.mon",
+	tue: "components.weeklyGrid.days.tue",
+	wed: "components.weeklyGrid.days.wed",
+	thu: "components.weeklyGrid.days.thu",
+	fri: "components.weeklyGrid.days.fri",
+	sat: "components.weeklyGrid.days.sat",
+	sun: "components.weeklyGrid.days.sun",
 };
 
 const DAY_ORDER: DayOfWeek[] = [
@@ -52,6 +54,7 @@ export function WeeklyGrid({
 	onSessionClick,
 	className,
 }: WeeklyGridProps) {
+	const { t } = useTranslation();
 	const activeDays = DAY_ORDER.filter((d) =>
 		sessions.some((s) => s.dayOfWeek === d),
 	);
@@ -88,7 +91,7 @@ export function WeeklyGrid({
 						key={day}
 						className="bg-muted/50 px-3 py-2 text-center font-medium text-muted-foreground text-xs uppercase tracking-wide"
 					>
-						{DAY_LABELS[day]}
+						{t(DAY_LABEL_KEYS[day])}
 					</div>
 				))}
 

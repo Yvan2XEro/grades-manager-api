@@ -12,26 +12,18 @@ export function useCurrentInstitution() {
 	return useQuery(trpc.institutions.get.queryOptions());
 }
 
-/** Saves the settings page form (the two "system" ids are managed elsewhere). */
+/** Saves the settings page form. */
 export function useUpsertInstitution(id: string | undefined) {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: ({
-			defaultAcademicYearId: _year,
-			registrationFormatId: _format,
-			...values
-		}: InstitutionFormValues) =>
+		mutationFn: (values: InstitutionFormValues) =>
 			trpcClient.institutions.upsert.mutate({
 				...toInstitutionPayload(values),
 				id,
 			}),
 		onSuccess: (savedInstitution) => {
-			toast.success(
-				t("admin.institution.toast.saved", {
-					defaultValue: "Institution saved",
-				}),
-			);
+			toast.success(t("admin.institution.toast.saved"));
 			// Update the cache directly with the saved institution instead of
 			// refetching — getFirst() could return the parent institution if it
 			// was created earlier, overwriting the form with the wrong data.
@@ -60,11 +52,7 @@ export function useSaveInstitutionMetadata(
 				data: { metadata: { ...currentMetadata, ...patch } },
 			}),
 		onSuccess: () => {
-			toast.success(
-				t("admin.institution.toast.saved", {
-					defaultValue: "Institution saved",
-				}),
-			);
+			toast.success(t("admin.institution.toast.saved"));
 			queryClient.invalidateQueries({
 				queryKey: trpc.institutions.get.queryKey(),
 			});

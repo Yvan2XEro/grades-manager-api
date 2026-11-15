@@ -30,10 +30,8 @@ export default function RegistrationFormatDetailPage() {
 	useBreadcrumbEntity(formatId, draft.id ? draft.name : null);
 
 	const backToList = () => navigate("/configuration/reg-numbers");
-	const backLabel = t("common.actions.back", { defaultValue: "Back" });
-	const deleteLabel = t("admin.registrationNumbers.list.delete", {
-		defaultValue: "Delete",
-	});
+	const backLabel = t("common.actions.back");
+	const deleteLabel = t("admin.registrationNumbers.list.delete");
 
 	if (isLoading) {
 		return (
@@ -56,9 +54,7 @@ export default function RegistrationFormatDetailPage() {
 				</Button>
 				<Card>
 					<CardContent className="py-10 text-center text-muted-foreground">
-						{t("admin.registrationNumbers.errors.notFound", {
-							defaultValue: "Format not found.",
-						})}
+						{t("admin.registrationNumbers.errors.notFound")}
 					</CardContent>
 				</Card>
 			</div>
@@ -79,45 +75,29 @@ export default function RegistrationFormatDetailPage() {
 					</button>
 					<h1 className="text-foreground">
 						{draft.id
-							? t("admin.registrationNumbers.dialog.editTitle", {
-									defaultValue: "Edit format",
-								})
-							: t("admin.registrationNumbers.dialog.createTitle", {
-									defaultValue: "New format",
-								})}
+							? t("admin.registrationNumbers.dialog.editTitle")
+							: t("admin.registrationNumbers.dialog.createTitle")}
 					</h1>
 					<p className="text-muted-foreground">
-						{t("admin.registrationNumbers.subtitle", {
-							defaultValue:
-								"Design templates for automatic matricule generation.",
-						})}
+						{t("admin.registrationNumbers.subtitle")}
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					{draft.id && draft.isActive && (
 						<Badge variant="secondary">
-							{t("admin.registrationNumbers.list.active", {
-								defaultValue: "Active",
-							})}
+							{t("admin.registrationNumbers.list.active")}
 						</Badge>
 					)}
 					<Button onClick={save} disabled={isSaving}>
-						{t("admin.registrationNumbers.actions.save", {
-							defaultValue: "Save format",
-						})}
+						{t("admin.registrationNumbers.actions.save")}
 					</Button>
 					{draft.id && !draft.isActive && (
 						<Button
 							variant="destructive"
 							onClick={() =>
 								confirmAction({
-									title: t(
-										"admin.registrationNumbers.list.confirmDeleteTitle",
-										{ defaultValue: "Delete format?" },
-									),
-									message: t("admin.registrationNumbers.list.confirmDelete", {
-										defaultValue: "Delete this format permanently?",
-									}),
+									title: t("admin.registrationNumbers.list.confirmDeleteTitle"),
+									message: t("admin.registrationNumbers.list.confirmDelete"),
 									confirmText: deleteLabel,
 									onConfirm: remove,
 								})

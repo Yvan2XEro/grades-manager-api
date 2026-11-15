@@ -17,9 +17,7 @@ export function PeriodFilters(props: PeriodFiltersProps) {
 		<div className="flex flex-wrap items-end gap-4">
 			<div className="w-56 space-y-1">
 				<Label className="text-muted-foreground text-xs">
-					{t("admin.classes.filters.academicYear", {
-						defaultValue: "Academic Year",
-					})}
+					{t("admin.classes.filters.academicYear")}
 				</Label>
 				<AcademicYearSelect
 					value={props.academicYearId}
@@ -28,7 +26,7 @@ export function PeriodFilters(props: PeriodFiltersProps) {
 			</div>
 			<div className="w-56 space-y-1">
 				<Label className="text-muted-foreground text-xs">
-					{t("admin.classes.filters.semester", { defaultValue: "Semester" })}
+					{t("admin.classes.filters.semester")}
 				</Label>
 				<SemesterSelect
 					value={props.semesterId}

@@ -7,7 +7,7 @@ export function getCentersColumns(t: TFunction): ColumnDef<CenterRow>[] {
 	return [
 		{
 			id: "logo",
-			header: t("admin.centers.table.logo", { defaultValue: "Logo" }),
+			header: t("admin.centers.table.logo"),
 			meta: { className: "w-16" },
 			cell: ({ row: { original: center } }) =>
 				center.logoUrl ? (
@@ -24,7 +24,7 @@ export function getCentersColumns(t: TFunction): ColumnDef<CenterRow>[] {
 		},
 		{
 			id: "code",
-			header: t("admin.centers.table.code", { defaultValue: "Code" }),
+			header: t("admin.centers.table.code"),
 			meta: { className: "w-28" },
 			cell: ({ row }) => (
 				<span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 font-mono text-xs">
@@ -34,7 +34,7 @@ export function getCentersColumns(t: TFunction): ColumnDef<CenterRow>[] {
 		},
 		{
 			id: "name",
-			header: t("admin.centers.table.name", { defaultValue: "Nom" }),
+			header: t("admin.centers.table.name"),
 			cell: ({ row: { original: center } }) => (
 				<div className="font-medium">
 					{center.shortName ?? center.name}
@@ -44,17 +44,17 @@ export function getCentersColumns(t: TFunction): ColumnDef<CenterRow>[] {
 		},
 		{
 			id: "city",
-			header: t("admin.centers.table.city", { defaultValue: "Ville" }),
+			header: t("admin.centers.table.city"),
 			cell: ({ row }) => row.original.city || "—",
 		},
 		{
 			id: "country",
-			header: t("admin.centers.table.country", { defaultValue: "Pays" }),
+			header: t("admin.centers.table.country"),
 			cell: ({ row }) => row.original.country || "—",
 		},
 		{
 			id: "status",
-			header: t("admin.centers.table.status", { defaultValue: "Statut" }),
+			header: t("admin.centers.table.status"),
 			cell: ({ row: { original: center } }) => (
 				<span
 					className={
@@ -64,8 +64,8 @@ export function getCentersColumns(t: TFunction): ColumnDef<CenterRow>[] {
 					}
 				>
 					{center.isActive
-						? t("common.status.active", { defaultValue: "Actif" })
-						: t("common.status.inactive", { defaultValue: "Inactif" })}
+						? t("common.status.active")
+						: t("common.status.inactive")}
 				</span>
 			),
 		},

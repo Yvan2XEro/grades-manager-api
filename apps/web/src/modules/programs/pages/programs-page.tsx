@@ -69,12 +69,8 @@ export default function ProgramsPage() {
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deletePrograms.mutate([...selection.selectedIds], {
@@ -116,9 +112,7 @@ export default function ProgramsPage() {
 					<div className="relative w-full max-w-sm">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 						<Input
-							placeholder={t("admin.programs.search", {
-								defaultValue: "Search programs...",
-							})}
+							placeholder={t("admin.programs.search")}
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							className="pl-9"
@@ -130,9 +124,7 @@ export default function ProgramsPage() {
 					>
 						<Button variant="outline" size="sm" onClick={startDuplicate}>
 							<Copy className="mr-1 h-3.5 w-3.5" />
-							{t("admin.programs.duplicate.button", {
-								defaultValue: "Dupliquer vers cycle…",
-							})}
+							{t("admin.programs.duplicate.button")}
 						</Button>
 						<Button
 							variant="destructive"

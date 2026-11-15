@@ -44,12 +44,8 @@ export const StudyCycleFormDialog = createCallable<
 					: await trpcClient.studyCycles.createCycle.mutate(data);
 				toast.success(
 					cycle
-						? t("admin.studyCycles.toast.updateSuccess", {
-								defaultValue: "Study cycle updated",
-							})
-						: t("admin.studyCycles.toast.createSuccess", {
-								defaultValue: "Study cycle created",
-							}),
+						? t("admin.studyCycles.toast.updateSuccess")
+						: t("admin.studyCycles.toast.createSuccess"),
 				);
 				queryClient.invalidateQueries({
 					queryKey: trpc.studyCycles.listPaged.queryKey(),
@@ -70,10 +66,8 @@ export const StudyCycleFormDialog = createCallable<
 			className="sm:max-w-xl"
 			title={
 				cycle
-					? t("admin.studyCycles.actions.update", {
-							defaultValue: "Update cycle",
-						})
-					: t("admin.studyCycles.actions.add", { defaultValue: "Add cycle" })
+					? t("admin.studyCycles.actions.update")
+					: t("admin.studyCycles.actions.add")
 			}
 		>
 			<Form {...form}>
@@ -82,9 +76,7 @@ export const StudyCycleFormDialog = createCallable<
 					{!cycle && autoLevelsPreview.length > 0 && (
 						<div className="rounded-lg border border-dashed bg-muted/40 p-3">
 							<p className="mb-2 font-medium text-muted-foreground text-xs">
-								{t("admin.studyCycles.form.autoLevelsPreview", {
-									defaultValue: "Levels that will be auto-created:",
-								})}
+								{t("admin.studyCycles.form.autoLevelsPreview")}
 							</p>
 							<div className="flex flex-wrap gap-1.5">
 								{autoLevelsPreview.map((lvl) => (
@@ -92,7 +84,10 @@ export const StudyCycleFormDialog = createCallable<
 										key={lvl.code}
 										className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary text-xs"
 									>
-										{lvl.code} · {lvl.minCredits} cr
+										{lvl.code} ·{" "}
+										{t("admin.studyCycles.form.creditsShort", {
+											value: lvl.minCredits,
+										})}
 									</span>
 								))}
 							</div>

@@ -24,9 +24,7 @@ export function WorkflowNotificationsPanel({
 	return (
 		<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
 			<h2 className="font-heading font-semibold text-foreground text-lg">
-				{t("dean.workflows.notifications", {
-					defaultValue: "Workflow notifications",
-				})}
+				{t("dean.workflows.notifications")}
 			</h2>
 			<ul className="mt-4 space-y-2">
 				{pendingNotifications.length ? (
@@ -57,9 +55,7 @@ export function WorkflowNotificationsPanel({
 					))
 				) : (
 					<li className="rounded-lg bg-muted/50 p-3 text-muted-foreground text-sm">
-						{t("dean.workflows.notificationsEmpty", {
-							defaultValue: "No notifications",
-						})}
+						{t("dean.workflows.notificationsEmpty")}
 					</li>
 				)}
 			</ul>

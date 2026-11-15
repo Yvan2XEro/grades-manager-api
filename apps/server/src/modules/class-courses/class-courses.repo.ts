@@ -324,12 +324,17 @@ export async function listPaged(opts: {
 				courseCode: schema.courses.code,
 				teacherFirstName: schema.domainUsers.firstName,
 				teacherLastName: schema.domainUsers.lastName,
+				ueSemester: schema.teachingUnits.semester,
 				createdAt: schema.classCourses.createdAt,
 			})
 			.from(schema.classCourses)
 			.leftJoin(
 				schema.courses,
 				eq(schema.courses.id, schema.classCourses.course),
+			)
+			.leftJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
 			)
 			.leftJoin(
 				schema.domainUsers,

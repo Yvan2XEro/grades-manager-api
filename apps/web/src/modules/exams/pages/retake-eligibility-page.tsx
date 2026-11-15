@@ -160,7 +160,7 @@ export default function RetakeEligibilityPage() {
 							<div className="relative w-full sm:w-64">
 								<Search className="-translate-y-1/2 absolute top-1/2 left-2.5 h-3.5 w-3.5 text-muted-foreground" />
 								<Input
-									placeholder="Nom ou n° d’inscription…"
+									placeholder={t("admin.retake.searchPlaceholder")}
 									value={search}
 									onChange={(e) => setSearch(e.target.value)}
 									className="h-8 pl-8 text-sm"

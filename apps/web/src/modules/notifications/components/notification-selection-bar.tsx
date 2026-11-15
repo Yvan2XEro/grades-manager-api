@@ -39,9 +39,7 @@ export function NotificationSelectionBar({
 					className="h-7 gap-1.5 text-xs"
 				>
 					<RefreshCw className="h-3.5 w-3.5" />
-					{t("admin.notifications.actions.flush", {
-						defaultValue: "Flush",
-					})}
+					{t("admin.notifications.actions.flush")}
 				</Button>
 			</div>
 		</div>

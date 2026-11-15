@@ -20,12 +20,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 
 const optionSchema = z.object({
-	name: z.string().min(1, "Name is required"),
-	code: z.string().min(1, "Code is required"),
+	name: z
+		.string()
+		.min(1, { error: () => i18n.t("admin.programs.validation.nameRequired") }),
+	code: z
+		.string()
+		.min(1, { error: () => i18n.t("admin.programs.validation.code") }),
 	description: z.string().optional(),
 });
 type OptionFormData = z.infer<typeof optionSchema>;
@@ -69,12 +74,8 @@ export const ProgramOptionFormDialog = createCallable<
 				: await trpcClient.programOptions.create.mutate({ ...data, programId });
 			toast.success(
 				option
-					? t("admin.programs.options.toast.update", {
-							defaultValue: "Option updated",
-						})
-					: t("admin.programs.options.toast.create", {
-							defaultValue: "Option added",
-						}),
+					? t("admin.programs.options.toast.update")
+					: t("admin.programs.options.toast.create"),
 			);
 			queryClient.invalidateQueries({
 				queryKey: trpc.programOptions.list.queryKey(),
@@ -152,10 +153,10 @@ export const ProgramOptionFormDialog = createCallable<
 						</Button>
 						<Button type="submit" disabled={submit.pending}>
 							{submit.pending
-								? t("common.actions.saving", { defaultValue: "Saving..." })
+								? t("common.actions.saving")
 								: option
 									? t("common.actions.saveChanges")
-									: t("common.actions.create", { defaultValue: "Create" })}
+									: t("common.actions.create")}
 						</Button>
 					</div>
 				</form>

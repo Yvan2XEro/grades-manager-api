@@ -18,11 +18,7 @@ export function useDeleteProgramOption(programId: string) {
 	return useMutation({
 		mutationFn: (id: string) => trpcClient.programOptions.delete.mutate({ id }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.programs.options.toast.delete", {
-					defaultValue: "Option deleted",
-				}),
-			);
+			toast.success(t("admin.programs.options.toast.delete"));
 			queryClient.invalidateQueries(
 				trpc.programOptions.list.queryFilter({ programId, limit: 100 }),
 			);

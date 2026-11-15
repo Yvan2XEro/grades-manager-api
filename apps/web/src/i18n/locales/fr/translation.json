@@ -11,10 +11,30 @@
     },
     "filterBar": {
       "label": "Filtres",
-      "reset": "Réinitialiser"
+      "reset": "Réinitialiser",
+      "activeCount_one": "{{count}} actif",
+      "activeCount_other": "{{count}} actifs"
     },
     "datePicker": {
       "placeholder": "Choisir une date"
+    },
+    "gradingProgress": {
+      "missing_one": "{{count}} manquant",
+      "missing_other": "{{count}} manquants"
+    },
+    "weeklyGrid": {
+      "days": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Jeu",
+        "fri": "Ven",
+        "sat": "Sam",
+        "sun": "Dim"
+      }
+    },
+    "loadingScreen": {
+      "label": "Chargement"
     }
   },
   "common": {
@@ -70,7 +90,9 @@
     "pagination": {
       "next": "Suivant",
       "previous": "Précédent",
-      "page": "Page"
+      "page": "Page",
+      "showing": "{{start}}–{{end}} sur {{total}}",
+      "perPage": "{{count}} / page"
     },
     "errors": {
       "unknown": "Erreur inconnue"
@@ -151,7 +173,14 @@
       "morePages": "Autres pages",
       "loading": "Chargement",
       "hidePassword": "Masquer le mot de passe",
-      "showPassword": "Afficher le mot de passe"
+      "showPassword": "Afficher le mot de passe",
+      "selectRow": "Sélectionner la ligne",
+      "clearSearch": "Effacer la recherche"
+    },
+    "itemCount_one": "{{count}} élément",
+    "itemCount_other": "{{count}} éléments",
+    "validation": {
+      "required": "Obligatoire"
     }
   },
   "navigation": {
@@ -452,6 +481,10 @@
       "details": "Détails",
       "myCourses": "Mes cours",
       "importYears": "Années académiques"
+    },
+    "badges": {
+      "new": "Nouveau",
+      "updated": "Mis à jour"
     }
   },
   "auth": {
@@ -914,7 +947,9 @@
       "fields": {
         "jobType": "Type de traitement",
         "academicYear": "Année académique",
-        "class": "Classe"
+        "class": "Classe",
+        "jobTypePlaceholder": "Sélectionnez un type de tâche...",
+        "classPlaceholder": "Sélectionnez une classe..."
       },
       "actions": {
         "create": "Nouveau traitement",
@@ -1384,7 +1419,8 @@
         "logoSvg": "Logo SVG (code source)",
         "logoSvgHint": "Si renseigné, le SVG est utilisé en priorité sur les exports (à la place du logo PNG/URL).",
         "logoSvgAlternative": "…ou code SVG (utilisé en priorité sur les exports)",
-        "signatoryTitlePlaceholder": "Directeur Général"
+        "signatoryTitlePlaceholder": "Directeur Général",
+        "readFileError": "Impossible de lire le fichier"
       },
       "sections": {
         "contact": "Contact et localisation",
@@ -1440,7 +1476,8 @@
         "duration": "Durée (années)",
         "minCredits": "Crédits minimum",
         "autoLevelsPreview": "Aperçu des niveaux auto-générés",
-        "nameEn": "Name (English)"
+        "nameEn": "Name (English)",
+        "creditsShort": "{{value}} cr"
       },
       "toast": {
         "createSuccess": "Cycle créé",
@@ -1650,7 +1687,7 @@
         "domainFrLabel": "Domaine (FR)",
         "domainEnLabel": "Domain (EN)",
         "specialiteFrLabel": "Spécialité (FR)",
-        "specialiteEnLabel": "Specialization (EN)",
+        "specialiteEnLabel": "Spécialité (EN)",
         "diplomaTitleFrLabel": "Titre diplôme (FR)",
         "diplomaTitleEnLabel": "Titre diplôme (EN)",
         "attestationValidityFrLabel": "Validité attestation (FR)",
@@ -1669,7 +1706,8 @@
         "name": "Le nom doit comporter au moins 2 caractères",
         "code": "Le code est obligatoire",
         "faculty": "Veuillez sélectionner une faculté",
-        "cycle": "Veuillez sélectionner un cycle"
+        "cycle": "Veuillez sélectionner un cycle",
+        "nameRequired": "Le nom est obligatoire"
       },
       "toast": {
         "createSuccess": "Programme créé avec succès",
@@ -1741,7 +1779,19 @@
         "center": "Centre",
         "cycle": "Cycle",
         "description": "Description",
-        "isCenterProgram": "Programme de centre"
+        "isCenterProgram": "Programme de centre",
+        "name": "Nom (FR)",
+        "nameEn": "Nom (EN)",
+        "code": "Code",
+        "abbreviation": "Abréviation",
+        "domainFr": "Domaine (FR)",
+        "domainEn": "Domaine (EN)",
+        "specialiteFr": "Spécialité (FR)",
+        "specialiteEn": "Spécialité (EN)",
+        "diplomaTitleFr": "Intitulé du diplôme (FR)",
+        "diplomaTitleEn": "Intitulé du diplôme (EN)",
+        "attestationValidityFr": "Validité de l'attestation (FR)",
+        "attestationValidityEn": "Validité de l'attestation (EN)"
       },
       "templateTypes": {
         "diploma": "Diplôme",
@@ -1923,7 +1973,8 @@
         "date": "Date du rattrapage",
         "scoringPolicy": "Politique de notation",
         "scoringPolicyHelp": "Comment calculer la note finale après le rattrapage"
-      }
+      },
+      "searchPlaceholder": "Nom ou n° d’inscription…"
     },
     "examTypes": {
       "title": "Types d'examen",
@@ -2499,7 +2550,8 @@
       "excel": {
         "publicationTitle": "PUBLICATION DES NOTES - {{course}} ({{type}})",
         "dateLine": "Date : {{date}}"
-      }
+      },
+      "contextTitle": "Contexte"
     },
     "students": {
       "title": "Gestion des étudiants",
@@ -2957,7 +3009,11 @@
       "windowOpened": "Fenêtre d'inscription ouverte",
       "windowOpenedDesc": "Les étudiants peuvent s'inscrire pour la classe sélectionnée.",
       "justNow": "À l'instant",
-      "flushConfirmDesc": "Cela va immédiatement tenter l'envoi de toutes les notifications en attente. Continuer ?"
+      "flushConfirmDesc": "Cela va immédiatement tenter l'envoi de toutes les notifications en attente. Continuer ?",
+      "channels": {
+        "email": "E-mail",
+        "webhook": "Webhook"
+      }
     },
     "teachingUnits": {
       "title": "Unités d'enseignement",
@@ -3196,7 +3252,8 @@
         "signedAt": "Signé le",
         "signedBy": "Signé par",
         "notYet": "Pas encore",
-        "juryNumber": "N° jury"
+        "juryNumber": "N° jury",
+        "fallbackTitle": "Délibération"
       },
       "override": {
         "title": "Modifier la décision",
@@ -3344,7 +3401,8 @@
         "decision": "Décision",
         "mention": "Mention",
         "stats": "Taux de réussite : {{rate}}% | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}}",
-        "sheetName": "Délibération"
+        "sheetName": "Délibération",
+        "filePrefix": "Deliberation"
       }
     },
     "centers": {
@@ -4708,12 +4766,26 @@
       },
       "noMatch": "Aucun cours correspondant",
       "noMatchHint": "Essayez une autre recherche ou effacez les filtres.",
-      "searchPlaceholder": "Search Placeholder",
+      "searchPlaceholder": "Rechercher un cours ou une classe…",
       "summary": "Summary",
       "noExams": "Aucun examen pour ce cours",
       "hubTitle": "Mes cours & notes",
       "hubDescription": "Saisie des notes, verrouillage et soumission par cours",
-      "noSearchMatch": "Aucun cours ne correspond à votre recherche."
+      "noSearchMatch": "Aucun cours ne correspond à votre recherche.",
+      "examRow": {
+        "submit": "Soumettre",
+        "enter": "Saisir",
+        "view": "Voir",
+        "average": "moy {{value}}"
+      },
+      "toolbar": {
+        "actionRequired": "Action requise",
+        "sort": {
+          "relevance": "Pertinence",
+          "name": "Nom A→Z",
+          "class": "Classe"
+        }
+      }
     },
     "courses.manage": {
       "title": "Gestion des cours",
@@ -4876,6 +4948,14 @@
         "exportSuccess": "Modèle exporté avec succès",
         "importSuccess": "{{count}} notes importées avec succès",
         "importError": "Échec de l'importation des notes"
+      },
+      "template": {
+        "registrationNumber": "Matricule",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "score": "Note",
+        "sheetName": "Notes",
+        "filePrefix": "notes"
       }
     },
     "gradeExport": {
@@ -5307,7 +5387,9 @@
         "sun": "Dimanche"
       },
       "errors": {
-        "endBeforeStart": "L'heure de fin doit être après l'heure de début."
+        "endBeforeStart": "L'heure de fin doit être après l'heure de début.",
+        "timeFormat": "L'heure doit être au format HH:MM",
+        "validUntilBeforeValidFrom": "La date de fin de validité doit être postérieure à la date de début"
       },
       "confirmDelete": "Supprimer cette séance ?",
       "confirmDeleteDesc": "Cette action est irréversible.",
@@ -5649,7 +5731,10 @@
       "actionRequired": "Action requise",
       "noDeliberation": "Délibération non encore effectuée",
       "avgGeneral": "Moy. générale",
-      "successRate": "Taux réussite"
+      "successRate": "Taux réussite",
+      "totalExams": "{{count}} au total",
+      "submittedExams_one": "{{count}} examen en attente",
+      "submittedExams_other": "{{count}} examens en attente"
     },
     "approvals": {
       "title": "Approbations en attente",
@@ -5674,7 +5759,10 @@
       "score": "Note",
       "searchPlaceholder": "Rechercher un examen...",
       "allClasses": "Toutes les classes",
-      "allYears": "Toutes les années"
+      "allYears": "Toutes les années",
+      "minMax": "min {{min}} · max {{max}}",
+      "selectAllExams": "Sélectionner tous les examens",
+      "selectExam": "Sélectionner {{name}}"
     },
     "history": {
       "title": "Historique des approbations",
@@ -5774,7 +5862,8 @@
       "enrolled": "Inscrit",
       "unenroll": "Se désinscrire",
       "enroll": "S'inscrire",
-      "selected": "{{count}} cours sélectionné(s) sur {{total}}"
+      "selected": "{{count}} cours sélectionné(s) sur {{total}}",
+      "coefficient": "Coef. {{value}}"
     },
     "dashboard": {
       "title": "Mon espace",
@@ -6046,7 +6135,9 @@
         "revoked": "Session révoquée",
         "revokedAll": "Autres sessions révoquées",
         "error": "Impossible de charger les sessions"
-      }
+      },
+      "unknownBrowser": "Navigateur inconnu",
+      "otherBrowser": "Navigateur"
     },
     "preferences": {
       "title": "Préférences",
@@ -6269,7 +6360,9 @@
         "diploma": "Délivrance de diplôme",
         "reenrollment": "Réinscription",
         "document_generation": "Génération de documents"
-      }
+      },
+      "enabledHint": "Les étudiants doivent être en règle pour effectuer cette action",
+      "disabledHint": "Contrôle désactivé — tous les étudiants ont accès"
     },
     "orders": {
       "title": "Ordres de paiement",
@@ -6824,7 +6917,11 @@
         "reviewed": "Décision enregistrée",
         "documentReviewed": "Document revu",
         "converted": "Candidature convertie en dossier étudiant"
-      }
+      },
+      "totalCount_one": "{{count}} candidature au total",
+      "totalCount_other": "{{count}} candidatures au total",
+      "filteredCount_one": "{{count}} candidature correspondant aux filtres",
+      "filteredCount_other": "{{count}} candidatures correspondant aux filtres"
     },
     "sections": {
       "father": "Père",

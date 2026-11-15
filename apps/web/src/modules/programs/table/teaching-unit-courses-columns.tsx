@@ -10,15 +10,11 @@ export function getTeachingUnitCoursesColumns(
 	return [
 		{
 			id: "code",
-			header: t("admin.teachingUnits.courses.table.code", {
-				defaultValue: "Code",
-			}),
+			header: t("admin.teachingUnits.courses.table.code"),
 			cell: ({ row }) => (
 				<ClipboardCopy
 					value={row.original.code}
-					label={t("admin.teachingUnits.courses.table.code", {
-						defaultValue: "Code",
-					})}
+					label={t("admin.teachingUnits.courses.table.code")}
 				/>
 			),
 		},
@@ -41,9 +37,7 @@ export function getTeachingUnitCoursesColumns(
 		},
 		{
 			id: "coefficient",
-			header: t("admin.teachingUnits.courses.table.coefficient", {
-				defaultValue: "Coef.",
-			}),
+			header: t("admin.teachingUnits.courses.table.coefficient"),
 			cell: ({ row }) => row.original.defaultCoefficient,
 		},
 	];

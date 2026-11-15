@@ -59,8 +59,9 @@ export default function AdmissionsPage() {
 					)}
 					{!isLoading && (
 						<p className="text-muted-foreground text-xs">
-							{total} {total === 1 ? "candidature" : "candidatures"}
-							{filters.hasFilters ? " correspondant aux filtres" : " au total"}
+							{filters.hasFilters
+								? t("admissions.admin.filteredCount", { count: total })
+								: t("admissions.admin.totalCount", { count: total })}
 						</p>
 					)}
 				</>

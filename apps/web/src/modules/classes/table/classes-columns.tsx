@@ -22,24 +22,22 @@ function TwoLines({ main, sub }: { main?: string; sub?: string }) {
 }
 
 export function getClassesColumns(t: TFunction): ColumnDef<ClassRow>[] {
-	const notAvailable = t("common.labels.notAvailable", { defaultValue: "N/A" });
+	const notAvailable = t("common.labels.notAvailable");
 	return [
 		{
 			id: "code",
-			header: t("admin.classes.table.code", { defaultValue: "Code" }),
+			header: t("admin.classes.table.code"),
 			meta: { className: "w-[13%]" },
 			cell: ({ row }) => (
 				<ClipboardCopy
 					value={row.original.code}
-					label={t("admin.classes.table.code", { defaultValue: "Code" })}
+					label={t("admin.classes.table.code")}
 				/>
 			),
 		},
 		{
 			id: "name",
-			header: t("admin.classes.table.classProgram", {
-				defaultValue: "Class / Program",
-			}),
+			header: t("admin.classes.table.classProgram"),
 			meta: { className: "w-[28%]" },
 			cell: ({ row }) => (
 				<TwoLines main={row.original.name} sub={row.original.program.name} />
@@ -47,7 +45,7 @@ export function getClassesColumns(t: TFunction): ColumnDef<ClassRow>[] {
 		},
 		{
 			id: "cycle",
-			header: t("admin.classes.table.cycle", { defaultValue: "Cycle / level" }),
+			header: t("admin.classes.table.cycle"),
 			meta: { className: "w-[20%]" },
 			cell: ({ row: { original: cls } }) =>
 				cls.cycle ? (
@@ -64,9 +62,7 @@ export function getClassesColumns(t: TFunction): ColumnDef<ClassRow>[] {
 		},
 		{
 			id: "option",
-			header: t("admin.classes.table.optionSemester", {
-				defaultValue: "Option / Semester",
-			}),
+			header: t("admin.classes.table.optionSemester"),
 			meta: { className: "w-[11%]" },
 			cell: ({ row: { original: cls } }) =>
 				cls.programOption ? (
@@ -77,7 +73,7 @@ export function getClassesColumns(t: TFunction): ColumnDef<ClassRow>[] {
 		},
 		{
 			id: "credits",
-			header: t("admin.classes.table.credits", { defaultValue: "Credits" }),
+			header: t("admin.classes.table.credits"),
 			meta: { className: "w-[13%]" },
 			cell: ({ row: { original: cls } }) => (
 				<div className="flex items-center gap-1.5 whitespace-nowrap">

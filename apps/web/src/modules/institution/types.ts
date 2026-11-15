@@ -27,10 +27,7 @@ export type Institution = {
 	logoSvg: string | null;
 	coverImageUrl: string | null;
 	parentInstitutionId: string | null;
-	institutionId: string | null;
 	timezone: string | null;
-	defaultAcademicYearId?: string | null;
-	registrationFormatId?: string | null;
 };
 
 export type StudyCycleRow =

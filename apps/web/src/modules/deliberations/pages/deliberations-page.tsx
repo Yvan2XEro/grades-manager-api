@@ -67,7 +67,7 @@ export default function DeliberationsList() {
 
 	const rowActions = (d: DeliberationListItem): RowAction[] => [
 		{
-			label: t("common.actions.open", { defaultValue: "Open" }),
+			label: t("common.actions.open"),
 			icon: ExternalLink,
 			onSelect: () => openDetail(d),
 		},
@@ -80,9 +80,7 @@ export default function DeliberationsList() {
 						separator: true,
 						onSelect: () =>
 							confirmAction({
-								title: t("admin.deliberations.confirm.deleteTitle", {
-									defaultValue: "Delete deliberation?",
-								}),
+								title: t("admin.deliberations.confirm.deleteTitle"),
 								message: t("admin.deliberations.confirm.delete"),
 								confirmText: t("admin.deliberations.actions.delete"),
 								onConfirm: () => deleteMutation.mutate(d.id),

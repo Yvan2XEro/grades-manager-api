@@ -37,7 +37,7 @@ export default function ClassDetailStudents() {
 		<Card className="flex min-h-64 flex-1 flex-col">
 			<CardHeader>
 				<CardTitle>
-					{t("classes.hub.tabs.students", { defaultValue: "Students" })}
+					{t("classes.hub.tabs.students")}
 					{students.length > 0 && (
 						<span className="ml-2 font-normal text-muted-foreground text-sm">
 							({students.length})
@@ -63,20 +63,10 @@ export default function ClassDetailStudents() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead>{t("admin.students.table.lastName")}</TableHead>
+								<TableHead>{t("admin.students.table.firstName")}</TableHead>
 								<TableHead>
-									{t("admin.students.table.lastName", {
-										defaultValue: "Last Name",
-									})}
-								</TableHead>
-								<TableHead>
-									{t("admin.students.table.firstName", {
-										defaultValue: "First Name",
-									})}
-								</TableHead>
-								<TableHead>
-									{t("admin.students.table.registrationNumber", {
-										defaultValue: "Reg. #",
-									})}
+									{t("admin.students.table.registrationNumber")}
 								</TableHead>
 								<TableHead className="w-16" />
 							</TableRow>

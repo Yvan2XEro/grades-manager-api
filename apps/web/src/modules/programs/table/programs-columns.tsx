@@ -10,11 +10,11 @@ export function getProgramsColumns(
 	return [
 		{
 			id: "code",
-			header: t("admin.programs.table.code", { defaultValue: "Code" }),
+			header: t("admin.programs.table.code"),
 			cell: ({ row }) => (
 				<ClipboardCopy
 					value={row.original.code}
-					label={t("admin.programs.table.code", { defaultValue: "Code" })}
+					label={t("admin.programs.table.code")}
 				/>
 			),
 		},
@@ -27,7 +27,7 @@ export function getProgramsColumns(
 		},
 		{
 			id: "cycle",
-			header: t("admin.programs.table.cycle", { defaultValue: "Cycle" }),
+			header: t("admin.programs.table.cycle"),
 			cell: ({ row: { original: program } }) => (
 				<span className="text-muted-foreground text-sm">
 					{program.cycleId ? cycleNames.get(program.cycleId) : "—"}
@@ -47,9 +47,7 @@ export function getProgramsColumns(
 		{
 			id: "options",
 			header: () => (
-				<div className="text-center">
-					{t("admin.programs.table.options", { defaultValue: "Options" })}
-				</div>
+				<div className="text-center">{t("admin.programs.table.options")}</div>
 			),
 			cell: ({ row }) => (
 				<div className="text-center">{row.original.optionsCount}</div>

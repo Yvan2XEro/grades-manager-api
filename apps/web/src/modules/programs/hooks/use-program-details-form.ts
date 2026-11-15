@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type { ProgramData } from "../types";
@@ -11,9 +12,13 @@ import { useStudyCycles } from "./use-study-cycles";
 
 // Mirrors the server update schema: these text fields are not nullable there
 const schema = z.object({
-	name: z.string().min(1, "Name is required"),
+	name: z
+		.string()
+		.min(1, { error: () => i18n.t("admin.programs.validation.nameRequired") }),
 	nameEn: z.string().optional().nullable(),
-	code: z.string().min(1, "Code is required"),
+	code: z
+		.string()
+		.min(1, { error: () => i18n.t("admin.programs.validation.code") }),
 	abbreviation: z.string().optional().nullable(),
 	description: z.string().optional(),
 	domainFr: z.string().optional().nullable(),
@@ -97,11 +102,7 @@ export function useProgramDetailsForm(
 		mutationFn: (data: ProgramDetailsFormData) =>
 			trpcClient.programs.update.mutate({ id: programId, ...data }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.programs.toast.updateSuccess", {
-					defaultValue: "Program updated",
-				}),
-			);
+			toast.success(t("admin.programs.toast.updateSuccess"));
 			queryClient.invalidateQueries(
 				trpc.programs.getById.queryOptions({ id: programId }),
 			);

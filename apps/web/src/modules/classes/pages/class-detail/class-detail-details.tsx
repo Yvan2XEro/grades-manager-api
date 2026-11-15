@@ -41,11 +41,7 @@ export default function ClassDetailDetails() {
 		mutationFn: (data: ClassFormData) =>
 			trpcClient.classes.update.mutate({ id: cls.id, ...toClassPayload(data) }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.classes.toast.updateSuccess", {
-					defaultValue: "Class updated",
-				}),
-			);
+			toast.success(t("admin.classes.toast.updateSuccess"));
 			queryClient.invalidateQueries(
 				trpc.classes.getById.queryOptions({ id: cls.id }),
 			);
@@ -73,7 +69,7 @@ export default function ClassDetailDetails() {
 						<div className="flex justify-end pt-2">
 							<Button type="submit" disabled={update.isPending}>
 								{update.isPending
-									? t("common.actions.saving", { defaultValue: "Saving..." })
+									? t("common.actions.saving")
 									: t("common.actions.saveChanges")}
 							</Button>
 						</div>

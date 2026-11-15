@@ -1,11 +1,31 @@
 import * as XLSX from "xlsx";
+import i18n from "@/i18n";
 import type { GradesByStudent, RosterStudent } from "../types";
 
-type TemplateRow = {
-	"Registration Number": string;
-	"First Name": string;
-	"Last Name": string;
-	Score: number | string;
+type TemplateColumn = "registrationNumber" | "firstName" | "lastName" | "score";
+
+const TEMPLATE_COLUMN_KEYS = {
+	registrationNumber: "teacher.gradeEntry.template.registrationNumber",
+	firstName: "teacher.gradeEntry.template.firstName",
+	lastName: "teacher.gradeEntry.template.lastName",
+	score: "teacher.gradeEntry.template.score",
+} as const satisfies Record<TemplateColumn, string>;
+
+/** Languages whose headers are accepted on import (a template may be filled in either). */
+const TEMPLATE_LANGUAGES = ["en", "fr"] as const;
+
+type TemplateRow = Record<string, string | number | null | undefined>;
+
+const columnHeader = (column: TemplateColumn) =>
+	i18n.t(TEMPLATE_COLUMN_KEYS[column]);
+
+/** Value of a column in an imported row, whatever the template language. */
+const readColumn = (row: TemplateRow, column: TemplateColumn) => {
+	for (const lng of TEMPLATE_LANGUAGES) {
+		const value = row[i18n.t(TEMPLATE_COLUMN_KEYS[column], { lng })];
+		if (value !== undefined) return value;
+	}
+	return undefined;
 };
 
 /** Excel template of an exam: one row per student with the current score. */
@@ -21,17 +41,22 @@ export function exportGradeTemplate({
 	examName: string;
 }) {
 	const data = students.map((student) => ({
-		"Registration Number": student.registrationNumber || "",
-		"First Name": student.firstName,
-		"Last Name": student.lastName,
-		Score: gradesByStudent[student.id]?.score ?? "",
+		[columnHeader("registrationNumber")]: student.registrationNumber || "",
+		[columnHeader("firstName")]: student.firstName,
+		[columnHeader("lastName")]: student.lastName,
+		[columnHeader("score")]: gradesByStudent[student.id]?.score ?? "",
 	}));
 
 	const worksheet = XLSX.utils.json_to_sheet(data);
 	const workbook = XLSX.utils.book_new();
-	XLSX.utils.book_append_sheet(workbook, worksheet, "Grades");
+	XLSX.utils.book_append_sheet(
+		workbook,
+		worksheet,
+		i18n.t("teacher.gradeEntry.template.sheetName"),
+	);
 
-	const fileName = `${courseName || "grades"}_${examName}_${new Date().toISOString().split("T")[0]}.xlsx`;
+	const prefix = courseName || i18n.t("teacher.gradeEntry.template.filePrefix");
+	const fileName = `${prefix}_${examName}_${new Date().toISOString().split("T")[0]}.xlsx`;
 	XLSX.writeFile(workbook, fileName);
 }
 
@@ -57,15 +82,24 @@ export function readGradeImport(
 				let importedCount = 0;
 
 				jsonData.forEach((row) => {
+					const registrationNumber = readColumn(row, "registrationNumber");
+					const firstName = readColumn(row, "firstName");
+					const lastName = readColumn(row, "lastName");
+					const rawScore = readColumn(row, "score");
 					const student = students.find(
 						(s) =>
-							s.registrationNumber === row["Registration Number"] ||
-							(s.firstName === row["First Name"] &&
-								s.lastName === row["Last Name"]),
+							(registrationNumber !== undefined &&
+								s.registrationNumber === String(registrationNumber)) ||
+							(s.firstName === firstName && s.lastName === lastName),
 					);
 
-					if (student && row.Score !== "" && row.Score !== null) {
-						const score = Number(row.Score);
+					if (
+						student &&
+						rawScore !== undefined &&
+						rawScore !== "" &&
+						rawScore !== null
+					) {
+						const score = Number(rawScore);
 						if (!Number.isNaN(score) && score >= 0 && score <= 20) {
 							updates[`student_${student.id}`] = score;
 							importedCount++;

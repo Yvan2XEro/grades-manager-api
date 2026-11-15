@@ -24,9 +24,7 @@ export default function DeliberationJuryTab() {
 						{delib.juryNumber && (
 							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
-									{t("admin.deliberations.detail.juryNumber", {
-										defaultValue: "N° jury",
-									})}
+									{t("admin.deliberations.detail.juryNumber")}
 								</dt>
 								<dd className="font-medium">{delib.juryNumber}</dd>
 							</div>

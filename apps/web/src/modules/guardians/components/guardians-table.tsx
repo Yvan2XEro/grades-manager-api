@@ -34,11 +34,7 @@ export function GuardiansTable({
 					<TableHead className="w-8" />
 					<TableHead>{t("guardians.fields.firstName")}</TableHead>
 					<TableHead>{t("guardians.fields.email")}</TableHead>
-					<TableHead>
-						{t("guardians.admin.linkedStudents", {
-							defaultValue: "Linked to",
-						})}
-					</TableHead>
+					<TableHead>{t("guardians.admin.linkedStudents")}</TableHead>
 					<TableHead>{t("guardians.fields.relationshipType")}</TableHead>
 					<TableHead className="w-10" />
 				</TableRow>
@@ -87,9 +83,7 @@ export function GuardiansTable({
 										<Badge variant="secondary">
 											{linkCount}{" "}
 											{linkCount === 1
-												? t("guardians.admin.student", {
-														defaultValue: "student",
-													})
+												? t("guardians.admin.student")
 												: t("guardians.admin.students")}
 										</Badge>
 									)}

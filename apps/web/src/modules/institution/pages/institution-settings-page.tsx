@@ -51,16 +51,9 @@ export default function InstitutionSettingsPage() {
 					<Landmark className="h-5 w-5 text-primary" />
 				</div>
 				<div>
-					<h1 className="text-foreground">
-						{t("admin.institution.title", {
-							defaultValue: "Institution settings",
-						})}
-					</h1>
+					<h1 className="text-foreground">{t("admin.institution.title")}</h1>
 					<p className="text-muted-foreground text-xs">
-						{t("admin.institution.subtitle", {
-							defaultValue:
-								"Configure the bilingual identity, branding, and official contacts for generated documents.",
-						})}
+						{t("admin.institution.subtitle")}
 					</p>
 				</div>
 			</div>

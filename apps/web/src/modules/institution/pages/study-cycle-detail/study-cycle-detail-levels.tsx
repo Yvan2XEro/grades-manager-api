@@ -24,7 +24,7 @@ export default function StudyCycleDetailLevels() {
 			cycleId: cycleId!,
 			defaults: {
 				code: `${cycle?.code ?? "L"}-L${nextNum}`,
-				name: `Level ${nextNum}`,
+				name: t("admin.studyCycles.levels.defaultName", { value: nextNum }),
 			},
 		});
 	};
@@ -37,9 +37,7 @@ export default function StudyCycleDetailLevels() {
 			<CardContent className="space-y-3 pt-6">
 				<Button type="button" variant="outline" onClick={openCreate}>
 					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.studyCycles.actions.addLevel", {
-						defaultValue: "Add level",
-					})}
+					{t("admin.studyCycles.actions.addLevel")}
 				</Button>
 				<div className="space-y-2">
 					{levelsQuery.data?.map((level) => (
@@ -52,7 +50,6 @@ export default function StudyCycleDetailLevels() {
 								<p className="text-muted-foreground text-xs">
 									{level.code} ·{" "}
 									{t("admin.studyCycles.levelCredits", {
-										defaultValue: "Required credits: {{value}}",
 										value: level.minCredits,
 									})}
 								</p>
@@ -83,9 +80,7 @@ export default function StudyCycleDetailLevels() {
 					))}
 					{!levelsQuery.data?.length && (
 						<p className="text-muted-foreground text-sm">
-							{t("admin.studyCycles.levelsEmpty", {
-								defaultValue: "No levels defined yet.",
-							})}
+							{t("admin.studyCycles.levelsEmpty")}
 						</p>
 					)}
 				</div>

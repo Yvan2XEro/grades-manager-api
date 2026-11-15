@@ -29,7 +29,6 @@ export function BulkActionBar({
 				>
 					<span className="font-medium text-primary text-sm">
 						{t("common.bulkActions.selected", {
-							defaultValue: "{{count}} selected",
 							count: selectedCount,
 						})}
 					</span>
@@ -40,7 +39,7 @@ export function BulkActionBar({
 						className="h-7 px-2 text-muted-foreground"
 					>
 						<X className="mr-1 h-3.5 w-3.5" />
-						{t("common.bulkActions.clear", { defaultValue: "Clear" })}
+						{t("common.bulkActions.clear")}
 					</Button>
 					<div className="mx-1 h-5 w-px bg-border" />
 					<div className="flex items-center gap-2">{children}</div>

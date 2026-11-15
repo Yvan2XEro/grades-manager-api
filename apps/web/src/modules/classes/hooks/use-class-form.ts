@@ -61,22 +61,13 @@ const classSchema = (t: TFunction) =>
 			error: t("admin.classes.validation.academicYear"),
 		}),
 		cycleLevelId: z.string({
-			error: t("admin.classes.validation.cycleLevel", {
-				defaultValue: "Please select a cycle level",
-			}),
+			error: t("admin.classes.validation.cycleLevel"),
 		}),
 		programOptionId: z.string({
-			error: t("admin.classes.validation.programOption", {
-				defaultValue: "Please select a program option",
-			}),
+			error: t("admin.classes.validation.programOption"),
 		}),
 		semesterId: z.string().optional(),
-		code: z.string().min(
-			3,
-			t("admin.classes.validation.code", {
-				defaultValue: "Code is required",
-			}),
-		),
+		code: z.string().min(3, t("admin.classes.validation.code")),
 		name: z.string().min(2, t("admin.classes.validation.name")),
 		totalCredits: z.coerce.number().int().min(0).default(0),
 	});

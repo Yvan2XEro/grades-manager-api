@@ -63,13 +63,7 @@ export const InstitutionFormDialog = createCallable<
 		call,
 		async (call, values: InstitutionFormValues) => {
 			try {
-				// The active year and format are not institution fields: the server derives them
-				const {
-					defaultAcademicYearId: _year,
-					registrationFormatId: _format,
-					...fields
-				} = values;
-				const shared = toInstitutionPayload(fields);
+				const shared = toInstitutionPayload(values);
 				const saved = editingInstitution
 					? await trpcClient.institutions.update.mutate({
 							id: editingInstitution.id,
@@ -78,12 +72,8 @@ export const InstitutionFormDialog = createCallable<
 					: await trpcClient.institutions.create.mutate(shared);
 				toast.success(
 					editingInstitution
-						? t("admin.institutions.toast.updateSuccess", {
-								defaultValue: "Institution updated",
-							})
-						: t("admin.institutions.toast.createSuccess", {
-								defaultValue: "Institution created",
-							}),
+						? t("admin.institutions.toast.updateSuccess")
+						: t("admin.institutions.toast.createSuccess"),
 				);
 				queryClient.invalidateQueries({
 					queryKey: trpc.institutions.list.queryKey(),
@@ -105,12 +95,8 @@ export const InstitutionFormDialog = createCallable<
 			contentClassName="max-h-[calc(90vh-8rem)]"
 			title={
 				editingInstitution
-					? t("admin.institutions.form.editTitle", {
-							defaultValue: "Edit institution",
-						})
-					: t("admin.institutions.form.createTitle", {
-							defaultValue: "Create institution",
-						})
+					? t("admin.institutions.form.editTitle")
+					: t("admin.institutions.form.createTitle")
 			}
 		>
 			<Form {...form}>
@@ -138,9 +124,7 @@ export const InstitutionFormDialog = createCallable<
 								? t("common.actions.saving")
 								: editingInstitution
 									? t("common.actions.save")
-									: t("admin.institutions.form.submit", {
-											defaultValue: "Create",
-										})}
+									: t("admin.institutions.form.submit")}
 						</Button>
 					</div>
 				</form>

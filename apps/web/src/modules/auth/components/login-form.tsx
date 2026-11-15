@@ -103,9 +103,7 @@ export function LoginForm({
 						htmlFor="remember"
 						className="cursor-pointer font-normal text-sm"
 					>
-						{t("auth.login.rememberMe", {
-							defaultValue: "Se souvenir de moi pendant 30 jours",
-						})}
+						{t("auth.login.rememberMe")}
 					</Label>
 				</motion.div>
 

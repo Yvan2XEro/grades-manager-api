@@ -11,12 +11,12 @@ export function getCoursesColumns(
 	return [
 		{
 			id: "code",
-			header: t("admin.courses.table.code", { defaultValue: "Code" }),
+			header: t("admin.courses.table.code"),
 			meta: { className: "w-[14%]" },
 			cell: ({ row }) => (
 				<ClipboardCopy
 					value={row.original.code}
-					label={t("admin.courses.table.code", { defaultValue: "Code" })}
+					label={t("admin.courses.table.code")}
 				/>
 			),
 		},
@@ -41,7 +41,7 @@ export function getCoursesColumns(
 						{name}
 					</p>
 				) : (
-					t("common.labels.notAvailable", { defaultValue: "N/A" })
+					t("common.labels.notAvailable")
 				);
 			},
 		},

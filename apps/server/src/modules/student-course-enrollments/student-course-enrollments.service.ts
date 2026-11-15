@@ -436,6 +436,7 @@ export async function autoEnrollClass(
 				studentId: string;
 				classCourseId: string;
 			}>,
+			warnings: [] as PrerequisiteWarning[],
 		};
 	}
 	const status = input.status ?? "active";

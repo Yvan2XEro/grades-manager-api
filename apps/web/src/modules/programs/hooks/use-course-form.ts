@@ -20,24 +20,13 @@ const buildCourseSchema = (t: TFunction) =>
 		name: z.string().min(2, t("admin.courses.validation.name")),
 		hours: z.coerce.number().min(1, t("admin.courses.validation.hours")),
 		program: z.string({ error: t("admin.courses.validation.program") }),
-		teachingUnitId: z.string().min(
-			1,
-			t("admin.teachingUnits.validation.required", {
-				defaultValue: "Select a teaching unit",
-			}),
-		),
+		teachingUnitId: z
+			.string()
+			.min(1, t("admin.teachingUnits.validation.required")),
 		defaultTeacher: z.string({
 			error: t("admin.courses.validation.teacher"),
 		}),
-		code: z
-			.string()
-			.trim()
-			.min(
-				2,
-				t("admin.courses.validation.code", {
-					defaultValue: "Code is required",
-				}),
-			),
+		code: z.string().trim().min(2, t("admin.courses.validation.code")),
 	});
 
 type CourseSchema = ReturnType<typeof buildCourseSchema>;

@@ -1,4 +1,5 @@
 import { AlertCircle, ArrowUpDown, Search, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,12 +30,13 @@ export function TeacherCoursesToolbar({
 	onFilterActionChange: (value: boolean) => void;
 	onSortChange: (value: TeacherCourseSort) => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="flex flex-wrap items-center gap-3">
 			<div className="relative min-w-[200px] flex-1">
 				<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 				<Input
-					placeholder="Rechercher un cours ou une classe…"
+					placeholder={t("teacher.courses.searchPlaceholder")}
 					className="pl-9"
 					value={search}
 					onChange={(e) => onSearchChange(e.target.value)}
@@ -43,6 +45,7 @@ export function TeacherCoursesToolbar({
 					<button
 						type="button"
 						onClick={() => onSearchChange("")}
+						aria-label={t("common.a11y.clearSearch")}
 						className="-translate-y-1/2 absolute top-1/2 right-3 text-muted-foreground transition-colors hover:text-foreground"
 					>
 						<X className="h-4 w-4" />
@@ -57,7 +60,7 @@ export function TeacherCoursesToolbar({
 				className="shrink-0 gap-2"
 			>
 				<AlertCircle className="h-4 w-4" />
-				Action requise
+				{t("teacher.courses.toolbar.actionRequired")}
 				{actionCount > 0 && (
 					<span
 						className={cn(
@@ -81,9 +84,15 @@ export function TeacherCoursesToolbar({
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent align="end">
-					<SelectItem value="relevance">Pertinence</SelectItem>
-					<SelectItem value="name">Nom A→Z</SelectItem>
-					<SelectItem value="class">Classe</SelectItem>
+					<SelectItem value="relevance">
+						{t("teacher.courses.toolbar.sort.relevance")}
+					</SelectItem>
+					<SelectItem value="name">
+						{t("teacher.courses.toolbar.sort.name")}
+					</SelectItem>
+					<SelectItem value="class">
+						{t("teacher.courses.toolbar.sort.class")}
+					</SelectItem>
 				</SelectContent>
 			</Select>
 		</div>

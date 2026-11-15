@@ -38,21 +38,15 @@ export function useDeleteTeachingUnits() {
 			queryClient.invalidateQueries(trpc.teachingUnits.listPaged.queryFilter());
 			toast.success(
 				ids.length === 1
-					? t("admin.teachingUnits.toast.deleted", {
-							defaultValue: "Teaching unit deleted",
-						})
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					? t("admin.teachingUnits.toast.deleted")
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) =>
 			toast.error(
 				ids.length === 1
 					? (error as Error).message
-					: t("common.bulkActions.deleteError", {
-							defaultValue: "Failed to delete items",
-						}),
+					: t("common.bulkActions.deleteError"),
 			),
 	});
 }

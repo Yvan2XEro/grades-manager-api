@@ -1,4 +1,6 @@
+import type { ParseKeys } from "i18next";
 import { CheckCircle2, Clock, RotateCcw, XCircle } from "lucide-react";
+import i18n from "@/i18n";
 import type { StatusFilter } from "../types";
 
 export const STATUS_TAB_KEYS: StatusFilter[] = [
@@ -36,13 +38,13 @@ export const statusConfig = {
 	},
 } as const;
 
-export const channelLabels: Record<string, string> = {
-	email: "Email",
-	webhook: "Webhook",
+export const channelLabelKeys: Record<string, ParseKeys> = {
+	email: "admin.notifications.channels.email",
+	webhook: "admin.notifications.channels.webhook",
 };
 
 export function formatDeliveryDate(date: string | Date) {
-	return new Intl.DateTimeFormat("fr-FR", {
+	return new Intl.DateTimeFormat(i18n.language, {
 		day: "2-digit",
 		month: "short",
 		hour: "2-digit",

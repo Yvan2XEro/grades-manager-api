@@ -53,19 +53,15 @@ export function TeachingUnitCoursesCard({
 
 	const confirmDelete = (id: string) =>
 		confirmAction({
-			title: t("admin.teachingUnits.courses.deleteTitle", {
-				defaultValue: "Delete element",
-			}),
-			message: t("admin.teachingUnits.courses.deleteMessage", {
-				defaultValue: "This action cannot be undone.",
-			}),
+			title: t("admin.teachingUnits.courses.deleteTitle"),
+			message: t("admin.teachingUnits.courses.deleteMessage"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () => deleteCourse.mutateAsync(id).catch(() => undefined),
 		});
 
 	const rowActions = (course: UeCourse): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Pencil,
 			onSelect: () => openForm(course),
 		},
@@ -84,22 +80,14 @@ export function TeachingUnitCoursesCard({
 		<Card className="border-0 shadow-sm">
 			<CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 				<div>
-					<CardTitle>
-						{t("admin.teachingUnits.courses.title", {
-							defaultValue: "Constitutive elements",
-						})}
-					</CardTitle>
+					<CardTitle>{t("admin.teachingUnits.courses.title")}</CardTitle>
 					<CardDescription>
-						{t("admin.teachingUnits.courses.subtitle", {
-							defaultValue: "Manage ECs tied to this teaching unit.",
-						})}
+						{t("admin.teachingUnits.courses.subtitle")}
 					</CardDescription>
 				</div>
 				<Button onClick={() => openForm()}>
 					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.teachingUnits.courses.actions.add", {
-						defaultValue: "Add element",
-					})}
+					{t("admin.teachingUnits.courses.actions.add")}
 				</Button>
 			</CardHeader>
 			<CardContent>
@@ -111,9 +99,7 @@ export function TeachingUnitCoursesCard({
 					rowActions={rowActions}
 					empty={
 						<p className="text-muted-foreground text-sm">
-							{t("admin.teachingUnits.courses.empty", {
-								defaultValue: "No elements yet.",
-							})}
+							{t("admin.teachingUnits.courses.empty")}
 						</p>
 					}
 				/>

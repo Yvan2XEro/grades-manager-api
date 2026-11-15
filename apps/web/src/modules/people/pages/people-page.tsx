@@ -42,19 +42,17 @@ export default function PeoplePage() {
 
 	const confirmDeleteProfile = (profileId: string) =>
 		confirmAction({
-			title: t("common.confirmDelete", { defaultValue: "Confirm delete" }),
-			message: t("usersHub.people.deleteConfirm", {
-				defaultValue: "This will permanently delete the profile.",
-			}),
-			confirmText: t("common.delete", { defaultValue: "Delete" }),
-			cancelText: t("common.cancel", { defaultValue: "Cancel" }),
+			title: t("common.confirmDelete"),
+			message: t("usersHub.people.deleteConfirm"),
+			confirmText: t("common.delete"),
+			cancelText: t("common.cancel"),
 			onConfirm: () =>
 				deleteMutation.mutateAsync(profileId).catch(() => undefined),
 		});
 
 	const rowActions = (person: PersonRow): RowAction[] => [
 		{
-			label: t("common.actions.open", { defaultValue: "Open" }),
+			label: t("common.actions.open"),
 			icon: ExternalLink,
 			onSelect: () => navigate(`/profiles/${person.id}`),
 		},
@@ -64,7 +62,7 @@ export default function PeoplePage() {
 			onSelect: () => navigate(`/profiles/${person.id}/access`),
 		},
 		{
-			label: t("common.actions.delete", { defaultValue: "Delete" }),
+			label: t("common.actions.delete"),
 			icon: Trash2,
 			destructive: true,
 			separator: true,
@@ -76,14 +74,12 @@ export default function PeoplePage() {
 		<ListLayout
 			header={
 				<PageHeader
-					title={t("usersHub.people.title", { defaultValue: "People" })}
-					description={t("usersHub.people.subtitle", {
-						defaultValue: "All profiles in the institution.",
-					})}
+					title={t("usersHub.people.title")}
+					description={t("usersHub.people.subtitle")}
 					actions={
 						<Button onClick={() => CreatePersonDialog.call()}>
 							<Plus className="mr-2 h-4 w-4" />
-							{t("usersHub.people.add", { defaultValue: "Add person" })}
+							{t("usersHub.people.add")}
 						</Button>
 					}
 				/>
@@ -111,9 +107,7 @@ export default function PeoplePage() {
 				rowActions={rowActions}
 				empty={
 					<div className="py-12 text-center text-muted-foreground">
-						{t("usersHub.people.empty", {
-							defaultValue: "No people found.",
-						})}
+						{t("usersHub.people.empty")}
 					</div>
 				}
 			/>

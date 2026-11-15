@@ -53,11 +53,7 @@ export default function ClassDetailCourses() {
 	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.classCourses.delete.mutate({ id }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.classCourses.toast.deleteSuccess", {
-					defaultValue: "Course assignment removed",
-				}),
-			);
+			toast.success(t("admin.classCourses.toast.deleteSuccess"));
 			invalidate();
 		},
 		onError: (err: Error) => toast.error(err.message),
@@ -67,16 +63,14 @@ export default function ClassDetailCourses() {
 		confirmAction({
 			title: t("admin.classCourses.deleteConfirm.title"),
 			message: t("admin.classCourses.deleteConfirm.description"),
-			confirmText: t("common.actions.delete", { defaultValue: "Delete" }),
+			confirmText: t("common.actions.delete"),
 			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
 		});
 
 	return (
 		<Card className="flex min-h-64 flex-1 flex-col">
 			<CardHeader className="flex flex-row items-center justify-between">
-				<CardTitle>
-					{t("classes.hub.tabs.courses", { defaultValue: "Courses" })}
-				</CardTitle>
+				<CardTitle>{t("classes.hub.tabs.courses")}</CardTitle>
 				<Button size="sm" asChild>
 					<Link to="/classes/assignments">
 						{t("admin.classCourses.actions.manage")}
@@ -88,16 +82,9 @@ export default function ClassDetailCourses() {
 					<Empty>
 						<EmptyHeader>
 							<EmptyContent>
-								<EmptyTitle>
-									{t("admin.classCourses.empty.title", {
-										defaultValue: "No course assignments",
-									})}
-								</EmptyTitle>
+								<EmptyTitle>{t("admin.classCourses.empty.title")}</EmptyTitle>
 								<EmptyDescription>
-									{t("admin.classCourses.empty.description", {
-										defaultValue:
-											"Assign courses to this class from the Assignments page.",
-									})}
+									{t("admin.classCourses.empty.description")}
 								</EmptyDescription>
 							</EmptyContent>
 						</EmptyHeader>

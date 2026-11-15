@@ -44,11 +44,7 @@ export function RetakeExamPicker({
 						/>
 					</div>
 					<div className="flex flex-col gap-2">
-						<Label>
-							{t("admin.classes.filters.semester", {
-								defaultValue: "Semester",
-							})}
-						</Label>
+						<Label>{t("admin.classes.filters.semester")}</Label>
 						<SemesterSelect
 							value={selection.semesterId}
 							onChange={selection.setSemesterId}

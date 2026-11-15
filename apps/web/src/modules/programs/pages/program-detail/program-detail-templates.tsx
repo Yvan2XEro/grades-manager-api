@@ -28,14 +28,10 @@ export default function ProgramDetailTemplates() {
 	return (
 		<Card>
 			<CardHeader className="flex flex-row items-center justify-between">
-				<CardTitle>
-					{t("programs.hub.tabs.templates", {
-						defaultValue: "Export Templates",
-					})}
-				</CardTitle>
+				<CardTitle>{t("programs.hub.tabs.templates")}</CardTitle>
 				<Button onClick={() => save.mutate()} disabled={save.isPending}>
 					{save.isPending
-						? t("common.actions.saving", { defaultValue: "Saving..." })
+						? t("common.actions.saving")
 						: t("common.actions.saveChanges")}
 				</Button>
 			</CardHeader>
@@ -51,14 +47,10 @@ export default function ProgramDetailTemplates() {
 								onValueChange={(val) => select(type, val)}
 							>
 								<SelectTrigger className="w-64">
-									<SelectValue
-										placeholder={t("common.none", { defaultValue: "None" })}
-									/>
+									<SelectValue placeholder={t("common.none")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="none">
-										{t("common.none", { defaultValue: "None" })}
-									</SelectItem>
+									<SelectItem value="none">{t("common.none")}</SelectItem>
 									{templates
 										.filter((tpl) => tpl.type === type)
 										.map((tpl) => (

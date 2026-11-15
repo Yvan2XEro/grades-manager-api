@@ -1,6 +1,8 @@
 import type React from "react";
+import { useTranslation } from "react-i18next";
 
 const LoadingScreen: React.FC = () => {
+	const { t } = useTranslation();
 	return (
 		<div
 			style={{
@@ -210,7 +212,7 @@ const LoadingScreen: React.FC = () => {
 						textTransform: "uppercase",
 					}}
 				>
-					Chargement
+					{t("components.loadingScreen.label")}
 					{[0, 0.2, 0.4].map((delay, i) => (
 						<span
 							key={i}

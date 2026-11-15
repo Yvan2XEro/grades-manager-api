@@ -58,7 +58,6 @@ export const buildCourseLabel = (
 ) => {
 	if (name && code) {
 		return t("admin.enrollments.warnings.courseLabel", {
-			defaultValue: "{{name}} ({{code}})",
 			name,
 			code,
 		});
@@ -66,7 +65,6 @@ export const buildCourseLabel = (
 	if (name) return name;
 	if (code) return code;
 	return t("admin.enrollments.warnings.courseFallback", {
-		defaultValue: "Course {{courseId}}",
 		courseId: fallbackId ?? "N/A",
 	});
 };

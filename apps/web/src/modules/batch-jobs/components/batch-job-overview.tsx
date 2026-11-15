@@ -40,12 +40,11 @@ export function BatchJobOverview({ job }: { job: BatchJob }) {
 								{t("admin.batchJobs.detail.step", {
 									current: progress.currentStep,
 									total: progress.totalSteps,
-									defaultValue: `Step ${progress.currentStep}/${progress.totalSteps}`,
 								})}
 							</span>
 							<span className="font-medium">
 								{progress.itemsProcessed}/{progress.itemsTotal}{" "}
-								{t("admin.batchJobs.detail.items", { defaultValue: "items" })}
+								{t("admin.batchJobs.detail.items")}
 							</span>
 						</div>
 						<div className="h-3 w-full rounded-full bg-gray-200">

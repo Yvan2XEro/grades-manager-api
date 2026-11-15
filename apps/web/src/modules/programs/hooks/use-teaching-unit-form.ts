@@ -12,35 +12,16 @@ import { useProgramList } from "./use-programs";
 
 const buildUnitSchema = (t: TFunction) =>
 	z.object({
-		name: z.string().min(
-			2,
-			t("admin.teachingUnits.validation.name", {
-				defaultValue: "Name is required",
-			}),
-		),
-		code: z.string().min(
-			2,
-			t("admin.teachingUnits.validation.code", {
-				defaultValue: "Code is required",
-			}),
-		),
+		name: z.string().min(2, t("admin.teachingUnits.validation.name")),
+		code: z.string().min(2, t("admin.teachingUnits.validation.code")),
 		description: z.string().optional(),
 		credits: z
 			.number()
 			.int()
-			.nonnegative(
-				t("admin.teachingUnits.validation.credits", {
-					defaultValue: "Credits must be positive",
-				}),
-			),
+			.nonnegative(t("admin.teachingUnits.validation.credits")),
 		semester: z.enum(["fall", "spring", "annual"]),
 		cycleLevelId: z.string().nullable().optional(),
-		programId: z.string().min(
-			1,
-			t("admin.teachingUnits.validation.program", {
-				defaultValue: "Select a program",
-			}),
-		),
+		programId: z.string().min(1, t("admin.teachingUnits.validation.program")),
 	});
 
 export type TeachingUnitFormData = z.infer<ReturnType<typeof buildUnitSchema>>;
@@ -126,11 +107,7 @@ export function useTeachingUnitForm(teachingUnitId: string) {
 		mutationFn: (payload: TeachingUnitFormData) =>
 			trpcClient.teachingUnits.create.mutate(payload),
 		onSuccess: (unit) => {
-			toast.success(
-				t("admin.teachingUnits.toast.created", {
-					defaultValue: "Teaching unit created",
-				}),
-			);
+			toast.success(t("admin.teachingUnits.toast.created"));
 			invalidateLists();
 			navigate(`/programs/teaching-units/${unit.id}/details`);
 		},
@@ -144,11 +121,7 @@ export function useTeachingUnitForm(teachingUnitId: string) {
 				...payload,
 			}),
 		onSuccess: () => {
-			toast.success(
-				t("admin.teachingUnits.toast.updated", {
-					defaultValue: "Teaching unit updated",
-				}),
-			);
+			toast.success(t("admin.teachingUnits.toast.updated"));
 			invalidateLists();
 		},
 		onError: (error: Error) => toast.error(error.message),

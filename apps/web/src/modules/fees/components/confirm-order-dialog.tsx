@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-import type { PaymentMethod } from "../types";
+import { PAYMENT_METHODS, type PaymentMethod } from "../types";
 
 /**
  * Confirms a payment order with the actual payment details; resolves `true`
@@ -70,9 +70,7 @@ export const ConfirmOrderDialog = createCallable<
 							className="font-medium text-sm"
 							htmlFor="confirm-payment-date"
 						>
-							{t("feeClearance.orders.fields.paymentDate", {
-								defaultValue: "Payment date",
-							})}
+							{t("feeClearance.orders.fields.paymentDate")}
 						</label>
 						<input
 							id="confirm-payment-date"
@@ -87,9 +85,7 @@ export const ConfirmOrderDialog = createCallable<
 							className="font-medium text-sm"
 							htmlFor="confirm-payment-method"
 						>
-							{t("feeClearance.orders.fields.paymentMethod", {
-								defaultValue: "Payment method",
-							})}
+							{t("feeClearance.orders.fields.paymentMethod")}
 						</label>
 						<select
 							id="confirm-payment-method"
@@ -97,11 +93,11 @@ export const ConfirmOrderDialog = createCallable<
 							value={paymentMethod}
 							onChange={(e) => setPaymentMethod(e.target.value)}
 						>
-							<option value="cash">Cash</option>
-							<option value="bank_transfer">Bank transfer</option>
-							<option value="mobile_money">Mobile money</option>
-							<option value="check">Check</option>
-							<option value="other">Other</option>
+							{PAYMENT_METHODS.map((m) => (
+								<option key={m} value={m}>
+									{t(`feeClearance.payments.methods.${m}`)}
+								</option>
+							))}
 						</select>
 					</div>
 					<div className="grid gap-1">

@@ -29,11 +29,7 @@ export function LiteralSegmentOptions({
 	const { t } = useTranslation();
 	return (
 		<div className="space-y-2">
-			<Label>
-				{t("admin.registrationNumbers.segments.literalValue", {
-					defaultValue: "Text value",
-				})}
-			</Label>
+			<Label>{t("admin.registrationNumbers.segments.literalValue")}</Label>
 			<Input
 				value={segment.value}
 				onChange={(event) =>
@@ -56,11 +52,7 @@ export function FieldSegmentOptions({
 	return (
 		<div className="grid gap-4 md:grid-cols-2">
 			<div className="space-y-2">
-				<Label>
-					{t("admin.registrationNumbers.segments.fieldSelect", {
-						defaultValue: "Select field",
-					})}
-				</Label>
+				<Label>{t("admin.registrationNumbers.segments.fieldSelect")}</Label>
 				<Select
 					value={segment.field}
 					onValueChange={(value) =>
@@ -83,11 +75,7 @@ export function FieldSegmentOptions({
 				</Select>
 			</div>
 			<div className="space-y-2">
-				<Label>
-					{t("admin.registrationNumbers.segments.transform", {
-						defaultValue: "Transform",
-					})}
-				</Label>
+				<Label>{t("admin.registrationNumbers.segments.transform")}</Label>
 				<Select
 					value={segment.transform ?? "upper"}
 					onValueChange={(value) =>
@@ -102,29 +90,19 @@ export function FieldSegmentOptions({
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="upper">
-							{t("admin.registrationNumbers.segments.uppercase", {
-								defaultValue: "Uppercase",
-							})}
+							{t("admin.registrationNumbers.segments.uppercase")}
 						</SelectItem>
 						<SelectItem value="lower">
-							{t("admin.registrationNumbers.segments.lowercase", {
-								defaultValue: "Lowercase",
-							})}
+							{t("admin.registrationNumbers.segments.lowercase")}
 						</SelectItem>
 						<SelectItem value="none">
-							{t("admin.registrationNumbers.segments.none", {
-								defaultValue: "Original",
-							})}
+							{t("admin.registrationNumbers.segments.none")}
 						</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 			<div className="space-y-2">
-				<Label>
-					{t("admin.registrationNumbers.segments.length", {
-						defaultValue: "Max length",
-					})}
-				</Label>
+				<Label>{t("admin.registrationNumbers.segments.length")}</Label>
 				<Input
 					type="number"
 					min={1}
@@ -139,11 +117,7 @@ export function FieldSegmentOptions({
 				/>
 			</div>
 			<div className="space-y-2">
-				<Label>
-					{t("admin.registrationNumbers.segments.fallback", {
-						defaultValue: "Fallback",
-					})}
-				</Label>
+				<Label>{t("admin.registrationNumbers.segments.fallback")}</Label>
 				<Input
 					value={segment.fallback ?? ""}
 					onChange={(event) =>
@@ -168,11 +142,7 @@ export function CounterSegmentOptions({
 		<div className="space-y-4">
 			<div className="grid gap-4 md:grid-cols-2">
 				<div className="space-y-2">
-					<Label>
-						{t("admin.registrationNumbers.segments.counterWidth", {
-							defaultValue: "Width",
-						})}
-					</Label>
+					<Label>{t("admin.registrationNumbers.segments.counterWidth")}</Label>
 					<Input
 						type="number"
 						min={1}
@@ -188,11 +158,7 @@ export function CounterSegmentOptions({
 					/>
 				</div>
 				<div className="space-y-2">
-					<Label>
-						{t("admin.registrationNumbers.segments.counterStart", {
-							defaultValue: "Start value",
-						})}
-					</Label>
+					<Label>{t("admin.registrationNumbers.segments.counterStart")}</Label>
 					<Input
 						type="number"
 						min={0}
@@ -209,11 +175,7 @@ export function CounterSegmentOptions({
 				</div>
 			</div>
 			<div className="space-y-2">
-				<Label>
-					{t("admin.registrationNumbers.segments.counterPad", {
-						defaultValue: "Pad character",
-					})}
-				</Label>
+				<Label>{t("admin.registrationNumbers.segments.counterPad")}</Label>
 				<Input
 					value={segment.padChar ?? "0"}
 					maxLength={1}
@@ -226,11 +188,7 @@ export function CounterSegmentOptions({
 				/>
 			</div>
 			<div className="space-y-2">
-				<Label>
-					{t("admin.registrationNumbers.segments.counterScope", {
-						defaultValue: "Counter scope",
-					})}
-				</Label>
+				<Label>{t("admin.registrationNumbers.segments.counterScope")}</Label>
 				<div className="flex flex-wrap gap-3">
 					{registrationCounterScopes.map((scope) => (
 						<label

@@ -37,21 +37,15 @@ export const StudentCourseRosterDialog = createCallable<{
 						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 							<div>
 								<CardTitle className="font-semibold text-foreground text-lg">
-									{t("admin.enrollments.courseRoster.title", {
-										defaultValue: "Course roster (per student)",
-									})}
+									{t("admin.enrollments.courseRoster.title")}
 								</CardTitle>
 								<p className="text-muted-foreground text-xs">
-									{t("admin.enrollments.courseRoster.subtitle", {
-										defaultValue:
-											"Select a student to review enrollment attempts, retakes, and status per course.",
-									})}
+									{t("admin.enrollments.courseRoster.subtitle")}
 								</p>
 							</div>
 							{studentId && (
 								<Badge variant="outline" className="text-sm">
 									{t("admin.enrollments.courseRoster.selected", {
-										defaultValue: "Managing: {{value}}",
 										value: studentName,
 									})}
 								</Badge>
@@ -62,9 +56,7 @@ export const StudentCourseRosterDialog = createCallable<{
 						{studentId ? (
 							<>
 								<p className="font-medium text-foreground text-sm">
-									{t("admin.enrollments.courseRoster.courses", {
-										defaultValue: "Class courses",
-									})}
+									{t("admin.enrollments.courseRoster.courses")}
 								</p>
 								<ScrollArea className="max-h-[420px] w-full rounded-md border">
 									<div className="divide-y">
@@ -101,7 +93,6 @@ export const StudentCourseRosterDialog = createCallable<{
 															</p>
 															<p className="text-muted-foreground text-xs">
 																{t("admin.enrollments.courseRoster.teacher", {
-																	defaultValue: "Teacher: {{value}}",
 																	value: teacherName,
 																})}
 															</p>
@@ -123,9 +114,7 @@ export const StudentCourseRosterDialog = createCallable<{
 																	{status === "none"
 																		? t(
 																				"admin.enrollments.courseRoster.notEnrolled",
-																				{
-																					defaultValue: "Not enrolled",
-																				},
+																				{},
 																			)
 																		: status}
 																</Badge>
@@ -137,7 +126,6 @@ export const StudentCourseRosterDialog = createCallable<{
 																		{t(
 																			"admin.enrollments.courseRoster.attemptBadge",
 																			{
-																				defaultValue: "Attempt {{value}}",
 																				value: enrollment.attempt,
 																			},
 																		)}
@@ -150,9 +138,7 @@ export const StudentCourseRosterDialog = createCallable<{
 																	>
 																		{t(
 																			"admin.enrollments.courseRoster.retakeEligible",
-																			{
-																				defaultValue: "Retake eligible",
-																			},
+																			{},
 																		)}
 																	</Badge>
 																)}
@@ -168,15 +154,11 @@ export const StudentCourseRosterDialog = createCallable<{
 																	{canReactivate
 																		? t(
 																				"admin.enrollments.courseRoster.reactivateBtn",
-																				{
-																					defaultValue: "Restore enrollment",
-																				},
+																				{},
 																			)
 																		: t(
 																				"admin.enrollments.courseRoster.enrollBtn",
-																				{
-																					defaultValue: "Enroll",
-																				},
+																				{},
 																			)}
 																</Button>
 																<Button
@@ -196,9 +178,7 @@ export const StudentCourseRosterDialog = createCallable<{
 																>
 																	{t(
 																		"admin.enrollments.courseRoster.withdrawBtn",
-																		{
-																			defaultValue: "Withdraw",
-																		},
+																		{},
 																	)}
 																</Button>
 																<Button
@@ -210,9 +190,7 @@ export const StudentCourseRosterDialog = createCallable<{
 																>
 																	{t(
 																		"admin.enrollments.courseRoster.retakeBtn",
-																		{
-																			defaultValue: "Retake",
-																		},
+																		{},
 																	)}
 																</Button>
 															</div>
@@ -229,10 +207,7 @@ export const StudentCourseRosterDialog = createCallable<{
 											);
 										}) ?? (
 											<p className="text-muted-foreground text-xs">
-												{t("admin.enrollments.courseRoster.noCourses", {
-													defaultValue:
-														"This class has no courses assigned yet.",
-												})}
+												{t("admin.enrollments.courseRoster.noCourses")}
 											</p>
 										)}
 									</div>
@@ -240,9 +215,7 @@ export const StudentCourseRosterDialog = createCallable<{
 							</>
 						) : (
 							<p className="text-muted-foreground text-xs">
-								{t("admin.enrollments.courseRoster.selectStudent", {
-									defaultValue: "Pick a student to manage course enrollments.",
-								})}
+								{t("admin.enrollments.courseRoster.selectStudent")}
 							</p>
 						)}
 					</CardContent>

@@ -8,7 +8,7 @@ export function getStudyCyclesColumns(
 	return [
 		{
 			id: "name",
-			header: t("admin.studyCycles.table.name", { defaultValue: "Name" }),
+			header: t("admin.studyCycles.table.name"),
 			cell: ({ row }) => (
 				<span className="font-semibold text-foreground">
 					{row.original.name}
@@ -17,21 +17,16 @@ export function getStudyCyclesColumns(
 		},
 		{
 			id: "credits",
-			header: t("admin.studyCycles.table.credits", {
-				defaultValue: "Credits",
-			}),
+			header: t("admin.studyCycles.table.credits"),
 			meta: { className: "w-20" },
 			cell: ({ row }) => row.original.totalCreditsRequired,
 		},
 		{
 			id: "duration",
-			header: t("admin.studyCycles.table.duration", {
-				defaultValue: "Duration",
-			}),
+			header: t("admin.studyCycles.table.duration"),
 			meta: { className: "w-28" },
 			cell: ({ row }) =>
 				t("admin.studyCycles.table.years", {
-					defaultValue: "{{value}} years",
 					value: row.original.durationYears,
 				}),
 		},

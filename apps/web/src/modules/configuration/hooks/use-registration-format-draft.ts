@@ -77,18 +77,10 @@ export function useRegistrationFormatDraft(formatId: string | undefined) {
 	const upsertMutation = useMutation({
 		mutationFn: async () => {
 			if (!draft.name.trim()) {
-				throw new Error(
-					t("admin.registrationNumbers.errors.missingName", {
-						defaultValue: "Name is required",
-					}),
-				);
+				throw new Error(t("admin.registrationNumbers.errors.missingName"));
 			}
 			if (!draft.definition.segments.length) {
-				throw new Error(
-					t("admin.registrationNumbers.errors.missingSegments", {
-						defaultValue: "Add at least one segment",
-					}),
-				);
+				throw new Error(t("admin.registrationNumbers.errors.missingSegments"));
 			}
 			const payload = {
 				name: draft.name.trim(),
@@ -105,11 +97,7 @@ export function useRegistrationFormatDraft(formatId: string | undefined) {
 			return trpcClient.registrationNumbers.create.mutate(payload);
 		},
 		onSuccess: (result) => {
-			toast.success(
-				t("admin.registrationNumbers.toast.saved", {
-					defaultValue: "Format saved",
-				}),
-			);
+			toast.success(t("admin.registrationNumbers.toast.saved"));
 			invalidateList();
 			if (!draft.id) {
 				navigate(`/registration-numbers/${result.id}`, { replace: true });

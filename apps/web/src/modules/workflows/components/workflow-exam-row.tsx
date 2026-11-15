@@ -28,7 +28,7 @@ export function WorkflowExamRow({
 					<Checkbox
 						checked={selected}
 						onCheckedChange={onToggle}
-						aria-label={`Select ${exam.name}`}
+						aria-label={t("dean.approvals.selectExam", { name: exam.name })}
 					/>
 					<div>
 						<p className="font-medium text-foreground text-sm">{exam.name}</p>
@@ -57,15 +57,11 @@ export function WorkflowExamRow({
 						onClick={onReject}
 					>
 						<XCircle className="mr-1 h-3.5 w-3.5" />
-						{t("dean.workflows.actions.reject", {
-							defaultValue: "Reject",
-						})}
+						{t("dean.workflows.actions.reject")}
 					</Button>
 					<Button size="sm" onClick={onApprove} disabled={isApproving}>
 						<CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-						{t("dean.workflows.actions.validate", {
-							defaultValue: "Approve",
-						})}
+						{t("dean.workflows.actions.validate")}
 					</Button>
 				</div>
 			</div>

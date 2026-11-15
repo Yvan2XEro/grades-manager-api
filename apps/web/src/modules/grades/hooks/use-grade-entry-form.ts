@@ -50,11 +50,7 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 	}, [selectedExam, gradeEntries, gradesFetching, reset]);
 
 	const readOnlyToast = () =>
-		toast.error(
-			t("teacher.gradeEntry.delegates.readOnlyToast", {
-				defaultValue: "You cannot edit this exam.",
-			}),
-		);
+		toast.error(t("teacher.gradeEntry.delegates.readOnlyToast"));
 
 	const handleExamChange = (examId: string) => {
 		reset({});
@@ -77,11 +73,7 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 
 	const handleExportTemplate = () => {
 		if (!selectedExamInfo || !rosterStudents.length) {
-			toast.error(
-				t("teacher.gradeEntry.toast.exportError", {
-					defaultValue: "Please select an exam with students",
-				}),
-			);
+			toast.error(t("teacher.gradeEntry.toast.exportError"));
 			return;
 		}
 		exportGradeTemplate({
@@ -90,11 +82,7 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 			courseName: courseInfo?.course_name,
 			examName: selectedExamInfo.name,
 		});
-		toast.success(
-			t("teacher.gradeEntry.toast.exportSuccess", {
-				defaultValue: "Template exported successfully",
-			}),
-		);
+		toast.success(t("teacher.gradeEntry.toast.exportSuccess"));
 	};
 
 	const handleImportGrades = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,17 +99,12 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 				reset(updates);
 				toast.success(
 					t("teacher.gradeEntry.toast.importSuccess", {
-						defaultValue: "Imported {{count}} grades successfully",
 						count: importedCount,
 					}),
 				);
 			})
 			.catch(() => {
-				toast.error(
-					t("teacher.gradeEntry.toast.importError", {
-						defaultValue: "Failed to import grades",
-					}),
-				);
+				toast.error(t("teacher.gradeEntry.toast.importError"));
 			});
 		event.target.value = "";
 	};

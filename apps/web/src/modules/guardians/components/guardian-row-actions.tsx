@@ -48,17 +48,13 @@ export function GuardianRowActions({
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={onEditPreferences}>
 					<Settings className="mr-2 h-4 w-4" />
-					{t("guardians.admin.editPreferences", {
-						defaultValue: "Edit preferences",
-					})}
+					{t("guardians.admin.editPreferences")}
 				</DropdownMenuItem>
 				{g.studentLinks.length > 0 && (
 					<DropdownMenuSub>
 						<DropdownMenuSubTrigger>
 							<UserMinus className="mr-2 h-4 w-4" />
-							{t("guardians.admin.removeFromStudent", {
-								defaultValue: "Remove from student",
-							})}
+							{t("guardians.admin.removeFromStudent")}
 						</DropdownMenuSubTrigger>
 						<DropdownMenuSubContent>
 							{g.studentLinks.map((link) => (

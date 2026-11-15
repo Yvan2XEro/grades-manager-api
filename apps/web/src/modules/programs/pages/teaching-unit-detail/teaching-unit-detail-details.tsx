@@ -29,9 +29,9 @@ export default function TeachingUnitDetailDetails() {
 							</Button>
 							<Button type="submit" disabled={isPending}>
 								{isPending
-									? t("common.actions.saving", { defaultValue: "Saving..." })
+									? t("common.actions.saving")
 									: isCreateMode
-										? t("common.actions.create", { defaultValue: "Create" })
+										? t("common.actions.create")
 										: t("common.actions.saveChanges")}
 							</Button>
 						</div>

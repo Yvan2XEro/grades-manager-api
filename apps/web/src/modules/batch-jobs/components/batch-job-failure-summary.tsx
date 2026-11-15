@@ -10,12 +10,8 @@ export function BatchJobFailureSummary({ job }: { job: BatchJob }) {
 			<div className="space-y-1">
 				<p className="font-medium text-red-800 text-sm">
 					{job.status === "stale"
-						? t("admin.batchJobs.detail.timedOut", {
-								defaultValue: "Job timed out",
-							})
-						: t("admin.batchJobs.detail.failureSummary", {
-								defaultValue: "Job failed",
-							})}
+						? t("admin.batchJobs.detail.timedOut")
+						: t("admin.batchJobs.detail.failureSummary")}
 				</p>
 				{job.error && <p className="text-red-700 text-sm">{job.error}</p>}
 				{job.steps?.some((s) => s.status === "failed") && (
@@ -25,10 +21,7 @@ export function BatchJobFailureSummary({ job }: { job: BatchJob }) {
 							.map((s) => (
 								<li key={s.id}>
 									<span className="font-medium">{s.name}:</span>{" "}
-									{s.error ??
-										t("admin.batchJobs.detail.unknownError", {
-											defaultValue: "Unknown error",
-										})}
+									{s.error ?? t("admin.batchJobs.detail.unknownError")}
 								</li>
 							))}
 					</ul>

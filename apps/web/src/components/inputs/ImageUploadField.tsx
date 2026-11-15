@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { trpcClient } from "@/utils/trpc";
@@ -18,7 +19,10 @@ const fileToBase64 = (file: File) =>
 			resolve(base64);
 		};
 		reader.onerror = () =>
-			reject(reader.error ?? new Error("Failed to read file"));
+			reject(
+				reader.error ??
+					new Error(i18n.t("admin.institution.form.readFileError")),
+			);
 		reader.readAsDataURL(file);
 	});
 
@@ -61,18 +65,12 @@ export function ImageUploadField({
 			});
 			onChange(upload.url);
 			setPreview(upload.url);
-			toast.success(
-				t("admin.institution.form.uploadSuccess", {
-					defaultValue: "Image uploaded",
-				}),
-			);
+			toast.success(t("admin.institution.form.uploadSuccess"));
 		} catch (error) {
 			const message =
 				error instanceof Error
 					? error.message
-					: t("admin.institution.form.uploadError", {
-							defaultValue: "Upload failed",
-						});
+					: t("admin.institution.form.uploadError");
 			toast.error(message);
 		} finally {
 			setIsUploading(false);
@@ -103,9 +101,7 @@ export function ImageUploadField({
 							setPreview("");
 						}}
 					>
-						{t("admin.institution.form.clearImage", {
-							defaultValue: "Remove image",
-						})}
+						{t("admin.institution.form.clearImage")}
 					</Button>
 				)}
 			</div>
@@ -119,9 +115,7 @@ export function ImageUploadField({
 						/>
 					) : (
 						<p className="text-muted-foreground text-xs">
-							{t("admin.institution.form.previewPlaceholder", {
-								defaultValue: "No image yet",
-							})}
+							{t("admin.institution.form.previewPlaceholder")}
 						</p>
 					)}
 				</div>
@@ -143,29 +137,18 @@ export function ImageUploadField({
 						)}
 					>
 						<UploadIcon className="h-6 w-6 text-primary" />
-						<p>
-							{t("admin.institution.form.uploadCta", {
-								defaultValue: "Select or drop an image",
-							})}
-						</p>
+						<p>{t("admin.institution.form.uploadCta")}</p>
 						<p className="text-muted-foreground text-xs">
-							{t("admin.institution.form.uploadHint", {
-								defaultValue: "PNG/JPG up to 5 MB",
-							})}
+							{t("admin.institution.form.uploadHint")}
 						</p>
 						{isUploading && (
 							<p className="text-primary text-xs">
-								{t("admin.institution.form.uploading", {
-									defaultValue: "Uploading…",
-								})}
+								{t("admin.institution.form.uploading")}
 							</p>
 						)}
 					</div>
 					<p className="text-muted-foreground text-xs">
-						{t("admin.institution.form.uploadDescription", {
-							defaultValue:
-								"You can still paste a public URL below if you host assets elsewhere.",
-						})}
+						{t("admin.institution.form.uploadDescription")}
 					</p>
 					<input
 						ref={inputRef}

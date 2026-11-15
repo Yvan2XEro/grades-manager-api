@@ -61,9 +61,7 @@ export function useWorkflowApprovals() {
 				approverId: undefined,
 			}),
 		onSuccess: () => {
-			toast.success(
-				t("dean.workflows.toast.validated", { defaultValue: "Exam approved" }),
-			);
+			toast.success(t("dean.workflows.toast.validated"));
 			invalidateExams();
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -83,11 +81,7 @@ export function useWorkflowApprovals() {
 		onSuccess: () => {
 			invalidateExams();
 			selection.clear();
-			toast.success(
-				t("dean.workflows.toast.bulkValidated", {
-					defaultValue: "Exams approved successfully",
-				}),
-			);
+			toast.success(t("dean.workflows.toast.bulkValidated"));
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -97,36 +91,24 @@ export function useWorkflowApprovals() {
 			examId: exam.id,
 			description: t("dean.workflows.rejectDialog.subtitle", {
 				name: exam.name,
-				defaultValue:
-					'Provide a reason for rejecting "{{name}}". The teacher will see this.',
 			}),
-			successMessage: t("dean.workflows.toast.rejected", {
-				defaultValue: "Exam rejected",
-			}),
+			successMessage: t("dean.workflows.toast.rejected"),
 		});
 		if (rejected) invalidateExams();
 	};
 
 	const confirmApproval = (pending: PendingConfirm) =>
 		confirmAction({
-			title: t("dean.workflows.confirm.title", {
-				defaultValue: "Approve and lock?",
-			}),
+			title: t("dean.workflows.confirm.title"),
 			message:
 				pending.kind === "bulk"
 					? t("dean.workflows.confirm.bulkMessage", {
 							count: pending.examIds.length,
-							defaultValue:
-								"You are about to approve and lock {{count}} exam(s). This action is irreversible — grades will no longer be editable.",
 						})
 					: t("dean.workflows.confirm.singleMessage", {
 							name: pending.examName,
-							defaultValue:
-								'Approve and lock "{{name}}"? This action is irreversible — grades will no longer be editable.',
 						}),
-			confirmText: t("dean.workflows.actions.validate", {
-				defaultValue: "Approve & lock",
-			}),
+			confirmText: t("dean.workflows.actions.validate"),
 			onConfirm: () =>
 				(pending.kind === "single"
 					? validateExam.mutateAsync(pending.examId)

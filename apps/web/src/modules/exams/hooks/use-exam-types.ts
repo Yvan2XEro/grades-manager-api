@@ -56,18 +56,9 @@ export function useDeleteExamTypes(onBulkDeleted: () => void) {
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.examTypes.listPaged.queryFilter());
 			onBulkDeleted();
-			toast.success(
-				t("common.bulkActions.deleteSuccess", {
-					defaultValue: "Items deleted successfully",
-				}),
-			);
+			toast.success(t("common.bulkActions.deleteSuccess"));
 		},
-		onError: () =>
-			toast.error(
-				t("common.bulkActions.deleteError", {
-					defaultValue: "Failed to delete items",
-				}),
-			),
+		onError: () => toast.error(t("common.bulkActions.deleteError")),
 	});
 
 	return { deleteExamType, bulkDelete };

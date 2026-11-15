@@ -27,9 +27,7 @@ export function useSubmitExam(examId: string) {
 	return useMutation({
 		mutationFn: () => trpcClient.exams.submit.mutate({ examId }),
 		onSuccess: () => {
-			toast.success(
-				t("teacher.workflow.toast.submitted", { defaultValue: "Soumis" }),
-			);
+			toast.success(t("teacher.workflow.toast.submitted"));
 			queryClient.invalidateQueries({ queryKey: ["teacher-hub-courses"] });
 		},
 		onError: (e: Error) => toast.error(e.message),

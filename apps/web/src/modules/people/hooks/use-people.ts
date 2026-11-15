@@ -43,7 +43,7 @@ export function useDeleteProfile() {
 	return useMutation({
 		mutationFn: (id: string) => trpcClient.users.deleteProfile.mutate({ id }),
 		onSuccess: () => {
-			toast.success(t("common.deleted", { defaultValue: "Deleted" }));
+			toast.success(t("common.deleted"));
 			// Invalidate all listPaged variants so any cached pages refresh
 			queryClient.invalidateQueries({
 				queryKey: trpc.users.listPaged.queryKey(),

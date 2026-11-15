@@ -45,7 +45,6 @@ export function SegmentEditor({
 					<div className="flex items-center gap-2 font-medium text-foreground text-sm">
 						<Hash className="h-4 w-4" />
 						{t("admin.registrationNumbers.segments.segmentLabel", {
-							defaultValue: "Segment {{index}}",
 							index: index + 1,
 						})}
 					</div>
@@ -79,11 +78,7 @@ export function SegmentEditor({
 					</div>
 				</div>
 				<div className="space-y-2">
-					<Label>
-						{t("admin.registrationNumbers.segments.typeLabel", {
-							defaultValue: "Segment type",
-						})}
-					</Label>
+					<Label>{t("admin.registrationNumbers.segments.typeLabel")}</Label>
 					<Select
 						value={segment.kind}
 						onValueChange={(value) => onKindChange(value as Segment["kind"])}
@@ -93,19 +88,13 @@ export function SegmentEditor({
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="literal">
-								{t("admin.registrationNumbers.segments.literal", {
-									defaultValue: "Literal text",
-								})}
+								{t("admin.registrationNumbers.segments.literal")}
 							</SelectItem>
 							<SelectItem value="field">
-								{t("admin.registrationNumbers.segments.field", {
-									defaultValue: "Data field",
-								})}
+								{t("admin.registrationNumbers.segments.field")}
 							</SelectItem>
 							<SelectItem value="counter">
-								{t("admin.registrationNumbers.segments.counter", {
-									defaultValue: "Counter",
-								})}
+								{t("admin.registrationNumbers.segments.counter")}
 							</SelectItem>
 						</SelectContent>
 					</Select>

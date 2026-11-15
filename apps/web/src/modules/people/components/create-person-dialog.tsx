@@ -50,7 +50,7 @@ export const CreatePersonDialog = createCallable<
 			dismissValue={undefined}
 			preventDismiss={submitting}
 			className="sm:max-w-lg"
-			title={t("usersHub.people.add", { defaultValue: "Add person" })}
+			title={t("usersHub.people.add")}
 		>
 			<form
 				onSubmit={(e) => {
@@ -60,9 +60,7 @@ export const CreatePersonDialog = createCallable<
 				className="space-y-4"
 			>
 				<div className="space-y-1">
-					<Label htmlFor="cp-first">
-						{t("common.fields.firstName", { defaultValue: "First name" })}
-					</Label>
+					<Label htmlFor="cp-first">{t("common.fields.firstName")}</Label>
 					<Input
 						id="cp-first"
 						required
@@ -73,9 +71,7 @@ export const CreatePersonDialog = createCallable<
 					/>
 				</div>
 				<div className="space-y-1">
-					<Label htmlFor="cp-last">
-						{t("common.fields.lastName", { defaultValue: "Last name" })}
-					</Label>
+					<Label htmlFor="cp-last">{t("common.fields.lastName")}</Label>
 					<Input
 						id="cp-last"
 						required
@@ -86,9 +82,7 @@ export const CreatePersonDialog = createCallable<
 					/>
 				</div>
 				<div className="space-y-1">
-					<Label htmlFor="cp-email">
-						{t("common.fields.email", { defaultValue: "Email" })}
-					</Label>
+					<Label htmlFor="cp-email">{t("common.fields.email")}</Label>
 					<Input
 						id="cp-email"
 						type="email"
@@ -104,12 +98,10 @@ export const CreatePersonDialog = createCallable<
 						disabled={submitting}
 						onClick={() => call.end(undefined)}
 					>
-						{t("common.cancel", { defaultValue: "Cancel" })}
+						{t("common.cancel")}
 					</Button>
 					<Button type="submit" disabled={submitting}>
-						{submitting
-							? t("common.saving")
-							: t("common.create", { defaultValue: "Create" })}
+						{submitting ? t("common.saving") : t("common.create")}
 					</Button>
 				</div>
 			</form>
