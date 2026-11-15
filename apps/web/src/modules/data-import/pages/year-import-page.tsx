@@ -1,5 +1,11 @@
-import { ArrowLeft, CheckCircle2, Circle, History } from "lucide-react";
-import { useEffect } from "react";
+import {
+	ArrowLeft,
+	CheckCircle2,
+	Circle,
+	FileStack,
+	History,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useParams, useSearchParams } from "react-router";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +19,10 @@ import { StepPreparePanel } from "../components/step-prepare-panel";
 import { StepReviewPanel } from "../components/step-review-panel";
 import { YearClosePanel } from "../components/year-close-panel";
 import { YearHistoryCard } from "../components/year-history-card";
+import {
+	type YearWorkbook,
+	YearWorkbookCard,
+} from "../components/year-workbook-card";
 import { useImportOverview } from "../hooks/use-import-overview";
 import { useImportStep } from "../hooks/use-import-step";
 import {
@@ -44,6 +54,7 @@ export default function YearImportPage() {
 		IMPORT_YEAR_STEPS[0].key;
 	const index = IMPORT_YEAR_STEPS.findIndex((s) => s.key === stepKey);
 	const goTo = (key: string) => setSearch({ step: key }, { replace: true });
+	const [workbook, setWorkbook] = useYearWorkbook(yearId);
 	// Pin the step once known: importing changes the counts it is derived from
 	const pinned = search.get("step");
 	useEffect(() => {
@@ -59,7 +70,7 @@ export default function YearImportPage() {
 		: undefined;
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col gap-6">
+		<div className="flex flex-col gap-6">
 			<div className="space-y-4">
 				<Button asChild variant="ghost" size="sm" className="-ml-2">
 					<Link to="/import">
@@ -87,7 +98,15 @@ export default function YearImportPage() {
 				</div>
 			</div>
 
-			<div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[16rem_1fr]">
+			{year && (
+				<YearWorkbookCard
+					academicYearId={year.id}
+					workbook={workbook}
+					onChange={setWorkbook}
+				/>
+			)}
+
+			<div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
 				<nav aria-label={t(`${G}yearImport.steps`)} className="space-y-1">
 					{IMPORT_YEAR_STEPS.map((step, i) => {
 						const count = year?.counts[step.count] ?? 0;
@@ -113,6 +132,12 @@ export default function YearImportPage() {
 								<span className="flex-1">
 									<span className="block font-medium">
 										{i + 1}. {stepLabel(step.key, t)}
+										{workbook?.steps.includes(step.key) && (
+											<FileStack
+												className="ml-1 inline h-3.5 w-3.5 text-primary"
+												aria-label={t(`${G}workbook.inWorkbook`)}
+											/>
+										)}
 										{step.optional && (
 											<span className="ml-1 font-normal text-muted-foreground text-xs">
 												({t(`${G}yearImport.optional`)})
@@ -146,6 +171,9 @@ export default function YearImportPage() {
 							stepKey={stepKey}
 							previousMissing={previousMissing?.key}
 							onGoTo={goTo}
+							workbook={
+								workbook?.steps.includes(stepKey) ? workbook : undefined
+							}
 						/>
 					)
 				)}
@@ -161,11 +189,14 @@ function YearStep({
 	stepKey,
 	previousMissing,
 	onGoTo,
+	workbook,
 }: {
 	yearId: string;
 	stepKey: string;
 	previousMissing?: string;
 	onGoTo: (key: string) => void;
+	/** The year's single workbook, when it holds this step's sheets. */
+	workbook?: YearWorkbook;
 }) {
 	const { t } = useTranslation();
 	const wizard = useImportStep(stepKey, yearId);
@@ -200,15 +231,34 @@ function YearStep({
 			{!wizard.definition ? (
 				<Skeleton className="h-80 w-full" />
 			) : wizard.phase === "prepare" ? (
-				<StepPreparePanel
-					step={stepKey}
-					sheets={wizard.definition.sheets}
-					onDownload={wizard.downloadTemplate}
-					isDownloading={wizard.isDownloading}
-					onFile={wizard.selectFile}
-					isAnalyzing={wizard.isAnalyzing}
-					fileName={wizard.fileName}
-				/>
+				<>
+					{workbook && (
+						<div className="flex flex-wrap items-center gap-3 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+							<FileStack className="h-4 w-4 text-primary" />
+							<span className="flex-1">
+								{t(`${G}workbook.stepCovered`, { name: workbook.name })}
+							</span>
+							<Button
+								size="sm"
+								disabled={wizard.isAnalyzing}
+								onClick={() =>
+									wizard.analyzeUploaded(workbook.fileId, workbook.name)
+								}
+							>
+								{t(`${G}workbook.check`)}
+							</Button>
+						</div>
+					)}
+					<StepPreparePanel
+						step={stepKey}
+						sheets={wizard.definition.sheets}
+						onDownload={wizard.downloadTemplate}
+						isDownloading={wizard.isDownloading}
+						onFile={wizard.selectFile}
+						isAnalyzing={wizard.isAnalyzing}
+						fileName={wizard.fileName}
+					/>
+				</>
 			) : wizard.phase === "review" && wizard.preview ? (
 				<StepReviewPanel
 					preview={wizard.preview}
@@ -240,4 +290,27 @@ function YearStep({
 			) : null}
 		</div>
 	);
+}
+
+/** The single workbook of the year, kept for the session (per year). */
+function useYearWorkbook(yearId: string) {
+	const key = `tkams.import-workbook.${yearId}`;
+	const [workbook, setWorkbook] = useState<YearWorkbook | null>(() => {
+		try {
+			const saved = sessionStorage.getItem(key);
+			return saved ? (JSON.parse(saved) as YearWorkbook) : null;
+		} catch {
+			return null;
+		}
+	});
+	const save = (value: YearWorkbook | null) => {
+		setWorkbook(value);
+		try {
+			if (value) sessionStorage.setItem(key, JSON.stringify(value));
+			else sessionStorage.removeItem(key);
+		} catch {
+			// storage unavailable: kept in memory only
+		}
+	};
+	return [workbook, save] as const;
 }

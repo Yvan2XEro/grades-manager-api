@@ -16,6 +16,17 @@ import { requireYear } from "./year-context";
 
 const LONG = "Notes";
 const MAX_SCORE = 20;
+const OTHER_SHEETS = new Set(
+	[
+		"Classes",
+		"Étudiants",
+		"Cours",
+		"Modèle",
+		"Exceptions",
+		"Décisions",
+		"Listes",
+	].map(normalize),
+);
 const ABSENT = new Set(["abs", "absent", "absente", "aj"]);
 const REG_HEADERS = [
 	"Matricule",
@@ -264,6 +275,8 @@ export const gradesStep: ImportStepDef = {
 		const issues: ImportIssue[] = [];
 		for (const ws of wb.worksheets) {
 			if (ws.state !== "visible") continue;
+			// Sheets of the other steps, in a single workbook for the year
+			if (OTHER_SHEETS.has(normalize(ws.name))) continue;
 			const headers = new Map<number, string>();
 			ws.getRow(1).eachCell((cell, index) => {
 				headers.set(index, cellText(cell));

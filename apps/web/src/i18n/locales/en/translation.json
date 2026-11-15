@@ -4971,6 +4971,16 @@
           "undoneBadge": "Undone",
           "blocked": "Data added since depends on this import: undo the later imports first.",
           "notUndoable": "Cannot be undone"
+        },
+        "workbook": {
+          "title": "All of the year in one workbook",
+          "text": "Optional: drop a workbook holding the sheets of several steps (Classes, Étudiants, Cours, Modèle, one sheet per class for grades…). Each step then checks its own sheets from it, in order.",
+          "covers": "covers: {{steps}}",
+          "forget": "Remove",
+          "nothing": "No sheet of this workbook matches a step of the year.",
+          "inWorkbook": "In the year's workbook",
+          "stepCovered": "The workbook {{name}} holds the sheets of this step.",
+          "check": "Check them"
         }
       }
     }

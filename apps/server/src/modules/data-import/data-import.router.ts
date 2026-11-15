@@ -1,12 +1,18 @@
 import { TRPCError } from "@trpc/server";
 import { and, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import ExcelJS from "exceljs";
 import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { adminProcedure, router, tenantAdminProcedure } from "@/lib/trpc";
 import { readImportFile, saveImportFile } from "./import-file-storage";
-import { FOUNDATION_STEPS, getImportStep, IMPORT_STEP_KEYS } from "./steps";
-import { annotateWorkbook, buildTemplate } from "./steps/workbook";
+import {
+	FOUNDATION_STEPS,
+	getImportStep,
+	IMPORT_STEP_KEYS,
+	YEAR_STEPS,
+} from "./steps";
+import { annotateWorkbook, buildTemplate, normalize } from "./steps/workbook";
 import { requireYear } from "./steps/year-context";
 import { closeImportedYear } from "./year-closing";
 
@@ -303,6 +309,41 @@ export const dataImportRouter = router({
 				mimeType:
 					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			};
+		}),
+
+	/**
+	 * Steps of a year found in one workbook (single file for the whole year):
+	 * a step is covered when one of its sheets is there; grades when a sheet
+	 * is named after a class of the year (or "Notes").
+	 */
+	workbookSteps: tenantAdminProcedure
+		.input(z.object({ fileId: z.string(), academicYearId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const year = await requireYear({
+				institutionId: ctx.institution.id,
+				academicYearId: input.academicYearId,
+			});
+			const wb = new ExcelJS.Workbook();
+			await wb.xlsx.load(
+				(await readImportFile(input.fileId)) as unknown as ArrayBuffer,
+			);
+			const names = new Set(
+				wb.worksheets
+					.filter((w) => w.state === "visible")
+					.map((w) => normalize(w.name)),
+			);
+			const classCodes = (
+				await db.query.classes.findMany({
+					where: eq(schema.classes.academicYear, year.id),
+					columns: { code: true },
+				})
+			).map((c) => normalize(c.code));
+			return YEAR_STEPS.filter((step) =>
+				step.key === "year.grades"
+					? names.has(normalize("Notes")) ||
+						classCodes.some((code) => names.has(code))
+					: step.sheets.some((sheet) => names.has(normalize(sheet.name))),
+			).map((step) => step.key);
 		}),
 
 	/** Imports of a year, latest first, with what they did (for undo). */

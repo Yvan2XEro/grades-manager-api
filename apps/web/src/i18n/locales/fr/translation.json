@@ -3959,6 +3959,16 @@
           "undoneBadge": "Annulé",
           "blocked": "Des données ajoutées depuis dépendent de cet import : annulez d'abord les imports plus récents.",
           "notUndoable": "Non annulable"
+        },
+        "workbook": {
+          "title": "Toute l'année dans un seul classeur",
+          "text": "Facultatif : déposez un classeur contenant les feuilles de plusieurs étapes (Classes, Étudiants, Cours, Modèle, une feuille par classe pour les notes…). Chaque étape y vérifie ensuite ses propres feuilles, dans l'ordre.",
+          "covers": "contient : {{steps}}",
+          "forget": "Retirer",
+          "nothing": "Aucune feuille de ce classeur ne correspond à une étape de l'année.",
+          "inWorkbook": "Dans le classeur de l'année",
+          "stepCovered": "Le classeur {{name}} contient les feuilles de cette étape.",
+          "check": "Les vérifier"
         }
       }
     }

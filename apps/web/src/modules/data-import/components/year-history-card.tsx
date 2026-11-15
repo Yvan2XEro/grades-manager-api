@@ -65,7 +65,7 @@ export function YearHistoryCard({
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<ul className="divide-y text-sm">
+				<ul className="max-h-72 divide-y overflow-y-auto text-sm">
 					{imports.map((job) => (
 						<li key={job.id} className="flex flex-wrap items-center gap-3 py-2">
 							<span className="min-w-40 font-medium">

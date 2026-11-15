@@ -42,11 +42,15 @@ export function useImportStep(step: string, academicYearId?: string) {
 	});
 
 	const analyze = useMutation({
-		mutationFn: async (file: File) => {
-			const { fileId } = await trpcClient.dataImport.upload.mutate({
-				name: file.name,
-				data: await readAsBase64(file),
-			});
+		/** A new file, or one already uploaded (the year's single workbook). */
+		mutationFn: async (source: File | { fileId: string }) => {
+			const { fileId } =
+				source instanceof File
+					? await trpcClient.dataImport.upload.mutate({
+							name: source.name,
+							data: await readAsBase64(source),
+						})
+					: source;
 			setFileId(fileId);
 			return trpcClient.batchJobs.preview.mutate({
 				type: "import.step",
@@ -105,6 +109,11 @@ export function useImportStep(step: string, academicYearId?: string) {
 		analyze.mutate(file);
 	};
 
+	const analyzeUploaded = (fileId: string, name: string) => {
+		setFileName(name);
+		analyze.mutate({ fileId });
+	};
+
 	const restart = () => {
 		setPhase("prepare");
 		setFileName(null);
@@ -131,6 +140,7 @@ export function useImportStep(step: string, academicYearId?: string) {
 		downloadTemplate: () => template.mutate(),
 		isDownloading: template.isPending,
 		selectFile,
+		analyzeUploaded,
 		isAnalyzing: analyze.isPending,
 		run: () => run.mutate(),
 		isRunning: run.isPending,
