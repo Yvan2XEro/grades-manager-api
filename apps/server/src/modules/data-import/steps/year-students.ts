@@ -9,6 +9,7 @@ import { issueRegistrationNumber } from "@/modules/registration-numbers/registra
 import type { ImportIssue, ImportStepDef, SheetSummary } from "./types";
 import { findDuplicates, normalize, validRows } from "./workbook";
 import { isPastYear, requireYear } from "./year-context";
+import { syncCourseEnrollments } from "./year-sync";
 
 const STUDENTS = "Étudiants";
 
@@ -530,6 +531,11 @@ export const studentsStep: ImportStepDef = {
 				await log(
 					`Students: ${summary.create} created, ${summary.update} updated.`,
 				);
+				// Students join the courses of their class when they already exist
+				const enrolled = await syncCourseEnrollments(year.id, [
+					...new Set(changes.map((c) => c.classId)),
+				]);
+				if (enrolled) await log(`Course enrollments: ${enrolled} created.`);
 			},
 		};
 	},

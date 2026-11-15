@@ -586,6 +586,11 @@ export const teachingUnits = pgTable(
 			.$type<TeachingUnitSemester>()
 			.notNull()
 			.default("annual"),
+		/** Level of the program's cycle the unit is taught in (L1, M2…); drives
+		 * which courses a class of that level receives. */
+		cycleLevelId: text("cycle_level_id").references(() => cycleLevels.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),

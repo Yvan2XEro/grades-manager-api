@@ -3,6 +3,8 @@ import { cyclesStep } from "./foundation-cycles";
 import { programsStep } from "./foundation-programs";
 import type { ImportStepDef } from "./types";
 import { classesStep } from "./year-classes";
+import { coursesStep } from "./year-courses";
+import { examsStep } from "./year-exams";
 import { studentsStep } from "./year-students";
 
 /** Steps of the guided import, in the order they must be done. */
@@ -13,7 +15,12 @@ export const FOUNDATION_STEPS: ImportStepDef[] = [
 ];
 
 /** Steps of the import of one academic year, in dependency order. */
-export const YEAR_STEPS: ImportStepDef[] = [classesStep, studentsStep];
+export const YEAR_STEPS: ImportStepDef[] = [
+	classesStep,
+	studentsStep,
+	coursesStep,
+	examsStep,
+];
 
 const ALL_STEPS = [...FOUNDATION_STEPS, ...YEAR_STEPS];
 

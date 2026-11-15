@@ -4,7 +4,16 @@ import * as schema from "@/db/schema/app-schema";
 import { member } from "@/db/schema/auth";
 import { normalizeCode } from "@/lib/strings";
 import type { ImportIssue, ImportStepDef, SheetSummary } from "./types";
-import { findDuplicates, validRows } from "./workbook";
+import { findDuplicates, normalize, validRows } from "./workbook";
+
+/** Levels of the institution's cycles. */
+async function loadLevels(institutionId: string) {
+	const cycles = await db.query.studyCycles.findMany({
+		where: eq(schema.studyCycles.institutionId, institutionId),
+		with: { levels: true },
+	});
+	return cycles.flatMap((c) => c.levels);
+}
 
 const UNITS = "UE";
 const COURSES = "EC";
@@ -15,7 +24,7 @@ const semesterLabel = (value: string) =>
 	Object.entries(SEMESTERS).find(([, v]) => v === value)?.[0] ?? "Annuel";
 
 /** Teachers of the institution, by lower-cased e-mail. */
-async function teachersByEmail(institutionId: string) {
+export async function teachersByEmail(institutionId: string) {
 	const institution = await db.query.institutions.findFirst({
 		where: eq(schema.institutions.id, institutionId),
 	});
@@ -76,6 +85,13 @@ export const curriculumStep: ImportStepDef = {
 					enum: Object.keys(SEMESTERS),
 				},
 				{ key: "description", header: "Description", width: 28 },
+				{
+					key: "levelCode",
+					header: "Code niveau",
+					listFrom: "levels",
+					hint: "Niveau où l'UE est enseignée (ex. L1) : ses EC sont proposés aux classes de ce niveau.",
+					aliases: ["Niveau", "Level"],
+				},
 			],
 		},
 		{
@@ -120,6 +136,9 @@ export const curriculumStep: ImportStepDef = {
 		const emailOf = new Map([...teachers].map(([email, id]) => [id, email]));
 		const programCode = new Map(programs.map((p) => [p.id, p.code]));
 		const unitCode = new Map(units.map((u) => [u.id, u.code]));
+		const levelCode = new Map(
+			(await loadLevels(institutionId)).map((l) => [l.id, l.code]),
+		);
 		const byProgram =
 			<T extends { code: string }>(key: (x: T) => string) =>
 			(a: T, b: T) =>
@@ -134,6 +153,7 @@ export const curriculumStep: ImportStepDef = {
 					String(u.credits),
 					semesterLabel(u.semester),
 					u.description ?? "",
+					u.cycleLevelId ? (levelCode.get(u.cycleLevelId) ?? "") : "",
 				]),
 			[COURSES]: courses
 				.sort(
@@ -158,7 +178,11 @@ export const curriculumStep: ImportStepDef = {
 		const programs = await db.query.programs.findMany({
 			where: eq(schema.programs.institutionId, institutionId),
 		});
-		return { programs: programs.map((p) => p.code).sort() };
+		const levels = await loadLevels(institutionId);
+		return {
+			programs: programs.map((p) => p.code).sort(),
+			levels: [...new Set(levels.map((l) => l.code))].sort(),
+		};
 	},
 
 	async plan(rows, { institutionId }) {
@@ -207,7 +231,36 @@ export const curriculumStep: ImportStepDef = {
 			unchanged: 0,
 			skipped: rows[UNITS].length - unitRows.length,
 		};
-		const unitChanges = unitRows.map((r) => {
+		const levels = await loadLevels(institutionId);
+		for (const r of unitRows) {
+			if (!r.values.levelCode) continue;
+			const program = programByCode.get(normalizeCode(r.values.programCode))!;
+			const level = levels.find(
+				(l) =>
+					l.cycleId === program.cycleId &&
+					normalize(l.code) === normalize(r.values.levelCode),
+			);
+			if (!level)
+				issues.push({
+					sheet: UNITS,
+					row: r.row,
+					column: "Code niveau",
+					level: "error",
+					code: "unknownLevel",
+					params: {
+						value: r.values.levelCode,
+						cycle: program.code,
+						allowed: levels
+							.filter((l) => l.cycleId === program.cycleId)
+							.map((l) => l.code)
+							.join(", "),
+					},
+					message: `Level "${r.values.levelCode}" is not a level of program ${program.code}.`,
+				});
+		}
+		const leveledRows = validRows(UNITS, rows[UNITS], issues);
+		unitSummary.skipped = rows[UNITS].length - leveledRows.length;
+		const unitChanges = leveledRows.map((r) => {
 			const program = programByCode.get(normalizeCode(r.values.programCode))!;
 			const code = normalizeCode(r.values.code);
 			const data = {
@@ -215,6 +268,14 @@ export const curriculumStep: ImportStepDef = {
 				credits: Number.parseInt(r.values.credits, 10),
 				semester: SEMESTERS[r.values.semester as keyof typeof SEMESTERS],
 				description: r.values.description || null,
+				// An empty cell keeps the level already set
+				cycleLevelId: r.values.levelCode
+					? (levels.find(
+							(l) =>
+								l.cycleId === program.cycleId &&
+								normalize(l.code) === normalize(r.values.levelCode),
+						)?.id ?? null)
+					: undefined,
 			};
 			const current = units.find(
 				(u) => u.programId === program.id && u.code === code,
@@ -224,7 +285,9 @@ export const curriculumStep: ImportStepDef = {
 				current.name !== data.name ||
 				current.credits !== data.credits ||
 				current.semester !== data.semester ||
-				(current.description ?? null) !== data.description;
+				(current.description ?? null) !== data.description ||
+				(data.cycleLevelId !== undefined &&
+					current.cycleLevelId !== data.cycleLevelId);
 			if (!current) unitSummary.create++;
 			else if (changed) unitSummary.update++;
 			else unitSummary.unchanged++;

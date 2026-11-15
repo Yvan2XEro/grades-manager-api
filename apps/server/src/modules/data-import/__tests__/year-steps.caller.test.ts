@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -272,5 +272,154 @@ describe("guided import — generated registration numbers", () => {
 			where: eq(schema.students.class, klass!.id),
 		});
 		expect(student?.registrationNumber).toStartWith(`G${s}-`);
+	});
+});
+
+describe("guided import — class courses and exams", () => {
+	it("generates the courses of each class from the curriculum, then its exams from the model", async () => {
+		const { ctx, caller } = await admin();
+		const institutionId = ctx.institution!.id;
+		const { s, program, past } = await fixture(institutionId);
+		const levels = await db.query.cycleLevels.findMany({
+			where: eq(schema.cycleLevels.cycleId, program.cycleId!),
+		});
+		const l1 = levels.find((l) => l.code === "L1")!;
+		const [unit] = await db
+			.insert(schema.teachingUnits)
+			.values({
+				programId: program.id,
+				code: `UE${s}`,
+				name: "Algo",
+				credits: 6,
+				semester: "fall",
+				cycleLevelId: l1.id,
+			})
+			.returning();
+		const [unleveled] = await db
+			.insert(schema.teachingUnits)
+			.values({ programId: program.id, code: `UX${s}`, name: "X", credits: 2 })
+			.returning();
+		await db.insert(schema.courses).values([
+			{
+				program: program.id,
+				teachingUnitId: unit.id,
+				code: `A${s}1`,
+				name: "Algo 1",
+				hours: 30,
+			},
+			{
+				program: program.id,
+				teachingUnitId: unit.id,
+				code: `A${s}2`,
+				name: "Algo 2",
+				hours: 30,
+			},
+			{
+				program: program.id,
+				teachingUnitId: unleveled.id,
+				code: `X${s}`,
+				name: "Hors niveau",
+				hours: 10,
+			},
+		]);
+		await importStep(caller, "year.classes", past.id, {
+			Classes: [CLASS_HEADERS, [`K${s}`, `K ${s}`, program.code, "L1"]],
+		});
+		await importStep(caller, "year.students", past.id, {
+			Étudiants: [
+				STUDENT_HEADERS,
+				[`S${s}1`, "Fotso", "Ana", "", "", "", `K${s}`],
+				[`S${s}2`, "Mbida", "Eric", "", "", "", `K${s}`],
+			],
+		});
+
+		const courses = await importStep(caller, "year.courses", past.id, {
+			Cours: [
+				[
+					"Code classe",
+					"Code EC",
+					"E-mail enseignant",
+					"Coefficient",
+					"Non enseigné",
+				],
+				[`K${s}`, `A${s}2`, "", "3", ""],
+			],
+		});
+		expect(courses.sheets[0]).toMatchObject({ create: 2 });
+		expect(courses.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ code: "unitsWithoutLevel" }),
+				expect.objectContaining({ code: "coursesWithoutTeacher" }),
+			]),
+		);
+		const klass = await db.query.classes.findFirst({
+			where: eq(schema.classes.code, `K${s}`),
+		});
+		const classCourses = await db.query.classCourses.findMany({
+			where: eq(schema.classCourses.class, klass!.id),
+		});
+		expect(
+			classCourses.map((c) => [c.code, Number(c.coefficient)]).sort(),
+		).toEqual([
+			[`A${s}1`, 1],
+			[`A${s}2`, 3],
+		]);
+		const courseEnrollments = await db.query.studentCourseEnrollments.findMany({
+			where: eq(schema.studentCourseEnrollments.sourceClassId, klass!.id),
+		});
+		expect(courseEnrollments).toHaveLength(4);
+
+		const exams = await importStep(caller, "year.exams", past.id, {
+			Modèle: [
+				["Type d'examen", "Pondération (%)", "Rattrapage de", "Note retenue"],
+				[`CC${s}`, "40", "", ""],
+				[`EX${s}`, "60", "", ""],
+				[`RA${s}`, "", `EX${s}`, "meilleure note"],
+			],
+			Exceptions: [
+				[
+					"Code classe",
+					"Code EC",
+					"Type d'examen",
+					"Pondération (%)",
+					"Date",
+					"N'a pas lieu",
+				],
+				[`K${s}`, `A${s}2`, `CC${s}`, "", "", "oui"],
+			],
+		});
+		expect(exams.issues.filter((i) => i.level === "error")).toHaveLength(0);
+		expect(exams.sheets[0]).toMatchObject({ create: 5, skipped: 1 });
+		const created = await db.query.exams.findMany({
+			where: inArray(
+				schema.exams.classCourse,
+				classCourses.map((c) => c.id),
+			),
+		});
+		const retake = created.find((e) => e.type === `RA${s}`)!;
+		const parent = created.find((e) => e.id === retake.parentExamId);
+		expect(parent?.type).toBe(`EX${s}`);
+		expect(retake).toMatchObject({
+			sessionType: "retake",
+			scoringPolicy: "best_of",
+			status: "approved",
+			percentage: "60.00",
+		});
+		// Same file again: nothing to do
+		const again = await importStep(
+			caller,
+			"year.exams",
+			past.id,
+			{
+				Modèle: [
+					["Type d'examen", "Pondération (%)", "Rattrapage de", "Note retenue"],
+					[`CC${s}`, "40", "", ""],
+					[`EX${s}`, "60", "", ""],
+					[`RA${s}`, "", `EX${s}`, "meilleure note"],
+				],
+			},
+			false,
+		);
+		expect(again.sheets[0]).toMatchObject({ create: 1, unchanged: 5 });
 	});
 });
