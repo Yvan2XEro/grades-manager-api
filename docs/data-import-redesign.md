@@ -1,6 +1,6 @@
 # Data import redesign — guided import per academic year
 
-Status: phase 1 done (hub, foundation steps, step wizard). Phase 2 next.
+Status: phase 1 done (hub, foundation steps, step wizard). The yearly import is redesigned in `data-import-analysis.md` (to be validated before coding).
 
 ## Problems with the current `/import`
 - 4 unordered tabs (structure, people, enrollments, grades): template → upload → counts → run → redirect to the batch job page. No academic-year context, no progress, no guidance.
