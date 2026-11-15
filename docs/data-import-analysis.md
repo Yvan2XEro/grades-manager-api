@@ -1,8 +1,6 @@
 # Data import — year import wizard (spec)
 
-> Replaces the "years" part of `data-import-redesign.md`. Status: decided, in implementation.
->
-> Shipped: the three Foundations steps; delivery 1 partly — the year wizard (`/import/years/:yearId`) with the Classes and Students & enrollments steps, row-level matching (registration number → email → name + birth date), translated issue codes, past/current year derived from the end date. Not yet: preview in a large dialog with before/after values, annotated file download, server-side wizard state beyond the per-year counts.
+> Replaces the "years" part of `data-import-redesign.md`. Status: **implemented** (all five deliveries). See "11. As built" for the decisions taken while building it.
 
 ## 1. Who and why
 
@@ -199,3 +197,24 @@ For an average institution over one year: about 2,000 students, 60 classes, 1,50
 5. Teachers, parents, then fees.
 
 Each delivery is tested end to end with a realistic file set: 3 years, 2,000 students, with repeaters, transfers and retakes.
+
+## 11. As built
+
+Steps of the year wizard (`/import/years/:yearId`), in order: Classes, Teachers (optional), Students & enrollments, Parents (optional), Class courses, Exams, Grades, Closing (action), Official decisions (optional), Fees (optional). Server: `apps/server/src/modules/data-import/steps/year-*.ts`; web: `apps/web/src/modules/data-import`.
+
+Decisions taken while building:
+
+- **Year kind** is derived from its end date (past = history), never asked.
+- **Teaching units have a level** (`teaching_units.cycle_level_id`, settable in the Foundations file and in the unit form): class courses are proposed from the units at the class level. Units without level are reported, not guessed.
+- **Teachers without account** are plain profiles; a class course needs a teacher, so a single "unassigned teacher" placeholder profile per institution stands in until one is given.
+- **Course enrollments** are generated (all students of a class × its courses) by the Class courses and Students steps; exemptions are made afterwards by withdrawing a course enrollment, not in a file.
+- **Absences** (`ABS`, `absent`, `AJ`) count as 0: the credit computation has no absence concept. The review reports how many.
+- **Exam weights**: the pre-filled model uses the exam types' default weights; types without one share what is left of 100 %. A retake takes the weight of the exam it replaces. Locked exams are never changed.
+- **Closing** locks the exams of a past year, recomputes credits and computes one annual deliberation per class, left open for review; it can be re-run.
+- **Official decisions** gaps are warnings; importing keeps the official decision as a traced override.
+- **Review**: shown in the wizard (full width) rather than in a dialog: totals per sheet, errors, warnings, and a "Changes" tab with before → after values (capped at 5,000 rows). "Download the annotated file" returns the client's file with each problem as a note on its cell, in the user's language.
+- **Single workbook**: dropped once per year; each step checks its own sheets from it, in dependency order, so references between sheets resolve against what the previous steps saved.
+- **Undo**: every year step journals what it creates and changes (`import_journal_entries`); undoing is refused while later data depends on it.
+- **Templates** (sheet names, headers, notes) are in French, the language of the files clients hold; English and common alternative headers are accepted on import. Issue messages and the UI are translated (FR/EN).
+- The former single-file importers and `/import/legacy` are removed (the URL redirects to `/import`).
+
