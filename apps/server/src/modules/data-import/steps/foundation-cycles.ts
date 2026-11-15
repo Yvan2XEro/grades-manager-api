@@ -195,7 +195,9 @@ export const cyclesStep: ImportStepDef = {
 					row: r.row,
 					column: "Code cycle",
 					level: "error",
-					message: `Cycle « ${r.values.cycleCode} » inconnu : ajoutez-le dans la feuille « ${CYCLES} ».`,
+					code: "unknownCycleInFile",
+					params: { value: r.values.cycleCode, sheet: CYCLES },
+					message: `Unknown cycle "${r.values.cycleCode}": add it to the ${CYCLES} sheet.`,
 				});
 		}
 		const levelRows = validRows(LEVELS, rows[LEVELS], issues);
@@ -234,7 +236,9 @@ export const cyclesStep: ImportStepDef = {
 					row: r.row,
 					column: "Ordre",
 					level: "error",
-					message: `L'ordre ${data.orderIndex} est déjà pris par le niveau « ${orderTaken.code} » de ce cycle.`,
+					code: "levelOrderTaken",
+					params: { order: data.orderIndex, level: orderTaken.code },
+					message: `Order ${data.orderIndex} is already taken by level ${orderTaken.code} of this cycle.`,
 				});
 				levelSummary.skipped++;
 				return [];
@@ -271,7 +275,7 @@ export const cyclesStep: ImportStepDef = {
 					}
 				}
 				await log(
-					`Cycles : ${cycleSummary.create} créé(s), ${cycleSummary.update} mis à jour.`,
+					`Cycles: ${cycleSummary.create} created, ${cycleSummary.update} updated.`,
 				);
 				for (const change of levelChanges) {
 					if (!change.changed) continue;
@@ -296,7 +300,7 @@ export const cyclesStep: ImportStepDef = {
 					}
 				}
 				await log(
-					`Niveaux : ${levelSummary.create} créé(s), ${levelSummary.update} mis à jour.`,
+					`Levels: ${levelSummary.create} created, ${levelSummary.update} updated.`,
 				);
 			},
 		};

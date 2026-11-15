@@ -240,7 +240,9 @@ export const curriculumStep: ImportStepDef = {
 					row: r.row,
 					column: "Code programme",
 					level: "error",
-					message: `Programme « ${r.values.programCode} » inconnu : importez-le d'abord à l'étape « Programmes & options ».`,
+					code: "unknownProgram",
+					params: { value: r.values.programCode },
+					message: `Unknown program "${r.values.programCode}": import it at the Programs & options step first.`,
 				});
 		};
 		rows[UNITS].forEach((r) => unknownProgram(UNITS, r));
@@ -335,7 +337,9 @@ export const curriculumStep: ImportStepDef = {
 					row: r.row,
 					column: "Code UE",
 					level: "error",
-					message: `UE « ${r.values.unitCode} » inconnue pour ce programme : ajoutez-la dans la feuille « ${UNITS} ».`,
+					code: "unknownUnit",
+					params: { value: r.values.unitCode, sheet: UNITS },
+					message: `Teaching unit "${r.values.unitCode}" unknown for this program: add it to the ${UNITS} sheet.`,
 				});
 			if (
 				r.values.teacherEmail &&
@@ -346,7 +350,9 @@ export const curriculumStep: ImportStepDef = {
 					row: r.row,
 					column: "E-mail enseignant",
 					level: "warning",
-					message: `Aucun compte « ${r.values.teacherEmail} » : l'EC sera importé sans enseignant par défaut.`,
+					code: "unknownDefaultTeacher",
+					params: { value: r.values.teacherEmail },
+					message: `No teacher "${r.values.teacherEmail}": the course is imported without default teacher.`,
 				});
 		}
 		const courseRows = validRows(COURSES, rows[COURSES], issues);
@@ -425,7 +431,7 @@ export const curriculumStep: ImportStepDef = {
 					}
 				}
 				await log(
-					`UE : ${unitSummary.create} créée(s), ${unitSummary.update} mise(s) à jour.`,
+					`Teaching units: ${unitSummary.create} created, ${unitSummary.update} updated.`,
 				);
 				for (const change of courseChanges) {
 					if (!change.changed) continue;
@@ -448,7 +454,7 @@ export const curriculumStep: ImportStepDef = {
 							.onConflictDoNothing();
 				}
 				await log(
-					`EC : ${courseSummary.create} créé(s), ${courseSummary.update} mis à jour.`,
+					`Courses: ${courseSummary.create} created, ${courseSummary.update} updated.`,
 				);
 			},
 		};

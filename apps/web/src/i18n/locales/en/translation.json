@@ -4839,7 +4839,15 @@
             "unknownRelationship": "\"{{value}}\" is not a known relationship (Father, Mother, Guardian, Uncle, Aunt, Other).",
             "guardianContactMissing": "An email or a phone number is required.",
             "invalidAmount": "\"{{value}}\" is not an amount.",
-            "noFeeForStudent": "No amount due for this student: add a row to the Frais sheet."
+            "noFeeForStudent": "No amount due for this student: add a row to the Frais sheet.",
+            "unknownUnit": "Teaching unit \"{{value}}\" unknown for this program: add it to the {{sheet}} sheet.",
+            "unknownDefaultTeacher": "No teacher \"{{value}}\": the course is imported without default teacher.",
+            "unknownCycleInFile": "Unknown cycle \"{{value}}\": add it to the {{sheet}} sheet.",
+            "levelOrderTaken": "Order {{order}} is already taken by level {{level}} of this cycle.",
+            "unknownCycle": "Unknown cycle \"{{value}}\": import it at the Cycles & levels step first.",
+            "programNameTaken": "This name is already used by program {{code}}.",
+            "programWithoutCycleWarning": "Without a cycle, the program's levels cannot be offered to its classes.",
+            "unknownProgramInFile": "Unknown program \"{{value}}\": add it to the {{sheet}} sheet."
           },
           "changes": "Changes ({{count}})"
         },
@@ -4930,6 +4938,20 @@
               "0": "Optional: one row per student with the amount due for the year, the discount if any and the total paid (when payments are not detailed in the Paiements sheet).",
               "1": "Optional: payment details, one row per payment. A payment already recorded (same date, amount and reference) is not created again."
             }
+          },
+          "foundation": {
+            "cycles": {
+              "0": "One cycle per row (Bachelor, Master, BTS…).",
+              "1": "The levels of each cycle, in order (L1, L2, L3…)."
+            },
+            "programs": {
+              "0": "One program per row.",
+              "1": "The options (tracks) of each program. Each program automatically gets a \"default\" option when none is declared."
+            },
+            "curriculum": {
+              "0": "The teaching units of each program.",
+              "1": "The courses of each teaching unit."
+            }
           }
         },
         "columnHelp": {
@@ -4969,7 +4991,35 @@
           },
           "foundation": {
             "curriculum": {
-              "levelCode": "Level where the unit is taught (e.g. L1): its courses are proposed to the classes of that level."
+              "levelCode": "Level where the unit is taught (e.g. L1): its courses are proposed to the classes of that level.",
+              "0": {
+                "code": "E.g. INF111"
+              },
+              "1": {
+                "code": "E.g. INF111-EC1",
+                "coefficient": "1 by default",
+                "teacherEmail": "Default teacher"
+              }
+            },
+            "cycles": {
+              "0": {
+                "code": "E.g. LIC, MAS, BTS",
+                "credits": "180 for an LMD Bachelor"
+              },
+              "1": {
+                "code": "E.g. L1, L2, M1",
+                "order": "1 for the first year of the cycle",
+                "minCredits": "60 by default"
+              }
+            },
+            "programs": {
+              "0": {
+                "code": "E.g. INF, GL, SIN",
+                "cycleCode": "Cycle imported at the Cycles & levels step"
+              },
+              "1": {
+                "code": "E.g. GEN, RES, AI"
+              }
             }
           }
         },

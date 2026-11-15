@@ -3827,7 +3827,15 @@
             "unknownRelationship": "« {{value}} » n'est pas un lien connu (Père, Mère, Tuteur, Oncle, Tante, Autre).",
             "guardianContactMissing": "Un e-mail ou un numéro de téléphone est obligatoire.",
             "invalidAmount": "« {{value}} » n'est pas un montant.",
-            "noFeeForStudent": "Aucun montant dû pour cet étudiant : ajoutez une ligne dans la feuille Frais."
+            "noFeeForStudent": "Aucun montant dû pour cet étudiant : ajoutez une ligne dans la feuille Frais.",
+            "unknownUnit": "UE « {{value}} » inconnue pour ce programme : ajoutez-la dans la feuille « {{sheet}} ».",
+            "unknownDefaultTeacher": "Aucun enseignant « {{value}} » : l'EC sera importé sans enseignant par défaut.",
+            "unknownCycleInFile": "Cycle « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} ».",
+            "levelOrderTaken": "L'ordre {{order}} est déjà pris par le niveau « {{level}} » de ce cycle.",
+            "unknownCycle": "Cycle « {{value}} » inconnu : importez-le d'abord à l'étape « Cycles & niveaux ».",
+            "programNameTaken": "Ce nom est déjà utilisé par le programme « {{code}} ».",
+            "programWithoutCycleWarning": "Sans cycle, les niveaux du programme ne seront pas proposés pour ses classes.",
+            "unknownProgramInFile": "Programme « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} »."
           },
           "changes": "Modifications ({{count}})"
         },
@@ -3918,6 +3926,20 @@
               "0": "Facultatif : une ligne par étudiant avec le montant dû pour l'année, la remise éventuelle et le total payé (si les paiements ne sont pas détaillés dans la feuille Paiements).",
               "1": "Facultatif : le détail des paiements, une ligne par versement. Un versement déjà enregistré (même date, montant et référence) n'est pas recréé."
             }
+          },
+          "foundation": {
+            "cycles": {
+              "0": "Un cycle par ligne (Licence, Master, BTS…).",
+              "1": "Les niveaux de chaque cycle, dans l'ordre (L1, L2, L3…)."
+            },
+            "programs": {
+              "0": "Un programme (filière) par ligne.",
+              "1": "Les options (parcours) de chaque programme. Chaque programme reçoit automatiquement une option « default » si vous n'en déclarez aucune."
+            },
+            "curriculum": {
+              "0": "Les unités d'enseignement de chaque programme.",
+              "1": "Les éléments constitutifs (matières) de chaque UE."
+            }
           }
         },
         "columnHelp": {
@@ -3957,7 +3979,35 @@
           },
           "foundation": {
             "curriculum": {
-              "levelCode": "Niveau où l'UE est enseignée (ex. L1) : ses EC sont proposés aux classes de ce niveau."
+              "levelCode": "Niveau où l'UE est enseignée (ex. L1) : ses EC sont proposés aux classes de ce niveau.",
+              "0": {
+                "code": "Ex. INF111"
+              },
+              "1": {
+                "code": "Ex. INF111-EC1",
+                "coefficient": "1 par défaut",
+                "teacherEmail": "Enseignant par défaut"
+              }
+            },
+            "cycles": {
+              "0": {
+                "code": "Ex. LIC, MAS, BTS",
+                "credits": "180 pour une Licence LMD"
+              },
+              "1": {
+                "code": "Ex. L1, L2, M1",
+                "order": "1 pour la première année du cycle",
+                "minCredits": "60 par défaut"
+              }
+            },
+            "programs": {
+              "0": {
+                "code": "Ex. INF, GL, SIN",
+                "cycleCode": "Cycle importé à l'étape « Cycles & niveaux »"
+              },
+              "1": {
+                "code": "Ex. GEN, RES, IA"
+              }
             }
           }
         },

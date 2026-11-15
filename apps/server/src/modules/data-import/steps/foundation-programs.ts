@@ -167,7 +167,9 @@ export const programsStep: ImportStepDef = {
 					row: r.row,
 					column: "Code cycle",
 					level: "error",
-					message: `Cycle « ${r.values.cycleCode} » inconnu : importez-le d'abord à l'étape « Cycles & niveaux ».`,
+					code: "unknownCycle",
+					params: { value: r.values.cycleCode },
+					message: `Unknown cycle "${r.values.cycleCode}": import it at the Cycles & levels step first.`,
 				});
 			const sameName = programs.find(
 				(p) =>
@@ -179,7 +181,9 @@ export const programsStep: ImportStepDef = {
 					row: r.row,
 					column: "Nom",
 					level: "error",
-					message: `Ce nom est déjà utilisé par le programme « ${sameName.code} ».`,
+					code: "programNameTaken",
+					params: { code: sameName.code },
+					message: `This name is already used by program ${sameName.code}.`,
 				});
 			if (!r.values.cycleCode)
 				issues.push({
@@ -187,8 +191,10 @@ export const programsStep: ImportStepDef = {
 					row: r.row,
 					column: "Code cycle",
 					level: "warning",
+					code: "programWithoutCycleWarning",
+					params: {},
 					message:
-						"Sans cycle, les niveaux du programme ne seront pas proposés pour ses classes.",
+						"Without a cycle, the program's levels cannot be offered to its classes.",
 				});
 		}
 
@@ -232,7 +238,9 @@ export const programsStep: ImportStepDef = {
 					row: r.row,
 					column: "Code programme",
 					level: "error",
-					message: `Programme « ${r.values.programCode} » inconnu : ajoutez-le dans la feuille « ${PROGRAMS} ».`,
+					code: "unknownProgramInFile",
+					params: { value: r.values.programCode, sheet: PROGRAMS },
+					message: `Unknown program "${r.values.programCode}": add it to the ${PROGRAMS} sheet.`,
 				});
 		}
 		const optionRows = validRows(OPTIONS, rows[OPTIONS], issues);
@@ -289,7 +297,7 @@ export const programsStep: ImportStepDef = {
 					}
 				}
 				await log(
-					`Programmes : ${programSummary.create} créé(s), ${programSummary.update} mis à jour.`,
+					`Programs: ${programSummary.create} created, ${programSummary.update} updated.`,
 				);
 				for (const change of optionChanges) {
 					if (!change.changed) continue;
@@ -312,7 +320,7 @@ export const programsStep: ImportStepDef = {
 							.onConflictDoNothing();
 				}
 				await log(
-					`Options : ${optionSummary.create} créée(s), ${optionSummary.update} mise(s) à jour.`,
+					`Options: ${optionSummary.create} created, ${optionSummary.update} updated.`,
 				);
 			},
 		};

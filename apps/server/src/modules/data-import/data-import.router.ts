@@ -297,13 +297,13 @@ export const dataImportRouter = router({
 			if (!/\.xlsx$/i.test(input.name))
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Seuls les fichiers Excel (.xlsx) sont acceptés.",
+					message: "Only Excel files (.xlsx) are accepted.",
 				});
 			const buffer = Buffer.from(input.data, "base64");
 			if (buffer.length > MAX_UPLOAD_BYTES)
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Le fichier dépasse 10 Mo.",
+					message: "The file exceeds 10 MB.",
 				});
 			return { fileId: await saveImportFile(buffer, ".xlsx") };
 		}),

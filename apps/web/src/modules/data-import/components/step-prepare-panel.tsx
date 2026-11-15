@@ -64,8 +64,14 @@ export function StepPreparePanel({
 											key={col.key}
 											title={[
 												col.hint &&
-													t(`${G}columnHelp.${step}.${col.key}`, {
-														defaultValue: col.hint,
+													// Per sheet first: two sheets may share a column key
+													t(`${G}columnHelp.${step}.${sheetIndex}.${col.key}`, {
+														defaultValue: t(
+															`${G}columnHelp.${step}.${col.key}`,
+															{
+																defaultValue: col.hint,
+															},
+														),
 													}),
 												col.enum?.join(" / "),
 											]
