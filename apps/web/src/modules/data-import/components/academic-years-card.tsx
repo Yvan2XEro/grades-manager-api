@@ -5,7 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { G, YEAR_STEPS, yearProgress } from "../services/import-steps";
+import {
+	G,
+	stepLabel,
+	YEAR_STEPS,
+	yearProgress,
+} from "../services/import-steps";
 import type { ImportYear } from "../types";
 import { useManualEntry } from "./manual-entry";
 
@@ -68,7 +73,7 @@ export function AcademicYearsCard({
 							<ol className="flex flex-1 flex-wrap gap-2">
 								{YEAR_STEPS.map((step, index) => {
 									const count = year.counts[step.count];
-									const label = t(`${G}yearSteps.${step.key}`);
+									const label = stepLabel(step.key, t);
 									return (
 										<li key={step.key}>
 											<span

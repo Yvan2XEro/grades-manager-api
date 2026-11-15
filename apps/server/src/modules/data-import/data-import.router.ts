@@ -110,6 +110,29 @@ async function yearCounts(institutionId: string) {
 					})
 				: [];
 			const examIds = exams.map((e) => e.id);
+			const delibs = await db.query.deliberations.findMany({
+				where: and(
+					eq(schema.deliberations.academicYearId, year.id),
+					eq(schema.deliberations.type, "annual"),
+				),
+				columns: { id: true },
+			});
+			const overrides = delibs.length
+				? ((
+						await db
+							.select({ n: count() })
+							.from(schema.deliberationStudentResults)
+							.where(
+								and(
+									inArray(
+										schema.deliberationStudentResults.deliberationId,
+										delibs.map((d) => d.id),
+									),
+									eq(schema.deliberationStudentResults.isOverridden, true),
+								),
+							)
+					)[0]?.n ?? 0)
+				: 0;
 			const [enrollments, grades] = await Promise.all([
 				db
 					.select({ n: count() })
@@ -134,6 +157,8 @@ async function yearCounts(institutionId: string) {
 					enrollments: enrollments[0]?.n ?? 0,
 					exams: examIds.length,
 					grades: grades[0]?.n ?? 0,
+					deliberations: delibs.length,
+					overrides,
 				},
 			};
 		}),

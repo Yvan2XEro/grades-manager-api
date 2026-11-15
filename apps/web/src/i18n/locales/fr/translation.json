@@ -3647,7 +3647,12 @@
           },
           "year": {
             "classes": "Classes",
-            "students": "Étudiants & inscriptions"
+            "students": "Étudiants & inscriptions",
+            "courses": "Cours des classes",
+            "exams": "Examens",
+            "grades": "Notes",
+            "close": "Clôture",
+            "decisions": "Décisions officielles"
           }
         },
         "stepDescriptions": {
@@ -3658,7 +3663,12 @@
           },
           "year": {
             "classes": "Les classes (promotions) de l'année : chacune appartient à un programme, une option et un niveau de son cycle.",
-            "students": "Les étudiants de l'année et leur classe. Un étudiant déjà connu d'une autre année est retrouvé par son matricule, son e-mail, ou ses nom et date de naissance : une seule fiche par personne, une inscription par année."
+            "students": "Les étudiants de l'année et leur classe. Un étudiant déjà connu d'une autre année est retrouvé par son matricule, son e-mail, ou ses nom et date de naissance : une seule fiche par personne, une inscription par année.",
+            "courses": "Chaque classe reçoit les EC de son niveau dans la maquette, avec un enseignant « à renseigner » quand aucun n'est connu. Le fichier est facultatif : il donne les enseignants et les coefficients, ajoute un EC hors maquette ou en retire un non enseigné. Les étudiants sont inscrits aux cours de leur classe.",
+            "exams": "Décrivez une fois le modèle d'évaluation (ex. CC 40 %, Examen 60 %, Rattrapage qui remplace l'Examen) : il crée les examens de tous les cours. La feuille Exceptions ajuste un cours en particulier.",
+            "grades": "Le modèle contient une feuille par classe, comme un procès-verbal : une ligne par étudiant, une colonne par EC et examen, déjà remplie avec les notes connues.",
+            "close": "Une fois les notes importées, clôturez l'année : les délibérations de chaque classe sont calculées et laissées ouvertes pour que vous les vérifiiez.",
+            "decisions": "Facultatif : importez les décisions de jury des procès-verbaux. Les écarts avec les décisions calculées sont listés ; importer retient la décision officielle, tracée comme dérogation."
           }
         },
         "yearSteps": {
@@ -3779,7 +3789,28 @@
             "unknownGender": "« {{value}} » n'est ni M ni F : laissé vide.",
             "ambiguousStudent": "Plusieurs étudiants connus correspondent à cette ligne ({{candidates}}) : indiquez le matricule.",
             "registrationMismatch": "Cette personne est déjà connue sous {{student}} : le matricule {{value}} ne correspond pas.",
-            "noRegistrationFormat": "Aucun matricule fourni et aucun format de matricule actif pour en générer un."
+            "noRegistrationFormat": "Aucun matricule fourni et aucun format de matricule actif pour en générer un.",
+            "unknownCourse": "L'EC {{value}} n'est pas dans la maquette du programme de {{class}}.",
+            "unknownTeacher": "Aucun enseignant avec l'e-mail {{value}} : le cours est gardé sans enseignant.",
+            "unitsWithoutLevel": "UE sans niveau, leurs EC ne sont pas proposés : {{units}}. Renseignez leur niveau dans les Fondations (UE & EC).",
+            "coursesWithoutTeacher": "{{count}} cours sans enseignant : ils pourront être attribués plus tard.",
+            "unknownRetakeTarget": "« {{value}} » n'est pas un type d'examen du modèle.",
+            "weightsNot100": "Les pondérations du modèle totalisent {{total}} %, pas 100 %.",
+            "noClassCourses": "{{year}} n'a encore aucun cours : importez-les à l'étape Cours des classes.",
+            "unknownClassCourse": "L'EC {{course}} n'est pas enseigné dans la classe {{class}}.",
+            "examLocked": "L'examen {{type}} de {{course}} est verrouillé : laissé inchangé.",
+            "sheetNotAClass": "La feuille « {{sheet}} » n'est pas une classe de {{year}} : ignorée.",
+            "unknownExam": "L'EC {{course}} n'a pas d'examen « {{value}} » : ajoutez-le à l'étape Examens.",
+            "studentNotInClass": "Aucun étudiant {{value}} inscrit en {{class}} cette année.",
+            "notEnrolledInCourse": "{{value}} n'est pas inscrit à {{course}}.",
+            "invalidScore": "« {{value}} » n'est pas une note entre 0 et {{max}} (ou ABS).",
+            "duplicateGrade": "Cette note est donnée deux fois dans le fichier.",
+            "absencesAsZero": "{{count}} absence(s) (ABS) enregistrée(s) comme 0.",
+            "yearNotClosed": "{{year}} n'a pas encore de délibération calculée : clôturez d'abord l'année.",
+            "unknownDecision": "« {{value}} » n'est pas une décision de jury connue.",
+            "noDeliberationResult": "Aucun résultat de délibération pour {{value}} en {{year}}.",
+            "deliberationNotOpen": "La délibération de cet étudiant est close : elle ne peut plus être modifiée.",
+            "decisionGap": "La décision officielle « {{value}} » diffère de la décision calculée ({{computed}})."
           }
         },
         "done": {
@@ -3816,9 +3847,20 @@
               "classes_one": "{{count}} classe",
               "classes_other": "{{count}} classes",
               "students_one": "{{count}} inscription",
-              "students_other": "{{count}} inscriptions"
+              "students_other": "{{count}} inscriptions",
+              "courses_one": "{{count}} cours",
+              "courses_other": "{{count}} cours",
+              "exams_one": "{{count}} examen",
+              "exams_other": "{{count}} examens",
+              "grades_one": "{{count}} note",
+              "grades_other": "{{count}} notes",
+              "close_one": "{{count}} délibération",
+              "close_other": "{{count}} délibérations",
+              "decisions_one": "{{count}} décision officielle",
+              "decisions_other": "{{count}} décisions officielles"
             }
-          }
+          },
+          "optional": "facultatif"
         },
         "sheetHelp": {
           "year": {
@@ -3827,6 +3869,20 @@
             },
             "students": {
               "0": "Un étudiant par ligne, avec sa classe de l'année. Un étudiant déjà connu est retrouvé par son matricule, son e-mail ou ses nom, prénom et date de naissance."
+            },
+            "courses": {
+              "0": "Facultatif : chaque classe reçoit déjà les EC de son niveau dans la maquette. Une ligne sert à indiquer l'enseignant, corriger un coefficient, ajouter un EC hors maquette ou retirer un EC non enseigné cette année."
+            },
+            "exams": {
+              "0": "Le modèle d'évaluation appliqué à tous les cours de l'année : un type d'examen par ligne avec sa pondération. Un rattrapage indique l'examen qu'il remplace.",
+              "1": "Facultatif : une ligne par examen d'un cours qui s'écarte du modèle (pondération, date) ou qui n'a pas lieu."
+            },
+            "grades": {
+              "0": "Une feuille par classe, nommée par son code : une ligne par étudiant (matricule), une colonne par EC et examen (« INF111 | CC »). Note de 0 à 20, virgule ou point ; ABS pour un absent (compte 0) ; vide = pas de note.",
+              "1": "Autre format accepté : une note par ligne, pour les exports d'autres logiciels."
+            },
+            "decisions": {
+              "0": "Facultatif, après la clôture de l'année : la décision du jury de chaque étudiant, telle qu'elle figure au procès-verbal. Les écarts avec les décisions calculées sont signalés ; importer retient la décision officielle."
             }
           }
         },
@@ -3842,8 +3898,40 @@
               "dateOfBirth": "jj/mm/aaaa",
               "gender": "M ou F",
               "classCode": "Classe de l'étudiant pour l'année importée."
+            },
+            "courses": {
+              "remove": "« oui » : l'EC n'est pas créé pour cette classe (un cours existant n'est jamais supprimé)."
+            },
+            "exams": {
+              "percentage": "Vide pour un rattrapage (il prend la pondération de l'examen remplacé).",
+              "retakeOf": "Pour un rattrapage : le type d'examen qu'il remplace (ex. Examen).",
+              "policy": "Rattrapage : la note remplace celle de l'examen, ou la meilleure des deux est gardée.",
+              "date": "jj/mm/aaaa",
+              "remove": "« oui » : cet examen n'est pas créé pour ce cours."
+            },
+            "decisions": {
+              "decision": "Admis, Admis par compensation, Ajourné, Redouble, Exclu (ou ADM, ADC, AJ, RED, EXC)."
+            }
+          },
+          "foundation": {
+            "curriculum": {
+              "levelCode": "Niveau où l'UE est enseignée (ex. L1) : ses EC sont proposés aux classes de ce niveau."
             }
           }
+        },
+        "close": {
+          "title": "Clôturer l'année",
+          "text": "Calcule les résultats de l'année à partir des notes importées. Vous pouvez la relancer après une correction.",
+          "lock": "Les examens de cette année passée sont validés et verrouillés.",
+          "credits": "Les crédits de chaque étudiant sont recalculés.",
+          "deliberations": "Une délibération annuelle par classe est calculée et laissée ouverte pour vérification.",
+          "noGrades": "Aucune note n'a encore été importée pour cette année.",
+          "run": "Clôturer l'année",
+          "again": "Recalculer",
+          "done": "Année clôturée",
+          "report": "{{locked}} examen(s) verrouillé(s), {{students}} étudiant(s) recalculé(s), délibérations : {{created}} créée(s), {{recomputed}} recalculée(s), {{skipped}} déjà close(s).",
+          "review": "Vérifier les délibérations",
+          "next": "Comparer aux décisions officielles"
         }
       }
     }

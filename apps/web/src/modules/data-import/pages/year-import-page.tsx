@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { StepDonePanel } from "../components/step-done-panel";
 import { StepPreparePanel } from "../components/step-prepare-panel";
 import { StepReviewPanel } from "../components/step-review-panel";
+import { YearClosePanel } from "../components/year-close-panel";
 import { useImportOverview } from "../hooks/use-import-overview";
 import { useImportStep } from "../hooks/use-import-step";
 import {
@@ -36,7 +37,9 @@ export default function YearImportPage() {
 
 	const stepKey =
 		IMPORT_YEAR_STEPS.find((s) => s.key === search.get("step"))?.key ??
-		IMPORT_YEAR_STEPS.find((s) => year && year.counts[s.count] === 0)?.key ??
+		IMPORT_YEAR_STEPS.find(
+			(s) => year && !s.optional && year.counts[s.count] === 0,
+		)?.key ??
 		IMPORT_YEAR_STEPS[0].key;
 	const index = IMPORT_YEAR_STEPS.findIndex((s) => s.key === stepKey);
 	const goTo = (key: string) => setSearch({ step: key }, { replace: true });
@@ -49,7 +52,9 @@ export default function YearImportPage() {
 	if (overview && !year) return <Navigate to="/import" replace />;
 	const past = year ? isPastYear(year) : false;
 	const previousMissing = year
-		? IMPORT_YEAR_STEPS.slice(0, index).find((s) => year.counts[s.count] === 0)
+		? IMPORT_YEAR_STEPS.slice(0, index).find(
+				(s) => !s.optional && year.counts[s.count] === 0,
+			)
 		: undefined;
 
 	return (
@@ -107,6 +112,11 @@ export default function YearImportPage() {
 								<span className="flex-1">
 									<span className="block font-medium">
 										{i + 1}. {stepLabel(step.key, t)}
+										{step.optional && (
+											<span className="ml-1 font-normal text-muted-foreground text-xs">
+												({t(`${G}yearImport.optional`)})
+											</span>
+										)}
 									</span>
 									<span className="text-muted-foreground text-xs">
 										{t(`${G}yearImport.count.${step.key}`, { count })}
@@ -117,14 +127,26 @@ export default function YearImportPage() {
 					})}
 				</nav>
 
-				{year && (
-					<YearStep
-						key={stepKey}
-						yearId={yearId}
-						stepKey={stepKey}
-						previousMissing={previousMissing?.key}
-						onGoTo={goTo}
-					/>
+				{year && IMPORT_YEAR_STEPS[index]?.action ? (
+					<div className="min-w-0 space-y-4">
+						<p className="text-muted-foreground text-sm">
+							{t(`${G}stepDescriptions.${stepKey}`, { defaultValue: "" })}
+						</p>
+						<YearClosePanel
+							year={year}
+							onNext={() => goTo(IMPORT_YEAR_STEPS[index + 1].key)}
+						/>
+					</div>
+				) : (
+					year && (
+						<YearStep
+							key={stepKey}
+							yearId={yearId}
+							stepKey={stepKey}
+							previousMissing={previousMissing?.key}
+							onGoTo={goTo}
+						/>
+					)
 				)}
 			</div>
 		</div>

@@ -186,10 +186,18 @@ export const examsStep: ImportStepDef = {
 					const main = [...normal].sort(
 						(a, b) => (b.defaultPercentage ?? 0) - (a.defaultPercentage ?? 0),
 					)[0];
+					// Types without a default weight share what is left of 100 %
+					const set = normal.filter((t) => t.defaultPercentage != null);
+					const rest = Math.max(
+						100 - set.reduce((n, t) => n + (t.defaultPercentage ?? 0), 0),
+						0,
+					);
+					const unset = normal.length - set.length;
+					const share = unset ? Math.round((rest / unset) * 100) / 100 : 0;
 					return [
 						...normal.map((t) => [
 							t.name,
-							String(t.defaultPercentage ?? ""),
+							String(t.defaultPercentage ?? share),
 							"",
 							"",
 						]),
@@ -362,7 +370,8 @@ export const examsStep: ImportStepDef = {
 		};
 		const changes: Change[] = [];
 		const summary: SheetSummary = {
-			sheet: MODEL,
+			// Counts exams, not rows of the model
+			sheet: "Examens",
 			create: 0,
 			update: 0,
 			unchanged: 0,

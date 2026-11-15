@@ -4659,7 +4659,12 @@
           },
           "year": {
             "classes": "Classes",
-            "students": "Students & enrollments"
+            "students": "Students & enrollments",
+            "courses": "Class courses",
+            "exams": "Exams",
+            "grades": "Grades",
+            "close": "Closing",
+            "decisions": "Official decisions"
           }
         },
         "stepDescriptions": {
@@ -4670,7 +4675,12 @@
           },
           "year": {
             "classes": "The classes (cohorts) of the year: each one belongs to a program, an option and a level of its cycle.",
-            "students": "The students of the year and their class. A student already known from another year is found again by registration number, email, or name and date of birth: one record per person, one enrollment per year."
+            "students": "The students of the year and their class. A student already known from another year is found again by registration number, email, or name and date of birth: one record per person, one enrollment per year.",
+            "courses": "Each class receives the courses of its level in the curriculum, with a placeholder teacher when none is known. The file is optional: it gives teachers and coefficients, adds a course outside the curriculum or marks one not taught. Students are enrolled in the courses of their class.",
+            "exams": "Describe the evaluation model once (e.g. CA 40 %, Exam 60 %, Retake replacing the Exam): it creates the exams of every course. The Exceptions sheet adjusts one course.",
+            "grades": "The template has one sheet per class, like a results report: one row per student, one column per course and exam, already filled with the known grades.",
+            "close": "Once the grades are in, close the year: the deliberations of each class are computed and left open so you can review them.",
+            "decisions": "Optional: import the jury decisions of the results reports. Gaps with the computed decisions are listed; importing keeps the official decision, traced as an override."
           }
         },
         "yearSteps": {
@@ -4791,7 +4801,28 @@
             "unknownGender": "\"{{value}}\" is not M or F: left empty.",
             "ambiguousStudent": "Several known students match this row ({{candidates}}): give the registration number.",
             "registrationMismatch": "This person is already known as {{student}}: registration number {{value}} does not match.",
-            "noRegistrationFormat": "No registration number given, and no active registration number format to generate one."
+            "noRegistrationFormat": "No registration number given, and no active registration number format to generate one.",
+            "unknownCourse": "Course {{value}} is not in the curriculum of the program of {{class}}.",
+            "unknownTeacher": "No teacher with email {{value}}: the course is kept without teacher.",
+            "unitsWithoutLevel": "Teaching units without level, their courses are not proposed: {{units}}. Set their level in the Foundations (UE & EC).",
+            "coursesWithoutTeacher": "{{count}} course(s) without teacher: they can be assigned later.",
+            "unknownRetakeTarget": "\"{{value}}\" is not an exam type of the model.",
+            "weightsNot100": "The weights of the model add up to {{total}} %, not 100 %.",
+            "noClassCourses": "{{year}} has no class courses yet: import them at the Class courses step.",
+            "unknownClassCourse": "Course {{course}} is not taught in class {{class}}.",
+            "examLocked": "The {{type}} exam of {{course}} is locked: left unchanged.",
+            "sheetNotAClass": "Sheet \"{{sheet}}\" is not a class of {{year}}: ignored.",
+            "unknownExam": "Course {{course}} has no \"{{value}}\" exam: add it at the Exams step.",
+            "studentNotInClass": "No student {{value}} enrolled in {{class}} this year.",
+            "notEnrolledInCourse": "{{value}} is not enrolled in {{course}}.",
+            "invalidScore": "\"{{value}}\" is not a grade between 0 and {{max}} (or ABS).",
+            "duplicateGrade": "This grade is given twice in the file.",
+            "absencesAsZero": "{{count}} absence(s) (ABS) recorded as 0.",
+            "yearNotClosed": "{{year}} has no computed deliberation yet: close the year first.",
+            "unknownDecision": "\"{{value}}\" is not a known jury decision.",
+            "noDeliberationResult": "No deliberation result for {{value}} in {{year}}.",
+            "deliberationNotOpen": "The deliberation of this student is closed: it cannot be changed.",
+            "decisionGap": "Official decision \"{{value}}\" differs from the computed one ({{computed}})."
           }
         },
         "done": {
@@ -4828,9 +4859,20 @@
               "classes_one": "{{count}} class",
               "classes_other": "{{count}} classes",
               "students_one": "{{count}} enrollment",
-              "students_other": "{{count}} enrollments"
+              "students_other": "{{count}} enrollments",
+              "courses_one": "{{count}} course",
+              "courses_other": "{{count}} courses",
+              "exams_one": "{{count}} exam",
+              "exams_other": "{{count}} exams",
+              "grades_one": "{{count}} grade",
+              "grades_other": "{{count}} grades",
+              "close_one": "{{count}} deliberation",
+              "close_other": "{{count}} deliberations",
+              "decisions_one": "{{count}} official decision",
+              "decisions_other": "{{count}} official decisions"
             }
-          }
+          },
+          "optional": "optional"
         },
         "sheetHelp": {
           "year": {
@@ -4839,6 +4881,20 @@
             },
             "students": {
               "0": "One student per row, with their class of the year. A known student is found by registration number, email, or name, first name and date of birth."
+            },
+            "courses": {
+              "0": "Optional: each class already receives the courses of its level in the curriculum. A row gives the teacher, fixes a coefficient, adds a course outside the curriculum or removes a course not taught this year."
+            },
+            "exams": {
+              "0": "The evaluation model applied to every course of the year: one exam type per row with its weight. A retake names the exam it replaces.",
+              "1": "Optional: one row per exam of a course that departs from the model (weight, date) or is not held."
+            },
+            "grades": {
+              "0": "One sheet per class, named by its code: one row per student (registration number), one column per course and exam (\"INF111 | CA\"). Grade from 0 to 20, comma or dot; ABS for an absent student (counts 0); empty = no grade.",
+              "1": "Other accepted format: one grade per row, for exports of other software."
+            },
+            "decisions": {
+              "0": "Optional, after closing the year: the jury decision of each student as written in the results report. Gaps with the computed decisions are reported; importing keeps the official decision."
             }
           }
         },
@@ -4854,8 +4910,40 @@
               "dateOfBirth": "dd/mm/yyyy",
               "gender": "M or F",
               "classCode": "Class of the student for the imported year."
+            },
+            "courses": {
+              "remove": "\"yes\": the course is not created for this class (an existing course is never deleted)."
+            },
+            "exams": {
+              "percentage": "Empty for a retake (it takes the weight of the exam it replaces).",
+              "retakeOf": "For a retake: the exam type it replaces (e.g. Exam).",
+              "policy": "Retake: its grade replaces the exam's, or the best of both is kept.",
+              "date": "dd/mm/yyyy",
+              "remove": "\"yes\": this exam is not created for this course."
+            },
+            "decisions": {
+              "decision": "Passed, Passed by compensation, Deferred, Repeat, Excluded (or ADM, ADC, AJ, RED, EXC)."
+            }
+          },
+          "foundation": {
+            "curriculum": {
+              "levelCode": "Level where the unit is taught (e.g. L1): its courses are proposed to the classes of that level."
             }
           }
+        },
+        "close": {
+          "title": "Close the year",
+          "text": "Computes the results of the year from the imported grades. You can run it again after a correction.",
+          "lock": "The exams of this past year are approved and locked.",
+          "credits": "The credits of every student are recomputed.",
+          "deliberations": "One annual deliberation per class is computed and left open for review.",
+          "noGrades": "No grade has been imported for this year yet.",
+          "run": "Close the year",
+          "again": "Recompute",
+          "done": "Year closed",
+          "report": "{{locked}} exam(s) locked, {{students}} student(s) recomputed, deliberations: {{created}} created, {{recomputed}} recomputed, {{skipped}} already closed.",
+          "review": "Review the deliberations",
+          "next": "Compare with official decisions"
         }
       }
     }

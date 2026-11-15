@@ -34,42 +34,29 @@ export const foundationStatus = (step: FoundationStep): StepStatus =>
 			? "done"
 			: "todo";
 
-/** Steps of an academic year, with the count that tells they are done. */
-export const YEAR_STEPS: {
-	key: string;
-	count: keyof ImportYear["counts"];
-}[] = [
-	{
-		key: "classes",
-		count: "classes",
-	},
-	{
-		key: "assignments",
-		count: "classCourses",
-	},
-	{
-		key: "enrollments",
-		count: "enrollments",
-	},
-	{ key: "exams", count: "exams" },
-	{
-		key: "grades",
-		count: "grades",
-	},
-];
-
 /** Importable steps of an academic year (`/import/years/:id`), in order. */
 export const IMPORT_YEAR_STEPS: {
 	key: string;
 	count: keyof ImportYear["counts"];
+	/** Not a file step: the closing of the year is an action. */
+	action?: boolean;
+	optional?: boolean;
 }[] = [
 	{ key: "year.classes", count: "classes" },
 	{ key: "year.students", count: "enrollments" },
+	{ key: "year.courses", count: "classCourses" },
+	{ key: "year.exams", count: "exams" },
+	{ key: "year.grades", count: "grades" },
+	{ key: "year.close", count: "deliberations", action: true },
+	{ key: "year.decisions", count: "overrides", optional: true },
 ];
 
 /** A year that has ended is imported as history. */
 export const isPastYear = (year: Pick<ImportYear, "endDate">) =>
 	new Date(year.endDate).getTime() < Date.now();
+
+/** Required steps of a year: its progress on the setup hub. */
+export const YEAR_STEPS = IMPORT_YEAR_STEPS.filter((s) => !s.optional);
 
 export const yearProgress = (year: ImportYear) =>
 	YEAR_STEPS.filter((step) => year.counts[step.count] > 0).length;
