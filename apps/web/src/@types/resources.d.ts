@@ -1211,6 +1211,22 @@ interface Resources {
 				profileMenuAria: "Open profile menu";
 				search: "Search…";
 				language: "Language";
+				lightMode: "Light mode";
+				darkMode: "Dark mode";
+				dashboard: "Dashboard";
+				sound: {
+					aria: "Sound settings";
+					volume: "Volume";
+					disable: "Turn off";
+					enable: "Turn on";
+					theme: "Sound theme";
+					themes: {
+						default: "Default";
+						soft: "Soft";
+						playful: "Lively";
+						minimal: "Minimal";
+					};
+				};
 			};
 			sidebar: {
 				search: "Search...";
@@ -5573,6 +5589,7 @@ interface Resources {
 				noEvents: "No financial events.";
 				viewDetail: "Detail";
 				viewHistory: "Financial history";
+				subtitleFor: "All payments and orders of {{name}}";
 			};
 			payment: {
 				methods: {

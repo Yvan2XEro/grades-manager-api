@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { trpc } from "@/utils/trpc";
 import { FinancialHistoryCard } from "../components/financial-history-card";
 import { formatMoney } from "../services/fee-format";
@@ -18,6 +19,13 @@ export default function StudentFinancialHistoryPage() {
 			studentId: studentId!,
 		}),
 	);
+	const { data: student } = useQuery(
+		trpc.students.getById.queryOptions({ id: studentId! }),
+	);
+	const studentName = student
+		? `${student.profile.lastName} ${student.profile.firstName}`
+		: null;
+	useBreadcrumbEntity(studentId, studentName);
 
 	if (isLoading) {
 		return (
@@ -44,7 +52,9 @@ export default function StudentFinancialHistoryPage() {
 						{t("feeClearance.history.title")}
 					</h2>
 					<p className="text-muted-foreground text-sm">
-						{t("feeClearance.history.subtitle")}
+						{studentName
+							? t("feeClearance.history.subtitleFor", { name: studentName })
+							: t("feeClearance.history.subtitle")}
 					</p>
 				</div>
 			</div>

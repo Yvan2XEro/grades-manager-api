@@ -200,7 +200,23 @@
       "languageSelectPlaceholder": "Sélectionnez la langue",
       "profileMenuAria": "Ouvrir le menu profil",
       "search": "Rechercher…",
-      "language": "Langue"
+      "language": "Langue",
+      "lightMode": "Mode clair",
+      "darkMode": "Mode sombre",
+      "dashboard": "Tableau de bord",
+      "sound": {
+        "aria": "Paramètres sonores",
+        "volume": "Volume",
+        "disable": "Désactiver",
+        "enable": "Activer",
+        "theme": "Thème sonore",
+        "themes": {
+          "default": "Défaut",
+          "soft": "Doux",
+          "playful": "Vif",
+          "minimal": "Minimal"
+        }
+      }
     },
     "sidebar": {
       "search": "Rechercher...",
@@ -5576,7 +5592,8 @@
       "empty": "Aucune affectation trouvée pour cet étudiant.",
       "noEvents": "Aucun événement financier.",
       "viewDetail": "Détail",
-      "viewHistory": "Historique financier"
+      "viewHistory": "Historique financier",
+      "subtitleFor": "Tous les paiements et ordres de {{name}}"
     },
     "payment": {
       "methods": {
