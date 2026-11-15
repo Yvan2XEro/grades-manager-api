@@ -174,6 +174,7 @@ export default function YearImportPage() {
 							workbook={
 								workbook?.steps.includes(stepKey) ? workbook : undefined
 							}
+							coveredSteps={workbook?.steps ?? []}
 						/>
 					)
 				)}
@@ -190,6 +191,7 @@ function YearStep({
 	previousMissing,
 	onGoTo,
 	workbook,
+	coveredSteps,
 }: {
 	yearId: string;
 	stepKey: string;
@@ -197,11 +199,16 @@ function YearStep({
 	onGoTo: (key: string) => void;
 	/** The year's single workbook, when it holds this step's sheets. */
 	workbook?: YearWorkbook;
+	/** Steps found in the year's workbook. */
+	coveredSteps: string[];
 }) {
 	const { t } = useTranslation();
 	const wizard = useImportStep(stepKey, yearId);
 	const index = IMPORT_YEAR_STEPS.findIndex((s) => s.key === stepKey);
-	const next = IMPORT_YEAR_STEPS[index + 1];
+	// Optional steps are suggested only when the year's workbook holds them
+	const next = IMPORT_YEAR_STEPS.slice(index + 1).find(
+		(s) => !s.optional || coveredSteps.includes(s.key),
+	);
 	return (
 		<div className="min-w-0 space-y-4">
 			<StatusStepper
