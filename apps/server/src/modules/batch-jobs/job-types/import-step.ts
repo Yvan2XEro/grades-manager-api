@@ -4,7 +4,12 @@ import { getImportStep } from "../../data-import/steps";
 import { readWorkbook } from "../../data-import/steps/workbook";
 import type { BatchJobDefinition, PreviewResult } from "../batch-jobs.types";
 
-const paramsSchema = z.object({ step: z.string(), fileId: z.string() });
+const paramsSchema = z.object({
+	step: z.string(),
+	fileId: z.string(),
+	/** Academic year of a year step. */
+	academicYearId: z.string().optional(),
+});
 type Params = z.infer<typeof paramsSchema>;
 
 /** Plans a guided-import step from its uploaded workbook. */
@@ -12,7 +17,10 @@ async function planStep(params: Params, institutionId: string) {
 	const step = getImportStep(params.step);
 	const buffer = await readImportFile(params.fileId);
 	const { rows, issues } = await readWorkbook(step, buffer);
-	const plan = await step.plan(rows, { institutionId });
+	const plan = await step.plan(rows, {
+		institutionId,
+		academicYearId: params.academicYearId,
+	});
 	return { step, plan: { ...plan, issues: [...issues, ...plan.issues] } };
 }
 

@@ -9,7 +9,9 @@ export interface ColumnDef {
 	enum?: readonly string[];
 	/** Dropdown filled with values of another list (e.g. existing cycle codes). */
 	listFrom?: string;
-	type?: "text" | "integer" | "number" | "email";
+	type?: "text" | "integer" | "number" | "email" | "date";
+	/** Other headers accepted for this column (e.g. English, other software). */
+	aliases?: string[];
 	width?: number;
 }
 
@@ -27,7 +29,10 @@ export interface ImportIssue {
 	row: number;
 	column?: string;
 	level: IssueLevel;
+	/** Fallback text; the web app translates `code` (`admin.dataImport.issues.*`). */
 	message: string;
+	code?: string;
+	params?: Record<string, string | number>;
 }
 
 export type SheetRow = {
@@ -55,12 +60,16 @@ export interface ImportPlan {
 
 export interface StepContext {
 	institutionId: string;
+	/** Set for the steps of an academic year (`scope: "year"`). */
+	academicYearId?: string;
 }
 
 /** A step of the guided import: its sheets, its pre-filled template and its plan. */
 export interface ImportStepDef {
 	key: string;
 	label: string;
+	/** Foundation steps are done once; year steps once per academic year. */
+	scope?: "institution" | "year";
 	sheets: SheetDef[];
 	/** Current data, written in the template so a re-import updates it. */
 	existingRows: (ctx: StepContext) => Promise<Record<string, string[][]>>;

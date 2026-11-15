@@ -7,6 +7,7 @@ import { adminProcedure, router, tenantAdminProcedure } from "@/lib/trpc";
 import { saveImportFile } from "./import-file-storage";
 import { FOUNDATION_STEPS, getImportStep, IMPORT_STEP_KEYS } from "./steps";
 import { buildTemplate } from "./steps/workbook";
+import { requireYear } from "./steps/year-context";
 
 const TEMPLATE_TYPES = [
 	"academic-structure",
@@ -177,20 +178,34 @@ export const dataImportRouter = router({
 		.input(z.object({ step: z.enum(IMPORT_STEP_KEYS) }))
 		.query(({ input }) => {
 			const step = getImportStep(input.step);
-			return { key: step.key, label: step.label, sheets: step.sheets };
+			return {
+				key: step.key,
+				label: step.label,
+				scope: step.scope ?? "institution",
+				sheets: step.sheets,
+			};
 		}),
 
 	/** Pre-filled template of a step (base64 xlsx): current data + dropdowns. */
 	template: tenantAdminProcedure
-		.input(z.object({ step: z.enum(IMPORT_STEP_KEYS) }))
+		.input(
+			z.object({
+				step: z.enum(IMPORT_STEP_KEYS),
+				academicYearId: z.string().optional(),
+			}),
+		)
 		.query(async ({ ctx, input }) => {
 			const step = getImportStep(input.step);
-			const buffer = await buildTemplate(step, {
+			const context = {
 				institutionId: ctx.institution.id,
-			});
+				academicYearId: input.academicYearId,
+			};
+			const buffer = await buildTemplate(step, context);
+			const year =
+				step.scope === "year" ? `-${(await requireYear(context)).name}` : "";
 			return {
 				data: buffer.toString("base64"),
-				filename: `import-${step.key.replace(".", "-")}.xlsx`,
+				filename: `import-${step.key.replace(".", "-")}${year}.xlsx`,
 				mimeType:
 					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			};

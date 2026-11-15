@@ -149,7 +149,9 @@ export async function readWorkbook(
 				sheet: sheet.name,
 				row: 0,
 				level: "warning",
-				message: `Feuille « ${sheet.name} » absente du fichier : rien n'y sera importé.`,
+				code: "missingSheet",
+				params: { sheet: sheet.name },
+				message: `Sheet "${sheet.name}" is missing: nothing is imported from it.`,
 			});
 			continue;
 		}
@@ -159,7 +161,9 @@ export async function readWorkbook(
 		});
 		const columns = sheet.columns.map((col) => ({
 			col,
-			index: headerIndex.get(normalize(col.header)),
+			index: [col.header, ...(col.aliases ?? [])]
+				.map((header) => headerIndex.get(normalize(header)))
+				.find((index) => index !== undefined),
 		}));
 		for (const { col, index } of columns) {
 			if (index === undefined && col.required)
@@ -168,7 +172,9 @@ export async function readWorkbook(
 					row: 1,
 					column: col.header,
 					level: "error",
-					message: `Colonne obligatoire « ${col.header} » introuvable dans l'en-tête.`,
+					code: "missingColumn",
+					params: { column: col.header },
+					message: `Required column "${col.header}" not found in the header.`,
 				});
 		}
 
@@ -182,35 +188,49 @@ export async function readWorkbook(
 			let invalid = false;
 			for (const { col } of columns) {
 				const value = values[col.key];
-				const issue = (message: string) => {
+				const issue = (code: string, message: string) => {
 					invalid = true;
 					issues.push({
 						sheet: sheet.name,
 						row: rowNumber,
 						column: col.header,
 						level: "error",
+						code,
+						params: { value, allowed: col.enum?.join(", ") ?? "" },
 						message,
 					});
 				};
 				if (!value) {
-					if (col.required) issue("Valeur obligatoire manquante.");
+					if (col.required) issue("required", "Required value missing.");
 					continue;
 				}
 				if (col.enum) {
 					const match = col.enum.find((v) => normalize(v) === normalize(value));
 					if (!match)
-						issue(`« ${value} » n'est pas permis (${col.enum.join(", ")}).`);
+						issue(
+							"enum",
+							`"${value}" is not allowed (${col.enum.join(", ")}).`,
+						);
 					else values[col.key] = match;
 				}
 				if (col.type === "integer" && !/^-?\d+$/.test(value))
-					issue(`« ${value} » doit être un nombre entier.`);
+					issue("integer", `"${value}" must be a whole number.`);
 				if (
 					col.type === "number" &&
 					Number.isNaN(Number(value.replace(",", ".")))
 				)
-					issue(`« ${value} » doit être un nombre.`);
+					issue("number", `"${value}" must be a number.`);
 				if (col.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-					issue(`« ${value} » n'est pas une adresse e-mail valide.`);
+					issue("email", `"${value}" is not a valid email address.`);
+				if (col.type === "date") {
+					const date = parseDate(value);
+					if (!date)
+						issue(
+							"date",
+							`"${value}" is not a date (dd/mm/yyyy or yyyy-mm-dd).`,
+						);
+					else values[col.key] = date;
+				}
 			}
 			rows[sheet.name].push({ row: rowNumber, values, invalid });
 		});
@@ -237,11 +257,40 @@ export function findDuplicates(
 				row: row.row,
 				column: label,
 				level: "error",
-				message: `Doublon : déjà présent ligne ${first}.`,
+				code: "duplicate",
+				params: { row: first },
+				message: `Duplicate: already on row ${first}.`,
 			});
 		else seen.set(k, row.row);
 	}
 	return issues;
+}
+
+/**
+ * Reads a date written as dd/mm/yyyy (or dd-mm-yyyy, dd.mm.yyyy), yyyy-mm-dd
+ * or an Excel serial number; returns yyyy-mm-dd, or null when it is not a date.
+ */
+export function parseDate(value: string): string | null {
+	const text = value.trim();
+	let y: number;
+	let m: number;
+	let d: number;
+	const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(text);
+	const fr = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(text);
+	if (iso) [y, m, d] = [Number(iso[1]), Number(iso[2]), Number(iso[3])];
+	else if (fr) [d, m, y] = [Number(fr[1]), Number(fr[2]), Number(fr[3])];
+	else if (/^\d{4,5}(\.\d+)?$/.test(text)) {
+		// Excel serial: days since 1899-12-30
+		const date = new Date(Date.UTC(1899, 11, 30) + Number(text) * 86400000);
+		[y, m, d] = [
+			date.getUTCFullYear(),
+			date.getUTCMonth() + 1,
+			date.getUTCDate(),
+		];
+	} else return null;
+	const date = new Date(Date.UTC(y, m - 1, d));
+	if (date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) return null;
+	return date.toISOString().slice(0, 10);
 }
 
 /** Rows of a sheet that carry no error. */
