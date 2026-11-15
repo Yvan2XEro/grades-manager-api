@@ -1,6 +1,8 @@
 # Data import — year import wizard (spec)
 
-> Replaces the "years" part of `data-import-redesign.md`. Status: decided, in implementation. Only the three "Foundations" steps are shipped so far.
+> Replaces the "years" part of `data-import-redesign.md`. Status: decided, in implementation.
+>
+> Shipped: the three Foundations steps; delivery 1 partly — the year wizard (`/import/years/:yearId`) with the Classes and Students & enrollments steps, row-level matching (registration number → email → name + birth date), translated issue codes, past/current year derived from the end date. Not yet: preview in a large dialog with before/after values, annotated file download, server-side wizard state beyond the per-year counts.
 
 ## 1. Who and why
 
@@ -172,8 +174,8 @@ Each validated step creates an **import batch** that records every created row a
 
 | Finding | Consequence | Fix |
 |---------|-------------|-----|
-| `autoEnrollClass` selects students by `students.class` (current class) | wrong course enrollments for a past year | select by the year's `enrollments` |
-| `enrollments` has no (student, year) uniqueness | duplicates possible on import | unique constraint + cleanup migration |
+| `autoEnrollClass` selects students by `students.class` (current class) | wrong course enrollments for a past year | **done**: selects by the year's `enrollments` |
+| `enrollments` has no (student, year) uniqueness | duplicates possible on import | **done**: partial unique index on open enrollments (mid-year transfers keep a closed one) + cleanup migration |
 | `grades.upsertNote` requires exam-workflow rights | unusable in bulk | bulk grade-writing service (same checks, no workflow) |
 | exams have no (course, type) uniqueness | ambiguous grade attachment | the import guarantees one exam per type per course |
 | teachers: no email uniqueness | duplicate people | match by normalised email in the import |

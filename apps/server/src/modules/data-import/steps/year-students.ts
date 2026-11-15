@@ -456,7 +456,6 @@ export const studentsStep: ImportStepDef = {
 							const registrationNumber =
 								change.registrationNumber ??
 								(await issueRegistrationNumber({
-									// biome-ignore lint/style/noNonNullAssertion: loaded above when no number is given
 									klass: klass!,
 									profile: {
 										firstName: change.profile.firstName,
