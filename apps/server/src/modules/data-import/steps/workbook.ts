@@ -306,3 +306,68 @@ export const validRows = (
 	);
 	return rows.filter((row) => !row.invalid && !bad.has(row.row));
 };
+
+const ERROR_FILL: ExcelJS.Fill = {
+	type: "pattern",
+	pattern: "solid",
+	fgColor: { argb: "FFFECACA" },
+};
+const WARNING_FILL: ExcelJS.Fill = {
+	type: "pattern",
+	pattern: "solid",
+	fgColor: { argb: "FFFEF3C7" },
+};
+
+/**
+ * Writes each note on its cell (the column found by its header, else the
+ * first cell of the row) and colours the cell: red for an error, amber for
+ * a warning. Notes on the same cell are joined.
+ */
+export async function annotateWorkbook(
+	buffer: Buffer,
+	notes: {
+		sheet: string;
+		row: number;
+		column?: string;
+		level: "error" | "warning";
+		text: string;
+	}[],
+): Promise<Buffer> {
+	const wb = new ExcelJS.Workbook();
+	await wb.xlsx.load(buffer as unknown as ArrayBuffer);
+	const byCell = new Map<
+		string,
+		{ cell: ExcelJS.Cell; texts: string[]; error: boolean }
+	>();
+	for (const note of notes) {
+		const ws = wb.worksheets.find(
+			(w) => normalize(w.name) === normalize(note.sheet),
+		);
+		if (!ws || note.row < 1) continue;
+		let col = 1;
+		if (note.column) {
+			ws.getRow(1).eachCell((cell, index) => {
+				if (normalize(cellText(cell)) === normalize(note.column ?? ""))
+					col = index;
+			});
+		}
+		const cell = ws.getRow(note.row).getCell(col);
+		const key = `${ws.name}!${cell.address}`;
+		const entry = byCell.get(key) ?? { cell, texts: [], error: false };
+		entry.texts.push(note.text);
+		entry.error ||= note.level === "error";
+		byCell.set(key, entry);
+	}
+	for (const { cell, texts, error } of byCell.values()) {
+		cell.note = texts.join("\n");
+		cell.fill = error ? ERROR_FILL : WARNING_FILL;
+	}
+	const out = await wb.xlsx.writeBuffer();
+	return Buffer.from(out as ArrayBuffer);
+}
+
+/** Fields of `a` whose value differs in `b` (for before/after displays). */
+export const diff = (a: Record<string, string>, b: Record<string, string>) =>
+	Object.fromEntries(
+		Object.entries(a).filter(([key, value]) => b[key] !== value),
+	);

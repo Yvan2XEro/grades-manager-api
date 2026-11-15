@@ -3764,7 +3764,9 @@
           "noError": "Le fichier ne contient aucune erreur.",
           "another": "Envoyer un autre fichier",
           "nothing": "Rien à importer",
-          "import": "Importer {{count}} ligne(s)"
+          "import": "Importer {{count}} ligne(s)",
+          "annotated": "Télécharger le fichier annoté",
+          "annotatedName": "{{name}} - annoté.xlsx"
         },
         "issues": {
           "errors": "Erreurs ({{count}})",
@@ -3814,7 +3816,8 @@
             "noDeliberationResult": "Aucun résultat de délibération pour {{value}} en {{year}}.",
             "deliberationNotOpen": "La délibération de cet étudiant est close : elle ne peut plus être modifiée.",
             "decisionGap": "La décision officielle « {{value}} » diffère de la décision calculée ({{computed}})."
-          }
+          },
+          "changes": "Modifications ({{count}})"
         },
         "done": {
           "title": "Import terminé",
@@ -3935,6 +3938,15 @@
           "report": "{{locked}} examen(s) verrouillé(s), {{students}} étudiant(s) recalculé(s), délibérations : {{created}} créée(s), {{recomputed}} recalculée(s), {{skipped}} déjà close(s).",
           "review": "Vérifier les délibérations",
           "next": "Comparer aux décisions officielles"
+        },
+        "changes": {
+          "none": "Rien à créer ni à mettre à jour.",
+          "action": "Action",
+          "what": "Ligne concernée",
+          "values": "Valeurs (avant → après)",
+          "create": "Création",
+          "update": "Mise à jour",
+          "truncated": "Les {{shown}} premières modifications sur {{total}} sont affichées."
         }
       }
     }

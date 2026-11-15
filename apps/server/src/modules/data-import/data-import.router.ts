@@ -4,9 +4,9 @@ import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { adminProcedure, router, tenantAdminProcedure } from "@/lib/trpc";
-import { saveImportFile } from "./import-file-storage";
+import { readImportFile, saveImportFile } from "./import-file-storage";
 import { FOUNDATION_STEPS, getImportStep, IMPORT_STEP_KEYS } from "./steps";
-import { buildTemplate } from "./steps/workbook";
+import { annotateWorkbook, buildTemplate } from "./steps/workbook";
 import { requireYear } from "./steps/year-context";
 import { closeImportedYear } from "./year-closing";
 
@@ -272,6 +272,37 @@ export const dataImportRouter = router({
 				academicYearId: input.academicYearId,
 				actorId: ctx.profile.id,
 			});
+		}),
+
+	/**
+	 * The uploaded workbook with each problem as a note on its cell (red),
+	 * so the client fixes the file where it is wrong. Texts come translated
+	 * from the caller.
+	 */
+	annotate: tenantAdminProcedure
+		.input(
+			z.object({
+				fileId: z.string(),
+				notes: z
+					.array(
+						z.object({
+							sheet: z.string(),
+							row: z.number().int(),
+							column: z.string().optional(),
+							level: z.enum(["error", "warning"]),
+							text: z.string(),
+						}),
+					)
+					.max(20000),
+			}),
+		)
+		.mutation(async ({ input }) => {
+			const buffer = await readImportFile(input.fileId);
+			return {
+				data: (await annotateWorkbook(buffer, input.notes)).toString("base64"),
+				mimeType:
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			};
 		}),
 
 	/** Marks a step as not applicable (or applicable again). */

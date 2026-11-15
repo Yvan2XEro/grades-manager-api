@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileWarning } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -31,6 +31,8 @@ export function StepReviewPanel({
 	onRun,
 	isRunning,
 	onRestart,
+	onDownloadAnnotated,
+	isAnnotating,
 }: {
 	preview: StepPreview;
 	fileName: string | null;
@@ -39,6 +41,9 @@ export function StepReviewPanel({
 	onRun: () => void;
 	isRunning: boolean;
 	onRestart: () => void;
+	/** The client's file with each problem as a note on its cell. */
+	onDownloadAnnotated: () => void;
+	isAnnotating: boolean;
 }) {
 	const { t } = useTranslation();
 	return (
@@ -86,9 +91,28 @@ export function StepReviewPanel({
 				</div>
 			)}
 
-			<IssuesTable issues={preview.issues} />
+			<IssuesTable
+				issues={preview.issues}
+				changes={preview.changes}
+				changesTotal={preview.changesTotal}
+			/>
 
 			<div className="flex flex-wrap justify-end gap-2">
+				{preview.issues.some((i) => i.row > 0) && (
+					<Button
+						variant="outline"
+						onClick={onDownloadAnnotated}
+						disabled={isAnnotating}
+						className="mr-auto"
+					>
+						{isAnnotating ? (
+							<Spinner className="mr-2 h-4 w-4" />
+						) : (
+							<FileWarning className="mr-2 h-4 w-4" />
+						)}
+						{t(`${G}review.annotated`)}
+					</Button>
+				)}
 				<Button variant="outline" onClick={onRestart} disabled={isRunning}>
 					{t(`${G}review.another`)}
 				</Button>

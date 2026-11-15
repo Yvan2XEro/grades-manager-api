@@ -4,7 +4,7 @@ import * as schema from "@/db/schema/app-schema";
 import { normalizeCode } from "@/lib/strings";
 import { createClass } from "@/modules/classes/classes.service";
 import type { ImportIssue, ImportStepDef, SheetSummary } from "./types";
-import { findDuplicates, normalize, validRows } from "./workbook";
+import { diff, findDuplicates, normalize, validRows } from "./workbook";
 import { requireYear } from "./year-context";
 
 const CLASSES = "Classes";
@@ -127,6 +127,10 @@ export const classesStep: ImportStepDef = {
 			}),
 		]);
 		const programByCode = new Map(refs.programs.map((p) => [p.code, p]));
+		const programCode = new Map(refs.programs.map((p) => [p.id, p.code]));
+		const levelCode = new Map(
+			refs.cycles.flatMap((c) => c.levels.map((l) => [l.id, l.code])),
+		);
 		const classByCode = new Map(existing.map((c) => [c.code, c]));
 		const error = (
 			row: number,
@@ -149,6 +153,9 @@ export const classesStep: ImportStepDef = {
 			code: string;
 			id?: string;
 			changed: boolean;
+			row: number;
+			before?: Record<string, string>;
+			after: Record<string, string>;
 			data: {
 				name: string;
 				program: string;
@@ -248,7 +255,25 @@ export const classesStep: ImportStepDef = {
 				current.cycleLevelId !== data.cycleLevelId ||
 				(programOptionId !== undefined &&
 					current.programOptionId !== programOptionId);
-			resolved.set(r.row, { code, id: current?.id, changed, data });
+			resolved.set(r.row, {
+				code,
+				id: current?.id,
+				changed,
+				data,
+				row: r.row,
+				before: current
+					? {
+							Nom: current.name,
+							"Code programme": programCode.get(current.program) ?? "",
+							"Code niveau": levelCode.get(current.cycleLevelId) ?? "",
+						}
+					: undefined,
+				after: {
+					Nom: data.name,
+					"Code programme": program.code,
+					"Code niveau": level.code,
+				},
+			});
 		}
 
 		const valid = validRows(CLASSES, sheetRows, issues);
@@ -266,6 +291,16 @@ export const classesStep: ImportStepDef = {
 		return {
 			sheets: [summary],
 			issues,
+			changes: changes
+				.filter((c) => c.changed)
+				.map((c) => ({
+					sheet: CLASSES,
+					row: c.row,
+					action: c.id ? "update" : "create",
+					label: c.code,
+					before: c.before && diff(c.before, c.after),
+					after: c.before ? diff(c.after, c.before) : c.after,
+				})),
 			async apply(log) {
 				for (const change of changes) {
 					if (!change.changed) continue;

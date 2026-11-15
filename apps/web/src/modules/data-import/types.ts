@@ -47,11 +47,23 @@ export interface SheetSummary {
 	skipped: number;
 }
 
+/** One row the import creates or updates (changed fields only). */
+export interface RowChange {
+	sheet: string;
+	row: number;
+	action: "create" | "update";
+	label: string;
+	before?: Record<string, string>;
+	after: Record<string, string>;
+}
+
 /** `previewResult` of an `import.step` batch job. */
 export interface StepPreview {
 	step: string;
 	sheets: SheetSummary[];
 	issues: ImportIssue[];
+	changes?: RowChange[];
+	changesTotal?: number;
 }
 
 export type StepStatus = "done" | "skipped" | "todo";

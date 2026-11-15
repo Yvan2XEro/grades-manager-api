@@ -216,6 +216,8 @@ function YearStep({
 					onRun={wizard.run}
 					isRunning={wizard.isRunning}
 					onRestart={wizard.restart}
+					onDownloadAnnotated={wizard.downloadAnnotated}
+					isAnnotating={wizard.isAnnotating}
 				/>
 			) : wizard.preview ? (
 				<StepDonePanel

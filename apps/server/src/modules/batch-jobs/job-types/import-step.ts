@@ -50,6 +50,9 @@ export const importStepJob: BatchJobDefinition<Params> = {
 			summary: {
 				step: step.key,
 				sheets: plan.sheets,
+				// Capped: the review shows a sample of very large imports
+				changes: (plan.changes ?? []).slice(0, 5000),
+				changesTotal: plan.changes?.length ?? 0,
 				issues: plan.issues.sort((a, b) =>
 					a.level === b.level ? a.row - b.row : a.level === "error" ? -1 : 1,
 				),

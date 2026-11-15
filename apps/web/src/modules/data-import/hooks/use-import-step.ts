@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
+import { issueText } from "../components/issues-table";
 import { G } from "../services/import-steps";
 import type { StepPreview } from "../types";
 
@@ -26,6 +27,7 @@ export function useImportStep(step: string, academicYearId?: string) {
 	const { t } = useTranslation();
 	const [phase, setPhase] = useState<WizardPhase>("prepare");
 	const [fileName, setFileName] = useState<string | null>(null);
+	const [fileId, setFileId] = useState<string | null>(null);
 	const [jobId, setJobId] = useState<string | null>(null);
 	const [preview, setPreview] = useState<StepPreview | null>(null);
 
@@ -45,6 +47,7 @@ export function useImportStep(step: string, academicYearId?: string) {
 				name: file.name,
 				data: await readAsBase64(file),
 			});
+			setFileId(fileId);
 			return trpcClient.batchJobs.preview.mutate({
 				type: "import.step",
 				params: { step, fileId, academicYearId },
@@ -68,6 +71,31 @@ export function useImportStep(step: string, academicYearId?: string) {
 			setPhase("done");
 			queryClient.invalidateQueries(trpc.dataImport.overview.queryFilter());
 		},
+		onError: (error) => toast.error(error.message),
+	});
+
+	const annotate = useMutation({
+		mutationFn: () =>
+			trpcClient.dataImport.annotate.mutate({
+				fileId: fileId!,
+				notes: (preview?.issues ?? [])
+					.filter((issue) => issue.row > 0)
+					.map((issue) => ({
+						sheet: issue.sheet,
+						row: issue.row,
+						column: issue.column,
+						level: issue.level,
+						text: issueText(issue, t),
+					})),
+			}),
+		onSuccess: (file) =>
+			downloadBase64(
+				file.data,
+				t(`${G}review.annotatedName`, {
+					name: (fileName ?? "import.xlsx").replace(/\.xlsx$/i, ""),
+				}),
+				file.mimeType,
+			),
 		onError: (error) => toast.error(error.message),
 	});
 
@@ -106,5 +134,7 @@ export function useImportStep(step: string, academicYearId?: string) {
 		run: () => run.mutate(),
 		isRunning: run.isPending,
 		restart,
+		downloadAnnotated: () => annotate.mutate(),
+		isAnnotating: annotate.isPending,
 	};
 }

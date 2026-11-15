@@ -7,6 +7,7 @@ import { recomputeForStudent } from "@/modules/student-credit-ledger/student-cre
 import type {
 	ImportIssue,
 	ImportStepDef,
+	RowChange,
 	SheetRow,
 	SheetSummary,
 } from "./types";
@@ -377,6 +378,7 @@ export const gradesStep: ImportStepDef = {
 			{ studentId: string; examId: string; score: number }
 		>();
 		let absences = 0;
+		const changes: RowChange[] = [];
 
 		for (const [sheet, sheetRows] of Object.entries(rows)) {
 			const summary: SheetSummary = {
@@ -508,6 +510,14 @@ export const gradesStep: ImportStepDef = {
 					continue;
 				}
 				writes.set(key, { studentId: student.id, examId: exam.id, score });
+				changes.push({
+					sheet,
+					row: r.row,
+					action: before === undefined ? "create" : "update",
+					label: `${student.registrationNumber} ${student.lastName} — ${cc.courseCode} | ${exam.type}`,
+					before: before === undefined ? undefined : { Note: String(before) },
+					after: { Note: String(score) },
+				});
 			}
 			sheets.push(summary);
 		}
@@ -524,6 +534,7 @@ export const gradesStep: ImportStepDef = {
 		return {
 			sheets,
 			issues,
+			changes,
 			async apply(log) {
 				const list = [...writes.values()];
 				for (let i = 0; i < list.length; i += 500) {

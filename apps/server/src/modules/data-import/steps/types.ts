@@ -51,9 +51,23 @@ export interface SheetSummary {
 	skipped: number;
 }
 
+/** One row the import creates or updates, with the values that change. */
+export interface RowChange {
+	sheet: string;
+	row: number;
+	action: "create" | "update";
+	/** What the row is about (code, registration number + name…). */
+	label: string;
+	/** Changed fields only, by column header. */
+	before?: Record<string, string>;
+	after: Record<string, string>;
+}
+
 export interface ImportPlan {
 	sheets: SheetSummary[];
 	issues: ImportIssue[];
+	/** Detail of the creations and updates (shown in the review). */
+	changes?: RowChange[];
 	/** Applies the valid rows; rows with errors are left out. */
 	apply: (log: (message: string) => Promise<void>) => Promise<void>;
 }

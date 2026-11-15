@@ -429,9 +429,69 @@ export const studentsStep: ImportStepDef = {
 			? "completed"
 			: "active";
 
+		const classCodeOf = new Map(classes.map((c) => [c.id, c.code]));
+		const GENDER_LETTER: Record<string, string> = { male: "M", female: "F" };
+		const shown = (p: Partial<ProfileFields>, classId?: string) => ({
+			Nom: p.lastName ?? "",
+			Prénom: p.firstName ?? "",
+			"Date de naissance": p.dateOfBirth ?? "",
+			"Lieu de naissance": p.placeOfBirth ?? "",
+			Sexe: p.gender ? (GENDER_LETTER[p.gender] ?? "") : "",
+			"E-mail": p.primaryEmail ?? "",
+			Téléphone: p.phone ?? "",
+			Nationalité: p.nationality ?? "",
+			"Code classe": classId ? (classCodeOf.get(classId) ?? "") : "",
+		});
+		const rowChanges = changes
+			.filter((c) => !c.student || isChanged(c))
+			.map((c) => {
+				const after = shown(c.profile, c.classId);
+				if (!c.student)
+					return {
+						sheet: STUDENTS,
+						row: c.row,
+						action: "create" as const,
+						label: `${c.registrationNumber ?? "—"} ${c.profile.lastName} ${c.profile.firstName}`,
+						after: Object.fromEntries(
+							Object.entries(after).filter(([, v]) => v),
+						),
+					};
+				const before = shown(
+					{
+						...c.student.profile,
+						dateOfBirth: c.student.profile.dateOfBirth ?? undefined,
+						placeOfBirth: c.student.profile.placeOfBirth ?? undefined,
+						gender: c.student.profile.gender ?? undefined,
+						phone: c.student.profile.phone ?? undefined,
+						nationality: c.student.profile.nationality ?? undefined,
+					},
+					c.enrollment?.classId,
+				);
+				// Empty cells keep the known value: they are not a change
+				const changedAfter = Object.fromEntries(
+					Object.entries(after).filter(
+						([k, v]) => v && v !== before[k as keyof typeof before],
+					),
+				);
+				return {
+					sheet: STUDENTS,
+					row: c.row,
+					action: "update" as const,
+					label: `${c.student.registrationNumber} ${c.student.profile.lastName} ${c.student.profile.firstName}`,
+					before: Object.fromEntries(
+						Object.keys(changedAfter).map((k) => [
+							k,
+							before[k as keyof typeof before],
+						]),
+					),
+					after: changedAfter,
+				};
+			});
+
 		return {
 			sheets: [summary],
 			issues,
+			changes: rowChanges,
 			async apply(log) {
 				const klassRecords = new Map<string, classesRepo.KlassRecord>();
 				const klassRecord = async (id: string) => {

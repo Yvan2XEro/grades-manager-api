@@ -4776,7 +4776,9 @@
           "noError": "The file contains no error.",
           "another": "Send another file",
           "nothing": "Nothing to import",
-          "import": "Import {{count}} row(s)"
+          "import": "Import {{count}} row(s)",
+          "annotated": "Download the annotated file",
+          "annotatedName": "{{name}} - annotated.xlsx"
         },
         "issues": {
           "errors": "Errors ({{count}})",
@@ -4826,7 +4828,8 @@
             "noDeliberationResult": "No deliberation result for {{value}} in {{year}}.",
             "deliberationNotOpen": "The deliberation of this student is closed: it cannot be changed.",
             "decisionGap": "Official decision \"{{value}}\" differs from the computed one ({{computed}})."
-          }
+          },
+          "changes": "Changes ({{count}})"
         },
         "done": {
           "title": "Import complete",
@@ -4947,6 +4950,15 @@
           "report": "{{locked}} exam(s) locked, {{students}} student(s) recomputed, deliberations: {{created}} created, {{recomputed}} recomputed, {{skipped}} already closed.",
           "review": "Review the deliberations",
           "next": "Compare with official decisions"
+        },
+        "changes": {
+          "none": "Nothing to create or update.",
+          "action": "Action",
+          "what": "Row",
+          "values": "Values (before → after)",
+          "create": "Create",
+          "update": "Update",
+          "truncated": "The first {{shown}} of {{total}} changes are shown."
         }
       }
     }
