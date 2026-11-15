@@ -3694,7 +3694,7 @@
         },
         "years": {
           "title": "3. Années académiques",
-          "text": "Les données de chaque année, de la plus ancienne à la plus récente : les promotions et les crédits d'une année dépendent des précédentes. L'import guidé de ces étapes arrive dans la prochaine version ; en attendant, chaque étape ouvre ici sa page de saisie.",
+          "text": "Les données de chaque année, de la plus ancienne à la plus récente. L'import d'une année (classes, étudiants et inscriptions, cours, examens, notes) est en cours de conception ; pour l'instant, chaque année affiche ce qu'elle contient déjà.",
           "add": "Gérer les années",
           "foundationsFirst": "Terminez d'abord les fondations : les classes d'une année s'appuient sur les programmes et les niveaux.",
           "empty": "Aucune année académique. Créez la première pour commencer.",
@@ -3766,12 +3766,7 @@
             "programs": "Programmes",
             "curriculum": "Unités d'enseignement"
           },
-          "year": "Années académiques",
-          "classes": "Classes",
-          "assignments": "Affectations des cours",
-          "enrollments": "Inscriptions",
-          "exams": "Examens",
-          "grades": "Export des notes"
+          "year": "Années académiques"
         }
       }
     }

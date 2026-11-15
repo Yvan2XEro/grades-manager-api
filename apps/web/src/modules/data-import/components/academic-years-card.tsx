@@ -70,11 +70,9 @@ export function AcademicYearsCard({
 									const label = t(`${G}yearSteps.${step.key}`);
 									return (
 										<li key={step.key}>
-											<button
-												type="button"
-												onClick={() => openManual(step.key)}
+											<span
 												className={cn(
-													"flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted",
+													"flex items-center gap-2 rounded-full border px-3 py-1 text-xs",
 													count > 0
 														? "border-primary/40 bg-primary/5 text-primary"
 														: "text-muted-foreground",
@@ -84,7 +82,7 @@ export function AcademicYearsCard({
 												<span className="font-semibold">{index + 1}</span>
 												{label}
 												<span className="tabular-nums opacity-70">{count}</span>
-											</button>
+											</span>
 										</li>
 									);
 								})}

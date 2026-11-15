@@ -3,11 +3,6 @@ import type React from "react";
 import { useTranslation } from "react-i18next";
 import { PageDialog } from "@/components/callable/page-dialog";
 import AcademicYearsPage from "@/modules/academic-years/pages/academic-years-page";
-import ClassCoursesPage from "@/modules/classes/pages/class-courses-page";
-import ClassesPage from "@/modules/classes/pages/classes-page";
-import EnrollmentsPage from "@/modules/enrollments/pages/enrollments-page";
-import ExamsPage from "@/modules/exams/pages/exams-page";
-import GradeExport from "@/modules/grades/pages/grade-export-page";
 import InstitutionSettingsPage from "@/modules/institution/pages/institution-settings-page";
 import StudyCyclesPage from "@/modules/institution/pages/study-cycles-page";
 import ProgramsPage from "@/modules/programs/pages/programs-page";
@@ -22,11 +17,6 @@ const MANUAL_PAGES: Record<string, React.ComponentType> = {
 	"foundation.programs": ProgramsPage,
 	"foundation.curriculum": TeachingUnitsPage,
 	year: AcademicYearsPage,
-	classes: ClassesPage,
-	assignments: ClassCoursesPage,
-	enrollments: EnrollmentsPage,
-	exams: ExamsPage,
-	grades: GradeExport,
 };
 
 /** Tab pages whose title is in their hub header: the dialog shows it. */

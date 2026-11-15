@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { G, type SetupMilestone } from "../services/import-steps";
-import { useManualEntry } from "./manual-entry";
+import { hasManualEntry, useManualEntry } from "./manual-entry";
 
 /**
  * Progress of the institution setup: a bar, the milestones in order and a
@@ -117,6 +117,9 @@ function MilestoneAction({
 	children: React.ReactNode;
 }) {
 	const openManual = useManualEntry();
+	// Data of a year comes from its import (not built yet): shown, not actionable
+	if (!milestone.importStep && !hasManualEntry(milestone.key))
+		return asButton ? null : <span className={className}>{children}</span>;
 	if (milestone.importStep) {
 		const link = (
 			<Link to={`/import/${milestone.key}`} className={className}>
