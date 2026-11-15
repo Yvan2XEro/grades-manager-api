@@ -11,30 +11,22 @@ export function TransitionPreflightPanel({
 	const { t } = useTranslation();
 	const rows = [
 		{
-			label: t("admin.academicYearTransitions.readiness.enrollments", {
-				defaultValue: "Étudiants inscrits",
-			}),
+			label: t("admin.academicYearTransitions.readiness.enrollments"),
 			value: readiness.enrollmentCount,
 			warn: readiness.enrollmentCount === 0,
 		},
 		{
-			label: t("admin.academicYearTransitions.readiness.signedDelibs", {
-				defaultValue: "Délibérations signées",
-			}),
+			label: t("admin.academicYearTransitions.readiness.signedDelibs"),
 			value: `${readiness.signedDeliberationCount}/${readiness.classCount}`,
 			warn: readiness.missingDeliberationClassCount > 0,
 		},
 		{
-			label: t("admin.academicYearTransitions.readiness.unlockedExams", {
-				defaultValue: "Examens approuvés non verrouillés",
-			}),
+			label: t("admin.academicYearTransitions.readiness.unlockedExams"),
 			value: readiness.unlockedApprovedExamCount,
 			warn: readiness.unlockedApprovedExamCount > 0,
 		},
 		{
-			label: t("admin.academicYearTransitions.readiness.incompleteCourses", {
-				defaultValue: "Inscriptions cours en cours",
-			}),
+			label: t("admin.academicYearTransitions.readiness.incompleteCourses"),
 			value: readiness.incompleteStudentCourseCount,
 			warn: readiness.incompleteStudentCourseCount > 0,
 		},
@@ -43,9 +35,7 @@ export function TransitionPreflightPanel({
 	return (
 		<div className="space-y-1.5 rounded-md border bg-muted/30 p-3">
 			<p className="mb-2 font-medium text-foreground text-xs">
-				{t("admin.academicYearTransitions.readiness.preflightTitle", {
-					defaultValue: "Diagnostic pré-lancement",
-				})}
+				{t("admin.academicYearTransitions.readiness.preflightTitle")}
 			</p>
 			{rows.map((row) => (
 				<div

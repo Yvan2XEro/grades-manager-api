@@ -47,9 +47,7 @@ export function PeopleFilters({ filters, onChange }: PeopleFiltersProps) {
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">
-							{t("common.filters.allStatuses", {
-								defaultValue: "All statuses",
-							})}
+							{t("common.filters.allStatuses")}
 						</SelectItem>
 						<SelectItem value="active">
 							{t("common.active", { defaultValue: "Active" })}
@@ -57,9 +55,7 @@ export function PeopleFilters({ filters, onChange }: PeopleFiltersProps) {
 						<SelectItem value="inactive">
 							{t("common.inactive", { defaultValue: "Inactive" })}
 						</SelectItem>
-						<SelectItem value="suspended">
-							{t("common.suspended", { defaultValue: "Suspended" })}
-						</SelectItem>
+						<SelectItem value="suspended">{t("common.suspended")}</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
@@ -79,7 +75,7 @@ export function PeopleFilters({ filters, onChange }: PeopleFiltersProps) {
 						)}
 					>
 						{r === "all"
-							? t("common.filters.all", { defaultValue: "All" })
+							? t("common.filters.all")
 							: t(`roles.${r}`, { defaultValue: r })}
 					</button>
 				))}

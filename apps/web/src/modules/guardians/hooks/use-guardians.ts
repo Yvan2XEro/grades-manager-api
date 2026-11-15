@@ -29,7 +29,7 @@ export function useRemoveGuardianLink() {
 		mutationFn: (input: { studentId: string; guardianId: string }) =>
 			trpcClient.guardians.removeLink.mutate(input),
 		onSuccess: () => {
-			toast.success(t("common.done", { defaultValue: "Done" }));
+			toast.success(t("common.done"));
 			refresh();
 		},
 		onError: (err: Error) => toast.error(err.message),

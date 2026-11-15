@@ -59,9 +59,7 @@ export default function PeoplePage() {
 			onSelect: () => navigate(`/profiles/${person.id}`),
 		},
 		{
-			label: t("usersHub.people.manageAccess", {
-				defaultValue: "Gérer l'accès",
-			}),
+			label: t("usersHub.people.manageAccess"),
 			icon: KeyRound,
 			onSelect: () => navigate(`/profiles/${person.id}/access`),
 		},

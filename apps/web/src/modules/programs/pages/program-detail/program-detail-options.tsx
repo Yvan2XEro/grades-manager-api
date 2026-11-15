@@ -30,12 +30,8 @@ export default function ProgramDetailOptions() {
 
 	const confirmDelete = (id: string) =>
 		confirmAction({
-			title: t("admin.programs.options.deleteConfirm.title", {
-				defaultValue: "Delete option?",
-			}),
-			message: t("admin.programs.options.deleteConfirm.description", {
-				defaultValue: "This cannot be undone.",
-			}),
+			title: t("admin.programs.options.deleteConfirm.title"),
+			message: t("admin.programs.options.deleteConfirm.description"),
 			confirmText: t("common.actions.delete", { defaultValue: "Delete" }),
 			onConfirm: () => deleteOption.mutateAsync(id),
 		});
@@ -65,7 +61,7 @@ export default function ProgramDetailOptions() {
 				</CardTitle>
 				<Button size="sm" onClick={openCreate}>
 					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.programs.options.add", { defaultValue: "Add Option" })}
+					{t("admin.programs.options.add")}
 				</Button>
 			</CardHeader>
 			<CardContent>
@@ -77,16 +73,10 @@ export default function ProgramDetailOptions() {
 					rowActions={rowActions}
 					empty={
 						<EmptyState
-							title={t("admin.programs.options.empty.title", {
-								defaultValue: "No options yet",
-							})}
-							description={t("admin.programs.options.empty.description", {
-								defaultValue: "Add specializations or tracks for this program.",
-							})}
+							title={t("admin.programs.options.emptyState.title")}
+							description={t("admin.programs.options.emptyState.description")}
 							cta={{
-								label: t("admin.programs.options.add", {
-									defaultValue: "Add Option",
-								}),
+								label: t("admin.programs.options.add"),
 								onClick: openCreate,
 								icon: <Plus className="h-4 w-4" />,
 							}}

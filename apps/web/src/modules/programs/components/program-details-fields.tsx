@@ -162,11 +162,7 @@ export function ProgramDetailsFields({
 				name="description"
 				render={({ field }) => (
 					<FormItem>
-						<FormLabel>
-							{t("admin.programs.fields.description", {
-								defaultValue: "Description",
-							})}
-						</FormLabel>
+						<FormLabel>{t("admin.programs.fields.description")}</FormLabel>
 						<FormControl>
 							<Textarea {...field} value={field.value ?? ""} rows={3} />
 						</FormControl>
@@ -181,13 +177,13 @@ export function ProgramDetailsFields({
 				<NullableSelectField
 					control={control}
 					name="cycleId"
-					label={t("admin.programs.fields.cycle", { defaultValue: "Cycle" })}
+					label={t("admin.programs.fields.cycle")}
 					items={cycles}
 				/>
 				<NullableSelectField
 					control={control}
 					name="centerId"
-					label={t("admin.programs.fields.center", { defaultValue: "Center" })}
+					label={t("admin.programs.fields.center")}
 					items={centers}
 				/>
 			</div>
@@ -205,9 +201,7 @@ export function ProgramDetailsFields({
 								/>
 							</FormControl>
 							<FormLabel className="mt-0">
-								{t("admin.programs.fields.isCenterProgram", {
-									defaultValue: "Center program",
-								})}
+								{t("admin.programs.fields.isCenterProgram")}
 							</FormLabel>
 						</FormItem>
 					)}

@@ -61,8 +61,6 @@ import { ProgramFormDialog } from "@/modules/programs/components/program-form-di
 import { ProgramOptionFormDialog } from "@/modules/programs/components/program-option-form-dialog";
 import { TeachingUnitFormDialog } from "@/modules/programs/components/teaching-unit-form-dialog";
 import { UeCourseFormDialog } from "@/modules/programs/components/ue-course-form-dialog";
-import { ExecutionDetailsDialog } from "@/modules/promotion-rules/components/execution-details-dialog";
-import { PromotionRuleFormDialog } from "@/modules/promotion-rules/components/promotion-rule-form-dialog";
 import { AvatarCropModal } from "@/modules/settings/components/avatar-crop-modal";
 import { CopyTimetableDialog } from "@/modules/timetable/components/copy-timetable-dialog";
 import { RoomFormDialog } from "@/modules/timetable/components/room-form-dialog";
@@ -126,7 +124,6 @@ export function CallableHost() {
 			<StudentCourseRosterDialog />
 			<BulkEnrollClassesDialog />
 			<EnrollEntireClassDialog />
-			<PromotionRuleFormDialog />
 			<DeliberationRuleFormDialog />
 			<RetakeOverrideDialog />
 			<ParticipationOverrideDialog />
@@ -147,7 +144,6 @@ export function CallableHost() {
 			<AvatarCropModal />
 			<DeanRejectExamDialog />
 			<AssignDelegateDialog />
-			<ExecutionDetailsDialog />
 			<ResolveItemSheet />
 		</>
 	);

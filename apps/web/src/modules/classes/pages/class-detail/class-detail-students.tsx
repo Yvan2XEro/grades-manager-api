@@ -51,14 +51,10 @@ export default function ClassDetailStudents() {
 						<EmptyHeader>
 							<EmptyContent>
 								<EmptyTitle>
-									{t("admin.classes.students.empty.title", {
-										defaultValue: "No students enrolled",
-									})}
+									{t("admin.classes.studentsEmpty.title")}
 								</EmptyTitle>
 								<EmptyDescription>
-									{t("admin.classes.students.empty.description", {
-										defaultValue: "Enroll students via the Enrollments tab.",
-									})}
+									{t("admin.classes.studentsEmpty.description")}
 								</EmptyDescription>
 							</EmptyContent>
 						</EmptyHeader>

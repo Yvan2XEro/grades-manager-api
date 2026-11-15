@@ -94,8 +94,8 @@ export const ProgramOptionFormDialog = createCallable<
 			className="sm:max-w-lg"
 			title={
 				option
-					? t("admin.programs.options.edit", { defaultValue: "Edit Option" })
-					: t("admin.programs.options.add", { defaultValue: "Add Option" })
+					? t("admin.programs.options.edit")
+					: t("admin.programs.options.add")
 			}
 		>
 			<Form {...form}>
@@ -105,11 +105,7 @@ export const ProgramOptionFormDialog = createCallable<
 						name="name"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>
-									{t("admin.programs.options.fields.name", {
-										defaultValue: "Name",
-									})}
-								</FormLabel>
+								<FormLabel>{t("admin.programs.options.fields.name")}</FormLabel>
 								<FormControl>
 									<Input {...field} />
 								</FormControl>
@@ -122,11 +118,7 @@ export const ProgramOptionFormDialog = createCallable<
 						name="code"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>
-									{t("admin.programs.options.fields.code", {
-										defaultValue: "Code",
-									})}
-								</FormLabel>
+								<FormLabel>{t("admin.programs.options.fields.code")}</FormLabel>
 								<FormControl>
 									<Input {...field} />
 								</FormControl>
@@ -140,9 +132,7 @@ export const ProgramOptionFormDialog = createCallable<
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>
-									{t("admin.programs.options.fields.description", {
-										defaultValue: "Description",
-									})}
+									{t("admin.programs.options.fields.description")}
 								</FormLabel>
 								<FormControl>
 									<Textarea {...field} rows={2} />

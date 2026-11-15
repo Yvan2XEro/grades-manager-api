@@ -67,7 +67,7 @@ export function getPeopleColumns(
 	return [
 		{
 			id: "name",
-			header: t("common.fields.name", { defaultValue: "Name" }),
+			header: t("common.fields.name"),
 			cell: ({ row }) => (
 				<span className="font-medium">
 					{row.original.firstName} {row.original.lastName}
@@ -76,7 +76,7 @@ export function getPeopleColumns(
 		},
 		{
 			id: "role",
-			header: t("common.fields.role", { defaultValue: "Role" }),
+			header: t("common.fields.role"),
 			cell: ({ row: { original: person } }) =>
 				person.role ? (
 					<Badge variant={roleBadgeVariant[person.role] ?? "outline"}>
@@ -89,7 +89,7 @@ export function getPeopleColumns(
 		...(isStudent ? studentColumns : [emailColumn]),
 		{
 			id: "status",
-			header: t("common.fields.status", { defaultValue: "Status" }),
+			header: t("common.fields.status"),
 			cell: ({ row: { original: person } }) => (
 				<Badge variant={person.status === "active" ? "default" : "secondary"}>
 					{t(`common.${person.status}`, { defaultValue: person.status ?? "" })}
@@ -98,17 +98,17 @@ export function getPeopleColumns(
 		},
 		{
 			id: "account",
-			header: t("usersHub.people.account", { defaultValue: "Compte" }),
+			header: t("usersHub.people.account"),
 			cell: ({ row }) =>
 				row.original.memberId ? (
 					<span className="inline-flex items-center gap-1 text-emerald-600 text-xs dark:text-emerald-400">
 						<UserCheck className="h-3.5 w-3.5" />
-						{t("usersHub.people.hasAccount", { defaultValue: "Actif" })}
+						{t("usersHub.people.hasAccount")}
 					</span>
 				) : (
 					<span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
 						<UserX className="h-3.5 w-3.5" />
-						{t("usersHub.people.noAccount", { defaultValue: "Aucun" })}
+						{t("usersHub.people.noAccount")}
 					</span>
 				),
 		},

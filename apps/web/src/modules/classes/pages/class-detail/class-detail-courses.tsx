@@ -65,12 +65,8 @@ export default function ClassDetailCourses() {
 
 	const confirmDelete = (id: string) =>
 		confirmAction({
-			title: t("admin.classCourses.deleteConfirm.title", {
-				defaultValue: "Remove course assignment?",
-			}),
-			message: t("admin.classCourses.deleteConfirm.description", {
-				defaultValue: "This cannot be undone.",
-			}),
+			title: t("admin.classCourses.deleteConfirm.title"),
+			message: t("admin.classCourses.deleteConfirm.description"),
 			confirmText: t("common.actions.delete", { defaultValue: "Delete" }),
 			onConfirm: () => deleteMutation.mutateAsync(id).catch(() => undefined),
 		});
@@ -83,9 +79,7 @@ export default function ClassDetailCourses() {
 				</CardTitle>
 				<Button size="sm" asChild>
 					<Link to="/classes/assignments">
-						{t("admin.classCourses.actions.manage", {
-							defaultValue: "Manage All",
-						})}
+						{t("admin.classCourses.actions.manage")}
 					</Link>
 				</Button>
 			</CardHeader>
@@ -112,21 +106,9 @@ export default function ClassDetailCourses() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>
-									{t("admin.classCourses.fields.code", {
-										defaultValue: "Code",
-									})}
-								</TableHead>
-								<TableHead>
-									{t("admin.classCourses.fields.course", {
-										defaultValue: "Course",
-									})}
-								</TableHead>
-								<TableHead>
-									{t("admin.classCourses.fields.teacher", {
-										defaultValue: "Teacher",
-									})}
-								</TableHead>
+								<TableHead>{t("admin.classCourses.fields.code")}</TableHead>
+								<TableHead>{t("admin.classCourses.fields.course")}</TableHead>
+								<TableHead>{t("admin.classCourses.fields.teacher")}</TableHead>
 								<TableHead className="w-16" />
 							</TableRow>
 						</TableHeader>

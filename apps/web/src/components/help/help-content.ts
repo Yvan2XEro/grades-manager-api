@@ -345,23 +345,6 @@ const content: Record<"en" | "fr", LangContent> = {
 			},
 		],
 
-		// ─── Promotion rules ─────────────────────────────────────────
-		"/promotion-legacy": [
-			{
-				title: "Promotion rules",
-				items: [
-					{
-						q: "What are promotion rules?",
-						a: "Configurable rules that determine whether a student is promoted, held back, or referred for a retake based on their grades.",
-					},
-					{
-						q: "How do I run a promotion evaluation?",
-						a: 'Go to "Evaluate", select the class and academic year, then run the evaluation to preview results before executing.',
-					},
-				],
-			},
-		],
-
 		// ─── Monitoring ──────────────────────────────────────────────
 		"/monitoring": [
 			{
@@ -971,23 +954,6 @@ const content: Record<"en" | "fr", LangContent> = {
 					{
 						q: "Peut-on annuler une délibération ?",
 						a: "Les brouillons peuvent être supprimés. Une fois finalisées, contactez un administrateur.",
-					},
-				],
-			},
-		],
-
-		// ─── Promotion rules ─────────────────────────────────────────
-		"/promotion-legacy": [
-			{
-				title: "Règles de promotion",
-				items: [
-					{
-						q: "Que sont les règles de promotion ?",
-						a: "Des règles configurables qui déterminent si un étudiant est promu, redoublant ou en rattrapage selon ses notes.",
-					},
-					{
-						q: "Comment lancer une évaluation de promotion ?",
-						a: "Allez dans \"Évaluer\", sélectionnez la classe et l'année, puis lancez l'évaluation pour prévisualiser avant d'exécuter.",
 					},
 				],
 			},

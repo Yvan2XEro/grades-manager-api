@@ -110,17 +110,6 @@ export type Semester = DateToString<
 	RouterOutputs["semesters"]["list"]
 >["items"][number];
 
-// Promotion Rules
-export type PromotionRule = DateToString<
-	RouterOutputs["promotionRules"]["list"]
->["items"][number];
-export type PromotionExecution = DateToString<
-	RouterOutputs["promotionRules"]["listExecutions"]
->["items"][number];
-export type ExecutionDetails = DateToString<
-	RouterOutputs["promotionRules"]["getExecutionDetails"]
->;
-
 // Grades
 export type Grade = DateToString<
 	RouterOutputs["grades"]["listByStudent"]

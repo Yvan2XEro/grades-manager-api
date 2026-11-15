@@ -74,6 +74,7 @@ const RENAMED: [from: string, to: string][] = [
 	["promotion-rules/evaluate", "/academic-results/promotion"],
 	["promotion-rules/execute", "/academic-results/promotion"],
 	["promotion-rules/history", "/academic-results/promotion"],
+	["promotion-legacy", "/academic-results/promotion"],
 ];
 
 /** Legacy paths, rendered inside the dashboard layout. */

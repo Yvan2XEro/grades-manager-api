@@ -24,7 +24,6 @@ import { monitoringRoutes } from "@/modules/monitoring/routes";
 import { notificationsRoutes } from "@/modules/notifications/routes";
 import { peopleRoutes } from "@/modules/people/routes";
 import { programsRoutes } from "@/modules/programs/routes";
-import { promotionRulesRoutes } from "@/modules/promotion-rules/routes";
 import { settingsRoutes } from "@/modules/settings/routes";
 import { statisticsRoutes } from "@/modules/statistics/routes";
 import { timetableRoutes } from "@/modules/timetable/routes";
@@ -181,7 +180,6 @@ function App() {
 						{notificationsRoutes}
 						{peopleRoutes}
 						{programsRoutes}
-						{promotionRulesRoutes}
 						{settingsRoutes}
 						{statisticsRoutes}
 						{timetableRoutes}

@@ -33,9 +33,7 @@ export const CreatePersonDialog = createCallable<
 				lastName: form.lastName.trim(),
 				email: form.email.trim(),
 			});
-			toast.success(
-				t("usersHub.people.created", { defaultValue: "Person created." }),
-			);
+			toast.success(t("usersHub.people.created"));
 			queryClient.invalidateQueries({
 				queryKey: trpc.users.listPaged.queryKey(),
 			});
@@ -110,7 +108,7 @@ export const CreatePersonDialog = createCallable<
 					</Button>
 					<Button type="submit" disabled={submitting}>
 						{submitting
-							? t("common.saving", { defaultValue: "Saving…" })
+							? t("common.saving")
 							: t("common.create", { defaultValue: "Create" })}
 					</Button>
 				</div>

@@ -218,9 +218,7 @@ export function ClassFormFields({
 				}
 				required
 				onCreate={controller.create.programOption}
-				createLabel={t("admin.programs.options.add", {
-					defaultValue: "Add Option",
-				})}
+				createLabel={t("admin.programs.options.add")}
 			/>
 
 			<div className="grid gap-4 sm:grid-cols-3">
