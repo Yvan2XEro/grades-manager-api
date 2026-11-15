@@ -38,16 +38,9 @@ export const OrgPicker: React.FC<OrgPickerProps> = ({
 			className="space-y-6"
 		>
 			<motion.div variants={item}>
-				<h2 className="text-foreground">
-					{t("auth.orgPicker.title", {
-						defaultValue: "Choisissez votre établissement",
-					})}
-				</h2>
+				<h2 className="text-foreground">{t("auth.orgPicker.title")}</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
-					{t("auth.orgPicker.subtitle", {
-						defaultValue:
-							"Sélectionnez l'établissement auquel vous souhaitez accéder.",
-					})}
+					{t("auth.orgPicker.subtitle")}
 				</p>
 			</motion.div>
 
@@ -58,10 +51,7 @@ export const OrgPicker: React.FC<OrgPickerProps> = ({
 				>
 					<Building2 className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
 					<p className="text-muted-foreground text-sm">
-						{t("auth.orgPicker.noOrgs", {
-							defaultValue:
-								"Aucun établissement trouvé pour ce compte. Contactez votre administrateur.",
-						})}
+						{t("auth.orgPicker.noOrgs")}
 					</p>
 				</motion.div>
 			) : (
@@ -108,7 +98,7 @@ export const OrgPicker: React.FC<OrgPickerProps> = ({
 					className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
 				>
 					<ChevronLeft className="h-4 w-4" />
-					{t("auth.orgPicker.back", { defaultValue: "Changer de compte" })}
+					{t("auth.orgPicker.back")}
 				</button>
 			</motion.div>
 		</motion.div>

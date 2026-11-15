@@ -92,12 +92,7 @@ export const ClassCourseFormDialog = createCallable<
 				teacher: z.string({
 					error: t("admin.classCourses.validation.teacher"),
 				}),
-				code: z.string().min(
-					3,
-					t("admin.classCourses.validation.code", {
-						defaultValue: "Code is required",
-					}),
-				),
+				code: z.string().min(3, t("admin.classCourses.validation.code")),
 				semesterId: z.string().optional(),
 				coefficient: z.coerce.number().positive().default(1),
 			}),
@@ -289,7 +284,6 @@ export const ClassCourseFormDialog = createCallable<
 					});
 					toast.success(
 						t("admin.classCourses.toast.autoEnrollSuccess", {
-							defaultValue: "{{count}} inscription(s) créée(s)",
 							count: result.createdCount,
 						}),
 					);
@@ -338,7 +332,7 @@ export const ClassCourseFormDialog = createCallable<
 						searchMode="hybrid"
 						getItemSubtitle={(cls) =>
 							programMap.get(cls.program)?.name ??
-							t("common.labels.notAvailable", { defaultValue: "N/A" })
+							t("common.labels.notAvailable")
 						}
 						required
 						onCreate={createClass}
@@ -399,9 +393,7 @@ export const ClassCourseFormDialog = createCallable<
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>
-									{t("admin.classCourses.form.semesterLabel", {
-										defaultValue: "Semester",
-									})}
+									{t("admin.classCourses.form.semesterLabel")}
 								</FormLabel>
 								<Select
 									value={field.value}
@@ -413,7 +405,6 @@ export const ClassCourseFormDialog = createCallable<
 											<SelectValue
 												placeholder={t(
 													"admin.classCourses.form.semesterPlaceholder",
-													{ defaultValue: "Select semester" },
 												)}
 											/>
 										</SelectTrigger>
@@ -442,17 +433,11 @@ export const ClassCourseFormDialog = createCallable<
 						name="code"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>
-									{t("admin.classCourses.form.codeLabel", {
-										defaultValue: "Code",
-									})}
-								</FormLabel>
+								<FormLabel>{t("admin.classCourses.form.codeLabel")}</FormLabel>
 								<FormControl>
 									<Input
 										{...field}
-										placeholder={t("admin.classCourses.form.codePlaceholder", {
-											defaultValue: "INF11-CLS24-01",
-										})}
+										placeholder={t("admin.classCourses.form.codePlaceholder")}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -466,9 +451,7 @@ export const ClassCourseFormDialog = createCallable<
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>
-									{t("admin.classCourses.form.coefficientLabel", {
-										defaultValue: "Coefficient",
-									})}
+									{t("admin.classCourses.form.coefficientLabel")}
 								</FormLabel>
 								<FormControl>
 									<Input
@@ -479,15 +462,11 @@ export const ClassCourseFormDialog = createCallable<
 										min="0.01"
 										placeholder={t(
 											"admin.classCourses.form.coefficientPlaceholder",
-											{ defaultValue: "1.00" },
 										)}
 									/>
 								</FormControl>
 								<p className="text-muted-foreground text-xs">
-									{t("admin.classCourses.form.coefficientHelp", {
-										defaultValue:
-											"Poids pour le calcul de la moyenne pondérée dans l'UE",
-									})}
+									{t("admin.classCourses.form.coefficientHelp")}
 								</p>
 								<FormMessage />
 							</FormItem>
@@ -505,10 +484,7 @@ export const ClassCourseFormDialog = createCallable<
 								htmlFor="auto-enroll-toggle"
 								className="cursor-pointer text-sm"
 							>
-								{t("admin.classCourses.form.autoEnrollOnCreate", {
-									defaultValue:
-										"Inscrire automatiquement les étudiants après l'assignation",
-								})}
+								{t("admin.classCourses.form.autoEnrollOnCreate")}
 							</label>
 						</div>
 					)}

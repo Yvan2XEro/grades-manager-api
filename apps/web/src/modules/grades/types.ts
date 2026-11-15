@@ -179,7 +179,7 @@ export interface ExportContext {
 }
 
 export type BulkExportReport = {
-	kind: "Évaluations" | "EC" | "UE";
+	kind: "eval" | "ec" | "ue";
 	total: number;
 	succeeded: number;
 	skipped: Array<{ id: string; reason: string }>;

@@ -67,14 +67,10 @@ export function GradeSpreadsheetGrid({
 			<thead className="sticky top-0 z-10 bg-muted/50">
 				<tr>
 					<th className="sticky left-0 z-20 min-w-[220px] border-b bg-muted/50 px-3 py-2 text-left font-medium">
-						{t("teacher.spreadsheet.studentCol", {
-							defaultValue: "Étudiant",
-						})}
+						{t("teacher.spreadsheet.studentCol")}
 					</th>
 					<th className="border-b px-2 py-2 text-left font-normal text-muted-foreground text-xs">
-						{t("teacher.spreadsheet.matricule", {
-							defaultValue: "Matricule",
-						})}
+						{t("teacher.spreadsheet.matricule")}
 					</th>
 					{exams.map((exam) => (
 						<th

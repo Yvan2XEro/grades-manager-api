@@ -28,9 +28,18 @@ export function exportExamGradesExcel({
 }) {
 	const headerRows = buildDocumentHeader(
 		config,
-		`PUBLICATION DES NOTES - ${exam.courseName} (${exam.type})`,
+		t("admin.gradeExport.excel.publicationTitle", {
+			course: exam.courseName,
+			type: exam.type,
+		}),
 		context,
-		exam.date ? [`Date: ${format(new Date(exam.date), "dd/MM/yyyy")}`] : [],
+		exam.date
+			? [
+					t("admin.gradeExport.excel.dateLine", {
+						date: format(new Date(exam.date), "dd/MM/yyyy"),
+					}),
+				]
+			: [],
 	);
 
 	const exportData = sortStudentsByName(students).map((student) => {

@@ -1,4 +1,5 @@
 import { Download, Eye, FileArchive } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -18,6 +19,7 @@ type State = ReturnType<typeof useBulkDocumentGeneration>;
 
 /** Options (ZIP, demo), preview / generate actions and the students of the class. */
 export function BulkDocumentStudentsCard({ state }: { state: State }) {
+	const { t } = useTranslation();
 	const {
 		studentItems,
 		studentsLoading,
@@ -38,10 +40,14 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 			<CardHeader>
 				<div className="flex items-center justify-between gap-4">
 					<div>
-						<CardTitle>Étudiants</CardTitle>
+						<CardTitle>{t("admin.documents.bulk.students.title")}</CardTitle>
 						<CardDescription>
-							{studentItems.length} étudiant(s) dans cette classe.{" "}
-							{selectedIds.size} sélectionné(s).
+							{t("admin.documents.bulk.students.count", {
+								count: studentItems.length,
+							})}{" "}
+							{t("admin.documents.bulk.students.selected", {
+								count: selectedIds.size,
+							})}
 						</CardDescription>
 					</div>
 					<div className="flex items-center gap-3">
@@ -56,7 +62,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 								className="flex cursor-pointer items-center gap-1 font-normal text-sm"
 							>
 								<FileArchive className="h-4 w-4" />
-								ZIP
+								{t("admin.documents.bulk.students.zip")}
 							</Label>
 						</div>
 						<div className="flex items-center gap-2">
@@ -69,7 +75,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 								htmlFor="demo"
 								className="cursor-pointer font-normal text-sm"
 							>
-								Mode démo
+								{t("admin.documents.bulk.students.demoMode")}
 							</Label>
 						</div>
 						<Button
@@ -79,14 +85,14 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 								previewOne.isPending ||
 								(selectedIds.size === 0 && studentItems.length === 0)
 							}
-							title="Aperçu du document pour le premier étudiant sélectionné"
+							title={t("admin.documents.bulk.students.previewHint")}
 						>
 							{previewOne.isPending ? (
 								<Spinner className="mr-2" />
 							) : (
 								<Eye className="mr-2 h-4 w-4" />
 							)}
-							Aperçu
+							{t("admin.documents.bulk.students.preview")}
 						</Button>
 						<Button
 							onClick={handleGenerate}
@@ -97,7 +103,9 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 							) : (
 								<Download className="mr-2 h-4 w-4" />
 							)}
-							Générer {selectedIds.size}
+							{t("admin.documents.bulk.students.generate", {
+								count: selectedIds.size,
+							})}
 						</Button>
 					</div>
 				</div>
@@ -106,7 +114,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 				{isGenerating && progress.total > 0 && (
 					<GenerationProgress
 						className="mb-4 space-y-2"
-						label="Génération en cours…"
+						label={t("admin.documents.bulk.students.generating")}
 						progress={progress}
 						summary={summary}
 					/>
@@ -118,7 +126,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 					</div>
 				) : studentItems.length === 0 ? (
 					<p className="py-8 text-center text-muted-foreground">
-						Aucun étudiant dans cette classe.
+						{t("admin.documents.bulk.students.empty")}
 					</p>
 				) : (
 					<BulkDocumentStudentsTable state={state} />

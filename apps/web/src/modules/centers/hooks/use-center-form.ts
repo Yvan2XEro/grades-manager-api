@@ -5,14 +5,17 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { z } from "zod";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { CENTERS_PATH } from "../paths";
 
+const requiredMessage = () => i18n.t("admin.centers.validation.required");
+
 export const adminInstanceSchema = z.object({
 	id: z.string().optional(),
-	nameFr: z.string().trim().min(1, "Requis"),
-	nameEn: z.string().trim().min(1, "Required"),
+	nameFr: z.string().trim().min(1, { error: requiredMessage }),
+	nameEn: z.string().trim().min(1, { error: requiredMessage }),
 	acronymFr: z.string().optional(),
 	acronymEn: z.string().optional(),
 	logoUrl: z.string().optional(),
@@ -23,8 +26,8 @@ export const adminInstanceSchema = z.object({
 
 export const legalTextSchema = z.object({
 	id: z.string().optional(),
-	textFr: z.string().trim().min(1, "Requis"),
-	textEn: z.string().trim().min(1, "Required"),
+	textFr: z.string().trim().min(1, { error: requiredMessage }),
+	textEn: z.string().trim().min(1, { error: requiredMessage }),
 });
 
 export const centerSchema = z.object({
@@ -176,18 +179,10 @@ export function useCenterForm(centerId?: string) {
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["centers"] });
 			if (isCreating) {
-				toast.success(
-					t("admin.centers.toast.createSuccess", {
-						defaultValue: "Centre créé",
-					}),
-				);
+				toast.success(t("admin.centers.toast.createSuccess"));
 				navigate(`${CENTERS_PATH}/${(data as { id: string }).id}/identity`);
 			} else {
-				toast.success(
-					t("admin.centers.toast.updateSuccess", {
-						defaultValue: "Centre mis à jour",
-					}),
-				);
+				toast.success(t("admin.centers.toast.updateSuccess"));
 				queryClient.invalidateQueries({ queryKey: ["center", centerId] });
 			}
 		},

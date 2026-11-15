@@ -45,11 +45,7 @@ export function ScheduleExamsSettings({
 	const { t } = useTranslation();
 	return (
 		<div className="flex flex-col gap-5 overflow-y-auto border-r bg-muted/30 px-5 py-5">
-			<Section
-				title={t("admin.examScheduler.form.periodSection", {
-					defaultValue: "Période",
-				})}
-			>
+			<Section title={t("admin.examScheduler.form.periodSection")}>
 				<Field label={t("admin.examScheduler.form.academicYearLabel")}>
 					<AcademicYearSelect
 						value={state.academicYearId || null}
@@ -69,11 +65,7 @@ export function ScheduleExamsSettings({
 
 			<div className="h-px bg-border" />
 
-			<Section
-				title={t("admin.examScheduler.form.configSection", {
-					defaultValue: "Configuration",
-				})}
-			>
+			<Section title={t("admin.examScheduler.form.configSection")}>
 				{state.sessionMode === "normal" ? (
 					<>
 						<Field label={t("admin.examScheduler.form.examTypeLabel")}>
@@ -196,11 +188,7 @@ export function ScheduleExamsSettings({
 
 			<div className="h-px bg-border" />
 
-			<Section
-				title={t("admin.examScheduler.form.dateRangeSection", {
-					defaultValue: "Plage de dates",
-				})}
-			>
+			<Section title={t("admin.examScheduler.form.dateRangeSection")}>
 				<Field label={t("admin.examScheduler.form.dateStartLabel")}>
 					<DatePicker value={state.dateStart} onChange={state.setDateStart} />
 				</Field>

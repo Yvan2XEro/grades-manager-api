@@ -1,10 +1,12 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { scoreBadge } from "../../services/score-styles";
 import type { UEData } from "../../types";
 
 export function UERow({ unit }: { unit: UEData }) {
+	const { t } = useTranslation();
 	const [open, setOpen] = useState(false);
 	const validated = unit.average >= 10;
 
@@ -32,18 +34,20 @@ export function UERow({ unit }: { unit: UEData }) {
 						)}
 						{validated ? (
 							<Badge variant="success" className="text-xs">
-								Validé
+								{t("student.performance.validated")}
 							</Badge>
 						) : (
 							<Badge variant="destructive" className="text-xs">
-								Non validé
+								{t("student.performance.notValidated")}
 							</Badge>
 						)}
 					</div>
 					<p className="mt-0.5 text-muted-foreground text-xs">
-						{unit.credits} crédit{unit.credits !== 1 ? "s" : ""}
+						{t("student.performance.ueCredits", { count: unit.credits })}
 						{" · "}
-						{unit.courses.length} cours
+						{t("student.performance.courseCount", {
+							count: unit.courses.length,
+						})}
 					</p>
 				</div>
 				<div className="shrink-0 text-muted-foreground">
@@ -67,7 +71,9 @@ export function UERow({ unit }: { unit: UEData }) {
 									{course.name}
 								</p>
 								<p className="text-muted-foreground text-xs">
-									Coeff. {course.coefficient}
+									{t("student.performance.coefficient", {
+										value: course.coefficient,
+									})}
 								</p>
 							</div>
 							<span

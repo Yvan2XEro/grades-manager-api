@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -18,6 +19,7 @@ import {
 } from "../services/profile-access";
 
 export function LinkAccountForm({ profileId }: { profileId: string }) {
+	const { t } = useTranslation();
 	const form = useForm<LinkAccountValues>({
 		resolver: zodResolver(linkAccountSchema),
 		defaultValues: { authEmail: "" },
@@ -36,11 +38,11 @@ export function LinkAccountForm({ profileId }: { profileId: string }) {
 					name="authEmail"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Email du compte existant</FormLabel>
+							<FormLabel>{t("usersHub.account.link.emailLabel")}</FormLabel>
 							<FormControl>
 								<Input
 									type="email"
-									placeholder="utilisateur@example.com"
+									placeholder={t("usersHub.account.link.emailPlaceholder")}
 									{...field}
 								/>
 							</FormControl>
@@ -49,15 +51,14 @@ export function LinkAccountForm({ profileId }: { profileId: string }) {
 					)}
 				/>
 				<p className="text-muted-foreground text-xs">
-					L'utilisateur doit déjà être membre de l'organisation. Son profil sera
-					lié à ce compte d'accès.
+					{t("usersHub.account.link.hint")}
 				</p>
 				<div className="flex justify-end pt-2">
 					<Button type="submit" disabled={mutation.isPending}>
 						{mutation.isPending && (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						)}
-						Lier le compte
+						{t("usersHub.account.link.submit")}
 					</Button>
 				</div>
 			</form>

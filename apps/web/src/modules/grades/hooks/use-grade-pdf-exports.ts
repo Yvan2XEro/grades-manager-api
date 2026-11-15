@@ -1,15 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { downloadBase64 } from "@/lib/download";
 import { trpcClient } from "@/utils/trpc";
 import type { ExamItem, TeachingUnitItem } from "../types";
 import type { ExportFilters, ExportTask } from "./use-export-task";
-
-const openPreview = (title: string, html: string) =>
-	DocumentPreviewDialog.call({
-		title,
-		description: "Prévisualisation HTML avant génération PDF",
-		html,
-	});
 
 const downloadPdf = (result: { data: string; filename: string }) =>
 	downloadBase64(result.data, result.filename, "application/pdf");
@@ -30,6 +24,13 @@ export function useGradePdfExports(
 	}: ExportFilters,
 	{ run }: ExportTask,
 ) {
+	const { t } = useTranslation();
+	const openPreview = (title: string, html: string) =>
+		DocumentPreviewDialog.call({
+			title,
+			description: t("admin.gradeExport.preview.description"),
+			html,
+		});
 	const pvReady = !!selectedClass && !!selectedSemester && !!selectedYear;
 	const pvInput = {
 		classId: selectedClass,
@@ -55,8 +56,8 @@ export function useGradePdfExports(
 				});
 				openPreview(
 					includeRetakes
-						? "Prévisualisation - Procès-Verbal (avec rattrapages)"
-						: "Prévisualisation - Procès-Verbal (sans rattrapages)",
+						? t("admin.gradeExport.preview.pvWithRetakes")
+						: t("admin.gradeExport.preview.pvWithoutRetakes"),
 					html,
 				);
 			},
@@ -96,7 +97,7 @@ export function useGradePdfExports(
 				const html = await trpcClient.exports.previewEvaluation.query({
 					examId,
 				});
-				openPreview("Prévisualisation - Publication Évaluation", html);
+				openPreview(t("admin.gradeExport.preview.evaluation"), html);
 			},
 			{
 				log: "Evaluation preview error",
@@ -132,7 +133,7 @@ export function useGradePdfExports(
 					teachingUnitId: ueId,
 					...pvInput,
 				});
-				openPreview("Prévisualisation - Publication UE", html);
+				openPreview(t("admin.gradeExport.preview.ue"), html);
 			},
 			{
 				log: "UE preview error",
@@ -174,7 +175,7 @@ export function useGradePdfExports(
 				const html = await trpcClient.exports.previewEc.query(
 					ecInput(classCourseId),
 				);
-				openPreview("Prévisualisation - Publication EC", html);
+				openPreview(t("admin.gradeExport.preview.ec"), html);
 			},
 			{
 				log: "EC preview error",

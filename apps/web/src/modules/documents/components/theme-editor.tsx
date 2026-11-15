@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -9,10 +10,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-	GROUP_META,
+	groupDescription,
+	groupLabel,
 	TAB_GROUP_ORDER,
-	TAB_LABELS,
 	type ThemeTab,
+	tabLabel,
 } from "../services/theme-fields";
 import { deepMergeTheme, setIn } from "../services/theme-utils";
 import { GroupSection } from "./theme-group-section";
@@ -35,6 +37,7 @@ export function ThemeEditor({
 	onChange,
 	presets,
 }: ThemeEditorProps) {
+	const { t } = useTranslation();
 	const merged = useMemo(
 		() => deepMergeTheme(defaultTheme, value),
 		[defaultTheme, value],
@@ -52,7 +55,9 @@ export function ThemeEditor({
 		<div className="space-y-4">
 			{presets && presets.length > 0 && (
 				<div className="flex items-center gap-2">
-					<Label className="text-muted-foreground text-xs">Préréglage:</Label>
+					<Label className="text-muted-foreground text-xs">
+						{t("admin.documents.theme.preset")}
+					</Label>
 					<Select
 						onValueChange={(presetId) => {
 							const p = presets.find((x) => x.id === presetId);
@@ -61,7 +66,9 @@ export function ThemeEditor({
 						}}
 					>
 						<SelectTrigger className="h-8 w-48">
-							<SelectValue placeholder="Appliquer un préréglage" />
+							<SelectValue
+								placeholder={t("admin.documents.theme.presetPlaceholder")}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							{presets.map((p) => (
@@ -76,7 +83,7 @@ export function ThemeEditor({
 						onClick={() => onChange({})}
 						className="text-muted-foreground text-xs underline hover:text-foreground"
 					>
-						Réinitialiser tout
+						{t("admin.documents.theme.resetAll")}
 					</button>
 				</div>
 			)}
@@ -84,7 +91,7 @@ export function ThemeEditor({
 				<TabsList>
 					{tabs.map((tab) => (
 						<TabsTrigger key={tab} value={tab}>
-							{TAB_LABELS[tab]}
+							{tabLabel(tab)}
 						</TabsTrigger>
 					))}
 				</TabsList>
@@ -93,12 +100,11 @@ export function ThemeEditor({
 						{TAB_GROUP_ORDER[tab].map((groupKey) => {
 							const group = (merged as Record<string, unknown>)[groupKey];
 							if (!group || typeof group !== "object") return null;
-							const meta = GROUP_META[groupKey];
 							return (
 								<GroupSection
 									key={groupKey}
-									title={meta?.label ?? groupKey}
-									description={meta?.description}
+									title={groupLabel(groupKey)}
+									description={groupDescription(groupKey)}
 									group={group as Record<string, unknown>}
 									path={[groupKey]}
 									setField={setField}

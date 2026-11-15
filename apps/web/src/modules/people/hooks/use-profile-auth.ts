@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import {
@@ -42,7 +43,7 @@ export function useCreateAuthAccount(profileId: string) {
 				memberRole: values.memberRole,
 			}),
 		onSuccess: () => {
-			toast.success("Compte créé avec succès.");
+			toast.success(i18n.t("usersHub.account.toast.created"));
 			invalidate();
 		},
 		onError: (err: Error) => toast.error(createAccountErrorMessage(err)),
@@ -58,7 +59,7 @@ export function useLinkAuthAccount(profileId: string) {
 				authEmail: values.authEmail,
 			}),
 		onSuccess: () => {
-			toast.success("Compte lié avec succès.");
+			toast.success(i18n.t("usersHub.account.toast.linked"));
 			invalidate();
 		},
 		onError: (err: Error) => toast.error(linkAccountErrorMessage(err)),
@@ -69,8 +70,8 @@ export function useSendPasswordReset(profileId: string) {
 	return useMutation({
 		mutationFn: () =>
 			trpcClient.profiles.sendPasswordReset.mutate({ profileId }),
-		onSuccess: () => toast.success("Email de réinitialisation envoyé."),
-		onError: () => toast.error("Erreur lors de l'envoi de l'email."),
+		onSuccess: () => toast.success(i18n.t("usersHub.account.toast.resetSent")),
+		onError: () => toast.error(i18n.t("usersHub.account.toast.resetFailed")),
 	});
 }
 
@@ -81,9 +82,15 @@ export function useToggleBan(profileId: string) {
 		mutationFn: (banned: boolean) =>
 			trpcClient.profiles.setBanStatus.mutate({ profileId, banned }),
 		onSuccess: (_data, banned) => {
-			toast.success(banned ? "Compte suspendu." : "Compte réactivé.");
+			toast.success(
+				i18n.t(
+					banned
+						? "usersHub.account.toast.suspended"
+						: "usersHub.account.toast.reactivated",
+				),
+			);
 			void queryClient.invalidateQueries({ queryKey: authKey(profileId) });
 		},
-		onError: () => toast.error("Erreur lors de la mise à jour du statut."),
+		onError: () => toast.error(i18n.t("usersHub.account.toast.statusFailed")),
 	});
 }

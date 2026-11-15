@@ -5,6 +5,7 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { type DocumentKind, KINDS } from "../services/class-template-kinds";
@@ -14,6 +15,7 @@ import { type DocumentKind, KINDS } from "../services/class-template-kinds";
  * assignments, theme presets, the theme override being edited and the preview.
  */
 export function useClassDocumentTemplates() {
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [selectedClassId, setSelectedClassId] = useState<string>("");
 	const [editingKind, setEditingKind] = useState<DocumentKind | null>(null);
@@ -135,12 +137,15 @@ export function useClassDocumentTemplates() {
 			return await trpcClient.exportTemplates.assignToClass.mutate(input);
 		},
 		onSuccess: () => {
-			toast.success("Modèle assigné");
+			toast.success(t("admin.documents.classTemplates.toast.assigned"));
 			queryClient.invalidateQueries({
 				queryKey: ["class-template-assignments", selectedClassId],
 			});
 		},
-		onError: (err: any) => toast.error(err.message || "Échec de l'assignation"),
+		onError: (err: any) =>
+			toast.error(
+				err.message || t("admin.documents.classTemplates.toast.assignError"),
+			),
 	});
 
 	const removeMutation = useMutation({
@@ -153,9 +158,7 @@ export function useClassDocumentTemplates() {
 			);
 		},
 		onSuccess: () => {
-			toast.success(
-				"Assignation retirée — la classe utilisera le modèle par défaut",
-			);
+			toast.success(t("admin.documents.classTemplates.toast.removed"));
 			queryClient.invalidateQueries({
 				queryKey: ["class-template-assignments", selectedClassId],
 			});
@@ -180,7 +183,10 @@ export function useClassDocumentTemplates() {
 			return (result as { html: string }).html;
 		},
 		onSuccess: (html) => setPreviewHtml(html),
-		onError: (err: any) => toast.error(err.message || "Échec de l'aperçu"),
+		onError: (err: any) =>
+			toast.error(
+				err.message || t("admin.documents.classTemplates.toast.previewError"),
+			),
 	});
 
 	const seedSystemDefaultsMutation = useMutation({
@@ -190,12 +196,19 @@ export function useClassDocumentTemplates() {
 			const skipped = data?.skipped ?? [];
 			if (created.length > 0) {
 				toast.success(
-					`Modèles système créés : ${created.join(", ")}${
-						skipped.length ? ` (déjà présents : ${skipped.join(", ")})` : ""
-					}`,
+					skipped.length
+						? t("admin.documents.classTemplates.toast.seedCreatedWithSkipped", {
+								created: created.join(", "),
+								skipped: skipped.join(", "),
+							})
+						: t("admin.documents.classTemplates.toast.seedCreated", {
+								created: created.join(", "),
+							}),
 				);
 			} else if (skipped.length > 0) {
-				toast.success("Modèles système déjà présents");
+				toast.success(
+					t("admin.documents.classTemplates.toast.seedAlreadyPresent"),
+				);
 			}
 			queryClient.invalidateQueries({ queryKey: ["templates-grouped"] });
 			// Other 4 types (pv/evaluation/ue/deliberation) are now seeded too —
@@ -204,7 +217,9 @@ export function useClassDocumentTemplates() {
 			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
 		},
 		onError: (err: any) =>
-			toast.error(err.message || "Échec de la création des modèles système"),
+			toast.error(
+				err.message || t("admin.documents.classTemplates.toast.seedError"),
+			),
 	});
 
 	const handleAssign = (kind: DocumentKind, templateId: string) => {
@@ -230,9 +245,7 @@ export function useClassDocumentTemplates() {
 		const templates = templatesByType?.[editingKind] ?? [];
 		const templateId = assignment?.templateId ?? templates[0]?.id;
 		if (!templateId) {
-			toast.error(
-				"Aucun modèle disponible — exécutez d'abord la création des modèles système",
-			);
+			toast.error(t("admin.documents.classTemplates.toast.noTemplate"));
 			return;
 		}
 		assignMutation.mutate(
@@ -258,7 +271,9 @@ export function useClassDocumentTemplates() {
 		);
 	}, [templatesByType]);
 
-	const editingKindLabel = KINDS.find((k) => k.value === editingKind)?.label;
+	const editingKindLabel = editingKind
+		? t(`admin.documents.kinds.${editingKind}.label`)
+		: undefined;
 	const selectedClassLabel = useMemo(() => {
 		const c = classes?.find((c) => c.id === selectedClassId);
 		return c ? `${c.code} — ${c.name}` : "";

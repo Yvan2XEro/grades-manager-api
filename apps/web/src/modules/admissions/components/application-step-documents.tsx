@@ -40,7 +40,7 @@ export function ApplicationStepDocuments({ t }: { t: (k: string) => string }) {
 				))}
 			</div>
 			<div className="rounded-lg bg-muted/50 p-3 text-muted-foreground text-sm">
-				💡 Ces pièces seront demandées lors du dépôt physique de votre dossier.
+				💡 {t("admissions.documents.physicalNotice")}
 			</div>
 		</div>
 	);

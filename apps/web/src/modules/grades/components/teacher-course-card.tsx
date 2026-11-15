@@ -26,7 +26,7 @@ export function TeacherCourseCard({ course }: { course: CourseData }) {
 							</span>
 							{course.isDelegated && (
 								<Badge variant="secondary" className="text-xs">
-									Délégué
+									{t("teacher.courses.delegatedBadge")}
 								</Badge>
 							)}
 						</div>
@@ -61,7 +61,7 @@ export function TeacherCourseCard({ course }: { course: CourseData }) {
 
 			{course.exams.length === 0 ? (
 				<p className="px-4 py-5 text-center text-muted-foreground text-sm">
-					Aucun examen pour ce cours
+					{t("teacher.courses.noExams")}
 				</p>
 			) : (
 				<div className="divide-y">

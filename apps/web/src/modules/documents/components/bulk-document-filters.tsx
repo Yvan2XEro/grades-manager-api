@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
 	Card,
 	CardContent,
@@ -13,16 +14,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	type BulkDocumentKind,
-	KIND_LABELS,
-	type useBulkDocumentGeneration,
+import type {
+	BulkDocumentKind,
+	useBulkDocumentGeneration,
 } from "../hooks/use-bulk-document-generation";
 
 type State = ReturnType<typeof useBulkDocumentGeneration>;
 
 /** Document kind, transcript period/semester, academic year and class. */
 export function BulkDocumentFilters({ state }: { state: State }) {
+	const { t } = useTranslation();
 	const {
 		kind,
 		setKind,
@@ -42,14 +43,14 @@ export function BulkDocumentFilters({ state }: { state: State }) {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Filtres</CardTitle>
+				<CardTitle>{t("admin.documents.bulk.filters.title")}</CardTitle>
 				<CardDescription>
-					Choisissez le type de document, l'année académique et la classe.
+					{t("admin.documents.bulk.filters.description")}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
 				<div className="space-y-1">
-					<Label>Type</Label>
+					<Label>{t("admin.documents.bulk.filters.type")}</Label>
 					<Select
 						value={kind}
 						onValueChange={(v) => setKind(v as BulkDocumentKind)}
@@ -59,18 +60,20 @@ export function BulkDocumentFilters({ state }: { state: State }) {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="transcript">
-								{KIND_LABELS.transcript}
+								{t("admin.documents.kinds.transcript.label")}
 							</SelectItem>
 							<SelectItem value="attestation">
-								{KIND_LABELS.attestation}
+								{t("admin.documents.kinds.attestation.label")}
 							</SelectItem>
-							<SelectItem value="diploma">{KIND_LABELS.diploma}</SelectItem>
+							<SelectItem value="diploma">
+								{t("admin.documents.kinds.diploma.label")}
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 				{kind === "transcript" && (
 					<div className="space-y-1">
-						<Label>Période</Label>
+						<Label>{t("admin.documents.bulk.filters.period")}</Label>
 						<Select
 							value={period}
 							onValueChange={(v) => setPeriod(v as "semester" | "annual")}
@@ -79,24 +82,32 @@ export function BulkDocumentFilters({ state }: { state: State }) {
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="annual">Annuel</SelectItem>
-								<SelectItem value="semester">Semestriel</SelectItem>
+								<SelectItem value="annual">
+									{t("admin.documents.bulk.filters.annual")}
+								</SelectItem>
+								<SelectItem value="semester">
+									{t("admin.documents.bulk.filters.semester")}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
 				)}
 				{kind === "transcript" && period === "semester" && (
 					<div className="space-y-1">
-						<Label>Semestre</Label>
+						<Label>{t("admin.documents.bulk.filters.semesterLabel")}</Label>
 						<Select
 							value={semesterId || "__ANY__"}
 							onValueChange={(v) => setSemesterId(v === "__ANY__" ? "" : v)}
 						>
 							<SelectTrigger>
-								<SelectValue placeholder="Le plus récent" />
+								<SelectValue
+									placeholder={t("admin.documents.bulk.filters.latest")}
+								/>
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="__ANY__">Le plus récent</SelectItem>
+								<SelectItem value="__ANY__">
+									{t("admin.documents.bulk.filters.latest")}
+								</SelectItem>
 								{(semesters ?? []).map((s) => (
 									<SelectItem key={s.id} value={s.id}>
 										{s.name}
@@ -107,7 +118,7 @@ export function BulkDocumentFilters({ state }: { state: State }) {
 					</div>
 				)}
 				<div className="space-y-1">
-					<Label>Année académique</Label>
+					<Label>{t("admin.documents.bulk.filters.academicYear")}</Label>
 					<Select
 						value={academicYearId || "__ANY__"}
 						onValueChange={(v) => {
@@ -116,10 +127,14 @@ export function BulkDocumentFilters({ state }: { state: State }) {
 						}}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Toutes" />
+							<SelectValue
+								placeholder={t("admin.documents.bulk.filters.allYears")}
+							/>
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="__ANY__">Toutes</SelectItem>
+							<SelectItem value="__ANY__">
+								{t("admin.documents.bulk.filters.allYears")}
+							</SelectItem>
 							{(academicYears ?? []).map((y) => (
 								<SelectItem key={y.id} value={y.id}>
 									{y.name}
@@ -129,14 +144,16 @@ export function BulkDocumentFilters({ state }: { state: State }) {
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<Label>Classe</Label>
+					<Label>{t("admin.documents.bulk.filters.class")}</Label>
 					<Select
 						value={classId}
 						onValueChange={setClassId}
 						disabled={classesLoading}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Choisir une classe…" />
+							<SelectValue
+								placeholder={t("admin.documents.bulk.filters.classPlaceholder")}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							{(classes ?? []).map((c) => (

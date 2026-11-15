@@ -37,17 +37,13 @@ export default function FeeStructureDetailImpact() {
 			<div className="grid grid-cols-3 gap-3 rounded-md bg-muted/40 p-3 text-sm">
 				<div>
 					<p className="text-muted-foreground text-xs">
-						{t("feeClearance.structures.impact.totalStudents", {
-							defaultValue: "Étudiants dans le scope",
-						})}
+						{t("feeClearance.structures.impact.totalStudents")}
 					</p>
 					<p className="font-semibold text-lg">{data.totals.totalStudents}</p>
 				</div>
 				<div>
 					<p className="text-muted-foreground text-xs">
-						{t("feeClearance.structures.impact.toAssign", {
-							defaultValue: "À assigner",
-						})}
+						{t("feeClearance.structures.impact.toAssign")}
 					</p>
 					<p className="font-semibold text-emerald-600 text-lg">
 						{data.totals.toAssign}
@@ -55,9 +51,7 @@ export default function FeeStructureDetailImpact() {
 				</div>
 				<div>
 					<p className="text-muted-foreground text-xs">
-						{t("feeClearance.structures.impact.alreadyAssigned", {
-							defaultValue: "Déjà assignés",
-						})}
+						{t("feeClearance.structures.impact.alreadyAssigned")}
 					</p>
 					<p className="font-semibold text-lg text-muted-foreground">
 						{data.totals.alreadyAssigned}
@@ -67,33 +61,20 @@ export default function FeeStructureDetailImpact() {
 
 			{data.classes.length === 0 ? (
 				<p className="text-muted-foreground text-sm">
-					{t("feeClearance.structures.impact.noClasses", {
-						defaultValue:
-							"Aucune classe ne correspond au scope de cette structure.",
-					})}
+					{t("feeClearance.structures.impact.noClasses")}
 				</p>
 			) : (
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>
-								{t("feeClearance.structures.impact.class", {
-									defaultValue: "Classe",
-								})}
+							<TableHead>{t("feeClearance.structures.impact.class")}</TableHead>
+							<TableHead className="text-right">
+								{t("feeClearance.structures.impact.toAssign")}
 							</TableHead>
 							<TableHead className="text-right">
-								{t("feeClearance.structures.impact.toAssign", {
-									defaultValue: "À assigner",
-								})}
+								{t("feeClearance.structures.impact.alreadyAssigned")}
 							</TableHead>
-							<TableHead className="text-right">
-								{t("feeClearance.structures.impact.alreadyAssigned", {
-									defaultValue: "Déjà assignés",
-								})}
-							</TableHead>
-							<TableHead className="text-right">
-								{t("common.total", { defaultValue: "Total" })}
-							</TableHead>
+							<TableHead className="text-right">{t("common.total")}</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>

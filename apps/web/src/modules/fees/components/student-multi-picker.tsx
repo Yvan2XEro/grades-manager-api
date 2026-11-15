@@ -57,8 +57,9 @@ export function StudentMultiPicker({
 			)}
 			{selectedIds.length > 0 && (
 				<p className="text-muted-foreground text-xs">
-					{selectedIds.length} {t("feeClearance.assignments.fields.student")}(s)
-					sélectionné(s)
+					{t("feeClearance.assignments.selectedStudents", {
+						count: selectedIds.length,
+					})}
 				</p>
 			)}
 		</div>

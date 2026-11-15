@@ -2,7 +2,7 @@ import type { TFunction } from "i18next";
 import * as XLSX from "xlsx";
 import type { RouterOutputs } from "@/utils/trpc";
 import type { ExcelCell, ExcelRow, ExportClass } from "../types";
-import { isInfoRow } from "./export-header";
+import { infoRow, isInfoRow, localizedName } from "./export-header";
 
 export type PVData = RouterOutputs["exports"]["getPVData"];
 
@@ -39,7 +39,7 @@ export function exportVerbalReportExcel({
 	// First header row: UE names spanning their courses
 	// Second header row: EC names/details
 
-	// Count total columns per UE: each course has 3 cols (CC, EX, Moy) + 3 for UE summary (Avg, Credits, Decision)
+	// Count total columns per UE: each course has 3 cols (CC, EX, Avg) + 3 for UE summary (Avg, Credits, Decision)
 	const fixedCols = 3; // Rank, registration number, name
 	const trailingCols = 3; // Overall average, total credits, decision
 
@@ -54,23 +54,33 @@ export function exportVerbalReportExcel({
 		const courseCols = ue.courses.length * 3; // CC, EX, average per course
 		const ueTotalCols = courseCols + 3; // + UE average, credits, decision
 		firstHeaderRow.push(
-			`${ue.name} (${ue.code}) [${ue.credits} cr.]`,
+			t("admin.gradeExport.pv.excel.ueHeader", {
+				name: ue.name,
+				code: ue.code,
+				credits: ue.credits,
+			}),
 			...Array(ueTotalCols - 1).fill(""),
 		);
 		for (const course of ue.courses) {
 			secondHeaderRow.push(
-				`${course.name} CC`,
-				`${course.name} EX`,
-				`Moy (×${course.coefficient})`,
+				t("admin.gradeExport.pv.excel.courseCc", { name: course.name }),
+				t("admin.gradeExport.pv.excel.courseEx", { name: course.name }),
+				t("admin.gradeExport.pv.excel.courseAverage", {
+					coefficient: course.coefficient,
+				}),
 			);
 		}
-		secondHeaderRow.push("Moy UE", "Crédits", "Décision");
+		secondHeaderRow.push(
+			t("admin.gradeExport.pv.excel.ueAverage"),
+			t("admin.gradeExport.pv.excel.credits"),
+			t("admin.gradeExport.pv.excel.decision"),
+		);
 	}
 
 	firstHeaderRow.push(
 		t("admin.gradeExport.pv.table.average"),
-		"Total Crédits",
-		"Décision",
+		t("admin.gradeExport.pv.excel.totalCredits"),
+		t("admin.gradeExport.pv.excel.decision"),
 	);
 	secondHeaderRow.push("", "", "");
 
@@ -148,24 +158,30 @@ export function exportVerbalReportExcel({
 
 	// Institution header
 	const institutionHeader: ExcelRow[] = [];
-	if (pvData.name_fr) {
-		institutionHeader.push([pvData.name_fr]);
+	const institutionName = localizedName(pvData.name_fr, pvData.name_en);
+	if (institutionName) {
+		institutionHeader.push([institutionName]);
 	}
-	if (pvData.faculty_name_fr) {
-		institutionHeader.push([pvData.faculty_name_fr]);
+	const facultyName = localizedName(
+		pvData.faculty_name_fr,
+		pvData.faculty_name_en,
+	);
+	if (facultyName) {
+		institutionHeader.push([facultyName]);
 	}
+	const documentTitle = t("admin.gradeExport.pv.excel.documentTitle");
 	institutionHeader.push([""]);
-	institutionHeader.push(["PROCÈS-VERBAL DES RÉSULTATS"]);
+	institutionHeader.push([documentTitle]);
 	institutionHeader.push([""]);
 
 	if (hasContext) {
-		if (classData) institutionHeader.push([`Classe: ${classData.name}`]);
+		if (classData) institutionHeader.push([infoRow("class", classData.name)]);
 		if (classData?.program)
-			institutionHeader.push([`Programme: ${classData.program.name}`]);
+			institutionHeader.push([infoRow("program", classData.program.name)]);
 		if (pvData.semester)
-			institutionHeader.push([`Semestre: ${pvData.semester}`]);
+			institutionHeader.push([infoRow("semester", pvData.semester)]);
 		if (pvData.academicYear)
-			institutionHeader.push([`Année Académique: ${pvData.academicYear}`]);
+			institutionHeader.push([infoRow("academicYear", pvData.academicYear)]);
 		institutionHeader.push([""]);
 	}
 
@@ -231,7 +247,7 @@ export function exportVerbalReportExcel({
 	// Style document title and info rows
 	for (let i = 0; i < institutionHeader.length; i++) {
 		const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
-		if (ws[cellRef] && ws[cellRef].v === "PROCÈS-VERBAL DES RÉSULTATS") {
+		if (ws[cellRef] && ws[cellRef].v === documentTitle) {
 			ws[cellRef].s = {
 				font: { bold: true, sz: 18 },
 				alignment: { horizontal: "center", vertical: "center" },

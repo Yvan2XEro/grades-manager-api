@@ -103,9 +103,7 @@ export function NotificationDeliveryCard({
 						disabled={isAcknowledging}
 					>
 						<CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-						{t("admin.notifications.actions.ack", {
-							defaultValue: "Accuser réception",
-						})}
+						{t("admin.notifications.actions.ack")}
 					</Button>
 				)}
 				{item.status === "failed" && (
@@ -117,9 +115,7 @@ export function NotificationDeliveryCard({
 						disabled={isRetrying}
 					>
 						<RotateCcw className="mr-1 h-3.5 w-3.5" />
-						{t("admin.notifications.actions.retry", {
-							defaultValue: "Relancer",
-						})}
+						{t("admin.notifications.actions.retry")}
 					</Button>
 				)}
 			</div>

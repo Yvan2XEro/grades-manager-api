@@ -33,7 +33,7 @@ export function TimetableFilters({ filters, teachers, classCourses }: Props) {
 				onChange={filters.changeAcademicYear}
 				autoSelectActive={false}
 				allowAll
-				allLabel={t("teacher.timetable.allYears") ?? "Toutes les années"}
+				allLabel={t("teacher.timetable.allYears")}
 				className="w-48"
 			/>
 			{filters.academicYearId && (

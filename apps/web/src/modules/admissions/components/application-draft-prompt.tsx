@@ -24,7 +24,7 @@ export function ApplicationDraftPrompt({
 							{t("admissions.wizard.draftNotice")}
 						</h2>
 						<p className="text-muted-foreground text-sm">
-							Reprendre là où vous en étiez ou recommencer depuis le début.
+							{t("admissions.wizard.resumeOrRestart")}
 						</p>
 					</div>
 					<div className="flex flex-col gap-3">

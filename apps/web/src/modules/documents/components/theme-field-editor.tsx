@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,6 +26,7 @@ export function FieldEditor({
 	isOverridden: boolean;
 	onChange: (v: unknown) => void;
 }) {
+	const { t } = useTranslation();
 	if (kind === "boolean") {
 		return (
 			<div className="flex items-center justify-between rounded px-2 py-1.5 hover:bg-muted/40">
@@ -128,7 +130,9 @@ export function FieldEditor({
 					<SelectContent>
 						<SelectItem value="A4">A4</SelectItem>
 						<SelectItem value="A3">A3</SelectItem>
-						<SelectItem value="Letter">Letter</SelectItem>
+						<SelectItem value="Letter">
+							{t("admin.documents.theme.pageSize.letter")}
+						</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
@@ -149,8 +153,12 @@ export function FieldEditor({
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="portrait">Portrait</SelectItem>
-						<SelectItem value="landscape">Paysage</SelectItem>
+						<SelectItem value="portrait">
+							{t("admin.documents.theme.orientation.portrait")}
+						</SelectItem>
+						<SelectItem value="landscape">
+							{t("admin.documents.theme.orientation.landscape")}
+						</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
@@ -209,19 +217,32 @@ export function FieldEditor({
 	);
 }
 
+/** The label is translated (EN or FR), so match the words of both languages. */
+const labelHas = (label: string, words: string[]) => {
+	const l = label.toLowerCase();
+	return words.some((w) => l.includes(w));
+};
+const OPACITY_WORDS = ["opacit"];
+const NON_NEGATIVE_WORDS = [
+	"opacit",
+	"taille",
+	"size",
+	"hauteur",
+	"height",
+	"largeur",
+	"width",
+];
+
 function inferMin(label: string, current: number): number {
 	if (current >= 0 && current <= 1) return 0;
-	if (label.toLowerCase().includes("opacité")) return 0;
-	if (label.toLowerCase().includes("taille") || label.includes("Hauteur"))
-		return 0;
-	if (label.toLowerCase().includes("largeur")) return 0;
+	if (labelHas(label, NON_NEGATIVE_WORDS)) return 0;
 	if (current < 0) return -100;
 	return 0;
 }
 
 function inferMax(label: string, current: number): number {
 	if (current <= 1 && current >= 0 && current % 1 !== 0) return 1; // opacity
-	if (label.toLowerCase().includes("opacité")) return 1;
+	if (labelHas(label, OPACITY_WORDS)) return 1;
 	const upper = current * 4;
 	return Math.max(20, Math.ceil(upper));
 }

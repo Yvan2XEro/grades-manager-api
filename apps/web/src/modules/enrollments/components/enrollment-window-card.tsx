@@ -50,21 +50,14 @@ export function EnrollmentWindowCard({
 						<p className="font-semibold text-foreground">
 							{windowStatus
 								? t("admin.enrollments.windowStatus", {
-										defaultValue: "Window: {{status}}",
 										status: windowStatus.status,
 									})
-								: t("admin.enrollments.windowMissing", {
-										defaultValue: "Window not configured",
-									})}
+								: t("admin.enrollments.windowMissing")}
 						</p>
 						<p className="text-muted-foreground text-xs">
 							{windowStatus?.status === "open"
-								? t("admin.enrollments.windowOpen", {
-										defaultValue: "Students can enroll.",
-									})
-								: t("admin.enrollments.windowClosed", {
-										defaultValue: "Window currently closed.",
-									})}
+								? t("admin.enrollments.windowOpen")
+								: t("admin.enrollments.windowClosed")}
 						</p>
 					</div>
 				</div>
@@ -81,15 +74,11 @@ export function EnrollmentWindowCard({
 						}
 						title={
 							!selectedAcademicYear
-								? t("admin.enrollments.bulkEnroll.requireYear", {
-										defaultValue: "Choisissez d'abord une année",
-									})
+								? t("admin.enrollments.bulkEnroll.requireYear")
 								: undefined
 						}
 					>
-						{t("admin.enrollments.bulkEnroll.openButton", {
-							defaultValue: "Inscription de masse",
-						})}
+						{t("admin.enrollments.bulkEnroll.openButton")}
 					</Button>
 					<Button
 						type="button"
@@ -105,9 +94,7 @@ export function EnrollmentWindowCard({
 							})
 						}
 					>
-						{t("admin.enrollments.autoEnroll.button", {
-							defaultValue: "Enroll entire class",
-						})}
+						{t("admin.enrollments.autoEnroll.button")}
 					</Button>
 					<Button
 						type="button"
@@ -115,9 +102,7 @@ export function EnrollmentWindowCard({
 						disabled={!selectedAcademicYear || !selectedClass}
 					>
 						<Unlock className="mr-1 h-4 w-4" />
-						{t("admin.enrollments.actions.open", {
-							defaultValue: "Open window",
-						})}
+						{t("admin.enrollments.actions.open")}
 					</Button>
 					<Button
 						type="button"
@@ -126,9 +111,7 @@ export function EnrollmentWindowCard({
 						disabled={!selectedAcademicYear || !selectedClass}
 					>
 						<LockOpen className="mr-1 h-4 w-4" />
-						{t("admin.enrollments.actions.close", {
-							defaultValue: "Close window",
-						})}
+						{t("admin.enrollments.actions.close")}
 					</Button>
 				</div>
 			</CardHeader>

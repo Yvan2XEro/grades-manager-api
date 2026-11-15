@@ -117,7 +117,9 @@ export function TemplateEditorSplit({
 								<iframe
 									srcDoc={previewHtml}
 									className="h-full w-full rounded border bg-white"
-									title="Template Preview"
+									title={t(
+										"admin.exportTemplates.editor.template.previewTitle",
+									)}
 									sandbox="allow-same-origin"
 								/>
 							) : (
@@ -140,8 +142,8 @@ export function TemplateEditorSplit({
 			<div
 				role="separator"
 				aria-orientation="horizontal"
-				aria-label="Redimensionner la hauteur"
-				title="Glisser pour redimensionner — double-clic pour réinitialiser"
+				aria-label={t("admin.exportTemplates.editor.template.resizeAria")}
+				title={t("admin.exportTemplates.editor.template.resizeHint")}
 				{...resizeHandlers}
 				onDoubleClick={resetHeight}
 				className="group -bottom-1.5 absolute inset-x-0 z-10 flex h-3 cursor-row-resize items-center justify-center"

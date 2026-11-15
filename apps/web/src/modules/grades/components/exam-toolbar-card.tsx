@@ -101,10 +101,7 @@ export function ExamToolbarCard({
 									}
 									title={
 										selectedExamInfo?.status !== "approved"
-											? t("teacher.gradeEntry.actions.lockRequiresApproval", {
-													defaultValue:
-														"L'examen doit être approuvé avant verrouillage",
-												})
+											? t("teacher.gradeEntry.actions.lockRequiresApproval")
 											: undefined
 									}
 								>
@@ -125,9 +122,7 @@ export function ExamToolbarCard({
 							disabled={!selectedExam || !hasStudents || inputsDisabled}
 						>
 							<Download className="mr-2 h-4 w-4" />
-							{t("teacher.gradeEntry.actions.exportTemplate", {
-								defaultValue: "Export Template",
-							})}
+							{t("teacher.gradeEntry.actions.exportTemplate")}
 						</Button>
 						<div>
 							<input
@@ -147,9 +142,7 @@ export function ExamToolbarCard({
 								disabled={!selectedExam || inputsDisabled}
 							>
 								<Upload className="mr-2 h-4 w-4" />
-								{t("teacher.gradeEntry.actions.importGrades", {
-									defaultValue: "Import Grades",
-								})}
+								{t("teacher.gradeEntry.actions.importGrades")}
 							</Button>
 						</div>
 					</div>
@@ -168,16 +161,9 @@ export function ExamToolbarCard({
 				{selectedExam && !canEditExam && (
 					<Alert variant="destructive">
 						<AlertTriangle className="h-4 w-4" />
-						<AlertTitle>
-							{t("teacher.gradeEntry.readOnly.title", {
-								defaultValue: "Read-only mode",
-							})}
-						</AlertTitle>
+						<AlertTitle>{t("teacher.gradeEntry.readOnly.title")}</AlertTitle>
 						<AlertDescription>
-							{t("teacher.gradeEntry.readOnly.description", {
-								defaultValue:
-									"You can view this exam but cannot modify grades.",
-							})}
+							{t("teacher.gradeEntry.readOnly.description")}
 						</AlertDescription>
 					</Alert>
 				)}

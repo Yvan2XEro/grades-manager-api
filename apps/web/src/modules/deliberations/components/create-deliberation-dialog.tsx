@@ -63,10 +63,7 @@ export const CreateDeliberationDialog = createCallable<Props, void>(
 							{t("admin.deliberations.form.createTitle")}
 						</DialogTitle>
 						<DialogDescription>
-							{t("admin.deliberations.form.createDescription", {
-								defaultValue:
-									"Configurez et lancez une nouvelle session de délibération",
-							})}
+							{t("admin.deliberations.form.createDescription")}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -77,15 +74,11 @@ export const CreateDeliberationDialog = createCallable<Props, void>(
 						>
 							<TabsList className="grid w-full grid-cols-2">
 								<TabsTrigger value="single">
-									{t("admin.deliberations.form.tabSingle", {
-										defaultValue: "Classe unique",
-									})}
+									{t("admin.deliberations.form.tabSingleClass")}
 								</TabsTrigger>
 								<TabsTrigger value="multi" className="gap-1.5">
 									<Users className="h-3.5 w-3.5" />
-									{t("admin.deliberations.form.tabMulti", {
-										defaultValue: "Multi-classes",
-									})}
+									{t("admin.deliberations.form.tabMultiClass")}
 								</TabsTrigger>
 							</TabsList>
 						</Tabs>
@@ -104,7 +97,7 @@ export const CreateDeliberationDialog = createCallable<Props, void>(
 										{classesQuery.isLoading ? (
 											<span className="flex items-center gap-2 text-muted-foreground">
 												<Loader2 className="h-3.5 w-3.5 animate-spin" />
-												Chargement…
+												{t("common.loading")}
 											</span>
 										) : (
 											<SelectValue
@@ -139,15 +132,10 @@ export const CreateDeliberationDialog = createCallable<Props, void>(
 									className="cursor-pointer font-medium text-sm"
 								>
 									<Zap className="mr-1 inline h-3.5 w-3.5 text-yellow-500" />
-									{t("admin.deliberations.form.quickStart", {
-										defaultValue: "Démarrage rapide",
-									})}
+									{t("admin.deliberations.form.quickStart")}
 								</label>
 								<p className="text-muted-foreground text-xs">
-									{t("admin.deliberations.form.quickStartHint", {
-										defaultValue:
-											"Crée, ouvre et calcule les résultats en une seule étape",
-									})}
+									{t("admin.deliberations.form.quickStartHint")}
 								</p>
 							</div>
 						</div>
@@ -166,9 +154,7 @@ export const CreateDeliberationDialog = createCallable<Props, void>(
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 								)}
 								{fields.quickStart
-									? t("admin.deliberations.form.quickStartSubmit", {
-											defaultValue: "Créer et calculer",
-										})
+									? t("admin.deliberations.form.quickStartSubmit")
 									: t("common.actions.create")}
 							</Button>
 						) : (
@@ -182,11 +168,9 @@ export const CreateDeliberationDialog = createCallable<Props, void>(
 									<Users className="mr-2 h-4 w-4" />
 								)}
 								{batchRunning
-									? t("admin.deliberations.form.batchCreating", {
-											defaultValue: "Création en cours…",
-										})
-									: t("admin.deliberations.form.batchSubmit", {
-											defaultValue: `Créer pour ${selectedClassIds.length || "…"} classe(s)`,
+									? t("admin.deliberations.form.batchCreating")
+									: t("admin.deliberations.form.batchSubmitCount", {
+											count: selectedClassIds.length,
 										})}
 							</Button>
 						)}

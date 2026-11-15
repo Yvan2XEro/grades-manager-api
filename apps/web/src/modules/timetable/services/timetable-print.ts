@@ -1,18 +1,15 @@
+import i18n from "@/i18n";
 import type { RouterOutputs } from "@/utils/trpc";
 import type { Session } from "../types";
 
 type Institution = RouterOutputs["institutions"]["get"];
 
-const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-const DAY_LABELS: Record<string, string> = {
-	mon: "Lundi",
-	tue: "Mardi",
-	wed: "Mercredi",
-	thu: "Jeudi",
-	fri: "Vendredi",
-	sat: "Samedi",
-	sun: "Dimanche",
-};
+const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+type Day = (typeof DAY_ORDER)[number];
+const isDay = (value: string): value is Day =>
+	(DAY_ORDER as readonly string[]).includes(value);
+const dayLabel = (day: string) =>
+	isDay(day) ? i18n.t(`teacher.timetable.days.${day}`) : day;
 
 /**
  * Opens a printable A4 landscape timetable (institution header, one column
@@ -24,13 +21,15 @@ export function printTimetable(
 	yearName: string,
 ) {
 	if (sessions.length === 0) return;
+	const t = i18n.t;
+	const isFrench = i18n.language.startsWith("fr");
 
 	// Unique sorted time slots (start times)
 	const timeSlots = [...new Set(sessions.map((s) => s.startTime))].sort();
 
 	// Days present in filtered sessions, sorted by natural week order
 	const days = [...new Set(sessions.map((s) => s.dayOfWeek))].sort(
-		(a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b),
+		(a, b) => DAY_ORDER.indexOf(a as Day) - DAY_ORDER.indexOf(b as Day),
 	);
 
 	// Context metadata
@@ -42,7 +41,9 @@ export function printTimetable(
 	const contextLabel = [
 		uniqueClasses.length <= 3
 			? uniqueClasses.join(", ")
-			: `${uniqueClasses.length} classes`,
+			: t("teacher.timetable.printDoc.classCount", {
+					count: uniqueClasses.length,
+				}),
 		yearName,
 	]
 		.filter(Boolean)
@@ -52,20 +53,23 @@ export function printTimetable(
 	const logoHtml = inst?.logoSvg
 		? `<div class="logo">${inst.logoSvg}</div>`
 		: inst?.logoUrl
-			? `<img class="logo" src="${inst.logoUrl}" alt="Logo" />`
+			? `<img class="logo" src="${inst.logoUrl}" alt="${t("common.logo")}" />`
 			: inst?.nameFr
 				? `<div class="logo-initials">${inst.nameFr.slice(0, 2).toUpperCase()}</div>`
 				: "";
 
-	const instName = inst?.nameFr ?? inst?.nameEn ?? "";
-	const instSub = [inst?.addressFr, inst?.contactPhone, inst?.contactEmail]
+	const instName =
+		(isFrench ? inst?.nameFr || inst?.nameEn : inst?.nameEn || inst?.nameFr) ??
+		"";
+	const address = isFrench
+		? inst?.addressFr || inst?.addressEn
+		: inst?.addressEn || inst?.addressFr;
+	const instSub = [address, inst?.contactPhone, inst?.contactEmail]
 		.filter(Boolean)
 		.join(" · ");
 
 	// Build grid
-	const headerCells = days
-		.map((d) => `<th>${DAY_LABELS[d] ?? d}</th>`)
-		.join("");
+	const headerCells = days.map((d) => `<th>${dayLabel(d)}</th>`).join("");
 
 	const bodyRows = timeSlots
 		.map((slot) => {
@@ -119,17 +123,17 @@ export function printTimetable(
 		})
 		.join("");
 
-	const printDate = new Date().toLocaleDateString("fr-FR", {
+	const printDate = new Date().toLocaleDateString(i18n.language, {
 		day: "2-digit",
 		month: "long",
 		year: "numeric",
 	});
 
 	const html = `<!DOCTYPE html>
-<html lang="fr">
+<html lang="${isFrench ? "fr" : "en"}">
 <head>
 <meta charset="utf-8"/>
-<title>Emploi du temps${contextLabel ? ` — ${contextLabel}` : ""}</title>
+<title>${t("teacher.timetable.title")}${contextLabel ? ` — ${contextLabel}` : ""}</title>
 <style>
 @page { size: A4 landscape; margin: 1.2cm; }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -176,10 +180,10 @@ td.time-col{background:#f8fafc;text-align:center;vertical-align:middle;padding:4
     ${instName ? `<div class="inst-name">${instName}</div>` : ""}
     ${instSub ? `<div class="inst-sub">${instSub}</div>` : ""}
   </div>
-  <div class="print-date">Généré le ${printDate}</div>
+  <div class="print-date">${t("teacher.timetable.printDoc.generatedOn", { date: printDate })}</div>
 </div>
 
-<div class="title">Emploi du Temps${contextLabel ? ` — ${contextLabel}` : ""}</div>
+<div class="title">${t("teacher.timetable.title")}${contextLabel ? ` — ${contextLabel}` : ""}</div>
 
 <table>
   <colgroup>
@@ -187,14 +191,14 @@ td.time-col{background:#f8fafc;text-align:center;vertical-align:middle;padding:4
     ${days.map(() => "<col/>").join("")}
   </colgroup>
   <thead>
-    <tr><th class="th-time">Heure</th>${headerCells}</tr>
+    <tr><th class="th-time">${t("teacher.timetable.printDoc.time")}</th>${headerCells}</tr>
   </thead>
   <tbody>${bodyRows}</tbody>
 </table>
 
 <div class="footer">
   <span>${[uniqueClasses.slice(0, 5).join(", "), yearName].filter(Boolean).join(" · ")}</span>
-  <span>${sessions.length} séance${sessions.length > 1 ? "s" : ""}</span>
+  <span>${t("teacher.timetable.sessionCount", { count: sessions.length })}</span>
 </div>
 
 <script>window.addEventListener("load",function(){window.print();});</script>

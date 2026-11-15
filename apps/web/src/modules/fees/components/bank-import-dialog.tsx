@@ -172,7 +172,6 @@ export const BankImportDialog = createCallable<Props, void>(
 									<span>
 										{t("feeClearance.bankImport.xlsxLoaded", {
 											count: parsedRows.length,
-											defaultValue: `${parsedRows.length} lignes chargées depuis le fichier Excel`,
 										})}
 									</span>
 									<button

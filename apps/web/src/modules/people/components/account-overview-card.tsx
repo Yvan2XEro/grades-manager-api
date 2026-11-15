@@ -6,6 +6,7 @@ import {
 	MailCheck,
 	UserCheck,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -27,15 +28,16 @@ export function AccountOverviewCard({
 }: {
 	authAccount: AuthAccount | null | undefined;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Card>
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					<UserCheck className="h-4 w-4 text-primary" />
-					Compte d'accès
+					{t("usersHub.account.overview.title")}
 				</CardTitle>
 				<CardDescription>
-					Statut du compte de connexion lié à ce profil.
+					{t("usersHub.account.overview.description")}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -46,7 +48,7 @@ export function AccountOverviewCard({
 							{authAccount.emailVerified ? (
 								<Badge variant="secondary" className={successBadge}>
 									<MailCheck className="h-3 w-3" />
-									Email vérifié
+									{t("usersHub.account.overview.emailVerified")}
 								</Badge>
 							) : (
 								<Badge
@@ -54,31 +56,35 @@ export function AccountOverviewCard({
 									className="gap-1 text-muted-foreground"
 								>
 									<AlertTriangle className="h-3 w-3" />
-									Email non vérifié
+									{t("usersHub.account.overview.emailNotVerified")}
 								</Badge>
 							)}
 							{authAccount.banned ? (
 								<Badge variant="destructive" className="gap-1">
 									<Ban className="h-3 w-3" />
-									Suspendu
+									{t("usersHub.account.overview.suspended")}
 								</Badge>
 							) : (
 								<Badge variant="secondary" className={successBadge}>
 									<CheckCircle2 className="h-3 w-3" />
-									Actif
+									{t("usersHub.account.overview.active")}
 								</Badge>
 							)}
 						</div>
 						<Separator />
 						<div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
 							<div className="space-y-1">
-								<p className="text-muted-foreground text-xs">Rôle</p>
+								<p className="text-muted-foreground text-xs">
+									{t("usersHub.account.overview.role")}
+								</p>
 								<p className="font-medium capitalize">
-									{roleLabel(authAccount.memberRole) ?? "—"}
+									{roleLabel(t, authAccount.memberRole) ?? "—"}
 								</p>
 							</div>
 							<div className="space-y-1">
-								<p className="text-muted-foreground text-xs">Membre depuis</p>
+								<p className="text-muted-foreground text-xs">
+									{t("usersHub.account.overview.memberSince")}
+								</p>
 								<p className="font-medium">
 									{authAccount.memberSince
 										? format(new Date(authAccount.memberSince), "dd/MM/yyyy")
@@ -92,11 +98,10 @@ export function AccountOverviewCard({
 						<AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
 						<div>
 							<p className="font-medium text-amber-800 text-sm dark:text-amber-200">
-								Aucun compte d'accès
+								{t("usersHub.account.overview.noAccountTitle")}
 							</p>
 							<p className="text-amber-700 text-xs dark:text-amber-300">
-								Ce profil n'est pas lié à un compte de connexion. L'utilisateur
-								ne peut pas se connecter à la plateforme.
+								{t("usersHub.account.overview.noAccountDescription")}
 							</p>
 						</div>
 					</div>

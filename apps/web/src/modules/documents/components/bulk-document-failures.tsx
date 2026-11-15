@@ -1,4 +1,5 @@
 import { AlertCircle, FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { useBulkDocumentGeneration } from "../hooks/use-bulk-document-generation";
 
@@ -6,13 +7,14 @@ type State = ReturnType<typeof useBulkDocumentGeneration>;
 
 /** Students whose document failed, with the error. */
 export function BulkDocumentFailures({ state }: { state: State }) {
+	const { t } = useTranslation();
 	const { summary, genStatus, studentItems } = state;
 	return (
 		<Card className="border-destructive/40">
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2 text-destructive">
 					<AlertCircle className="h-5 w-5" />
-					{summary.error} échec(s)
+					{t("admin.documents.bulk.failuresTitle", { count: summary.error })}
 				</CardTitle>
 			</CardHeader>
 			<CardContent>

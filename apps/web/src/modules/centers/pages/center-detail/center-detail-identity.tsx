@@ -13,9 +13,7 @@ export default function CenterDetailIdentity() {
 			<Card>
 				<CardHeader>
 					<CardTitle className="text-sm">
-						{t("admin.centers.sections.identity", {
-							defaultValue: "Informations Générales",
-						})}
+						{t("admin.centers.sections.identity")}
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-4">

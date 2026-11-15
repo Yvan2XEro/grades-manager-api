@@ -24,7 +24,7 @@ export function ApplicationStepIdentity({
 	t,
 }: {
 	form: ApplicationWizardForm;
-	t: (k: string) => string;
+	t: (k: string, options?: Record<string, unknown>) => string;
 }) {
 	return (
 		<div className="grid gap-5 md:grid-cols-2">
@@ -35,7 +35,12 @@ export function ApplicationStepIdentity({
 					<FormItem>
 						<FormLabel required>{t("admissions.fields.lastName")}</FormLabel>
 						<FormControl>
-							<Input {...field} placeholder="Ex : MBALLA" />
+							<Input
+								{...field}
+								placeholder={t("admissions.placeholders.example", {
+									value: "MBALLA",
+								})}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -48,7 +53,12 @@ export function ApplicationStepIdentity({
 					<FormItem>
 						<FormLabel required>{t("admissions.fields.firstName")}</FormLabel>
 						<FormControl>
-							<Input {...field} placeholder="Ex : Jean-Paul" />
+							<Input
+								{...field}
+								placeholder={t("admissions.placeholders.example", {
+									value: "Jean-Paul",
+								})}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -148,7 +158,12 @@ export function ApplicationStepIdentity({
 							{t("admissions.fields.placeOfBirth")}
 						</FormLabel>
 						<FormControl>
-							<Input {...field} placeholder="Ex : Yaoundé" />
+							<Input
+								{...field}
+								placeholder={t("admissions.placeholders.example", {
+									value: "Yaoundé",
+								})}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -161,7 +176,7 @@ export function ApplicationStepIdentity({
 					<FormItem>
 						<FormLabel>
 							{t("admissions.fields.countryOfBirth")}{" "}
-							<OptionalBadge label="opt." />
+							<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 						</FormLabel>
 						<FormControl>
 							<Input {...field} />
@@ -179,7 +194,12 @@ export function ApplicationStepIdentity({
 							{t("admissions.fields.idCardNumber")}
 						</FormLabel>
 						<FormControl>
-							<Input {...field} placeholder="Ex : 123456789" />
+							<Input
+								{...field}
+								placeholder={t("admissions.placeholders.example", {
+									value: "123456789",
+								})}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -192,7 +212,7 @@ export function ApplicationStepIdentity({
 					<FormItem>
 						<FormLabel>
 							{t("admissions.fields.primaryLanguage")}{" "}
-							<OptionalBadge label="opt." />
+							<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 						</FormLabel>
 						<Select onValueChange={field.onChange} value={field.value ?? ""}>
 							<FormControl>
@@ -220,7 +240,7 @@ export function ApplicationStepIdentity({
 					<FormItem>
 						<FormLabel>
 							{t("admissions.fields.employmentStatus")}{" "}
-							<OptionalBadge label="opt." />
+							<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 						</FormLabel>
 						<Select onValueChange={field.onChange} value={field.value ?? ""}>
 							<FormControl>

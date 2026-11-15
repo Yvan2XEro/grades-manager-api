@@ -77,22 +77,14 @@ export default function ApiKeysPage() {
 			toolbar={
 				<div className="grid gap-4 lg:grid-cols-2">
 					<ApiActivityChart
-						title={t("admin.apiKeys.activity.title", {
-							defaultValue: "Activité — 30 derniers jours",
-						})}
-						emptyText={t("admin.apiKeys.activity.empty", {
-							defaultValue: "Aucune activité enregistrée.",
-						})}
+						title={t("admin.apiKeys.activity.title")}
+						emptyText={t("admin.apiKeys.activity.empty")}
 						series={activity}
 						gradientPrefix="grad"
 					/>
 					<ApiActivityChart
-						title={t("admin.apiKeys.callActivity.title", {
-							defaultValue: "Appels API — 30 derniers jours",
-						})}
-						emptyText={t("admin.apiKeys.callActivity.empty", {
-							defaultValue: "Aucun appel enregistré.",
-						})}
+						title={t("admin.apiKeys.callActivity.title")}
+						emptyText={t("admin.apiKeys.callActivity.empty")}
 						series={calls}
 						gradientPrefix="call-grad"
 					/>

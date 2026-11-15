@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { BulkAssignPreview } from "../types";
 
 /** Students a bulk assignment would reach, and how many are skipped. */
@@ -7,6 +8,7 @@ export function BulkAssignPreviewPanel({
 }: {
 	preview: BulkAssignPreview;
 }) {
+	const { t } = useTranslation();
 	const hasNew = preview.toAssign.length > 0;
 	const hasSkipped = preview.alreadyAssignedCount > 0;
 
@@ -15,12 +17,15 @@ export function BulkAssignPreviewPanel({
 			<div className="flex items-center gap-4 text-sm">
 				<span className="flex items-center gap-1 text-emerald-700">
 					<CheckCircle2 className="h-3.5 w-3.5" />
-					<strong>{preview.toAssign.length}</strong> à assigner
+					<strong>{preview.toAssign.length}</strong>{" "}
+					{t("feeClearance.bulkAssign.toAssign")}
 				</span>
 				{hasSkipped && (
 					<span className="flex items-center gap-1 text-muted-foreground">
 						<AlertCircle className="h-3.5 w-3.5" />
-						{preview.alreadyAssignedCount} déjà assigné(s) — ignoré(s)
+						{t("feeClearance.bulkAssign.alreadyAssigned", {
+							count: preview.alreadyAssignedCount,
+						})}
 					</span>
 				)}
 			</div>
@@ -30,9 +35,15 @@ export function BulkAssignPreviewPanel({
 					<table className="w-full text-xs">
 						<thead className="sticky top-0 bg-muted/80">
 							<tr>
-								<th className="px-2 py-1.5 text-left font-medium">Étudiant</th>
-								<th className="px-2 py-1.5 text-left font-medium">Matricule</th>
-								<th className="px-2 py-1.5 text-right font-medium">Montant</th>
+								<th className="px-2 py-1.5 text-left font-medium">
+									{t("feeClearance.bulkAssign.col.student")}
+								</th>
+								<th className="px-2 py-1.5 text-left font-medium">
+									{t("feeClearance.bulkAssign.col.registration")}
+								</th>
+								<th className="px-2 py-1.5 text-right font-medium">
+									{t("feeClearance.bulkAssign.col.amount")}
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -56,7 +67,7 @@ export function BulkAssignPreviewPanel({
 
 			{!hasNew && (
 				<p className="text-muted-foreground text-sm">
-					Tous les étudiants ont déjà une assignation pour cette année.
+					{t("feeClearance.bulkAssign.allAssigned")}
 				</p>
 			)}
 		</div>

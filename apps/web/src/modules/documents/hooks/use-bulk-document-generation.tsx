@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { fileDateStamp } from "@/lib/download";
 import { toast } from "@/lib/toast";
@@ -10,12 +11,6 @@ import {
 } from "../services/bulk-document-download";
 
 export type BulkDocumentKind = "diploma" | "transcript" | "attestation";
-
-export const KIND_LABELS: Record<BulkDocumentKind, string> = {
-	diploma: "Diplôme",
-	transcript: "Relevé de notes",
-	attestation: "Attestation",
-};
 
 type GenStatus =
 	| { state: "pending" }
@@ -28,12 +23,13 @@ type GenStatus =
  * generation (+ HTML preview) of the bulk document generation page.
  */
 export function useBulkDocumentGeneration() {
+	const { t } = useTranslation();
 	const [kind, setKind] = useState<BulkDocumentKind>("transcript");
 	const [academicYearId, setAcademicYearId] = useState<string>("");
 	const [classId, setClassId] = useState<string>("");
 	const [demoMode, setDemoMode] = useState(false);
 	const [zipDownload, setZipDownload] = useState(true);
-	// Period only matters for transcripts. Defaults to annual; semestriel
+	// Period only matters for transcripts. Defaults to annual; semester
 	// switches the title to "RELEVÉ DE NOTES SEMESTRIEL" and (future) filters
 	// data to the chosen semester.
 	const [period, setPeriod] = useState<"semester" | "annual">("annual");
@@ -165,27 +161,32 @@ export function useBulkDocumentGeneration() {
 				: studentId;
 			const templateName = res.usedTemplate?.name;
 			DocumentPreviewDialog.call({
-				title: `Aperçu — ${KIND_LABELS[kind]} (${studentName})`,
+				title: t("admin.documents.bulk.previewTitle", {
+					kind: t(`admin.documents.kinds.${kind}.label`),
+					student: studentName,
+				}),
 				description: templateName ? (
-					<>
-						Modèle utilisé : <strong>{templateName}</strong>
-					</>
+					<Trans
+						i18nKey="admin.documents.bulk.templateUsed"
+						values={{ name: templateName }}
+						components={{ strong: <strong /> }}
+					/>
 				) : (
-					"Rendu HTML — données réelles, sans rasterisation PDF."
+					t("admin.documents.bulk.previewDescription")
 				),
 				html: res.data,
 				paper: true,
 			});
 		},
 		onError: (err: any) => {
-			toast.error(err?.message ?? "Échec de l'aperçu");
+			toast.error(err?.message ?? t("admin.documents.bulk.toast.previewError"));
 		},
 	});
 
 	const handleGenerate = async () => {
 		const ids = [...selectedIds];
 		if (ids.length === 0) {
-			toast.error("Aucun étudiant sélectionné");
+			toast.error(t("admin.documents.bulk.toast.noSelection"));
 			return;
 		}
 		setIsGenerating(true);
@@ -243,15 +244,21 @@ export function useBulkDocumentGeneration() {
 			});
 		} catch (err) {
 			toast.error(
-				`Échec du regroupement ZIP : ${err instanceof Error ? err.message : String(err)}`,
+				t("admin.documents.bulk.toast.zipError", {
+					error: err instanceof Error ? err.message : String(err),
+				}),
 			);
 		}
 
 		setIsGenerating(false);
 		if (failCount === 0) {
-			toast.success(`${okCount} document(s) généré(s)`);
+			toast.success(
+				t("admin.documents.bulk.toast.generated", { count: okCount }),
+			);
 		} else {
-			toast.warning(`${okCount} OK · ${failCount} échec(s)`);
+			toast.warning(
+				t("admin.documents.bulk.summary", { ok: okCount, error: failCount }),
+			);
 		}
 	};
 
@@ -269,7 +276,7 @@ export function useBulkDocumentGeneration() {
 	const previewFirst = () => {
 		const first = [...selectedIds][0] ?? studentItems[0]?.id;
 		if (!first) {
-			toast.error("Aucun étudiant à prévisualiser");
+			toast.error(t("admin.documents.bulk.toast.noStudentToPreview"));
 			return;
 		}
 		previewOne.mutate(first);

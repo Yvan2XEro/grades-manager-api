@@ -40,6 +40,7 @@ interface Resources {
 				clear: "Clear";
 				clearFilters: "Clear filters";
 				followJob: "Follow the job";
+				apply: "Apply";
 			};
 			fields: {
 				email: "Email";
@@ -94,7 +95,7 @@ interface Resources {
 			noResults: "No results";
 			search: "Search";
 			select: "Select";
-			loadMore: "Charger plus";
+			loadMore: "Load more";
 			cancel: "Cancel";
 			all: "All";
 			allYears: "All years";
@@ -128,6 +129,17 @@ interface Resources {
 			notFound: "Not found";
 			saving: "Saving…";
 			suspended: "Suspended";
+			documentPreview: {
+				frameTitle: "Document preview";
+			};
+			cascadeDelete: {
+				title: "Delete {{name}}";
+				willDelete: "This action will permanently delete:";
+				irreversible: "This action cannot be undone.";
+				deleting: "Deleting...";
+				deleteAll: "Delete all";
+			};
+			logo: "Logo";
 		};
 		teacher: {
 			courses: {
@@ -161,10 +173,14 @@ interface Resources {
 					status: "Status";
 					teacher: "Teacher";
 				};
-				noMatch: "No Match";
+				noMatch: "No matching course";
 				noMatchHint: "Try another search or clear the filters.";
 				searchPlaceholder: "Search Placeholder";
 				summary: "Summary";
+				noExams: "No exam for this course";
+				hubTitle: "My courses & grades";
+				hubDescription: "Grade entry, locking and submission per course";
+				noSearchMatch: "No course matches your search.";
 			};
 			"courses.manage": {
 				title: "Course Management";
@@ -551,6 +567,14 @@ interface Resources {
 				allYears: "All years";
 				print: "Print";
 				copyFromYear: "Copy from another year";
+				sessionCount_one: "{{count}} session";
+				sessionCount_other: "{{count}} sessions";
+				printDoc: {
+					classCount_one: "{{count}} class";
+					classCount_other: "{{count}} classes";
+					generatedOn: "Generated on {{date}}";
+					time: "Time";
+				};
 			};
 			rooms: {
 				title: "Rooms";
@@ -1033,9 +1057,6 @@ interface Resources {
 					noData: "noData";
 				};
 				lastLevel: "lastLevel";
-				selectSourceFirst: "selectSourceFirst";
-				noTargetAvailable: "noTargetAvailable";
-				lastLevelHint: "lastLevelHint";
 				emptyState: {
 					title: "title";
 					description: "description";
@@ -1457,6 +1478,7 @@ interface Resources {
 				notMember: "You are not a member of this organization. Contact your administrator.";
 				rememberMe: "Remember me for 30 days";
 				subtitle: "Sign in to access your institutions.";
+				scopedSubtitle: "Sign in to your workspace.";
 			};
 			register: {
 				title: "Create your account";
@@ -1571,6 +1593,11 @@ interface Resources {
 					remaining: "Remaining";
 					rate: "Collection rate";
 				};
+				statusStats: {
+					title: "Enrollment status";
+					subtitle: "Breakdown by status";
+					empty: "No enrollments";
+				};
 			};
 			statistics: {
 				title: "Statistics";
@@ -1655,6 +1682,41 @@ interface Resources {
 						rejected: "Rejected";
 						waitlisted: "Waitlisted";
 						enrolled: "Enrolled";
+					};
+				};
+				excel: {
+					notAvailable: "N/A";
+					files: {
+						students: "student-statistics.xlsx";
+						performance: "performance-statistics.xlsx";
+						finances: "finance-statistics.xlsx";
+						admissions: "admissions-statistics.xlsx";
+					};
+					sheets: {
+						byProgram: "By program";
+						byStatus: "By status";
+						byGender: "By gender";
+						byDecision: "By decision";
+						byMention: "By mention";
+						overview: "Overview";
+						monthly: "Monthly";
+						byMethod: "By method";
+					};
+					columns: {
+						program: "Program";
+						enrolled: "Enrolled";
+						status: "Status";
+						count: "Count";
+						gender: "Gender";
+						decision: "Decision";
+						students: "Students";
+						mention: "Mention";
+						indicator: "Indicator";
+						amount: "Amount";
+						month: "Month";
+						method: "Method";
+						transactions: "Transactions";
+						applications: "Applications";
 					};
 				};
 			};
@@ -1890,7 +1952,7 @@ interface Resources {
 				activity: {
 					title: "Activity — last 30 days";
 					empty: "No activity recorded.";
-					unknownKey: "Sans clé";
+					unknownKey: "No key";
 				};
 				callActivity: {
 					title: "API calls — last 30 days";
@@ -2148,12 +2210,12 @@ interface Resources {
 					success: "Catalogue exported successfully";
 					error: "Error during export";
 					title: "Export the teaching unit / course catalogue";
-					scopeLabel: "Périmètre";
+					scopeLabel: "Scope";
 					scopeYear: "All classes for the filtered year";
 					noYearWarning: "no year selected";
 					scopeSelection: "Specific classes";
-					classesLabel: "Classes à inclure";
-					selectedCount: "classe(s) sélectionnée(s)";
+					classesLabel: "Classes to include";
+					selectedCount: "class(es) selected";
 					generate: "Generate PDF";
 				};
 				deleteConfirm: {
@@ -2202,6 +2264,10 @@ interface Resources {
 					excelSuccess: "Student list exported successfully";
 					excelError: "Failed to export student list";
 					sheetName: "Students";
+					templateUsed: "Template used: {{name}}";
+					templateUsedCenter: "Template used: {{name}} (center)";
+					templateFallback: "The official template could not be rendered ({{error}}). Falling back to a basic jsPDF export.";
+					institutionFallback: "Institution";
 				};
 				form: {
 					createTitle: "Add class";
@@ -2237,6 +2303,7 @@ interface Resources {
 					deleteSuccess: "Class deleted successfully";
 					deleteError: "Could not delete the class";
 					bulkGenerateSuccess: "Classes generated successfully";
+					bulkGenerateResult: "{{created}} class(es) created, {{skipped}} skipped";
 				};
 				delete: {
 					title: "Delete class";
@@ -2278,6 +2345,7 @@ interface Resources {
 					yearLabel: "Academic year";
 					sourceYearLabel: "Clone assignments from (optional)";
 					sourceYearHint: "If set, this year's teacher assignments are copied to the new classes.";
+					sourceYearPlaceholder: "None (optional)";
 				};
 				studentsEmpty: {
 					description: "Enroll students via the Enrollments tab.";
@@ -2366,6 +2434,8 @@ interface Resources {
 					city: "City (for document date line)";
 					logoSvg: "SVG logo (source code)";
 					logoSvgHint: "If set, the SVG takes priority over the PNG/URL logo in exports.";
+					logoSvgAlternative: "…or SVG code (takes priority in exports)";
+					signatoryTitlePlaceholder: "Director General";
 				};
 				sections: {
 					contact: "Contact & location";
@@ -2535,7 +2605,7 @@ interface Resources {
 					cloneFromHint: "Teaching units and courses from the source program will be copied after creation.";
 					submitWithClone: "Create and clone";
 					nameEnLabel: "Name (English)";
-					abbreviationLabel: "Abréviation";
+					abbreviationLabel: "Abbreviation";
 					domainFrLabel: "Domaine (FR)";
 					domainEnLabel: "Domain (EN)";
 					specialiteFrLabel: "Specialty (FR)";
@@ -2631,6 +2701,21 @@ interface Resources {
 					cycle: "Cycle";
 					description: "Description";
 					isCenterProgram: "Center program";
+				};
+				templateTypes: {
+					diploma: "Diploma";
+					transcript: "Transcript";
+					attestation: "Attestation";
+					enrollment_certificate: "Enrollment certificate";
+					student_list: "Student list";
+					pv: "Minutes (PV)";
+					evaluation: "Evaluation publication";
+					ec: "EC publication";
+					ue: "UE publication";
+					deliberation: "Deliberation";
+					payment_order: "Payment order";
+					payment_receipt: "Payment receipt";
+					financial_clearance: "Financial clearance";
 				};
 			};
 			courses: {
@@ -2922,6 +3007,8 @@ interface Resources {
 						noPreview: "No preview yet";
 						clickGenerate: 'Click "Generate preview" after providing template content.';
 						required: "Template content cannot be empty.";
+						resizeAria: "Resize height";
+						resizeHint: "Drag to resize, double-click to reset";
 					};
 					columns: {
 						title: "Column Configuration";
@@ -2992,6 +3079,55 @@ interface Resources {
 						success: "Preview generated successfully";
 						error: "Failed to generate preview";
 					};
+					livePreview: "Live preview";
+					rendering: "rendering…";
+					layout: "Layout:";
+					sideBySide: "Side by side";
+					stacked: "Stacked";
+					hbs: {
+						variable: "variable";
+						ifCondition: "if condition";
+						unlessCondition: "unless condition";
+						iterate: "iterate";
+						with: "scope into context";
+						or: "(...args) → boolean: true if any arg is truthy";
+						logo: "(svg=, url=, alt?, class?, style?) → renders the inline SVG if set, else <img src=url>";
+						headerBilingual: "3-column header (FR + coat of arms + EN)";
+						headerCenter: "Center variant header (institution + center)";
+						studentsTable: "Student roster table";
+						signatures3: "3-signature block (graduate / rector / minister)";
+						watermarkBlock: "Watermark block (logo + text)";
+					};
+				};
+				types: {
+					pv: "PV (Minutes)";
+					evaluation: "Evaluation";
+					ue: "UE (Teaching unit)";
+					deliberation: "Deliberation";
+					diploma: "Diploma";
+					transcript: "Transcript";
+					attestation: "Attestation";
+					student_list: "Student list";
+				};
+				system: {
+					seedFailed: "Failures ({{count}}): {{details}}";
+					seedCreated: "Official templates created: {{created}}";
+					seedAllPresent: "All official templates are already present.";
+					linked_one: "{{count}} program → template assignment (re)created (center variant for center programs, standard otherwise).";
+					linked_other: "{{count}} program → template assignments (re)created (center variant for center programs, standard otherwise).";
+					linkFailed_one: "{{count}} assignment failed: {{details}}";
+					linkFailed_other: "{{count}} assignments failed: {{details}}";
+					seedError: "Initialization failed";
+					exportPartial: "{{count}} templates exported, {{failed}} failures: {{details}}";
+					exportSuccess_one: "{{count}} template exported as PDF (ZIP)";
+					exportSuccess_other: "{{count}} templates exported as PDF (ZIP)";
+					exportError: "Template export failed";
+					exportAllHint: "Generates one PDF per template (16 files: 8 types × standard + center) with the real institution and center details and a sample student. Downloaded as a ZIP.";
+					exportAllPending: "Generating…";
+					exportAll: "Download all templates (PDF)";
+					seedHint: "Creates the 3 official templates (diploma, transcript, attestation) if missing";
+					seed: "Initialize official templates";
+					zipName: "templates-preview";
 				};
 			};
 			examScheduler: {
@@ -3034,6 +3170,8 @@ interface Resources {
 					title: "Target classes";
 					description: "All classes for the selected year are preselected. Deselect any you wish to exclude.";
 					selectAll: "Select all classes";
+					selectedCount_one: "{{count}} class selected";
+					selectedCount_other: "{{count}} classes selected";
 				};
 				retakeExams: {
 					title: "Exams eligible for retake";
@@ -3043,6 +3181,8 @@ interface Resources {
 					examCount: "{{count}} exams";
 					examCount_one: "{{count}} exam";
 					examCount_other: "{{count}} exams";
+					selectedCount_one: "{{count}} exam selected";
+					selectedCount_other: "{{count}} exams selected";
 				};
 				actions: {
 					schedule: "Schedule exams";
@@ -3107,7 +3247,7 @@ interface Resources {
 						filePrefix: "exam-grades";
 						label: "Per-exam exports ({{count}})";
 						scoreColumn: "Score";
-						sheetName: "Scores examen";
+						sheetName: "Exam scores";
 					};
 					pvLabel: "Grade report";
 					pvExport: "Download grade report (Excel)";
@@ -3118,6 +3258,17 @@ interface Resources {
 					emptyDescription: "There are no exams created for this class yet.";
 					loadingDescription: "Fetching all exams and their courses for this class.";
 					loadingTitle: "Loading assessments…";
+					selectedCount_one: "{{selected}} / {{count}} assessment selected";
+					selectedCount_other: "{{selected}} / {{count}} assessments selected";
+					searchPlaceholder: "Search a course or an assessment...";
+					sort: {
+						course: "By course";
+						date: "By date";
+						type: "By type";
+					};
+					courseCount_one: "{{selected}} / {{count}} assessment";
+					courseCount_other: "{{selected}} / {{count}} assessments";
+					noMatch: "No assessment found for “{{query}}”";
 				};
 				columns: {
 					lastName: "Last name";
@@ -3126,6 +3277,16 @@ interface Resources {
 					birthDate: "Birth date";
 					birthPlace: "Birth place";
 					gender: "Gender";
+					code: "Code";
+					title: "Title";
+					coefficient: "Coef.";
+					ueName: "UE name";
+					credits: "Credits";
+					course: "Course";
+					type: "Type";
+					date: "Date";
+					excel: "Excel";
+					pdf: "PDF";
 				};
 				sheetName: "Grades";
 				filePrefix: "grades";
@@ -3155,6 +3316,25 @@ interface Resources {
 						rank: "Rank";
 						title: "Results table";
 					};
+					title: "Verbal report";
+					description: "Full report with every UE, averages and decisions";
+					missingSemester: "Select a semester";
+					semester: "Semester";
+					semesterPlaceholder: "Select a semester";
+					includeRetakes: "Include retake grades";
+					previewPdf: "Preview PDF";
+					generatePdf: "Generate PDF";
+					excel: {
+						documentTitle: "RESULTS VERBAL REPORT";
+						ueHeader: "{{name}} ({{code}}) [{{credits}} cr.]";
+						courseCc: "{{name}} CA";
+						courseEx: "{{name}} EX";
+						courseAverage: "Avg (×{{coefficient}})";
+						ueAverage: "UE avg";
+						credits: "Credits";
+						decision: "Decision";
+						totalCredits: "Total credits";
+					};
 				};
 				toast: {
 					semestersFetchError: "Could not load semesters";
@@ -3171,6 +3351,80 @@ interface Resources {
 					bulkUesError: "Bulk UE generation failed";
 					ecGenerateError: "EC generation failed";
 					ecPreviewError: "Could not generate EC preview";
+					bulkExportError: "Bulk export failed";
+				};
+				bulk: {
+					title: "Bulk export (ZIP)";
+					description: "Generates a ZIP file holding every PDF, sorted by program and class. Filtered by the year and semester selected at the top of the page when set.";
+					running: "Generating · {{seconds}}s";
+					allClasses: "All classes";
+					selectedClass: "Selected class";
+					warning: "⚠️ Bulk generation can take several minutes depending on the volume (1 PDF ≈ 1-2 s). The server reuses a single Chromium browser to speed up the batch.";
+					kinds: {
+						eval: {
+							title: "Assessments";
+							short: "Assessments";
+							description: "One PDF per exam. No eligibility check.";
+						};
+						ec: {
+							title: "EC (course elements)";
+							short: "EC";
+							description: "One PDF per EC. Skipped automatically when weights ≠ 100%.";
+						};
+						ue: {
+							title: "UE (teaching units)";
+							short: "UE";
+							description: "One PDF per UE × class × semester. Skipped automatically when the UE is incomplete.";
+						};
+					};
+					report: {
+						title: "Export report — {{kind}}";
+						downloaded: "ZIP downloaded:";
+						total: "Total candidates";
+						generated: "Generated";
+						skipped: "Skipped";
+						skippedDetail: "Skipped items";
+						id: "ID";
+						reason: "Reason";
+					};
+				};
+				ec: {
+					title: "By EC";
+					description: "PDF publication per course element (EC): combines every assessment (CA + practical + exam) with the EC average. The weights of the EC's exams must add up to 100%.";
+				};
+				ue: {
+					title: "By teaching unit";
+					description: "PDF publication per UE — requires a selected semester";
+					creditsShort: "{{count}} cr.";
+				};
+				downloadAll: "Download all";
+				evaluations: {
+					title: "By assessment";
+					description: "Individual export per selected assessment";
+					downloadAllPdf: "Download all PDFs";
+				};
+				transcript: {
+					description: "Combined Excel export with the average per course for the selected assessments";
+					missingExams: "Select assessments";
+					documentTitle: "TRANSCRIPT";
+				};
+				preview: {
+					description: "HTML preview before PDF generation";
+					pvWithRetakes: "Preview - Verbal report (with retakes)";
+					pvWithoutRetakes: "Preview - Verbal report (without retakes)";
+					evaluation: "Preview - Assessment publication";
+					ue: "Preview - UE publication";
+					ec: "Preview - EC publication";
+				};
+				header: {
+					class: "Class:";
+					program: "Program:";
+					semester: "Semester:";
+					academicYear: "Academic year:";
+				};
+				excel: {
+					publicationTitle: "GRADE PUBLICATION - {{course}} ({{type}})";
+					dateLine: "Date: {{date}}";
 				};
 			};
 			students: {
@@ -3488,6 +3742,14 @@ interface Resources {
 					option: "Option: {{value}}";
 					window: "Window: {{status}}";
 					semester: "Semester";
+					labels: {
+						students_one: "student";
+						students_other: "students";
+						cycle: "Cycle:";
+						level: "Level:";
+						option: "Option:";
+						window: "Window:";
+					};
 				};
 				listTitle: "Enrollments";
 				fields: {
@@ -3565,13 +3827,15 @@ interface Resources {
 					classesLabel: "Classes ({{n}} selected)";
 					description: "Select one or more classes. Every student of each class will be enrolled in all of its courses (all semesters). To target a specific semester, use “Enroll entire class” class by class.";
 					noClasses: "No class for this year.";
-					noSelection: "No Selection";
+					noSelection: "No selection";
 					openButton: "Bulk enrollment";
 					partial: "{{count}} enrollments created, {{err}} error(s).";
 					requireYear: "Choose a year first";
 					run: "Run enrollment";
 					success: "{{count}} enrollments created across {{n}} class(es).";
 					title: "Bulk enrollment";
+					resultCreated: "{{created}} created";
+					resultCreatedSkipped: "{{created}} created, {{skipped}} already existing";
 				};
 			};
 			teachingUnits: {
@@ -3722,11 +3986,11 @@ interface Resources {
 				};
 				reasons: {
 					ATTEMPT_LIMIT_REACHED: "Attempt limit reached";
-					FAILED_EXAM: "Exam échoué";
+					FAILED_EXAM: "Exam failed";
 					NO_GRADE: "No grade recorded";
 					OVERRIDE_FORCE_ELIGIBLE: "Forced eligible (override)";
 					OVERRIDE_FORCE_INELIGIBLE: "Forced ineligible (override)";
-					PASSED_EXAM: "Exam réussi";
+					PASSED_EXAM: "Exam passed";
 				};
 				selectExam: "Select an approved exam";
 				selectExamPlaceholder: "Choose an exam to view eligibility";
@@ -3743,9 +4007,9 @@ interface Resources {
 				title: "Retake Eligibility";
 				toast: {
 					overrideError: "Could not apply override";
-					overrideSuccess: "Override appliquée avec succès";
+					overrideSuccess: "Override applied";
 					removeError: "Could not remove override";
-					removeSuccess: "Override supprimée";
+					removeSuccess: "Override removed";
 				};
 			};
 			deliberations: {
@@ -3822,15 +4086,22 @@ interface Resources {
 					quickStartHint: "Creates the deliberation, opens it and computes results in one step";
 					quickStartSubmit: "Create & compute";
 					createDescription: "Configure and start a new deliberation session";
-					tabSingle: "Classe unique";
+					tabSingle: "Single class";
 					tabMulti: "Multi-classes";
 					juryNumber: "Jury number";
-					juryNumberPlaceholder: "ex: J2024-001";
+					juryNumberPlaceholder: "e.g. J2024-001";
 					classes: "Classes";
 					selectYearFirst: "Select an academic year first";
 					noClasses: "No class for this year";
 					batchCreating: "Creating…";
-					batchSubmit: "batchSubmit";
+					tabSingleClass: "Single class";
+					tabMultiClass: "Multiple classes";
+					batchSubmitCount_one: "Create for {{count}} class";
+					batchSubmitCount_other: "Create for {{count}} classes";
+					juryNumberExample: "e.g. J2024-001";
+					batchErrorCount_one: "{{count}} error";
+					batchErrorCount_other: "{{count}} errors";
+					batchFailures: "Failed: {{names}}";
 				};
 				detail: {
 					tabs: {
@@ -3896,20 +4167,21 @@ interface Resources {
 					confirm: "Promote";
 					success: "{{count}} students promoted successfully";
 					noAdmitted: "No admitted students to promote";
-					lastLevelTitle: "lastLevelTitle";
-					lastLevelHint: "lastLevelHint";
+					lastLevelTitle: "Last level of the cycle";
+					lastLevelHint: "There is no next class: admitted students complete the cycle and are marked as graduated.";
 					noTargetFound: {
 						title: "title";
 						searched: "searched";
-						criteriaProgram: "criteriaProgram";
-						criteriaLevel: "criteriaLevel";
+						criteriaProgram: "Same program: {{program}}";
+						criteriaLevel: "Next level after {{level}} (position {{nextIndex}})";
 						criteriaYear: "criteriaYear";
 						fix: "fix";
 						goToClasses: "goToClasses";
 					};
-					targetClassHint: "targetClassHint";
 					ctaDesc: "Students with an 'Admitted' decision can be promoted to the next academic level.";
 					ctaTitle: "Promote admitted students";
+					targetClassHint_one: "{{count}} admitted student will be enrolled in this class.";
+					targetClassHint_other: "{{count}} admitted students will be enrolled in this class.";
 				};
 				ueDecision: {
 					ADM: "Acquired";
@@ -3927,8 +4199,10 @@ interface Resources {
 					exportSuccess: "Export ready";
 					error: "An error occurred";
 					initAndComputeSuccess: "Deliberation created and results computed";
-					batchCreateSuccess: "batchCreateSuccess";
-					batchCreatePartial: "batchCreatePartial";
+					batchCreatedCount_one: "{{count}} deliberation created";
+					batchCreatedCount_other: "{{count}} deliberations created";
+					batchCreatedPartial_one: "{{created}} created, {{count}} error";
+					batchCreatedPartial_other: "{{created}} created, {{count}} errors";
 				};
 				confirm: {
 					delete: "Are you sure you want to delete this deliberation?";
@@ -3990,6 +4264,25 @@ interface Resources {
 					allStatuses: "All statuses";
 					allTypes: "All types";
 					allYears: "All years";
+				};
+				excel: {
+					program: "Program: {{value}}";
+					class: "Class: {{value}}";
+					academicYear: "Academic year: {{value}}";
+					semester: "Semester: {{value}}";
+					rank: "Rank";
+					registrationNumber: "Registration no.";
+					lastName: "Last name";
+					firstName: "First name";
+					ueAverage: "{{code}} Avg";
+					ueDecision: "{{code}} Dec";
+					ueCredits: "{{code}} Cr";
+					generalAverage: "Overall avg";
+					credits: "Credits";
+					decision: "Decision";
+					mention: "Mention";
+					stats: "Success rate: {{rate}}% | Admitted: {{admitted}} | Compensated: {{compensated}} | Deferred: {{deferred}}";
+					sheetName: "Deliberation";
 				};
 			};
 			gradeAccessGrants: {
@@ -4075,18 +4368,18 @@ interface Resources {
 					backToList: "Back to list";
 				};
 				sections: {
-					identity: "Informations Générales";
+					identity: "General information";
 					logos: "Logos";
 					adminInstances: "Instances Administratives";
 					authorization: "Authorization Texts";
-					contact: "Coordonnées";
+					contact: "Contact details";
 				};
 				form: {
 					shortName: "Center name (short)";
-					city: "Localisation";
+					city: "Location";
 					name: "Full name (French)";
 					nameEn: "Full name (English)";
-					isActive: "Centre actif";
+					isActive: "Active center";
 					logoUrl: "Center logo";
 					logoUrlHint: "Shown in document headers.";
 					adminInstanceLogoUrl: "Administrative instance logo (e.g. MINEFOP)";
@@ -4101,14 +4394,16 @@ interface Resources {
 					authorizationOrderFr: "Authorization order (French)";
 					authorizationOrderEn: "Authorization order (English)";
 					postalBox: "P.O. box";
-					contactPhone: "Téléphone";
+					contactPhone: "Phone";
 					contactEmail: "Email";
-					country: "Pays";
-					addressFr: "Adresse (FR)";
-					addressEn: "Adresse (EN)";
+					country: "Country";
+					addressFr: "Address (FR)";
+					addressEn: "Address (EN)";
 					adminInstanceLogoSvg: "…or SVG code (takes priority)";
 					logoSvg: "…or SVG code (takes priority)";
 					watermarkLogoSvg: "…or SVG code (takes priority)";
+					code: "Code";
+					countryPlaceholder: "Cameroon";
 				};
 				actions: {
 					addInstance: "Add an instance";
@@ -4118,15 +4413,21 @@ interface Resources {
 				adminInstances: {
 					empty: "No administrative instance — click Add to create one.";
 					itemTitle: "Instance #{{n}}";
+					nameFr: "Name (French)";
+					nameEn: "Name (English)";
+					acronymFr: "Acronym (French)";
+					acronymEn: "Acronym (English)";
 				};
 				legalTexts: {
 					title: "Legal texts (Having regard to…)";
 					empty: "No legal text";
 					itemTitle: "Legal text #{{n}}";
+					textFr: "Text (French)";
+					textEn: "Text (English)";
 				};
 				toast: {
-					deleteSuccess: "Centre supprimé";
-					createSuccess: "Centre créé";
+					deleteSuccess: "Center deleted";
+					createSuccess: "Center created";
 					updateSuccess: "Center updated";
 				};
 				title: "Nos centres";
@@ -4134,10 +4435,10 @@ interface Resources {
 				table: {
 					logo: "Logo";
 					code: "Code";
-					name: "Nom";
-					city: "Ville";
-					country: "Pays";
-					status: "Statut";
+					name: "Name";
+					city: "City";
+					country: "Country";
+					status: "Status";
 				};
 				empty: {
 					title: "Aucun centre";
@@ -4146,6 +4447,9 @@ interface Resources {
 				delete: {
 					title: "Delete center";
 					message: "Are you sure you want to delete this center? This action cannot be undone.";
+				};
+				validation: {
+					required: "Required";
 				};
 			};
 			graduation: {
@@ -4877,6 +5181,392 @@ interface Resources {
 					};
 				};
 			};
+			documents: {
+				kinds: {
+					diploma: {
+						label: "Diploma";
+						description: "Official state diploma";
+					};
+					transcript: {
+						label: "Transcript";
+						description: "Official transcript of the student's grades";
+					};
+					student_list: {
+						label: "Student list";
+						description: "Roster for this class (configurable columns)";
+					};
+					attestation: {
+						label: "Attestation";
+						description: "Certificate of success or enrollment";
+					};
+				};
+				classTemplates: {
+					toast: {
+						assigned: "Template assigned";
+						assignError: "Assignment failed";
+						removed: "Assignment removed: the class will use the default template";
+						previewError: "Preview failed";
+						seedCreated: "System templates created: {{created}}";
+						seedCreatedWithSkipped: "System templates created: {{created}} (already present: {{skipped}})";
+						seedAlreadyPresent: "System templates already present";
+						seedError: "Failed to create the system templates";
+						noTemplate: "No template available: create the system templates first";
+					};
+					previewSubtitle: '{{classLabel}} · sample data: use "Generate" on the student record to produce the final document';
+					title: "Document templates per class";
+					subtitle: "Choose the diploma, transcript and attestation template for each class. You can override the theme per class (colors, fonts, sizes, etc.) without changing the institution template.";
+					seedCreate: "Create system templates";
+					seedReset: "Reset system templates";
+					targetClass: {
+						title: "Target class";
+						description: "Select the class to configure. If nothing is assigned, the program or institution default template applies.";
+						placeholder: "Choose a class...";
+					};
+					card: {
+						assigned: "Assigned";
+						institutionDefault: "Institution default";
+						templateUsed: "Template used";
+						templatePlaceholder: "(institution default)";
+						customTheme: "Custom theme for this class";
+						noTemplateHint: "No template available: create the system templates first";
+						editThemeHint: "Edit this class's theme";
+						createThemeHint: "Create a customization for this class (uses the default template)";
+						customizeTheme: "Customize theme";
+						preview: "Preview";
+						reset: "Reset";
+					};
+					editor: {
+						title: "Customize · {{kind}}";
+						subtitle: "{{classLabel}} · overrides apply to this class only";
+						modifiedGroups_one: "{{count}} group modified";
+						modifiedGroups_other: "{{count}} groups modified";
+						preview: "Preview";
+						refreshPreview: "Refresh preview";
+						livePreview: "Live preview";
+						previewHint: 'Click "Refresh preview" to render the document';
+					};
+				};
+				preview: {
+					title: "Document preview";
+					downloadHtml: "Download HTML";
+					frameTitle: "Preview";
+					fileName: "document-preview";
+				};
+				bulk: {
+					summary: "{{ok}} OK · {{error}} failed";
+					failuresTitle_one: "{{count}} failure";
+					failuresTitle_other: "{{count}} failures";
+					status: {
+						pending: "Pending";
+						running: "Generating";
+						ok: "OK";
+						error: "Failed";
+					};
+					title: "Bulk generation";
+					subtitle: "Generated in the browser. <strong>Do not close the tab</strong> during the operation.";
+					previewTitle: "Preview: {{kind}} ({{student}})";
+					templateUsed: "Template used: <strong>{{name}}</strong>";
+					previewDescription: "HTML rendering with real data, without PDF rasterization.";
+					toast: {
+						previewError: "Preview failed";
+						noSelection: "No student selected";
+						zipError: "ZIP bundling failed: {{error}}";
+						generated_one: "{{count}} document generated";
+						generated_other: "{{count}} documents generated";
+						noStudentToPreview: "No student to preview";
+					};
+					filters: {
+						title: "Filters";
+						description: "Choose the document type, the academic year and the class.";
+						type: "Type";
+						period: "Period";
+						annual: "Annual";
+						semester: "Semester-based";
+						semesterLabel: "Semester";
+						latest: "Most recent";
+						academicYear: "Academic year";
+						allYears: "All";
+						class: "Class";
+						classPlaceholder: "Choose a class…";
+					};
+					students: {
+						title: "Students";
+						count_one: "{{count}} student in this class.";
+						count_other: "{{count}} students in this class.";
+						selected_one: "{{count}} selected.";
+						selected_other: "{{count}} selected.";
+						zip: "ZIP";
+						demoMode: "Demo mode";
+						previewHint: "Preview the document for the first selected student";
+						preview: "Preview";
+						generate: "Generate {{count}}";
+						generating: "Generating…";
+						empty: "No students in this class.";
+					};
+					table: {
+						selectAll: "Select all";
+						selectOne: "Select {{name}}";
+						registrationNumber: "Registration no.";
+						lastName: "Last name";
+						firstName: "First name(s)";
+						status: "Status";
+						preview: "Preview";
+						previewFor: "Preview for {{name}}";
+					};
+				};
+				generate: {
+					trigger: "Generate an academic document";
+					htmlPreviewTitle: "HTML preview: {{kind}}";
+					toast: {
+						success: "Document generated and downloaded";
+						error: "Generation failed";
+					};
+					title: "Generate a document";
+					description: "For <strong>{{name}}</strong>. The template used is the one assigned to the class (otherwise the institution default).";
+					kind: "Document type";
+					format: "Format";
+					formatPdf: "PDF";
+					formatHtml: "HTML (preview)";
+					demoMode: "Demo mode";
+					demoModeHint: 'Adds a "DEMO" watermark';
+					submit: "Generate";
+				};
+				theme: {
+					groups: {
+						fonts: {
+							label: "Fonts";
+							description: "Choose the font for each area (title, body, header, etc.)";
+						};
+						sizes: {
+							label: "Text sizes";
+							description: "Sizes in points (pt): adjust for readability.";
+						};
+						colors: {
+							label: "Colors";
+							description: "Main colors and accents.";
+						};
+						borders: {
+							label: "Borders";
+							description: "Width of the decorative borders in pixels.";
+						};
+						logos: {
+							label: "Logos";
+							description: "Logo sizes and offsets in pixels.";
+						};
+						qrCode: {
+							label: "QR code";
+							description: "QR code display and size.";
+						};
+						titleEffects: {
+							label: "Title effects";
+							description: "Title shadow, spacing and height.";
+						};
+						spacing: {
+							label: "Spacing";
+							description: "Margins between sections (mm).";
+						};
+						display: {
+							label: "Display";
+							description: "Bilingual, main language, visual options.";
+						};
+						watermark: {
+							label: "Watermark";
+							description: "Watermark text and logo (ORIGINAL, etc.).";
+						};
+						page: {
+							label: "Page format";
+							description: "Paper size, orientation and margins (mm).";
+						};
+						table: {
+							label: "Table";
+							description: "Appearance of the tables in the transcript.";
+						};
+					};
+					tabs: {
+						typography: "Typography";
+						colors: "Colors";
+						sizes: "Sizes";
+						options: "Options";
+					};
+					fields: {
+						main: "Main";
+						title: "Title";
+						subtitle: "Subtitle";
+						header: "Header";
+						legalText: "Legal text";
+						studentName: "Student name";
+						studentInfo: "Student info";
+						footer: "Footer";
+						signature: "Signature";
+						mention: "Honors";
+						reference: "Reference";
+						body: "Body";
+						table: "Table";
+						tableHeader: "Table header";
+						tableBody: "Table body";
+						primary: "Primary";
+						secondary: "Secondary";
+						accent: "Accent";
+						fullName: "Full name";
+						matricule: "Registration no.";
+						diplomaTitle: "Diploma title";
+						yearObtention: "Year obtained";
+						juryDates: "Jury dates";
+						outerBorder: "Outer border";
+						innerBorder: "Inner border";
+						tableHeaderBg: "Header background";
+						tableHeaderText: "Header text";
+						tableBorder: "Table border";
+						alternateRow: "Alternate row";
+						passingGrade: "Passing grade";
+						failingGrade: "Failing grade";
+						border: "Border";
+						content: "Content";
+						summary: "Summary";
+						referenceNumber: "Reference no.";
+						outerWidth: "Outer width";
+						innerWidth: "Inner width";
+						rowHeight: "Row height";
+						borderWidth: "Border width";
+						alternateRows: "Alternate rows";
+						showCoefficient: "Coefficient";
+						showCredits: "Credits";
+						showAppreciation: "Appreciation";
+						highlightFailures: "Highlight failures";
+						institutionLogoSize: "Institution logo";
+						facultyLogoSize: "Faculty logo";
+						universityLogoSize: "University logo";
+						ministryLogoSize: "Ministry logo";
+						coatOfArmsSize: "Coat of arms";
+						watermarkLogoSize: "Watermark logo";
+						facultyLogoOffsetX: "Faculty logo X";
+						facultyLogoOffsetY: "Faculty logo Y";
+						coatOfArmsOffsetX: "Coat of arms X";
+						coatOfArmsOffsetY: "Coat of arms Y";
+						ministryLogoOffsetX: "Ministry logo X";
+						ministryLogoOffsetY: "Ministry logo Y";
+						enabled: "Enabled";
+						compactPayload: "Compact QR";
+						size: "Size";
+						offsetX: "Offset X";
+						offsetY: "Offset Y";
+						lineHeight: "Line height";
+						letterSpacing: "Letter spacing";
+						shadow: "Shadow";
+						shadowColor: "Shadow color";
+						shadowOffsetX: "Shadow X";
+						shadowOffsetY: "Shadow Y";
+						shadowBlur: "Shadow blur";
+						headerLineHeight: "Header line height";
+						titleBlockMarginTop: "Title top margin";
+						titleBlockMarginBottom: "Title bottom margin";
+						ministerBlockMarginBottom: "Minister bottom margin";
+						recipientBlockMarginBottom: "Recipient bottom margin";
+						signatureBlockMarginTop: "Signature top margin";
+						sectionSpacing: "Section spacing";
+						bodyLineHeight: "Body line height";
+						paragraphSpacing: "Paragraph spacing";
+						bilingual: "Bilingual (FR/EN)";
+						primaryLanguage: "Main language";
+						showQRCode: "Show QR code";
+						qrCodeSize: "QR code size";
+						showSemesterBreakdown: "Breakdown by semester";
+						showRanking: "Show ranking";
+						showRefNumber: "Reference no.";
+						showStamp: "Stamp";
+						decorative: "Decorative";
+						text: "Text";
+						color: "Color";
+						textOpacity: "Text opacity";
+						logoOpacity: "Logo opacity";
+						logoSize: "Logo size";
+						textSize: "Text size";
+						orientation: "Orientation";
+						margins: "Margins";
+						top: "Top";
+						right: "Right";
+						bottom: "Bottom";
+						left: "Left";
+					};
+					preset: "Preset:";
+					presetPlaceholder: "Apply a preset";
+					resetAll: "Reset all";
+					pageSize: {
+						letter: "Letter";
+					};
+					orientation: {
+						portrait: "Portrait";
+						landscape: "Landscape";
+					};
+				};
+				studentList: {
+					trigger: "Export (template)";
+					triggerHint: "Export this list with an official template";
+					triggerDisabledHint: "Select a class, a program or a year first";
+					toast: {
+						templateUsed: "Template used: {{name}}";
+						templateUsedCenter: "Template used: {{name}} (center)";
+						error: "Generation failed";
+					};
+					previewTitle: "HTML preview: student list";
+					title: "Export the student list";
+					forClass: "For the selected class.";
+					forProgram: "For the selected program.";
+					forStudents_one: "For {{count}} selected student.";
+					forStudents_other: "For {{count}} selected students.";
+					forFilters: "According to the current filters.";
+					template: "Template";
+					templateDefault: "(institution default)";
+					noTemplate: "No template: create one with Initialize official templates";
+					defaultSuffix: " (default)";
+					demoModeHint: '"DEMO" watermark';
+				};
+				bulkClassExport: {
+					title: "Bulk export of lists";
+					description: "Generates the student lists of the selected classes: as a single file (multi-sheet Excel) or one separate file per class (ZIP).";
+					format: "Format";
+					formatXlsx: "Excel (.xlsx)";
+					formatPdf: "PDF (rendered from template)";
+					mode: "Mode";
+					unified: "Single file";
+					excelOnly: " (Excel only)";
+					separated: "Separate files (ZIP)";
+					classesCount: "Classes ({{selected}} / {{total}})";
+					table: {
+						code: "Code";
+						name: "Name";
+						program: "Program";
+						year: "Year";
+						status: "Status";
+					};
+					progress: "Exporting…";
+					submit: "Export ({{count}})";
+					toast: {
+						noSelection: "No class selected";
+						success: "{{ok}} / {{total}} list(s) exported";
+						error: "Export failed";
+					};
+					institutionFallback: "Institution";
+					sheet: {
+						title: "Student list: {{name}}";
+						code: "Code: {{value}}";
+						program: "Program: {{value}}";
+						year: "Year: {{value}}";
+						headcount: "Headcount: {{value}}";
+						registrationNumber: "Registration no.";
+						lastName: "Last name";
+						firstName: "First name(s)";
+						dateOfBirth: "Date of birth";
+						gender: "Gender";
+						genderOther: "Other";
+						sheetName: "Students";
+					};
+					file: {
+						unified: "class_lists";
+						perClass: "list";
+					};
+				};
+			};
 		};
 		dean: {
 			workflows: {
@@ -4914,7 +5604,7 @@ interface Resources {
 				confirm: {
 					title: "Approve and lock?";
 					bulkMessage: "bulkMessage";
-					singleMessage: "singleMessage";
+					singleMessage: 'Approve and lock "{{name}}"? This cannot be undone: grades will no longer be editable.';
 				};
 				dateFrom: "Submitted from";
 				rejectDialog: {
@@ -5034,6 +5724,12 @@ interface Resources {
 				creditsPlural: "{{count}} credits";
 				rank: "Rank {{rank}} in the class";
 				mention: "Mention: {{mention}}";
+				ueCredits_one: "{{count}} credit";
+				ueCredits_other: "{{count}} credits";
+				courseCount_one: "{{count}} course";
+				courseCount_other: "{{count}} courses";
+				coefficient: "Coeff. {{value}}";
+				ueCreditsEarned: "{{earned}}/{{total}} credits";
 			};
 			exams: {
 				title: "Exam calendar";
@@ -5250,6 +5946,9 @@ interface Resources {
 					uploading: "Uploading...";
 					success: "Avatar updated";
 					error: "Failed to upload avatar";
+					cropTitle: "Crop profile picture";
+					cropPreviewAlt: "Preview";
+					cropError: "Could not crop the image";
 				};
 				email: {
 					change: "Change email";
@@ -5384,6 +6083,15 @@ interface Resources {
 				computing: "Computing preview…";
 				preview: "Preview";
 				confirm: "Confirm ({{count}} student(s))";
+				toAssign: "to assign";
+				alreadyAssigned_one: "{{count}} already assigned — skipped";
+				alreadyAssigned_other: "{{count}} already assigned — skipped";
+				col: {
+					student: "Student";
+					registration: "Registration number";
+					amount: "Amount";
+				};
+				allAssigned: "All students already have an assignment for this year.";
 			};
 			structures: {
 				title: "Fee Structures";
@@ -5457,6 +6165,13 @@ interface Resources {
 				xlsxLoaded: "{{count}} rows loaded from the Excel file";
 				notes: "Batch note (optional)";
 				notesPlaceholder: "E.g. bank transfer of July 15 2026";
+				status: {
+					matched: "Matched";
+					duplicate: "Duplicate";
+					unknown_ref: "Unknown reference";
+					amount_mismatch: "Amount mismatch";
+				};
+				expectedAmount: "(expected: {{amount}})";
 			};
 			assignments: {
 				title: "Student Payments";
@@ -5497,6 +6212,8 @@ interface Resources {
 				exemptNotes: "Exemption reason (optional)";
 				exemptConfirmTitle: "Mark student as exempt?";
 				exemptConfirmDescription: "The student will be marked as exempt. You may enter an optional reason.";
+				selectedStudents_one: "{{count}} student selected";
+				selectedStudents_other: "{{count}} students selected";
 			};
 			payments: {
 				title: "Payment history";
@@ -5916,6 +6633,8 @@ interface Resources {
 				noValue: "Not provided";
 				priorHigherEdYes: "Yes, I have previously studied in higher education";
 				priorHigherEdNo: "No, this is my first time in higher education";
+				optionalShort: "opt.";
+				resumeOrRestart: "Pick up where you left off or start over from the beginning.";
 			};
 			recap: {
 				identity: "Identity";
@@ -5940,6 +6659,7 @@ interface Resources {
 					bacTranscript: "BAC / GCE A-Level transcript";
 					priorTranscript: "Last year transcript + success certificate (if prior higher ed)";
 				};
+				physicalNotice: "These documents will be requested when you submit your physical file.";
 			};
 			validation: {
 				firstNameRequired: "First name is required";
@@ -6084,6 +6804,28 @@ interface Resources {
 					converted: "Application converted to student record";
 				};
 			};
+			sections: {
+				father: "Father";
+				mother: "Mother";
+				guardian: "Legal guardian";
+				emergency: "Emergency contact";
+				contact: "Contact";
+				nationalityOrigin: "Nationality & origin";
+				programChoices: "Program preferences";
+			};
+			placeholders: {
+				example: "e.g. {{value}}";
+				guardianRelation: "e.g. Uncle, Elder brother";
+				email: "your@email.com";
+				whatsapp: "If different from the phone number";
+				nationality: "e.g. Cameroonian";
+				bacSeries: "e.g. C, D, A-Level...";
+				bacInstitution: "e.g. Lycée Général Leclerc";
+				bacMatricule: "OBC registration number";
+				priorInstitution: "e.g. University of Yaoundé I";
+				priorField: "e.g. Computer science";
+				personalStatement: "Describe your career plans and your motivation...";
+			};
 		};
 		institutionHub: {
 			title: "Institution & Structure";
@@ -6136,6 +6878,71 @@ interface Resources {
 				hasAccount: "Active";
 				manageAccess: "Manage access";
 				noAccount: "None";
+			};
+			account: {
+				overview: {
+					title: "Login account";
+					description: "Status of the login account linked to this profile.";
+					emailVerified: "Email verified";
+					emailNotVerified: "Email not verified";
+					suspended: "Suspended";
+					active: "Active";
+					role: "Role";
+					memberSince: "Member since";
+					noAccountTitle: "No login account";
+					noAccountDescription: "This profile is not linked to a login account. The user cannot sign in to the platform.";
+				};
+				provisioning: {
+					title: "Provisioning";
+					description: "Create a new account or link an existing account to this profile.";
+					createTab: "Create an account";
+					linkTab: "Link an existing account";
+				};
+				security: {
+					title: "Security actions";
+					description: "Manage this user's account access and security.";
+					resetTitle: "Reset password";
+					resetDescription: "Sends a password reset email to";
+					sendEmail: "Send email";
+					reactivateTitle: "Reactivate account";
+					suspendTitle: "Suspend account";
+					reactivateDescription: "Lets the user sign in to the platform again.";
+					suspendDescription: "Immediately blocks every sign-in of this user.";
+					reactivate: "Reactivate";
+					suspend: "Suspend";
+				};
+				create: {
+					emailPlaceholder: "firstname.lastname@example.com";
+					rolePlaceholder: "Choose a role";
+					submit: "Create account";
+				};
+				link: {
+					emailLabel: "Email of the existing account";
+					emailPlaceholder: "user@example.com";
+					hint: "The user must already be a member of the organization. Their profile will be linked to this login account.";
+					submit: "Link account";
+				};
+				validation: {
+					emailInvalid: "Invalid email";
+					passwordMin: "Password must be at least 8 characters";
+					roleRequired: "Role is required";
+				};
+				errors: {
+					emailExists: "An account with this email already exists.";
+					createFailed: "Could not create the account.";
+					notMember: "This user is not a member of the organization.";
+					alreadyLinked: "This account is already linked to another profile.";
+					linkFailed: "Could not link the account.";
+				};
+				toast: {
+					created: "Account created successfully.";
+					linked: "Account linked successfully.";
+					resetSent: "Password reset email sent.";
+					resetFailed: "Could not send the email.";
+					suspended: "Account suspended.";
+					reactivated: "Account reactivated.";
+					statusFailed: "Could not update the account status.";
+				};
 			};
 		};
 		profileHub: {

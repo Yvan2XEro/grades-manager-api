@@ -34,12 +34,13 @@ export function TranscriptExportCard({
 							{t("admin.gradeExport.actions.combinedLabel")}
 						</CardTitle>
 						<CardDescription className="mt-1">
-							Export Excel combiné avec la moyenne par cours pour les
-							évaluations sélectionnées
+							{t("admin.gradeExport.transcript.description")}
 						</CardDescription>
 					</div>
 					{!hasExamSelection && (
-						<MissingHint>Sélectionnez des évaluations</MissingHint>
+						<MissingHint>
+							{t("admin.gradeExport.transcript.missingExams")}
+						</MissingHint>
 					)}
 				</div>
 			</CardHeader>

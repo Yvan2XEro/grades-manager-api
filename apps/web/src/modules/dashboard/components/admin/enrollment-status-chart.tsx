@@ -1,4 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StatusSlice } from "../../types";
@@ -45,6 +46,7 @@ export function EnrollmentStatusChart({
 }: {
 	data: StatusSlice[];
 }) {
+	const { t } = useTranslation();
 	return (
 		<Card className="border-0 shadow-sm lg:col-span-2">
 			<CardHeader className="pb-2">
@@ -53,9 +55,11 @@ export function EnrollmentStatusChart({
 						<CheckCircle2 className="h-4 w-4 text-primary" />
 					</div>
 					<div>
-						<CardTitle className="text-base">Statut des inscriptions</CardTitle>
+						<CardTitle className="text-base">
+							{t("admin.dashboard.statusStats.title")}
+						</CardTitle>
 						<p className="text-muted-foreground text-xs">
-							Répartition par état
+							{t("admin.dashboard.statusStats.subtitle")}
 						</p>
 					</div>
 				</div>
@@ -119,7 +123,7 @@ export function EnrollmentStatusChart({
 				) : (
 					<div className="flex h-48 flex-col items-center justify-center gap-2 text-muted-foreground">
 						<CheckCircle2 className="h-10 w-10 opacity-30" />
-						<p className="text-sm">Aucune inscription</p>
+						<p className="text-sm">{t("admin.dashboard.statusStats.empty")}</p>
 					</div>
 				)}
 			</CardContent>

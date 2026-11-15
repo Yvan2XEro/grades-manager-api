@@ -31,9 +31,7 @@ export function ProgramEnrollmentChart({
 							{t("admin.dashboard.programStats.title")}
 						</CardTitle>
 						<p className="text-muted-foreground text-xs">
-							{t("admin.dashboard.programStats.subtitle", {
-								defaultValue: "Étudiants inscrits par filière",
-							})}
+							{t("admin.dashboard.programStats.subtitle")}
 						</p>
 					</div>
 				</div>

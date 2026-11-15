@@ -416,7 +416,7 @@ const Sidebar: React.FC = () => {
 						<motion.img
 							key="favicon"
 							src="/favicon.ico"
-							alt="Logo"
+							alt={t("common.logo")}
 							className="size-6 object-contain"
 							initial={{ opacity: 0, scale: 0.65, rotate: -15 }}
 							animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -444,7 +444,7 @@ const Sidebar: React.FC = () => {
 							{/* Floating logo */}
 							<motion.img
 								src={logoSrc}
-								alt="Logo"
+								alt={t("common.logo")}
 								className="h-7 w-auto"
 								animate={{ y: [0, -2, 0] }}
 								transition={{
@@ -547,9 +547,7 @@ const Sidebar: React.FC = () => {
 						if (q && visible.length === 0) {
 							return (
 								<p className="px-3 py-6 text-center text-[12px] text-muted-foreground">
-									{t("navigation.sidebar.noResults", {
-										defaultValue: "Aucun résultat",
-									})}
+									{t("navigation.sidebar.noResults")}
 								</p>
 							);
 						}

@@ -62,12 +62,7 @@ export const ProgramFormDialog = createCallable<
 		() =>
 			z.object({
 				name: z.string().min(2, t("admin.programs.validation.name")),
-				code: z.string().min(
-					2,
-					t("admin.programs.validation.code", {
-						defaultValue: "Code is required",
-					}),
-				),
+				code: z.string().min(2, t("admin.programs.validation.code")),
 				cycleId: z.string().nullable().optional(),
 			}),
 		[t],
@@ -139,9 +134,7 @@ export const ProgramFormDialog = createCallable<
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel required>
-										{t("admin.programs.form.codeLabel", {
-											defaultValue: "Code",
-										})}
+										{t("admin.programs.form.codeLabel")}
 									</FormLabel>
 									<FormControl>
 										<Input
@@ -160,16 +153,10 @@ export const ProgramFormDialog = createCallable<
 						name="cycleId"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>
-									{t("admin.programs.form.cycleLabel", {
-										defaultValue: "Cycle d'études",
-									})}
-								</FormLabel>
+								<FormLabel>{t("admin.programs.form.cycleLabel")}</FormLabel>
 								<QuickCreate
 									onCreate={createCycle}
-									label={t("admin.studyCycles.actions.add", {
-										defaultValue: "Add cycle",
-									})}
+									label={t("admin.studyCycles.actions.add")}
 								>
 									<Select
 										value={field.value ?? NONE}
@@ -180,16 +167,13 @@ export const ProgramFormDialog = createCallable<
 												<SelectValue
 													placeholder={t(
 														"admin.programs.form.cyclePlaceholder",
-														{ defaultValue: "Sélectionner un cycle" },
 													)}
 												/>
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
 											<SelectItem value={NONE}>
-												{t("admin.programs.form.cloneFromNone", {
-													defaultValue: "Aucun",
-												})}
+												{t("admin.programs.form.cloneFromNone")}
 											</SelectItem>
 											{(cycles?.items ?? []).map((cyc) => (
 												<SelectItem key={cyc.id} value={cyc.id}>

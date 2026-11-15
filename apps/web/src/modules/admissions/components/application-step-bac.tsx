@@ -24,7 +24,7 @@ export function ApplicationStepBac({
 	t,
 }: {
 	form: ApplicationWizardForm;
-	t: (k: string) => string;
+	t: (k: string, options?: Record<string, unknown>) => string;
 }) {
 	const diplomaType = useWatch({
 		control: form.control,
@@ -98,7 +98,10 @@ export function ApplicationStepBac({
 							</Select>
 						) : (
 							<FormControl>
-								<Input {...field} placeholder="Ex : C, D, A-Level..." />
+								<Input
+									{...field}
+									placeholder={t("admissions.placeholders.bacSeries")}
+								/>
 							</FormControl>
 						)}
 						<FormMessage />
@@ -117,7 +120,9 @@ export function ApplicationStepBac({
 								min={1990}
 								max={new Date().getFullYear()}
 								{...field}
-								placeholder="Ex : 2023"
+								placeholder={t("admissions.placeholders.example", {
+									value: "2023",
+								})}
 							/>
 						</FormControl>
 						<FormMessage />
@@ -156,7 +161,8 @@ export function ApplicationStepBac({
 				render={({ field }) => (
 					<FormItem>
 						<FormLabel>
-							{t("admissions.fields.bacAverage")} <OptionalBadge label="opt." />
+							{t("admissions.fields.bacAverage")}{" "}
+							<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 						</FormLabel>
 						<FormControl>
 							<Input
@@ -165,7 +171,9 @@ export function ApplicationStepBac({
 								min={0}
 								max={20}
 								{...field}
-								placeholder="Ex : 12.50"
+								placeholder={t("admissions.placeholders.example", {
+									value: "12.50",
+								})}
 							/>
 						</FormControl>
 						<FormMessage />
@@ -181,7 +189,10 @@ export function ApplicationStepBac({
 							{t("admissions.fields.bacInstitution")}
 						</FormLabel>
 						<FormControl>
-							<Input {...field} placeholder="Ex : Lycée Général Leclerc" />
+							<Input
+								{...field}
+								placeholder={t("admissions.placeholders.bacInstitution")}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -207,10 +218,13 @@ export function ApplicationStepBac({
 					<FormItem>
 						<FormLabel>
 							{t("admissions.fields.bacMatricule")}{" "}
-							<OptionalBadge label="opt." />
+							<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 						</FormLabel>
 						<FormControl>
-							<Input {...field} placeholder="N° matricule OBC" />
+							<Input
+								{...field}
+								placeholder={t("admissions.placeholders.bacMatricule")}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>

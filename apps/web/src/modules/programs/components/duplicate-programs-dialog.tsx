@@ -61,8 +61,6 @@ export const DuplicateProgramsDialog = createCallable<
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
 			toast.success(
 				t("admin.programs.duplicate.toast.success", {
-					defaultValue:
-						"{{created}} programme(s) créé(s), {{skipped}} ignoré(s)",
 					created: result.createdCount,
 					skipped: result.skippedCount,
 				}),
@@ -70,10 +68,7 @@ export const DuplicateProgramsDialog = createCallable<
 			call.end(result);
 		} catch (err) {
 			toast.error(
-				(err as Error).message ||
-					t("admin.programs.duplicate.toast.error", {
-						defaultValue: "Erreur lors de la duplication",
-					}),
+				(err as Error).message || t("admin.programs.duplicate.toast.error"),
 			);
 		}
 	});
@@ -84,28 +79,18 @@ export const DuplicateProgramsDialog = createCallable<
 			dismissValue={undefined}
 			preventDismiss={submit.pending}
 			className="sm:max-w-lg"
-			title={t("admin.programs.duplicate.title", {
-				defaultValue: "Dupliquer vers un autre cycle",
-			})}
+			title={t("admin.programs.duplicate.title")}
 			description={t("admin.programs.duplicate.description", {
-				defaultValue:
-					"{{count}} programme(s) seront copiés vers chaque cycle sélectionné. Le code et le nom seront préfixés par celui du cycle.",
 				count: sourceProgramIds.length,
 			})}
 		>
 			<div className="space-y-4">
 				<div className="space-y-2">
 					<div className="flex items-center justify-between gap-2">
-						<Label>
-							{t("admin.programs.duplicate.targetCycles", {
-								defaultValue: "Cycles cibles",
-							})}
-						</Label>
+						<Label>{t("admin.programs.duplicate.targetCycles")}</Label>
 						<QuickCreate
 							onCreate={createCycle}
-							label={t("admin.studyCycles.actions.add", {
-								defaultValue: "Add cycle",
-							})}
+							label={t("admin.studyCycles.actions.add")}
 						/>
 					</div>
 					{cycles?.items?.length ? (
@@ -137,9 +122,7 @@ export const DuplicateProgramsDialog = createCallable<
 						</div>
 					) : (
 						<p className="text-muted-foreground text-sm">
-							{t("admin.programs.duplicate.noCycles", {
-								defaultValue: "Aucun cycle disponible",
-							})}
+							{t("admin.programs.duplicate.noCycles")}
 						</p>
 					)}
 				</div>
@@ -149,11 +132,7 @@ export const DuplicateProgramsDialog = createCallable<
 						checked={cloneCurriculum}
 						onCheckedChange={(v) => setCloneCurriculum(Boolean(v))}
 					/>
-					<span>
-						{t("admin.programs.duplicate.cloneCurriculum", {
-							defaultValue: "Cloner également les UE et EC",
-						})}
-					</span>
+					<span>{t("admin.programs.duplicate.cloneCurriculum")}</span>
 				</label>
 
 				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -173,9 +152,7 @@ export const DuplicateProgramsDialog = createCallable<
 						}
 					>
 						{submit.pending && <Spinner className="mr-2 h-4 w-4" />}
-						{t("admin.programs.duplicate.submit", {
-							defaultValue: "Dupliquer",
-						})}
+						{t("admin.programs.duplicate.submit")}
 					</Button>
 				</div>
 			</div>

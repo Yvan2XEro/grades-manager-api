@@ -29,7 +29,9 @@ export function CenterInstanceFields({
 					name={`administrativeInstances.${index}.nameFr`}
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel required>Nom (Français) *</FormLabel>
+							<FormLabel required>
+								{t("admin.centers.adminInstances.nameFr")}
+							</FormLabel>
 							<FormControl>
 								<Input {...field} />
 							</FormControl>
@@ -42,7 +44,9 @@ export function CenterInstanceFields({
 					name={`administrativeInstances.${index}.nameEn`}
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel required>Nom (Anglais) *</FormLabel>
+							<FormLabel required>
+								{t("admin.centers.adminInstances.nameEn")}
+							</FormLabel>
 							<FormControl>
 								<Input {...field} />
 							</FormControl>
@@ -57,7 +61,9 @@ export function CenterInstanceFields({
 					name={`administrativeInstances.${index}.acronymFr`}
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Acronyme (Français)</FormLabel>
+							<FormLabel>
+								{t("admin.centers.adminInstances.acronymFr")}
+							</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="MINEFOP" />
 							</FormControl>
@@ -70,7 +76,9 @@ export function CenterInstanceFields({
 					name={`administrativeInstances.${index}.acronymEn`}
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Acronyme (Anglais)</FormLabel>
+							<FormLabel>
+								{t("admin.centers.adminInstances.acronymEn")}
+							</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="MINEFOP" />
 							</FormControl>
@@ -84,13 +92,9 @@ export function CenterInstanceFields({
 				className="space-y-4"
 				urlName={`administrativeInstances.${index}.logoUrl`}
 				svgName={`administrativeInstances.${index}.logoSvg`}
-				label={t("admin.centers.form.adminInstanceLogo", {
-					defaultValue: "Logo de l'instance",
-				})}
+				label={t("admin.centers.form.adminInstanceLogo")}
 				description=""
-				svgLabel={t("admin.centers.form.adminInstanceLogoSvg", {
-					defaultValue: "…ou code SVG (prioritaire)",
-				})}
+				svgLabel={t("admin.centers.form.adminInstanceLogoSvg")}
 			/>
 			<div className="grid gap-3 md:grid-cols-2">
 				<FormField
@@ -100,15 +104,10 @@ export function CenterInstanceFields({
 						<FormItem className="flex items-center justify-between rounded-md border bg-background p-3">
 							<div className="space-y-0.5">
 								<FormLabel className="text-sm">
-									{t("admin.centers.form.showOnTranscripts", {
-										defaultValue: "Afficher le logo sur les relevés",
-									})}
+									{t("admin.centers.form.showOnTranscripts")}
 								</FormLabel>
 								<p className="text-muted-foreground text-xs">
-									{t("admin.centers.form.showOnTranscriptsHint", {
-										defaultValue:
-											"Le logo apparaîtra dans l'en-tête des relevés de notes",
-									})}
+									{t("admin.centers.form.showOnTranscriptsHint")}
 								</p>
 							</div>
 							<FormControl>
@@ -127,15 +126,10 @@ export function CenterInstanceFields({
 						<FormItem className="flex items-center justify-between rounded-md border bg-background p-3">
 							<div className="space-y-0.5">
 								<FormLabel className="text-sm">
-									{t("admin.centers.form.showOnCertificates", {
-										defaultValue: "Afficher le logo sur les attestations",
-									})}
+									{t("admin.centers.form.showOnCertificates")}
 								</FormLabel>
 								<p className="text-muted-foreground text-xs">
-									{t("admin.centers.form.showOnCertificatesHint", {
-										defaultValue:
-											"Le logo apparaîtra dans l'en-tête des attestations",
-									})}
+									{t("admin.centers.form.showOnCertificatesHint")}
 								</p>
 							</div>
 							<FormControl>

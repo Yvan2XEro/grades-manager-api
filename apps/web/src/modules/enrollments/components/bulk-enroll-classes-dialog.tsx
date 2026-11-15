@@ -62,7 +62,6 @@ export const BulkEnrollClassesDialog = createCallable<
 			if (errCount === 0) {
 				toast.success(
 					t("admin.enrollments.bulkEnroll.success", {
-						defaultValue: "{{count}} inscriptions créées sur {{n}} classe(s).",
 						count: totalCreated,
 						n: results.length,
 					}),
@@ -70,7 +69,6 @@ export const BulkEnrollClassesDialog = createCallable<
 			} else {
 				toast.error(
 					t("admin.enrollments.bulkEnroll.partial", {
-						defaultValue: "{{count}} inscriptions créées, {{err}} erreur(s).",
 						count: totalCreated,
 						err: errCount,
 					}),
@@ -94,15 +92,10 @@ export const BulkEnrollClassesDialog = createCallable<
 				<div className="space-y-5">
 					<div>
 						<h3 className="font-semibold text-lg">
-							{t("admin.enrollments.bulkEnroll.title", {
-								defaultValue: "Inscription de masse",
-							})}
+							{t("admin.enrollments.bulkEnroll.title")}
 						</h3>
 						<p className="mt-1 text-muted-foreground text-sm">
-							{t("admin.enrollments.bulkEnroll.description", {
-								defaultValue:
-									"Sélectionnez une ou plusieurs classes. Tous les étudiants de chaque classe seront inscrits à tous ses cours (tous semestres confondus). Pour cibler un semestre précis, utilise le bouton « Enroll entire class » classe par classe.",
-							})}
+							{t("admin.enrollments.bulkEnroll.description")}
 						</p>
 					</div>
 
@@ -112,7 +105,6 @@ export const BulkEnrollClassesDialog = createCallable<
 								<div className="mb-2 flex items-center justify-between">
 									<label className="font-medium text-sm">
 										{t("admin.enrollments.bulkEnroll.classesLabel", {
-											defaultValue: "Classes ({{n}} sélectionnées)",
 											n: bulkSelectedClassIds.size,
 										})}
 									</label>
@@ -126,18 +118,14 @@ export const BulkEnrollClassesDialog = createCallable<
 												)
 											}
 										>
-											{t("common.actions.selectAll", {
-												defaultValue: "Tout cocher",
-											})}
+											{t("common.actions.selectAll")}
 										</Button>
 										<Button
 											variant="ghost"
 											size="sm"
 											onClick={() => setBulkSelectedClassIds(new Set())}
 										>
-											{t("common.actions.clear", {
-												defaultValue: "Tout décocher",
-											})}
+											{t("common.actions.clear")}
 										</Button>
 									</div>
 								</div>
@@ -164,9 +152,7 @@ export const BulkEnrollClassesDialog = createCallable<
 										))}
 										{!classes.length && (
 											<p className="p-4 text-center text-muted-foreground text-sm">
-												{t("admin.enrollments.bulkEnroll.noClasses", {
-													defaultValue: "Aucune classe pour cette année.",
-												})}
+												{t("admin.enrollments.bulkEnroll.noClasses")}
 											</p>
 										)}
 									</div>
@@ -179,9 +165,7 @@ export const BulkEnrollClassesDialog = createCallable<
 									onClick={close}
 									disabled={bulkEnrollMutation.isPending}
 								>
-									{t("common.actions.cancel", {
-										defaultValue: "Annuler",
-									})}
+									{t("common.actions.cancel")}
 								</Button>
 								<Button
 									onClick={() => bulkEnrollMutation.mutate()}
@@ -193,9 +177,7 @@ export const BulkEnrollClassesDialog = createCallable<
 									{bulkEnrollMutation.isPending && (
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									)}
-									{t("admin.enrollments.bulkEnroll.run", {
-										defaultValue: "Lancer l'inscription",
-									})}
+									{t("admin.enrollments.bulkEnroll.run")}
 								</Button>
 							</div>
 						</>
@@ -213,17 +195,23 @@ export const BulkEnrollClassesDialog = createCallable<
 										<span className="text-xs">
 											{r.error
 												? r.error
-												: `${r.created} créées${r.skipped ? `, ${r.skipped} déjà existantes` : ""}`}
+												: r.skipped
+													? t(
+															"admin.enrollments.bulkEnroll.resultCreatedSkipped",
+															{
+																created: r.created,
+																skipped: r.skipped,
+															},
+														)
+													: t("admin.enrollments.bulkEnroll.resultCreated", {
+															created: r.created,
+														})}
 										</span>
 									</div>
 								))}
 							</div>
 							<div className="flex justify-end">
-								<Button onClick={close}>
-									{t("common.actions.close", {
-										defaultValue: "Fermer",
-									})}
-								</Button>
+								<Button onClick={close}>{t("common.actions.close")}</Button>
 							</div>
 						</>
 					)}

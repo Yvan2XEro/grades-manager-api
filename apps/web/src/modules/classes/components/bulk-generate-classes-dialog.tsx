@@ -43,10 +43,9 @@ export const BulkGenerateClassesDialog = createCallable<
 			});
 			queryClient.invalidateQueries(trpc.classes.listPaged.queryKey());
 			toast.success(
-				t("admin.classes.toast.bulkGenerateSuccess", {
+				t("admin.classes.toast.bulkGenerateResult", {
 					created: result.created,
 					skipped: result.skipped,
-					defaultValue: `${result.created} classe(s) créée(s), ${result.skipped} ignorée(s)`,
 				}),
 			);
 			call.end(result);
@@ -62,25 +61,14 @@ export const BulkGenerateClassesDialog = createCallable<
 		>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>
-						{t("admin.classes.bulkGenerate.title", {
-							defaultValue: "Générer toutes les classes",
-						})}
-					</DialogTitle>
+					<DialogTitle>{t("admin.classes.bulkGenerate.title")}</DialogTitle>
 					<DialogDescription>
-						{t("admin.classes.bulkGenerate.description", {
-							defaultValue:
-								"Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées.",
-						})}
+						{t("admin.classes.bulkGenerate.description")}
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody className="space-y-4">
 					<div className="space-y-2">
-						<Label>
-							{t("admin.classes.bulkGenerate.yearLabel", {
-								defaultValue: "Année académique cible",
-							})}
-						</Label>
+						<Label>{t("admin.classes.bulkGenerate.yearLabel")}</Label>
 						<AcademicYearSelect
 							value={yearId}
 							onChange={setYearId}
@@ -88,22 +76,17 @@ export const BulkGenerateClassesDialog = createCallable<
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label>
-							{t("admin.classes.bulkGenerate.sourceYearLabel", {
-								defaultValue: "Cloner les affectations depuis (optionnel)",
-							})}
-						</Label>
+						<Label>{t("admin.classes.bulkGenerate.sourceYearLabel")}</Label>
 						<AcademicYearSelect
 							value={sourceYearId}
 							onChange={setSourceYearId}
 							autoSelectActive={false}
-							placeholder="Aucune (optionnel)"
+							placeholder={t(
+								"admin.classes.bulkGenerate.sourceYearPlaceholder",
+							)}
 						/>
 						<p className="text-muted-foreground text-xs">
-							{t("admin.classes.bulkGenerate.sourceYearHint", {
-								defaultValue:
-									"Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes.",
-							})}
+							{t("admin.classes.bulkGenerate.sourceYearHint")}
 						</p>
 					</div>
 				</DialogBody>
@@ -122,9 +105,7 @@ export const BulkGenerateClassesDialog = createCallable<
 						{generate.pending && (
 							<Spinner className="mr-2 h-4 w-4 animate-spin" />
 						)}
-						{t("admin.classes.bulkGenerate.submit", {
-							defaultValue: "Générer",
-						})}
+						{t("admin.classes.bulkGenerate.submit")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

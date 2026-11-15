@@ -24,7 +24,7 @@ export function ApplicationStepContact({
 	t,
 }: {
 	form: ApplicationWizardForm;
-	t: (k: string) => string;
+	t: (k: string, options?: Record<string, unknown>) => string;
 }) {
 	const originRegion = useWatch({
 		control: form.control,
@@ -40,7 +40,7 @@ export function ApplicationStepContact({
 		<div className="space-y-6">
 			<div>
 				<p className="mb-3 font-medium text-muted-foreground text-sm uppercase tracking-wide">
-					Contact
+					{t("admissions.sections.contact")}
 				</p>
 				<div className="grid gap-4 md:grid-cols-2">
 					<FormField
@@ -53,7 +53,7 @@ export function ApplicationStepContact({
 									<Input
 										type="email"
 										{...field}
-										placeholder="votre@email.com"
+										placeholder={t("admissions.placeholders.email")}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -80,13 +80,13 @@ export function ApplicationStepContact({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.whatsapp")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
 									<Input
 										type="tel"
 										{...field}
-										placeholder="Si différent du téléphone"
+										placeholder={t("admissions.placeholders.whatsapp")}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -99,10 +99,16 @@ export function ApplicationStepContact({
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>
-									{t("admissions.fields.city")} <OptionalBadge label="opt." />
+									{t("admissions.fields.city")}{" "}
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
-									<Input {...field} placeholder="Ex : Yaoundé" />
+									<Input
+										{...field}
+										placeholder={t("admissions.placeholders.example", {
+											value: "Yaoundé",
+										})}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -115,7 +121,7 @@ export function ApplicationStepContact({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.address")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
 									<Input {...field} />
@@ -131,10 +137,15 @@ export function ApplicationStepContact({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.postalBox")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
-									<Input {...field} placeholder="Ex : 12345" />
+									<Input
+										{...field}
+										placeholder={t("admissions.placeholders.example", {
+											value: "12345",
+										})}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -144,7 +155,7 @@ export function ApplicationStepContact({
 			</div>
 			<div>
 				<p className="mb-3 font-medium text-muted-foreground text-sm uppercase tracking-wide">
-					Nationalité & Origine
+					{t("admissions.sections.nationalityOrigin")}
 				</p>
 				<div className="grid gap-4 md:grid-cols-2">
 					<FormField
@@ -156,7 +167,10 @@ export function ApplicationStepContact({
 									{t("admissions.fields.nationality")}
 								</FormLabel>
 								<FormControl>
-									<Input {...field} placeholder="Ex : Camerounaise" />
+									<Input
+										{...field}
+										placeholder={t("admissions.placeholders.nationality")}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -216,7 +230,9 @@ export function ApplicationStepContact({
 									<FormItem>
 										<FormLabel>
 											{t("admissions.fields.originRegion")}{" "}
-											<OptionalBadge label="opt." />
+											<OptionalBadge
+												label={t("admissions.wizard.optionalShort")}
+											/>
 										</FormLabel>
 										<Select
 											onValueChange={(v) => {
@@ -250,7 +266,9 @@ export function ApplicationStepContact({
 										<FormItem>
 											<FormLabel>
 												{t("admissions.fields.originDepartment")}{" "}
-												<OptionalBadge label="opt." />
+												<OptionalBadge
+													label={t("admissions.wizard.optionalShort")}
+												/>
 											</FormLabel>
 											<Select
 												onValueChange={field.onChange}

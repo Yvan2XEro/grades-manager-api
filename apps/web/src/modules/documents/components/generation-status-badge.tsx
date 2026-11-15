@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 
 export type GenerationState =
@@ -13,29 +14,34 @@ export function GenerationStatusBadge({
 }: {
 	status: GenerationState | undefined;
 }) {
+	const { t } = useTranslation();
 	if (!status) return <span className="text-muted-foreground text-xs">—</span>;
 	switch (status.state) {
 		case "pending":
-			return <Badge variant="secondary">En attente</Badge>;
+			return (
+				<Badge variant="secondary">
+					{t("admin.documents.bulk.status.pending")}
+				</Badge>
+			);
 		case "running":
 			return (
 				<Badge variant="secondary">
 					<Loader2 className="mr-1 h-3 w-3 animate-spin" />
-					Génération
+					{t("admin.documents.bulk.status.running")}
 				</Badge>
 			);
 		case "ok":
 			return (
 				<Badge className="bg-emerald-600">
 					<CheckCircle2 className="mr-1 h-3 w-3" />
-					OK
+					{t("admin.documents.bulk.status.ok")}
 				</Badge>
 			);
 		case "error":
 			return (
 				<Badge variant="destructive" title={status.error}>
 					<AlertCircle className="mr-1 h-3 w-3" />
-					Échec
+					{t("admin.documents.bulk.status.error")}
 				</Badge>
 			);
 	}

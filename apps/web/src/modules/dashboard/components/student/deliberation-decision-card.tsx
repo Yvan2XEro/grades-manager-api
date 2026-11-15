@@ -167,7 +167,10 @@ export function DeliberationDecisionCard({
 											)}
 										</p>
 										<p className="text-[10px] text-muted-foreground">
-											{ue.creditsEarned}/{ue.ueCredits} crédits
+											{t("student.performance.ueCreditsEarned", {
+												earned: ue.creditsEarned,
+												total: ue.ueCredits,
+											})}
 										</p>
 									</div>
 									<div className="flex shrink-0 items-center gap-2">

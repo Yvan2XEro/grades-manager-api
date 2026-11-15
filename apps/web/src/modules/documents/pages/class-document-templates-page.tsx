@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -21,6 +22,7 @@ import { useClassDocumentTemplates } from "../hooks/use-class-document-templates
 import { KINDS } from "../services/class-template-kinds";
 
 export default function ClassDocumentTemplates() {
+	const { t } = useTranslation();
 	const state = useClassDocumentTemplates();
 	const {
 		classes,
@@ -41,7 +43,9 @@ export default function ClassDocumentTemplates() {
 		return (
 			<DocumentPreviewView
 				html={previewHtml}
-				subtitle={`${selectedClassLabel} · données fictives — utilisez "Générer" sur la fiche étudiant pour produire le document final`}
+				subtitle={t("admin.documents.classTemplates.previewSubtitle", {
+					classLabel: selectedClassLabel,
+				})}
 				onBack={() => setPreviewHtml(null)}
 			/>
 		);
@@ -52,12 +56,10 @@ export default function ClassDocumentTemplates() {
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="font-bold text-2xl text-foreground">
-						Templates de documents par classe
+						{t("admin.documents.classTemplates.title")}
 					</h1>
 					<p className="text-muted-foreground">
-						Choisissez le modèle de diplôme, relevé et attestation pour chaque
-						classe. Vous pouvez surcharger le thème par classe (couleurs,
-						polices, tailles, etc.) sans toucher au modèle d'institution.
+						{t("admin.documents.classTemplates.subtitle")}
 					</p>
 				</div>
 				<Button
@@ -70,17 +72,18 @@ export default function ClassDocumentTemplates() {
 						<Spinner className="mr-2 h-4 w-4" />
 					) : null}
 					{totalTemplates === 0
-						? "Créer les modèles système"
-						: "Réinitialiser les modèles système"}
+						? t("admin.documents.classTemplates.seedCreate")
+						: t("admin.documents.classTemplates.seedReset")}
 				</Button>
 			</div>
 
 			<Card>
 				<CardHeader>
-					<CardTitle>Classe ciblée</CardTitle>
+					<CardTitle>
+						{t("admin.documents.classTemplates.targetClass.title")}
+					</CardTitle>
 					<CardDescription>
-						Sélectionnez la classe à configurer. Si rien n'est assigné, c'est le
-						modèle par défaut du programme ou de l'institution qui s'applique.
+						{t("admin.documents.classTemplates.targetClass.description")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -90,7 +93,11 @@ export default function ClassDocumentTemplates() {
 						disabled={classesLoading}
 					>
 						<SelectTrigger className="max-w-md">
-							<SelectValue placeholder="Choisir une classe..." />
+							<SelectValue
+								placeholder={t(
+									"admin.documents.classTemplates.targetClass.placeholder",
+								)}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							{(classes ?? []).map((c) => (

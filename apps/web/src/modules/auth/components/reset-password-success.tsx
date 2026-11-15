@@ -37,24 +37,17 @@ export function ResetPasswordSuccess() {
 			</div>
 			<div>
 				<h2 className="font-semibold text-foreground text-xl">
-					{t("auth.reset.successTitle", {
-						defaultValue: "Mot de passe mis à jour",
-					})}
+					{t("auth.reset.successTitle")}
 				</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
-					{t("auth.reset.successMessage", {
-						defaultValue: `Redirection vers la connexion dans ${countdown} secondes...`,
-						countdown,
-					})}
+					{t("auth.reset.successMessage", { countdown })}
 				</p>
 			</div>
 			<Link
 				to="/auth/login"
 				className="inline-flex items-center gap-1.5 font-medium text-primary text-sm hover:underline"
 			>
-				{t("auth.reset.signInNow", {
-					defaultValue: "Se connecter maintenant",
-				})}
+				{t("auth.reset.signInNow")}
 				<ArrowRight className="h-4 w-4" />
 			</Link>
 		</motion.div>

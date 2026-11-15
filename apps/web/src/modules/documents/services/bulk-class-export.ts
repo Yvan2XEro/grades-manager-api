@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import i18n from "@/i18n";
 import { downloadBlob } from "@/lib/download";
 
 export interface BulkExportClass {
@@ -54,7 +55,10 @@ export async function saveClassExports(
 				sheetSafe(r.cls.code || r.cls.name),
 			);
 		}
-		XLSX.writeFile(workbook, `listes_classes_${date}.xlsx`);
+		XLSX.writeFile(
+			workbook,
+			`${i18n.t("admin.documents.bulkClassExport.file.unified")}_${date}.xlsx`,
+		);
 	} else {
 		// ZIP — one file per class (PDF or XLSX).
 		const JSZip = (await import("jszip")).default;
@@ -67,14 +71,20 @@ export async function saveClassExports(
 				XLSX.utils.book_append_sheet(
 					wb,
 					buildClassWorksheet(r.cls, r.students, institutionName),
-					"Étudiants",
+					i18n.t("admin.documents.bulkClassExport.sheet.sheetName"),
 				);
 				const buf = XLSX.write(wb, { type: "array", bookType: "xlsx" });
-				zip.file(`liste_${slugify(r.cls.code || r.cls.name)}.xlsx`, buf);
+				zip.file(
+					`${i18n.t("admin.documents.bulkClassExport.file.perClass")}_${slugify(r.cls.code || r.cls.name)}.xlsx`,
+					buf,
+				);
 			}
 		}
 		const blob = await zip.generateAsync({ type: "blob" });
-		downloadBlob(blob, `listes_classes_${date}.zip`);
+		downloadBlob(
+			blob,
+			`${i18n.t("admin.documents.bulkClassExport.file.unified")}_${date}.zip`,
+		);
 	}
 }
 
@@ -101,14 +111,33 @@ export function buildClassWorksheet(
 	const headerRows: (string | number)[][] = [
 		[institutionName],
 		[],
-		[`Liste d'étudiants — ${cls.name}`],
+		[i18n.t("admin.documents.bulkClassExport.sheet.title", { name: cls.name })],
 		[],
-		[`Code: ${cls.code}`],
-		[`Programme: ${cls.program?.name ?? "—"}`],
-		[`Année: ${cls.academicYear?.name ?? "—"}`],
-		[`Effectif: ${sortedStudents.length}`],
+		[i18n.t("admin.documents.bulkClassExport.sheet.code", { value: cls.code })],
+		[
+			i18n.t("admin.documents.bulkClassExport.sheet.program", {
+				value: cls.program?.name ?? "—",
+			}),
+		],
+		[
+			i18n.t("admin.documents.bulkClassExport.sheet.year", {
+				value: cls.academicYear?.name ?? "—",
+			}),
+		],
+		[
+			i18n.t("admin.documents.bulkClassExport.sheet.headcount", {
+				value: sortedStudents.length,
+			}),
+		],
 		[],
-		["#", "Matricule", "Nom", "Prénom(s)", "Date de naissance", "Genre"],
+		[
+			"#",
+			i18n.t("admin.documents.bulkClassExport.sheet.registrationNumber"),
+			i18n.t("admin.documents.bulkClassExport.sheet.lastName"),
+			i18n.t("admin.documents.bulkClassExport.sheet.firstName"),
+			i18n.t("admin.documents.bulkClassExport.sheet.dateOfBirth"),
+			i18n.t("admin.documents.bulkClassExport.sheet.gender"),
+		],
 	];
 	const rows = sortedStudents.map((s, i) => [
 		i + 1,
@@ -137,7 +166,8 @@ export function mapGender(raw: string | null | undefined): string {
 	const v = String(raw).trim().toLowerCase();
 	if (v === "male" || v === "m" || v === "homme" || v === "h") return "M";
 	if (v === "female" || v === "f" || v === "femme") return "F";
-	if (v === "other" || v === "autre") return "Autre";
+	if (v === "other" || v === "autre")
+		return i18n.t("admin.documents.bulkClassExport.sheet.genderOther");
 	return String(raw).toUpperCase();
 }
 

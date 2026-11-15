@@ -21,9 +21,7 @@ export default function CenterDetailInstances() {
 			<Card>
 				<CardHeader className="flex-row items-center justify-between">
 					<CardTitle className="text-sm">
-						{t("admin.centers.sections.adminInstances", {
-							defaultValue: "Instances Administratives",
-						})}
+						{t("admin.centers.sections.adminInstances")}
 					</CardTitle>
 					<Button
 						type="button"
@@ -43,18 +41,13 @@ export default function CenterDetailInstances() {
 						}
 					>
 						<Plus className="mr-1.5 h-3.5 w-3.5" />
-						{t("admin.centers.actions.addInstance", {
-							defaultValue: "Ajouter une instance",
-						})}
+						{t("admin.centers.actions.addInstance")}
 					</Button>
 				</CardHeader>
 				<CardContent className="space-y-4">
 					{instances.fields.length === 0 ? (
 						<p className="rounded-md border border-dashed p-6 text-center text-muted-foreground text-sm">
-							{t("admin.centers.adminInstances.empty", {
-								defaultValue:
-									"Aucune instance administrative — cliquez sur Ajouter pour en créer.",
-							})}
+							{t("admin.centers.adminInstances.empty")}
 						</p>
 					) : (
 						instances.fields.map((field, index) => (
@@ -65,7 +58,6 @@ export default function CenterDetailInstances() {
 								<div className="flex items-center justify-between">
 									<p className="font-medium text-sm">
 										{t("admin.centers.adminInstances.itemTitle", {
-											defaultValue: "Instance #{{n}}",
 											n: index + 1,
 										})}
 									</p>

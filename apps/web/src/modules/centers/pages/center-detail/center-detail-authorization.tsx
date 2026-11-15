@@ -28,9 +28,7 @@ export default function CenterDetailAuthorization() {
 			<Card>
 				<CardHeader>
 					<CardTitle className="text-sm">
-						{t("admin.centers.sections.authorization", {
-							defaultValue: "Textes d'Autorisation",
-						})}
+						{t("admin.centers.sections.authorization")}
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -41,9 +39,7 @@ export default function CenterDetailAuthorization() {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.centers.form.authorizationOrderFr", {
-											defaultValue: "Arrêté d'autorisation (Français)",
-										})}
+										{t("admin.centers.form.authorizationOrderFr")}
 									</FormLabel>
 									<FormControl>
 										<Textarea rows={2} {...field} />
@@ -58,9 +54,7 @@ export default function CenterDetailAuthorization() {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.centers.form.authorizationOrderEn", {
-											defaultValue: "Arrêté d'autorisation (Anglais)",
-										})}
+										{t("admin.centers.form.authorizationOrderEn")}
 									</FormLabel>
 									<FormControl>
 										<Textarea rows={2} {...field} />
@@ -74,9 +68,7 @@ export default function CenterDetailAuthorization() {
 					<div className="space-y-3 rounded-md border bg-muted/20 p-4">
 						<div className="flex items-center justify-between">
 							<p className="font-medium text-sm">
-								{t("admin.centers.legalTexts.title", {
-									defaultValue: "Textes Légaux (Vu les lois...)",
-								})}
+								{t("admin.centers.legalTexts.title")}
 							</p>
 							<Button
 								type="button"
@@ -85,16 +77,12 @@ export default function CenterDetailAuthorization() {
 								onClick={() => legalTexts.append({ textFr: "", textEn: "" })}
 							>
 								<Plus className="mr-1.5 h-3.5 w-3.5" />
-								{t("admin.centers.actions.addLegalText", {
-									defaultValue: "Ajouter",
-								})}
+								{t("admin.centers.actions.addLegalText")}
 							</Button>
 						</div>
 						{legalTexts.fields.length === 0 ? (
 							<p className="rounded-md border border-dashed p-4 text-center text-muted-foreground text-xs">
-								{t("admin.centers.legalTexts.empty", {
-									defaultValue: "Aucun texte légal",
-								})}
+								{t("admin.centers.legalTexts.empty")}
 							</p>
 						) : (
 							legalTexts.fields.map((field, index) => (
@@ -105,7 +93,6 @@ export default function CenterDetailAuthorization() {
 									<div className="flex items-center justify-between">
 										<p className="text-muted-foreground text-xs">
 											{t("admin.centers.legalTexts.itemTitle", {
-												defaultValue: "Texte légal #{{n}}",
 												n: index + 1,
 											})}
 										</p>
@@ -125,7 +112,7 @@ export default function CenterDetailAuthorization() {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel className="text-xs">
-														Texte (Français) *
+														{t("admin.centers.legalTexts.textFr")} *
 													</FormLabel>
 													<FormControl>
 														<Textarea rows={2} {...field} />
@@ -140,7 +127,7 @@ export default function CenterDetailAuthorization() {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel className="text-xs">
-														Texte (Anglais) *
+														{t("admin.centers.legalTexts.textEn")} *
 													</FormLabel>
 													<FormControl>
 														<Textarea rows={2} {...field} />

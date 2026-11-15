@@ -50,24 +50,17 @@ export function DocumentParamsCard({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					<FileSignature className="h-5 w-5" />
-					{t("admin.institution.sections.documentParams", {
-						defaultValue: "Document Generation",
-					})}
+					{t("admin.institution.sections.documentParams")}
 				</CardTitle>
 				<CardDescription>
-					{t("admin.institution.sections.documentParamsHint", {
-						defaultValue:
-							"Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation.",
-					})}
+					{t("admin.institution.sections.documentParamsHint")}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<div className="grid gap-4 md:grid-cols-2">
 					<div className="space-y-1.5">
 						<label className="font-medium text-sm">
-							{t("admin.institution.form.signatoryName", {
-								defaultValue: "Signatory name",
-							})}
+							{t("admin.institution.form.signatoryName")}
 						</label>
 						<Input
 							value={params.signatoryName ?? ""}
@@ -77,22 +70,20 @@ export function DocumentParamsCard({
 					</div>
 					<div className="space-y-1.5">
 						<label className="font-medium text-sm">
-							{t("admin.institution.form.signatoryTitle", {
-								defaultValue: "Signatory title",
-							})}
+							{t("admin.institution.form.signatoryTitle")}
 						</label>
 						<Input
 							value={params.signatoryTitle ?? ""}
 							onChange={(e) => update("signatoryTitle", e.target.value)}
-							placeholder="Directeur Général"
+							placeholder={t(
+								"admin.institution.form.signatoryTitlePlaceholder",
+							)}
 						/>
 					</div>
 				</div>
 				<div className="max-w-sm space-y-1.5">
 					<label className="font-medium text-sm">
-						{t("admin.institution.form.city", {
-							defaultValue: "City (for document date line)",
-						})}
+						{t("admin.institution.form.city")}
 					</label>
 					<Input
 						value={params.city ?? ""}

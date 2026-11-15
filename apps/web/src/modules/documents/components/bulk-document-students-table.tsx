@@ -1,4 +1,5 @@
 import { Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
@@ -17,6 +18,7 @@ type State = ReturnType<typeof useBulkDocumentGeneration>;
 
 /** Students of the class with a checkbox, their generation status and a preview button. */
 export function BulkDocumentStudentsTable({ state }: { state: State }) {
+	const { t } = useTranslation();
 	const {
 		studentItems,
 		allSelected,
@@ -34,14 +36,20 @@ export function BulkDocumentStudentsTable({ state }: { state: State }) {
 						<Checkbox
 							checked={allSelected}
 							onCheckedChange={toggleAll}
-							aria-label="Tout sélectionner"
+							aria-label={t("admin.documents.bulk.table.selectAll")}
 						/>
 					</TableHead>
-					<TableHead>Matricule</TableHead>
-					<TableHead>Nom</TableHead>
-					<TableHead>Prénom(s)</TableHead>
-					<TableHead className="w-32">Statut</TableHead>
-					<TableHead className="w-12 text-right">Aperçu</TableHead>
+					<TableHead>
+						{t("admin.documents.bulk.table.registrationNumber")}
+					</TableHead>
+					<TableHead>{t("admin.documents.bulk.table.lastName")}</TableHead>
+					<TableHead>{t("admin.documents.bulk.table.firstName")}</TableHead>
+					<TableHead className="w-32">
+						{t("admin.documents.bulk.table.status")}
+					</TableHead>
+					<TableHead className="w-12 text-right">
+						{t("admin.documents.bulk.table.preview")}
+					</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -53,7 +61,9 @@ export function BulkDocumentStudentsTable({ state }: { state: State }) {
 								<Checkbox
 									checked={selectedIds.has(s.id)}
 									onCheckedChange={() => toggleOne(s.id)}
-									aria-label={`Sélectionner ${s.profile.firstName}`}
+									aria-label={t("admin.documents.bulk.table.selectOne", {
+										name: s.profile.firstName,
+									})}
 								/>
 							</TableCell>
 							<TableCell className="font-mono text-xs">
@@ -70,7 +80,9 @@ export function BulkDocumentStudentsTable({ state }: { state: State }) {
 									size="sm"
 									onClick={() => previewOne.mutate(s.id)}
 									disabled={previewOne.isPending}
-									title={`Aperçu pour ${s.profile.firstName} ${s.profile.lastName}`}
+									title={t("admin.documents.bulk.table.previewFor", {
+										name: `${s.profile.firstName} ${s.profile.lastName}`,
+									})}
 								>
 									{previewOne.isPending && previewOne.variables === s.id ? (
 										<Spinner className="h-4 w-4" />

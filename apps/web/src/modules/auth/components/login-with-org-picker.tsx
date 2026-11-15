@@ -27,12 +27,5 @@ export const LoginWithOrgPicker: React.FC<LoginWithOrgPickerProps> = ({
 		return <OrgPicker orgs={orgs} onSelect={selectOrg} onBack={back} />;
 	}
 
-	return (
-		<LoginForm
-			subtitle={t("auth.login.subtitle", {
-				defaultValue: "Connectez-vous pour accéder à vos établissements.",
-			})}
-			onSubmit={signIn}
-		/>
-	);
+	return <LoginForm subtitle={t("auth.login.subtitle")} onSubmit={signIn} />;
 };

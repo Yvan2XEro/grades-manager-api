@@ -19,9 +19,7 @@ export default function CenterCreatePage() {
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 					<div>
 						<h1 className="text-foreground">
-							{t("admin.centers.detail.title", {
-								defaultValue: "Gestion des Centres",
-							})}
+							{t("admin.centers.detail.title")}
 						</h1>
 					</div>
 					<div className="flex gap-2">
@@ -31,13 +29,11 @@ export default function CenterCreatePage() {
 							onClick={() => navigate(CENTERS_PATH)}
 						>
 							<ArrowLeft className="mr-2 h-4 w-4" />
-							{t("admin.centers.detail.backToList", {
-								defaultValue: "Retour à la liste",
-							})}
+							{t("admin.centers.detail.backToList")}
 						</Button>
 						<Button type="submit" disabled={isSaving}>
 							<Save className="mr-2 h-4 w-4" />
-							{t("common.actions.save", { defaultValue: "Enregistrer" })}
+							{t("common.actions.save")}
 						</Button>
 					</div>
 				</div>

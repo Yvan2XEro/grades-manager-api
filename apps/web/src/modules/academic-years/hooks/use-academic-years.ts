@@ -40,18 +40,14 @@ export function useDeleteAcademicYears() {
 			toast.success(
 				ids.length === 1
 					? t("admin.academicYears.toast.deleteSuccess")
-					: t("common.bulkActions.deleteSuccess", {
-							defaultValue: "Items deleted successfully",
-						}),
+					: t("common.bulkActions.deleteSuccess"),
 			);
 		},
 		onError: (error, ids) =>
 			toast.error(
 				ids.length === 1
 					? errorMessage(error, t("admin.academicYears.toast.deleteError"))
-					: t("common.bulkActions.deleteError", {
-							defaultValue: "Failed to delete items",
-						}),
+					: t("common.bulkActions.deleteError"),
 			),
 	});
 }
@@ -88,7 +84,6 @@ export function useCreateNextAcademicYear(
 			invalidate();
 			toast.success(
 				t("admin.academicYears.toast.createNextYearSuccess", {
-					defaultValue: "Année suivante créée : {{name}}",
 					name: newYear.name,
 				}),
 			);
@@ -96,12 +91,7 @@ export function useCreateNextAcademicYear(
 		},
 		onError: (error) =>
 			toast.error(
-				errorMessage(
-					error,
-					t("admin.academicYears.toast.createNextYearError", {
-						defaultValue: "Erreur lors de la création de l'année suivante",
-					}),
-				),
+				errorMessage(error, t("admin.academicYears.toast.createNextYearError")),
 			),
 	});
 }

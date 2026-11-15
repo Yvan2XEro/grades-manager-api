@@ -20,23 +20,23 @@ async function loadStudentList(cls: ClassRow, t: TFunction) {
 	);
 	const gender = (value?: string | null) =>
 		value === "male"
-			? t("common.gender.male", { defaultValue: "M" })
+			? t("common.gender.male")
 			: value === "female"
-				? t("common.gender.female", { defaultValue: "F" })
+				? t("common.gender.female")
 				: "-";
 	return {
 		institutionName:
-			institution?.nameFr || institution?.nameEn || "Institution",
+			institution?.nameFr ||
+			institution?.nameEn ||
+			t("admin.classes.export.institutionFallback"),
 		shortName: institution?.shortName ?? "",
 		head: [
 			"#",
-			t("admin.students.table.registrationNumber", {
-				defaultValue: "Reg. Number",
-			}),
-			t("admin.students.table.lastName", { defaultValue: "Last Name" }),
-			t("admin.students.table.firstName", { defaultValue: "First Name" }),
-			t("admin.students.table.dateOfBirth", { defaultValue: "Birth Date" }),
-			t("admin.students.table.gender", { defaultValue: "Gender" }),
+			t("admin.students.table.registrationNumber"),
+			t("admin.students.table.lastName"),
+			t("admin.students.table.firstName"),
+			t("admin.students.table.dateOfBirth"),
+			t("admin.students.table.gender"),
 		],
 		rows: sorted.map((student, index) => [
 			index + 1,
@@ -53,7 +53,7 @@ async function loadStudentList(cls: ClassRow, t: TFunction) {
 			`${t("admin.classes.table.code")}: ${cls.code}`,
 			`${t("admin.classes.table.program")}: ${cls.program.name}`,
 			`${t("admin.classes.table.academicYear")}: ${cls.academicYear.name}`,
-			`${t("admin.classes.export.totalStudents", { defaultValue: "Total students" })}: ${sorted.length}`,
+			`${t("admin.classes.export.totalStudents")}: ${sorted.length}`,
 		],
 	};
 }
@@ -70,14 +70,9 @@ async function exportBasicPdf(cls: ClassRow, t: TFunction) {
 	if (list.shortName) doc.text(list.shortName, 105, 27, { align: "center" });
 	doc.setFontSize(14);
 	doc.setFont("helvetica", "bold");
-	doc.text(
-		t("admin.classes.export.title", { defaultValue: "Student List" }),
-		105,
-		40,
-		{
-			align: "center",
-		},
-	);
+	doc.text(t("admin.classes.export.title"), 105, 40, {
+		align: "center",
+	});
 	doc.setFontSize(11);
 	doc.setFont("helvetica", "normal");
 	list.info.forEach((line, i) => doc.text(line, 14, 50 + i * 6));
@@ -93,14 +88,11 @@ async function exportBasicPdf(cls: ClassRow, t: TFunction) {
 	for (let i = 1; i <= pageCount; i++) {
 		doc.setPage(i);
 		doc.setFontSize(8);
+		doc.text(`${t("admin.classes.export.page")} ${i}/${pageCount}`, 105, 290, {
+			align: "center",
+		});
 		doc.text(
-			`${t("admin.classes.export.page", { defaultValue: "Page" })} ${i}/${pageCount}`,
-			105,
-			290,
-			{ align: "center" },
-		);
-		doc.text(
-			`${t("admin.classes.export.generatedOn", { defaultValue: "Generated on" })}: ${new Date().toLocaleString()}`,
+			`${t("admin.classes.export.generatedOn")}: ${new Date().toLocaleString()}`,
 			14,
 			290,
 		);
@@ -129,10 +121,13 @@ export async function exportStudentListPdf(cls: ClassRow, t: TFunction) {
 		).usedTemplate;
 		toast.success(
 			template
-				? `Modèle utilisé : ${template.name}${template.variant === "center" ? " (centre)" : ""}`
-				: t("admin.classes.export.success", {
-						defaultValue: "Student list exported successfully",
-					}),
+				? t(
+						template.variant === "center"
+							? "admin.classes.export.templateUsedCenter"
+							: "admin.classes.export.templateUsed",
+						{ name: template.name },
+					)
+				: t("admin.classes.export.success"),
 		);
 		return;
 	} catch (err) {
@@ -141,23 +136,17 @@ export async function exportStudentListPdf(cls: ClassRow, t: TFunction) {
 			err,
 		);
 		toast.warning(
-			`Le modèle officiel n'a pas pu être rendu (${err instanceof Error ? err.message : "erreur inconnue"}). Génération basique via jsPDF.`,
+			t("admin.classes.export.templateFallback", {
+				error: err instanceof Error ? err.message : t("common.errors.unknown"),
+			}),
 		);
 	}
 	try {
 		await exportBasicPdf(cls, t);
-		toast.success(
-			t("admin.classes.export.success", {
-				defaultValue: "Student list exported successfully",
-			}),
-		);
+		toast.success(t("admin.classes.export.success"));
 	} catch (error) {
 		console.error("Error exporting PDF:", error);
-		toast.error(
-			t("admin.classes.export.error", {
-				defaultValue: "Failed to export student list",
-			}),
-		);
+		toast.error(t("admin.classes.export.error"));
 	}
 }
 
@@ -168,7 +157,7 @@ export async function exportStudentListExcel(cls: ClassRow, t: TFunction) {
 			[list.institutionName],
 			[list.shortName],
 			[],
-			[t("admin.classes.export.title", { defaultValue: "Student List" })],
+			[t("admin.classes.export.title")],
 			[],
 			...list.info.map((line) => [line]),
 			[],
@@ -187,20 +176,12 @@ export async function exportStudentListExcel(cls: ClassRow, t: TFunction) {
 		XLSX.utils.book_append_sheet(
 			workbook,
 			worksheet,
-			t("admin.classes.export.sheetName", { defaultValue: "Students" }),
+			t("admin.classes.export.sheetName"),
 		);
 		XLSX.writeFile(workbook, `students_${cls.code}_${fileDateStamp()}.xlsx`);
-		toast.success(
-			t("admin.classes.export.excelSuccess", {
-				defaultValue: "Student list exported successfully",
-			}),
-		);
+		toast.success(t("admin.classes.export.excelSuccess"));
 	} catch (error) {
 		console.error("Error exporting Excel:", error);
-		toast.error(
-			t("admin.classes.export.excelError", {
-				defaultValue: "Failed to export student list",
-			}),
-		);
+		toast.error(t("admin.classes.export.excelError"));
 	}
 }

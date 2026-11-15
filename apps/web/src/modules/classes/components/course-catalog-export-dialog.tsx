@@ -52,18 +52,10 @@ export const CourseCatalogExportDialog = createCallable<
 			a.download = result.filename;
 			a.click();
 			URL.revokeObjectURL(url);
-			toast.success(
-				t("admin.classCourses.export.success", {
-					defaultValue: "Catalogue exporté avec succès",
-				}),
-			);
+			toast.success(t("admin.classCourses.export.success"));
 			call.end(true);
 		} catch {
-			toast.error(
-				t("admin.classCourses.export.error", {
-					defaultValue: "Erreur lors de l'export PDF",
-				}),
-			);
+			toast.error(t("admin.classCourses.export.error"));
 		}
 	});
 
@@ -72,17 +64,11 @@ export const CourseCatalogExportDialog = createCallable<
 			call={call}
 			dismissValue={false}
 			preventDismiss={exportPdf.pending}
-			title={t("admin.classCourses.export.title", {
-				defaultValue: "Exporter le catalogue UE / EC",
-			})}
+			title={t("admin.classCourses.export.title")}
 		>
 			<div className="space-y-4">
 				<div className="space-y-1.5">
-					<Label>
-						{t("admin.classCourses.export.scopeLabel", {
-							defaultValue: "Périmètre",
-						})}
-					</Label>
+					<Label>{t("admin.classCourses.export.scopeLabel")}</Label>
 					<Select
 						value={scope}
 						onValueChange={(v) => setScope(v as "year" | "selection")}
@@ -92,16 +78,12 @@ export const CourseCatalogExportDialog = createCallable<
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="year">
-								{t("admin.classCourses.export.scopeYear", {
-									defaultValue: "Toutes les classes de l'année filtrée",
-								})}
+								{t("admin.classCourses.export.scopeYear")}
 								{!academicYearId &&
-									` (${t("admin.classCourses.export.noYearWarning", { defaultValue: "aucune année sélectionnée" })})`}
+									` (${t("admin.classCourses.export.noYearWarning")})`}
 							</SelectItem>
 							<SelectItem value="selection">
-								{t("admin.classCourses.export.scopeSelection", {
-									defaultValue: "Classes spécifiques",
-								})}
+								{t("admin.classCourses.export.scopeSelection")}
 							</SelectItem>
 						</SelectContent>
 					</Select>
@@ -109,11 +91,7 @@ export const CourseCatalogExportDialog = createCallable<
 
 				{scope === "selection" && (
 					<div className="space-y-1.5">
-						<Label>
-							{t("admin.classCourses.export.classesLabel", {
-								defaultValue: "Classes à inclure",
-							})}
-						</Label>
+						<Label>{t("admin.classCourses.export.classesLabel")}</Label>
 						<div className="max-h-48 space-y-0.5 overflow-y-auto rounded border p-2">
 							{classes.map((cls) => (
 								<label
@@ -140,9 +118,7 @@ export const CourseCatalogExportDialog = createCallable<
 						{selectedClassIds.length > 0 && (
 							<p className="text-muted-foreground text-xs">
 								{selectedClassIds.length}{" "}
-								{t("admin.classCourses.export.selectedCount", {
-									defaultValue: "classe(s) sélectionnée(s)",
-								})}
+								{t("admin.classCourses.export.selectedCount")}
 							</p>
 						)}
 					</div>
@@ -171,9 +147,7 @@ export const CourseCatalogExportDialog = createCallable<
 						) : (
 							<FileDown className="mr-2 h-4 w-4" />
 						)}
-						{t("admin.classCourses.export.generate", {
-							defaultValue: "Générer le PDF",
-						})}
+						{t("admin.classCourses.export.generate")}
 					</Button>
 				</div>
 			</div>

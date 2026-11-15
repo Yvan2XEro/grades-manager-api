@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Download, FileText } from "lucide-react";
 import { useState } from "react";
 import { createCallable } from "react-call";
+import { useTranslation } from "react-i18next";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { Button } from "@/components/ui/button";
@@ -37,10 +38,8 @@ interface Props {
 	label?: string;
 }
 
-export function ExportStudentListButton({
-	label = "Exporter (template)",
-	...filters
-}: Props) {
+export function ExportStudentListButton({ label, ...filters }: Props) {
+	const { t } = useTranslation();
 	const { classId, programId, academicYearId, studentIds } = filters;
 	const hasFilter =
 		classId ||
@@ -56,12 +55,12 @@ export function ExportStudentListButton({
 			disabled={!hasFilter}
 			title={
 				hasFilter
-					? "Exporter cette liste avec un template officiel"
-					: "Sélectionnez d'abord une classe, un programme ou une année"
+					? t("admin.documents.studentList.triggerHint")
+					: t("admin.documents.studentList.triggerDisabledHint")
 			}
 		>
 			<FileText className="mr-1 h-4 w-4" />
-			{label}
+			{label ?? t("admin.documents.studentList.trigger")}
 		</Button>
 	);
 }
@@ -72,6 +71,7 @@ export function ExportStudentListButton({
  */
 export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 	({ call, classId, programId, academicYearId, studentIds }) => {
+		const { t } = useTranslation();
 		const [templateId, setTemplateId] = useState<string>("");
 		const [format, setFormat] = useState<"pdf" | "html">("pdf");
 		const [demoMode, setDemoMode] = useState(false);
@@ -116,13 +116,19 @@ export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 				};
 			},
 			onSuccess: (result) => {
-				const t = result.usedTemplate;
+				const used = result.usedTemplate;
 				toast.success(
-					`Modèle utilisé : ${t.name}${t.variant === "center" ? " (centre)" : ""}`,
+					used.variant === "center"
+						? t("admin.documents.studentList.toast.templateUsedCenter", {
+								name: used.name,
+							})
+						: t("admin.documents.studentList.toast.templateUsed", {
+								name: used.name,
+							}),
 				);
 				if (result.mimeType === "text/html") {
 					DocumentPreviewDialog.call({
-						title: "Aperçu HTML — Liste d'étudiants",
+						title: t("admin.documents.studentList.previewTitle"),
 						html: result.data,
 					});
 					return;
@@ -131,7 +137,9 @@ export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 				call.end();
 			},
 			onError: (err: any) =>
-				toast.error(err.message || "Échec de la génération"),
+				toast.error(
+					err.message || t("admin.documents.studentList.toast.error"),
+				),
 		});
 
 		return (
@@ -141,42 +149,46 @@ export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 			>
 				<DialogContent className="max-w-md">
 					<DialogHeader>
-						<DialogTitle>Exporter la liste d'étudiants</DialogTitle>
+						<DialogTitle>{t("admin.documents.studentList.title")}</DialogTitle>
 						<DialogDescription>
 							{classId
-								? "Pour la classe sélectionnée."
+								? t("admin.documents.studentList.forClass")
 								: programId
-									? "Pour le programme sélectionné."
+									? t("admin.documents.studentList.forProgram")
 									: studentIds
-										? `Pour ${studentIds.length} étudiant(s) sélectionné(s).`
-										: "Selon les filtres en cours."}
+										? t("admin.documents.studentList.forStudents", {
+												count: studentIds.length,
+											})
+										: t("admin.documents.studentList.forFilters")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6 py-2">
 						<div className="space-y-1">
-							<Label>Modèle</Label>
+							<Label>{t("admin.documents.studentList.template")}</Label>
 							<Select value={templateId} onValueChange={setTemplateId}>
 								<SelectTrigger>
 									<SelectValue
 										placeholder={
 											templates && templates.length > 0
-												? "(défaut institution)"
-												: "Aucun modèle — créez-en via Initialiser modèles officiels"
+												? t("admin.documents.studentList.templateDefault")
+												: t("admin.documents.studentList.noTemplate")
 										}
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{(templates ?? []).map((t) => (
-										<SelectItem key={t.id} value={t.id}>
-											{t.name}
-											{t.isDefault ? " (défaut)" : ""}
+									{(templates ?? []).map((tpl) => (
+										<SelectItem key={tpl.id} value={tpl.id}>
+											{tpl.name}
+											{tpl.isDefault
+												? t("admin.documents.studentList.defaultSuffix")
+												: ""}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
 						</div>
 						<div className="space-y-1">
-							<Label>Format</Label>
+							<Label>{t("admin.documents.generate.format")}</Label>
 							<Select
 								value={format}
 								onValueChange={(v) => setFormat(v as "pdf" | "html")}
@@ -185,16 +197,20 @@ export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="pdf">PDF</SelectItem>
-									<SelectItem value="html">HTML (aperçu)</SelectItem>
+									<SelectItem value="pdf">
+										{t("admin.documents.generate.formatPdf")}
+									</SelectItem>
+									<SelectItem value="html">
+										{t("admin.documents.generate.formatHtml")}
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 						<div className="flex items-center justify-between">
 							<Label className="flex flex-col gap-0.5">
-								<span>Mode démo</span>
+								<span>{t("admin.documents.generate.demoMode")}</span>
 								<span className="font-normal text-muted-foreground text-xs">
-									Filigrane "DÉMO"
+									{t("admin.documents.studentList.demoModeHint")}
 								</span>
 							</Label>
 							<Switch checked={demoMode} onCheckedChange={setDemoMode} />
@@ -206,7 +222,7 @@ export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 							disabled={generate.isPending}
 							onClick={() => call.end()}
 						>
-							Annuler
+							{t("common.actions.cancel")}
 						</Button>
 						<Button
 							onClick={() => generate.mutate()}
@@ -214,7 +230,7 @@ export const ExportStudentListDialog = createCallable<Omit<Props, "label">>(
 						>
 							{generate.isPending && <Spinner className="mr-2" />}
 							<Download className="mr-1 h-4 w-4" />
-							Générer
+							{t("admin.documents.generate.submit")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

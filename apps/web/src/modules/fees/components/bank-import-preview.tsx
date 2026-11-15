@@ -23,28 +23,23 @@ type ImportStatus = BankImportStatus;
 const STATUS_BADGE: Record<
 	ImportStatus,
 	{
-		label: string;
 		variant: "default" | "secondary" | "destructive" | "outline";
 		icon: React.ReactNode;
 	}
 > = {
 	matched: {
-		label: "Correspondance",
 		variant: "default",
 		icon: <CheckCircle2 className="h-3 w-3" />,
 	},
 	duplicate: {
-		label: "Doublon",
 		variant: "secondary",
 		icon: <AlertCircle className="h-3 w-3" />,
 	},
 	unknown_ref: {
-		label: "Référence inconnue",
 		variant: "destructive",
 		icon: <XCircle className="h-3 w-3" />,
 	},
 	amount_mismatch: {
-		label: "Montant incorrect",
 		variant: "outline",
 		icon: <HelpCircle className="h-3 w-3" />,
 	},
@@ -95,7 +90,7 @@ export function BankImportPreview({
 								return (
 									<Badge key={status} variant={cfg.variant} className="gap-1">
 										{cfg.icon}
-										{cfg.label}: {n}
+										{t(`feeClearance.bankImport.status.${status}`)}: {n}
 									</Badge>
 								);
 							})}
@@ -134,7 +129,9 @@ export function BankImportPreview({
 												{r.amount.toLocaleString()}
 												{r.orderAmount && r.orderAmount !== r.amount && (
 													<span className="ml-1 text-muted-foreground">
-														(attendu: {r.orderAmount.toLocaleString()})
+														{t("feeClearance.bankImport.expectedAmount", {
+															amount: r.orderAmount.toLocaleString(),
+														})}
 													</span>
 												)}
 											</TableCell>
@@ -153,10 +150,8 @@ export function BankImportPreview({
 														cfg.icon
 													)}
 													{isForced
-														? t("feeClearance.bankImport.forced", {
-																defaultValue: "Forcé",
-															})
-														: cfg.label}
+														? t("feeClearance.bankImport.forced")
+														: t(`feeClearance.bankImport.status.${r.status}`)}
 												</Badge>
 											</TableCell>
 											<TableCell>
@@ -168,9 +163,7 @@ export function BankImportPreview({
 																onToggleForceMatch(r.reference)
 															}
 														/>
-														{t("feeClearance.bankImport.forceMatch", {
-															defaultValue: "Forcer",
-														})}
+														{t("feeClearance.bankImport.forceMatch")}
 													</label>
 												)}
 											</TableCell>

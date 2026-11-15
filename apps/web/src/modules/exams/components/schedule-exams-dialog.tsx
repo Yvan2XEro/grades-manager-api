@@ -96,18 +96,16 @@ export const ScheduleExamsDialog = createCallable<
 						{sessionMode === "normal" &&
 							state.classSelection.selected.size > 0 && (
 								<span className="text-muted-foreground text-xs">
-									{state.classSelection.selected.size}{" "}
-									{t("admin.examScheduler.classes.title", {
-										defaultValue: "classes",
+									{t("admin.examScheduler.classes.selectedCount", {
+										count: state.classSelection.selected.size,
 									})}
 								</span>
 							)}
 						{sessionMode === "retake" &&
 							state.examSelection.selected.size > 0 && (
 								<span className="text-muted-foreground text-xs">
-									{state.examSelection.selected.size}{" "}
-									{t("admin.examScheduler.retakeExams.title", {
-										defaultValue: "examens sélectionnés",
+									{t("admin.examScheduler.retakeExams.selectedCount", {
+										count: state.examSelection.selected.size,
 									})}
 								</span>
 							)}

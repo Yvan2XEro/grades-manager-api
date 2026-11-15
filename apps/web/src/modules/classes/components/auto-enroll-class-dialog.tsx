@@ -43,7 +43,6 @@ export const AutoEnrollClassDialog = createCallable<void, boolean>(
 				});
 				toast.success(
 					t("admin.classCourses.toast.autoEnrollSuccess", {
-						defaultValue: "{{count}} inscription(s) créée(s)",
 						count: result.createdCount,
 					}),
 				);
@@ -52,9 +51,7 @@ export const AutoEnrollClassDialog = createCallable<void, boolean>(
 				const message =
 					error instanceof Error && error.message
 						? error.message
-						: t("admin.classCourses.toast.autoEnrollError", {
-								defaultValue: "Erreur lors de l'inscription automatique",
-							});
+						: t("admin.classCourses.toast.autoEnrollError");
 				toast.error(message);
 			}
 		});
@@ -64,23 +61,16 @@ export const AutoEnrollClassDialog = createCallable<void, boolean>(
 				call={call}
 				dismissValue={false}
 				preventDismiss={enroll.pending}
-				title={t("admin.classCourses.autoEnroll.title", {
-					defaultValue: "Inscrire automatiquement les étudiants",
-				})}
+				title={t("admin.classCourses.autoEnroll.title")}
 			>
 				<div className="space-y-4">
 					<p className="text-muted-foreground text-sm">
-						{t("admin.classCourses.autoEnroll.description", {
-							defaultValue:
-								"Inscrit automatiquement tous les étudiants inscrits dans la classe aux cours qui leur sont assignés pour l'année académique choisie.",
-						})}
+						{t("admin.classCourses.autoEnroll.description")}
 					</p>
 
 					<div>
 						<label className="mb-2 block font-medium text-sm">
-							{t("admin.classCourses.autoEnroll.classLabel", {
-								defaultValue: "Classe",
-							})}
+							{t("admin.classCourses.autoEnroll.classLabel")}
 						</label>
 						<CodedEntitySelect
 							items={classes}
@@ -90,9 +80,7 @@ export const AutoEnrollClassDialog = createCallable<void, boolean>(
 								const cls = classes.find((c) => c.code === code);
 								setClassId(cls?.id || "");
 							}}
-							placeholder={t("admin.classCourses.autoEnroll.classPlaceholder", {
-								defaultValue: "Sélectionner une classe",
-							})}
+							placeholder={t("admin.classCourses.autoEnroll.classPlaceholder")}
 							searchMode="hybrid"
 							getItemSubtitle={(cls) => programMap.get(cls.program)?.name ?? ""}
 						/>
@@ -100,9 +88,7 @@ export const AutoEnrollClassDialog = createCallable<void, boolean>(
 
 					<div>
 						<label className="mb-2 block font-medium text-sm">
-							{t("admin.classCourses.autoEnroll.yearLabel", {
-								defaultValue: "Année académique",
-							})}
+							{t("admin.classCourses.autoEnroll.yearLabel")}
 						</label>
 						<AcademicYearSelect
 							value={academicYearId}
@@ -127,9 +113,7 @@ export const AutoEnrollClassDialog = createCallable<void, boolean>(
 							) : (
 								<Users className="mr-2 h-4 w-4" />
 							)}
-							{t("admin.classCourses.autoEnroll.submit", {
-								defaultValue: "Inscrire les étudiants",
-							})}
+							{t("admin.classCourses.autoEnroll.submit")}
 						</Button>
 					</div>
 				</div>

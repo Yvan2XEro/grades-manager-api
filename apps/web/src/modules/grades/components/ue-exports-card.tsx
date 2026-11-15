@@ -1,4 +1,5 @@
 import { Download, Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,19 +28,20 @@ export function UeExportsCard({
 	onPreview: (ueId: string) => void;
 	onGenerate: (ueId: string) => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Card>
 			<CardHeader className="pb-3">
 				<div className="flex items-center justify-between">
 					<div>
 						<CardTitle className="text-base">
-							Par Unité d&apos;Enseignement{" "}
+							{t("admin.gradeExport.ue.title")}{" "}
 							<Badge variant="secondary" className="ml-1">
 								{teachingUnits.length}
 							</Badge>
 						</CardTitle>
 						<CardDescription className="mt-1">
-							Publication PDF par UE — nécessite un semestre sélectionné
+							{t("admin.gradeExport.ue.description")}
 						</CardDescription>
 					</div>
 					<Button
@@ -53,7 +55,7 @@ export function UeExportsCard({
 							icon={Download}
 							className="mr-1 h-3 w-3"
 						/>
-						Tout télécharger
+						{t("admin.gradeExport.downloadAll")}
 					</Button>
 				</div>
 			</CardHeader>
@@ -62,12 +64,18 @@ export function UeExportsCard({
 					<table className="w-full text-sm">
 						<thead className="bg-muted/50">
 							<tr>
-								<th className="px-4 py-2 text-left font-medium">Code</th>
 								<th className="px-4 py-2 text-left font-medium">
-									Nom de l&apos;UE
+									{t("admin.gradeExport.columns.code")}
 								</th>
-								<th className="px-4 py-2 text-left font-medium">Crédits</th>
-								<th className="px-4 py-2 text-right font-medium">Actions</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("admin.gradeExport.columns.ueName")}
+								</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("admin.gradeExport.columns.credits")}
+								</th>
+								<th className="px-4 py-2 text-right font-medium">
+									{t("common.table.actions")}
+								</th>
 							</tr>
 						</thead>
 						<tbody className="divide-y">
@@ -76,7 +84,9 @@ export function UeExportsCard({
 									<td className="px-4 py-2 font-mono text-xs">{ue.code}</td>
 									<td className="px-4 py-2 font-medium">{ue.name}</td>
 									<td className="px-4 py-2 text-muted-foreground">
-										{ue.credits} cr.
+										{t("admin.gradeExport.ue.creditsShort", {
+											count: ue.credits,
+										})}
 									</td>
 									<td className="px-4 py-2 text-right">
 										<div className="flex justify-end gap-1">

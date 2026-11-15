@@ -24,11 +24,7 @@ export function useDeleteCenter() {
 	return useMutation({
 		mutationFn: (id: string) => trpcClient.centers.delete.mutate({ id }),
 		onSuccess: () => {
-			toast.success(
-				t("admin.centers.toast.deleteSuccess", {
-					defaultValue: "Centre supprimé",
-				}),
-			);
+			toast.success(t("admin.centers.toast.deleteSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["centers"] });
 		},
 		onError: (error: Error) => toast.error(error.message),

@@ -77,18 +77,9 @@ export function useExportTemplateMutations() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.exportTemplates.listPaged.queryKey());
-			toast.success(
-				t("common.bulkActions.deleteSuccess", {
-					defaultValue: "Items deleted successfully",
-				}),
-			);
+			toast.success(t("common.bulkActions.deleteSuccess"));
 		},
-		onError: () =>
-			toast.error(
-				t("common.bulkActions.deleteError", {
-					defaultValue: "Failed to delete items",
-				}),
-			),
+		onError: () => toast.error(t("common.bulkActions.deleteError")),
 	});
 
 	return { deleteMutation, setDefaultMutation, bulkDeleteMutation };
@@ -96,6 +87,7 @@ export function useExportTemplateMutations() {
 
 /** Seeds the official templates and downloads a ZIP of every bundled template rendered as PDF. */
 export function useSystemTemplates() {
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 
 	// Seed system defaults mutation (idempotent)
@@ -118,15 +110,20 @@ export function useSystemTemplates() {
 			const failed = result.failed ?? [];
 			if (failed.length > 0) {
 				toast.error(
-					`Échecs (${failed.length}) : ${failed
-						.map((f) => `${f.type} → ${f.reason}`)
-						.join(" ; ")}`,
+					t("admin.exportTemplates.system.seedFailed", {
+						count: failed.length,
+						details: failed.map((f) => `${f.type} → ${f.reason}`).join(" ; "),
+					}),
 				);
 			}
 			if (result.created.length > 0) {
-				toast.success(`Modèles officiels créés : ${result.created.join(", ")}`);
+				toast.success(
+					t("admin.exportTemplates.system.seedCreated", {
+						created: result.created.join(", "),
+					}),
+				);
 			} else if (failed.length === 0) {
-				toast.info("Tous les modèles officiels sont déjà présents.");
+				toast.info(t("admin.exportTemplates.system.seedAllPresent"));
 			}
 			// Auto-link feedback: show how many program×type assignments were
 			// (re)written so the admin sees the linking step ran.
@@ -134,20 +131,23 @@ export function useSystemTemplates() {
 			const linkFails = result.assignmentFailures ?? [];
 			if (linked > 0) {
 				toast.success(
-					`${linked} affectations programme → modèle (re)créées (variant centre pour les programmes de centre, standard sinon).`,
+					t("admin.exportTemplates.system.linked", { count: linked }),
 				);
 			}
 			if (linkFails.length > 0) {
 				toast.warning(
-					`${linkFails.length} affectations en échec : ${linkFails
-						.slice(0, 3)
-						.map((f) => `${f.programCode ?? "?"}/${f.templateType}`)
-						.join(", ")}${linkFails.length > 3 ? "…" : ""}`,
+					t("admin.exportTemplates.system.linkFailed", {
+						count: linkFails.length,
+						details: `${linkFails
+							.slice(0, 3)
+							.map((f) => `${f.programCode ?? "?"}/${f.templateType}`)
+							.join(", ")}${linkFails.length > 3 ? "…" : ""}`,
+					}),
 				);
 			}
 		},
 		onError: (error: any) => {
-			toast.error(error.message || "Erreur lors de l'initialisation");
+			toast.error(error.message || t("admin.exportTemplates.system.seedError"));
 		},
 	});
 
@@ -165,21 +165,31 @@ export function useSystemTemplates() {
 		}) => {
 			downloadBase64(
 				result.zipBase64,
-				`templates-preview-${fileDateStamp()}.zip`,
+				`${t("admin.exportTemplates.system.zipName")}-${fileDateStamp()}.zip`,
 				"application/zip",
 			);
 			if (result.failures.length > 0) {
 				toast.warning(
-					`${result.count} modèles exportés, ${result.failures.length} échecs : ${result.failures
-						.map((f) => `${f.kind}/${f.variant}`)
-						.join(", ")}`,
+					t("admin.exportTemplates.system.exportPartial", {
+						count: result.count,
+						failed: result.failures.length,
+						details: result.failures
+							.map((f) => `${f.kind}/${f.variant}`)
+							.join(", "),
+					}),
 				);
 			} else {
-				toast.success(`${result.count} modèles exportés en PDF (ZIP)`);
+				toast.success(
+					t("admin.exportTemplates.system.exportSuccess", {
+						count: result.count,
+					}),
+				);
 			}
 		},
 		onError: (error: any) => {
-			toast.error(error.message || "Erreur lors de l'export des modèles");
+			toast.error(
+				error.message || t("admin.exportTemplates.system.exportError"),
+			);
 		},
 	});
 

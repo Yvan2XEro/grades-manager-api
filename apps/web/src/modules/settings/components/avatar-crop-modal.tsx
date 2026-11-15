@@ -1,6 +1,7 @@
 import { CropIcon, ZoomIn, ZoomOut } from "lucide-react";
 import { useRef, useState } from "react";
 import { createCallable } from "react-call";
+import { useTranslation } from "react-i18next";
 import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
@@ -20,6 +21,7 @@ export const AvatarCropModal = createCallable<
 	{ src: string },
 	Blob | undefined
 >(({ call, src }) => {
+	const { t } = useTranslation();
 	const imgRef = useRef<HTMLImageElement>(null);
 	const [crop, setCrop] = useState<Crop>();
 	const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
@@ -35,7 +37,7 @@ export const AvatarCropModal = createCallable<
 		try {
 			call.end(await cropToBlob(imgRef.current, completedCrop));
 		} catch {
-			toast.error("Erreur lors du recadrage");
+			toast.error(t("settings.account.avatar.cropError"));
 		}
 	};
 
@@ -45,7 +47,7 @@ export const AvatarCropModal = createCallable<
 				<DialogHeader className="px-6 pt-5 pb-4">
 					<DialogTitle className="flex items-center gap-2 text-base">
 						<CropIcon className="h-4 w-4 text-primary" />
-						Recadrer la photo de profil
+						{t("settings.account.avatar.cropTitle")}
 					</DialogTitle>
 				</DialogHeader>
 				<div className="flex items-center justify-center bg-muted/40 px-6 py-4">
@@ -60,7 +62,7 @@ export const AvatarCropModal = createCallable<
 						<img
 							ref={imgRef}
 							src={src}
-							alt="Aperçu"
+							alt={t("settings.account.avatar.cropPreviewAlt")}
 							style={{
 								transform: `scale(${scale})`,
 								transformOrigin: "center",
@@ -85,10 +87,10 @@ export const AvatarCropModal = createCallable<
 				</div>
 				<DialogFooter className="px-6 pt-2 pb-5">
 					<Button variant="outline" onClick={() => call.end(undefined)}>
-						Annuler
+						{t("common.actions.cancel")}
 					</Button>
 					<Button onClick={handleConfirm} disabled={!completedCrop}>
-						Appliquer
+						{t("common.actions.apply")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

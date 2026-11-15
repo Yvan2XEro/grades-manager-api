@@ -23,7 +23,7 @@ export function ApplicationStepFamily({
 		<div className="space-y-6">
 			<div>
 				<p className="mb-3 font-medium text-muted-foreground text-sm uppercase tracking-wide">
-					Père
+					{t("admissions.sections.father")}
 				</p>
 				<div className="grid gap-4 md:grid-cols-2">
 					<FormField
@@ -63,7 +63,7 @@ export function ApplicationStepFamily({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.fatherPhone")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
 									<Input type="tel" {...field} />
@@ -93,7 +93,7 @@ export function ApplicationStepFamily({
 			</div>
 			<div>
 				<p className="mb-3 font-medium text-muted-foreground text-sm uppercase tracking-wide">
-					Mère
+					{t("admissions.sections.mother")}
 				</p>
 				<div className="grid gap-4 md:grid-cols-2">
 					<FormField
@@ -133,7 +133,7 @@ export function ApplicationStepFamily({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.motherPhone")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
 									<Input type="tel" {...field} />
@@ -163,7 +163,8 @@ export function ApplicationStepFamily({
 			</div>
 			<div>
 				<p className="mb-3 font-medium text-muted-foreground text-sm uppercase tracking-wide">
-					Tuteur légal <OptionalBadge label="opt." />
+					{t("admissions.sections.guardian")}{" "}
+					<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 				</p>
 				<div className="grid gap-4 md:grid-cols-2">
 					<FormField
@@ -186,7 +187,10 @@ export function ApplicationStepFamily({
 							<FormItem>
 								<FormLabel>{t("admissions.fields.guardianRelation")}</FormLabel>
 								<FormControl>
-									<Input {...field} placeholder="Ex : Oncle, Frère aîné" />
+									<Input
+										{...field}
+										placeholder={t("admissions.placeholders.guardianRelation")}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -209,7 +213,7 @@ export function ApplicationStepFamily({
 			</div>
 			<div>
 				<p className="mb-3 font-medium text-muted-foreground text-sm uppercase tracking-wide">
-					Contact d'urgence
+					{t("admissions.sections.emergency")}
 				</p>
 				<div className="grid gap-4 md:grid-cols-2">
 					<FormField

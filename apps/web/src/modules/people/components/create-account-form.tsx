@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -27,6 +28,7 @@ import {
 } from "../services/profile-access";
 
 export function CreateAccountForm({ profileId }: { profileId: string }) {
+	const { t } = useTranslation();
 	const form = useForm<CreateAccountValues>({
 		resolver: zodResolver(createAccountSchema),
 		defaultValues: { email: "", password: "", memberRole: "student" },
@@ -45,11 +47,11 @@ export function CreateAccountForm({ profileId }: { profileId: string }) {
 					name="email"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Email</FormLabel>
+							<FormLabel>{t("common.fields.email")}</FormLabel>
 							<FormControl>
 								<Input
 									type="email"
-									placeholder="prenom.nom@example.com"
+									placeholder={t("usersHub.account.create.emailPlaceholder")}
 									{...field}
 								/>
 							</FormControl>
@@ -63,7 +65,7 @@ export function CreateAccountForm({ profileId }: { profileId: string }) {
 						name="password"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Mot de passe</FormLabel>
+								<FormLabel>{t("common.fields.password")}</FormLabel>
 								<FormControl>
 									<PasswordInput {...field} />
 								</FormControl>
@@ -76,20 +78,24 @@ export function CreateAccountForm({ profileId }: { profileId: string }) {
 						name="memberRole"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Rôle</FormLabel>
+								<FormLabel>{t("common.fields.role")}</FormLabel>
 								<Select
 									onValueChange={field.onChange}
 									defaultValue={field.value}
 								>
 									<FormControl>
 										<SelectTrigger>
-											<SelectValue placeholder="Choisir un rôle" />
+											<SelectValue
+												placeholder={t(
+													"usersHub.account.create.rolePlaceholder",
+												)}
+											/>
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
-										{ASSIGNABLE_ROLES.map((r) => (
-											<SelectItem key={r.value} value={r.value}>
-												{r.label}
+										{ASSIGNABLE_ROLES.map((role) => (
+											<SelectItem key={role} value={role}>
+												{t(`admin.users.roles.${role}`)}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -104,7 +110,7 @@ export function CreateAccountForm({ profileId }: { profileId: string }) {
 						{mutation.isPending && (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						)}
-						Créer le compte
+						{t("usersHub.account.create.submit")}
 					</Button>
 				</div>
 			</form>

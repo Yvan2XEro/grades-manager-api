@@ -116,7 +116,6 @@ export const AssignTeachingUnitDialog = createCallable<
 			if (toCreate.length > 0) {
 				toast.success(
 					t("admin.classCourses.toast.bulkAssignSuccess", {
-						defaultValue: "{{count}} cours assignés avec succès",
 						count: toCreate.length,
 					}),
 				);
@@ -128,9 +127,7 @@ export const AssignTeachingUnitDialog = createCallable<
 			const message =
 				error instanceof Error && error.message
 					? error.message
-					: t("admin.classCourses.toast.bulkAssignError", {
-							defaultValue: "Erreur lors de l'assignation",
-						});
+					: t("admin.classCourses.toast.bulkAssignError");
 			toast.error(message);
 		}
 	});
@@ -140,9 +137,7 @@ export const AssignTeachingUnitDialog = createCallable<
 			call={call}
 			dismissValue={skippedCourses.length > 0}
 			preventDismiss={assign.pending}
-			title={t("admin.classCourses.ueAssign.title", {
-				defaultValue: "Assigner une unité d'enseignement",
-			})}
+			title={t("admin.classCourses.ueAssign.title")}
 		>
 			{skippedCourses.length > 0 ? (
 				<div className="space-y-4">
@@ -150,15 +145,10 @@ export const AssignTeachingUnitDialog = createCallable<
 						<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
 						<div>
 							<p className="font-medium text-yellow-800">
-								{t("admin.classCourses.ueAssign.skippedTitle", {
-									defaultValue: "Certains cours n'ont pas été assignés",
-								})}
+								{t("admin.classCourses.ueAssign.skippedTitle")}
 							</p>
 							<p className="mt-1 text-sm text-yellow-700">
-								{t("admin.classCourses.ueAssign.skippedDesc", {
-									defaultValue:
-										"Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :",
-								})}
+								{t("admin.classCourses.ueAssign.skippedDesc")}
 							</p>
 							<ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
 								{skippedCourses.map((name) => (
@@ -177,9 +167,7 @@ export const AssignTeachingUnitDialog = createCallable<
 				<div className="space-y-4">
 					<div>
 						<label className="mb-2 block font-medium text-sm">
-							{t("admin.classCourses.ueAssign.classLabel", {
-								defaultValue: "Classe",
-							})}
+							{t("admin.classCourses.ueAssign.classLabel")}
 						</label>
 						<CodedEntitySelect
 							items={classes}
@@ -190,9 +178,7 @@ export const AssignTeachingUnitDialog = createCallable<
 								setClassId(cls?.id || "");
 								setTeachingUnitId("");
 							}}
-							placeholder={t("admin.classCourses.ueAssign.classPlaceholder", {
-								defaultValue: "Sélectionner une classe",
-							})}
+							placeholder={t("admin.classCourses.ueAssign.classPlaceholder")}
 							searchMode="hybrid"
 							getItemSubtitle={(cls) => programMap.get(cls.program)?.name ?? ""}
 							onCreate={createClass}
@@ -203,9 +189,7 @@ export const AssignTeachingUnitDialog = createCallable<
 					{classId && (
 						<div>
 							<label className="mb-2 block font-medium text-sm">
-								{t("admin.classCourses.ueAssign.ueLabel", {
-									defaultValue: "Unité d'enseignement",
-								})}
+								{t("admin.classCourses.ueAssign.ueLabel")}
 							</label>
 							<Select
 								value={teachingUnitId}
@@ -214,12 +198,7 @@ export const AssignTeachingUnitDialog = createCallable<
 							>
 								<SelectTrigger>
 									<SelectValue
-										placeholder={t(
-											"admin.classCourses.ueAssign.uePlaceholder",
-											{
-												defaultValue: "Sélectionner une UE",
-											},
-										)}
+										placeholder={t("admin.classCourses.ueAssign.uePlaceholder")}
 									/>
 								</SelectTrigger>
 								<SelectContent>
@@ -234,19 +213,14 @@ export const AssignTeachingUnitDialog = createCallable<
 							</Select>
 							{teachingUnits.length === 0 && (
 								<p className="mt-1 text-muted-foreground text-xs">
-									{t("admin.classCourses.ueAssign.noUe", {
-										defaultValue: "Aucune UE trouvée pour ce programme",
-									})}
+									{t("admin.classCourses.ueAssign.noUe")}
 								</p>
 							)}
 						</div>
 					)}
 
 					<p className="text-muted-foreground text-xs">
-						{t("admin.classCourses.ueAssign.hint", {
-							defaultValue:
-								"Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
-						})}
+						{t("admin.classCourses.ueAssign.hint")}
 					</p>
 
 					<div className="flex justify-end gap-2">
@@ -266,9 +240,7 @@ export const AssignTeachingUnitDialog = createCallable<
 							) : (
 								<Layers className="mr-2 h-4 w-4" />
 							)}
-							{t("admin.classCourses.ueAssign.submit", {
-								defaultValue: "Assigner les cours",
-							})}
+							{t("admin.classCourses.ueAssign.submit")}
 						</Button>
 					</div>
 				</div>

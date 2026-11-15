@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { Download, Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,19 +31,20 @@ export function ExamExportsCard({
 	onPreview: (examId: string) => void;
 	onGenerate: (examId: string) => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Card>
 			<CardHeader className="pb-3">
 				<div className="flex items-center justify-between">
 					<div>
 						<CardTitle className="text-base">
-							Par évaluation{" "}
+							{t("admin.gradeExport.evaluations.title")}{" "}
 							<Badge variant="secondary" className="ml-1">
 								{exams.length}
 							</Badge>
 						</CardTitle>
 						<CardDescription className="mt-1">
-							Export individuel par évaluation sélectionnée
+							{t("admin.gradeExport.evaluations.description")}
 						</CardDescription>
 					</div>
 					<Button
@@ -56,7 +58,7 @@ export function ExamExportsCard({
 							icon={Download}
 							className="mr-1 h-3 w-3"
 						/>
-						Tout télécharger PDF
+						{t("admin.gradeExport.evaluations.downloadAllPdf")}
 					</Button>
 				</div>
 			</CardHeader>
@@ -65,11 +67,21 @@ export function ExamExportsCard({
 					<table className="w-full text-sm">
 						<thead className="bg-muted/50">
 							<tr>
-								<th className="px-4 py-2 text-left font-medium">Cours</th>
-								<th className="px-4 py-2 text-left font-medium">Type</th>
-								<th className="px-4 py-2 text-left font-medium">Date</th>
-								<th className="px-4 py-2 text-right font-medium">Excel</th>
-								<th className="px-4 py-2 text-right font-medium">PDF</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("admin.gradeExport.columns.course")}
+								</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("admin.gradeExport.columns.type")}
+								</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("admin.gradeExport.columns.date")}
+								</th>
+								<th className="px-4 py-2 text-right font-medium">
+									{t("admin.gradeExport.columns.excel")}
+								</th>
+								<th className="px-4 py-2 text-right font-medium">
+									{t("admin.gradeExport.columns.pdf")}
+								</th>
 							</tr>
 						</thead>
 						<tbody className="divide-y">

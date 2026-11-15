@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import {
@@ -13,6 +14,7 @@ import {
 
 /** Selection, per-class status and the sequential export of `BulkClassExportDialog`. */
 export function useBulkClassExport(classes: BulkExportClass[]) {
+	const { t, i18n } = useTranslation();
 	const [format, setFormat] = useState<BulkExportFormat>("xlsx");
 	const [mode, setMode] = useState<BulkExportMode>("unified");
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(
@@ -22,7 +24,7 @@ export function useBulkClassExport(classes: BulkExportClass[]) {
 	const [progress, setProgress] = useState({ done: 0, total: 0 });
 	const [isRunning, setIsRunning] = useState(false);
 
-	// "Unique" only makes sense for Excel (multi-sheets workbook). PDF unique
+	// "Single file" only makes sense for Excel (multi-sheets workbook). PDF unique
 	// would require pdf-lib for merging; we fall back to "separated".
 	useEffect(() => {
 		if (format === "pdf" && mode === "unified") setMode("separated");
@@ -50,7 +52,8 @@ export function useBulkClassExport(classes: BulkExportClass[]) {
 	const exportMutation = useMutation({
 		mutationFn: async () => {
 			const ids = [...selectedIds];
-			if (ids.length === 0) throw new Error("Aucune classe sélectionnée");
+			if (ids.length === 0)
+				throw new Error(t("admin.documents.bulkClassExport.toast.noSelection"));
 
 			setIsRunning(true);
 			setProgress({ done: 0, total: ids.length });
@@ -112,9 +115,12 @@ export function useBulkClassExport(classes: BulkExportClass[]) {
 				}
 			}
 
+			const names = institution as { nameFr?: string; nameEn?: string };
 			const institutionName =
-				(institution as { nameFr?: string; nameEn?: string })?.nameFr ??
-				"Institution";
+				(i18n.language.startsWith("en")
+					? (names?.nameEn ?? names?.nameFr)
+					: (names?.nameFr ?? names?.nameEn)) ??
+				t("admin.documents.bulkClassExport.institutionFallback");
 			await saveClassExports(results, format, mode, institutionName);
 
 			return {
@@ -123,11 +129,18 @@ export function useBulkClassExport(classes: BulkExportClass[]) {
 			};
 		},
 		onSuccess: (r) => {
-			toast.success(`${r.ok} / ${r.total} liste(s) exportée(s)`);
+			toast.success(
+				t("admin.documents.bulkClassExport.toast.success", {
+					ok: r.ok,
+					total: r.total,
+				}),
+			);
 			setIsRunning(false);
 		},
 		onError: (err: any) => {
-			toast.error(err?.message ?? "Échec de l'export");
+			toast.error(
+				err?.message ?? t("admin.documents.bulkClassExport.toast.error"),
+			);
 			setIsRunning(false);
 		},
 	});

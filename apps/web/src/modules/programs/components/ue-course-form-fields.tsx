@@ -53,16 +53,13 @@ export function UeCourseFormFields({
 				render={({ field }) => (
 					<FormItem>
 						<FormLabel>
-							{t("admin.teachingUnits.courses.form.codeLabel", {
-								defaultValue: "Code",
-							})}
+							{t("admin.teachingUnits.courses.form.codeLabel")}
 						</FormLabel>
 						<FormControl>
 							<Input
 								{...field}
 								placeholder={t(
 									"admin.teachingUnits.courses.form.codePlaceholder",
-									{ defaultValue: "INF111" },
 								)}
 							/>
 						</FormControl>
@@ -139,9 +136,7 @@ export function UeCourseFormFields({
 				render={({ field }) => (
 					<FormItem>
 						<FormLabel>
-							{t("admin.teachingUnits.courses.form.coefficientLabel", {
-								defaultValue: "Coefficient par défaut",
-							})}
+							{t("admin.teachingUnits.courses.form.coefficientLabel")}
 						</FormLabel>
 						<FormControl>
 							<Input
@@ -152,15 +147,11 @@ export function UeCourseFormFields({
 								min="0.01"
 								placeholder={t(
 									"admin.teachingUnits.courses.form.coefficientPlaceholder",
-									{ defaultValue: "1.00" },
 								)}
 							/>
 						</FormControl>
 						<p className="text-muted-foreground text-xs">
-							{t("admin.teachingUnits.courses.form.coefficientHelp", {
-								defaultValue:
-									"Poids par défaut lors de l'assignation à une classe",
-							})}
+							{t("admin.teachingUnits.courses.form.coefficientHelp")}
 						</p>
 						<FormMessage />
 					</FormItem>

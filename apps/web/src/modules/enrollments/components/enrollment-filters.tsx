@@ -64,9 +64,7 @@ export function EnrollmentFilters({
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				<div className="space-y-1.5">
 					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-						{t("admin.enrollments.filters.year", {
-							defaultValue: "Année académique",
-						})}
+						{t("admin.enrollments.filters.year")}
 					</p>
 					<AcademicYearSelect
 						value={selectedAcademicYear || null}
@@ -77,14 +75,12 @@ export function EnrollmentFilters({
 								semesterId: "",
 							})
 						}
-						placeholder={t("admin.enrollments.selectYear", {
-							defaultValue: "Sélectionner une année",
-						})}
+						placeholder={t("admin.enrollments.selectYear")}
 					/>
 				</div>
 				<div className="space-y-1.5">
 					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-						{t("admin.enrollments.filters.class", { defaultValue: "Classe" })}
+						{t("admin.enrollments.filters.class")}
 					</p>
 					<Select
 						value={selectedClass}
@@ -92,11 +88,7 @@ export function EnrollmentFilters({
 						disabled={!selectedAcademicYear}
 					>
 						<SelectTrigger data-testid="class-select" className="w-full">
-							<SelectValue
-								placeholder={t("admin.enrollments.selectClass", {
-									defaultValue: "Sélectionner une classe",
-								})}
-							/>
+							<SelectValue placeholder={t("admin.enrollments.selectClass")} />
 						</SelectTrigger>
 						<SelectContent>
 							{classes.map((klass) => (
@@ -112,17 +104,13 @@ export function EnrollmentFilters({
 				</div>
 				<div className="space-y-1.5">
 					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-						{t("admin.enrollments.filters.semester", {
-							defaultValue: "Semestre",
-						})}
+						{t("admin.enrollments.filters.semester")}
 					</p>
 					<SemesterSelect
 						value={selectedSemester || null}
 						onChange={(v) => onChange({ semesterId: v ?? "" })}
 						disabled={!selectedClass}
-						placeholder={t("admin.enrollments.selectSemester", {
-							defaultValue: "Sélectionner un semestre",
-						})}
+						placeholder={t("admin.enrollments.selectSemester")}
 					/>
 				</div>
 				<div className="space-y-1.5">
@@ -163,11 +151,13 @@ export function EnrollmentFilters({
 				<div className="mt-3 flex flex-wrap gap-4 rounded-lg border border-dashed bg-muted/30 px-4 py-2.5 text-muted-foreground text-xs">
 					<span>
 						<span className="font-medium text-foreground">{studentsCount}</span>{" "}
-						étudiant(s)
+						{t("admin.enrollments.filters.labels.students", {
+							count: studentsCount,
+						})}
 					</span>
 					{selectedClassDetails?.cycle?.name && (
 						<span>
-							Cycle:{" "}
+							{t("admin.enrollments.filters.labels.cycle")}{" "}
 							<span className="font-medium text-foreground">
 								{selectedClassDetails.cycle.name}
 							</span>
@@ -175,7 +165,7 @@ export function EnrollmentFilters({
 					)}
 					{selectedClassDetails?.cycleLevel?.name && (
 						<span>
-							Niveau:{" "}
+							{t("admin.enrollments.filters.labels.level")}{" "}
 							<span className="font-medium text-foreground">
 								{selectedClassDetails.cycleLevel.name}
 							</span>
@@ -183,7 +173,7 @@ export function EnrollmentFilters({
 					)}
 					{selectedClassDetails?.programOption?.name && (
 						<span>
-							Option:{" "}
+							{t("admin.enrollments.filters.labels.option")}{" "}
 							<span className="font-medium text-foreground">
 								{selectedClassDetails.programOption.name}
 							</span>
@@ -191,7 +181,7 @@ export function EnrollmentFilters({
 					)}
 					{windowStatus && (
 						<span>
-							Fenêtre:{" "}
+							{t("admin.enrollments.filters.labels.window")}{" "}
 							<span className="font-medium text-foreground">
 								{windowStatus}
 							</span>

@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Download, FileText } from "lucide-react";
 import { useState } from "react";
 import { createCallable } from "react-call";
+import { Trans, useTranslation } from "react-i18next";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
 import { Button } from "@/components/ui/button";
@@ -29,12 +30,6 @@ import { trpcClient } from "@/utils/trpc";
 
 type DocumentKind = "diploma" | "transcript" | "attestation";
 
-const KIND_LABELS: Record<DocumentKind, string> = {
-	diploma: "Diplôme",
-	transcript: "Relevé de notes",
-	attestation: "Attestation",
-};
-
 interface Props {
 	studentId: string;
 	studentName: string;
@@ -47,6 +42,7 @@ export function GenerateDocumentButton({
 	studentName,
 	renderTrigger,
 }: Props) {
+	const { t } = useTranslation();
 	const open = () => GenerateDocumentDialog.call({ studentId, studentName });
 	return renderTrigger ? (
 		renderTrigger(open)
@@ -55,7 +51,7 @@ export function GenerateDocumentButton({
 			size="sm"
 			variant="ghost"
 			onClick={open}
-			title="Générer un document académique"
+			title={t("admin.documents.generate.trigger")}
 		>
 			<FileText className="h-4 w-4" />
 		</Button>
@@ -70,6 +66,7 @@ export const GenerateDocumentDialog = createCallable<{
 	studentId: string;
 	studentName: string;
 }>(({ call, studentId, studentName }) => {
+	const { t } = useTranslation();
 	const [kind, setKind] = useState<DocumentKind>("transcript");
 	const [format, setFormat] = useState<"pdf" | "html">("pdf");
 	const [demoMode, setDemoMode] = useState(false);
@@ -91,17 +88,20 @@ export const GenerateDocumentDialog = createCallable<{
 		onSuccess: (result) => {
 			if (result.mimeType === "text/html") {
 				DocumentPreviewDialog.call({
-					title: `Aperçu HTML — ${KIND_LABELS[kind]}`,
+					title: t("admin.documents.generate.htmlPreviewTitle", {
+						kind: t(`admin.documents.kinds.${kind}.label`),
+					}),
 					description: studentName,
 					html: result.data,
 				});
 				return;
 			}
 			downloadBase64(result.data, result.filename, result.mimeType);
-			toast.success("Document généré et téléchargé");
+			toast.success(t("admin.documents.generate.toast.success"));
 			call.end();
 		},
-		onError: (err: any) => toast.error(err.message || "Échec de la génération"),
+		onError: (err: any) =>
+			toast.error(err.message || t("admin.documents.generate.toast.error")),
 	});
 
 	return (
@@ -111,15 +111,18 @@ export const GenerateDocumentDialog = createCallable<{
 		>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>Générer un document</DialogTitle>
+					<DialogTitle>{t("admin.documents.generate.title")}</DialogTitle>
 					<DialogDescription>
-						Pour <strong>{studentName}</strong>. Le modèle utilisé est celui
-						assigné à la classe (sinon le défaut institution).
+						<Trans
+							i18nKey="admin.documents.generate.description"
+							values={{ name: studentName }}
+							components={{ strong: <strong /> }}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4 px-6 py-2">
 					<div className="space-y-1">
-						<Label>Type de document</Label>
+						<Label>{t("admin.documents.generate.kind")}</Label>
 						<Select
 							value={kind}
 							onValueChange={(v) => setKind(v as DocumentKind)}
@@ -128,18 +131,20 @@ export const GenerateDocumentDialog = createCallable<{
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="diploma">{KIND_LABELS.diploma}</SelectItem>
+								<SelectItem value="diploma">
+									{t("admin.documents.kinds.diploma.label")}
+								</SelectItem>
 								<SelectItem value="transcript">
-									{KIND_LABELS.transcript}
+									{t("admin.documents.kinds.transcript.label")}
 								</SelectItem>
 								<SelectItem value="attestation">
-									{KIND_LABELS.attestation}
+									{t("admin.documents.kinds.attestation.label")}
 								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
 					<div className="space-y-1">
-						<Label>Format</Label>
+						<Label>{t("admin.documents.generate.format")}</Label>
 						<Select
 							value={format}
 							onValueChange={(v) => setFormat(v as "pdf" | "html")}
@@ -148,16 +153,20 @@ export const GenerateDocumentDialog = createCallable<{
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="pdf">PDF</SelectItem>
-								<SelectItem value="html">HTML (aperçu)</SelectItem>
+								<SelectItem value="pdf">
+									{t("admin.documents.generate.formatPdf")}
+								</SelectItem>
+								<SelectItem value="html">
+									{t("admin.documents.generate.formatHtml")}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
 					<div className="flex items-center justify-between">
 						<Label className="flex flex-col gap-0.5">
-							<span>Mode démo</span>
+							<span>{t("admin.documents.generate.demoMode")}</span>
 							<span className="font-normal text-muted-foreground text-xs">
-								Ajoute un filigrane "DÉMO"
+								{t("admin.documents.generate.demoModeHint")}
 							</span>
 						</Label>
 						<Switch checked={demoMode} onCheckedChange={setDemoMode} />
@@ -169,7 +178,7 @@ export const GenerateDocumentDialog = createCallable<{
 						disabled={generate.isPending}
 						onClick={() => call.end()}
 					>
-						Annuler
+						{t("common.actions.cancel")}
 					</Button>
 					<Button
 						onClick={() => generate.mutate()}
@@ -177,7 +186,7 @@ export const GenerateDocumentDialog = createCallable<{
 					>
 						{generate.isPending && <Spinner className="mr-2" />}
 						<Download className="mr-1 h-4 w-4" />
-						Générer
+						{t("admin.documents.generate.submit")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

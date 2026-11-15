@@ -51,9 +51,7 @@ export default function GradeSpreadsheet() {
 		return (
 			<Card>
 				<CardContent className="py-10 text-center text-muted-foreground text-sm">
-					{t("teacher.spreadsheet.noCourse", {
-						defaultValue: "Aucun cours sélectionné",
-					})}
+					{t("teacher.spreadsheet.noCourse")}
 				</CardContent>
 			</Card>
 		);
@@ -99,9 +97,7 @@ export default function GradeSpreadsheet() {
 					<div className="relative max-w-md">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 						<Input
-							placeholder={t("teacher.spreadsheet.searchStudent", {
-								defaultValue: "Rechercher un étudiant…",
-							})}
+							placeholder={t("teacher.spreadsheet.searchStudent")}
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
 							className="pl-9"
@@ -114,32 +110,23 @@ export default function GradeSpreadsheet() {
 			{!exams.length ? (
 				<Card>
 					<CardContent className="py-10 text-center text-muted-foreground text-sm">
-						{t("teacher.spreadsheet.noExams", {
-							defaultValue: "Aucun examen pour ce cours. Créez-en un d'abord.",
-						})}
+						{t("teacher.spreadsheet.noExams")}
 					</CardContent>
 				</Card>
 			) : !filteredStudents.length ? (
 				<Card>
 					<CardContent className="py-10 text-center text-muted-foreground text-sm">
-						{t("teacher.spreadsheet.noStudents", {
-							defaultValue: "Aucun étudiant ne correspond à la recherche.",
-						})}
+						{t("teacher.spreadsheet.noStudents")}
 					</CardContent>
 				</Card>
 			) : (
 				<Card>
 					<CardHeader className="pb-3">
 						<CardTitle className="text-base">
-							{t("teacher.spreadsheet.legend.title", {
-								defaultValue: "Saisie rapide — auto-enregistrement",
-							})}
+							{t("teacher.spreadsheet.legend.title")}
 						</CardTitle>
 						<CardDescription className="text-xs">
-							{t("teacher.spreadsheet.legend.hint", {
-								defaultValue:
-									"Tab/Entrée/flèches pour naviguer. Vide une cellule pour supprimer la note. Sauvegarde automatique au blur.",
-							})}
+							{t("teacher.spreadsheet.legend.hint")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="overflow-x-auto p-0">

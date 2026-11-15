@@ -1,4 +1,5 @@
 import { Download, Loader2, Package } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -11,28 +12,7 @@ import type { BulkExportKind } from "../hooks/use-bulk-grade-exports";
 import type { BulkScope } from "../types";
 import { BusyIcon } from "./export-ui";
 
-const BULK_KINDS: Array<{
-	kind: BulkExportKind;
-	title: string;
-	description: string;
-}> = [
-	{
-		kind: "eval",
-		title: "Évaluations",
-		description: "Une PDF par examen. Aucun check d'éligibilité.",
-	},
-	{
-		kind: "ec",
-		title: "EC (Éléments Constitutifs)",
-		description: "Une PDF par EC. Skip auto si pondérations ≠ 100%.",
-	},
-	{
-		kind: "ue",
-		title: "UE (Unités d'Enseignement)",
-		description:
-			"Une PDF par UE × classe × semestre. Skip auto si UE incomplète.",
-	},
-];
+const BULK_KINDS: BulkExportKind[] = ["eval", "ec", "ue"];
 
 /**
  * Bulk export: builds a server-side ZIP holding every PDF
@@ -54,6 +34,7 @@ export function BulkZipExportCard({
 	hasClass: boolean;
 	onExport: (kind: BulkExportKind, scope: BulkScope) => void;
 }) {
+	const { t } = useTranslation();
 	const isBusy = exporting !== null;
 	return (
 		<Card>
@@ -62,19 +43,17 @@ export function BulkZipExportCard({
 					<div>
 						<CardTitle className="flex items-center gap-2 text-base">
 							<Package className="h-4 w-4" />
-							Export massif (ZIP)
+							{t("admin.gradeExport.bulk.title")}
 						</CardTitle>
 						<CardDescription className="mt-1">
-							Génère un fichier ZIP contenant tous les PDFs classés par
-							programme et classe. Filtré par l&apos;année et le semestre
-							sélectionnés en haut de page si renseignés.
+							{t("admin.gradeExport.bulk.description")}
 						</CardDescription>
 					</div>
 					{exporting?.startsWith("bulk-") && (
 						<div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-amber-900 text-xs dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
 							<Loader2 className="h-3.5 w-3.5 animate-spin" />
 							<span className="font-medium">
-								Génération en cours · {bulkElapsed}s
+								{t("admin.gradeExport.bulk.running", { seconds: bulkElapsed })}
 							</span>
 						</div>
 					)}
@@ -82,11 +61,13 @@ export function BulkZipExportCard({
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<div className="grid gap-3 sm:grid-cols-3">
-					{BULK_KINDS.map(({ kind, title, description }) => (
+					{BULK_KINDS.map((kind) => (
 						<div key={kind} className="rounded-md border p-3">
-							<div className="font-medium text-sm">{title}</div>
+							<div className="font-medium text-sm">
+								{t(`admin.gradeExport.bulk.kinds.${kind}.title`)}
+							</div>
 							<p className="mt-1 text-muted-foreground text-xs">
-								{description}
+								{t(`admin.gradeExport.bulk.kinds.${kind}.description`)}
 							</p>
 							<div className="mt-3 flex flex-col gap-2">
 								<Button
@@ -101,7 +82,7 @@ export function BulkZipExportCard({
 										icon={Download}
 										className="mr-1 h-3 w-3"
 									/>
-									Toutes classes
+									{t("admin.gradeExport.bulk.allClasses")}
 								</Button>
 								<Button
 									type="button"
@@ -114,16 +95,14 @@ export function BulkZipExportCard({
 										icon={Download}
 										className="mr-1 h-3 w-3"
 									/>
-									Classe sélectionnée
+									{t("admin.gradeExport.bulk.selectedClass")}
 								</Button>
 							</div>
 						</div>
 					))}
 				</div>
 				<p className="text-muted-foreground text-xs">
-					⚠️ La génération massive peut prendre plusieurs minutes selon le volume
-					(1 PDF ≈ 1-2s). Le serveur réutilise un seul navigateur Chromium pour
-					accélérer le batch.
+					{t("admin.gradeExport.bulk.warning")}
 				</p>
 			</CardContent>
 		</Card>

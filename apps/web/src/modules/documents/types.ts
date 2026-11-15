@@ -1,15 +1,23 @@
+import i18n from "@/i18n";
+
 export const EXPORT_TYPES = [
-	{ value: "pv", label: "PV (Procès-Verbal)" },
-	{ value: "evaluation", label: "Evaluation" },
-	{ value: "ue", label: "UE (Teaching Unit)" },
-	{ value: "deliberation", label: "Délibération" },
-	{ value: "diploma", label: "Diplôme" },
-	{ value: "transcript", label: "Relevé de notes" },
-	{ value: "attestation", label: "Attestation" },
-	{ value: "student_list", label: "Liste d'étudiants" },
+	{ value: "pv" },
+	{ value: "evaluation" },
+	{ value: "ue" },
+	{ value: "deliberation" },
+	{ value: "diploma" },
+	{ value: "transcript" },
+	{ value: "attestation" },
+	{ value: "student_list" },
 ] as const;
 
 export type ExportTemplateType = (typeof EXPORT_TYPES)[number]["value"];
 
+const isExportTemplateType = (type: string): type is ExportTemplateType =>
+	EXPORT_TYPES.some((t) => t.value === type);
+
+/** Translated label of an export template type (falls back to the raw type). */
 export const getExportTypeLabel = (type: string) =>
-	EXPORT_TYPES.find((t) => t.value === type)?.label || type;
+	isExportTemplateType(type)
+		? i18n.t(`admin.exportTemplates.types.${type}`)
+		: type;

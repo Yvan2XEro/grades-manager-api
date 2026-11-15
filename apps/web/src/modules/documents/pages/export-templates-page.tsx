@@ -26,7 +26,7 @@ import {
 	useSystemTemplates,
 } from "../hooks/use-export-templates";
 import { getExportTemplatesColumns } from "../table/export-templates-columns";
-import { EXPORT_TYPES } from "../types";
+import { EXPORT_TYPES, getExportTypeLabel } from "../types";
 
 export default function ExportTemplatesManagement() {
 	const { t } = useTranslation();
@@ -62,12 +62,8 @@ export default function ExportTemplatesManagement() {
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				bulkDeleteMutation.mutate([...selection.selectedIds], {
@@ -77,19 +73,17 @@ export default function ExportTemplatesManagement() {
 
 	const rowActions = (template: ExportTemplate): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Settings,
 			onSelect: () => openEditor(template),
 		},
 		{
-			label: t("common.actions.rename", { defaultValue: "Rename" }),
+			label: t("common.actions.rename"),
 			icon: Pencil,
 			onSelect: () => RenameTemplateDialog.call({ template }),
 		},
 		{
-			label: t("admin.exportTemplates.actions.setDefault", {
-				defaultValue: "Set as default",
-			}),
+			label: t("admin.exportTemplates.actions.setDefault"),
 			icon: Star,
 			disabled: template.isDefault || setDefaultMutation.isPending,
 			onSelect: () =>
@@ -122,7 +116,7 @@ export default function ExportTemplatesManagement() {
 							variant="outline"
 							onClick={() => exportAllMutation.mutate()}
 							disabled={exportAllMutation.isPending}
-							title="Génère un PDF par modèle (16 fichiers — 8 types × standard + centre) avec les vraies infos d'institution et centre, étudiant fictif. Téléchargement ZIP."
+							title={t("admin.exportTemplates.system.exportAllHint")}
 						>
 							{exportAllMutation.isPending ? (
 								<Spinner className="mr-2" />
@@ -130,17 +124,17 @@ export default function ExportTemplatesManagement() {
 								<FileText className="mr-2 h-4 w-4" />
 							)}
 							{exportAllMutation.isPending
-								? "Génération en cours…"
-								: "Télécharger tous les modèles (PDF)"}
+								? t("admin.exportTemplates.system.exportAllPending")
+								: t("admin.exportTemplates.system.exportAll")}
 						</Button>
 						<Button
 							variant="outline"
 							onClick={() => seedSystemMutation.mutate()}
 							disabled={seedSystemMutation.isPending}
-							title="Crée les 3 modèles officiels (diplôme, relevé, attestation) si absents"
+							title={t("admin.exportTemplates.system.seedHint")}
 						>
 							{seedSystemMutation.isPending && <Spinner className="mr-2" />}
-							Initialiser modèles officiels
+							{t("admin.exportTemplates.system.seed")}
 						</Button>
 						<Button onClick={openCreate}>
 							<Plus className="mr-2 h-4 w-4" />
@@ -176,7 +170,7 @@ export default function ExportTemplatesManagement() {
 								</SelectItem>
 								{EXPORT_TYPES.map((type) => (
 									<SelectItem key={type.value} value={type.value}>
-										{type.label}
+										{getExportTypeLabel(type.value)}
 									</SelectItem>
 								))}
 							</SelectContent>

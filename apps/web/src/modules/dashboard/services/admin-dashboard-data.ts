@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import type { ProgramBar, StatusSlice } from "../types";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -7,12 +8,10 @@ const STATUS_COLORS: Record<string, string> = {
 	withdrawn: "var(--chart-4)",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-	active: "Actif",
-	pending: "En attente",
-	completed: "Terminé",
-	withdrawn: "Retiré",
-};
+const KNOWN_STATUSES = ["active", "pending", "completed", "withdrawn"] as const;
+type KnownStatus = (typeof KNOWN_STATUSES)[number];
+const isKnownStatus = (status: string): status is KnownStatus =>
+	(KNOWN_STATUSES as readonly string[]).includes(status);
 
 export function toProgramBars(
 	byProgram: { programName: string; count: number }[] | undefined,
@@ -29,7 +28,9 @@ export function toStatusSlices(
 	return (byStatus ?? [])
 		.filter((s) => s.count > 0)
 		.map((s) => ({
-			name: STATUS_LABELS[s.status] ?? s.status,
+			name: isKnownStatus(s.status)
+				? i18n.t(`admin.enrollments.status.${s.status}`)
+				: s.status,
 			value: s.count,
 			color: STATUS_COLORS[s.status] ?? "var(--chart-5)",
 		}));

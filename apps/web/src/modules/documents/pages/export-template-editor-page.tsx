@@ -82,7 +82,7 @@ export default function ExportTemplateEditor() {
 						</h1>
 						<p className="text-muted-foreground">
 							{t("admin.exportTemplates.editor.subtitle", {
-								type: template?.type || templateType,
+								type: getExportTypeLabel(template?.type || templateType),
 							})}
 						</p>
 					</div>
@@ -121,7 +121,7 @@ export default function ExportTemplateEditor() {
 						<SelectContent>
 							{EXPORT_TYPES.map((type) => (
 								<SelectItem key={type.value} value={type.value}>
-									{type.label}
+									{getExportTypeLabel(type.value)}
 								</SelectItem>
 							))}
 							{/* Templates of other types (created elsewhere) keep their label */}
@@ -152,29 +152,31 @@ export default function ExportTemplateEditor() {
 						htmlFor="live-preview"
 						className="cursor-pointer font-normal text-sm"
 					>
-						Aperçu en direct
+						{t("admin.exportTemplates.editor.livePreview")}
 					</Label>
 					{livePreview && isPreviewPending && (
 						<span className="text-muted-foreground text-xs italic">
-							rendu en cours…
+							{t("admin.exportTemplates.editor.rendering")}
 						</span>
 					)}
 				</div>
 				<div className="ml-auto flex items-center gap-2">
-					<Label className="text-muted-foreground text-xs">Disposition:</Label>
+					<Label className="text-muted-foreground text-xs">
+						{t("admin.exportTemplates.editor.layout")}
+					</Label>
 					<Button
 						size="sm"
 						variant={splitDirection === "horizontal" ? "default" : "outline"}
 						onClick={() => setSplitDirection("horizontal")}
 					>
-						Côte à côte
+						{t("admin.exportTemplates.editor.sideBySide")}
 					</Button>
 					<Button
 						size="sm"
 						variant={splitDirection === "vertical" ? "default" : "outline"}
 						onClick={() => setSplitDirection("vertical")}
 					>
-						Empilé
+						{t("admin.exportTemplates.editor.stacked")}
 					</Button>
 				</div>
 			</div>

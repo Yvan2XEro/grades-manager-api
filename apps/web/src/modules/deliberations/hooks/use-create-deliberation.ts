@@ -101,11 +101,7 @@ export function useCreateDeliberation(onDone: () => void) {
 				buildInput(singleClassId!),
 			),
 		onSuccess: () => {
-			toast.success(
-				t("admin.deliberations.toast.initAndComputeSuccess", {
-					defaultValue: "Délibération créée et résultats calculés",
-				}),
-			);
+			toast.success(t("admin.deliberations.toast.initAndComputeSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
 			close();
 		},
@@ -175,15 +171,16 @@ export function useCreateDeliberation(onDone: () => void) {
 
 		if (errors.length === 0) {
 			toast.success(
-				t("admin.deliberations.toast.batchCreateSuccess", {
-					defaultValue: `${selectedClassIds.length} délibération(s) créée(s)`,
+				t("admin.deliberations.toast.batchCreatedCount", {
+					count: selectedClassIds.length,
 				}),
 			);
 			close();
 		} else {
 			toast.error(
-				t("admin.deliberations.toast.batchCreatePartial", {
-					defaultValue: `${selectedClassIds.length - errors.length} créée(s), ${errors.length} erreur(s)`,
+				t("admin.deliberations.toast.batchCreatedPartial", {
+					created: selectedClassIds.length - errors.length,
+					count: errors.length,
 				}),
 			);
 		}

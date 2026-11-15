@@ -48,15 +48,10 @@ export function ExamSelectionCard({
 			<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
 				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				<p className="font-medium text-sm">
-					{t("admin.gradeExport.exams.loadingTitle", {
-						defaultValue: "Chargement des évaluations…",
-					})}
+					{t("admin.gradeExport.exams.loadingTitle")}
 				</p>
 				<p className="text-muted-foreground text-xs">
-					{t("admin.gradeExport.exams.loadingDescription", {
-						defaultValue:
-							"On récupère tous les examens et leurs cours pour cette classe.",
-					})}
+					{t("admin.gradeExport.exams.loadingDescription")}
 				</p>
 			</CardContent>
 		</Card>
@@ -70,8 +65,10 @@ export function ExamSelectionCard({
 							{t("admin.gradeExport.exams.title")}
 						</CardTitle>
 						<CardDescription>
-							{selection.selectedExams.length} / {exams.length} évaluations
-							sélectionnées
+							{t("admin.gradeExport.exams.selectedCount", {
+								selected: selection.selectedExams.length,
+								count: exams.length,
+							})}
 						</CardDescription>
 					</div>
 					<div className="flex gap-2">
@@ -82,7 +79,7 @@ export function ExamSelectionCard({
 							onClick={selection.selectAll}
 							disabled={selection.selectedExams.length === exams.length}
 						>
-							Tout sélectionner
+							{t("common.actions.selectAll")}
 						</Button>
 						<Button
 							type="button"
@@ -91,7 +88,7 @@ export function ExamSelectionCard({
 							onClick={selection.deselectAll}
 							disabled={selection.selectedExams.length === 0}
 						>
-							Tout désélectionner
+							{t("common.actions.deselectAll")}
 						</Button>
 					</div>
 				</div>
@@ -101,7 +98,7 @@ export function ExamSelectionCard({
 					<div className="relative flex-1">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 						<Input
-							placeholder="Rechercher une matière ou une évaluation..."
+							placeholder={t("admin.gradeExport.exams.searchPlaceholder")}
 							value={selection.searchQuery}
 							onChange={(e) => selection.setSearchQuery(e.target.value)}
 							className="pl-9"
@@ -115,9 +112,15 @@ export function ExamSelectionCard({
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="course">Par matière</SelectItem>
-							<SelectItem value="date">Par date</SelectItem>
-							<SelectItem value="type">Par type</SelectItem>
+							<SelectItem value="course">
+								{t("admin.gradeExport.exams.sort.course")}
+							</SelectItem>
+							<SelectItem value="date">
+								{t("admin.gradeExport.exams.sort.date")}
+							</SelectItem>
+							<SelectItem value="type">
+								{t("admin.gradeExport.exams.sort.type")}
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -154,8 +157,10 @@ export function ExamSelectionCard({
 															)}
 														</div>
 														<div className="text-muted-foreground text-xs">
-															{courseSelectedCount} / {courseExams.length}{" "}
-															évaluations
+															{t("admin.gradeExport.exams.courseCount", {
+																selected: courseSelectedCount,
+																count: courseExams.length,
+															})}
 														</div>
 													</div>
 													<Badge
@@ -207,7 +212,9 @@ export function ExamSelectionCard({
 					</Accordion>
 				) : (
 					<p className="py-6 text-center text-muted-foreground text-sm">
-						Aucune évaluation trouvée pour &ldquo;{selection.searchQuery}&rdquo;
+						{t("admin.gradeExport.exams.noMatch", {
+							query: selection.searchQuery,
+						})}
 					</p>
 				)}
 			</CardContent>

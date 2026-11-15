@@ -1,4 +1,5 @@
 import { Eye, FileText, RotateCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,7 @@ export function ClassTemplateKindCard({
 	kind: (typeof KINDS)[number];
 	state: ReturnType<typeof useClassDocumentTemplates>;
 }) {
+	const { t } = useTranslation();
 	const {
 		assignmentsByKind,
 		templatesByType,
@@ -47,32 +49,42 @@ export function ClassTemplateKindCard({
 				<div className="flex items-center justify-between">
 					<CardTitle className="flex items-center gap-2">
 						<FileText className="h-4 w-4" />
-						{k.label}
+						{t(`admin.documents.kinds.${k.value}.label`)}
 					</CardTitle>
 					{assignment ? (
-						<Badge variant="default">Assigné</Badge>
+						<Badge variant="default">
+							{t("admin.documents.classTemplates.card.assigned")}
+						</Badge>
 					) : (
-						<Badge variant="secondary">Défaut institution</Badge>
+						<Badge variant="secondary">
+							{t("admin.documents.classTemplates.card.institutionDefault")}
+						</Badge>
 					)}
 				</div>
-				<CardDescription>{k.description}</CardDescription>
+				<CardDescription>
+					{t(`admin.documents.kinds.${k.value}.description`)}
+				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-3">
 				<div>
 					<Label className="text-muted-foreground text-xs">
-						Modèle utilisé
+						{t("admin.documents.classTemplates.card.templateUsed")}
 					</Label>
 					<Select
 						value={assignment?.templateId ?? ""}
 						onValueChange={(v) => handleAssign(k.value, v)}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="(défaut institution)" />
+							<SelectValue
+								placeholder={t(
+									"admin.documents.classTemplates.card.templatePlaceholder",
+								)}
+							/>
 						</SelectTrigger>
 						<SelectContent>
-							{templates.map((t) => (
-								<SelectItem key={t.id} value={t.id}>
-									{t.name}
+							{templates.map((tpl) => (
+								<SelectItem key={tpl.id} value={tpl.id}>
+									{tpl.name}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -81,7 +93,7 @@ export function ClassTemplateKindCard({
 
 				{hasOverrides && (
 					<div className="rounded bg-amber-50 px-2 py-1 text-amber-700 text-xs">
-						Thème personnalisé pour cette classe
+						{t("admin.documents.classTemplates.card.customTheme")}
 					</div>
 				)}
 
@@ -93,13 +105,13 @@ export function ClassTemplateKindCard({
 						disabled={templates.length === 0}
 						title={
 							templates.length === 0
-								? "Aucun modèle disponible — créez d'abord les modèles système"
+								? t("admin.documents.classTemplates.card.noTemplateHint")
 								: assignment
-									? "Modifier le thème de cette classe"
-									: "Créer une personnalisation pour cette classe (utilise le modèle par défaut)"
+									? t("admin.documents.classTemplates.card.editThemeHint")
+									: t("admin.documents.classTemplates.card.createThemeHint")
 						}
 					>
-						Personnaliser le thème
+						{t("admin.documents.classTemplates.card.customizeTheme")}
 					</Button>
 					<Button
 						size="sm"
@@ -113,7 +125,7 @@ export function ClassTemplateKindCard({
 						disabled={previewMutation.isPending}
 					>
 						<Eye className="mr-1 h-3.5 w-3.5" />
-						Aperçu
+						{t("admin.documents.classTemplates.card.preview")}
 					</Button>
 					{assignment && (
 						<Button
@@ -127,7 +139,7 @@ export function ClassTemplateKindCard({
 							}
 						>
 							<RotateCcw className="mr-1 h-3.5 w-3.5" />
-							Réinitialiser
+							{t("admin.documents.classTemplates.card.reset")}
 						</Button>
 					)}
 				</div>

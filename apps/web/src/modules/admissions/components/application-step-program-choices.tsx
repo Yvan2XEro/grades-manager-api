@@ -100,7 +100,7 @@ export function ApplicationStepProgramChoices({
 						<FormItem>
 							<FormLabel>
 								{t("admissions.fields.trainingType")}{" "}
-								<OptionalBadge label="opt." />
+								<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 							</FormLabel>
 							<Select onValueChange={field.onChange} value={field.value ?? ""}>
 								<FormControl>
@@ -123,7 +123,7 @@ export function ApplicationStepProgramChoices({
 			</div>
 			<div>
 				<p className="mb-3 font-medium text-muted-foreground text-sm uppercase tracking-wide">
-					Vœux de formation
+					{t("admissions.sections.programChoices")}
 				</p>
 				<div className="space-y-3">
 					<FormField
@@ -157,7 +157,7 @@ export function ApplicationStepProgramChoices({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.secondChoiceProgram")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<Select
 									onValueChange={field.onChange}
@@ -189,7 +189,7 @@ export function ApplicationStepProgramChoices({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.thirdChoiceProgram")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<Select
 									onValueChange={field.onChange}
@@ -226,13 +226,13 @@ export function ApplicationStepProgramChoices({
 					<FormItem>
 						<FormLabel>
 							{t("admissions.fields.personalStatement")}{" "}
-							<OptionalBadge label="opt." />
+							<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 						</FormLabel>
 						<FormControl>
 							<Textarea
 								{...field}
 								rows={5}
-								placeholder="Décrivez votre projet professionnel et vos motivations..."
+								placeholder={t("admissions.placeholders.personalStatement")}
 								maxLength={3000}
 							/>
 						</FormControl>

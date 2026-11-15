@@ -1,4 +1,5 @@
 import { Loader2, RefreshCw, ShieldCheck, ShieldOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -22,6 +23,7 @@ export function AccountSecurityCard({
 	profileId: string;
 	authAccount: AuthAccount;
 }) {
+	const { t } = useTranslation();
 	const passwordReset = useSendPasswordReset(profileId);
 	const toggleBan = useToggleBan(profileId);
 
@@ -30,18 +32,20 @@ export function AccountSecurityCard({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					<ShieldCheck className="h-4 w-4 text-primary" />
-					Actions de sécurité
+					{t("usersHub.account.security.title")}
 				</CardTitle>
 				<CardDescription>
-					Gérez l'accès et la sécurité du compte de cet utilisateur.
+					{t("usersHub.account.security.description")}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<div className="flex flex-col gap-1 rounded-lg border p-4 md:flex-row md:items-center md:justify-between">
 					<div className="space-y-1">
-						<p className="font-medium text-sm">Réinitialiser le mot de passe</p>
+						<p className="font-medium text-sm">
+							{t("usersHub.account.security.resetTitle")}
+						</p>
 						<p className="text-muted-foreground text-xs">
-							Envoie un email de réinitialisation à{" "}
+							{t("usersHub.account.security.resetDescription")}{" "}
 							<span className="font-mono">{authAccount.email}</span>.
 						</p>
 					</div>
@@ -56,7 +60,7 @@ export function AccountSecurityCard({
 						) : (
 							<RefreshCw className="mr-2 h-4 w-4" />
 						)}
-						Envoyer l'email
+						{t("usersHub.account.security.sendEmail")}
 					</Button>
 				</div>
 				<Separator />
@@ -64,13 +68,13 @@ export function AccountSecurityCard({
 					<div className="space-y-1">
 						<p className="font-medium text-sm">
 							{authAccount.banned
-								? "Réactiver le compte"
-								: "Suspendre le compte"}
+								? t("usersHub.account.security.reactivateTitle")
+								: t("usersHub.account.security.suspendTitle")}
 						</p>
 						<p className="text-muted-foreground text-xs">
 							{authAccount.banned
-								? "Permet à l'utilisateur de se reconnecter à la plateforme."
-								: "Bloque immédiatement toutes les connexions de cet utilisateur."}
+								? t("usersHub.account.security.reactivateDescription")
+								: t("usersHub.account.security.suspendDescription")}
 						</p>
 					</div>
 					<Button
@@ -86,7 +90,9 @@ export function AccountSecurityCard({
 						) : (
 							<ShieldOff className="mr-2 h-4 w-4" />
 						)}
-						{authAccount.banned ? "Réactiver" : "Suspendre"}
+						{authAccount.banned
+							? t("usersHub.account.security.reactivate")
+							: t("usersHub.account.security.suspend")}
 					</Button>
 				</div>
 			</CardContent>

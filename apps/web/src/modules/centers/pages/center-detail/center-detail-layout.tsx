@@ -45,10 +45,7 @@ export default function CenterDetailLayout() {
 								{centerQuery.data?.name ?? ""}
 							</h1>
 							<p className="mt-0.5 text-muted-foreground text-xs">
-								{t("admin.centers.detail.subtitle", {
-									defaultValue:
-										"Configurez les centres de formation professionnelle",
-								})}
+								{t("admin.centers.detail.subtitle")}
 							</p>
 						</div>
 						<Button
@@ -57,9 +54,7 @@ export default function CenterDetailLayout() {
 							onClick={() => navigate(CENTERS_PATH)}
 						>
 							<ArrowLeft className="mr-2 h-4 w-4" />
-							{t("admin.centers.detail.backToList", {
-								defaultValue: "Retour à la liste",
-							})}
+							{t("admin.centers.detail.backToList")}
 						</Button>
 					</div>
 					<HubNav tabs={TABS} basePath={`${CENTERS_PATH}/${centerId}`} />

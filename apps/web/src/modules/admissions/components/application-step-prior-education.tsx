@@ -24,7 +24,7 @@ export function ApplicationStepPriorEducation({
 	t,
 }: {
 	form: ApplicationWizardForm;
-	t: (k: string) => string;
+	t: (k: string, options?: Record<string, unknown>) => string;
 }) {
 	const hasPrior = useWatch({
 		control: form.control,
@@ -72,7 +72,7 @@ export function ApplicationStepPriorEducation({
 								<FormControl>
 									<Input
 										{...field}
-										placeholder="Ex : Université de Yaoundé I"
+										placeholder={t("admissions.placeholders.priorInstitution")}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -88,7 +88,10 @@ export function ApplicationStepPriorEducation({
 									{t("admissions.fields.priorField")}
 								</FormLabel>
 								<FormControl>
-									<Input {...field} placeholder="Ex : Informatique" />
+									<Input
+										{...field}
+										placeholder={t("admissions.placeholders.priorField")}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -130,7 +133,7 @@ export function ApplicationStepPriorEducation({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.priorResult")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<Select
 									onValueChange={field.onChange}
@@ -160,7 +163,7 @@ export function ApplicationStepPriorEducation({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.priorStartYear")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
 									<Input
@@ -168,7 +171,9 @@ export function ApplicationStepPriorEducation({
 										min={1990}
 										max={new Date().getFullYear()}
 										{...field}
-										placeholder="Ex : 2022"
+										placeholder={t("admissions.placeholders.example", {
+											value: "2022",
+										})}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -182,7 +187,7 @@ export function ApplicationStepPriorEducation({
 							<FormItem>
 								<FormLabel>
 									{t("admissions.fields.priorEndYear")}{" "}
-									<OptionalBadge label="opt." />
+									<OptionalBadge label={t("admissions.wizard.optionalShort")} />
 								</FormLabel>
 								<FormControl>
 									<Input
@@ -190,7 +195,9 @@ export function ApplicationStepPriorEducation({
 										min={1990}
 										max={new Date().getFullYear() + 1}
 										{...field}
-										placeholder="Ex : 2023"
+										placeholder={t("admissions.placeholders.example", {
+											value: "2023",
+										})}
 									/>
 								</FormControl>
 								<FormMessage />

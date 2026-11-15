@@ -26,14 +26,10 @@ const NotificationsCenter = () => {
 					</div>
 					<div>
 						<h1 className="font-semibold text-foreground text-xl">
-							{t("admin.notifications.title", {
-								defaultValue: "Notifications",
-							})}
+							{t("admin.notifications.title")}
 						</h1>
 						<p className="text-muted-foreground text-sm">
-							{t("admin.notifications.subtitle", {
-								defaultValue: "Suivi des notifications système",
-							})}
+							{t("admin.notifications.subtitle")}
 						</p>
 					</div>
 				</div>
@@ -51,9 +47,7 @@ const NotificationsCenter = () => {
 							c.flushMutation.isPending && "animate-spin",
 						)}
 					/>
-					{t("admin.notifications.actions.flush", {
-						defaultValue: "Flush pending",
-					})}
+					{t("admin.notifications.actions.flush")}
 				</Button>
 			</div>
 
@@ -87,11 +81,7 @@ const NotificationsCenter = () => {
 			) : c.notifications.length === 0 ? (
 				<div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-card py-16 text-muted-foreground">
 					<Inbox className="h-10 w-10 opacity-30" />
-					<p className="text-sm">
-						{t("admin.notifications.empty", {
-							defaultValue: "Aucune notification",
-						})}
-					</p>
+					<p className="text-sm">{t("admin.notifications.empty")}</p>
 				</div>
 			) : (
 				<>

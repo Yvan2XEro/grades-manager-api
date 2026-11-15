@@ -1,5 +1,6 @@
 import type React from "react";
 import { createCallable } from "react-call";
+import { useTranslation } from "react-i18next";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
 import {
 	Dialog,
@@ -20,26 +21,31 @@ interface Props {
 
 /** Full-height preview of a rendered HTML document. */
 export const DocumentPreviewDialog = createCallable<Props>(
-	({ call, title, description, html, paper }) => (
-		<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
-			<DialogContent className="flex h-[90vh] max-w-6xl flex-col">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					{description && <DialogDescription>{description}</DialogDescription>}
-				</DialogHeader>
-				<div className="mx-6 mb-6 flex-1 overflow-auto rounded border bg-white">
-					<iframe
-						title="Aperçu document"
-						className="block h-full w-full bg-white"
-						style={
-							paper ? { minWidth: "210mm", minHeight: "297mm" } : undefined
-						}
-						srcDoc={html}
-						sandbox="allow-same-origin"
-					/>
-				</div>
-			</DialogContent>
-		</Dialog>
-	),
+	({ call, title, description, html, paper }) => {
+		const { t } = useTranslation();
+		return (
+			<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
+				<DialogContent className="flex h-[90vh] max-w-6xl flex-col">
+					<DialogHeader>
+						<DialogTitle>{title}</DialogTitle>
+						{description && (
+							<DialogDescription>{description}</DialogDescription>
+						)}
+					</DialogHeader>
+					<div className="mx-6 mb-6 flex-1 overflow-auto rounded border bg-white">
+						<iframe
+							title={t("common.documentPreview.frameTitle")}
+							className="block h-full w-full bg-white"
+							style={
+								paper ? { minWidth: "210mm", minHeight: "297mm" } : undefined
+							}
+							srcDoc={html}
+							sandbox="allow-same-origin"
+						/>
+					</div>
+				</DialogContent>
+			</Dialog>
+		);
+	},
 	DIALOG_EXIT_MS,
 );

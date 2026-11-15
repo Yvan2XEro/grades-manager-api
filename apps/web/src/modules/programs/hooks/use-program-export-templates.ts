@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type { ExportTemplateType } from "../types";
@@ -22,21 +23,15 @@ export const EXPORT_TEMPLATE_TYPES: ExportTemplateType[] = [
 	"financial_clearance",
 ];
 
-export const EXPORT_TEMPLATE_TYPE_LABELS: Record<ExportTemplateType, string> = {
-	diploma: "Diplôme",
-	transcript: "Relevé de notes",
-	attestation: "Attestation",
-	enrollment_certificate: "Certificat de scolarité",
-	student_list: "Liste d'étudiants",
-	pv: "Procès-verbal",
-	evaluation: "Publication d'évaluation",
-	ec: "Publication d'EC",
-	ue: "Publication d'UE",
-	deliberation: "Délibération",
-	payment_order: "Ordre de paiement",
-	payment_receipt: "Reçu de paiement",
-	financial_clearance: "Quitus financier",
-};
+/** Localized label of each document type, resolved in the current language on read. */
+export const EXPORT_TEMPLATE_TYPE_LABELS = EXPORT_TEMPLATE_TYPES.reduce(
+	(labels, type) =>
+		Object.defineProperty(labels, type, {
+			enumerable: true,
+			get: () => i18n.t(`admin.programs.templateTypes.${type}`),
+		}),
+	{} as Record<ExportTemplateType, string>,
+);
 
 /**
  * Template chosen per document type for a program (`"none"` = default), the
@@ -85,11 +80,7 @@ export function useProgramExportTemplates(
 					})),
 			}),
 		onSuccess: () => {
-			toast.success(
-				t("admin.programs.toast.updateSuccess", {
-					defaultValue: "Templates saved",
-				}),
-			);
+			toast.success(t("admin.programs.toast.updateSuccess"));
 			queryClient.invalidateQueries(
 				trpc.programs.listExportTemplates.queryKey({ programId }),
 			);

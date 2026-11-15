@@ -47,22 +47,28 @@ export function VerbalReportCard({
 						<CardTitle className="flex items-center gap-3 text-base">
 							<StepBadge step={3} muted />
 							<FileText className="h-4 w-4" />
-							Procès-Verbal
+							{t("admin.gradeExport.pv.title")}
 						</CardTitle>
 						<CardDescription className="mt-1">
-							PV complet avec toutes les UEs, moyennes et décisions
+							{t("admin.gradeExport.pv.description")}
 						</CardDescription>
 					</div>
-					{!pvReady && <MissingHint>Sélectionnez un semestre</MissingHint>}
+					{!pvReady && (
+						<MissingHint>
+							{t("admin.gradeExport.pv.missingSemester")}
+						</MissingHint>
+					)}
 				</div>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<div className="space-y-2">
-					<Label htmlFor={semesterId}>Semestre</Label>
+					<Label htmlFor={semesterId}>
+						{t("admin.gradeExport.pv.semester")}
+					</Label>
 					<SemesterSelect
 						value={selectedSemester || null}
 						onChange={(v) => onSemesterChange(v ?? "")}
-						placeholder="Sélectionner un semestre"
+						placeholder={t("admin.gradeExport.pv.semesterPlaceholder")}
 					/>
 				</div>
 				<div className="flex items-center gap-2">
@@ -77,7 +83,7 @@ export function VerbalReportCard({
 						htmlFor="include-retakes"
 						className="cursor-pointer font-normal text-sm"
 					>
-						Inclure les notes de rattrapage
+						{t("admin.gradeExport.pv.includeRetakes")}
 					</Label>
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -105,7 +111,7 @@ export function VerbalReportCard({
 							icon={Eye}
 							className="mr-2 h-4 w-4"
 						/>
-						Prévisualiser PDF
+						{t("admin.gradeExport.pv.previewPdf")}
 					</Button>
 					<Button type="button" onClick={onGenerate} disabled={disabled}>
 						<BusyIcon
@@ -113,7 +119,7 @@ export function VerbalReportCard({
 							icon={FileText}
 							className="mr-2 h-4 w-4"
 						/>
-						Générer PDF
+						{t("admin.gradeExport.pv.generatePdf")}
 					</Button>
 				</div>
 			</CardContent>

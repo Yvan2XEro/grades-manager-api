@@ -1,5 +1,6 @@
 import type { TFunction } from "i18next";
 import * as XLSX from "xlsx";
+import i18n from "@/i18n";
 import type {
 	AdmissionsStats,
 	EnrollmentStats,
@@ -19,100 +20,111 @@ function writeWorkbook(
 	XLSX.writeFile(wb, filename);
 }
 
+const x = (key: string) => i18n.t(`admin.statistics.excel.${key}` as never);
+const NA = () => x("notAvailable");
+const ENROLLMENT_STATUSES = ["active", "pending", "completed", "withdrawn"];
+
 export const exportEnrollmentStats = (data: EnrollmentStats) =>
-	writeWorkbook("statistiques-etudiants.xlsx", [
+	writeWorkbook(x("files.students"), [
 		[
-			"Par programme",
+			x("sheets.byProgram"),
 			data.byProgram.map((p) => ({
-				Programme: p.programName,
-				Inscrits: p.count,
+				[x("columns.program")]: p.programName,
+				[x("columns.enrolled")]: p.count,
 			})),
 		],
 		[
-			"Par statut",
-			data.byStatus.map((s) => ({ Statut: s.status, Count: s.count })),
+			x("sheets.byStatus"),
+			data.byStatus.map((s) => ({
+				[x("columns.status")]: ENROLLMENT_STATUSES.includes(s.status)
+					? i18n.t(`admin.statistics.enrollment.status.${s.status}` as never)
+					: s.status,
+				[x("columns.count")]: s.count,
+			})),
 		],
 		[
-			"Par genre",
+			x("sheets.byGender"),
 			data.byGender.map((g) => ({
-				Genre: g.gender ?? "N/A",
-				Count: g.count,
+				[x("columns.gender")]: g.gender ?? NA(),
+				[x("columns.count")]: g.count,
 			})),
 		],
 	]);
 
 export const exportPerformanceStats = (data: PerformanceStats) =>
-	writeWorkbook("statistiques-performance.xlsx", [
+	writeWorkbook(x("files.performance"), [
 		[
-			"Par décision",
+			x("sheets.byDecision"),
 			data.byDecision.map((d) => ({
-				Décision: d.decision ?? "N/A",
-				Étudiants: d.count,
+				[x("columns.decision")]: d.decision ?? NA(),
+				[x("columns.students")]: d.count,
 			})),
 		],
 		[
-			"Par mention",
+			x("sheets.byMention"),
 			data.byMention.map((m) => ({
-				Mention: m.mention ?? "N/A",
-				Étudiants: m.count,
+				[x("columns.mention")]: m.mention ?? NA(),
+				[x("columns.students")]: m.count,
 			})),
 		],
 	]);
 
 export const exportFinanceStats = (data: FinanceStats, t: TFunction) =>
-	writeWorkbook("statistiques-finances.xlsx", [
+	writeWorkbook(x("files.finances"), [
 		[
-			"Vue d'ensemble",
+			x("sheets.overview"),
 			[
 				{
-					Indicateur: t("admin.statistics.finances.expected"),
-					Montant: data.expected,
+					[x("columns.indicator")]: t("admin.statistics.finances.expected"),
+					[x("columns.amount")]: data.expected,
 				},
 				{
-					Indicateur: t("admin.statistics.finances.collected"),
-					Montant: data.collected,
+					[x("columns.indicator")]: t("admin.statistics.finances.collected"),
+					[x("columns.amount")]: data.collected,
 				},
 				{
-					Indicateur: t("admin.statistics.finances.outstanding"),
-					Montant: data.outstanding,
+					[x("columns.indicator")]: t("admin.statistics.finances.outstanding"),
+					[x("columns.amount")]: data.outstanding,
 				},
 				{
-					Indicateur: t("admin.statistics.finances.collectionRate"),
-					Montant: `${data.collectionRate}%`,
+					[x("columns.indicator")]: t(
+						"admin.statistics.finances.collectionRate",
+					),
+					[x("columns.amount")]: `${data.collectionRate}%`,
 				},
 			],
 		],
 		[
-			"Mensuel",
+			x("sheets.monthly"),
 			data.monthlyCollections.map((m) => ({
-				Mois: m.month,
-				Montant: m.total,
+				[x("columns.month")]: m.month,
+				[x("columns.amount")]: m.total,
 			})),
 		],
 		[
-			"Par méthode",
+			x("sheets.byMethod"),
 			data.byPaymentMethod.map((m) => ({
-				Méthode: m.method,
-				Montant: m.total,
-				Transactions: m.count,
+				[x("columns.method")]: m.method,
+				[x("columns.amount")]: m.total,
+				[x("columns.transactions")]: m.count,
 			})),
 		],
 	]);
 
 export const exportAdmissionsStats = (data: AdmissionsStats) =>
-	writeWorkbook("statistiques-admissions.xlsx", [
+	writeWorkbook(x("files.admissions"), [
 		[
-			"Par statut",
+			x("sheets.byStatus"),
 			data.byStatus.map((s) => ({
-				Statut: s.status,
-				Candidatures: s.count,
+				[x("columns.status")]: s.status,
+				[x("columns.applications")]: s.count,
 			})),
 		],
 		[
-			"Par programme",
+			x("sheets.byProgram"),
 			data.byProgram.map((p) => ({
-				Programme: p.programName,
-				Candidatures: p.count,
+				[x("columns.program")]: p.programName,
+				[x("columns.applications")]: p.count,
 			})),
 		],
 	]);

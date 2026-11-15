@@ -6,7 +6,11 @@
  * Used by `CodeEditor` to power autocomplete and snippet insertion. Keep this
  * in sync with the actual render data — when a new top-level key is added in
  * the service, mirror it here so editor users get the suggestion.
+ *
+ * Prose `detail`s are getters so they follow the current UI language.
  */
+
+import i18n from "@/i18n";
 
 export type HbsCompletionEntry = {
 	label: string;
@@ -270,14 +274,44 @@ export const HBS_VARIABLES: HbsCompletionEntry[] = [
 	"qrCodeImage",
 	"watermarkRepeat",
 	"showResults",
-].map((label) => ({ label, type: "variable" as const, detail: "variable" }));
+].map((label) => ({
+	label,
+	type: "variable" as const,
+	get detail() {
+		return i18n.t("admin.exportTemplates.editor.hbs.variable");
+	},
+}));
 
 /** Built-in Handlebars block helpers (use after `{{#`). */
 export const HBS_BLOCK_HELPERS: HbsCompletionEntry[] = [
-	{ label: "if", type: "block", detail: "if condition" },
-	{ label: "unless", type: "block", detail: "unless condition" },
-	{ label: "each", type: "block", detail: "iterate" },
-	{ label: "with", type: "block", detail: "scope into context" },
+	{
+		label: "if",
+		type: "block",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.ifCondition");
+		},
+	},
+	{
+		label: "unless",
+		type: "block",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.unlessCondition");
+		},
+	},
+	{
+		label: "each",
+		type: "block",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.iterate");
+		},
+	},
+	{
+		label: "with",
+		type: "block",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.with");
+		},
+	},
 ];
 
 /**
@@ -310,13 +344,16 @@ export const HBS_INLINE_HELPERS: HbsCompletionEntry[] = [
 	},
 	{
 		label: "or",
-		detail: "(...args) → boolean — true if any arg is truthy",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.or");
+		},
 		type: "helper",
 	},
 	{
 		label: "logo",
-		detail:
-			"(svg=, url=, alt?, class?, style?) → renders inline SVG if set, else <img src=url>",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.logo");
+		},
 		type: "helper",
 	},
 ];
@@ -350,7 +387,9 @@ export const HBS_SNIPPETS: HbsCompletionEntry[] = [
 	{
 		label: "header-bilingual",
 		type: "snippet",
-		detail: "En-tête 3 colonnes (FR + armoiries + EN)",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.headerBilingual");
+		},
 		apply: `<div class="header">
 	<div class="header-text">
 		<div class="country">{{country.fr}}</div>
@@ -374,7 +413,9 @@ export const HBS_SNIPPETS: HbsCompletionEntry[] = [
 	{
 		label: "header-center",
 		type: "snippet",
-		detail: "En-tête variante Centre (institution + center)",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.headerCenter");
+		},
 		apply: `<div class="header">
 	<div class="header-block">
 		<div class="institution-name">{{institution.nameFr}}</div>
@@ -395,7 +436,9 @@ export const HBS_SNIPPETS: HbsCompletionEntry[] = [
 	{
 		label: "students-table",
 		type: "snippet",
-		detail: "Tableau roster d'étudiants",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.studentsTable");
+		},
 		apply: `<table>
 	<thead>
 		<tr>
@@ -420,7 +463,9 @@ export const HBS_SNIPPETS: HbsCompletionEntry[] = [
 	{
 		label: "signatures-3",
 		type: "snippet",
-		detail: "Bloc 3 signatures (impétrant / recteur / ministre)",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.signatures3");
+		},
 		apply: `<div class="signature-section">
 	{{#each signatures}}
 	<div class="signature-box{{#if this.minister}} minister{{/if}}">
@@ -433,7 +478,9 @@ export const HBS_SNIPPETS: HbsCompletionEntry[] = [
 	{
 		label: "watermark-block",
 		type: "snippet",
-		detail: "Bloc filigrane (logo + texte)",
+		get detail() {
+			return i18n.t("admin.exportTemplates.editor.hbs.watermarkBlock");
+		},
 		apply: `<div class="watermark">
 	{{{logo svg=institution.watermarkLogoSvg url=institution.watermarkLogoUrl alt=""}}}
 	<div class="watermark-text">{{theme.watermark.text}}</div>

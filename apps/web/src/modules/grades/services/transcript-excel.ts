@@ -11,8 +11,6 @@ import { buildDocumentHeader, isInfoRow } from "./export-header";
 import { resolveRetakeGrades } from "./retake-grades";
 import { sortStudentsByName } from "./student-grades";
 
-const TITLE = "RELEVÉ DE NOTES";
-
 /** Average per course of the selected exams (retakes merged into their parent exam). */
 function courseAveragesOf(student: StudentExport, selectedExams: string[]) {
 	// Build exam list from student's grades for retake resolution
@@ -89,6 +87,7 @@ export function exportTranscriptExcel({
 	filename: string;
 	t: TFunction;
 }) {
+	const TITLE = t("admin.gradeExport.transcript.documentTitle");
 	const headerRows = buildDocumentHeader(config, TITLE, context);
 
 	const exportData = sortStudentsByName(students).map((student) => ({
@@ -126,7 +125,7 @@ export function exportTranscriptExcel({
 		};
 	}
 
-	// Style document title (find "RELEVÉ DE NOTES")
+	// Style document title
 	for (let i = 0; i < headerRows.length; i++) {
 		const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
 		if (ws[cellRef] && ws[cellRef].v === TITLE) {
@@ -137,7 +136,7 @@ export function exportTranscriptExcel({
 		}
 	}
 
-	// Style info rows (Classe, Programme, etc.) - Bold labels
+	// Style info rows (class, program, etc.) - Bold labels
 	for (let i = 0; i < headerRows.length; i++) {
 		const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
 		if (ws[cellRef] && typeof ws[cellRef].v === "string") {

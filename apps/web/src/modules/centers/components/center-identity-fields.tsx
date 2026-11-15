@@ -26,7 +26,7 @@ export function CenterIdentityFields({
 					name="code"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel required>Code *</FormLabel>
+							<FormLabel required>{t("admin.centers.form.code")}</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="CEPRES" />
 							</FormControl>
@@ -39,11 +39,7 @@ export function CenterIdentityFields({
 					name="shortName"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.centers.form.shortName", {
-									defaultValue: "Nom du centre (court)",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.centers.form.shortName")}</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="CEPRES" />
 							</FormControl>
@@ -56,11 +52,7 @@ export function CenterIdentityFields({
 					name="city"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.centers.form.city", {
-									defaultValue: "Localisation",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.centers.form.city")}</FormLabel>
 							<FormControl>
 								<Input {...field} placeholder="Douala" />
 							</FormControl>
@@ -75,11 +67,7 @@ export function CenterIdentityFields({
 					name="name"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel required>
-								{t("admin.centers.form.name", {
-									defaultValue: "Nom complet (Français)",
-								})}
-							</FormLabel>
+							<FormLabel required>{t("admin.centers.form.name")}</FormLabel>
 							<FormControl>
 								<Input
 									{...field}
@@ -95,11 +83,7 @@ export function CenterIdentityFields({
 					name="nameEn"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								{t("admin.centers.form.nameEn", {
-									defaultValue: "Nom complet (Anglais)",
-								})}
-							</FormLabel>
+							<FormLabel>{t("admin.centers.form.nameEn")}</FormLabel>
 							<FormControl>
 								<Input
 									{...field}
@@ -118,9 +102,7 @@ export function CenterIdentityFields({
 					<FormItem className="flex items-center justify-between rounded-md border p-3">
 						<div className="space-y-0.5">
 							<FormLabel className="text-sm">
-								{t("admin.centers.form.isActive", {
-									defaultValue: "Centre actif",
-								})}
+								{t("admin.centers.form.isActive")}
 							</FormLabel>
 						</div>
 						<FormControl>

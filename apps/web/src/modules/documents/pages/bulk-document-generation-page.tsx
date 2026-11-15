@@ -1,20 +1,24 @@
+import { Trans, useTranslation } from "react-i18next";
 import { BulkDocumentFailures } from "../components/bulk-document-failures";
 import { BulkDocumentFilters } from "../components/bulk-document-filters";
 import { BulkDocumentStudentsCard } from "../components/bulk-document-students-card";
 import { useBulkDocumentGeneration } from "../hooks/use-bulk-document-generation";
 
 export default function BulkDocumentGeneration() {
+	const { t } = useTranslation();
 	const state = useBulkDocumentGeneration();
 
 	return (
 		<div className="space-y-6">
 			<div>
 				<h1 className="font-bold text-2xl text-foreground">
-					Génération en lot
+					{t("admin.documents.bulk.title")}
 				</h1>
 				<p className="text-muted-foreground">
-					Génération côté navigateur. <strong>Ne fermez pas l'onglet</strong>{" "}
-					pendant l'opération.
+					<Trans
+						i18nKey="admin.documents.bulk.subtitle"
+						components={{ strong: <strong /> }}
+					/>
 				</p>
 			</div>
 

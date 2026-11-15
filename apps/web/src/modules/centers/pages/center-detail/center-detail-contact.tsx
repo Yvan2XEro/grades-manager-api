@@ -21,9 +21,7 @@ export default function CenterDetailContact() {
 			<Card>
 				<CardHeader>
 					<CardTitle className="text-sm">
-						{t("admin.centers.sections.contact", {
-							defaultValue: "Coordonnées",
-						})}
+						{t("admin.centers.sections.contact")}
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -33,11 +31,7 @@ export default function CenterDetailContact() {
 							name="postalBox"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.centers.form.postalBox", {
-											defaultValue: "Boîte postale",
-										})}
-									</FormLabel>
+									<FormLabel>{t("admin.centers.form.postalBox")}</FormLabel>
 									<FormControl>
 										<Input {...field} placeholder="9293 Douala" />
 									</FormControl>
@@ -50,11 +44,7 @@ export default function CenterDetailContact() {
 							name="contactPhone"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.centers.form.contactPhone", {
-											defaultValue: "Téléphone",
-										})}
-									</FormLabel>
+									<FormLabel>{t("admin.centers.form.contactPhone")}</FormLabel>
 									<FormControl>
 										<Input {...field} placeholder="+237 ..." />
 									</FormControl>
@@ -67,11 +57,7 @@ export default function CenterDetailContact() {
 							name="contactEmail"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.centers.form.contactEmail", {
-											defaultValue: "Email",
-										})}
-									</FormLabel>
+									<FormLabel>{t("admin.centers.form.contactEmail")}</FormLabel>
 									<FormControl>
 										<Input type="email" {...field} />
 									</FormControl>
@@ -85,13 +71,12 @@ export default function CenterDetailContact() {
 						name="country"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>
-									{t("admin.centers.form.country", {
-										defaultValue: "Pays",
-									})}
-								</FormLabel>
+								<FormLabel>{t("admin.centers.form.country")}</FormLabel>
 								<FormControl>
-									<Input {...field} placeholder="Cameroun" />
+									<Input
+										{...field}
+										placeholder={t("admin.centers.form.countryPlaceholder")}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -103,11 +88,7 @@ export default function CenterDetailContact() {
 							name="addressFr"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.centers.form.addressFr", {
-											defaultValue: "Adresse (FR)",
-										})}
-									</FormLabel>
+									<FormLabel>{t("admin.centers.form.addressFr")}</FormLabel>
 									<FormControl>
 										<Textarea rows={2} {...field} />
 									</FormControl>
@@ -120,11 +101,7 @@ export default function CenterDetailContact() {
 							name="addressEn"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.centers.form.addressEn", {
-											defaultValue: "Adresse (EN)",
-										})}
-									</FormLabel>
+									<FormLabel>{t("admin.centers.form.addressEn")}</FormLabel>
 									<FormControl>
 										<Textarea rows={2} {...field} />
 									</FormControl>

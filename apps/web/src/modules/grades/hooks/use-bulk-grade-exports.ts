@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
@@ -12,17 +13,14 @@ type BulkFilters = Parameters<
 
 const BULK_EXPORTS = {
 	eval: {
-		kind: "Évaluations",
 		mutate: (filters: BulkFilters) =>
 			trpcClient.exports.bulkExportEvaluations.mutate(filters),
 	},
 	ec: {
-		kind: "EC",
 		mutate: (filters: BulkFilters) =>
 			trpcClient.exports.bulkExportEcs.mutate(filters),
 	},
 	ue: {
-		kind: "UE",
 		mutate: (filters: BulkFilters) =>
 			trpcClient.exports.bulkExportUes.mutate(filters),
 	},
@@ -40,6 +38,7 @@ export function useBulkGradeExports(
 	{ selectedYear, selectedClass, selectedSemester }: ExportFilters,
 	{ setExporting }: ExportTask,
 ) {
+	const { t } = useTranslation();
 	const [bulkElapsed, setBulkElapsed] = useState<number>(0); // seconds
 
 	const buildBulkFilters = (scope: BulkScope) => ({
@@ -71,7 +70,7 @@ export function useBulkGradeExports(
 			const result = await BULK_EXPORTS[kind].mutate(buildBulkFilters(scope));
 			downloadBase64(result.data, result.filename, result.mimeType);
 			BulkExportReportDialog.call({
-				kind: BULK_EXPORTS[kind].kind,
+				kind,
 				total: result.total,
 				succeeded: result.succeeded,
 				skipped: result.skipped,
@@ -79,7 +78,9 @@ export function useBulkGradeExports(
 			});
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : "Bulk export failed",
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.bulkExportError"),
 			);
 		} finally {
 			stopTimer();

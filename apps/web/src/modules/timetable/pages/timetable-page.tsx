@@ -111,7 +111,7 @@ export default function TimetablePage() {
 			<TimetableActions
 				summary={
 					sessionsQuery.isSuccess && sessions.length > 0
-						? `${sessions.length} séance${sessions.length > 1 ? "s" : ""}`
+						? t("teacher.timetable.sessionCount", { count: sessions.length })
 						: null
 				}
 				canCopy={!!academicYearId}

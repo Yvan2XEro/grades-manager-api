@@ -73,17 +73,11 @@ export function CreateDeliberationFields({
 					/>
 				</div>
 				<div className="space-y-2">
-					<Label>
-						{t("admin.deliberations.form.juryNumber", {
-							defaultValue: "Numéro de jury",
-						})}
-					</Label>
+					<Label>{t("admin.deliberations.form.juryNumber")}</Label>
 					<Input
 						value={fields.juryNumber}
 						onChange={(e) => patch({ juryNumber: e.target.value })}
-						placeholder={t("admin.deliberations.form.juryNumberPlaceholder", {
-							defaultValue: "ex: J2024-001",
-						})}
+						placeholder={t("admin.deliberations.form.juryNumberExample")}
 					/>
 				</div>
 			</div>

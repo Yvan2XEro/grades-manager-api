@@ -1,16 +1,23 @@
 import { format } from "date-fns";
+import i18n from "@/i18n";
 import type { ExcelRow, ExportConfig, ExportContext } from "../types";
 
-const INFO_PREFIXES = [
-	"Classe:",
-	"Programme:",
-	"Semestre:",
-	"Année Académique:",
-];
+const INFO_KEYS = ["class", "program", "semester", "academicYear"] as const;
+type InfoKey = (typeof INFO_KEYS)[number];
 
-/** `Classe: …`, `Programme: …` rows are rendered with a bold label. */
+const infoLabel = (key: InfoKey) => i18n.t(`admin.gradeExport.header.${key}`);
+
+/** `Class: …`, `Program: …` context row of an Excel header. */
+export const infoRow = (key: InfoKey, value: string) =>
+	`${infoLabel(key)} ${value}`;
+
+/** `Class: …`, `Program: …` rows are rendered with a bold label. */
 export const isInfoRow = (value: string) =>
-	INFO_PREFIXES.some((prefix) => value.startsWith(prefix));
+	INFO_KEYS.some((key) => value.startsWith(infoLabel(key)));
+
+/** Picks the French or English variant of an institution field. */
+export const localizedName = (fr?: string | null, en?: string | null) =>
+	(i18n.language.startsWith("fr") ? fr || en : en || fr) || "";
 
 /**
  * Institution / title / context rows put above an Excel table
@@ -26,10 +33,14 @@ export function buildDocumentHeader(
 
 	// Institution header
 	if (config.institution) {
-		headerRows.push([config.institution.name_fr || ""]);
-		if (config.institution.faculty_name_fr) {
-			headerRows.push([config.institution.faculty_name_fr]);
-		}
+		headerRows.push([
+			localizedName(config.institution.name_fr, config.institution.name_en),
+		]);
+		const facultyName = localizedName(
+			config.institution.faculty_name_fr,
+			config.institution.faculty_name_en,
+		);
+		if (facultyName) headerRows.push([facultyName]);
 	}
 
 	// Document title and info
@@ -38,11 +49,11 @@ export function buildDocumentHeader(
 	headerRows.push([""]);
 
 	if (classData || semester || year) {
-		if (classData) headerRows.push([`Classe: ${classData.name}`]);
+		if (classData) headerRows.push([infoRow("class", classData.name)]);
 		if (classData?.program)
-			headerRows.push([`Programme: ${classData.program.name}`]);
-		if (semester) headerRows.push([`Semestre: ${semester.name}`]);
-		if (year) headerRows.push([`Année Académique: ${year.name}`]);
+			headerRows.push([infoRow("program", classData.program.name)]);
+		if (semester) headerRows.push([infoRow("semester", semester.name)]);
+		if (year) headerRows.push([infoRow("academicYear", year.name)]);
 		for (const info of extraInfo) headerRows.push([info]);
 		headerRows.push([""]);
 	}

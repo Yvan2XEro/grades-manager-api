@@ -26,16 +26,10 @@ export function CreateDeliberationClassPicker({
 
 	return (
 		<div className="space-y-2">
-			<Label>
-				{t("admin.deliberations.form.classes", {
-					defaultValue: "Classes",
-				})}
-			</Label>
+			<Label>{t("admin.deliberations.form.classes")}</Label>
 			{!fields.academicYearId ? (
 				<p className="rounded-lg border border-dashed py-5 text-center text-muted-foreground text-sm">
-					{t("admin.deliberations.form.selectYearFirst", {
-						defaultValue: "Sélectionnez d'abord une année académique",
-					})}
+					{t("admin.deliberations.form.selectYearFirst")}
 				</p>
 			) : classesQuery.isLoading ? (
 				<div className="flex items-center justify-center py-5">
@@ -43,9 +37,7 @@ export function CreateDeliberationClassPicker({
 				</div>
 			) : allClasses.length === 0 ? (
 				<p className="rounded-lg border border-dashed py-5 text-center text-muted-foreground text-sm">
-					{t("admin.deliberations.form.noClasses", {
-						defaultValue: "Aucune classe pour cette année",
-					})}
+					{t("admin.deliberations.form.noClasses")}
 				</p>
 			) : (
 				<>
@@ -61,12 +53,8 @@ export function CreateDeliberationClassPicker({
 								<Square className="h-4 w-4" />
 							)}
 							{allSelected
-								? t("common.actions.deselectAll", {
-										defaultValue: "Tout désélectionner",
-									})
-								: t("common.actions.selectAll", {
-										defaultValue: "Tout sélectionner",
-									})}
+								? t("common.actions.deselectAll")
+								: t("common.actions.selectAll")}
 						</button>
 						{selectedClassIds.length > 0 && (
 							<Badge variant="secondary">
@@ -98,7 +86,9 @@ export function CreateDeliberationClassPicker({
 								</span>
 								{batchProgress.errors.length > 0 && (
 									<span className="text-destructive">
-										{batchProgress.errors.length} erreur(s)
+										{t("admin.deliberations.form.batchErrorCount", {
+											count: batchProgress.errors.length,
+										})}
 									</span>
 								)}
 							</div>
@@ -107,7 +97,9 @@ export function CreateDeliberationClassPicker({
 							/>
 							{batchProgress.errors.length > 0 && (
 								<p className="text-destructive text-xs">
-									Échecs : {batchProgress.errors.join(", ")}
+									{t("admin.deliberations.form.batchFailures", {
+										names: batchProgress.errors.join(", "),
+									})}
 								</p>
 							)}
 						</div>

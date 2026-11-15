@@ -1,4 +1,5 @@
 import { Download, Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,21 +30,20 @@ export function EcExportsCard({
 	onPreview: (classCourseId: string) => void;
 	onGenerate: (classCourseId: string) => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Card>
 			<CardHeader className="pb-3">
 				<div className="flex items-center justify-between">
 					<div>
 						<CardTitle className="text-base">
-							Par EC{" "}
+							{t("admin.gradeExport.ec.title")}{" "}
 							<Badge variant="secondary" className="ml-1">
 								{classCourses.length}
 							</Badge>
 						</CardTitle>
 						<CardDescription className="mt-1">
-							Publication PDF par Élément Constitutif — agrège toutes les
-							évaluations (CC + TP + Examen) avec moyenne EC. Nécessite que la
-							somme des pondérations des examens de l&apos;EC soit à 100%.
+							{t("admin.gradeExport.ec.description")}
 						</CardDescription>
 					</div>
 				</div>
@@ -53,10 +53,18 @@ export function EcExportsCard({
 					<table className="w-full text-sm">
 						<thead className="bg-muted/40">
 							<tr>
-								<th className="px-4 py-2 text-left font-medium">Code</th>
-								<th className="px-4 py-2 text-left font-medium">Intitulé</th>
-								<th className="px-4 py-2 text-right font-medium">Coef.</th>
-								<th className="px-4 py-2 text-right font-medium">Actions</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("admin.gradeExport.columns.code")}
+								</th>
+								<th className="px-4 py-2 text-left font-medium">
+									{t("admin.gradeExport.columns.title")}
+								</th>
+								<th className="px-4 py-2 text-right font-medium">
+									{t("admin.gradeExport.columns.coefficient")}
+								</th>
+								<th className="px-4 py-2 text-right font-medium">
+									{t("common.table.actions")}
+								</th>
 							</tr>
 						</thead>
 						<tbody className="divide-y">

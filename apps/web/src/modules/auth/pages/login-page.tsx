@@ -35,9 +35,7 @@ const Login: React.FC = () => {
 
 	return (
 		<LoginForm
-			subtitle={t("auth.login.subtitle", {
-				defaultValue: "Connectez-vous à votre espace.",
-			})}
+			subtitle={t("auth.login.scopedSubtitle")}
 			forgotPasswordHref={`/auth/forgot?return=${callbackURL}`}
 			onSubmit={onSubmit}
 		/>

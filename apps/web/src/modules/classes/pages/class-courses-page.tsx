@@ -66,12 +66,8 @@ export default function ClassCoursesPage() {
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteClassCourses.mutate([...selection.selectedIds], {
@@ -116,18 +112,14 @@ export default function ClassCoursesPage() {
 								}
 							>
 								<FileDown className="mr-2 h-4 w-4" />
-								{t("admin.classCourses.actions.exportPdf", {
-									defaultValue: "Exporter PDF",
-								})}
+								{t("admin.classCourses.actions.exportPdf")}
 							</Button>
 							<Button
 								variant="outline"
 								onClick={() => AutoEnrollClassDialog.call()}
 							>
 								<Users className="mr-2 h-4 w-4" />
-								{t("admin.classCourses.actions.autoEnroll", {
-									defaultValue: "Inscrire les étudiants",
-								})}
+								{t("admin.classCourses.actions.autoEnroll")}
 							</Button>
 							<Button
 								variant="outline"
@@ -139,9 +131,7 @@ export default function ClassCoursesPage() {
 								}
 							>
 								<Layers className="mr-2 h-4 w-4" />
-								{t("admin.classCourses.actions.assignUe", {
-									defaultValue: "Assigner un UE",
-								})}
+								{t("admin.classCourses.actions.assignUe")}
 							</Button>
 							<Button onClick={() => openForm()}>
 								<Plus className="mr-2 h-4 w-4" />

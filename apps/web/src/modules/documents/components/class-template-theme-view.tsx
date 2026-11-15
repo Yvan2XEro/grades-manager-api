@@ -1,4 +1,5 @@
 import { ArrowLeft, Save } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import type { useClassDocumentTemplates } from "../hooks/use-class-document-templates";
@@ -8,6 +9,7 @@ type State = ReturnType<typeof useClassDocumentTemplates>;
 
 /** Full-page editor of the theme overrides of one class template, with live preview. */
 export function ClassTemplateThemeView({ state }: { state: State }) {
+	const { t } = useTranslation();
 	const {
 		editingKind,
 		editingKindLabel,
@@ -30,24 +32,29 @@ export function ClassTemplateThemeView({ state }: { state: State }) {
 				<div className="flex items-center gap-3">
 					<Button variant="outline" size="sm" onClick={closeEditor}>
 						<ArrowLeft className="mr-1 h-4 w-4" />
-						Retour
+						{t("common.actions.back")}
 					</Button>
 					<div>
 						<h1 className="font-bold text-foreground text-xl">
-							Personnaliser · {editingKindLabel}
+							{t("admin.documents.classTemplates.editor.title", {
+								kind: editingKindLabel,
+							})}
 						</h1>
 						<p className="text-muted-foreground text-xs">
-							{selectedClassLabel} · les surcharges s'appliquent uniquement à
-							cette classe
+							{t("admin.documents.classTemplates.editor.subtitle", {
+								classLabel: selectedClassLabel,
+							})}
 						</p>
 					</div>
 				</div>
 				<div className="flex items-center gap-2">
 					<span className="text-muted-foreground text-xs">
-						{Object.keys(overrides).length} groupe(s) modifié(s)
+						{t("admin.documents.classTemplates.editor.modifiedGroups", {
+							count: Object.keys(overrides).length,
+						})}
 					</span>
 					<Button variant="ghost" onClick={() => setEditingKind(null)}>
-						Annuler
+						{t("common.actions.cancel")}
 					</Button>
 					<Button
 						onClick={handleSaveOverrides}
@@ -55,7 +62,7 @@ export function ClassTemplateThemeView({ state }: { state: State }) {
 					>
 						{assignMutation.isPending && <Spinner className="mr-2" />}
 						<Save className="mr-1 h-4 w-4" />
-						Enregistrer
+						{t("common.actions.save")}
 					</Button>
 				</div>
 			</div>
@@ -70,7 +77,9 @@ export function ClassTemplateThemeView({ state }: { state: State }) {
 				</div>
 				<div className="flex flex-col overflow-hidden rounded border bg-muted/20">
 					<div className="flex items-center justify-between border-b bg-background px-3 py-2 text-xs">
-						<span className="font-medium">Aperçu</span>
+						<span className="font-medium">
+							{t("admin.documents.classTemplates.editor.preview")}
+						</span>
 						<Button
 							size="sm"
 							variant="ghost"
@@ -83,19 +92,19 @@ export function ClassTemplateThemeView({ state }: { state: State }) {
 							disabled={previewMutation.isPending}
 						>
 							{previewMutation.isPending && <Spinner className="mr-1" />}
-							Rafraîchir l'aperçu
+							{t("admin.documents.classTemplates.editor.refreshPreview")}
 						</Button>
 					</div>
 					<div className="flex-1">
 						{previewHtml ? (
 							<iframe
-								title="Aperçu live"
+								title={t("admin.documents.classTemplates.editor.livePreview")}
 								className="h-full w-full bg-white"
 								srcDoc={previewHtml}
 							/>
 						) : (
 							<div className="flex h-full items-center justify-center text-muted-foreground text-xs">
-								Cliquez "Rafraîchir l'aperçu" pour générer le rendu
+								{t("admin.documents.classTemplates.editor.previewHint")}
 							</div>
 						)}
 					</div>

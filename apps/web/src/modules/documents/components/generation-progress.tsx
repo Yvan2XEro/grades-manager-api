@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Progress } from "@/components/ui/progress";
 
 /** "<label> done / total" with the OK / failure counts and a progress bar. */
@@ -12,6 +13,7 @@ export function GenerationProgress({
 	summary: { ok: number; error: number };
 	className?: string;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className={className}>
 			<div className="flex items-center justify-between text-sm">
@@ -19,7 +21,10 @@ export function GenerationProgress({
 					{label} {progress.done} / {progress.total}
 				</span>
 				<span className="text-muted-foreground">
-					{summary.ok} OK · {summary.error} échec(s)
+					{t("admin.documents.bulk.summary", {
+						ok: summary.ok,
+						error: summary.error,
+					})}
 				</span>
 			</div>
 			<Progress

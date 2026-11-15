@@ -68,9 +68,7 @@ export function useSpreadsheetCells(grades: SavedGrade[] | undefined) {
 			if (!validation.ok) {
 				setErrors((e) => ({
 					...e,
-					[k]: t("teacher.spreadsheet.invalidScore", {
-						defaultValue: "Score doit être entre 0 et 20",
-					}),
+					[k]: t("teacher.spreadsheet.invalidScore"),
 				}));
 				setStates((s) => ({ ...s, [k]: "error" }));
 				return;
@@ -106,7 +104,7 @@ export function useSpreadsheetCells(grades: SavedGrade[] | undefined) {
 				}, 1500);
 			} catch (err: any) {
 				setStates((s) => ({ ...s, [k]: "error" }));
-				setErrors((e) => ({ ...e, [k]: err?.message ?? "Erreur" }));
+				setErrors((e) => ({ ...e, [k]: err?.message ?? t("common.error") }));
 			}
 		},
 		[gradeIds, deleteMutation, upsertMutation, t],

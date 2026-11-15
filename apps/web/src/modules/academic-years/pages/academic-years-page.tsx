@@ -64,12 +64,8 @@ export default function AcademicYearsPage() {
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteYears.mutate([...selection.selectedIds], {
@@ -79,19 +75,17 @@ export default function AcademicYearsPage() {
 
 	const rowActions = (year: AcademicYearRow): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Pencil,
 			onSelect: () => openYearForm(year),
 		},
 		{
-			label: t("admin.academicYears.setup.button", { defaultValue: "Setup" }),
+			label: t("admin.academicYears.setup.button"),
 			icon: Copy,
 			onSelect: () => openSetup(year),
 		},
 		{
-			label: t("admin.academicYears.actions.createNextYear", {
-				defaultValue: "Créer l'année suivante",
-			}),
+			label: t("admin.academicYears.actions.createNextYear"),
 			icon: CalendarPlus,
 			disabled: createNextYear.isPending,
 			onSelect: () => createNextYear.mutate(year.id),

@@ -39,10 +39,7 @@ export function ApiActivityChart({
 }: ApiActivityChartProps) {
 	const { t } = useTranslation();
 	const keyLabel = (keyId: string) =>
-		labelMap.get(keyId) ??
-		t("admin.apiKeys.activity.unknownKey", {
-			defaultValue: "Sans clé",
-		});
+		labelMap.get(keyId) ?? t("admin.apiKeys.activity.unknownKey");
 
 	return (
 		<Card>

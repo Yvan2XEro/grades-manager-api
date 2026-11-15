@@ -25,13 +25,8 @@ export default function CentersPage() {
 
 	const confirmDelete = (center: CenterRow) =>
 		confirmAction({
-			title: t("admin.centers.delete.title", {
-				defaultValue: "Supprimer le centre",
-			}),
-			message: t("admin.centers.delete.message", {
-				defaultValue:
-					"Êtes-vous sûr de vouloir supprimer ce centre ? Cette action est irréversible.",
-			}),
+			title: t("admin.centers.delete.title"),
+			message: t("admin.centers.delete.message"),
 			onConfirm: () =>
 				deleteMutation.mutateAsync(center.id).catch(() => undefined),
 		});
@@ -51,19 +46,14 @@ export default function CentersPage() {
 		},
 	];
 
-	const addLabel = t("admin.centers.actions.add", {
-		defaultValue: "Ajouter un centre",
-	});
+	const addLabel = t("admin.centers.actions.add");
 
 	return (
 		<ListLayout
 			header={
 				<PageHeader
-					title={t("admin.centers.title", { defaultValue: "Nos centres" })}
-					description={t("admin.centers.subtitle", {
-						defaultValue:
-							"Configurez les centres de formation professionnelle de l'institution.",
-					})}
+					title={t("admin.centers.title")}
+					description={t("admin.centers.subtitle")}
 					actions={
 						<Button onClick={openCreate}>
 							<Plus className="mr-2 h-4 w-4" />
@@ -83,13 +73,8 @@ export default function CentersPage() {
 					<EmptyState
 						className="m-4"
 						icon={<Building className="h-6 w-6" />}
-						title={t("admin.centers.empty.title", {
-							defaultValue: "Aucun centre",
-						})}
-						description={t("admin.centers.empty.description", {
-							defaultValue:
-								"Créez votre premier centre pour organiser les programmes par campus.",
-						})}
+						title={t("admin.centers.empty.title")}
+						description={t("admin.centers.empty.description")}
 						cta={{
 							label: addLabel,
 							onClick: openCreate,

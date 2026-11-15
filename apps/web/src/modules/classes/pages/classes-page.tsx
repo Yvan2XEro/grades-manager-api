@@ -77,12 +77,8 @@ export default function ClassesPage() {
 
 	const confirmBulkDelete = () =>
 		confirmAction({
-			title: t("common.bulkActions.confirmDeleteTitle", {
-				defaultValue: "Delete selected items?",
-			}),
-			message: t("common.bulkActions.confirmDelete", {
-				defaultValue: "Are you sure you want to delete the selected items?",
-			}),
+			title: t("common.bulkActions.confirmDeleteTitle"),
+			message: t("common.bulkActions.confirmDelete"),
 			confirmText: t("common.actions.delete"),
 			onConfirm: () =>
 				deleteClasses.mutate([...selection.selectedIds], {
@@ -92,25 +88,23 @@ export default function ClassesPage() {
 
 	const rowActions = (cls: ClassRow): RowAction[] => [
 		{
-			label: t("common.actions.edit", { defaultValue: "Edit" }),
+			label: t("common.actions.edit"),
 			icon: Pencil,
 			onSelect: () => openDetail(cls),
 		},
 		{
-			label: t("admin.classes.export.button", { defaultValue: "Export PDF" }),
+			label: t("admin.classes.export.button"),
 			icon: FileText,
 			separator: true,
 			onSelect: () => exportStudentListPdf(cls, t),
 		},
 		{
-			label: t("admin.classes.export.excelButton", {
-				defaultValue: "Export Excel",
-			}),
+			label: t("admin.classes.export.excelButton"),
 			icon: FileSpreadsheet,
 			onSelect: () => exportStudentListExcel(cls, t),
 		},
 		{
-			label: t("common.actions.delete", { defaultValue: "Delete" }),
+			label: t("common.actions.delete"),
 			icon: Trash2,
 			destructive: true,
 			separator: true,
@@ -138,9 +132,7 @@ export default function ClassesPage() {
 								onClick={() => BulkGenerateClassesDialog.call()}
 							>
 								<Wand2 className="mr-2 h-4 w-4" />
-								{t("admin.classes.actions.bulkGenerate", {
-									defaultValue: "Générer les classes",
-								})}
+								{t("admin.classes.actions.bulkGenerate")}
 							</Button>
 							<Button
 								variant="outline"
@@ -148,9 +140,7 @@ export default function ClassesPage() {
 								disabled={classes.length === 0}
 							>
 								<Download className="mr-2 h-4 w-4" />
-								{t("admin.classes.actions.bulkExport", {
-									defaultValue: "Exporter en lot",
-								})}
+								{t("admin.classes.actions.bulkExport")}
 							</Button>
 							<Button onClick={openCreate}>
 								<Plus className="mr-2 h-4 w-4" />
