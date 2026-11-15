@@ -16,11 +16,11 @@ type Params = z.infer<typeof paramsSchema>;
 async function planStep(params: Params, institutionId: string) {
 	const step = getImportStep(params.step);
 	const buffer = await readImportFile(params.fileId);
-	const { rows, issues } = await readWorkbook(step, buffer);
-	const plan = await step.plan(rows, {
-		institutionId,
-		academicYearId: params.academicYearId,
-	});
+	const ctx = { institutionId, academicYearId: params.academicYearId };
+	const { rows, issues } = step.read
+		? await step.read(buffer, ctx)
+		: await readWorkbook(step, buffer);
+	const plan = await step.plan(rows, ctx);
 	return { step, plan: { ...plan, issues: [...issues, ...plan.issues] } };
 }
 

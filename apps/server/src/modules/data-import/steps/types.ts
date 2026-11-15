@@ -79,4 +79,11 @@ export interface ImportStepDef {
 		rows: Record<string, SheetRow[]>,
 		ctx: StepContext,
 	) => Promise<ImportPlan>;
+	/** Steps whose sheets depend on the data (one sheet per class…) build
+	 * their own template and read their own workbook. */
+	template?: (ctx: StepContext) => Promise<Buffer>;
+	read?: (
+		buffer: Buffer,
+		ctx: StepContext,
+	) => Promise<{ rows: Record<string, SheetRow[]>; issues: ImportIssue[] }>;
 }

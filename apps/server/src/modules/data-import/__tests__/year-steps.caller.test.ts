@@ -405,6 +405,67 @@ describe("guided import — class courses and exams", () => {
 			status: "approved",
 			percentage: "60.00",
 		});
+		// Grades: download the grid, fill it, import it
+		const template = await caller.dataImport.template({
+			step: "year.grades",
+			academicYearId: past.id,
+		});
+		const wb = new ExcelJS.Workbook();
+		await wb.xlsx.load(Buffer.from(template.data, "base64") as never);
+		const grid = wb.getWorksheet(`K${s}`)!;
+		const headers = (grid.getRow(1).values as string[]).slice(1);
+		expect(headers).toEqual(
+			expect.arrayContaining([
+				`A${s}1 | CC${s}`,
+				`A${s}1 | RA${s}`,
+				`A${s}2 | EX${s}`,
+			]),
+		);
+		expect(headers).not.toContain(`A${s}2 | CC${s}`);
+		const col = (h: string) => headers.indexOf(h) + 1;
+		grid.eachRow((row, n) => {
+			if (n === 1) return;
+			const ana = row.getCell(1).text === `S${s}1`;
+			row.getCell(col(`A${s}1 | CC${s}`)).value = ana ? "12,5" : "ABS";
+			row.getCell(col(`A${s}1 | EX${s}`)).value = ana ? 14 : 25;
+		});
+		const long = wb.getWorksheet("Notes")!;
+		long.addRow([`S${s}2`, `K${s}`, `A${s}2`, `EX${s}`, "8"]);
+		const data = Buffer.from(await wb.xlsx.writeBuffer()).toString("base64");
+		const { fileId } = await caller.dataImport.upload({
+			name: "notes.xlsx",
+			data,
+		});
+		const gradeJob = await caller.batchJobs.preview({
+			type: "import.step",
+			params: { step: "year.grades", fileId, academicYearId: past.id },
+		});
+		const gradeSummary = gradeJob.previewResult as unknown as Summary & {
+			sheets: { sheet: string; create: number; skipped: number }[];
+		};
+		expect(gradeSummary.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ code: "invalidScore", level: "error" }),
+				expect.objectContaining({ code: "absencesAsZero" }),
+			]),
+		);
+		expect(gradeSummary.sheets).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ sheet: `K${s}`, create: 3, skipped: 1 }),
+				expect.objectContaining({ sheet: "Notes", create: 1 }),
+			]),
+		);
+		expect((await caller.batchJobs.run({ jobId: gradeJob.id }))?.status).toBe(
+			"completed",
+		);
+		const ana = await db.query.students.findFirst({
+			where: eq(schema.students.registrationNumber, `S${s}1`),
+		});
+		const anaGrades = await db.query.grades.findMany({
+			where: eq(schema.grades.student, ana!.id),
+		});
+		expect(anaGrades.map((g) => g.score).sort()).toEqual(["12.50", "14.00"]);
+
 		// Same file again: nothing to do
 		const again = await importStep(
 			caller,

@@ -201,7 +201,9 @@ export const dataImportRouter = router({
 				institutionId: ctx.institution.id,
 				academicYearId: input.academicYearId,
 			};
-			const buffer = await buildTemplate(step, context);
+			const buffer = step.template
+				? await step.template(context)
+				: await buildTemplate(step, context);
 			const year =
 				step.scope === "year" ? `-${(await requireYear(context)).name}` : "";
 			return {

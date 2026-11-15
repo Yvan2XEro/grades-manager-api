@@ -36,7 +36,7 @@ export const normalize = (value: string) =>
 		.toLowerCase()
 		.replace(/\s+/g, " ");
 
-function cellText(cell: ExcelJS.Cell): string {
+export function cellText(cell: ExcelJS.Cell): string {
 	const value = cell.value;
 	if (value === null || value === undefined) return "";
 	if (value instanceof Date) return value.toISOString().slice(0, 10);
