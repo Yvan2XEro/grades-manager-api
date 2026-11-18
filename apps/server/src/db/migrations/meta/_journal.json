@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1784632303052,
-      "tag": "0000_flawless_eternity",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1789212737007,
-      "tag": "0001_smart_wolfpack",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1794726788193,
-      "tag": "0002_enrollment_open_unique",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1794730665410,
-      "tag": "0003_teaching_unit_level",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1794732185494,
-      "tag": "0004_import_journal",
+      "when": 1794997009767,
+      "tag": "0000_init",
       "breakpoints": true
     }
   ]
