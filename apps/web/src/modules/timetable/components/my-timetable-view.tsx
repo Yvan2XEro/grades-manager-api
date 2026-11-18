@@ -9,6 +9,7 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { type GridSession, WeeklyGrid } from "@/components/ui/weekly-grid";
 import type { TimetablePeriod } from "../hooks/use-timetable-period";
 
@@ -30,7 +31,7 @@ export function MyTimetableView({
 }: Props) {
 	const { t } = useTranslation();
 	return (
-		<div className="p-6">
+		<div className="md:p-6">
 			<div className="mb-6">
 				<h1 className="font-semibold text-xl">
 					{t("teacher.timetable.myTitle")}
@@ -39,7 +40,7 @@ export function MyTimetableView({
 			</div>
 
 			<div className="mb-6 flex flex-wrap gap-4">
-				<div className="w-64">
+				<div className="w-full sm:w-64">
 					<Label className="mb-1.5 block text-xs">
 						{t("teacher.timetable.filterByYear")}
 					</Label>
@@ -49,7 +50,7 @@ export function MyTimetableView({
 					/>
 				</div>
 				{period.academicYearId && (
-					<div className="w-52">
+					<div className="w-full sm:w-52">
 						<Label className="mb-1.5 block text-xs">
 							{t("teacher.timetable.filterBySemester")}
 						</Label>
@@ -61,12 +62,14 @@ export function MyTimetableView({
 				)}
 			</div>
 
-			{!isPending && sessions.length === 0 ? (
+			{isPending ? (
+				<Skeleton className="h-72 w-full" />
+			) : sessions.length === 0 ? (
 				<Empty>
 					<EmptyHeader>
 						<Calendar className="h-8 w-8 text-muted-foreground/40" />
 					</EmptyHeader>
-					<EmptyTitle>{t("teacher.timetable.noSessions")}</EmptyTitle>
+					<EmptyTitle>{t("teacher.timetable.myNoSessionsTitle")}</EmptyTitle>
 					<EmptyDescription>{emptyDescription}</EmptyDescription>
 				</Empty>
 			) : (

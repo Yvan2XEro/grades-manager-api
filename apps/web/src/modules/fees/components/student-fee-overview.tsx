@@ -20,7 +20,7 @@ export function StudentFeeOverview({
 	return (
 		<div
 			className={cn(
-				"flex items-center gap-4 rounded-xl border p-4 shadow-sm",
+				"flex flex-wrap items-center gap-4 rounded-xl border p-4 shadow-sm",
 				cleared
 					? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
 					: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30",
@@ -31,7 +31,7 @@ export function StudentFeeOverview({
 			) : (
 				<AlertCircle className="h-8 w-8 shrink-0 text-amber-600" />
 			)}
-			<div className="flex-1">
+			<div className="min-w-48 flex-1">
 				<p className="font-semibold text-lg">
 					{cleared
 						? t("feeClearance.quitus.cleared")
@@ -44,7 +44,7 @@ export function StudentFeeOverview({
 					</strong>
 				</p>
 			</div>
-			<div className="shrink-0 text-right">
+			<div className="shrink-0 sm:text-right">
 				<p className="text-muted-foreground text-sm">
 					{t("feeClearance.student.totalDue")}
 				</p>

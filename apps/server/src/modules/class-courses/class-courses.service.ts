@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
@@ -34,6 +34,9 @@ export type TeacherOverviewExam = {
 	status: string;
 	canEdit: boolean;
 	classCourseId: string;
+	/** Grades entered so far, and their average (null when none). */
+	gradedCount: number;
+	average: number | null;
 };
 
 export type TeacherOverviewCourse = {
@@ -44,7 +47,27 @@ export type TeacherOverviewCourse = {
 	studentCount: number;
 	exams: TeacherOverviewExam[];
 	isDelegated: boolean;
+	semesterId: string | null;
+	semesterName: string | null;
+	/**
+	 * Half of the academic year the course is taught in: odd semesters
+	 * (S1, S3, S5) and fall units are the first, even ones and spring units
+	 * the second; null for annual courses.
+	 */
+	yearHalf: "first" | "second" | null;
 };
+
+function courseYearHalf(
+	semesterOrder: number | undefined,
+	ueSemester: string | null | undefined,
+): TeacherOverviewCourse["yearHalf"] {
+	if (semesterOrder !== undefined) {
+		return semesterOrder % 2 === 1 ? "first" : "second";
+	}
+	if (ueSemester === "fall") return "first";
+	if (ueSemester === "spring") return "second";
+	return null;
+}
 
 async function validateConfig(
 	config: Pick<schema.NewClassCourse, "class" | "course" | "semesterId">,
@@ -325,8 +348,25 @@ export async function buildTeacherOverview(
 		},
 	);
 
+	// One aggregate query for every exam (the home page used to fetch the
+	// grades of each exam separately: hundreds of requests for a teacher)
+	const examIds = examResult.items.map((exam) => exam.id);
+	const gradeStats = examIds.length
+		? await db
+				.select({
+					examId: schema.grades.exam,
+					count: sql<number>`count(*)::int`,
+					average: sql<string | null>`avg(${schema.grades.score})`,
+				})
+				.from(schema.grades)
+				.where(inArray(schema.grades.exam, examIds))
+				.groupBy(schema.grades.exam)
+		: [];
+	const statsByExam = new Map(gradeStats.map((row) => [row.examId, row]));
+
 	const examsByClassCourse = new Map<string, TeacherOverviewExam[]>();
 	for (const exam of examResult.items) {
+		const stats = statsByExam.get(exam.id);
 		const bucket = examsByClassCourse.get(exam.classCourse) ?? [];
 		bucket.push({
 			id: exam.id,
@@ -338,18 +378,45 @@ export async function buildTeacherOverview(
 			status: exam.status ?? (exam.isLocked ? "locked" : "open"),
 			canEdit: exam.canEdit ?? false,
 			classCourseId: exam.classCourse,
+			gradedCount: Number(stats?.count ?? 0),
+			average:
+				stats?.average != null
+					? Number(Number(stats.average).toFixed(2))
+					: null,
 		});
 		examsByClassCourse.set(exam.classCourse, bucket);
 	}
 
-	return classCourses.map((classCourse) => ({
-		classCourseId: classCourse.id,
-		courseName:
-			classCourse.courseName ?? classCourse.courseCode ?? classCourse.course,
-		className: classCourse.className ?? classCourse.class,
-		programName: classCourse.programName ?? "",
-		studentCount: classCourse.studentCount ?? 0,
-		exams: examsByClassCourse.get(classCourse.id) ?? [],
-		isDelegated: classCourse.isDelegated ?? false,
-	}));
+	const semesterIds = [
+		...new Set(
+			classCourses
+				.map((item) => item.semesterId)
+				.filter((id): id is string => Boolean(id)),
+		),
+	];
+	const semesters = semesterIds.length
+		? await db.query.semesters.findMany({
+				where: inArray(schema.semesters.id, semesterIds),
+			})
+		: [];
+	const semesterById = new Map(semesters.map((sem) => [sem.id, sem]));
+
+	return classCourses.map((classCourse): TeacherOverviewCourse => {
+		const semester = classCourse.semesterId
+			? semesterById.get(classCourse.semesterId)
+			: undefined;
+		return {
+			classCourseId: classCourse.id,
+			courseName:
+				classCourse.courseName ?? classCourse.courseCode ?? classCourse.course,
+			className: classCourse.className ?? classCourse.class,
+			programName: classCourse.programName ?? "",
+			studentCount: classCourse.studentCount ?? 0,
+			exams: examsByClassCourse.get(classCourse.id) ?? [],
+			isDelegated: classCourse.isDelegated ?? false,
+			semesterId: semester?.id ?? null,
+			semesterName: semester?.name ?? null,
+			yearHalf: courseYearHalf(semester?.orderIndex, classCourse.ueSemester),
+		};
+	});
 }

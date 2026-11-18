@@ -1,5 +1,6 @@
-import { CheckCircle2, Clock, CreditCard } from "lucide-react";
+import { CalendarClock, CheckCircle2, Clock, CreditCard } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import {
 	Table,
 	TableBody,
@@ -66,19 +67,8 @@ export function StudentAssignmentCard({
 					<AssignmentStatusBadge status={a.status} />
 				</div>
 			</div>
-			{canGenerateOrder && (
-				<div className="border-b px-4 py-3">
-					<GenerateOrderPanel
-						assignmentId={a.id}
-						balance={balance}
-						currency={a.currency}
-						installments={installments}
-					/>
-				</div>
-			)}
-
 			{/* Amounts */}
-			<div className="grid grid-cols-3 gap-4 px-4 py-3 text-sm">
+			<div className="grid grid-cols-3 gap-2 px-4 py-3 text-sm sm:gap-4">
 				<div>
 					<p className="text-muted-foreground">
 						{t("feeClearance.assignments.fields.effectiveAmount")}
@@ -103,6 +93,57 @@ export function StudentAssignmentCard({
 				</div>
 			</div>
 
+			{/* Installments: what is due when, and paying them */}
+			{(canGenerateOrder || installments.length > 0) && (
+				<div className="border-t px-4 py-3">
+					<p className="mb-2 flex items-center gap-1 font-medium text-sm">
+						<CalendarClock className="h-4 w-4" />
+						{t("feeClearance.student.schedule")}
+					</p>
+					{canGenerateOrder ? (
+						<>
+							<p className="mb-2 text-muted-foreground text-xs">
+								{t("feeClearance.student.scheduleHint")}
+							</p>
+							<GenerateOrderPanel
+								assignmentId={a.id}
+								balance={balance}
+								currency={a.currency}
+								installments={installments}
+							/>
+						</>
+					) : (
+						<ul className="grid gap-2">
+							{installments.map((installment) => (
+								<li
+									key={installment.id}
+									className="flex items-center gap-3 rounded-md border p-3 text-sm"
+								>
+									<span className="min-w-0 flex-1">
+										<span className="block">{installment.label}</span>
+										{installment.dueDate && (
+											<span className="block text-muted-foreground text-xs">
+												{t("feeClearance.student.dueOn", {
+													date: formatDate(installment.dueDate, "PP"),
+												})}
+											</span>
+										)}
+									</span>
+									<span className="shrink-0 font-medium">
+										{money(installment.amount)}
+									</span>
+									<Badge variant="outline">
+										{t(
+											`feeClearance.student.installmentStatus.${installment.status}`,
+										)}
+									</Badge>
+								</li>
+							))}
+						</ul>
+					)}
+				</div>
+			)}
+
 			{/* Pending orders */}
 			{pendingOrders.length > 0 && (
 				<div className="border-t px-4 py-3">
@@ -110,41 +151,45 @@ export function StudentAssignmentCard({
 						<Clock className="h-4 w-4" />
 						{t("feeClearance.student.pendingOrders")} ({pendingOrders.length})
 					</p>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>
-									{t("feeClearance.orders.fields.reference")}
-								</TableHead>
-								<TableHead>{t("feeClearance.orders.fields.amount")}</TableHead>
-								<TableHead>
-									{t("feeClearance.orders.fields.expiresAt")}
-								</TableHead>
-								<TableHead />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{pendingOrders.map((o) => (
-								<TableRow key={o.id}>
-									<TableCell className="font-mono text-xs">
-										{o.reference ?? "—"}
-									</TableCell>
-									<TableCell className="font-medium">
-										{money(Number(o.amount))}
-									</TableCell>
-									<TableCell>
-										{o.expiresAt ? formatDate(o.expiresAt, "P") : "—"}
-									</TableCell>
-									<TableCell>
-										<DownloadOrderButton
-											orderId={o.id}
-											reference={o.reference}
-										/>
-									</TableCell>
+					<div className="overflow-x-auto">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>
+										{t("feeClearance.orders.fields.reference")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.orders.fields.amount")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.orders.fields.expiresAt")}
+									</TableHead>
+									<TableHead />
 								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+							</TableHeader>
+							<TableBody>
+								{pendingOrders.map((o) => (
+									<TableRow key={o.id}>
+										<TableCell className="font-mono text-xs">
+											{o.reference ?? "—"}
+										</TableCell>
+										<TableCell className="font-medium">
+											{money(Number(o.amount))}
+										</TableCell>
+										<TableCell>
+											{o.expiresAt ? formatDate(o.expiresAt, "P") : "—"}
+										</TableCell>
+										<TableCell>
+											<DownloadOrderButton
+												orderId={o.id}
+												reference={o.reference}
+											/>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
 				</div>
 			)}
 
@@ -155,48 +200,63 @@ export function StudentAssignmentCard({
 						<CreditCard className="h-4 w-4" />
 						{t("feeClearance.payments.title")} ({a.payments.length})
 					</p>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>
-									{t("feeClearance.payments.fields.reference")}
-								</TableHead>
-								<TableHead>
-									{t("feeClearance.payments.fields.amount")}
-								</TableHead>
-								<TableHead>
-									{t("feeClearance.payments.fields.paymentDate")}
-								</TableHead>
-								<TableHead />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{a.payments.map(
-								(p: {
-									id: string;
-									reference: string | null;
-									amount: string | number;
-									paymentDate: string;
-								}) => (
-									<TableRow key={p.id}>
-										<TableCell className="font-mono text-xs">
-											{p.reference ?? "—"}
-										</TableCell>
-										<TableCell className="font-medium text-emerald-600">
-											{money(Number(p.amount))}
-										</TableCell>
-										<TableCell>{formatDate(p.paymentDate, "P")}</TableCell>
-										<TableCell>
-											<DownloadReceiptButton
-												paymentId={p.id}
-												reference={p.reference}
-											/>
-										</TableCell>
-									</TableRow>
-								),
-							)}
-						</TableBody>
-					</Table>
+					<div className="overflow-x-auto">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>
+										{t("feeClearance.payments.fields.reference")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.payments.fields.amount")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.payments.fields.paymentDate")}
+									</TableHead>
+									<TableHead />
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{a.payments.map(
+									(p: {
+										id: string;
+										reference: string | null;
+										amount: string | number;
+										paymentDate: string;
+									}) => (
+										<TableRow key={p.id}>
+											<TableCell className="font-mono text-xs">
+												{p.reference ?? "—"}
+											</TableCell>
+											<TableCell className="font-medium text-emerald-600">
+												{money(Number(p.amount))}
+											</TableCell>
+											<TableCell>{formatDate(p.paymentDate, "P")}</TableCell>
+											<TableCell>
+												<DownloadReceiptButton
+													paymentId={p.id}
+													reference={p.reference}
+												/>
+											</TableCell>
+										</TableRow>
+									),
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</div>
+			)}
+
+			{a.payments.length === 0 && a.status !== "exempt" && (
+				<div className="border-t px-4 py-3 text-sm">
+					<p className="mb-1 flex items-center gap-1 font-medium">
+						<CreditCard className="h-4 w-4" />
+						{t("feeClearance.payments.title")}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{t("feeClearance.student.noPayments")}{" "}
+						{t("feeClearance.student.receiptHint")}
+					</p>
 				</div>
 			)}
 
@@ -204,7 +264,7 @@ export function StudentAssignmentCard({
 				<div className="flex items-center gap-1 border-t px-4 py-2 text-emerald-600 text-xs">
 					<CheckCircle2 className="h-3 w-3" />
 					{t("feeClearance.quitus.clearedOn", {
-						date: formatDate(a.clearedAt, "P"),
+						date: formatDate(a.clearedAt, "PP"),
 					})}
 				</div>
 			)}

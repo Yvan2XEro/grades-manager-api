@@ -195,7 +195,7 @@ interface Resources {
 		};
 		"teacher": {
 			"courses": {
-				"title": "My Courses";
+				"title": "My courses";
 				"subtitle": "Manage your assigned courses and grades";
 				"delegatedBadge": "Delegated";
 				"delegatedDashboardBadge": "Delegated";
@@ -230,7 +230,7 @@ interface Resources {
 				"searchPlaceholder": "Search for a course or a class…";
 				"summary": "Summary";
 				"noExams": "No evaluation yet for this course. Evaluations (CC, exam) are scheduled by the registrar: once created, they appear here for grade entry.";
-				"hubTitle": "My courses & grades";
+				"hubTitle": "My courses";
 				"hubDescription": "Grade entry, locking and submission per course";
 				"noSearchMatch": "No course matches your search.";
 				"examRow": {
@@ -246,7 +246,25 @@ interface Resources {
 						"name": "Name A→Z";
 						"class": "Class";
 					};
+					"period": {
+						"label": "Semester";
+						"first": "1st semester (S1, S3, S5)";
+						"second": "2nd semester (S2, S4, S6)";
+						"all": "Whole year";
+						"current": "current";
+					};
 				};
+				"roster": {
+					"title": "Students — {{course}}";
+					"description_one": "{{className}} · {{count}} student";
+					"description_other": "{{className}} · {{count}} students";
+					"search": "Search by name or registration number";
+					"empty": "No student found.";
+					"open_one": "{{count}} student — see the list";
+					"open_other": "{{count}} students — see the list";
+				};
+				"openCourse": "Open the grade entry of this course";
+				"noCourseInPeriod": "You teach no course in this semester. Choose another semester or the whole year.";
 			};
 			"courses.manage": {
 				"title": "Course Management";
@@ -395,7 +413,7 @@ interface Resources {
 				};
 			};
 			"dashboard": {
-				"title": "Teacher Dashboard";
+				"title": "My courses";
 				"subtitle": "Welcome back, {{name}}";
 				"stats": {
 					"courses": "My Courses";
@@ -622,7 +640,7 @@ interface Resources {
 				"myTitle": "My Timetable";
 				"mySubtitle": "Your weekly course sessions";
 				"studentSubtitle": "Your weekly classes";
-				"studentNoSessionsDesc": "Your weekly classes will appear here once scheduled.";
+				"studentNoSessionsDesc": "The institution has not published the timetable of your class for this period yet. Your weekly classes will appear here as soon as they are scheduled.";
 				"noSessions": "No sessions";
 				"noSessionsDesc": "No sessions scheduled for this period.";
 				"selectCourse": "Select a course";
@@ -670,6 +688,8 @@ interface Resources {
 					"generatedOn": "Generated on {{date}}";
 					"time": "Time";
 				};
+				"myNoSessionsTitle": "No class scheduled yet";
+				"teacherNoSessionsDesc": "The institution has not scheduled any session of your courses for this period yet. Try another semester, or contact the academic office if you expected classes.";
 			};
 			"rooms": {
 				"title": "Rooms";
@@ -1255,6 +1275,8 @@ interface Resources {
 				"searchStudent": "Search for a student…";
 				"studentCol": "Student";
 				"lockedExam": "Locked: approved evaluation, grades can no longer be edited";
+				"phoneScrollHint_other": "{{count}} evaluations: swipe the table sideways to see them all, or use the single exam mode.";
+				"phoneScrollHint_one": "{{count}} evaluation.";
 			};
 		};
 		"navigation": {
@@ -1320,7 +1342,7 @@ interface Resources {
 			};
 			"header": {
 				"adminDashboard": "Admin dashboard";
-				"teacherDashboard": "Teacher dashboard";
+				"teacherDashboard": "My courses";
 				"notificationsAria": "Open notifications";
 				"toggleSidebarAria": "Toggle sidebar";
 				"languageSelectAria": "Change language";
@@ -1434,9 +1456,11 @@ interface Resources {
 					"dashboard": "My performance";
 					"exams": "Exam calendar";
 					"timetable": "Timetable";
-					"enrollments": "My courses";
+					"enrollments": "My enrollments";
 					"documents": "My documents";
 					"timeline": "Academic Timeline";
+					"fees": "My fees";
+					"feesKeywords": "fees tuition payment payments receipt balance installment";
 				};
 			};
 			"roles": {
@@ -1460,7 +1484,7 @@ interface Resources {
 				"feeAssignments": "Student payments";
 				"academicYears": "Academic years";
 				"myFees": "My fees";
-				"courseEnrollment": "Course registration";
+				"courseEnrollment": "Course enrollments";
 				"examCalendar": "Exam calendar";
 				"documents": "Documents";
 				"notifications": "Notifications";
@@ -1610,6 +1634,10 @@ interface Resources {
 				"error": "Unable to send the reset email";
 				"backToLogin": "Back to sign in";
 				"subtitle": "Enter your email address to receive a password reset link.";
+				"sentTitle": "Check your inbox";
+				"sentBody": "If an account exists for {{email}}, we have sent it a link to choose a new password.";
+				"sentHint": "Nothing after a few minutes? Check your spam folder, or send the link again.";
+				"resend": "Send the link again";
 			};
 			"reset": {
 				"title": "Choose a new password";
@@ -5971,7 +5999,7 @@ interface Resources {
 				"tomorrow": "Tomorrow";
 			};
 			"enrollments": {
-				"title": "Course enrollment";
+				"title": "Course enrollments";
 				"subtitle": "Manage your course registrations during the open enrollment window";
 				"windowOpen": "Enrollment window open";
 				"windowClosed": "Enrollment closed";
@@ -6214,6 +6242,7 @@ interface Resources {
 				"validation": {
 					"firstName": "First name is required";
 					"lastName": "Last name is required";
+					"gender": "Choose a gender from the list, or leave it empty.";
 				};
 				"toast": {
 					"success": "Profile updated";
@@ -6561,6 +6590,11 @@ interface Resources {
 					"pending": "Order pending";
 					"paid": "Paid";
 				};
+				"schedule": "Installments and due dates";
+				"scheduleHint": "Select the installments you want to pay, then generate a payment order to take to the bank.";
+				"dueOn": "Due {{date}}";
+				"receiptHint": "Receipts can be downloaded once the payment is recorded by the finance office.";
+				"noPayments": "No payment recorded yet.";
 			};
 			"history": {
 				"title": "Financial history";

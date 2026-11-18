@@ -1,5 +1,6 @@
 import { Bell, Inbox } from "lucide-react";
 import type React from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
@@ -30,9 +31,10 @@ export const NotificationBell: React.FC = () => {
 	const { listQuery, items, unread } = useMyNotifications(20);
 	const markReadMut = useMarkNotificationRead();
 	const markAllMut = useMarkAllNotificationsRead();
+	const [open, setOpen] = useState(false);
 
 	return (
-		<Popover>
+		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button
 					variant="ghost"
@@ -142,19 +144,26 @@ export const NotificationBell: React.FC = () => {
 												className="flex min-w-0 flex-1 items-start gap-3"
 												onClick={() => {
 													if (isUnread) markReadMut.mutate(item.id);
+													setOpen(false);
 												}}
 											>
 												{innerContent}
 											</Link>
 										) : (
-											<div className="flex min-w-0 flex-1 items-start gap-3">
+											<button
+												type="button"
+												className="flex min-w-0 flex-1 items-start gap-3 text-left"
+												onClick={() => {
+													if (isUnread) markReadMut.mutate(item.id);
+												}}
+											>
 												{innerContent}
-											</div>
+											</button>
 										)}
 										{isUnread && (
 											<button
 												type="button"
-												className="shrink-0 self-center rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
+												className="shrink-0 self-center rounded px-1.5 py-0.5 font-medium text-[10px] text-primary transition-opacity hover:underline md:opacity-0 md:group-hover:opacity-100"
 												onClick={() => markReadMut.mutate(item.id)}
 												disabled={markReadMut.isPending}
 											>
@@ -174,7 +183,10 @@ export const NotificationBell: React.FC = () => {
 						variant="ghost"
 						size="sm"
 						className="h-7 w-full text-xs"
-						onClick={() => navigate("/notifications")}
+						onClick={() => {
+							setOpen(false);
+							navigate("/notifications");
+						}}
 					>
 						{t("notifications.viewAll")}
 					</Button>

@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 import { authClient } from "../../lib/auth-client";
 import { useStore } from "../../store";
+import { HelpWidget } from "../help/HelpWidget";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
 	Breadcrumb,
@@ -326,6 +327,8 @@ const Header: React.FC = () => {
 							</PopoverContent>
 						</Popover>
 
+						<HelpWidget />
+
 						{canAccessNotifications ? <NotificationBell /> : null}
 
 						{/* Avatar / profile dropdown */}
@@ -373,10 +376,7 @@ const Header: React.FC = () => {
 
 								<DropdownMenuItem
 									className="gap-2"
-									onSelect={(e) => {
-										e.preventDefault();
-										navigate("/settings");
-									}}
+									onSelect={() => navigate("/settings")}
 								>
 									<Settings className="h-4 w-4" />
 									{t("settings.menuLabel")}
@@ -419,10 +419,7 @@ const Header: React.FC = () => {
 
 								<DropdownMenuItem
 									className="gap-2 text-destructive focus:text-destructive"
-									onSelect={(e) => {
-										e.preventDefault();
-										handleLogout();
-									}}
+									onSelect={() => handleLogout()}
 								>
 									<LogOut className="h-4 w-4" />
 									{t("auth.logout.aria")}

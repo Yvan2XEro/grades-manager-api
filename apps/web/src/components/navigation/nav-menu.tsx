@@ -384,6 +384,12 @@ export function useNavMenu(IC = "size-[15px] shrink-0"): NavMenu {
 				labelKey: "navigation.sidebar.student.enrollments",
 			},
 			{
+				to: "/fees",
+				icon: <CreditCard className={IC} />,
+				labelKey: "navigation.sidebar.student.fees",
+				keywordsKey: "navigation.sidebar.student.feesKeywords",
+			},
+			{
 				to: "/documents",
 				icon: <FileText className={IC} />,
 				labelKey: "navigation.sidebar.student.documents",

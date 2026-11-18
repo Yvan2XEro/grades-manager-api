@@ -49,6 +49,7 @@ import { RecordPaymentDialog } from "@/modules/fees/components/record-payment-di
 import { UpdateDiscountDialog } from "@/modules/fees/components/update-discount-dialog";
 import { AssignDelegateDialog } from "@/modules/grades/components/assign-delegate-dialog";
 import { BulkExportReportDialog } from "@/modules/grades/components/bulk-export-report-dialog";
+import { CourseRosterDialog } from "@/modules/grades/components/course-roster-dialog";
 import { GrantGradeAccessDialog } from "@/modules/grades/components/grant-grade-access-dialog";
 import { AddGuardianDialog } from "@/modules/guardians/components/add-guardian-dialog";
 import { GuardianPreferencesSheet } from "@/modules/guardians/components/guardian-preferences-sheet";
@@ -146,6 +147,7 @@ export function CallableHost() {
 			<AvatarCropModal />
 			<DeanRejectExamDialog />
 			<AssignDelegateDialog />
+			<CourseRosterDialog />
 			<ResolveItemSheet />
 		</>
 	);

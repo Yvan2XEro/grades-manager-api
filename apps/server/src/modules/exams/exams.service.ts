@@ -280,30 +280,40 @@ export async function validateExam(
 		return upd;
 	});
 
-	// Notify the teacher — canonical type used by all paths; dedupeKey=examId prevents duplicates
-	void (async () => {
-		try {
-			if (existing.scheduledBy) {
-				const notifType =
-					status === "approved" ? "grade.approved" : "grade.rejected";
-				await notificationsService.queueInApp(
-					existing.scheduledBy,
-					notifType,
-					{
-						examId,
-						examName: existing.name,
-						classCourseId: existing.classCourse,
-						...(status === "rejected" && rejectionReason
-							? { reason: rejectionReason }
-							: {}),
-					},
-					{ dedupeKey: examId },
-				);
-			}
-		} catch {
-			// swallow — notification failure must not fail the approval
+	// Notify the course teacher (and whoever scheduled the exam, when it is
+	// someone else) — canonical type used by all paths; dedupeKey=examId
+	// prevents duplicates. Awaited so the bell shows it on the next refetch,
+	// but a failure never fails the approval.
+	try {
+		const classCourse = await db.query.classCourses.findFirst({
+			where: eq(schema.classCourses.id, existing.classCourse),
+			columns: { teacher: true },
+		});
+		const recipients = new Set(
+			[classCourse?.teacher, existing.scheduledBy].filter(
+				(id): id is string => Boolean(id) && id !== resolved,
+			),
+		);
+		const notifType =
+			status === "approved" ? "grade.approved" : "grade.rejected";
+		for (const recipientId of recipients) {
+			await notificationsService.queueInApp(
+				recipientId,
+				notifType,
+				{
+					examId,
+					examName: existing.name,
+					classCourseId: existing.classCourse,
+					...(status === "rejected" && rejectionReason
+						? { reason: rejectionReason }
+						: {}),
+				},
+				{ dedupeKey: examId },
+			);
 		}
-	})();
+	} catch (error) {
+		console.error("[exams] approval notification failed", error);
+	}
 
 	return updated;
 }

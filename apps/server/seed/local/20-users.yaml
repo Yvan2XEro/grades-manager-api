@@ -808,1507 +808,1507 @@ domainUsers:
   # ─── Profils étudiants BTS Santé 2025-2026 ───
   - code: STD-IMM1-001
     authUserCode: STD-IMM1-001
-    firstName: 'Haiwe'
-    lastName: 'Hubert'
+    firstName: 'Hubert'
+    lastName: 'Haiwe'
     primaryEmail: hainkreohuberto@gmail.com
     phone: '693288796'
     dateOfBirth: 2004-03-25
     placeOfBirth: 'SERE'
-    gender: MALE
+    gender: male
     nationality: 'Tchadienne'
     status: active
   - code: STD-IMM1-002
     authUserCode: STD-IMM1-002
-    firstName: 'Djuikom Fotso'
-    lastName: 'Merveille Soreine'
+    firstName: 'Merveille Soreine'
+    lastName: 'Djuikom Fotso'
     primaryEmail: imm1.002@students.inses.cm
     phone: '678722543'
     dateOfBirth: 2008-03-12
     placeOfBirth: 'PORT-GENTIL (GABON)'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM1-001
     authUserCode: STD-SFM1-001
-    firstName: 'Enoh Siema'
-    lastName: 'Joinito'
+    firstName: 'Joinito'
+    lastName: 'Enoh Siema'
     primaryEmail: joinitoenoh609@gmail.com
     phone: '671214302'
     dateOfBirth: 2005-05-22
     placeOfBirth: 'LOUM'
-    gender: MALE
+    gender: male
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM1-002
     authUserCode: STD-SFM1-002
-    firstName: 'Tatsafouo Kenne'
-    lastName: 'Lucrece Crace'
+    firstName: 'Lucrece Crace'
+    lastName: 'Tatsafouo Kenne'
     primaryEmail: graceluciel16@gmail.com
     phone: '683767377'
     dateOfBirth: 2008-04-18
     placeOfBirth: 'BAMBI-BALESSING'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM1-003
     authUserCode: STD-SFM1-003
-    firstName: 'Prossie Poutta'
-    lastName: 'Maeva'
+    firstName: 'Maeva'
+    lastName: 'Prossie Poutta'
     primaryEmail: pouttamaeva@gmail.com
     phone: '695286422'
     dateOfBirth: 2007-07-09
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM1-004
     authUserCode: STD-SFM1-004
-    firstName: 'Petga'
-    lastName: 'Romilus Dalfane'
+    firstName: 'Romilus Dalfane'
+    lastName: 'Petga'
     primaryEmail: youngstyve65@gmail.com
     phone: '653518363'
     dateOfBirth: 2006-09-17
     placeOfBirth: 'LOUM'
-    gender: MALE
+    gender: male
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-001
     authUserCode: STD-SFM2-001
-    firstName: 'Nguemdjo'
-    lastName: 'Ade Berthe'
+    firstName: 'Ade Berthe'
+    lastName: 'Nguemdjo'
     primaryEmail: sfm2.001@students.inses.cm
     phone: '674710502'
     dateOfBirth: 2005-11-01
     placeOfBirth: 'MELONG'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-002
     authUserCode: STD-SFM2-002
-    firstName: 'Sehkweng'
-    lastName: 'Aminata'
+    firstName: 'Aminata'
+    lastName: 'Sehkweng'
     primaryEmail: sfm2.002@students.inses.cm
     phone: '693802161'
     dateOfBirth: 2004-11-12
     placeOfBirth: 'PONA / GUIGLO'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-003
     authUserCode: STD-SFM2-003
-    firstName: 'Menka Negou'
-    lastName: 'Ange Michelle'
+    firstName: 'Ange Michelle'
+    lastName: 'Menka Negou'
     primaryEmail: sfm2.003@students.inses.cm
     phone: '651311041'
     dateOfBirth: 2006-08-27
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-004
     authUserCode: STD-SFM2-004
-    firstName: 'Tsawoung'
-    lastName: 'Ariane Blonde'
+    firstName: 'Ariane Blonde'
+    lastName: 'Tsawoung'
     primaryEmail: sfm2.004@students.inses.cm
     phone: '681281404'
     dateOfBirth: 1999-05-20
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-005
     authUserCode: STD-SFM2-005
-    firstName: 'Mazeukui Feudjio'
-    lastName: 'Belviane'
+    firstName: 'Belviane'
+    lastName: 'Mazeukui Feudjio'
     primaryEmail: sfm2.005@students.inses.cm
     phone: '690486199'
     dateOfBirth: 2003-03-21
     placeOfBirth: 'CS DE TAM'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-006
     authUserCode: STD-SFM2-006
-    firstName: 'Inna'
-    lastName: 'Hawaou'
+    firstName: 'Hawaou'
+    lastName: 'Inna'
     primaryEmail: sfm2.006@students.inses.cm
     phone: '658345838'
     dateOfBirth: 2005-08-20
     placeOfBirth: 'Centre Med Mil de Bertoua'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-007
     authUserCode: STD-SFM2-007
-    firstName: 'Ngwohaho Ndzeuta'
-    lastName: 'Lafortune'
+    firstName: 'Lafortune'
+    lastName: 'Ngwohaho Ndzeuta'
     primaryEmail: sfm2.007@students.inses.cm
     phone: '6514962'
     dateOfBirth: 2005-02-10
     placeOfBirth: 'BONASSAMA-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-008
     authUserCode: STD-SFM2-008
-    firstName: 'Fadimatou'
-    lastName: 'Mamoudou'
+    firstName: 'Mamoudou'
+    lastName: 'Fadimatou'
     primaryEmail: sfm2.008@students.inses.cm
     phone: '678454088'
     dateOfBirth: 2003-05-22
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-009
     authUserCode: STD-SFM2-009
-    firstName: 'Najela'
-    lastName: 'Patricia Babila'
+    firstName: 'Patricia Babila'
+    lastName: 'Najela'
     primaryEmail: sfm2.009@students.inses.cm
     phone: '677256190'
     dateOfBirth: 2004-08-05
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM2-010
     authUserCode: STD-SFM2-010
-    firstName: 'Keunang'
-    lastName: 'Stephanie Kingue'
+    firstName: 'Stephanie Kingue'
+    lastName: 'Keunang'
     primaryEmail: sfm2.010@students.inses.cm
     phone: '687277600'
     dateOfBirth: 2004-05-28
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-001
     authUserCode: STD-SFM3-001
-    firstName: 'Maguieze'
-    lastName: 'Andine Martini'
+    firstName: 'Andine Martini'
+    lastName: 'Maguieze'
     primaryEmail: sfm3.001@students.inses.cm
     phone: '659951823'
     dateOfBirth: 2003-05-09
     placeOfBirth: 'DOUALA – CAMEROUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-002
     authUserCode: STD-SFM3-002
-    firstName: 'Massop Silatsa'
-    lastName: 'Djinnela Arrienne'
+    firstName: 'Djinnela Arrienne'
+    lastName: 'Massop Silatsa'
     primaryEmail: sfm3.002@students.inses.cm
     phone: '679917923'
     dateOfBirth: 2004-08-04
     placeOfBirth: 'DOUALA-CAMEROUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-003
     authUserCode: STD-SFM3-003
-    firstName: 'Soh Ndong'
-    lastName: 'Ludelle Ferrelle'
+    firstName: 'Ludelle Ferrelle'
+    lastName: 'Soh Ndong'
     primaryEmail: sfm3.003@students.inses.cm
     phone: '672073019'
     dateOfBirth: 2001-07-22
     placeOfBirth: 'Centre de santé développé M.C Njombe'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-004
     authUserCode: STD-SFM3-004
-    firstName: 'Mbanga'
-    lastName: 'Maxima Fanny'
+    firstName: 'Maxima Fanny'
+    lastName: 'Mbanga'
     primaryEmail: sfm3.004@students.inses.cm
     phone: '671187792'
     dateOfBirth: 2002-07-28
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-005
     authUserCode: STD-SFM3-005
-    firstName: 'Soumaiya'
-    lastName: 'Pekassaya'
+    firstName: 'Pekassaya'
+    lastName: 'Soumaiya'
     primaryEmail: sfm3.005@students.inses.cm
     phone: '693862665'
     dateOfBirth: 2002-03-29
     placeOfBirth: 'FOUMBAN'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-006
     authUserCode: STD-SFM3-006
-    firstName: 'Tetsafouet Kengmo'
-    lastName: 'Renelle Gabrielle'
+    firstName: 'Renelle Gabrielle'
+    lastName: 'Tetsafouet Kengmo'
     primaryEmail: sfm3.006@students.inses.cm
     phone: '683356164'
     dateOfBirth: 2005-10-05
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-007
     authUserCode: STD-SFM3-007
-    firstName: 'Mawa Fondjo'
-    lastName: 'Rodia Durelle'
+    firstName: 'Rodia Durelle'
+    lastName: 'Mawa Fondjo'
     primaryEmail: sfm3.007@students.inses.cm
     phone: '657488284'
     dateOfBirth: 2006-07-26
     placeOfBirth: 'LA MTE DE FOTOUNI'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-008
     authUserCode: STD-SFM3-008
-    firstName: 'Djiala'
-    lastName: 'Stephie Nelka'
+    firstName: 'Stephie Nelka'
+    lastName: 'Djiala'
     primaryEmail: sfm3.008@students.inses.cm
     phone: '674197446'
     dateOfBirth: 2004-02-29
     placeOfBirth: 'MATERNITE DE MANJO'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-009
     authUserCode: STD-SFM3-009
-    firstName: 'Tiomatsa Nzoma'
-    lastName: 'Valdine'
+    firstName: 'Valdine'
+    lastName: 'Tiomatsa Nzoma'
     primaryEmail: sfm3.009@students.inses.cm
     phone: '683980730'
     dateOfBirth: 2001-02-15
     placeOfBirth: 'BALENG'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SFM3-010
     authUserCode: STD-SFM3-010
-    firstName: 'Ngoueka’a Fotouo'
-    lastName: 'Vannelle'
+    firstName: 'Vannelle'
+    lastName: 'Ngoueka’a Fotouo'
     primaryEmail: sfm3.010@students.inses.cm
     phone: '682680477'
     dateOfBirth: 2000-05-30
     placeOfBirth: 'BABADJOU'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-001
     authUserCode: STD-SIN1-001
-    firstName: 'Detche Nana'
-    lastName: 'Alexia Samantha'
+    firstName: 'Alexia Samantha'
+    lastName: 'Detche Nana'
     primaryEmail: samanthadetche@icloud.com
     phone: '676175504'
     dateOfBirth: 2001-08-01
     placeOfBirth: 'BANKA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-002
     authUserCode: STD-SIN1-002
-    firstName: 'Fokem Moboh'
-    lastName: 'Alicia Aurelle'
+    firstName: 'Alicia Aurelle'
+    lastName: 'Fokem Moboh'
     primaryEmail: aliciafokem45@gmail.com
     phone: '678959958'
     dateOfBirth: 2004-06-16
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-003
     authUserCode: STD-SIN1-003
-    firstName: 'Feutcheu Souop'
-    lastName: 'Andriane Loveline'
+    firstName: 'Andriane Loveline'
+    lastName: 'Feutcheu Souop'
     primaryEmail: feutcheuloveline@gmail.com
     phone: '692318600'
     dateOfBirth: 2006-02-05
     placeOfBirth: 'BANDJOUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-004
     authUserCode: STD-SIN1-004
-    firstName: 'Ngningahe Fonkou'
-    lastName: 'Ange Grace'
+    firstName: 'Ange Grace'
+    lastName: 'Ngningahe Fonkou'
     primaryEmail: angengningahe@gmail.com
     phone: '672446595'
     dateOfBirth: 2007-06-19
     placeOfBirth: 'BONABERI'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-005
     authUserCode: STD-SIN1-005
-    firstName: 'Benam'
-    lastName: 'Bertrand'
+    firstName: 'Bertrand'
+    lastName: 'Benam'
     primaryEmail: benambertrand2000@gmail.com
     phone: '689495944'
     dateOfBirth: 2000-07-11
     placeOfBirth: 'GADJIBIAN'
-    gender: MALE
+    gender: male
     nationality: 'Tchadienne'
     status: active
   - code: STD-SIN1-006
     authUserCode: STD-SIN1-006
-    firstName: 'Ndjerandouba'
-    lastName: 'Bienvenu'
+    firstName: 'Bienvenu'
+    lastName: 'Ndjerandouba'
     primaryEmail: ndjerandoubabienvenu734@gmail.com
     phone: '695737507'
     dateOfBirth: 2002-04-12
     placeOfBirth: 'DOGORO'
-    gender: MALE
+    gender: male
     nationality: 'Tchadienne'
     status: active
   - code: STD-SIN1-007
     authUserCode: STD-SIN1-007
-    firstName: 'Kouemou Kenfack'
-    lastName: 'Brandy Stela'
+    firstName: 'Brandy Stela'
+    lastName: 'Kouemou Kenfack'
     primaryEmail: princessestela286@gmail.com
     phone: '693898650'
     dateOfBirth: 2006-01-15
     placeOfBirth: 'KRIBI'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-008
     authUserCode: STD-SIN1-008
-    firstName: 'Fokou Fopa'
-    lastName: 'Brinda'
+    firstName: 'Brinda'
+    lastName: 'Fokou Fopa'
     primaryEmail: fopabrinda0@gmail.com
     phone: '683858284'
     dateOfBirth: 2005-01-05
     placeOfBirth: 'MBOUDA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-009
     authUserCode: STD-SIN1-009
-    firstName: 'Welaghe Monkam'
-    lastName: 'Francis Merlin'
+    firstName: 'Francis Merlin'
+    lastName: 'Welaghe Monkam'
     primaryEmail: nanaadeline63@gmail.com
     phone: '672620111'
     dateOfBirth: 2007-01-05
     placeOfBirth: 'DOUALA'
-    gender: MALE
+    gender: male
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-010
     authUserCode: STD-SIN1-010
-    firstName: 'Toukep Djeutchouang'
-    lastName: 'Grace'
+    firstName: 'Grace'
+    lastName: 'Toukep Djeutchouang'
     primaryEmail: monkamfrancis0@gmail.com
     phone: '676013378'
     dateOfBirth: 2009-08-22
     placeOfBirth: 'BANDJOUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-011
     authUserCode: STD-SIN1-011
-    firstName: 'Bere'
-    lastName: 'Herve'
+    firstName: 'Herve'
+    lastName: 'Bere'
     primaryEmail: loubacharles369@gmail.com
     phone: '697005847'
     dateOfBirth: 2001-05-17
     placeOfBirth: 'DOGORO'
-    gender: MALE
+    gender: male
     nationality: 'Tchadienne'
     status: active
   - code: STD-SIN1-012
     authUserCode: STD-SIN1-012
-    firstName: 'Subine Ngapa'
-    lastName: 'Jessie'
+    firstName: 'Jessie'
+    lastName: 'Subine Ngapa'
     primaryEmail: jessiengapa@gmail.com
     phone: '689497814'
     dateOfBirth: 2007-03-28
     placeOfBirth: 'NGAOUNDERE'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-013
     authUserCode: STD-SIN1-013
-    firstName: 'Che Frunji'
-    lastName: 'Mahiever'
+    firstName: 'Mahiever'
+    lastName: 'Che Frunji'
     primaryEmail: mahiever15@gmail.com
     phone: '672222338/653775941'
     dateOfBirth: 2005-07-05
     placeOfBirth: 'DOUALA CAMEROUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-014
     authUserCode: STD-SIN1-014
-    firstName: 'Eboule Djemba'
-    lastName: 'Marie Louise'
+    firstName: 'Marie Louise'
+    lastName: 'Eboule Djemba'
     primaryEmail: djembamarie7@gmail.com
     phone: '690441093'
     dateOfBirth: 2006-04-09
     placeOfBirth: 'NJOMBE'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-015
     authUserCode: STD-SIN1-015
-    firstName: 'Djuikom Fotso'
-    lastName: 'Merveille Soreine'
+    firstName: 'Merveille Soreine'
+    lastName: 'Djuikom Fotso'
     primaryEmail: sin1.015@students.inses.cm
     phone: '678722543'
     dateOfBirth: 2008-03-12
     placeOfBirth: 'PORT-GENTIL (GABON)'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-016
     authUserCode: STD-SIN1-016
-    firstName: 'Wouappi Wouappi'
-    lastName: 'Michelle Lafortune'
+    firstName: 'Michelle Lafortune'
+    lastName: 'Wouappi Wouappi'
     primaryEmail: andreyinwe18@gmail.com
     phone: '674506321'
     dateOfBirth: 2003-12-14
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-017
     authUserCode: STD-SIN1-017
-    firstName: 'Siekeup'
-    lastName: 'Milagro'
+    firstName: 'Milagro'
+    lastName: 'Siekeup'
     primaryEmail: milagrosiekeup539@gmail.com
     phone: '670313823'
     dateOfBirth: 2007-05-25
     placeOfBirth: 'MBOUDA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-018
     authUserCode: STD-SIN1-018
-    firstName: 'Miria Merveille'
-    lastName: 'Ndame'
+    firstName: 'Ndame'
+    lastName: 'Miria Merveille'
     primaryEmail: sin1.018@students.inses.cm
     phone: '691939046'
     dateOfBirth: 2006-04-10
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-019
     authUserCode: STD-SIN1-019
-    firstName: 'Famegne Noutong'
-    lastName: 'Pascale Audrey'
+    firstName: 'Pascale Audrey'
+    lastName: 'Famegne Noutong'
     primaryEmail: audreykamdem53@gmail.com
     phone: '679351595'
     dateOfBirth: 2008-10-01
     placeOfBirth: 'BATOUFAM'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-020
     authUserCode: STD-SIN1-020
-    firstName: 'Massop Eyoum'
-    lastName: 'Reine Frances'
+    firstName: 'Reine Frances'
+    lastName: 'Massop Eyoum'
     primaryEmail: eyoumreine86@gmail.com
     phone: '686772833'
     dateOfBirth: 2006-07-03
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN1-021
     authUserCode: STD-SIN1-021
-    firstName: 'Graodandi'
-    lastName: 'Walandi'
+    firstName: 'Walandi'
+    lastName: 'Graodandi'
     primaryEmail: graobedaniel@gmail.com
     phone: '655096470/699152062'
     dateOfBirth: 2004-01-01
     placeOfBirth: 'GAMBA'
-    gender: MALE
+    gender: male
     nationality: 'Tchadienne'
     status: active
   - code: STD-SIN2-001
     authUserCode: STD-SIN2-001
-    firstName: 'Kwedi Moukalla'
-    lastName: 'Agnes La Princesse Iris'
+    firstName: 'Agnes La Princesse Iris'
+    lastName: 'Kwedi Moukalla'
     primaryEmail: sin2.001@students.inses.cm
     phone: '659231332'
     dateOfBirth: 2005-09-28
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-002
     authUserCode: STD-SIN2-002
-    firstName: 'Boumeni'
-    lastName: 'Alida'
+    firstName: 'Alida'
+    lastName: 'Boumeni'
     primaryEmail: sin2.002@students.inses.cm
     phone: '650360690'
     dateOfBirth: 2004-05-19
     placeOfBirth: 'KEKEM'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-003
     authUserCode: STD-SIN2-003
-    firstName: 'Matho Ngoufo'
-    lastName: 'Ange Dinecha'
+    firstName: 'Ange Dinecha'
+    lastName: 'Matho Ngoufo'
     primaryEmail: sin2.003@students.inses.cm
     phone: '689660444'
     dateOfBirth: 2006-10-28
     placeOfBirth: 'BABADJOU'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-004
     authUserCode: STD-SIN2-004
-    firstName: 'Nyake Nguea'
-    lastName: 'Anne Priscilia'
+    firstName: 'Anne Priscilia'
+    lastName: 'Nyake Nguea'
     primaryEmail: sin2.004@students.inses.cm
     phone: '658531966'
     dateOfBirth: 2005-10-05
     placeOfBirth: 'DOUALA-CAMEROUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-005
     authUserCode: STD-SIN2-005
-    firstName: 'Mekam Fomba'
-    lastName: 'Annielle Kessy'
+    firstName: 'Annielle Kessy'
+    lastName: 'Mekam Fomba'
     primaryEmail: sin2.005@students.inses.cm
     phone: '692786606'
     dateOfBirth: 2007-12-08
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-006
     authUserCode: STD-SIN2-006
-    firstName: 'Tchanda'
-    lastName: 'Cendrine Princesse'
+    firstName: 'Cendrine Princesse'
+    lastName: 'Tchanda'
     primaryEmail: sin2.006@students.inses.cm
     phone: '696267916'
     dateOfBirth: 2002-06-16
     placeOfBirth: 'Hôpital mont – coupé de Njombe'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-007
     authUserCode: STD-SIN2-007
-    firstName: 'Magne Tetzogang'
-    lastName: 'Christelle Laitisia'
+    firstName: 'Christelle Laitisia'
+    lastName: 'Magne Tetzogang'
     primaryEmail: sin2.007@students.inses.cm
     phone: '650290690'
     dateOfBirth: 2006-01-02
     placeOfBirth: 'BANSOA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-008
     authUserCode: STD-SIN2-008
-    firstName: 'Ekeu Kameni'
-    lastName: 'Christopher'
+    firstName: 'Christopher'
+    lastName: 'Ekeu Kameni'
     primaryEmail: sin2.008@students.inses.cm
-    gender: MALE
+    gender: male
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-009
     authUserCode: STD-SIN2-009
-    firstName: 'Nguestsa Dongmo'
-    lastName: 'Dorcasse Zobelle'
+    firstName: 'Dorcasse Zobelle'
+    lastName: 'Nguestsa Dongmo'
     primaryEmail: sin2.009@students.inses.cm
     phone: '697959667'
     dateOfBirth: 2001-02-20
     placeOfBirth: 'BAMENDOU-BALEFOCK'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-010
     authUserCode: STD-SIN2-010
-    firstName: 'Konsebe'
-    lastName: 'Esther'
+    firstName: 'Esther'
+    lastName: 'Konsebe'
     primaryEmail: sin2.010@students.inses.cm
     phone: '656191227'
     dateOfBirth: 2001-02-05
     placeOfBirth: 'GANG – HOU'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-011
     authUserCode: STD-SIN2-011
-    firstName: 'Kiye Makoma'
-    lastName: 'Fani Audrey'
+    firstName: 'Fani Audrey'
+    lastName: 'Kiye Makoma'
     primaryEmail: sin2.011@students.inses.cm
     phone: '694001628'
     dateOfBirth: 2003-10-19
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-012
     authUserCode: STD-SIN2-012
-    firstName: 'Tchatat Ghomffo'
-    lastName: 'Flore Emilie'
+    firstName: 'Flore Emilie'
+    lastName: 'Tchatat Ghomffo'
     primaryEmail: sin2.012@students.inses.cm
     phone: '686823376'
     dateOfBirth: 2006-06-05
     placeOfBirth: 'NKONGSAMBA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-013
     authUserCode: STD-SIN2-013
-    firstName: 'Feudjio Nguiazon'
-    lastName: 'Hornella'
+    firstName: 'Hornella'
+    lastName: 'Feudjio Nguiazon'
     primaryEmail: sin2.013@students.inses.cm
     phone: '654582898'
     dateOfBirth: 2001-04-01
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-014
     authUserCode: STD-SIN2-014
-    firstName: 'Guekam Tchouansi'
-    lastName: 'Ines Therese'
+    firstName: 'Ines Therese'
+    lastName: 'Guekam Tchouansi'
     primaryEmail: sin2.014@students.inses.cm
     phone: '677924636'
     dateOfBirth: 2004-04-10
     placeOfBirth: 'NJOMBE'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-015
     authUserCode: STD-SIN2-015
-    firstName: 'Aloumbe'
-    lastName: 'Jeanne Pierrette'
+    firstName: 'Jeanne Pierrette'
+    lastName: 'Aloumbe'
     primaryEmail: sin2.015@students.inses.cm
     phone: '695130523'
     dateOfBirth: 2005-02-27
     placeOfBirth: 'YAOUNDE'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-016
     authUserCode: STD-SIN2-016
-    firstName: 'Wandji Paho'
-    lastName: 'Juliana Joyce'
+    firstName: 'Juliana Joyce'
+    lastName: 'Wandji Paho'
     primaryEmail: sin2.016@students.inses.cm
     phone: '693376021'
     dateOfBirth: 2005-08-26
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-017
     authUserCode: STD-SIN2-017
-    firstName: 'Mbeyoun'
-    lastName: 'Kevine'
+    firstName: 'Kevine'
+    lastName: 'Mbeyoun'
     primaryEmail: sin2.017@students.inses.cm
     phone: '658506404'
     dateOfBirth: 1997-03-23
     placeOfBirth: 'NKONGSAMBA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-018
     authUserCode: STD-SIN2-018
-    firstName: 'Tchoutang'
-    lastName: 'Little Samanta'
+    firstName: 'Little Samanta'
+    lastName: 'Tchoutang'
     primaryEmail: sin2.018@students.inses.cm
     phone: '650619898'
     dateOfBirth: 2007-01-16
     placeOfBirth: 'LELEM – MANGWETE'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-019
     authUserCode: STD-SIN2-019
-    firstName: 'Ndame'
-    lastName: 'Miss Estelle'
+    firstName: 'Miss Estelle'
+    lastName: 'Ndame'
     primaryEmail: sin2.019@students.inses.cm
     phone: '698941457'
     dateOfBirth: 2005-07-08
     placeOfBirth: 'BONENDALE-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-020
     authUserCode: STD-SIN2-020
-    firstName: 'Tchoupa Leukeulefack'
-    lastName: 'Morgane'
+    firstName: 'Morgane'
+    lastName: 'Tchoupa Leukeulefack'
     primaryEmail: sin2.020@students.inses.cm
     phone: '681004105'
     dateOfBirth: 2005-03-16
     placeOfBirth: 'FOUMBOT'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-021
     authUserCode: STD-SIN2-021
-    firstName: 'Kwuida-teugni'
-    lastName: 'Paul Kassandra'
+    firstName: 'Paul Kassandra'
+    lastName: 'Kwuida-teugni'
     primaryEmail: sin2.021@students.inses.cm
     phone: '677361718'
     dateOfBirth: 2007-01-18
     placeOfBirth: 'FOKOUE'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-022
     authUserCode: STD-SIN2-022
-    firstName: 'Ateufack'
-    lastName: 'Therese'
+    firstName: 'Therese'
+    lastName: 'Ateufack'
     primaryEmail: sin2.022@students.inses.cm
     phone: '653261530'
     dateOfBirth: 2008-01-20
     placeOfBirth: 'FOMBAP'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN2-023
     authUserCode: STD-SIN2-023
-    firstName: 'Donkeng Gninpiezi'
-    lastName: 'Vanessa'
+    firstName: 'Vanessa'
+    lastName: 'Donkeng Gninpiezi'
     primaryEmail: sin2.023@students.inses.cm
     phone: '690666577'
     dateOfBirth: 2001-01-16
     placeOfBirth: 'BAMENDOU-BALEFOCK'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-SIN3-001
     authUserCode: STD-SIN3-001
-    firstName: 'Kengni Fokou'
-    lastName: 'Adelaide Verone'
+    firstName: 'Adelaide Verone'
+    lastName: 'Kengni Fokou'
     primaryEmail: sin3.001@students.inses.cm
     phone: '676232689'
     dateOfBirth: 2006-09-28
     placeOfBirth: 'MTE DE FOTOUNI'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-002
     authUserCode: STD-SIN3-002
-    firstName: 'Djiogue Zemkouo'
-    lastName: 'Ange Fortune'
+    firstName: 'Ange Fortune'
+    lastName: 'Djiogue Zemkouo'
     primaryEmail: sin3.002@students.inses.cm
     phone: '671585952'
     dateOfBirth: 2006-04-22
     placeOfBirth: 'BONABERI –DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-003
     authUserCode: STD-SIN3-003
-    firstName: 'Dala Ngounou'
-    lastName: 'Ange Maeva'
+    firstName: 'Ange Maeva'
+    lastName: 'Dala Ngounou'
     primaryEmail: sin3.003@students.inses.cm
     phone: '671837906'
     dateOfBirth: 2006-10-25
     placeOfBirth: 'NKAPA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-004
     authUserCode: STD-SIN3-004
-    firstName: 'Djeussi Tchioffo'
-    lastName: 'Ange Merveille'
+    firstName: 'Ange Merveille'
+    lastName: 'Djeussi Tchioffo'
     primaryEmail: sin3.004@students.inses.cm
     phone: '697835439'
     dateOfBirth: 2007-01-05
     placeOfBirth: 'BAHAM'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-005
     authUserCode: STD-SIN3-005
-    firstName: 'Lekane Djouaka'
-    lastName: 'Ange Murielle'
+    firstName: 'Ange Murielle'
+    lastName: 'Lekane Djouaka'
     primaryEmail: sin3.005@students.inses.cm
     phone: '657301232'
     dateOfBirth: 2006-02-04
     placeOfBirth: 'DOUALA-CAMEROUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-006
     authUserCode: STD-SIN3-006
-    firstName: 'Manefouet Kenfouet'
-    lastName: 'Ange Staelle'
+    firstName: 'Ange Staelle'
+    lastName: 'Manefouet Kenfouet'
     primaryEmail: sin3.006@students.inses.cm
     phone: '673393421'
     dateOfBirth: 2005-04-23
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-007
     authUserCode: STD-SIN3-007
-    firstName: 'Fokou Nguemeta'
-    lastName: 'Belville La Ville'
+    firstName: 'Belville La Ville'
+    lastName: 'Fokou Nguemeta'
     primaryEmail: sin3.007@students.inses.cm
     phone: '679165881'
     dateOfBirth: 2005-08-21
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-008
     authUserCode: STD-SIN3-008
-    firstName: 'Zapa Moffo'
-    lastName: 'Beramiss France'
+    firstName: 'Beramiss France'
+    lastName: 'Zapa Moffo'
     primaryEmail: sin3.008@students.inses.cm
     phone: '656290193'
     dateOfBirth: 2006-05-20
     placeOfBirth: 'BONABERI – DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-009
     authUserCode: STD-SIN3-009
-    firstName: 'Tchokouaha Daleu'
-    lastName: 'Carmelle L’or'
+    firstName: 'Carmelle L’or'
+    lastName: 'Tchokouaha Daleu'
     primaryEmail: sin3.009@students.inses.cm
     phone: '682326456'
     dateOfBirth: 2005-09-11
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-010
     authUserCode: STD-SIN3-010
-    firstName: 'Youndjeu Mbousseu'
-    lastName: 'Colette Nadele'
+    firstName: 'Colette Nadele'
+    lastName: 'Youndjeu Mbousseu'
     primaryEmail: sin3.010@students.inses.cm
     phone: '671011054'
     dateOfBirth: 1999-03-12
     placeOfBirth: 'DISP EEC DE BABOUANTOU'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-011
     authUserCode: STD-SIN3-011
-    firstName: 'Medonfo'
-    lastName: 'Diderole Derrick'
+    firstName: 'Diderole Derrick'
+    lastName: 'Medonfo'
     primaryEmail: sin3.011@students.inses.cm
     phone: '671748370'
     dateOfBirth: 2003-09-10
     placeOfBirth: 'BAFOU'
-    gender: MALE
+    gender: male
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-012
     authUserCode: STD-SIN3-012
-    firstName: 'Atsopben'
-    lastName: 'Dilane'
+    firstName: 'Dilane'
+    lastName: 'Atsopben'
     primaryEmail: sin3.012@students.inses.cm
     phone: '655844005'
     dateOfBirth: 2005-08-12
     placeOfBirth: 'DOUALA'
-    gender: MALE
+    gender: male
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-013
     authUserCode: STD-SIN3-013
-    firstName: 'Guindo'
-    lastName: 'Djeneba'
+    firstName: 'Djeneba'
+    lastName: 'Guindo'
     primaryEmail: sin3.013@students.inses.cm
     phone: '691770552'
     dateOfBirth: 2004-09-08
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-014
     authUserCode: STD-SIN3-014
-    firstName: 'Dzokem'
-    lastName: 'Dorinelle Stadiane'
+    firstName: 'Dorinelle Stadiane'
+    lastName: 'Dzokem'
     primaryEmail: sin3.014@students.inses.cm
     phone: '679136620'
     dateOfBirth: 2005-05-31
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-015
     authUserCode: STD-SIN3-015
-    firstName: 'Djuikem Dadjo'
-    lastName: 'Douglas Serena Eleonor'
+    firstName: 'Douglas Serena Eleonor'
+    lastName: 'Djuikem Dadjo'
     primaryEmail: sin3.015@students.inses.cm
     phone: '658687607'
     dateOfBirth: 2004-03-29
     placeOfBirth: 'NKAPA-SOCAPALM'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-016
     authUserCode: STD-SIN3-016
-    firstName: 'Toumba Penda'
-    lastName: 'Elise Diane'
+    firstName: 'Elise Diane'
+    lastName: 'Toumba Penda'
     primaryEmail: sin3.016@students.inses.cm
     phone: '692042513'
     dateOfBirth: 2000-02-24
     placeOfBirth: 'LA MATERNITE DE YABASSI'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-017
     authUserCode: STD-SIN3-017
-    firstName: 'Ngouegni Nzetouo'
-    lastName: 'Florinda Calone'
+    firstName: 'Florinda Calone'
+    lastName: 'Ngouegni Nzetouo'
     primaryEmail: sin3.017@students.inses.cm
     phone: '681857537'
     dateOfBirth: 2003-05-01
     placeOfBirth: 'BALEPO'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-018
     authUserCode: STD-SIN3-018
-    firstName: 'Tamko Tchoula'
-    lastName: 'Guilaine Auriole'
+    firstName: 'Guilaine Auriole'
+    lastName: 'Tamko Tchoula'
     primaryEmail: sin3.018@students.inses.cm
     phone: '694774114'
     dateOfBirth: 1997-08-30
     placeOfBirth: 'CSI DE FOMOPEA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-019
     authUserCode: STD-SIN3-019
-    firstName: 'Eno Happy'
-    lastName: 'Isaiah Akqan'
+    firstName: 'Isaiah Akqan'
+    lastName: 'Eno Happy'
     primaryEmail: sin3.019@students.inses.cm
     phone: '683924085'
     dateOfBirth: 2003-05-27
     placeOfBirth: 'DOUALA'
-    gender: MALE
+    gender: male
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-020
     authUserCode: STD-SIN3-020
-    firstName: 'Njowe Sonne'
-    lastName: 'Jeannette Brenda'
+    firstName: 'Jeannette Brenda'
+    lastName: 'Njowe Sonne'
     primaryEmail: sin3.020@students.inses.cm
     phone: '683622309'
     dateOfBirth: 2005-08-26
     placeOfBirth: 'BOMONO'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-021
     authUserCode: STD-SIN3-021
-    firstName: 'Noubosse Mapi'
-    lastName: 'Joel Arielle'
+    firstName: 'Joel Arielle'
+    lastName: 'Noubosse Mapi'
     primaryEmail: sin3.021@students.inses.cm
     phone: '683617421'
     dateOfBirth: 2005-01-13
     placeOfBirth: 'BONABERI-DOUALA IV'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-022
     authUserCode: STD-SIN3-022
-    firstName: 'Tabeua'
-    lastName: 'Landry Wilfried'
+    firstName: 'Landry Wilfried'
+    lastName: 'Tabeua'
     primaryEmail: sin3.022@students.inses.cm
     phone: '671179219'
     dateOfBirth: 2004-04-22
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-023
     authUserCode: STD-SIN3-023
-    firstName: 'Lonlac Tchoffo'
-    lastName: 'Laureta Veliane'
+    firstName: 'Laureta Veliane'
+    lastName: 'Lonlac Tchoffo'
     primaryEmail: sin3.023@students.inses.cm
     phone: '670079804'
     dateOfBirth: 2006-10-24
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-024
     authUserCode: STD-SIN3-024
-    firstName: 'Tchuendem Bopda'
-    lastName: 'Lesly Ange'
+    firstName: 'Lesly Ange'
+    lastName: 'Tchuendem Bopda'
     primaryEmail: sin3.024@students.inses.cm
     phone: '692422105'
     dateOfBirth: 2005-10-28
     placeOfBirth: 'YAOUNDE'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-025
     authUserCode: STD-SIN3-025
-    firstName: 'Kengne Teugoum'
-    lastName: 'Lorie Francelle'
+    firstName: 'Lorie Francelle'
+    lastName: 'Kengne Teugoum'
     primaryEmail: sin3.025@students.inses.cm
     phone: '691756290'
     dateOfBirth: 2005-06-29
     placeOfBirth: 'BONABERI – DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-026
     authUserCode: STD-SIN3-026
-    firstName: 'Tchouaffi Siewe'
-    lastName: 'Lucresse Manuella'
+    firstName: 'Lucresse Manuella'
+    lastName: 'Tchouaffi Siewe'
     primaryEmail: sin3.026@students.inses.cm
     phone: '656485415'
     dateOfBirth: 2004-01-20
     placeOfBirth: 'BONENDALE-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-027
     authUserCode: STD-SIN3-027
-    firstName: 'Tagouffo Moho'
-    lastName: 'Lyonaire Elise'
+    firstName: 'Lyonaire Elise'
+    lastName: 'Tagouffo Moho'
     primaryEmail: sin3.027@students.inses.cm
     phone: '651545597'
     dateOfBirth: 2006-03-21
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-028
     authUserCode: STD-SIN3-028
-    firstName: 'Toukam'
-    lastName: 'Manuella Dolvine'
+    firstName: 'Manuella Dolvine'
+    lastName: 'Toukam'
     primaryEmail: sin3.028@students.inses.cm
     phone: '656187054'
     dateOfBirth: 2002-06-28
     placeOfBirth: 'CENTRE DE SANTE DE TOUOPA TESSE'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-029
     authUserCode: STD-SIN3-029
-    firstName: 'Meyouke'
-    lastName: 'Marie Prisca'
+    firstName: 'Marie Prisca'
+    lastName: 'Meyouke'
     primaryEmail: sin3.029@students.inses.cm
     phone: '653669411'
     dateOfBirth: 2005-03-29
     placeOfBirth: 'BOMONO'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-030
     authUserCode: STD-SIN3-030
-    firstName: 'Ndondoki Edjong'
-    lastName: 'Marie Vanelle'
+    firstName: 'Marie Vanelle'
+    lastName: 'Ndondoki Edjong'
     primaryEmail: sin3.030@students.inses.cm
     phone: '656707325'
     dateOfBirth: 2005-11-30
     placeOfBirth: 'BONABERI – DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-031
     authUserCode: STD-SIN3-031
-    firstName: 'Togno Yomsi'
-    lastName: 'Mariette Blanche'
+    firstName: 'Mariette Blanche'
+    lastName: 'Togno Yomsi'
     primaryEmail: sin3.031@students.inses.cm
     phone: '696626121'
     dateOfBirth: 1997-07-28
     placeOfBirth: 'HA – BANDJOUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-032
     authUserCode: STD-SIN3-032
-    firstName: 'Ngatchoua Pougoue'
-    lastName: 'Marina Patricia'
+    firstName: 'Marina Patricia'
+    lastName: 'Ngatchoua Pougoue'
     primaryEmail: sin3.032@students.inses.cm
     phone: '682852552'
     dateOfBirth: 2004-08-29
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-033
     authUserCode: STD-SIN3-033
-    firstName: 'Mbanga'
-    lastName: 'Maxima Fanny'
+    firstName: 'Maxima Fanny'
+    lastName: 'Mbanga'
     primaryEmail: sin3.033@students.inses.cm
     phone: '671187792'
     dateOfBirth: 2002-07-28
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-034
     authUserCode: STD-SIN3-034
-    firstName: 'Djoufack Kenfack Tongo'
-    lastName: 'Melvine Ange Arole'
+    firstName: 'Melvine Ange Arole'
+    lastName: 'Djoufack Kenfack Tongo'
     primaryEmail: sin3.034@students.inses.cm
     phone: '650584725'
     dateOfBirth: 2000-10-26
     placeOfBirth: 'BONABERI – DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-035
     authUserCode: STD-SIN3-035
-    firstName: 'Nangmo'
-    lastName: 'Orele Jacqueline'
+    firstName: 'Orele Jacqueline'
+    lastName: 'Nangmo'
     primaryEmail: sin3.035@students.inses.cm
     phone: '678562850'
     dateOfBirth: 2001-03-03
     placeOfBirth: 'CSI FONTSA-TOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-036
     authUserCode: STD-SIN3-036
-    firstName: 'Nimfeng Foutse'
-    lastName: 'Patricia Laure'
+    firstName: 'Patricia Laure'
+    lastName: 'Nimfeng Foutse'
     primaryEmail: sin3.036@students.inses.cm
     phone: '671210869'
     dateOfBirth: 2005-07-03
     placeOfBirth: 'LOUM'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-037
     authUserCode: STD-SIN3-037
-    firstName: 'Ntondi'
-    lastName: 'Paule Michelle'
+    firstName: 'Paule Michelle'
+    lastName: 'Ntondi'
     primaryEmail: sin3.037@students.inses.cm
     phone: '658585104'
     dateOfBirth: 2005-01-09
     placeOfBirth: 'DOUALA-CAMEROUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-038
     authUserCode: STD-SIN3-038
-    firstName: 'Nguestsa'
-    lastName: 'Pauline Laure'
+    firstName: 'Pauline Laure'
+    lastName: 'Nguestsa'
     primaryEmail: sin3.038@students.inses.cm
     phone: '675066497'
     dateOfBirth: 1999-08-16
     placeOfBirth: 'LA MATERNITE DE DEIDO-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-039
     authUserCode: STD-SIN3-039
-    firstName: 'Kakanou Deugoue'
-    lastName: 'Pharelle Cinthia Martina'
+    firstName: 'Pharelle Cinthia Martina'
+    lastName: 'Kakanou Deugoue'
     primaryEmail: sin3.039@students.inses.cm
     phone: '654452576'
     dateOfBirth: 2004-02-07
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-040
     authUserCode: STD-SIN3-040
-    firstName: 'Maguelong Yotebong'
-    lastName: 'Raissa'
+    firstName: 'Raissa'
+    lastName: 'Maguelong Yotebong'
     primaryEmail: sin3.040@students.inses.cm
     phone: '683340597'
     dateOfBirth: 2005-07-01
     placeOfBirth: 'PMI NKWEN-BAMENDA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-041
     authUserCode: STD-SIN3-041
-    firstName: 'Tananfoe Tsafack'
-    lastName: 'Rivaldo'
+    firstName: 'Rivaldo'
+    lastName: 'Tananfoe Tsafack'
     primaryEmail: sin3.041@students.inses.cm
     phone: '676114387'
     dateOfBirth: 2002-05-14
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: MALE
+    gender: male
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-042
     authUserCode: STD-SIN3-042
-    firstName: 'Tsapi Saha'
-    lastName: 'Romida'
+    firstName: 'Romida'
+    lastName: 'Tsapi Saha'
     primaryEmail: sin3.042@students.inses.cm
     phone: '682950855'
     dateOfBirth: 2002-10-01
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-043
     authUserCode: STD-SIN3-043
-    firstName: 'Ajie Djuikem'
-    lastName: 'Rosalie Cindy'
+    firstName: 'Rosalie Cindy'
+    lastName: 'Ajie Djuikem'
     primaryEmail: sin3.043@students.inses.cm
     phone: '672922417'
     dateOfBirth: 2003-03-09
     placeOfBirth: 'BONABERI-DOIALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-044
     authUserCode: STD-SIN3-044
-    firstName: 'Nguimfack Tenekeng'
-    lastName: 'Ruchelle'
+    firstName: 'Ruchelle'
+    lastName: 'Nguimfack Tenekeng'
     primaryEmail: sin3.044@students.inses.cm
     phone: '695823587'
     dateOfBirth: 2000-10-24
     placeOfBirth: 'MBOKOU – SANTCHOU'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-045
     authUserCode: STD-SIN3-045
-    firstName: 'Ndoki Sappi Mouyombon'
-    lastName: 'Sariette Gatienne'
+    firstName: 'Sariette Gatienne'
+    lastName: 'Ndoki Sappi Mouyombon'
     primaryEmail: sin3.045@students.inses.cm
     phone: '679490844'
     dateOfBirth: 1999-07-31
     placeOfBirth: 'DOUALA – CAMEROUN'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-046
     authUserCode: STD-SIN3-046
-    firstName: 'Manto'
-    lastName: 'Sezine Ravina'
+    firstName: 'Sezine Ravina'
+    lastName: 'Manto'
     primaryEmail: sin3.046@students.inses.cm
     phone: '671106847'
     dateOfBirth: 2004-05-16
     placeOfBirth: 'CENTRE DE SANTE DE BAMENDJO'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-047
     authUserCode: STD-SIN3-047
-    firstName: 'Maninang Mabeuntsa'
-    lastName: 'Stela Naomie'
+    firstName: 'Stela Naomie'
+    lastName: 'Maninang Mabeuntsa'
     primaryEmail: sin3.047@students.inses.cm
     phone: '674454297'
     dateOfBirth: 2005-04-10
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-048
     authUserCode: STD-SIN3-048
-    firstName: 'Bokengue Anoke'
-    lastName: 'Suzanne'
+    firstName: 'Suzanne'
+    lastName: 'Bokengue Anoke'
     primaryEmail: sin3.048@students.inses.cm
     phone: '650256603'
     dateOfBirth: 2001-03-30
     placeOfBirth: 'MBANGA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-049
     authUserCode: STD-SIN3-049
-    firstName: 'Kengmo Zogang'
-    lastName: 'Sylvianie Adriane'
+    firstName: 'Sylvianie Adriane'
+    lastName: 'Kengmo Zogang'
     primaryEmail: sin3.049@students.inses.cm
     phone: '686847807'
     dateOfBirth: 2005-01-05
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-050
     authUserCode: STD-SIN3-050
-    firstName: 'Djionang Ngouajio'
-    lastName: 'Vanelle Nadia'
+    firstName: 'Vanelle Nadia'
+    lastName: 'Djionang Ngouajio'
     primaryEmail: sin3.050@students.inses.cm
     phone: '659754212'
     dateOfBirth: 2000-01-18
     placeOfBirth: 'FOUMBOT'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-051
     authUserCode: STD-SIN3-051
-    firstName: 'Yameni Moko'
-    lastName: 'Vyclane-fleurette'
+    firstName: 'Vyclane-fleurette'
+    lastName: 'Yameni Moko'
     primaryEmail: sin3.051@students.inses.cm
     phone: '697837840'
     dateOfBirth: 2004-04-13
     placeOfBirth: 'LA MTE BANDJA-CENTRE'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-052
     authUserCode: STD-SIN3-052
-    firstName: 'Tajiotio'
-    lastName: 'Ynes Maurelle'
+    firstName: 'Ynes Maurelle'
+    lastName: 'Tajiotio'
     primaryEmail: sin3.052@students.inses.cm
     phone: '672253568'
     dateOfBirth: 2002-09-06
     placeOfBirth: 'BATCHAM'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-SIN3-053
     authUserCode: STD-SIN3-053
-    firstName: 'Kenfack Tadonkeng'
-    lastName: 'Yvane Tibelle'
+    firstName: 'Yvane Tibelle'
+    lastName: 'Kenfack Tadonkeng'
     primaryEmail: sin3.053@students.inses.cm
     phone: '675119253'
     dateOfBirth: 2004-02-26
     placeOfBirth: 'CSI DE DOUMBOUO'
-    gender: FEMALE
+    gender: female
     nationality: 'Cameounaise'
     status: active
   - code: STD-TLB1-001
     authUserCode: STD-TLB1-001
-    firstName: 'Diassia Hlamma'
-    lastName: 'Dieu Ne Dort'
+    firstName: 'Dieu Ne Dort'
+    lastName: 'Diassia Hlamma'
     primaryEmail: diassiahlammadieunedortgmai@gmail.com
     phone: '693391400'
     dateOfBirth: 2003-08-22
     placeOfBirth: 'GOBO'
-    gender: MALE
+    gender: male
     nationality: 'Tchadiene'
     status: active
   - code: STD-TLB1-002
     authUserCode: STD-TLB1-002
-    firstName: 'Dzamogni Takem'
-    lastName: 'Grace Leticia'
+    firstName: 'Grace Leticia'
+    lastName: 'Dzamogni Takem'
     primaryEmail: mariemoukoudi8@gmail.com
     phone: '678491481'
     dateOfBirth: 2006-07-04
     placeOfBirth: 'BBERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB1-003
     authUserCode: STD-TLB1-003
-    firstName: 'Seruh Preyciouse'
-    lastName: 'Tiwa'
+    firstName: 'Tiwa'
+    lastName: 'Seruh Preyciouse'
     primaryEmail: tlb1.003@students.inses.cm
     phone: '659028498'
     dateOfBirth: 2007-08-26
     placeOfBirth: 'DLA-BONABERI'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB2-001
     authUserCode: STD-TLB2-001
-    firstName: 'Manimie'
-    lastName: 'Danielle'
+    firstName: 'Danielle'
+    lastName: 'Manimie'
     primaryEmail: tlb2.001@students.inses.cm
     phone: '679142565'
     dateOfBirth: 2002-04-01
     placeOfBirth: 'Hôpital central YAOUNDE II'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB2-002
     authUserCode: STD-TLB2-002
-    firstName: 'Enkak Kamaleu'
-    lastName: 'Genevieve Astride'
+    firstName: 'Genevieve Astride'
+    lastName: 'Enkak Kamaleu'
     primaryEmail: tlb2.002@students.inses.cm
     phone: '692767467'
     dateOfBirth: 2003-01-07
     placeOfBirth: 'MBANGA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB2-003
     authUserCode: STD-TLB2-003
-    firstName: 'Nongni Momo'
-    lastName: 'Wilfried'
+    firstName: 'Wilfried'
+    lastName: 'Nongni Momo'
     primaryEmail: tlb2.003@students.inses.cm
     phone: '652557596'
     dateOfBirth: 2002-10-18
     placeOfBirth: 'BALEVENG'
-    gender: MALE
+    gender: male
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB3-001
     authUserCode: STD-TLB3-001
-    firstName: 'Nguemtchuen Bopda'
-    lastName: 'Kevine'
+    firstName: 'Kevine'
+    lastName: 'Nguemtchuen Bopda'
     primaryEmail: tlb3.001@students.inses.cm
     phone: '697009626'
     dateOfBirth: 1998-01-03
     placeOfBirth: 'BALENG'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB3-002
     authUserCode: STD-TLB3-002
-    firstName: 'Madonkeng Tefouet'
-    lastName: 'Maeva'
+    firstName: 'Maeva'
+    lastName: 'Madonkeng Tefouet'
     primaryEmail: tlb3.002@students.inses.cm
     phone: '676798249'
     dateOfBirth: 1999-09-22
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB3-003
     authUserCode: STD-TLB3-003
-    firstName: 'Pondi Fakam'
-    lastName: 'Paul Eric'
+    firstName: 'Paul Eric'
+    lastName: 'Pondi Fakam'
     primaryEmail: tlb3.003@students.inses.cm
     phone: '670283797'
     dateOfBirth: 2006-07-04
     placeOfBirth: 'MOMBO'
-    gender: MALE
+    gender: male
     nationality: 'Camerounaise'
     status: active
   - code: STD-TLB3-004
     authUserCode: STD-TLB3-004
-    firstName: 'Zamo'
-    lastName: 'Sylviane Laure'
+    firstName: 'Sylviane Laure'
+    lastName: 'Zamo'
     primaryEmail: tlb3.004@students.inses.cm
     phone: '652069413'
     dateOfBirth: 2004-04-11
     placeOfBirth: 'FONGO-NDENG'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
 
   # ─── Profils étudiants BTS Génie Logiciel — Niveau 1 (2025-2026) ───
   - code: STD-IGL1-001
     authUserCode: STD-IGL1-001
-    firstName: 'Lapa Foban'
-    lastName: 'Loic Herman'
+    firstName: 'Loic Herman'
+    lastName: 'Lapa Foban'
     primaryEmail: loicfomban@gmail.com
     phone: '650412087/674126242'
     dateOfBirth: 2004-04-12
     placeOfBirth: 'NKONGSAMBA'
-    gender: MALE
+    gender: male
     nationality: 'Camerounaise'
     status: active
   - code: STD-IGL1-002
     authUserCode: STD-IGL1-002
-    firstName: 'Mefoche'
-    lastName: 'Ange Brielle'
+    firstName: 'Ange Brielle'
+    lastName: 'Mefoche'
     primaryEmail: mafobrielle@gmail.com
     dateOfBirth: 2006-06-09
     placeOfBirth: 'BONABERI'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-IGL1-003
     authUserCode: STD-IGL1-003
-    firstName: 'Munganga Tshilemba'
-    lastName: 'Laure Christine'
+    firstName: 'Laure Christine'
+    lastName: 'Munganga Tshilemba'
     primaryEmail: mungangalaure@gmail.com
     phone: '695058632'
     dateOfBirth: 2005-11-23
     placeOfBirth: 'DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
   - code: STD-IGL1-004
     authUserCode: STD-IGL1-004
-    firstName: 'Thaddee Wanga'
-    lastName: 'Ketsia'
+    firstName: 'Ketsia'
+    lastName: 'Thaddee Wanga'
     primaryEmail: igl1.004@students.inses.cm
     phone: '698032168'
     dateOfBirth: 2007-11-08
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
 
@@ -2324,12 +2324,12 @@ domainUsers:
 
   - code: TEST-STUDENT
     authUserCode: TEST-STUDENT
-    firstName: 'Mefoche'
-    lastName: 'Ange Brielle'
+    firstName: 'Ange Brielle'
+    lastName: 'Mefoche'
     primaryEmail: student@test.inses.cm
     dateOfBirth: 2006-06-09
     placeOfBirth: 'BONABERI-DOUALA'
-    gender: FEMALE
+    gender: female
     nationality: 'Camerounaise'
     status: active
     organizationSlug: inses-institution

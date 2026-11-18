@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import type React from "react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,25 @@ const Sidebar: React.FC = () => {
 	const [search, setSearch] = useState("");
 
 	const menuContent = useNavMenu();
+
+	// Phone drawer: close it once a link is followed, and on Escape
+	// biome-ignore lint/correctness/useExhaustiveDependencies: runs on navigation
+	useEffect(() => {
+		if (window.innerWidth < 768) useStore.getState().setSidebarOpen(false);
+	}, [location.pathname]);
+	const closeOnPhone = () => {
+		if (window.innerWidth < 768) useStore.getState().setSidebarOpen(false);
+	};
+	useEffect(() => {
+		if (!sidebarOpen) return;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && window.innerWidth < 768) {
+				useStore.getState().setSidebarOpen(false);
+			}
+		};
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
+	}, [sidebarOpen]);
 
 	const allLinks = useMemo<NavItem[]>(
 		() =>
@@ -251,6 +270,7 @@ const Sidebar: React.FC = () => {
 														to={link.to}
 														end={ROOT_PATHS.has(link.to)}
 														className={makeLinkClass(link)}
+														onClick={closeOnPhone}
 														data-testid={`nav-${link.to}`}
 													>
 														{link.icon}
@@ -274,6 +294,7 @@ const Sidebar: React.FC = () => {
 								to={link.to}
 								end={ROOT_PATHS.has(link.to)}
 								className={makeLinkClass(link)}
+								onClick={closeOnPhone}
 								data-testid={`nav-${link.to}`}
 							>
 								{link.icon}

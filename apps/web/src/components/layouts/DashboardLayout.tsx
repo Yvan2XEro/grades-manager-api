@@ -2,10 +2,8 @@ import type React from "react";
 import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { useStore } from "../../store";
-import { HelpWidget } from "../help/HelpWidget";
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";
-import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const DashboardLayout: React.FC = () => {
 	const { user, setSidebarOpen } = useStore();
@@ -25,8 +23,6 @@ const DashboardLayout: React.FC = () => {
 
 	return (
 		<div className="relative isolate flex h-dvh overflow-hidden bg-background">
-			{/* SVG wave filter definition — must come before the pattern */}
-			<GridWaveFilter />
 			{/* Background pattern — z:-1 to stay strictly behind the content */}
 			<div className="-z-10 pointer-events-none absolute inset-0 bg-dot-pattern" />
 			<Sidebar />
@@ -41,7 +37,6 @@ const DashboardLayout: React.FC = () => {
 					</div>
 				</main>
 			</div>
-			<HelpWidget />
 		</div>
 	);
 };

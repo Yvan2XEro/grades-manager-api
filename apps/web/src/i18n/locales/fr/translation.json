@@ -255,7 +255,7 @@
     },
     "header": {
       "adminDashboard": "Tableau de bord administrateur",
-      "teacherDashboard": "Tableau de bord enseignant",
+      "teacherDashboard": "Mes cours",
       "notificationsAria": "Ouvrir les notifications",
       "toggleSidebarAria": "Afficher ou masquer le menu latéral",
       "languageSelectAria": "Changer de langue",
@@ -371,7 +371,9 @@
         "timetable": "Emploi du temps",
         "enrollments": "Mes inscriptions",
         "documents": "Mes documents",
-        "timeline": "Historique"
+        "timeline": "Historique",
+        "fees": "Mes frais",
+        "feesKeywords": "frais scolarité paiement paiements reçu solde échéance tranche"
       }
     },
     "roles": {
@@ -395,7 +397,7 @@
       "feeAssignments": "Paiements étudiants",
       "academicYears": "Années académiques",
       "myFees": "Mes frais",
-      "courseEnrollment": "Inscription aux cours",
+      "courseEnrollment": "Inscriptions aux cours",
       "examCalendar": "Calendrier des examens",
       "documents": "Documents",
       "notifications": "Notifications",
@@ -544,7 +546,11 @@
       "success": "E-mail de réinitialisation envoyé",
       "error": "Impossible d'envoyer l'e-mail de réinitialisation",
       "backToLogin": "Retour à la connexion",
-      "subtitle": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation de mot de passe."
+      "subtitle": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation de mot de passe.",
+      "sentTitle": "Consultez votre boîte e-mail",
+      "sentBody": "Si un compte existe pour {{email}}, nous lui avons envoyé un lien pour choisir un nouveau mot de passe.",
+      "sentHint": "Rien reçu après quelques minutes ? Vérifiez vos courriers indésirables, ou renvoyez le lien.",
+      "resend": "Renvoyer le lien"
     },
     "reset": {
       "title": "Définir un nouveau mot de passe",
@@ -4863,7 +4869,7 @@
       "searchPlaceholder": "Rechercher un cours ou une classe…",
       "summary": "Summary",
       "noExams": "Aucune évaluation pour ce cours. Les évaluations (CC, examen) sont programmées par la scolarité : dès leur création, elles apparaissent ici pour la saisie des notes.",
-      "hubTitle": "Mes cours & notes",
+      "hubTitle": "Mes cours",
       "hubDescription": "Saisie des notes, verrouillage et soumission par cours",
       "noSearchMatch": "Aucun cours ne correspond à votre recherche.",
       "examRow": {
@@ -4878,8 +4884,26 @@
           "relevance": "Pertinence",
           "name": "Nom A→Z",
           "class": "Classe"
+        },
+        "period": {
+          "label": "Semestre",
+          "first": "1er semestre (S1, S3, S5)",
+          "second": "2e semestre (S2, S4, S6)",
+          "all": "Toute l'année",
+          "current": "en cours"
         }
-      }
+      },
+      "roster": {
+        "title": "Étudiants — {{course}}",
+        "description_one": "{{className}} · {{count}} étudiant",
+        "description_other": "{{className}} · {{count}} étudiants",
+        "search": "Rechercher par nom ou matricule",
+        "empty": "Aucun étudiant trouvé.",
+        "open_one": "{{count}} étudiant — voir la liste",
+        "open_other": "{{count}} étudiants — voir la liste"
+      },
+      "openCourse": "Ouvrir la saisie des notes de ce cours",
+      "noCourseInPeriod": "Vous n'enseignez aucun cours ce semestre. Choisissez un autre semestre ou toute l'année."
     },
     "courses.manage": {
       "title": "Gestion des cours",
@@ -4926,7 +4950,7 @@
       }
     },
     "dashboard": {
-      "title": "Tableau de bord enseignant",
+      "title": "Mes cours",
       "subtitle": "Bon retour, {{name}}",
       "stats": {
         "courses": "Mes cours",
@@ -5480,7 +5504,7 @@
       "myTitle": "Mon emploi du temps",
       "mySubtitle": "Vos sessions de cours hebdomadaires",
       "studentSubtitle": "Vos cours de la semaine",
-      "studentNoSessionsDesc": "Vos cours hebdomadaires apparaîtront ici une fois programmés.",
+      "studentNoSessionsDesc": "L'établissement n'a pas encore publié l'emploi du temps de votre classe pour cette période. Vos cours de la semaine apparaîtront ici dès qu'ils seront programmés.",
       "noSessions": "Aucune session",
       "noSessionsDesc": "Aucune session programmée pour cette période.",
       "selectCourse": "Sélectionnez un cours",
@@ -5516,7 +5540,9 @@
         "classCount_other": "{{count}} classes",
         "generatedOn": "Généré le {{date}}",
         "time": "Heure"
-      }
+      },
+      "myNoSessionsTitle": "Aucun cours programmé pour le moment",
+      "teacherNoSessionsDesc": "L'établissement n'a encore programmé aucune séance de vos cours pour cette période. Essayez un autre semestre, ou contactez la scolarité si vous attendiez des cours."
     },
     "rooms": {
       "title": "Salles",
@@ -5785,7 +5811,9 @@
       "perExamMode": "Mode examen unique",
       "searchStudent": "Rechercher un étudiant…",
       "studentCol": "Étudiant",
-      "lockedExam": "Verrouillée : évaluation validée, les notes ne sont plus modifiables"
+      "lockedExam": "Verrouillée : évaluation validée, les notes ne sont plus modifiables",
+      "phoneScrollHint_other": "{{count}} évaluations : faites glisser le tableau sur le côté pour les voir toutes, ou passez en mode examen unique.",
+      "phoneScrollHint_one": "{{count}} évaluation."
     }
   },
   "dean": {
@@ -5991,7 +6019,7 @@
     },
     "dashboard": {
       "title": "Mon espace",
-      "subtitle": "Vue d ensemble de votre parcours académique et administratif",
+      "subtitle": "Vue d'ensemble de votre parcours académique et administratif",
       "pendingFees": "Des frais de scolarité sont en attente de règlement. Régularisez votre situation pour éviter des restrictions.",
       "viewFees": "Mes frais",
       "upcomingExams": "Examens à venir",
@@ -6028,7 +6056,7 @@
       "description": "Téléchargez vos documents académiques",
       "download": "Télécharger PDF",
       "generating": "Génération...",
-      "generateError": "Échec de génération. Réessayez ou contactez l administration.",
+      "generateError": "Échec de génération. Réessayez ou contactez l'administration.",
       "transcript": {
         "title": "Relevé de notes",
         "description": "Relevé officiel de vos notes et résultats académiques.",
@@ -6046,7 +6074,7 @@
       },
       "history": {
         "title": "Historique des téléchargements",
-        "empty": "Aucun document téléchargé pour l instant."
+        "empty": "Aucun document téléchargé pour l'instant."
       }
     },
     "timeline": {
@@ -6217,7 +6245,8 @@
       },
       "validation": {
         "firstName": "Le prénom est requis",
-        "lastName": "Le nom est requis"
+        "lastName": "Le nom est requis",
+        "gender": "Choisissez un genre dans la liste, ou laissez le champ vide."
       },
       "toast": {
         "success": "Profil mis à jour",
@@ -6564,7 +6593,12 @@
         "payable": "À payer",
         "pending": "Ordre en attente",
         "paid": "Payée"
-      }
+      },
+      "schedule": "Échéancier",
+      "scheduleHint": "Cochez les tranches à payer, puis générez un ordre de paiement à présenter à la banque.",
+      "dueOn": "À payer avant le {{date}}",
+      "receiptHint": "Le reçu est téléchargeable dès que le paiement est enregistré par le service financier.",
+      "noPayments": "Aucun paiement enregistré pour le moment."
     },
     "history": {
       "title": "Historique financier",
@@ -6593,7 +6627,7 @@
     "markRead": "Lu",
     "markAllRead": "Tout marquer comme lu",
     "timeAgo": {
-      "justNow": "À l instant",
+      "justNow": "À l'instant",
       "minutes": "{{count}} min",
       "hours": "{{count}} h",
       "days": "{{count}} j"
