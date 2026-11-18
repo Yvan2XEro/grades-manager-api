@@ -794,7 +794,7 @@
         "unknown": "Non renseigné"
       },
       "enrollment": {
-        "totalLabel": "Inscriptions actives",
+        "totalLabel": "Inscriptions de l'année (tous statuts)",
         "byProgram": "Inscrits par programme",
         "byStatus": "Répartition par statut",
         "byGender": "Répartition par genre",
@@ -811,14 +811,6 @@
         "avgGeneral": "Moyenne générale",
         "byDecision": "Résultats par décision",
         "byMention": "Résultats par mention",
-        "decision": {
-          "passed": "Admis",
-          "failed": "Échoué",
-          "repeating": "Redoublant",
-          "excluded": "Exclu",
-          "deferred": "Reporté",
-          "unknown": "Inconnu"
-        },
         "mention": {
           "passable": "Passable",
           "assez_bien": "Assez bien",
@@ -826,7 +818,9 @@
           "tres_bien": "Très bien",
           "excellent": "Excellent",
           "unknown": "Non attribuée"
-        }
+        },
+        "passRate": "Taux de réussite",
+        "passRateHint": "Étudiants admis et compensés parmi les étudiants délibérés dans les délibérations de l'année."
       },
       "finances": {
         "title": "Vue financière",
@@ -3215,7 +3209,7 @@
         "deferred": "Ajourné",
         "repeat": "Redoublant",
         "excluded": "Exclu",
-        "pending": "En attente"
+        "pending": "Incomplet"
       },
       "mention": {
         "passable": "Passable",
@@ -3295,14 +3289,28 @@
         "signedBy": "Signé par",
         "notYet": "Pas encore",
         "juryNumber": "N° jury",
-        "fallbackTitle": "Délibération"
+        "fallbackTitle": "Délibération",
+        "ues": "UE",
+        "missingUes_one": "{{count}} UE sans note",
+        "missingUes_other": "{{count}} UE sans notes"
       },
       "override": {
         "title": "Modifier la décision",
         "currentDecision": "Décision actuelle",
         "newDecision": "Nouvelle décision",
         "reason": "Motif",
-        "reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision..."
+        "reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision...",
+        "partialAverage": "{{value}} (partielle)",
+        "computedDecision": "Décision calculée",
+        "restore": "Rétablir « {{decision}} »",
+        "restoreReason": "Décision calculée rétablie",
+        "newDecisionPlaceholder": "Choisir la décision du jury",
+        "computed": "calculée",
+        "help": {
+          "deferred": "Ajourné : pas encore admis ; l'étudiant peut repasser les UE non acquises (rattrapage) avant une décision définitive.",
+          "repeat": "Redoublant : l'étudiant reprend le même niveau l'année suivante.",
+          "excluded": "Exclu : l'étudiant ne peut pas poursuivre dans la filière."
+        }
       },
       "logs": {
         "title": "Journal d'activité",
@@ -3315,34 +3323,41 @@
         "signed": "Délibération signée",
         "reopened": "Délibération rouverte (résultats masqués)",
         "exported": "Diplomation exportée",
-        "promoted": "Étudiants promus"
+        "promoted": "Étudiants promus",
+        "promotedDetails": "{{count}} → {{className}}"
       },
       "promote": {
         "button": "Promouvoir les admis",
         "title": "Promouvoir les admis",
-        "description": "{{count}} étudiants admis/compensés seront inscrits dans la classe cible",
+        "description": "{{count}} étudiants admis ou compensés seront inscrits dans la classe cible.",
         "targetAcademicYear": "Année académique cible",
         "targetAcademicYearPlaceholder": "Sélectionner l'année suivante",
         "targetClass": "Classe cible",
         "targetClassPlaceholder": "Sélectionner la classe de destination",
         "confirm": "Promouvoir",
-        "success": "{{count}} étudiants promus avec succès",
         "noAdmitted": "Aucun étudiant admis à promouvoir",
         "lastLevelTitle": "Dernier niveau du cycle",
         "lastLevelHint": "Il n'y a pas de classe suivante : les étudiants admis terminent le cycle et sont marqués diplômés.",
         "noTargetFound": {
-          "title": "title",
-          "searched": "searched",
-          "criteriaProgram": "Même programme : {{program}}",
-          "criteriaLevel": "Niveau suivant {{level}} (rang {{nextIndex}})",
-          "criteriaYear": "criteriaYear",
-          "fix": "fix",
-          "goToClasses": "goToClasses"
+          "title": "La classe du niveau suivant n'existe pas encore",
+          "description": "Il n'existe pas de classe {{program}} de niveau « {{level}} » en {{year}}. Elle peut être créée maintenant, avec un code généré.",
+          "create": "Créer « {{name}} »"
         },
-        "ctaDesc": "Les étudiants avec la décision « Admis » peuvent être promus au niveau suivant.",
+        "ctaDesc": "Les étudiants dont la décision est « Admis » ou « Compensé » passent au niveau suivant du cycle (ou sont diplômés au dernier niveau).",
         "ctaTitle": "Promouvoir les étudiants admis",
         "targetClassHint_one": "{{count}} étudiant admis sera inscrit dans cette classe.",
-        "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe."
+        "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe.",
+        "othersStay": "Les étudiants ajournés, redoublants ou exclus restent dans cette classe. Pour réinscrire les redoublants au même niveau l'année suivante, utilisez le passage d'année.",
+        "yearTransitionLink": "Passage d'année",
+        "done_one": "Promotion effectuée le {{date}} : {{count}} étudiant inscrit en {{className}}",
+        "done_other": "Promotion effectuée le {{date}} : {{count}} étudiants inscrits en {{className}}",
+        "doneGraduated_one": "Effectué le {{date}} : {{count}} étudiant diplômé",
+        "doneGraduated_other": "Effectué le {{date}} : {{count}} étudiants diplômés",
+        "alreadyPromoted_one": "{{count}} étudiant était déjà inscrit pour cette année : pas de double inscription.",
+        "alreadyPromoted_other": "{{count}} étudiants étaient déjà inscrits pour cette année : pas de double inscription.",
+        "success_one": "{{count}} étudiant promu",
+        "success_other": "{{count}} étudiants promus",
+        "classCreated": "Classe « {{name}} » créée"
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -3373,7 +3388,9 @@
         "closeTitle": "Clôturer et publier aux étudiants ?",
         "signTitle": "Signer la délibération ?",
         "deleteTitle": "Supprimer la délibération ?",
-        "reopenTitle": "Réouvrir la délibération ?"
+        "reopenTitle": "Réouvrir la délibération ?",
+        "closeIncomplete_one": "{{count}} étudiant a encore des résultats incomplets et figurera comme « Incomplet ».",
+        "closeIncomplete_other": "{{count}} étudiants ont encore des résultats incomplets et figureront comme « Incomplet »."
       },
       "rules": {
         "title": "Règles de délibération",
@@ -3442,9 +3459,22 @@
         "credits": "Crédits",
         "decision": "Décision",
         "mention": "Mention",
-        "stats": "Taux de réussite : {{rate}}% | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}}",
+        "stats": "Taux de réussite : {{rate}} | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}} | Redoublants : {{repeat}} | Exclus : {{excluded}} | Incomplets : {{incomplete}}",
         "sheetName": "Délibération",
-        "filePrefix": "Deliberation"
+        "filePrefix": "Deliberation",
+        "title": "PROCÈS-VERBAL DE DÉLIBÉRATION",
+        "session": "Session : {{value}}",
+        "classAverage": "Moyenne de la classe : {{value}}",
+        "signatures": "Le jury",
+        "president": "Président du jury",
+        "member": "Membre du jury",
+        "signatureLine": "Signature : ____________________"
+      },
+      "incomplete": {
+        "title_one": "{{count}} étudiant a des résultats incomplets",
+        "title_other": "{{count}} étudiants ont des résultats incomplets",
+        "hintOpen": "Des notes manquent : aucune moyenne, aucun rang, aucune mention ni décision n'est attribué. Saisissez les notes manquantes puis recalculez, ou faites trancher le jury avec « Modifier la décision » avant de clôturer.",
+        "hintClosed": "Ces étudiants figurent comme « Incomplet » au procès-verbal, sans moyenne, rang ni mention."
       }
     },
     "centers": {
@@ -3564,134 +3594,134 @@
       "emptyHint": "Les étudiants apparaissent ici une fois diplômés lors d'une délibération."
     },
     "academicYearTransitions": {
-      "title": "Passage d'annee",
-      "subtitle": "Preparez, revisez, approuvez et executez la destination annuelle de chaque etudiant.",
-      "generatedAt": "Genere {{date}}",
+      "title": "Passage d'année",
+      "subtitle": "Préparez, révisez, approuvez et exécutez le devenir de chaque étudiant pour l'année suivante.",
+      "generatedAt": "Généré {{date}}",
       "actions": {
         "refresh": "Actualiser",
-        "prepare": "Preparer le plan",
-        "preparing": "Preparation...",
+        "prepare": "Préparer le plan",
+        "preparing": "Préparation…",
         "submit": "Soumettre",
         "approve": "Approuver",
-        "execute": "Executer",
+        "execute": "Exécuter",
         "cancel": "Annuler",
-        "resolve": "Resoudre le cas",
+        "resolve": "Résoudre le cas",
         "submitBlocked": "{{count}} étudiant(s) bloqué(s) à résoudre d'abord.",
         "running": "En cours…"
       },
       "create": {
         "title": "Nouvelle transition",
-        "description": "Selectionnez l'annee source, l'annee cible et le perimetre. TKAMS prepare le devenir de chaque etudiant."
+        "description": "Sélectionnez l'année source, l'année cible et le périmètre. TKAMS prépare le devenir de chaque étudiant."
       },
       "plans": {
         "title": "Plans"
       },
       "fields": {
-        "sourceYear": "Annee academique source",
-        "targetYear": "Annee academique cible",
-        "scope": "Perimetre",
-        "deferredPolicy": "Politique des ajournes"
+        "sourceYear": "Année académique source",
+        "targetYear": "Année académique cible",
+        "scope": "Périmètre",
+        "deferredPolicy": "Politique des ajournés"
       },
       "placeholders": {
-        "sourceYear": "Selectionner l'annee source",
-        "targetYear": "Selectionner l'annee cible",
-        "scope": "Selectionner le perimetre",
-        "search": "Rechercher un etudiant ou matricule...",
-        "targetClass": "Selectionner la classe cible",
+        "sourceYear": "Sélectionner l'année source",
+        "targetYear": "Sélectionner l'année cible",
+        "scope": "Sélectionner le périmètre",
+        "search": "Rechercher un étudiant ou un matricule…",
+        "targetClass": "Sélectionner la classe cible",
         "reason": "Expliquez pourquoi cette correction est valide"
       },
       "scope": {
-        "allClasses": "Toutes les classes de l'annee source"
+        "allClasses": "Toutes les classes de l'année source"
       },
       "deferred": {
-        "review": "Envoyer les ajournes en revue",
-        "repeat": "Traiter les ajournes comme redoublants"
+        "review": "Envoyer les ajournés en revue",
+        "repeat": "Traiter les ajournés comme redoublants"
       },
       "metrics": {
-        "students": "etudiants"
+        "students": "étudiants"
       },
       "summary": {
         "total": "Total",
         "promote": "Promus",
         "repeat": "Redoublants",
-        "graduate": "Diplomes",
-        "blocked": "A traiter",
+        "graduate": "Diplômés",
+        "blocked": "À traiter",
         "overridden": "Corrections"
       },
       "review": {
         "title": "Espace de revue",
-        "description": "Traitez d'abord les cas bloques. Ouvrez une ligne pour inspecter et corriger."
+        "description": "Traitez d'abord les cas bloqués. Ouvrez une ligne pour l'examiner et la corriger."
       },
       "table": {
-        "student": "Etudiant",
+        "student": "Étudiant",
         "decision": "Décision",
         "source": "Classe d'origine",
         "outcome": "Action",
         "destination": "Destination",
-        "status": "Etat"
+        "status": "État"
       },
       "item": {
         "title": "Cas de transition"
       },
       "resolve": {
-        "title": "Resoudre l'exception",
+        "title": "Résoudre l'exception",
         "outcome": "Action finale",
         "targetClass": "Classe cible",
         "reason": "Motif"
       },
       "status": {
         "draft": "Brouillon",
-        "ready": "Pret",
+        "ready": "Prêt",
         "pending_approval": "En attente",
-        "approved": "Approuve",
+        "approved": "Approuvé",
         "running": "En cours",
-        "completed": "Termine",
-        "completed_with_errors": "Termine avec erreurs",
-        "stale": "Obsolete",
-        "cancelled": "Annule"
+        "completed": "Terminé",
+        "completed_with_errors": "Terminé avec erreurs",
+        "stale": "Obsolète",
+        "cancelled": "Annulé"
       },
       "itemStatus": {
-        "all": "Tous les etats",
-        "ready": "Pret",
-        "blocked": "Bloque",
+        "all": "Tous les états",
+        "ready": "Prêt",
+        "blocked": "Bloqué",
         "processing": "Traitement",
-        "succeeded": "Reussi",
-        "failed": "Echoue",
+        "succeeded": "Réussi",
+        "failed": "Échoué",
         "excluded": "Exclu"
       },
       "outcome": {
         "all": "Toutes les actions",
         "promote": "Promouvoir",
         "repeat": "Redoubler",
-        "graduate": "Diplomer",
+        "graduate": "Diplômer",
         "exclude": "Exclure",
-        "transfer": "Transferer",
+        "transfer": "Transférer",
         "suspend": "Suspendre",
-        "review": "A traiter"
+        "review": "À traiter"
       },
       "decision": {
         "admitted": "Admis",
         "compensated": "Admis par compensation",
-        "deferred": "Ajourne",
+        "deferred": "Ajourné",
         "repeat": "Redoublant",
         "excluded": "Exclu",
-        "pending": "En attente"
+        "pending": "Incomplet"
       },
       "blocker": {
-        "missing_signed_deliberation": "Deliberation annuelle signee manquante",
-        "missing_student_decision": "Decision etudiant manquante",
-        "existing_target_enrollment": "Inscription deja presente dans l'annee cible",
+        "missing_signed_deliberation": "Délibération annuelle signée manquante",
+        "missing_student_decision": "Décision de l'étudiant manquante",
+        "existing_target_enrollment": "Inscription déjà présente dans l'année cible",
         "missing_promotion_target": "Classe de promotion manquante",
-        "ambiguous_promotion_target": "Destination de promotion ambigue",
+        "ambiguous_promotion_target": "Destination de promotion ambiguë",
         "missing_repeat_target": "Classe de redoublement manquante",
-        "ambiguous_repeat_target": "Destination de redoublement ambigue",
-        "deferred_requires_review": "Decision ajournee a examiner",
-        "pending_decision": "Decision en attente"
+        "ambiguous_repeat_target": "Destination de redoublement ambiguë",
+        "deferred_requires_review": "Décision « Ajourné » à examiner",
+        "pending_decision": "Décision en attente (résultats incomplets)"
       },
       "empty": {
         "noPlans": "Aucun plan de transition.",
-        "selectPlan": "Creez ou selectionnez un plan pour commencer la revue.",
-        "noItems": "Aucun etudiant ne correspond aux filtres.",
+        "selectPlan": "Créez ou sélectionnez un plan pour commencer la revue.",
+        "noItems": "Aucun étudiant ne correspond aux filtres.",
         "notFound": "Plan de transition introuvable."
       },
       "tabs": {
@@ -3739,9 +3769,9 @@
         }
       },
       "toast": {
-        "created": "Plan de transition cree",
-        "updated": "Transition mise a jour",
-        "resolved": "Cas de transition resolu",
+        "created": "Plan de passage créé",
+        "updated": "Passage mis à jour",
+        "resolved": "Cas résolu",
         "submitted": "Plan soumis pour approbation.",
         "approved": "Plan approuvé — prêt à être exécuté.",
         "executed": "Exécution démarrée.",
@@ -3755,6 +3785,11 @@
         "approved": "Approuvé",
         "running": "En cours",
         "completed": "Terminé"
+      },
+      "howTo": {
+        "title": "Lequel utiliser ?",
+        "transition": "Le passage d'année (cette page) est la voie normale : un plan pour toutes les classes de l'année, qui traite admis, redoublants, diplômés et exclus, avec revue et approbation avant exécution.",
+        "shortcut": "« Promouvoir les admis » sur une délibération clôturée est un raccourci pour une seule classe : il n'inscrit que ses étudiants admis et compensés au niveau suivant. Un étudiant déjà inscrit dans l'année cible n'est jamais inscrit deux fois."
       }
     },
     "gradeScale": {
@@ -5322,9 +5357,9 @@
         "name": "Nom",
         "courseAverages": "Moyennes par cours",
         "overallAverage": "Moyenne générale",
-        "credits": "credits",
-        "decision": "decision",
-        "mention": "mention"
+        "credits": "Crédits",
+        "decision": "Décision",
+        "mention": "Mention"
       },
       "actions": {
         "promote": "Promouvoir",
@@ -5802,8 +5837,8 @@
       "subtitle": "Vue d'ensemble par cohorte — saisie, résultats, taux de réussite",
       "students": "Étudiants",
       "pending": "En attente",
-      "avgProgress": "Avancement moyen",
-      "avgSuccess": "Taux réussite moyen",
+      "avgProgress": "Avancement de la saisie",
+      "avgSuccess": "Taux de réussite",
       "gradingProgress": "Avancement saisie",
       "approved": "approuvés",
       "submitted": "en attente",
@@ -5815,7 +5850,13 @@
       "successRate": "Taux réussite",
       "totalExams": "{{count}} au total",
       "submittedExams_one": "{{count}} examen en attente",
-      "submittedExams_other": "{{count}} examens en attente"
+      "submittedExams_other": "{{count}} examens en attente",
+      "hint": {
+        "students": "Inscriptions de l'année dans ces classes (tous statuts), comme sur la page Statistiques.",
+        "pending": "Examens dont les notes ont été soumises et attendent l'approbation.",
+        "progress": "Examens soumis ou approuvés parmi tous les examens des classes. Les classes sans examen ne sont pas comptées.",
+        "success": "Étudiants admis et compensés parmi les étudiants délibérés, d'après la délibération de l'année de chaque classe. Les classes non encore délibérées ne sont pas comptées."
+      }
     },
     "approvals": {
       "title": "Approbations en attente",
@@ -5920,7 +5961,9 @@
       "courseCount_one": "{{count}} cours",
       "courseCount_other": "{{count}} cours",
       "coefficient": "Coeff. {{value}}",
-      "ueCreditsEarned": "{{earned}}/{{total}} crédits"
+      "ueCreditsEarned": "{{earned}}/{{total}} crédits",
+      "noMarksYet": "Aucune note pour l'instant",
+      "noMarks": "Sans note"
     },
     "exams": {
       "title": "Calendrier des examens",
@@ -6249,9 +6292,9 @@
       "deferred": "Ajourné — vous devrez repasser les matières insuffisantes.",
       "repeat": "Redoublant — vous redoublez l'année.",
       "excluded": "Exclu — contactez l'administration.",
-      "pending": "Décision en attente.",
+      "pending": "Résultats incomplets : la décision du jury est en attente.",
       "unknown": "Décision inconnue.",
-      "overridden": "Surclassé"
+      "overridden": "Décision du jury"
     },
     "publishedAt": "Publié le {{date}}"
   },

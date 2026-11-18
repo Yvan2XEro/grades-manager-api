@@ -2,7 +2,6 @@ import { ArrowRight, GraduationCap, Loader2 } from "lucide-react";
 import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
-import { QuickCreate } from "@/components/callable/quick-create";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -45,9 +44,11 @@ export const PromoteAdmittedDialog = createCallable<Props, void>(
 			availableYears,
 			isLastLevel,
 			sourceClass,
+			nextLevel,
 			targetClasses,
 			showNoClassFound,
 			createTargetClass,
+			creatingTarget,
 			promoteMutation,
 			close,
 		} = usePromoteAdmitted({
@@ -69,6 +70,9 @@ export const PromoteAdmittedDialog = createCallable<Props, void>(
 								count: admittedCount,
 							})}
 						</DialogDescription>
+						<p className="text-muted-foreground text-xs">
+							{t("admin.deliberations.promote.othersStay")}
+						</p>
 					</DialogHeader>
 
 					<DialogBody className="space-y-4 py-1">
@@ -128,42 +132,40 @@ export const PromoteAdmittedDialog = createCallable<Props, void>(
 								) : showNoClassFound ? (
 									<PromoteNoTargetFound
 										programName={sourceClass?.programInfo?.name}
-										levelCode={sourceClass?.cycleLevel?.code}
-										levelOrderIndex={sourceClass?.cycleLevel?.orderIndex}
+										nextLevelName={nextLevel?.name}
+										yearName={
+											availableYears.find((y) => y.id === targetYearId)?.name
+										}
+										creating={creatingTarget}
 										onCreateClass={createTargetClass}
 									/>
 								) : (
-									<QuickCreate
-										onCreate={createTargetClass}
-										label={t("admin.classes.actions.add")}
+									<Select
+										value={targetClassId}
+										onValueChange={setTargetClassId}
 									>
-										<Select
-											value={targetClassId}
-											onValueChange={setTargetClassId}
-										>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.deliberations.promote.targetClassPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-											<SelectContent>
-												{targetClasses.map((cls) => (
-													<SelectItem key={cls.id} value={cls.id}>
-														<span className="flex items-center gap-2">
-															{cls.cycleLevel?.code && (
-																<span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono font-semibold text-primary text-xs">
-																	{cls.cycleLevel.code}
-																</span>
-															)}
-															<span>{cls.name}</span>
-														</span>
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</QuickCreate>
+										<SelectTrigger>
+											<SelectValue
+												placeholder={t(
+													"admin.deliberations.promote.targetClassPlaceholder",
+												)}
+											/>
+										</SelectTrigger>
+										<SelectContent>
+											{targetClasses.map((cls) => (
+												<SelectItem key={cls.id} value={cls.id}>
+													<span className="flex items-center gap-2">
+														{cls.cycleLevel?.code && (
+															<span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono font-semibold text-primary text-xs">
+																{cls.cycleLevel.code}
+															</span>
+														)}
+														<span>{cls.name}</span>
+													</span>
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
 								)}
 
 								{targetClassId && !showNoClassFound && (

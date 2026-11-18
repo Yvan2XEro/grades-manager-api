@@ -1,4 +1,4 @@
-import { RefreshCcw } from "lucide-react";
+import { Info, RefreshCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -31,6 +31,22 @@ export default function AcademicYearTransitionsPage() {
 					</Button>
 				}
 			/>
+
+			{/* Two ways to move students to the next year: say which one to use */}
+			<div className="flex items-start gap-3 rounded-xl border bg-muted/30 px-4 py-3 text-sm">
+				<Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+				<div className="space-y-1">
+					<p className="font-medium">
+						{t("admin.academicYearTransitions.howTo.title")}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{t("admin.academicYearTransitions.howTo.transition")}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{t("admin.academicYearTransitions.howTo.shortcut")}
+					</p>
+				</div>
+			</div>
 
 			<div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
 				<div className="space-y-4">

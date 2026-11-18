@@ -32,9 +32,13 @@ export type CohortData = {
 	totalExams: number;
 	approvedExams: number;
 	submittedExams: number;
-	gradingProgress: number;
+	/** null when the class has no exam yet. */
+	gradingProgress: number | null;
+	deliberationStatus: string | null;
 	avgGeneral: number | null;
+	deliberatedCount: number;
 	admittedCount: number;
+	/** Percentage (one decimal), null without a deliberation. */
 	successRate: number | null;
 };
 
@@ -55,6 +59,8 @@ export type UeResult = {
 	ueCredits: number;
 	ueAverage: number | null;
 	isValidated: boolean;
+	/** false while some courses of the UE have no mark. */
+	isComplete?: boolean;
 	creditsEarned: number;
 };
 

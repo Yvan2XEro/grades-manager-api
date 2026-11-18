@@ -2,6 +2,7 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "@/lib/date-format";
 import { useDeliberationContext } from "../../hooks/use-deliberation-context";
+import type { DeliberationDecision } from "../../services/deliberation-status";
 
 export default function DeliberationActivityTab() {
 	const { t } = useTranslation();
@@ -21,6 +22,16 @@ export default function DeliberationActivityTab() {
 							const actor = log.actor
 								? `${log.actor.firstName} ${log.actor.lastName}`.trim()
 								: null;
+							const student = log.student?.profile
+								? `${log.student.profile.lastName ?? ""} ${log.student.profile.firstName ?? ""}`.trim()
+								: null;
+							const details = (log.details ?? {}) as {
+								previousDecision?: DeliberationDecision | "pending" | null;
+								newDecision?: DeliberationDecision | "pending" | null;
+								reason?: string | null;
+								promotedCount?: number;
+								targetClassName?: string;
+							};
 							return (
 								<div
 									key={log.id}
@@ -33,10 +44,41 @@ export default function DeliberationActivityTab() {
 												defaultValue: log.action,
 											})}
 										</span>
+										{student && <span className="ml-1">— {student}</span>}
+										{log.action === "override_decision" &&
+											details.newDecision && (
+												<span className="ml-1">
+													(
+													{t(
+														`admin.deliberations.decision.${details.previousDecision ?? "pending"}`,
+													)}{" "}
+													→{" "}
+													{t(
+														`admin.deliberations.decision.${details.newDecision}`,
+													)}
+													)
+												</span>
+											)}
+										{log.action === "promoted" &&
+											details.promotedCount != null && (
+												<span className="ml-1">
+													(
+													{t("admin.deliberations.logs.promotedDetails", {
+														count: details.promotedCount,
+														className: details.targetClassName ?? "—",
+													})}
+													)
+												</span>
+											)}
 										{actor && (
 											<span className="ml-1 text-muted-foreground">
 												{t("admin.deliberations.logs.by", { name: actor })}
 											</span>
+										)}
+										{details.reason && (
+											<p className="text-muted-foreground text-xs italic">
+												{details.reason}
+											</p>
 										)}
 									</div>
 									<span className="shrink-0 text-muted-foreground text-xs">

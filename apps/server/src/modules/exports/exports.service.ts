@@ -1146,7 +1146,7 @@ export class ExportsService {
 			deferred: "Ajourné",
 			repeat: "Redoublant",
 			excluded: "Exclu",
-			pending: "En attente",
+			pending: "Incomplet",
 		};
 
 		// Collect unique UEs across all students
@@ -1168,12 +1168,14 @@ export class ExportsService {
 		}
 		const ues = Array.from(ueMap.values());
 
-		// Sort students alphabetically by family name (NOM), then given names.
-		// Seed/UI convention: firstName carries the family name (NOM).
+		// Minutes order: by rank, then the unranked (incomplete) students by
+		// family name and given names.
 		const sortedStudents = [...data.students].sort(
 			(a, b) =>
-				(a.firstName ?? "").localeCompare(b.firstName ?? "") ||
-				(a.lastName ?? "").localeCompare(b.lastName ?? ""),
+				(a.rank ?? Number.POSITIVE_INFINITY) -
+					(b.rank ?? Number.POSITIVE_INFINITY) ||
+				(a.lastName ?? "").localeCompare(b.lastName ?? "") ||
+				(a.firstName ?? "").localeCompare(b.firstName ?? ""),
 		);
 
 		// Enrich students with labels and ensure UE order matches

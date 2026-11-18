@@ -1131,9 +1131,9 @@ interface Resources {
 					"name": "Name";
 					"courseAverages": "Course averages";
 					"overallAverage": "Overall average";
-					"credits": "credits";
-					"decision": "decision";
-					"mention": "mention";
+					"credits": "Credits";
+					"decision": "Decision";
+					"mention": "Mention";
 				};
 				"actions": {
 					"promote": "Promote";
@@ -1727,7 +1727,7 @@ interface Resources {
 					"unknown": "Not specified";
 				};
 				"enrollment": {
-					"totalLabel": "Active enrollments";
+					"totalLabel": "Enrollments this year (all statuses)";
 					"byProgram": "Students by program";
 					"byStatus": "Status breakdown";
 					"byGender": "Gender breakdown";
@@ -1744,14 +1744,6 @@ interface Resources {
 					"avgGeneral": "General average";
 					"byDecision": "Results by decision";
 					"byMention": "Results by mention";
-					"decision": {
-						"passed": "Passed";
-						"failed": "Failed";
-						"repeating": "Repeating";
-						"excluded": "Excluded";
-						"deferred": "Deferred";
-						"unknown": "Unknown";
-					};
 					"mention": {
 						"passable": "Pass";
 						"assez_bien": "Fairly good";
@@ -1760,6 +1752,8 @@ interface Resources {
 						"excellent": "Excellent";
 						"unknown": "Not assigned";
 					};
+					"passRate": "Pass rate";
+					"passRateHint": "Admitted and compensated students among the students deliberated in the year's deliberations.";
 				};
 				"finances": {
 					"title": "Financial overview";
@@ -4214,7 +4208,7 @@ interface Resources {
 					"deferred": "Deferred";
 					"repeat": "Repeat";
 					"excluded": "Excluded";
-					"pending": "Pending";
+					"pending": "Incomplete";
 				};
 				"mention": {
 					"passable": "Pass";
@@ -4295,6 +4289,9 @@ interface Resources {
 					"notYet": "Not yet";
 					"juryNumber": "N° jury";
 					"fallbackTitle": "Deliberation";
+					"ues": "UEs";
+					"missingUes_one": "{{count}} UE without marks";
+					"missingUes_other": "{{count}} UEs without marks";
 				};
 				"override": {
 					"title": "Override decision";
@@ -4302,6 +4299,17 @@ interface Resources {
 					"newDecision": "New decision";
 					"reason": "Reason";
 					"reasonPlaceholder": "Explain why you are overriding this decision...";
+					"partialAverage": "{{value}} (partial)";
+					"computedDecision": "Computed decision";
+					"restore": "Restore “{{decision}}”";
+					"restoreReason": "Computed decision restored";
+					"newDecisionPlaceholder": "Choose the jury's decision";
+					"computed": "computed";
+					"help": {
+						"deferred": "Deferred: not passed yet; the student can resit the failed UEs before a final decision.";
+						"repeat": "Repeat: the student repeats the same level next year.";
+						"excluded": "Excluded: the student may not continue in the program.";
+					};
 				};
 				"logs": {
 					"title": "Activity log";
@@ -4315,33 +4323,40 @@ interface Resources {
 					"reopened": "Deliberation reopened (results hidden)";
 					"exported": "Diplomation exported";
 					"promoted": "Students promoted";
+					"promotedDetails": "{{count}} → {{className}}";
 				};
 				"promote": {
 					"button": "Promote admitted";
 					"title": "Promote admitted students";
-					"description": "{{count}} admitted/compensated students will be enrolled in the target class";
+					"description": "{{count}} admitted or compensated students will be enrolled in the target class.";
 					"targetAcademicYear": "Target academic year";
 					"targetAcademicYearPlaceholder": "Select the next academic year";
 					"targetClass": "Target class";
 					"targetClassPlaceholder": "Select destination class";
 					"confirm": "Promote";
-					"success": "{{count}} students promoted successfully";
 					"noAdmitted": "No admitted students to promote";
 					"lastLevelTitle": "Last level of the cycle";
 					"lastLevelHint": "There is no next class: admitted students complete the cycle and are marked as graduated.";
 					"noTargetFound": {
-						"title": "title";
-						"searched": "searched";
-						"criteriaProgram": "Same program: {{program}}";
-						"criteriaLevel": "Next level after {{level}} (position {{nextIndex}})";
-						"criteriaYear": "criteriaYear";
-						"fix": "fix";
-						"goToClasses": "goToClasses";
+						"title": "The next-level class does not exist yet";
+						"description": "There is no {{program}} class of level “{{level}}” in {{year}}. It can be created now, with a generated code.";
+						"create": "Create “{{name}}”";
 					};
-					"ctaDesc": "Students with an 'Admitted' decision can be promoted to the next academic level.";
+					"ctaDesc": "Students whose decision is “Admitted” or “Compensated” move up to the next level of the cycle (or graduate on the last level).";
 					"ctaTitle": "Promote admitted students";
 					"targetClassHint_one": "{{count}} admitted student will be enrolled in this class.";
 					"targetClassHint_other": "{{count}} admitted students will be enrolled in this class.";
+					"othersStay": "Deferred, repeating and excluded students stay in this class. To re-enrol repeating students in the same level next year, use the year transition.";
+					"yearTransitionLink": "Year transition";
+					"done_one": "Promotion done on {{date}}: {{count}} student enrolled in {{className}}";
+					"done_other": "Promotion done on {{date}}: {{count}} students enrolled in {{className}}";
+					"doneGraduated_one": "Done on {{date}}: {{count}} student graduated";
+					"doneGraduated_other": "Done on {{date}}: {{count}} students graduated";
+					"alreadyPromoted_one": "{{count}} student was already enrolled for that year and was not enrolled twice.";
+					"alreadyPromoted_other": "{{count}} students were already enrolled for that year and were not enrolled twice.";
+					"success_one": "{{count}} student promoted";
+					"success_other": "{{count}} students promoted";
+					"classCreated": "Class “{{name}}” created";
 				};
 				"ueDecision": {
 					"ADM": "Acquired";
@@ -4373,6 +4388,8 @@ interface Resources {
 					"signTitle": "Sign deliberation?";
 					"deleteTitle": "Delete deliberation?";
 					"reopenTitle": "Reopen deliberation?";
+					"closeIncomplete_one": "{{count}} student still has incomplete results and will appear as “Incomplete”.";
+					"closeIncomplete_other": "{{count}} students still have incomplete results and will appear as “Incomplete”.";
 				};
 				"rules": {
 					"title": "Deliberation rules";
@@ -4441,9 +4458,22 @@ interface Resources {
 					"credits": "Credits";
 					"decision": "Decision";
 					"mention": "Mention";
-					"stats": "Success rate: {{rate}}% | Admitted: {{admitted}} | Compensated: {{compensated}} | Deferred: {{deferred}}";
+					"stats": "Pass rate: {{rate}} | Admitted: {{admitted}} | Compensated: {{compensated}} | Deferred: {{deferred}} | Repeating: {{repeat}} | Excluded: {{excluded}} | Incomplete: {{incomplete}}";
 					"sheetName": "Deliberation";
 					"filePrefix": "Deliberation";
+					"title": "DELIBERATION MINUTES";
+					"session": "Session: {{value}}";
+					"classAverage": "Class average: {{value}}";
+					"signatures": "The jury";
+					"president": "Jury president";
+					"member": "Jury member";
+					"signatureLine": "Signature: ____________________";
+				};
+				"incomplete": {
+					"title_one": "{{count}} student has incomplete results";
+					"title_other": "{{count}} students have incomplete results";
+					"hintOpen": "Marks are missing: no average, rank, mention or decision is given. Enter the missing marks and compute again, or let the jury decide with “Override decision” before closing.";
+					"hintClosed": "These students appear as “Incomplete” on the minutes, without average, rank or mention.";
 				};
 			};
 			"gradeAccessGrants": {
@@ -4743,7 +4773,7 @@ interface Resources {
 					"deferred": "Deferred";
 					"repeat": "Repeat";
 					"excluded": "Excluded";
-					"pending": "Pending";
+					"pending": "Incomplete";
 				};
 				"blocker": {
 					"missing_signed_deliberation": "Missing signed annual deliberation";
@@ -4823,6 +4853,11 @@ interface Resources {
 					"approved": "Approved";
 					"running": "Running";
 					"completed": "Completed";
+				};
+				"howTo": {
+					"title": "Which one to use?";
+					"transition": "Year transition (this page) is the standard way: one plan for every class of the year, covering admitted, repeating, graduating and excluded students, with review and approval before execution.";
+					"shortcut": "“Promote admitted” on a closed deliberation is a shortcut for one class: it only enrolls its admitted and compensated students in the next level. Students already enrolled in the target year are never enrolled twice.";
 				};
 			};
 			"gradeScale": {
@@ -5798,8 +5833,8 @@ interface Resources {
 				"subtitle": "Cohort overview — grading, results, success rates";
 				"students": "Students";
 				"pending": "Pending";
-				"avgProgress": "Avg. progress";
-				"avgSuccess": "Avg. success rate";
+				"avgProgress": "Grading progress";
+				"avgSuccess": "Pass rate";
 				"gradingProgress": "Grading progress";
 				"approved": "approved";
 				"submitted": "pending";
@@ -5812,6 +5847,12 @@ interface Resources {
 				"totalExams": "{{count}} total";
 				"submittedExams_one": "{{count}} exam pending";
 				"submittedExams_other": "{{count}} exams pending";
+				"hint": {
+					"students": "Enrollments of the year in these classes (all statuses), as on the statistics page.";
+					"pending": "Exams whose marks were submitted and wait for approval.";
+					"progress": "Submitted or approved exams among all exams of the classes. Classes without exams are not counted.";
+					"success": "Admitted and compensated students among deliberated students, from each class's deliberation of the year. Classes not deliberated yet are not counted.";
+				};
 			};
 			"approvals": {
 				"title": "Pending approvals";
@@ -5917,6 +5958,8 @@ interface Resources {
 				"courseCount_other": "{{count}} courses";
 				"coefficient": "Coeff. {{value}}";
 				"ueCreditsEarned": "{{earned}}/{{total}} credits";
+				"noMarksYet": "No marks yet";
+				"noMarks": "No marks";
 			};
 			"exams": {
 				"title": "Exam calendar";
@@ -6245,9 +6288,9 @@ interface Resources {
 				"deferred": "Deferred — you must retake failing subjects.";
 				"repeat": "Repeating — you repeat the academic year.";
 				"excluded": "Excluded — please contact administration.";
-				"pending": "Decision pending.";
+				"pending": "Results incomplete: the jury's decision is pending.";
 				"unknown": "Unknown decision.";
-				"overridden": "Overridden";
+				"overridden": "Decided by the jury";
 			};
 			"publishedAt": "Published on {{date}}";
 		};

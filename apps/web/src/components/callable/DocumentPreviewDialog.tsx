@@ -25,7 +25,7 @@ export const DocumentPreviewDialog = createCallable<Props>(
 		const { t } = useTranslation();
 		return (
 			<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
-				<DialogContent className="flex h-[90vh] max-w-6xl flex-col">
+				<DialogContent className="flex h-[90vh] flex-col sm:max-w-5xl">
 					<DialogHeader>
 						<DialogTitle>{title}</DialogTitle>
 						{description && (

@@ -8,7 +8,8 @@ import type { UEData } from "../../types";
 export function UERow({ unit }: { unit: UEData }) {
 	const { t } = useTranslation();
 	const [open, setOpen] = useState(false);
-	const validated = unit.average >= 10;
+	const graded = unit.courses.some((c) => c.average > 0);
+	const validated = graded && unit.average >= 10;
 
 	return (
 		<div className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -18,9 +19,9 @@ export function UERow({ unit }: { unit: UEData }) {
 				onClick={() => setOpen((p) => !p)}
 			>
 				<div
-					className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold text-xs ${scoreBadge(unit.average)}`}
+					className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold text-xs ${graded ? scoreBadge(unit.average) : "bg-muted text-muted-foreground"}`}
 				>
-					{unit.average.toFixed(1)}
+					{graded ? unit.average.toFixed(1) : "—"}
 				</div>
 				<div className="min-w-0 flex-1">
 					<div className="flex flex-wrap items-center gap-2">
@@ -32,7 +33,11 @@ export function UERow({ unit }: { unit: UEData }) {
 								{unit.code}
 							</span>
 						)}
-						{validated ? (
+						{!graded ? (
+							<Badge variant="outline" className="text-xs">
+								{t("student.performance.noMarks")}
+							</Badge>
+						) : validated ? (
 							<Badge variant="success" className="text-xs">
 								{t("student.performance.validated")}
 							</Badge>

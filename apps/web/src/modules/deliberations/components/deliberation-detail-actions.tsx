@@ -17,6 +17,10 @@ import type { DeliberationAction } from "../types";
 interface DeliberationDetailActionsProps {
 	deliberationId: string;
 	status: string;
+	/** Students without a decision (incomplete results). */
+	pendingCount: number;
+	/** Whether the admitted students were already promoted. */
+	promoted: boolean;
 	onPromoteAdmitted: () => void;
 }
 
@@ -24,6 +28,8 @@ interface DeliberationDetailActionsProps {
 export function DeliberationDetailActions({
 	deliberationId,
 	status,
+	pendingCount,
+	promoted,
 	onPromoteAdmitted,
 }: DeliberationDetailActionsProps) {
 	const { t } = useTranslation();
@@ -35,7 +41,7 @@ export function DeliberationDetailActions({
 		texts: { title: string; message: string; confirmText: string },
 	) => confirmAction({ ...texts, onConfirm: () => transition.mutate(action) });
 
-	const promoteButton = (
+	const promoteButton = promoted ? null : (
 		<Button variant="outline" onClick={onPromoteAdmitted}>
 			<UserCheck className="mr-2 h-4 w-4" />
 			{t("admin.deliberations.promote.button")}
@@ -102,7 +108,10 @@ export function DeliberationDetailActions({
 						onClick={() =>
 							confirmTransition("close", {
 								title: t("admin.deliberations.confirm.closeTitle"),
-								message: t("admin.deliberations.confirm.close"),
+								message:
+									pendingCount > 0
+										? `${t("admin.deliberations.confirm.closeIncomplete", { count: pendingCount })} ${t("admin.deliberations.confirm.close")}`
+										: t("admin.deliberations.confirm.close"),
 								confirmText: t("admin.deliberations.actions.close"),
 							})
 						}

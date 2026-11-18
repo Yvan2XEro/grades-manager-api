@@ -39,7 +39,7 @@ import type { DeliberationListItem } from "../types";
 export default function DeliberationsList() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const [statusFilter, setStatusFilter] = useState<string>("open");
+	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);

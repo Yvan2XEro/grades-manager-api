@@ -350,36 +350,64 @@ export async function getStudentDecision(
 		}));
 }
 
+/**
+ * Per-class figures of the dean dashboard, for one academic year (the active
+ * one by default). Definitions match the statistics page:
+ * - students: enrollments of the class for its year;
+ * - grading progress: (approved + submitted) / all exams of the class, null
+ *   when the class has no exam;
+ * - average and pass rate: those of the class's deliberation of that year
+ *   (annual first, then the most advanced), null when it has none. Pass rate =
+ *   (admitted + compensated) / deliberated students.
+ */
 export async function getCohortAnalytics(
 	institutionId: string,
 	opts: { classId?: string; academicYearId?: string },
 ) {
-	// Get all classes for this institution (optionally filtered)
-	const classWhere = opts.classId
-		? and(
-				eq(schema.classes.institutionId, institutionId),
-				eq(schema.classes.id, opts.classId),
-			)
-		: opts.academicYearId
-			? and(
-					eq(schema.classes.institutionId, institutionId),
-					eq(schema.classes.academicYear, opts.academicYearId),
-				)
-			: eq(schema.classes.institutionId, institutionId);
+	let academicYearId = opts.academicYearId;
+	if (!academicYearId && !opts.classId) {
+		const active = await db.query.academicYears.findFirst({
+			where: and(
+				eq(schema.academicYears.institutionId, institutionId),
+				eq(schema.academicYears.isActive, true),
+			),
+		});
+		academicYearId = active?.id;
+	}
 
 	const classes = await db.query.classes.findMany({
-		where: classWhere,
-		with: {
-			academicYear: true,
-			students: true,
-		},
-		limit: 50,
+		where: and(
+			eq(schema.classes.institutionId, institutionId),
+			opts.classId ? eq(schema.classes.id, opts.classId) : undefined,
+			academicYearId
+				? eq(schema.classes.academicYear, academicYearId)
+				: undefined,
+		),
+		with: { academicYear: true },
+		orderBy: (c, { asc }) => asc(c.name),
+		limit: 200,
 	});
 
-	const cohorts = await Promise.all(
+	const statusRank: Record<string, number> = {
+		signed: 4,
+		closed: 3,
+		open: 2,
+		draft: 1,
+	};
+
+	return Promise.all(
 		classes.map(async (cls) => {
-			const studentIds = cls.students.map((s) => s.id);
-			const totalStudents = studentIds.length;
+			const yearId = cls.academicYear?.id ?? "";
+			const [enrolled] = await db
+				.select({ cnt: count() })
+				.from(schema.enrollments)
+				.where(
+					and(
+						eq(schema.enrollments.classId, cls.id),
+						eq(schema.enrollments.academicYearId, yearId),
+					),
+				);
+			const totalStudents = Number(enrolled?.cnt ?? 0);
 
 			// Count exams by status
 			const examStats = await db
@@ -409,34 +437,34 @@ export async function getCohortAnalytics(
 			const gradingProgress =
 				totalExams > 0
 					? Math.round(((approvedExams + submittedExams) / totalExams) * 100)
-					: 0;
+					: null;
 
-			// Get average from deliberation results if available
-			let avgGeneral: number | null = null;
-			let admittedCount = 0;
-			if (totalStudents > 0) {
-				const allResults = await db.query.deliberationStudentResults.findMany({
-					where: (t, { inArray: inArr }) => inArr(t.studentId, studentIds),
-					columns: {
-						generalAverage: true,
-						finalDecision: true,
-					},
-				});
-				if (allResults.length > 0) {
-					const validAvgs = allResults
-						.map((r) => r.generalAverage)
-						.filter((a): a is number => a !== null);
-					avgGeneral =
-						validAvgs.length > 0
-							? validAvgs.reduce((s, v) => s + v, 0) / validAvgs.length
-							: null;
-					admittedCount = allResults.filter(
-						(r) =>
-							r.finalDecision === "admitted" ||
-							r.finalDecision === "compensated",
-					).length;
-				}
-			}
+			// The class's deliberation of its year: annual first, most advanced
+			const deliberations = await db.query.deliberations.findMany({
+				where: and(
+					eq(schema.deliberations.classId, cls.id),
+					eq(schema.deliberations.academicYearId, yearId),
+				),
+			});
+			const delib = deliberations
+				.filter((d) => d.stats)
+				.sort(
+					(a, b) =>
+						Number(b.type === "annual") - Number(a.type === "annual") ||
+						(statusRank[b.status] ?? 0) - (statusRank[a.status] ?? 0) ||
+						b.createdAt.getTime() - a.createdAt.getTime(),
+				)[0];
+			const stats = delib?.stats as
+				| {
+						totalStudents?: number;
+						admittedCount?: number;
+						compensatedCount?: number;
+						classAverage?: number | null;
+				  }
+				| undefined;
+			const deliberatedCount = stats?.totalStudents ?? 0;
+			const admittedCount =
+				(stats?.admittedCount ?? 0) + (stats?.compensatedCount ?? 0);
 
 			return {
 				classId: cls.id,
@@ -447,17 +475,17 @@ export async function getCohortAnalytics(
 				approvedExams,
 				submittedExams,
 				gradingProgress,
-				avgGeneral,
+				deliberationStatus: delib?.status ?? null,
+				avgGeneral: stats?.classAverage ?? null,
+				deliberatedCount,
 				admittedCount,
 				successRate:
-					totalStudents > 0
-						? Math.round((admittedCount / totalStudents) * 100)
+					delib && deliberatedCount > 0
+						? Math.round((admittedCount / deliberatedCount) * 1000) / 10
 						: null,
 			};
 		}),
 	);
-
-	return cohorts;
 }
 
 export async function closeExpiredApprovedExams() {
