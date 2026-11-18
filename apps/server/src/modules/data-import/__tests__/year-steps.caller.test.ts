@@ -659,6 +659,41 @@ describe("guided import — undo", () => {
 	});
 });
 
+describe("guided import — undo after closing", () => {
+	it("refuses to undo a class import while a deliberation uses the class", async () => {
+		const { ctx, caller } = await admin();
+		const institutionId = ctx.institution!.id;
+		const { s, program, past } = await fixture(institutionId);
+		const fileId = await upload(caller, {
+			Classes: [CLASS_HEADERS, [`D${s}`, `D ${s}`, program.code, "L1"]],
+		});
+		const job = await caller.batchJobs.preview({
+			type: "import.step",
+			params: { step: "year.classes", fileId, academicYearId: past.id },
+		});
+		await caller.batchJobs.run({ jobId: job.id });
+		const klass = await db.query.classes.findFirst({
+			where: eq(schema.classes.code, `D${s}`),
+		});
+		await db.insert(schema.deliberations).values({
+			institutionId,
+			classId: klass!.id,
+			academicYearId: past.id,
+			type: "annual",
+			createdBy: ctx.profile!.id,
+		});
+
+		const refused = await caller.batchJobs.rollback({ jobId: job.id });
+		expect(refused?.status).toBe("failed");
+		expect(refused?.error).toStartWith("Cannot undo");
+		expect(
+			await db.query.classes.findFirst({
+				where: eq(schema.classes.id, klass!.id),
+			}),
+		).toBeDefined();
+	});
+});
+
 describe("guided import — teachers and parents", () => {
 	it("creates teachers without account, assigns them to courses, links parents", async () => {
 		const { ctx, caller } = await admin();

@@ -78,7 +78,7 @@ export function useExamForm(exam?: ExamFormValuesIn) {
 	});
 	const { data: courses = [] } = useQuery({
 		queryKey: examFormKeys.courses,
-		queryFn: fetchCourseOptions,
+		queryFn: () => fetchCourseOptions(),
 	});
 	const classMap = new Map(classes.map((c) => [c.id, c.name]));
 	const courseMap = new Map(courses.map((c) => [c.id, c.name]));

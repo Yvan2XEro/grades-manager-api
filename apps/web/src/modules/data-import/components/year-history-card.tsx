@@ -46,6 +46,8 @@ export function YearHistoryCard({
 							? t(`${G}history.blocked`)
 							: t(`${G}history.undoFailed`),
 					);
+					// Retrying will not help: close and let the user act on the reason
+					call.end(false);
 					return;
 				}
 				toast.success(t(`${G}history.undone`));

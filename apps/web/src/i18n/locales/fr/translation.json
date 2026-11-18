@@ -3921,13 +3921,15 @@
         },
         "years": {
           "title": "3. Années académiques",
-          "text": "Les données de chaque année, de la plus ancienne à la plus récente. L'import d'une année (classes, étudiants et inscriptions, cours, examens, notes) est en cours de conception ; pour l'instant, chaque année affiche ce qu'elle contient déjà.",
+          "text": "Les données de chaque année, de la plus ancienne à la plus récente. Importez une année étape par étape (classes, étudiants, cours, examens, notes, puis clôture) ; chaque import peut être annulé.",
           "add": "Gérer les années",
           "foundationsFirst": "Terminez d'abord les fondations : les classes d'une année s'appuient sur les programmes et les niveaux.",
           "empty": "Aucune année académique. Créez la première pour commencer.",
           "active": "Active",
           "import": "Importer",
-          "resume": "Reprendre"
+          "resume": "Reprendre",
+          "optionalSteps_one": "+ {{count}} étape facultative",
+          "optionalSteps_other": "+ {{count}} étapes facultatives (enseignants, parents, décisions, frais)"
         },
         "stepPage": {
           "back": "Mise en route & import",
@@ -4223,7 +4225,8 @@
           "done": "Année clôturée",
           "report": "{{locked}} examen(s) verrouillé(s), {{students}} étudiant(s) recalculé(s), délibérations : {{created}} créée(s), {{recomputed}} recalculée(s), {{skipped}} déjà close(s).",
           "review": "Vérifier les délibérations",
-          "next": "Comparer aux décisions officielles"
+          "next": "Comparer aux décisions officielles",
+          "undoNote": "Les imports restent annulables après la clôture, sauf celui des classes : pour l'annuler, il faudra d'abord supprimer les délibérations calculées ici."
         },
         "changes": {
           "none": "Rien à créer ni à mettre à jour.",
@@ -4243,7 +4246,7 @@
           "undoFailed": "L'import n'a pas pu être annulé.",
           "undone": "Import annulé",
           "undoneBadge": "Annulé",
-          "blocked": "Des données ajoutées depuis dépendent de cet import : annulez d'abord les imports plus récents.",
+          "blocked": "D'autres données dépendent de cet import (imports plus récents, ou délibérations calculées à la clôture de l'année) : annulez d'abord les imports plus récents ou supprimez ces délibérations.",
           "notUndoable": "Non annulable",
           "undoConfirm": "Annuler l'import",
           "keep": "Le conserver"

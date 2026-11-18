@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
 	G,
+	IMPORT_YEAR_STEPS,
 	stepLabel,
 	YEAR_STEPS,
 	yearProgress,
@@ -69,6 +70,11 @@ export function AcademicYearsCard({
 										{progress}/{YEAR_STEPS.length}
 									</span>
 								</div>
+								<p className="mt-1 text-muted-foreground text-xs">
+									{t(`${G}years.optionalSteps`, {
+										count: IMPORT_YEAR_STEPS.length - YEAR_STEPS.length,
+									})}
+								</p>
 							</div>
 							<ol className="flex flex-1 flex-wrap gap-2">
 								{YEAR_STEPS.map((step, index) => {

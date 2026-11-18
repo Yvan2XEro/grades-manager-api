@@ -470,9 +470,35 @@ export const examsStep: ImportStepDef = {
 				);
 		}
 
+		// Detail of the review: one line per exam created or changed
+		const ccById = new Map(classCourses.map((cc) => [cc.id, cc]));
+		const rowChanges = changes.map((c) => {
+			const cc = ccById.get(c.classCourseId);
+			const current = c.id ? exams.find((e) => e.id === c.id) : undefined;
+			return {
+				sheet: MODEL,
+				row: 0,
+				action: c.id ? ("update" as const) : ("create" as const),
+				label: `${cc?.classCode ?? ""} · ${cc?.courseCode ?? ""} — ${c.component.type}`,
+				...(current
+					? {
+							before: {
+								Pondération: `${Number(current.percentage)} %`,
+								Date: current.date.toISOString().slice(0, 10),
+							},
+						}
+					: {}),
+				after: {
+					Pondération: `${Number(c.percentage)} %`,
+					Date: c.date.toISOString().slice(0, 10),
+				},
+			};
+		});
+
 		return {
 			sheets: [summary],
 			issues,
+			changes: rowChanges,
 			async apply(log, journal) {
 				// Exam types of the model that the institution does not have yet
 				const types = await db.query.examTypes.findMany({

@@ -126,14 +126,21 @@ export const ClassCourseFormDialog = createCallable<
 	const classes = useClassOptions(classSearch);
 	const programMap = useProgramNames();
 
+	// Only the courses of the class's program (all of them before a class is chosen)
+	const programId = classes.find((c) => c.id === form.watch("class"))?.program;
 	const { data: defaultCourses = [] } = useQuery({
-		queryKey: COURSES_KEY,
-		queryFn: fetchCourseOptions,
+		queryKey: [...COURSES_KEY, programId ?? "all"],
+		queryFn: () => fetchCourseOptions(programId),
 	});
 	const { data: searchCourses = [] } = useQuery({
-		queryKey: [...COURSES_KEY, "search", courseSearch],
+		queryKey: [...COURSES_KEY, "search", courseSearch, programId ?? "all"],
 		queryFn: async () =>
-			(await trpcClient.courses.search.query({ query: courseSearch })).map(
+			(
+				await trpcClient.courses.search.query({
+					query: courseSearch,
+					programId,
+				})
+			).map(
 				(course): CourseOption => ({
 					id: course.id,
 					name: course.name,

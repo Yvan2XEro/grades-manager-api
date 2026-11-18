@@ -4988,13 +4988,15 @@
         },
         "years": {
           "title": "3. Academic years",
-          "text": "The data of each year, from the oldest to the most recent. The import of a year (classes, students and enrollments, courses, exams, grades) is being designed; for now each year shows what it already contains.",
+          "text": "Each year's data, from the oldest to the most recent. Import a year step by step (classes, students, courses, exams, grades, then closing); each import can be undone.",
           "add": "Manage years",
           "foundationsFirst": "Finish the foundations first: the classes of a year rely on programs and levels.",
           "empty": "No academic year. Create the first one to start.",
           "active": "Active",
           "import": "Import",
-          "resume": "Resume"
+          "resume": "Resume",
+          "optionalSteps_one": "+ {{count}} optional step",
+          "optionalSteps_other": "+ {{count}} optional steps (teachers, parents, decisions, fees)"
         },
         "stepPage": {
           "back": "Setup & data import",
@@ -5290,7 +5292,8 @@
           "done": "Year closed",
           "report": "{{locked}} exam(s) locked, {{students}} student(s) recomputed, deliberations: {{created}} created, {{recomputed}} recomputed, {{skipped}} already closed.",
           "review": "Review the deliberations",
-          "next": "Compare with official decisions"
+          "next": "Compare with official decisions",
+          "undoNote": "Imports stay undoable after closing, except the class import: undoing it requires deleting the deliberations computed here first."
         },
         "changes": {
           "none": "Nothing to create or update.",
@@ -5310,7 +5313,7 @@
           "undoFailed": "The import could not be undone.",
           "undone": "Import undone",
           "undoneBadge": "Undone",
-          "blocked": "Data added since depends on this import: undo the later imports first.",
+          "blocked": "Other data depends on this import (more recent imports, or deliberations computed when the year was closed): undo the more recent imports or delete those deliberations first.",
           "notUndoable": "Cannot be undone",
           "undoConfirm": "Undo the import",
           "keep": "Keep it"

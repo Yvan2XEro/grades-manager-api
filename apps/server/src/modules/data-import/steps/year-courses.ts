@@ -343,9 +343,28 @@ export const coursesStep: ImportStepDef = {
 				message: `${withoutTeacher} course(s) without teacher: they can be assigned later.`,
 			});
 
+		// Detail of the review: one line per course of a class created or changed
+		const classCodeOf = new Map(classes.map((c) => [c.id, c.code]));
+		const rowChanges = changes.map((c) => {
+			const course = courseById.get(c.courseId)!;
+			const current = c.id ? existing.get(c.key) : undefined;
+			return {
+				sheet: COURSES,
+				row: 0,
+				action: c.id ? ("update" as const) : ("create" as const),
+				label:
+					`${classCodeOf.get(c.classId) ?? ""} · ${course.code} ${course.name ?? ""}`.trim(),
+				...(current
+					? { before: { Coefficient: String(Number(current.coefficient)) } }
+					: {}),
+				after: { Coefficient: String(Number(c.coefficient)) },
+			};
+		});
+
 		return {
 			sheets: [summary],
 			issues,
+			changes: rowChanges,
 			async apply(log, journal) {
 				const byId = new Map(classCourses.map((cc) => [cc.id, cc]));
 				const placeholder = withoutTeacher
