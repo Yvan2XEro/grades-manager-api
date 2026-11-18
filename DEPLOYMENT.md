@@ -85,13 +85,20 @@ cp .env.website .env
 
 Edit `.env` and fill in all required values (see [Environment Variables](#environment-variables) below).
 
-### Step 3 — Build and start
+### Step 3 — Pull and start
+
+The website image is built by GitHub Actions (`.github/workflows/build-and-push.yml`) and pushed to `ghcr.io/yvan2xero/tkams-website`: `latest` on pushes to `main` and on `v*` tags, `dev` on pushes to `dev`. The server never builds it. Set `WEBSITE_IMAGE_TAG` in `.env` to run another tag.
+
+If the package is private, log the server in to GHCR once with a token that has `read:packages` (in Dokploy: Settings → Registry):
 
 ```bash
-docker compose up -d --build
+echo "$GHCR_TOKEN" | docker login ghcr.io -u <github-user> --password-stdin
 ```
 
-The first build takes 3–5 minutes (Next.js compilation). Subsequent updates are faster due to Docker layer caching.
+```bash
+docker compose pull
+docker compose up -d
+```
 
 ### Step 4 — Verify
 
@@ -127,13 +134,14 @@ Copy `.env.website` to `.env` and fill in:
 
 ## Updates
 
+Merging to `main` builds a new `latest` image. When the `WEBSITE_DOKPLOY_DEPLOY_URL` repository secret holds the Dokploy deploy webhook of the compose app, the workflow then triggers the redeploy itself. By hand:
+
 ```bash
 cd /opt/tkams
-git pull
-docker compose up -d --build
+git pull                      # only for docker-compose.yml changes
+docker compose pull website
+docker compose up -d website
 ```
-
-Docker caches unchanged layers, so only modified files trigger a full rebuild. A typical update with no dependency changes takes ~2 minutes.
 
 ---
 
