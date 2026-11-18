@@ -8,6 +8,7 @@ import {
 	ServerCog,
 	XCircle,
 } from "lucide-react";
+import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export type TFn = (key: string, opts?: Record<string, unknown>) => string;
@@ -43,7 +44,7 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 		labelKey: "notifications.types.fee_payment_confirmed",
 		subtitleFn: (p) =>
 			p.amount && p.currency
-				? `${Number(p.amount).toLocaleString()} ${p.currency}`
+				? formatMoney(String(p.amount), String(p.currency))
 				: String(p.reference ?? ""),
 	},
 	"grade.approved": {

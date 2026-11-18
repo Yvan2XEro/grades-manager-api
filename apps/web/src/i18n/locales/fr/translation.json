@@ -181,7 +181,16 @@
     "itemCount_other": "{{count}} éléments",
     "validation": {
       "required": "Obligatoire"
-    }
+    },
+    "courseStatus": {
+      "planned": "Prévu",
+      "active": "En cours",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "withdrawn": "Abandonné"
+    },
+    "close": "Fermer",
+    "clear": "Effacer"
   },
   "navigation": {
     "breadcrumbs": {
@@ -290,7 +299,7 @@
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
         "dataImport": "Import de données",
-        "feeClearance": "Quitus / Frais",
+        "feeClearance": "Frais de scolarité",
         "statistics": "Statistiques",
         "students": "Étudiants",
         "studentPromotion": "Promotion des étudiants",
@@ -374,22 +383,24 @@
       "teacher": "Enseignant",
       "administrator": "Administrateur",
       "super_admin": "Super administrateur",
-      "owner": "Propriétaire"
+      "owner": "Propriétaire",
+      "member": "Membre"
     },
     "pages": {
-      "people": "Personnes",
+      "people": "Utilisateurs",
       "enrollments": "Inscriptions",
       "admissions": "Admissions",
       "exams": "Examens",
       "deliberations": "Délibérations",
-      "feeAssignments": "Affectations de frais",
+      "feeAssignments": "Paiements étudiants",
       "academicYears": "Années académiques",
       "myFees": "Mes frais",
       "courseEnrollment": "Inscription aux cours",
       "examCalendar": "Calendrier des examens",
       "documents": "Documents",
       "notifications": "Notifications",
-      "openProfile": "Ouvrir la fiche"
+      "openProfile": "Ouvrir la fiche",
+      "students": "Étudiants"
     },
     "crumbs": {
       "academicYears": "Années académiques",
@@ -413,7 +424,7 @@
       "enrollments": "Inscriptions",
       "students": "Étudiants",
       "users": "Utilisateurs",
-      "people": "Personnes",
+      "people": "Utilisateurs",
       "guardians": "Parents",
       "apiKeys": "Clés API",
       "identity": "Identité",
@@ -438,11 +449,11 @@
       "graduation": "Diplômés",
       "feeClearance": "Frais de scolarité",
       "feeStructures": "Barèmes de frais",
-      "feeAssignments": "Affectations de frais",
+      "feeAssignments": "Paiements étudiants",
       "installments": "Échéances",
       "impact": "Impact",
       "history": "Historique",
-      "feeGating": "Restriction d'accès",
+      "feeGating": "Restrictions d'accès",
       "timetable": "Emploi du temps",
       "schedule": "Planning",
       "rooms": "Salles",
@@ -749,7 +760,10 @@
         "expected": "Attendu",
         "collected": "Collecté",
         "remaining": "Restant",
-        "rate": "Taux de collecte"
+        "rate": "Taux de collecte",
+        "coverage": "{{assigned}} étudiants sur {{total}} ont des frais affectés.",
+        "coverageShort": "{{assigned}}/{{total}} étudiants avec frais",
+        "rateHint": "Le taux ne porte que sur leurs frais."
       },
       "statusStats": {
         "title": "Statut des inscriptions",
@@ -785,7 +799,8 @@
           "active": "Actif",
           "pending": "En attente",
           "completed": "Terminé",
-          "withdrawn": "Retiré"
+          "withdrawn": "Retiré",
+          "graduated": "Diplômé"
         }
       },
       "performance": {
@@ -2945,7 +2960,7 @@
         "emptyStudents": "Sélectionnez une classe pour afficher les étudiants.",
         "courses": "Cours de la classe",
         "selectStudent": "Choisissez un étudiant pour gérer ses inscriptions.",
-        "openModalBtn": "Voir le roster",
+        "openModalBtn": "Voir les cours par étudiant",
         "teacher": "Enseignant : {{value}}",
         "notEnrolled": "Non inscrit",
         "enrollBtn": "Inscrire",
@@ -4004,7 +4019,7 @@
             "noRegistrationFormat": "Aucun matricule fourni et aucun format de matricule actif pour en générer un.",
             "unknownCourse": "L'EC {{value}} n'est pas dans la maquette du programme de {{class}}.",
             "unknownTeacher": "Aucun enseignant avec l'e-mail {{value}} : le cours est gardé sans enseignant.",
-            "unitsWithoutLevel": "UE sans niveau, leurs EC ne sont pas proposés : {{units}}. Renseignez leur niveau dans les Fondations (UE & EC).",
+            "unitsWithoutLevel": "Certaines unités d'enseignement (UE) n'ont pas de niveau, leurs cours (EC) ne sont donc pas proposés : {{units}}. Indiquez leur niveau dans Fondations (UE & EC).",
             "coursesWithoutTeacher": "{{count}} cours sans enseignant : ils pourront être attribués plus tard.",
             "unknownRetakeTarget": "« {{value}} » n'est pas un type d'examen du modèle.",
             "weightsNot100": "Les pondérations du modèle totalisent {{total}} %, pas 100 %.",
@@ -6235,8 +6250,8 @@
     "noDate": "Date non définie"
   },
   "feeClearance": {
-    "title": "Quitus / Frais",
-    "subtitle": "Gérez les barèmes, les paiements des étudiants et les quitus",
+    "title": "Frais de scolarité",
+    "subtitle": "Barèmes, paiements des étudiants et restrictions d'accès",
     "bulkAssign": {
       "mode": "Périmètre",
       "modeClass": "Par classe",
@@ -6326,7 +6341,7 @@
       "forceMatch": "Forcer",
       "forced": "Forcé",
       "xlsxLoaded": "{{count}} lignes chargées depuis le fichier Excel",
-      "notes": "Note de batch (optionnelle)",
+      "notes": "Remarque (facultative)",
       "notesPlaceholder": "Ex : virement du 15 juillet 2026",
       "status": {
         "matched": "Correspondance",
@@ -6399,10 +6414,40 @@
         "mobile_money": "Mobile money",
         "check": "Chèque",
         "other": "Autre"
-      }
+      },
+      "recordFor": "Enregistrer un paiement — {{name}}",
+      "noFees": {
+        "title": "Aucun frais affecté pour {{year}}",
+        "description": "Choisissez le barème qui s'applique à {{name}} : il lui sera affecté en même temps que ce paiement.",
+        "structure": "Barème de frais",
+        "none": "Aucun barème actif ne correspond à la classe de cet étudiant pour {{year}}. Créez-en un dans Frais de scolarité › Barèmes de frais."
+      },
+      "summary": {
+        "balance": "Reste à payer",
+        "paid": "Déjà payé"
+      },
+      "settled": "Plus rien à payer pour {{year}} : {{status}}.",
+      "amountMax": "Au plus {{amount}} (reste à payer).",
+      "referenceHint": "Laissez vide pour numéroter le reçu automatiquement.",
+      "success": {
+        "title": "Paiement enregistré",
+        "description": "{{amount}} reçus de {{name}} le {{date}}.",
+        "receiptNumber": "Reçu n° {{number}}",
+        "assigned": "Le barème « {{structure}} » a été affecté à l'étudiant.",
+        "remaining": "Reste à payer : {{amount}}"
+      },
+      "receiptFailed": "Le reçu n'a pas pu être généré. Le paiement est bien enregistré : réessayez plus tard depuis l'historique des paiements.",
+      "errors": {
+        "exceedsBalance": "Le montant dépasse le reste à payer.",
+        "fullyPaid": "Ces frais sont déjà entièrement payés.",
+        "exempt": "L'étudiant est exonéré de ces frais.",
+        "structureRequired": "Choisissez le barème à affecter.",
+        "failed": "Le paiement n'a pas pu être enregistré. Réessayez."
+      },
+      "searchStudent": "Rechercher un étudiant par nom ou matricule…"
     },
     "gating": {
-      "title": "Verrous académiques",
+      "title": "Restrictions d'accès",
       "subtitle": "Bloquez certaines actions académiques pour les étudiants n'ayant pas réglé leurs frais",
       "gates": {
         "exam_registration": "Inscription aux examens",
@@ -6437,7 +6482,8 @@
         "pending": "En attente",
         "confirmed": "Confirmé",
         "cancelled": "Annulé"
-      }
+      },
+      "downloadFailed": "Le bon de caisse n'a pas pu être généré. Réessayez plus tard."
     },
     "quitus": {
       "title": "Quitus / Attestation de paiement",
@@ -7028,19 +7074,19 @@
     "title": "Utilisateurs & Étudiants",
     "description": "Gérez les comptes, les étudiants, les parents et les clés d'API",
     "tabs": {
-      "people": "Personnes",
+      "people": "Utilisateurs",
       "guardians": "Tuteurs",
       "apiKeys": "Clés API"
     },
     "people": {
-      "title": "Personnes",
-      "subtitle": "Tous les profils de cette institution.",
+      "title": "Utilisateurs",
+      "subtitle": "Le personnel de l'établissement et ses comptes de connexion. Les étudiants sont dans le menu Étudiants.",
       "add": "Ajouter une personne",
       "searchPlaceholder": "Rechercher par nom ou email…",
       "class": "Classe",
       "regNumber": "Matricule",
       "enrollmentStatus": "Inscription",
-      "empty": "Aucune personne trouvée.",
+      "empty": "Aucun utilisateur trouvé.",
       "deleteConfirm": "Cette action supprimera définitivement le profil et ne peut pas être annulée.",
       "account": "Compte",
       "created": "Personne créée.",
@@ -7062,7 +7108,7 @@
         "noAccountDescription": "Ce profil n'est pas lié à un compte de connexion. L'utilisateur ne peut pas se connecter à la plateforme."
       },
       "provisioning": {
-        "title": "Provisionnement",
+        "title": "Compte de connexion",
         "description": "Créez un nouveau compte ou liez un compte existant à ce profil.",
         "createTab": "Créer un compte",
         "linkTab": "Lier un compte existant"
@@ -7112,6 +7158,12 @@
         "reactivated": "Compte réactivé.",
         "statusFailed": "Erreur lors de la mise à jour du statut."
       }
+    },
+    "students": {
+      "title": "Étudiants",
+      "subtitle": "Les étudiants de l'établissement, par année académique, classe et statut d'inscription.",
+      "empty": "Aucun étudiant ne correspond à ces filtres.",
+      "allEnrollmentStatuses": "Tous les statuts d'inscription"
     }
   },
   "profileHub": {
@@ -7155,11 +7207,16 @@
     },
     "finances": {
       "academicYear": "Année académique",
-      "amount": "Montant",
+      "amount": "Montant dû",
       "discount": "Remise",
       "status": "Statut",
       "clearedAt": "Soldé le",
-      "empty": "Aucun enregistrement financier trouvé."
+      "empty": "Aucun frais affecté à cet étudiant. Enregistrer un paiement lui affecte le barème de sa classe.",
+      "structure": "Barème",
+      "paid": "Payé",
+      "balance": "Reste à payer",
+      "emptyReadOnly": "Aucun frais affecté pour le moment.",
+      "openFile": "Dossier de frais"
     },
     "guardians": {
       "name": "Nom",

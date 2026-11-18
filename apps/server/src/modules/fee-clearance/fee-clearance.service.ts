@@ -965,6 +965,186 @@ export async function recordPayment(
 	return payment;
 }
 
+// ── Payments from the student's side ──────────────────────────────────
+
+/**
+ * What the cashier needs to take a payment from a student for a year: the
+ * student's fee assignment for that year with its balance, or — when the
+ * student has none yet — the active fee structures that fit the student's
+ * class (same program / level, or institution-wide) to assign on the spot.
+ * Without a year, the active year is used when the student is enrolled in
+ * it, else the student's latest enrollment year.
+ */
+export async function getStudentPaymentContext(
+	institutionId: string,
+	input: { studentId: string; academicYearId?: string },
+) {
+	const found = await repo.findStudentWithEnrollments(
+		input.studentId,
+		institutionId,
+	);
+	if (!found) throw notFound("Student not found for this institution");
+	const { student, enrollments } = found;
+
+	let yearId = input.academicYearId;
+	if (!yearId) {
+		const active = enrollments.find((e) => e.isActiveYear);
+		yearId =
+			active?.academicYearId ??
+			enrollments[0]?.academicYearId ??
+			(await repo.findActiveAcademicYear(institutionId))?.id;
+	}
+	if (!yearId) throw notFound("No academic year found for this institution");
+	const year = await repo.findAcademicYearById(yearId, institutionId);
+	if (!year) throw notFound("Academic year not found for this institution");
+	const enrollment = enrollments.find((e) => e.academicYearId === yearId);
+
+	const assignment = await repo.findAssignmentForStudent(
+		student.id,
+		yearId,
+		institutionId,
+	);
+	const structureOf = (s: {
+		id: string;
+		name: string;
+		totalAmount: string;
+		currency: string;
+		installments?: { id: string; label: string; amount: string }[];
+	}) => ({
+		id: s.id,
+		name: s.name,
+		totalAmount: Number(s.totalAmount),
+		currency: s.currency,
+		installments: (s.installments ?? []).map((i) => ({
+			id: i.id,
+			label: i.label,
+			amount: Number(i.amount),
+		})),
+	});
+
+	let current = null;
+	if (assignment) {
+		const paidAmount = assignment.payments.reduce(
+			(sum, p) => sum + Number(p.amount),
+			0,
+		);
+		const structure = await repo.findFeeStructureById(
+			assignment.feeStructureId,
+			institutionId,
+		);
+		current = {
+			id: assignment.id,
+			status: assignment.status,
+			effectiveAmount: Number(assignment.effectiveAmount),
+			currency: assignment.currency,
+			paidAmount,
+			balance: Math.max(Number(assignment.effectiveAmount) - paidAmount, 0),
+			feeStructure: structure ? structureOf(structure) : null,
+		};
+	}
+
+	const structures = assignment
+		? []
+		: (
+				await repo.listFeeStructures(institutionId, {
+					academicYearId: yearId,
+					isActive: true,
+				})
+			)
+				.filter(
+					(s) =>
+						(!s.programId || s.programId === enrollment?.programId) &&
+						(!s.cycleLevelId || s.cycleLevelId === enrollment?.cycleLevelId),
+				)
+				// The most specific structure first: program + level, then program
+				.sort(
+					(a, b) =>
+						Number(!!b.programId) +
+						Number(!!b.cycleLevelId) -
+						(Number(!!a.programId) + Number(!!a.cycleLevelId)),
+				)
+				.map(structureOf);
+
+	return {
+		student: {
+			id: student.id,
+			registrationNumber: student.registrationNumber,
+			firstName: student.profile?.firstName ?? "",
+			lastName: student.profile?.lastName ?? "",
+		},
+		academicYear: { id: year.id, name: year.name },
+		className: enrollment?.className ?? null,
+		assignment: current,
+		structures,
+	};
+}
+
+/**
+ * Records a payment for a student and a year. A student without fees for
+ * that year gets `feeStructureId` assigned first, in the same step; if the
+ * payment is then refused, that new assignment is removed again.
+ */
+export async function recordStudentPayment(
+	institutionId: string,
+	recordedBy: string,
+	input: {
+		studentId: string;
+		academicYearId: string;
+		feeStructureId?: string;
+		amount: number;
+		currency: string;
+		paymentDate: string;
+		paymentMethod: string;
+		installmentId?: string;
+		reference?: string;
+		notes?: string;
+	},
+) {
+	const { studentId, academicYearId, feeStructureId, ...payment } = input;
+	let assignment = await repo.findAssignmentForStudent(
+		studentId,
+		academicYearId,
+		institutionId,
+	);
+	let createdId: string | null = null;
+	if (!assignment) {
+		if (!feeStructureId)
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message:
+					"The student has no fees for this academic year: choose a fee structure to assign",
+			});
+		const created = await assignStudent(institutionId, recordedBy, {
+			studentId,
+			academicYearId,
+			feeStructureId,
+			discountAmount: 0,
+		});
+		createdId = created.id;
+		assignment = await repo.findAssignmentForStudent(
+			studentId,
+			academicYearId,
+			institutionId,
+		);
+		if (!assignment) throw notFound("Fee assignment not found");
+	}
+	try {
+		const row = await recordPayment(institutionId, recordedBy, {
+			...payment,
+			currency: assignment.currency,
+			feeAssignmentId: assignment.id,
+		});
+		return {
+			payment: row,
+			feeAssignmentId: assignment.id,
+			assigned: !!createdId,
+		};
+	} catch (error) {
+		if (createdId) await repo.deleteAssignment(createdId, institutionId);
+		throw error;
+	}
+}
+
 export async function deletePayment(paymentId: string, institutionId: string) {
 	const payment = await repo.findPaymentById(paymentId);
 	if (!payment || payment.feeAssignment.institutionId !== institutionId)

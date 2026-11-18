@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import type { TFunction } from "i18next";
+import { formatDate } from "@/lib/date-format";
 import { AssignmentStatusBadge } from "../components/status-badges";
 import { formatAmount, getStudentName } from "../services/fee-format";
 import type { FeeAssignmentRow } from "../types";
@@ -44,9 +44,7 @@ export function getFeeAssignmentsColumns(
 			id: "clearedAt",
 			header: t("feeClearance.assignments.fields.clearedAt"),
 			cell: ({ row }) =>
-				row.original.clearedAt
-					? format(new Date(row.original.clearedAt), "dd/MM/yyyy")
-					: "—",
+				row.original.clearedAt ? formatDate(row.original.clearedAt, "P") : "—",
 		},
 	];
 }

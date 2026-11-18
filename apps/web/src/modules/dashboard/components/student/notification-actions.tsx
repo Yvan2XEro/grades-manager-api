@@ -7,6 +7,7 @@ import {
 	ServerCog,
 	XCircle,
 } from "lucide-react";
+import { formatMoney } from "@/lib/money";
 import type { NotifItem, TFn } from "../../types";
 
 type Category =
@@ -59,7 +60,7 @@ export const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		labelKey: "student.pendingActions.paymentConfirmed",
 		subtitleFn: (p) =>
 			p.amount && p.currency
-				? `${Number(p.amount).toLocaleString()} ${p.currency}`
+				? formatMoney(String(p.amount), String(p.currency))
 				: "",
 		priority: "low",
 		category: "financial",

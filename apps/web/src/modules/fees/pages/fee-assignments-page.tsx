@@ -1,4 +1,4 @@
-import { FileUp, Users } from "lucide-react";
+import { FileUp, Plus, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -21,6 +21,7 @@ import {
 	FeeAssignmentsFilters,
 	type FeeAssignmentsFilterValues,
 } from "../components/fee-assignments-filters";
+import { RecordPaymentDialog } from "../components/record-payment-dialog";
 import {
 	countByStatus,
 	useFeeAssignments,
@@ -57,6 +58,17 @@ export default function FeeAssignmentsPage() {
 					description={t("feeClearance.assignments.subtitle")}
 					actions={
 						<>
+							<Button
+								onClick={() =>
+									RecordPaymentDialog.call({
+										target: { kind: "student", studentId: "", studentName: "" },
+										onRecorded: refreshAssignments,
+									})
+								}
+							>
+								<Plus className="mr-2 h-4 w-4" />
+								{t("feeClearance.payments.record")}
+							</Button>
 							<Button
 								variant="outline"
 								onClick={() =>

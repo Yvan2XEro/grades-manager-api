@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -8,8 +8,9 @@ function yearEq(col: Parameters<typeof eq>[0], id: string | undefined) {
 
 export const statsRepo = {
 	async overview(institutionId: string, academicYearId?: string) {
+		// Distinct students: one student enrolled twice still counts once
 		const [studentsRow] = await db
-			.select({ count: count() })
+			.select({ count: countDistinct(schema.enrollments.studentId) })
 			.from(schema.enrollments)
 			.where(
 				and(
@@ -32,6 +33,23 @@ export const statsRepo = {
 		const [feeExpectedRow] = await db
 			.select({
 				total: sql<string>`COALESCE(SUM(${schema.studentFeeAssignments.effectiveAmount}), '0')`,
+			})
+			.from(schema.studentFeeAssignments)
+			.where(
+				and(
+					eq(schema.studentFeeAssignments.institutionId, institutionId),
+					...yearEq(
+						schema.studentFeeAssignments.academicYearId,
+						academicYearId,
+					),
+				),
+			);
+
+		// How many students have fees assigned: the collection rate only
+		// covers them, so the dashboard shows it next to the rate.
+		const [feeAssignedRow] = await db
+			.select({
+				count: countDistinct(schema.studentFeeAssignments.studentId),
 			})
 			.from(schema.studentFeeAssignments)
 			.where(
@@ -96,6 +114,7 @@ export const statsRepo = {
 			feeExpected,
 			feeCollected,
 			feeOutstanding: feeExpected - feeCollected,
+			feeAssignedStudents: feeAssignedRow?.count ?? 0,
 			feeCollectionRate:
 				feeExpected > 0 ? Math.round((feeCollected / feeExpected) * 100) : 0,
 			admissionsTotal: admissionsRow?.count ?? 0,

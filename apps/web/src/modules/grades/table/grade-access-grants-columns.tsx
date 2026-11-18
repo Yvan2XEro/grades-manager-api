@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import type { TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
 import { dateLocale } from "@/lib/date-format";
+import { roleLabel } from "@/lib/enum-labels";
 import type { GradeAccessGrantRow } from "../types";
 
 export function getGradeAccessGrantsColumns(
@@ -18,7 +19,7 @@ export function getGradeAccessGrantsColumns(
 						.filter(Boolean)
 						.join(" ") || "—"}
 					<Badge variant="outline" className="ml-2 text-[10px]">
-						{g.profile.role}
+						{roleLabel(g.profile.role)}
 					</Badge>
 				</span>
 			),

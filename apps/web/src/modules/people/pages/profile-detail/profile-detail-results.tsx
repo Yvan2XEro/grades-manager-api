@@ -10,6 +10,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { courseStatusLabel } from "@/lib/enum-labels";
 import { trpcClient } from "@/utils/trpc";
 import { useProfileContext } from "../../hooks/use-profile-context";
 
@@ -73,9 +74,7 @@ export default function ProfileResultsTab() {
 							</TableCell>
 							<TableCell>
 								<Badge variant={statusVariants[result.status] ?? "secondary"}>
-									{t(`admin.courseEnrollment.status.${result.status}`, {
-										defaultValue: result.status,
-									})}
+									{courseStatusLabel(result.status)}
 								</Badge>
 							</TableCell>
 						</TableRow>

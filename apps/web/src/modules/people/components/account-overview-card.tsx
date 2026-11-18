@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import {
 	AlertTriangle,
 	Ban,
@@ -16,6 +15,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { formatDate } from "@/lib/date-format";
 import type { AuthAccount } from "../hooks/use-profile-auth";
 import { roleLabel } from "../services/profile-access";
 
@@ -87,7 +87,7 @@ export function AccountOverviewCard({
 								</p>
 								<p className="font-medium">
 									{authAccount.memberSince
-										? format(new Date(authAccount.memberSince), "dd/MM/yyyy")
+										? formatDate(authAccount.memberSince, "P")
 										: "—"}
 								</p>
 							</div>

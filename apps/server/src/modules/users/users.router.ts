@@ -1,6 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import z from "zod";
-import { businessRoles, domainStatuses } from "@/db/schema/app-schema";
+import {
+	businessRoles,
+	domainStatuses,
+	enrollmentStatuses,
+} from "@/db/schema/app-schema";
 import {
 	adminProcedure,
 	protectedProcedure,
@@ -38,6 +42,8 @@ export const usersRouter = router({
 				search: z.string().optional(),
 				classId: z.string().optional(),
 				academicYearId: z.string().optional(),
+				audience: z.enum(["students", "staff"]).optional(),
+				enrollmentStatus: z.enum(enrollmentStatuses).optional(),
 			}),
 		)
 		.query(({ input, ctx }) =>

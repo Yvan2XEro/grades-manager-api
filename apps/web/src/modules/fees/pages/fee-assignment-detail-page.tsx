@@ -15,6 +15,7 @@ import {
 	useDeletePayment,
 	useFeeAssignment,
 	usePdfDownload,
+	useReceiptDownload,
 } from "../hooks/use-fee-assignment";
 import { getStudentName } from "../services/fee-format";
 import { getPaymentOrdersColumns } from "../table/payment-orders-columns";
@@ -32,12 +33,11 @@ export default function FeeAssignmentDetailPage() {
 	);
 	const cancelOrder = useCancelOrder(invalidate);
 	const deletePayment = useDeletePayment(invalidate);
-	const orderPdf = usePdfDownload((orderId) =>
-		trpcClient.feeClearance.downloadOrder.query({ orderId }),
+	const orderPdf = usePdfDownload(
+		(orderId) => trpcClient.feeClearance.downloadOrder.query({ orderId }),
+		t("feeClearance.orders.downloadFailed"),
 	);
-	const receiptPdf = usePdfDownload((paymentId) =>
-		trpcClient.feeClearance.downloadReceipt.query({ paymentId }),
-	);
+	const receiptPdf = useReceiptDownload();
 
 	const currency = assignment?.currency ?? "";
 	const orderColumns = useMemo(

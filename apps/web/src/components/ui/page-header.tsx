@@ -17,8 +17,14 @@ export function PageHeader({
 	className,
 }: PageHeaderProps) {
 	return (
-		<div className={cn("flex items-start justify-between gap-4", className)}>
-			<div className="min-w-0 space-y-1">
+		// Wraps: on a phone the actions go under the title instead of off-screen
+		<div
+			className={cn(
+				"flex flex-wrap items-start justify-between gap-x-4 gap-y-3",
+				className,
+			)}
+		>
+			<div className="min-w-0 flex-1 basis-72 space-y-1">
 				{breadcrumb && <div className="mb-1">{breadcrumb}</div>}
 				<h1 className="truncate font-semibold text-2xl text-foreground tracking-tight">
 					{title}
@@ -28,7 +34,7 @@ export function PageHeader({
 				)}
 			</div>
 			{actions && (
-				<div className="flex shrink-0 items-center gap-2">{actions}</div>
+				<div className="flex flex-wrap items-center gap-2">{actions}</div>
 			)}
 		</div>
 	);

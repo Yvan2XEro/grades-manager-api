@@ -10,6 +10,8 @@ type Overview = {
 	feeCollected?: number;
 	feeOutstanding?: number;
 	feeCollectionRate?: number;
+	feeAssignedStudents?: number;
+	activeStudents?: number;
 };
 
 /** Tuition fees: expected / collected / outstanding and collection rate. */
@@ -37,7 +39,7 @@ export function FeeSummaryCard({ ov }: { ov: Overview | undefined }) {
 				</button>
 			</CardHeader>
 			<CardContent className="space-y-4">
-				<div className="grid grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
 					{[
 						{
 							label: t("admin.dashboard.fees.expected"),
@@ -83,6 +85,13 @@ export function FeeSummaryCard({ ov }: { ov: Overview | undefined }) {
 							}}
 						/>
 					</div>
+					<p className="mt-1.5 text-muted-foreground text-xs">
+						{t("admin.dashboard.fees.coverage", {
+							assigned: ov?.feeAssignedStudents ?? 0,
+							total: ov?.activeStudents ?? 0,
+						})}{" "}
+						{t("admin.dashboard.fees.rateHint")}
+					</p>
 				</div>
 			</CardContent>
 		</Card>

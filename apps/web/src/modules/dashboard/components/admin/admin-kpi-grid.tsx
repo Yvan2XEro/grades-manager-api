@@ -18,7 +18,16 @@ type Overview = {
 	examsPending?: number;
 	deliberationsOpen?: number;
 	feeCollectionRate?: number;
+	feeAssignedStudents?: number;
 };
+
+type KpiKey =
+	| "activeStudents"
+	| "enrollments"
+	| "admissionsTotal"
+	| "examsPending"
+	| "deliberationsOpen"
+	| "feeCollectionRate";
 
 export function AdminKpiGrid({
 	ov,
@@ -35,7 +44,7 @@ export function AdminKpiGrid({
 			icon: <Users className="h-5 w-5" />,
 			gradient: "bg-primary/10",
 			iconColor: "text-primary",
-			page: "people",
+			page: "students",
 		},
 		{
 			key: "enrollments",
@@ -77,6 +86,11 @@ export function AdminKpiGrid({
 			iconColor: "text-green-600 dark:text-green-400",
 			page: "fees",
 			suffix: "%",
+			// The rate only covers students with fees assigned: say how many
+			hint: t("admin.dashboard.fees.coverageShort", {
+				assigned: ov?.feeAssignedStudents ?? 0,
+				total: ov?.activeStudents ?? 0,
+			}),
 		},
 	];
 
@@ -91,9 +105,7 @@ export function AdminKpiGrid({
 				<StatCard
 					key={card.key}
 					card={card}
-					label={t(`admin.dashboard.stats.${card.key}`, {
-						defaultValue: card.key,
-					})}
+					label={t(`admin.dashboard.stats.${card.key as KpiKey}`)}
 				/>
 			))}
 		</motion.div>

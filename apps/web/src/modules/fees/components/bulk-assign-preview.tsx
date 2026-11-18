@@ -1,5 +1,6 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatMoney } from "@/lib/money";
 import type { BulkAssignPreview } from "../types";
 
 /** Students a bulk assignment would reach, and how many are skipped. */
@@ -56,7 +57,7 @@ export function BulkAssignPreviewPanel({
 										{s.registrationNumber}
 									</td>
 									<td className="px-2 py-1 text-right tabular-nums">
-										{Number(s.amount).toLocaleString()} {s.currency}
+										{formatMoney(s.amount, s.currency)}
 									</td>
 								</tr>
 							))}
