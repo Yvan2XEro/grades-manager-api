@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatDate } from "@/lib/date-format";
-import { formatMoney } from "../services/fee-format";
 import { useCreateMyOrder } from "../hooks/use-my-fees";
+import { formatMoney } from "../services/fee-format";
 import type { PayableInstallment } from "../types";
 
 /** Installment checkboxes and the button generating a payment order (student view). */

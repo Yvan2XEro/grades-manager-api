@@ -22,6 +22,7 @@ export function CourseSelectCard({
 		code: string;
 		course: string;
 		courseName?: string | null;
+		className?: string | null;
 	}>;
 	isLoading: boolean;
 	onChange: (value: string) => void;
@@ -47,7 +48,8 @@ export function CourseSelectCard({
 						<SelectContent>
 							{classCourses.map((cc) => (
 								<SelectItem key={cc.id} value={cc.id}>
-									{cc.courseName ?? cc.course} • {cc.code}
+									{cc.courseName ?? cc.course}
+									{cc.className ? ` — ${cc.className}` : ""}
 								</SelectItem>
 							))}
 						</SelectContent>

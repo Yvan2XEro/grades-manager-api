@@ -1,4 +1,10 @@
-import { AlertCircle, ArrowUpDown, Search, X } from "lucide-react";
+import {
+	AlertCircle,
+	ArrowUpDown,
+	CalendarRange,
+	Search,
+	X,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,10 +16,13 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import type { TeacherCourseSort } from "../types";
+import type { TeacherCoursePeriod, TeacherCourseSort } from "../types";
 
-/** Search, "action required" filter and sort of the teacher home. */
+/** Search, semester, "action required" filter and sort of the teacher home. */
 export function TeacherCoursesToolbar({
+	period,
+	currentPeriod,
+	onPeriodChange,
 	search,
 	filterAction,
 	actionCount,
@@ -22,6 +31,10 @@ export function TeacherCoursesToolbar({
 	onFilterActionChange,
 	onSortChange,
 }: {
+	period: TeacherCoursePeriod;
+	/** Half of the year we are in, marked "current" in the list. */
+	currentPeriod: "first" | "second";
+	onPeriodChange: (value: TeacherCoursePeriod) => void;
 	search: string;
 	filterAction: boolean;
 	actionCount: number;
@@ -52,6 +65,31 @@ export function TeacherCoursesToolbar({
 					</button>
 				)}
 			</div>
+
+			<Select
+				value={period}
+				onValueChange={(v) => onPeriodChange(v as TeacherCoursePeriod)}
+			>
+				<SelectTrigger
+					className="h-9 w-auto shrink-0 gap-2 text-sm"
+					aria-label={t("teacher.courses.toolbar.period.label")}
+				>
+					<CalendarRange className="h-3.5 w-3.5 text-muted-foreground" />
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					{(["first", "second"] as const).map((half) => (
+						<SelectItem key={half} value={half}>
+							{t(`teacher.courses.toolbar.period.${half}`)}
+							{half === currentPeriod &&
+								` · ${t("teacher.courses.toolbar.period.current")}`}
+						</SelectItem>
+					))}
+					<SelectItem value="all">
+						{t("teacher.courses.toolbar.period.all")}
+					</SelectItem>
+				</SelectContent>
+			</Select>
 
 			<Button
 				variant={filterAction ? "default" : "outline"}

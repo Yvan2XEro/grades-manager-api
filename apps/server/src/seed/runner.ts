@@ -1651,7 +1651,8 @@ function resolveSeedOrganization(
 function normalizeGender(value: string | null | undefined): Gender | null {
 	const v = (value ?? "").trim().toLowerCase();
 	if (["male", "m", "masculin", "homme"].includes(v)) return "male";
-	if (["female", "f", "feminin", "féminin", "femme"].includes(v)) return "female";
+	if (["female", "f", "feminin", "féminin", "femme"].includes(v))
+		return "female";
 	if (v === "other") return "other";
 	return null;
 }

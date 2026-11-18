@@ -65,9 +65,7 @@ function App() {
 			) ?? session.domainProfiles?.[0];
 		const [accountFirstName, ...rest] = (session.user.name || "").split(" ");
 		const firstName = activeProfile?.firstName || accountFirstName;
-		const lastName = activeProfile
-			? activeProfile.lastName
-			: rest.join(" ");
+		const lastName = activeProfile ? activeProfile.lastName : rest.join(" ");
 		const membershipRole = session.activeMembership?.role ?? null;
 		const role = normalizeRole(membershipRole);
 		return {

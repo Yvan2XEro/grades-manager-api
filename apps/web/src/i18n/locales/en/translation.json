@@ -185,7 +185,7 @@
   },
   "teacher": {
     "courses": {
-      "title": "My Courses",
+      "title": "My courses",
       "subtitle": "Manage your assigned courses and grades",
       "delegatedBadge": "Delegated",
       "delegatedDashboardBadge": "Delegated",
@@ -220,7 +220,7 @@
       "searchPlaceholder": "Search for a course or a class…",
       "summary": "Summary",
       "noExams": "No evaluation yet for this course. Evaluations (CC, exam) are scheduled by the registrar: once created, they appear here for grade entry.",
-      "hubTitle": "My courses & grades",
+      "hubTitle": "My courses",
       "hubDescription": "Grade entry, locking and submission per course",
       "noSearchMatch": "No course matches your search.",
       "examRow": {
@@ -235,8 +235,26 @@
           "relevance": "Relevance",
           "name": "Name A→Z",
           "class": "Class"
+        },
+        "period": {
+          "label": "Semester",
+          "first": "1st semester (S1, S3, S5)",
+          "second": "2nd semester (S2, S4, S6)",
+          "all": "Whole year",
+          "current": "current"
         }
-      }
+      },
+      "roster": {
+        "title": "Students — {{course}}",
+        "description_one": "{{className}} · {{count}} student",
+        "description_other": "{{className}} · {{count}} students",
+        "search": "Search by name or registration number",
+        "empty": "No student found.",
+        "open_one": "{{count}} student — see the list",
+        "open_other": "{{count}} students — see the list"
+      },
+      "openCourse": "Open the grade entry of this course",
+      "noCourseInPeriod": "You teach no course in this semester. Choose another semester or the whole year."
     },
     "courses.manage": {
       "title": "Course Management",
@@ -385,7 +403,7 @@
       }
     },
     "dashboard": {
-      "title": "Teacher Dashboard",
+      "title": "My courses",
       "subtitle": "Welcome back, {{name}}",
       "stats": {
         "courses": "My Courses",
@@ -1246,7 +1264,9 @@
       "perExamMode": "Per-exam mode",
       "searchStudent": "Search for a student…",
       "studentCol": "Student",
-      "lockedExam": "Locked: approved evaluation, grades can no longer be edited"
+      "lockedExam": "Locked: approved evaluation, grades can no longer be edited",
+      "phoneScrollHint_other": "{{count}} evaluations: swipe the table sideways to see them all, or use the single exam mode.",
+      "phoneScrollHint_one": "{{count}} evaluation."
     }
   },
   "navigation": {
@@ -1312,7 +1332,7 @@
     },
     "header": {
       "adminDashboard": "Admin dashboard",
-      "teacherDashboard": "Teacher dashboard",
+      "teacherDashboard": "My courses",
       "notificationsAria": "Open notifications",
       "toggleSidebarAria": "Toggle sidebar",
       "languageSelectAria": "Change language",

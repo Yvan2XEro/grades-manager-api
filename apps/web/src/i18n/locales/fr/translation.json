@@ -246,7 +246,7 @@
     },
     "header": {
       "adminDashboard": "Tableau de bord administrateur",
-      "teacherDashboard": "Tableau de bord enseignant",
+      "teacherDashboard": "Mes cours",
       "notificationsAria": "Ouvrir les notifications",
       "toggleSidebarAria": "Afficher ou masquer le menu latéral",
       "languageSelectAria": "Changer de langue",
@@ -4774,7 +4774,7 @@
       "searchPlaceholder": "Rechercher un cours ou une classe…",
       "summary": "Summary",
       "noExams": "Aucune évaluation pour ce cours. Les évaluations (CC, examen) sont programmées par la scolarité : dès leur création, elles apparaissent ici pour la saisie des notes.",
-      "hubTitle": "Mes cours & notes",
+      "hubTitle": "Mes cours",
       "hubDescription": "Saisie des notes, verrouillage et soumission par cours",
       "noSearchMatch": "Aucun cours ne correspond à votre recherche.",
       "examRow": {
@@ -4789,8 +4789,26 @@
           "relevance": "Pertinence",
           "name": "Nom A→Z",
           "class": "Classe"
+        },
+        "period": {
+          "label": "Semestre",
+          "first": "1er semestre (S1, S3, S5)",
+          "second": "2e semestre (S2, S4, S6)",
+          "all": "Toute l'année",
+          "current": "en cours"
         }
-      }
+      },
+      "roster": {
+        "title": "Étudiants — {{course}}",
+        "description_one": "{{className}} · {{count}} étudiant",
+        "description_other": "{{className}} · {{count}} étudiants",
+        "search": "Rechercher par nom ou matricule",
+        "empty": "Aucun étudiant trouvé.",
+        "open_one": "{{count}} étudiant — voir la liste",
+        "open_other": "{{count}} étudiants — voir la liste"
+      },
+      "openCourse": "Ouvrir la saisie des notes de ce cours",
+      "noCourseInPeriod": "Vous n'enseignez aucun cours ce semestre. Choisissez un autre semestre ou toute l'année."
     },
     "courses.manage": {
       "title": "Gestion des cours",
@@ -4837,7 +4855,7 @@
       }
     },
     "dashboard": {
-      "title": "Tableau de bord enseignant",
+      "title": "Mes cours",
       "subtitle": "Bon retour, {{name}}",
       "stats": {
         "courses": "Mes cours",
@@ -5698,7 +5716,9 @@
       "perExamMode": "Mode examen unique",
       "searchStudent": "Rechercher un étudiant…",
       "studentCol": "Étudiant",
-      "lockedExam": "Verrouillée : évaluation validée, les notes ne sont plus modifiables"
+      "lockedExam": "Verrouillée : évaluation validée, les notes ne sont plus modifiables",
+      "phoneScrollHint_other": "{{count}} évaluations : faites glisser le tableau sur le côté pour les voir toutes, ou passez en mode examen unique.",
+      "phoneScrollHint_one": "{{count}} évaluation."
     }
   },
   "dean": {

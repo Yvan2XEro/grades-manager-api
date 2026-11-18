@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { MailCheck, Mail } from "lucide-react";
+import { Mail, MailCheck } from "lucide-react";
 import { useQueryState } from "nuqs";
 import React from "react";
 import { useForm } from "react-hook-form";

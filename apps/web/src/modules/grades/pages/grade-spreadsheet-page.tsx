@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { MoveHorizontal, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -134,6 +134,14 @@ export default function GradeSpreadsheet() {
 								? t("teacher.spreadsheet.legend.readOnlyHint")
 								: t("teacher.spreadsheet.legend.hint")}
 						</CardDescription>
+						{exams.length > 1 && (
+							<p className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5 text-muted-foreground text-xs sm:hidden">
+								<MoveHorizontal className="h-3.5 w-3.5 shrink-0" />
+								{t("teacher.spreadsheet.phoneScrollHint", {
+									count: exams.length,
+								})}
+							</p>
+						)}
 					</CardHeader>
 					<CardContent className="overflow-x-auto p-0">
 						<GradeSpreadsheetGrid

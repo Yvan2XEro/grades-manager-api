@@ -106,9 +106,9 @@ export function StudentAssignmentCard({
 								{t("feeClearance.student.scheduleHint")}
 							</p>
 							<GenerateOrderPanel
-						assignmentId={a.id}
-						balance={balance}
-						currency={a.currency}
+								assignmentId={a.id}
+								balance={balance}
+								currency={a.currency}
 								installments={installments}
 							/>
 						</>
@@ -152,41 +152,43 @@ export function StudentAssignmentCard({
 						{t("feeClearance.student.pendingOrders")} ({pendingOrders.length})
 					</p>
 					<div className="overflow-x-auto">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>
-									{t("feeClearance.orders.fields.reference")}
-								</TableHead>
-								<TableHead>{t("feeClearance.orders.fields.amount")}</TableHead>
-								<TableHead>
-									{t("feeClearance.orders.fields.expiresAt")}
-								</TableHead>
-								<TableHead />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{pendingOrders.map((o) => (
-								<TableRow key={o.id}>
-									<TableCell className="font-mono text-xs">
-										{o.reference ?? "—"}
-									</TableCell>
-									<TableCell className="font-medium">
-										{money(Number(o.amount))}
-									</TableCell>
-									<TableCell>
-										{o.expiresAt ? formatDate(o.expiresAt, "P") : "—"}
-									</TableCell>
-									<TableCell>
-										<DownloadOrderButton
-											orderId={o.id}
-											reference={o.reference}
-										/>
-									</TableCell>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>
+										{t("feeClearance.orders.fields.reference")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.orders.fields.amount")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.orders.fields.expiresAt")}
+									</TableHead>
+									<TableHead />
 								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+							</TableHeader>
+							<TableBody>
+								{pendingOrders.map((o) => (
+									<TableRow key={o.id}>
+										<TableCell className="font-mono text-xs">
+											{o.reference ?? "—"}
+										</TableCell>
+										<TableCell className="font-medium">
+											{money(Number(o.amount))}
+										</TableCell>
+										<TableCell>
+											{o.expiresAt ? formatDate(o.expiresAt, "P") : "—"}
+										</TableCell>
+										<TableCell>
+											<DownloadOrderButton
+												orderId={o.id}
+												reference={o.reference}
+											/>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
 					</div>
 				</div>
 			)}
@@ -199,50 +201,48 @@ export function StudentAssignmentCard({
 						{t("feeClearance.payments.title")} ({a.payments.length})
 					</p>
 					<div className="overflow-x-auto">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>
-									{t("feeClearance.payments.fields.reference")}
-								</TableHead>
-								<TableHead>
-									{t("feeClearance.payments.fields.amount")}
-								</TableHead>
-								<TableHead>
-									{t("feeClearance.payments.fields.paymentDate")}
-								</TableHead>
-								<TableHead />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{a.payments.map(
-								(p: {
-									id: string;
-									reference: string | null;
-									amount: string | number;
-									paymentDate: string;
-								}) => (
-									<TableRow key={p.id}>
-										<TableCell className="font-mono text-xs">
-											{p.reference ?? "—"}
-										</TableCell>
-										<TableCell className="font-medium text-emerald-600">
-											{money(Number(p.amount))}
-										</TableCell>
-										<TableCell>
-											{formatDate(p.paymentDate, "P")}
-										</TableCell>
-										<TableCell>
-											<DownloadReceiptButton
-												paymentId={p.id}
-												reference={p.reference}
-											/>
-										</TableCell>
-									</TableRow>
-								),
-							)}
-						</TableBody>
-					</Table>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>
+										{t("feeClearance.payments.fields.reference")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.payments.fields.amount")}
+									</TableHead>
+									<TableHead>
+										{t("feeClearance.payments.fields.paymentDate")}
+									</TableHead>
+									<TableHead />
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{a.payments.map(
+									(p: {
+										id: string;
+										reference: string | null;
+										amount: string | number;
+										paymentDate: string;
+									}) => (
+										<TableRow key={p.id}>
+											<TableCell className="font-mono text-xs">
+												{p.reference ?? "—"}
+											</TableCell>
+											<TableCell className="font-medium text-emerald-600">
+												{money(Number(p.amount))}
+											</TableCell>
+											<TableCell>{formatDate(p.paymentDate, "P")}</TableCell>
+											<TableCell>
+												<DownloadReceiptButton
+													paymentId={p.id}
+													reference={p.reference}
+												/>
+											</TableCell>
+										</TableRow>
+									),
+								)}
+							</TableBody>
+						</Table>
 					</div>
 				</div>
 			)}

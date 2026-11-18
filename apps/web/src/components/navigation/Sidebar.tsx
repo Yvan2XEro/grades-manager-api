@@ -268,7 +268,7 @@ const Sidebar: React.FC = () => {
 														to={link.to}
 														end={ROOT_PATHS.has(link.to)}
 														className={makeLinkClass(link)}
-								onClick={closeOnPhone}
+														onClick={closeOnPhone}
 														data-testid={`nav-${link.to}`}
 													>
 														{link.icon}
