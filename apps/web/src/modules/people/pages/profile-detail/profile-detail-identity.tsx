@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate } from "@/lib/date-format";
+import { genderLabel } from "@/lib/enum-labels";
 import { useProfileContext } from "../../hooks/use-profile-context";
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
@@ -15,15 +17,6 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 export default function ProfileIdentityTab() {
 	const { profile } = useProfileContext();
 	const { t } = useTranslation();
-
-	const formatDate = (value?: string | null) => {
-		if (!value) return null;
-		try {
-			return new Date(value).toLocaleDateString();
-		} catch {
-			return value;
-		}
-	};
 
 	return (
 		<div className="grid gap-6 pt-6 md:grid-cols-2">
@@ -52,7 +45,7 @@ export default function ProfileIdentityTab() {
 					/>
 					<InfoRow
 						label={t("profileHub.identity.gender")}
-						value={profile.gender}
+						value={profile.gender ? genderLabel(profile.gender) : null}
 					/>
 				</CardContent>
 			</Card>
@@ -65,7 +58,7 @@ export default function ProfileIdentityTab() {
 				<CardContent className="divide-y">
 					<InfoRow
 						label={t("profileHub.identity.dateOfBirth")}
-						value={formatDate(profile.dateOfBirth)}
+						value={formatDate(profile.dateOfBirth, "P")}
 					/>
 					<InfoRow
 						label={t("profileHub.identity.placeOfBirth")}

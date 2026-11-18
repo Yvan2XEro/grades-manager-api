@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatMoney } from "@/lib/money";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import type { InstallmentOption } from "../types";
@@ -75,7 +76,7 @@ export const CreateOrderDialog = createCallable<
 						<Input
 							type="number"
 							min={1}
-							placeholder={`${balance.toLocaleString()} ${currency}`}
+							placeholder={formatMoney(balance, currency)}
 							value={form.amount}
 							onChange={(e) =>
 								setForm((f) => ({ ...f, amount: e.target.value }))

@@ -51,8 +51,7 @@ function CentersLegacyRedirect() {
 /** Paths renamed or merged into hubs over time, kept for bookmarks. */
 const RENAMED: [from: string, to: string][] = [
 	["guardians", "/users/guardians"],
-	["students", "/users/people"],
-	["student-promotion", "/users/people"],
+	["student-promotion", "/students"],
 	["faculties", "/institution/faculties"],
 	["study-cycles", "/institution/cycles"],
 	["teaching-units", "/programs/teaching-units"],

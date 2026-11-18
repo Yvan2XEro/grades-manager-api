@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { CheckCircle2, Clock, CreditCard } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,6 +8,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/date-format";
 import { formatMoney } from "../services/fee-format";
 import type { PayableInstallment, StudentFeeAssignment } from "../types";
 import { GenerateOrderPanel } from "./generate-order-panel";
@@ -130,12 +130,10 @@ export function StudentAssignmentCard({
 										{o.reference ?? "—"}
 									</TableCell>
 									<TableCell className="font-medium">
-										{Number(o.amount).toLocaleString()} {currency}
+										{money(Number(o.amount))}
 									</TableCell>
 									<TableCell>
-										{o.expiresAt
-											? format(new Date(o.expiresAt), "dd/MM/yyyy")
-											: "—"}
+										{o.expiresAt ? formatDate(o.expiresAt, "P") : "—"}
 									</TableCell>
 									<TableCell>
 										<DownloadOrderButton
@@ -185,11 +183,9 @@ export function StudentAssignmentCard({
 											{p.reference ?? "—"}
 										</TableCell>
 										<TableCell className="font-medium text-emerald-600">
-											{Number(p.amount).toLocaleString()} {currency}
+											{money(Number(p.amount))}
 										</TableCell>
-										<TableCell>
-											{format(new Date(p.paymentDate), "dd/MM/yyyy")}
-										</TableCell>
+										<TableCell>{formatDate(p.paymentDate, "P")}</TableCell>
 										<TableCell>
 											<DownloadReceiptButton
 												paymentId={p.id}
@@ -208,7 +204,7 @@ export function StudentAssignmentCard({
 				<div className="flex items-center gap-1 border-t px-4 py-2 text-emerald-600 text-xs">
 					<CheckCircle2 className="h-3 w-3" />
 					{t("feeClearance.quitus.clearedOn", {
-						date: format(new Date(a.clearedAt), "dd/MM/yyyy"),
+						date: formatDate(a.clearedAt, "P"),
 					})}
 				</div>
 			)}

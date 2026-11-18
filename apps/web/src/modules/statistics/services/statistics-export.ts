@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 import * as XLSX from "xlsx";
 import i18n from "@/i18n";
+import { formatMoney } from "@/lib/money";
 import type {
 	AdmissionsStats,
 	EnrollmentStats,
@@ -129,9 +130,5 @@ export const exportAdmissionsStats = (data: AdmissionsStats) =>
 		],
 	]);
 
-export function formatAmount(n: number) {
-	return `${new Intl.NumberFormat("fr-FR", {
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(n)} XAF`;
-}
+/** Amount in FCFA, in the UI language. */
+export const formatAmount = (n: number) => formatMoney(n);

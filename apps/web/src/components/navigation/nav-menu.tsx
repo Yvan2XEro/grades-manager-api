@@ -114,7 +114,7 @@ export function useNavMenu(IC = "size-[15px] shrink-0"): NavMenu {
 				titleKey: "navigation.sidebar.groups.inscriptions",
 				items: [
 					{
-						to: "/users/people",
+						to: "/students",
 						icon: <GraduationCap className={IC} />,
 						labelKey: "navigation.sidebar.admin.students",
 					},

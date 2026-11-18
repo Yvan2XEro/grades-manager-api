@@ -183,7 +183,10 @@ export async function findStudentWithEnrollments(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.enrollments.academicYearId),
 		)
-		.innerJoin(schema.classes, eq(schema.classes.id, schema.enrollments.classId))
+		.innerJoin(
+			schema.classes,
+			eq(schema.classes.id, schema.enrollments.classId),
+		)
 		.where(
 			and(
 				eq(schema.enrollments.studentId, studentId),

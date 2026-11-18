@@ -68,12 +68,12 @@ export function useDeletePayment(onDone: () => void) {
 
 /**
  * Downloads a generated PDF; `downloadingId` is the id being downloaded so
- * its action can be disabled meanwhile.
+ * its action can be disabled meanwhile. A failure shows `errorMessage`.
  */
 export function usePdfDownload(
 	fetchPdf: (id: string) => Promise<{ pdf: string }>,
+	errorMessage: string,
 ) {
-	const { t } = useTranslation();
 	const [downloadingId, setDownloadingId] = useState<string | null>(null);
 	const download = async (id: string, filename: string) => {
 		setDownloadingId(id);
@@ -81,10 +81,19 @@ export function usePdfDownload(
 			const { pdf } = await fetchPdf(id);
 			downloadBase64(pdf, filename, "application/pdf");
 		} catch {
-			toast.error(t("common.error"));
+			toast.error(errorMessage);
 		} finally {
 			setDownloadingId(null);
 		}
 	};
 	return { downloadingId, download };
+}
+
+/** Downloads the receipt of a payment, with a translated message on failure. */
+export function useReceiptDownload() {
+	const { t } = useTranslation();
+	return usePdfDownload(
+		(paymentId) => trpcClient.feeClearance.downloadReceipt.query({ paymentId }),
+		t("feeClearance.payments.receiptFailed"),
+	);
 }

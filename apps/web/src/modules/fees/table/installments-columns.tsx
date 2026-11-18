@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import type { TFunction } from "i18next";
+import { formatDate } from "@/lib/date-format";
 import { formatAmount } from "../services/fee-format";
 import type { FeeInstallment } from "../types";
 
@@ -23,9 +23,7 @@ export function getInstallmentsColumns(
 			id: "dueDate",
 			header: t("feeClearance.structures.installments.dueDate"),
 			cell: ({ row }) =>
-				row.original.dueDate
-					? format(new Date(row.original.dueDate), "dd/MM/yyyy")
-					: "—",
+				row.original.dueDate ? formatDate(row.original.dueDate, "P") : "—",
 		},
 	];
 }

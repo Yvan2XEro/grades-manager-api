@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import type { ParseKeys } from "i18next";
 import { Award, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useState } from "react";
@@ -6,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import type { DecisionResult } from "../../types";
 
 const DECISION_CONFIG: Record<
@@ -131,7 +131,7 @@ export function DeliberationDecisionCard({
 						{decision.closedAt && (
 							<span>
 								{t("deliberation.publishedAt", {
-									date: format(new Date(decision.closedAt), "dd/MM/yyyy"),
+									date: formatDate(decision.closedAt, "P"),
 								})}
 							</span>
 						)}

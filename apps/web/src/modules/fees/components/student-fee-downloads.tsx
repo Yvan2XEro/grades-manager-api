@@ -3,16 +3,20 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { downloadBase64 } from "@/lib/download";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 function PdfDownloadButton({
 	label,
 	fetchPdf,
 	filename,
+	errorMessage,
 }: {
 	label: string;
 	fetchPdf: () => Promise<{ pdf: string }>;
 	filename: string;
+	/** Shown when the PDF cannot be generated. */
+	errorMessage: string;
 }) {
 	const [pending, setPending] = useState(false);
 
@@ -21,6 +25,8 @@ function PdfDownloadButton({
 		try {
 			const result = await fetchPdf();
 			downloadBase64(result.pdf, filename, "application/pdf");
+		} catch {
+			toast.error(errorMessage);
 		} finally {
 			setPending(false);
 		}
@@ -59,6 +65,7 @@ export function DownloadOrderButton({
 				trpcClient.feeClearance.myDownloadOrder.query({ orderId })
 			}
 			filename={`order-${reference ?? orderId}.pdf`}
+			errorMessage={t("feeClearance.orders.downloadFailed")}
 		/>
 	);
 }
@@ -79,6 +86,7 @@ export function DownloadReceiptButton({
 				trpcClient.feeClearance.myDownloadReceipt.query({ paymentId })
 			}
 			filename={`receipt-${reference ?? paymentId}.pdf`}
+			errorMessage={t("feeClearance.payments.receiptFailed")}
 		/>
 	);
 }

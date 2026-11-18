@@ -176,9 +176,10 @@ export async function listPaged(opts: ListPagedOpts) {
 		db
 			.select({
 				...baseSelect,
+				// A plain "member" account of a student shows as the student
 				role: sql<
 					string | null
-				>`COALESCE(${member.role}, CASE WHEN ${hasStudentRecord} THEN 'student' END)`,
+				>`COALESCE(NULLIF(${member.role}, 'member'), CASE WHEN ${hasStudentRecord} THEN 'student' END, ${member.role})`,
 			})
 			.from(domainUsers)
 			.leftJoin(member, eq(member.id, domainUsers.memberId))

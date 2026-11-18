@@ -36,6 +36,7 @@ const NotificationsPage = lazy(
 const PeopleManagement = lazy(
 	() => import("@/modules/people/pages/people-page"),
 );
+const StudentsPage = lazy(() => import("@/modules/people/pages/students-page"));
 
 export interface HostablePage {
 	page: React.ComponentType;
@@ -51,6 +52,7 @@ export interface HostablePage {
  */
 export const HOSTABLE_PAGES: Record<string, HostablePage> = {
 	"/users/people": { page: PeopleManagement, key: "people" },
+	"/students": { page: StudentsPage, key: "students" },
 	"/classes/enrollments": {
 		page: EnrollmentsPage,
 		key: "enrollments",

@@ -42,7 +42,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Students ────────────────────────────────────────────────
-		"/users/people": [
+		"/students": [
 			{
 				title: "Students",
 				items: [
@@ -656,7 +656,7 @@ const content: Record<"en" | "fr", LangContent> = {
 		],
 
 		// ─── Students ────────────────────────────────────────────────
-		"/users/people": [
+		"/students": [
 			{
 				title: "Étudiants",
 				items: [

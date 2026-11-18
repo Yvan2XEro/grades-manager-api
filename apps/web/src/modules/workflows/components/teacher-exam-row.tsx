@@ -1,7 +1,9 @@
+import type { ParseKeys } from "i18next";
 import { AlertCircle, CheckCircle2, Clock, Send, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import type { TeacherExam } from "../types";
 
 /** Exam of the teacher with its status and the submit action. */
@@ -25,8 +27,7 @@ export function TeacherExamRow({
 				<div>
 					<p className="font-medium text-foreground">{exam.name}</p>
 					<p className="text-muted-foreground text-xs">
-						{exam.type} • {new Date(exam.date).toLocaleDateString()} •{" "}
-						{exam.percentage}%
+						{exam.type} • {formatDate(exam.date, "P")} • {exam.percentage}%
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -51,7 +52,7 @@ export function TeacherExamRow({
 						{!isApproved && !isRejected && !isSubmitted && (
 							<AlertCircle className="h-3.5 w-3.5" />
 						)}
-						{exam.status}
+						{t(`teacher.exams.status.${exam.status}` as ParseKeys)}
 					</Badge>
 				</div>
 			</div>

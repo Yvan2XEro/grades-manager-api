@@ -2,7 +2,7 @@ import { useOpenPage } from "@/components/navigation/page-link";
 
 /** Route of each page a dashboard card opens over the dashboard. */
 const PAGES = {
-	people: "/users/people",
+	students: "/students",
 	enrollments: "/classes/enrollments",
 	admissions: "/admissions",
 	exams: "/exams/list",

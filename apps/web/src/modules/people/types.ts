@@ -12,14 +12,27 @@ export type BusinessRole =
 
 export type DomainUserStatus = "active" | "inactive" | "suspended";
 
-/** Roles surfaced in the filter chips (excludes super_admin). */
-export const ROLES: Array<Exclude<BusinessRole, "super_admin">> = [
-	"administrator",
-	"dean",
-	"teacher",
-	"grade_editor",
-	"staff",
-	"student",
+/** Roles of the staff filter chips (students have their own list). */
+export const STAFF_ROLES: Array<
+	Exclude<BusinessRole, "super_admin" | "student">
+> = ["administrator", "dean", "teacher", "grade_editor", "staff"];
+
+/** `students`: people with a student record; `staff`: everyone else. */
+export type PeopleAudience = "students" | "staff";
+
+export type EnrollmentStatus =
+	| "pending"
+	| "active"
+	| "completed"
+	| "graduated"
+	| "withdrawn";
+
+export const ENROLLMENT_STATUSES: EnrollmentStatus[] = [
+	"active",
+	"pending",
+	"completed",
+	"graduated",
+	"withdrawn",
 ];
 
 /** A row of the people table. */
@@ -31,6 +44,7 @@ export interface PeopleFilters {
 	search: string;
 	classId: string | null;
 	academicYearId: string | null;
+	enrollmentStatus: EnrollmentStatus | "all";
 }
 
 export type TimelineEvent = {

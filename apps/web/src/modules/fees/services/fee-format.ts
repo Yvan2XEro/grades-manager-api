@@ -1,12 +1,12 @@
-/** `150 000 XAF`. */
-export const formatMoney = (value: number, currency: string) =>
-	`${value.toLocaleString()} ${currency}`;
+import { formatMoney } from "@/lib/money";
+
+export { formatMoney };
 
 /** Decimal amount as returned by the API, or `—` when missing. */
 export const formatAmount = (
 	amount: string | null | undefined,
 	currency: string,
-) => (amount ? formatMoney(Number(amount), currency) : "—");
+) => (amount ? formatMoney(amount, currency) : "—");
 
 /** `First Last` of an assignment's student, or `—`. */
 export const getStudentName = (assignment: {

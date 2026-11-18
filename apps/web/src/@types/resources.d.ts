@@ -183,6 +183,15 @@ interface Resources {
 			validation: {
 				required: "Required";
 			};
+			courseStatus: {
+				planned: "Planned";
+				active: "In progress";
+				completed: "Completed";
+				failed: "Failed";
+				withdrawn: "Withdrawn";
+			};
+			close: "Close";
+			clear: "Clear";
 		};
 		teacher: {
 			courses: {
@@ -1355,7 +1364,7 @@ interface Resources {
 					notifications: "Notifications";
 					batchJobs: "Batch Jobs";
 					dataImport: "Data Import";
-					feeClearance: "Fee Clearance";
+					feeClearance: "Tuition fees";
 					statistics: "Statistics";
 					students: "Students";
 					studentPromotion: "Student promotion";
@@ -1440,14 +1449,15 @@ interface Resources {
 				administrator: "Administrator";
 				super_admin: "Super admin";
 				owner: "Owner";
+				member: "Member";
 			};
 			pages: {
-				people: "People";
+				people: "Users";
 				enrollments: "Enrollments";
 				admissions: "Admissions";
 				exams: "Exams";
 				deliberations: "Deliberations";
-				feeAssignments: "Fee assignments";
+				feeAssignments: "Student payments";
 				academicYears: "Academic years";
 				myFees: "My fees";
 				courseEnrollment: "Course registration";
@@ -1455,6 +1465,7 @@ interface Resources {
 				documents: "Documents";
 				notifications: "Notifications";
 				openProfile: "Open the profile";
+				students: "Students";
 			};
 			crumbs: {
 				academicYears: "Academic years";
@@ -1478,7 +1489,7 @@ interface Resources {
 				enrollments: "Enrollments";
 				students: "Students";
 				users: "Users";
-				people: "People";
+				people: "Users";
 				guardians: "Guardians";
 				apiKeys: "API keys";
 				identity: "Identity";
@@ -1501,13 +1512,13 @@ interface Resources {
 				jury: "Jury";
 				activity: "Activity";
 				graduation: "Graduates";
-				feeClearance: "Fees";
+				feeClearance: "Tuition fees";
 				feeStructures: "Fee structures";
-				feeAssignments: "Fee assignments";
+				feeAssignments: "Student payments";
 				installments: "Installments";
 				impact: "Impact";
 				history: "History";
-				feeGating: "Access restriction";
+				feeGating: "Access restrictions";
 				timetable: "Timetable";
 				schedule: "Schedule";
 				rooms: "Rooms";
@@ -1683,6 +1694,9 @@ interface Resources {
 					collected: "Collected";
 					remaining: "Remaining";
 					rate: "Collection rate";
+					coverage: "{{assigned}} of {{total}} students have fees assigned.";
+					coverageShort: "{{assigned}}/{{total}} students with fees";
+					rateHint: "The rate only covers their fees.";
 				};
 				statusStats: {
 					title: "Enrollment status";
@@ -1719,6 +1733,7 @@ interface Resources {
 						pending: "Pending";
 						completed: "Completed";
 						withdrawn: "Withdrawn";
+						graduated: "Graduated";
 					};
 				};
 				performance: {
@@ -3908,7 +3923,7 @@ interface Resources {
 					emptyStudents: "Select a class to view students.";
 					courses: "Class courses";
 					selectStudent: "Pick a student to manage course enrollments.";
-					openModalBtn: "Open roster";
+					openModalBtn: "Courses per student";
 					teacher: "Teacher: {{value}}";
 					notEnrolled: "Not enrolled";
 					enrollBtn: "Enroll";
@@ -5044,7 +5059,7 @@ interface Resources {
 							noRegistrationFormat: "No registration number given, and no active registration number format to generate one.";
 							unknownCourse: "Course {{value}} is not in the curriculum of the program of {{class}}.";
 							unknownTeacher: "No teacher with email {{value}}: the course is kept without teacher.";
-							unitsWithoutLevel: "Teaching units without level, their courses are not proposed: {{units}}. Set their level in the Foundations (UE & EC).";
+							unitsWithoutLevel: "Some teaching units (UE) have no level, so their courses (EC) are not offered: {{units}}. Set their level in Foundations (UE & EC).";
 							coursesWithoutTeacher: "{{count}} course(s) without teacher: they can be assigned later.";
 							unknownRetakeTarget: '"{{value}}" is not an exam type of the model.';
 							weightsNot100: "The weights of the model add up to {{total}} %, not 100 %.";
@@ -6202,8 +6217,8 @@ interface Resources {
 			noDate: "Date not set";
 		};
 		feeClearance: {
-			title: "Fee Clearance";
-			subtitle: "Manage fee structures, student payments, and clearance status";
+			title: "Tuition fees";
+			subtitle: "Fee structures, student payments and access restrictions";
 			bulkAssign: {
 				mode: "Scope";
 				modeClass: "By class";
@@ -6293,7 +6308,7 @@ interface Resources {
 				forceMatch: "Force";
 				forced: "Forced";
 				xlsxLoaded: "{{count}} rows loaded from the Excel file";
-				notes: "Batch note (optional)";
+				notes: "Note (optional)";
 				notesPlaceholder: "E.g. bank transfer of July 15 2026";
 				status: {
 					matched: "Matched";
@@ -6367,9 +6382,39 @@ interface Resources {
 					check: "Check";
 					other: "Other";
 				};
+				recordFor: "Record a payment — {{name}}";
+				noFees: {
+					title: "No fees assigned for {{year}} yet";
+					description: "Choose the fee structure that applies to {{name}}: it is assigned together with this payment.";
+					structure: "Fee structure";
+					none: "No active fee structure matches this student's class for {{year}}. Create one in Tuition fees › Fee structures.";
+				};
+				summary: {
+					balance: "Remaining to pay";
+					paid: "Already paid";
+				};
+				settled: "Nothing left to pay for {{year}}: {{status}}.";
+				amountMax: "At most {{amount}} (remaining to pay).";
+				referenceHint: "Leave empty to number the receipt automatically.";
+				success: {
+					title: "Payment recorded";
+					description: "{{amount}} received from {{name}} on {{date}}.";
+					receiptNumber: "Receipt no. {{number}}";
+					assigned: "The fee structure “{{structure}}” has been assigned to the student.";
+					remaining: "Remaining to pay: {{amount}}";
+				};
+				receiptFailed: "The receipt could not be generated. The payment is recorded: try again later from the payment history.";
+				errors: {
+					exceedsBalance: "The amount is higher than what remains to pay.";
+					fullyPaid: "These fees are already fully paid.";
+					exempt: "The student is exempted from these fees.";
+					structureRequired: "Choose the fee structure to assign.";
+					failed: "The payment could not be recorded. Try again.";
+				};
+				searchStudent: "Search a student by name or registration number…";
 			};
 			gating: {
-				title: "Academic Gates";
+				title: "Access restrictions";
 				subtitle: "Block specific academic actions for students who have not paid their fees";
 				gates: {
 					exam_registration: "Exam registration";
@@ -6405,6 +6450,7 @@ interface Resources {
 					confirmed: "Confirmed";
 					cancelled: "Cancelled";
 				};
+				downloadFailed: "The payment order could not be generated. Try again later.";
 			};
 			quitus: {
 				title: "Quitus / Fee Clearance Certificate";
@@ -6995,19 +7041,19 @@ interface Resources {
 			title: "Users & Students";
 			description: "Manage accounts, students, guardians and API keys";
 			tabs: {
-				people: "People";
+				people: "Users";
 				guardians: "Guardians";
 				apiKeys: "API Keys";
 			};
 			people: {
-				title: "People";
-				subtitle: "All profiles in this institution.";
+				title: "Users";
+				subtitle: "Staff of the institution and their login accounts. Students are listed under Students.";
 				add: "Add person";
 				searchPlaceholder: "Search by name or email…";
 				class: "Class";
 				regNumber: "Reg. number";
 				enrollmentStatus: "Enrollment";
-				empty: "No people found.";
+				empty: "No user found.";
 				deleteConfirm: "This will permanently delete the profile and cannot be undone.";
 				account: "Account";
 				created: "Person created.";
@@ -7029,7 +7075,7 @@ interface Resources {
 					noAccountDescription: "This profile is not linked to a login account. The user cannot sign in to the platform.";
 				};
 				provisioning: {
-					title: "Provisioning";
+					title: "Login account";
 					description: "Create a new account or link an existing account to this profile.";
 					createTab: "Create an account";
 					linkTab: "Link an existing account";
@@ -7080,6 +7126,13 @@ interface Resources {
 					statusFailed: "Could not update the account status.";
 				};
 			};
+			students: {
+				title: "Students";
+				subtitle: "Students of the institution, by academic year, class and enrollment status.";
+				empty: "No student matches these filters.";
+				add: "Add student";
+				allEnrollmentStatuses: "All enrollment statuses";
+			};
 		};
 		profileHub: {
 			studentBadge: "Student";
@@ -7122,11 +7175,16 @@ interface Resources {
 			};
 			finances: {
 				academicYear: "Academic Year";
-				amount: "Amount";
+				amount: "Amount due";
 				discount: "Discount";
 				status: "Status";
-				clearedAt: "Cleared At";
-				empty: "No fee records found.";
+				clearedAt: "Cleared on";
+				empty: "No fees assigned to this student yet. Recording a payment assigns the fee structure of the student's class.";
+				structure: "Fee structure";
+				paid: "Paid";
+				balance: "Remaining";
+				emptyReadOnly: "No fees assigned yet.";
+				openFile: "Fee file";
 			};
 			guardians: {
 				name: "Name";

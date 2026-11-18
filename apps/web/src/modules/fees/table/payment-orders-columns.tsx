@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import type { TFunction } from "i18next";
+import { formatDate } from "@/lib/date-format";
 import { OrderStatusBadge } from "../components/status-badges";
 import { formatMoney } from "../services/fee-format";
 import type { PaymentOrder } from "../types";
@@ -13,8 +13,7 @@ export function getPaymentOrdersColumns(
 		{
 			id: "createdAt",
 			header: t("feeClearance.orders.fields.createdAt"),
-			cell: ({ row }) =>
-				format(new Date(row.original.createdAt), "dd/MM/yyyy HH:mm"),
+			cell: ({ row }) => formatDate(row.original.createdAt, "PPp"),
 		},
 		{
 			id: "reference",

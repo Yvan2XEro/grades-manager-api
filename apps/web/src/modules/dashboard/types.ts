@@ -14,6 +14,8 @@ export type KpiCard = {
 	/** Page opened over the dashboard. */
 	page: DashboardPage;
 	suffix?: string;
+	/** Small line under the figure, e.g. what a rate covers. */
+	hint?: string;
 };
 
 export type ProgramBar = { name: string; students: number };

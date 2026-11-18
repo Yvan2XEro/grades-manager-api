@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import type { TFunction } from "i18next";
+import { formatDate } from "@/lib/date-format";
 import { formatMoney } from "../services/fee-format";
 import type { FeePayment } from "../types";
 
@@ -12,8 +12,7 @@ export function getPaymentsColumns(
 		{
 			id: "paymentDate",
 			header: t("feeClearance.payments.fields.paymentDate"),
-			cell: ({ row }) =>
-				format(new Date(row.original.paymentDate), "dd/MM/yyyy"),
+			cell: ({ row }) => formatDate(row.original.paymentDate, "P"),
 		},
 		{
 			id: "amount",

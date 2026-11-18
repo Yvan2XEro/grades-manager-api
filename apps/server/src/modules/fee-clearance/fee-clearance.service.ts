@@ -1134,7 +1134,11 @@ export async function recordStudentPayment(
 			currency: assignment.currency,
 			feeAssignmentId: assignment.id,
 		});
-		return { payment: row, feeAssignmentId: assignment.id, assigned: !!createdId };
+		return {
+			payment: row,
+			feeAssignmentId: assignment.id,
+			assigned: !!createdId,
+		};
 	} catch (error) {
 		if (createdId) await repo.deleteAssignment(createdId, institutionId);
 		throw error;
