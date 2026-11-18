@@ -41,6 +41,8 @@ import {
 	previewBulkAssignYearSchema,
 	previewStructureImpactSchema,
 	recordPaymentSchema,
+	recordStudentPaymentSchema,
+	studentPaymentContextSchema,
 	toggleGateSchema,
 	updateDiscountSchema,
 	updateFeeStructureSchema,
@@ -303,6 +305,24 @@ export const feeClearanceRouter = router({
 			if (!ctx.profile?.id)
 				throw new Error("Profile required to record payment");
 			return service.recordPayment(ctx.institution.id, ctx.profile.id, input);
+		}),
+
+	studentPaymentContext: feeManageProcedure
+		.input(studentPaymentContextSchema)
+		.query(({ ctx, input }) =>
+			service.getStudentPaymentContext(ctx.institution.id, input),
+		),
+
+	recordStudentPayment: feePaymentProcedure
+		.input(recordStudentPaymentSchema)
+		.mutation(({ ctx, input }) => {
+			if (!ctx.profile?.id)
+				throw new Error("Profile required to record payment");
+			return service.recordStudentPayment(
+				ctx.institution.id,
+				ctx.profile.id,
+				input,
+			);
 		}),
 
 	deletePayment: feePaymentProcedure

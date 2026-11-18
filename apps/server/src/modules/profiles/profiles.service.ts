@@ -38,7 +38,12 @@ export async function getProfile(profileId: string, ctx: Context) {
 	if (roleSatisfies(ctx.memberRole, ["administrator"])) {
 		availableTabs.push("access");
 	}
-	return { ...profile, student, availableTabs };
+	return {
+		...profile,
+		student,
+		availableTabs,
+		canRecordPayments: Boolean(student && ctx.permissions?.canRecordPayments),
+	};
 }
 
 export async function getEnrollments(profileId: string, ctx: Context) {

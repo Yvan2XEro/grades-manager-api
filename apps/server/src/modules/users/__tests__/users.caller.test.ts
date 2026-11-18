@@ -1,5 +1,6 @@
 import { describe, expect, it, mock, test } from "bun:test";
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { enrollments } from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
@@ -229,6 +230,50 @@ describe("users.listPaged", () => {
 		const caller = appRouter.createCaller(await asAdmin());
 		const result = await caller.users.listPaged({ page: 1, pageSize: 1 });
 		expect(result.pageCount).toBe(Math.ceil(result.total / 1));
+	});
+
+	test("students are the profiles with a student record, account or not", async () => {
+		// Most students have no login account: the account role cannot find them
+		const student = await createStudent();
+		const caller = appRouter.createCaller(await asAdmin());
+		const students = await caller.users.listPaged({
+			page: 1,
+			pageSize: 100,
+			audience: "students",
+		});
+		const row = students.items.find((i) => i.id === student.domainUserId);
+		expect(row?.role).toBe("student");
+		expect(students.total).toBe(students.items.length);
+
+		const staff = await caller.users.listPaged({
+			page: 1,
+			pageSize: 100,
+			audience: "staff",
+		});
+		expect(staff.items.some((i) => i.id === student.domainUserId)).toBe(false);
+
+		const everyone = await caller.users.listPaged({ page: 1, pageSize: 100 });
+		expect(
+			everyone.items.find((i) => i.id === student.domainUserId)?.role,
+		).toBe("student");
+	});
+
+	test("students can be filtered by enrollment status", async () => {
+		const student = await createStudent();
+		const caller = appRouter.createCaller(await asAdmin());
+		const [enrollment] = await db
+			.select()
+			.from(enrollments)
+			.where(eq(enrollments.studentId, student.id));
+		const other = enrollment.status === "active" ? "withdrawn" : "active";
+		const result = await caller.users.listPaged({
+			page: 1,
+			pageSize: 100,
+			audience: "students",
+			academicYearId: enrollment.academicYearId,
+			enrollmentStatus: other,
+		});
+		expect(result.items.some((i) => i.id === student.domainUserId)).toBe(false);
 	});
 
 	test("student with multiple enrollments appears exactly once", async () => {

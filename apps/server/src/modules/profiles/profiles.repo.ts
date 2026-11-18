@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -93,6 +93,8 @@ export async function listFeeAssignments(
 			currency: schema.studentFeeAssignments.currency,
 			discountAmount: schema.studentFeeAssignments.discountAmount,
 			clearedAt: schema.studentFeeAssignments.clearedAt,
+			paidAmount: sql<string>`(SELECT COALESCE(SUM(${schema.feePayments.amount}), 0) FROM ${schema.feePayments} WHERE ${schema.feePayments.feeAssignmentId} = ${schema.studentFeeAssignments.id})`,
+			feeStructureName: schema.feeStructures.name,
 			academicYearId: schema.academicYears.id,
 			academicYearName: schema.academicYears.name,
 		})
@@ -100,6 +102,10 @@ export async function listFeeAssignments(
 		.innerJoin(
 			schema.academicYears,
 			eq(schema.studentFeeAssignments.academicYearId, schema.academicYears.id),
+		)
+		.leftJoin(
+			schema.feeStructures,
+			eq(schema.studentFeeAssignments.feeStructureId, schema.feeStructures.id),
 		)
 		.where(
 			and(

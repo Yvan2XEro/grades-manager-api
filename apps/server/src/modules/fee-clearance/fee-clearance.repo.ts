@@ -142,6 +142,76 @@ export async function createAssignment(data: NewStudentFeeAssignment) {
 	return row;
 }
 
+/** Removes an assignment created in a step that then failed (no payments yet). */
+export async function deleteAssignment(id: string, institutionId: string) {
+	await db
+		.delete(schema.studentFeeAssignments)
+		.where(
+			and(
+				eq(schema.studentFeeAssignments.id, id),
+				eq(schema.studentFeeAssignments.institutionId, institutionId),
+			),
+		);
+}
+
+/** A student of the institution with their profile and enrollments (newest year first). */
+export async function findStudentWithEnrollments(
+	studentId: string,
+	institutionId: string,
+) {
+	const student = await db.query.students.findFirst({
+		where: and(
+			eq(schema.students.id, studentId),
+			eq(schema.students.institutionId, institutionId),
+		),
+		with: { profile: true },
+	});
+	if (!student) return null;
+	const enrollments = await db
+		.select({
+			academicYearId: schema.enrollments.academicYearId,
+			academicYearName: schema.academicYears.name,
+			isActiveYear: schema.academicYears.isActive,
+			status: schema.enrollments.status,
+			classId: schema.classes.id,
+			className: schema.classes.name,
+			programId: schema.classes.program,
+			cycleLevelId: schema.classes.cycleLevelId,
+		})
+		.from(schema.enrollments)
+		.innerJoin(
+			schema.academicYears,
+			eq(schema.academicYears.id, schema.enrollments.academicYearId),
+		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.enrollments.classId))
+		.where(
+			and(
+				eq(schema.enrollments.studentId, studentId),
+				eq(schema.enrollments.institutionId, institutionId),
+			),
+		)
+		.orderBy(desc(schema.academicYears.startDate));
+	return { student, enrollments };
+}
+
+export async function findActiveAcademicYear(institutionId: string) {
+	return db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.institutionId, institutionId),
+			eq(schema.academicYears.isActive, true),
+		),
+	});
+}
+
+export async function findAcademicYearById(id: string, institutionId: string) {
+	return db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.id, id),
+			eq(schema.academicYears.institutionId, institutionId),
+		),
+	});
+}
+
 export async function findAssignmentById(id: string, institutionId: string) {
 	return db.query.studentFeeAssignments.findFirst({
 		where: and(

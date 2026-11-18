@@ -1224,3 +1224,142 @@ describe("previewStructureImpact", () => {
 		).rejects.toHaveProperty("code", "NOT_FOUND");
 	});
 });
+
+describe("payments from the student's side", () => {
+	async function setup() {
+		const ctx = await adminWithRealProfile();
+		const caller = createCaller(ctx);
+		const year = await createAcademicYear();
+		const program = await createProgram();
+		const otherProgram = await createProgram();
+		const klass = await createClass({
+			program: program.id,
+			academicYear: year.id,
+		});
+		const student = await createStudent({ class: klass.id });
+		const programStructure = await caller.feeClearance.createStructure({
+			academicYearId: year.id,
+			programId: program.id,
+			name: "Program fees",
+			totalAmount: 250000,
+			currency: "XAF",
+		});
+		const generalStructure = await caller.feeClearance.createStructure({
+			academicYearId: year.id,
+			name: "Institution fees",
+			totalAmount: 100000,
+			currency: "XAF",
+		});
+		const otherStructure = await caller.feeClearance.createStructure({
+			academicYearId: year.id,
+			programId: otherProgram.id,
+			name: "Other program fees",
+			totalAmount: 300000,
+			currency: "XAF",
+		});
+		return {
+			caller,
+			year,
+			student,
+			programStructure,
+			generalStructure,
+			otherStructure,
+		};
+	}
+
+	it("offers the structures that fit the student's class when none is assigned", async () => {
+		const { caller, year, student, programStructure, generalStructure } =
+			await setup();
+		const context = await caller.feeClearance.studentPaymentContext({
+			studentId: student.id,
+			academicYearId: year.id,
+		});
+		expect(context.assignment).toBeNull();
+		expect(context.academicYear.id).toBe(year.id);
+		// The program's structure first, then the institution-wide one; never another program's
+		expect(context.structures.map((s) => s.id)).toEqual([
+			programStructure.id,
+			generalStructure.id,
+		]);
+	});
+
+	it("assigns the chosen structure and records the payment in one step", async () => {
+		const { caller, year, student, programStructure } = await setup();
+		const result = await caller.feeClearance.recordStudentPayment({
+			studentId: student.id,
+			academicYearId: year.id,
+			feeStructureId: programStructure.id,
+			amount: 100000,
+			currency: "XAF",
+			paymentDate: "2025-10-01",
+			paymentMethod: "cash",
+		});
+		expect(result.assigned).toBe(true);
+		const context = await caller.feeClearance.studentPaymentContext({
+			studentId: student.id,
+			academicYearId: year.id,
+		});
+		expect(context.assignment?.id).toBe(result.feeAssignmentId);
+		expect(context.assignment?.status).toBe("partial");
+		expect(context.assignment?.balance).toBe(150000);
+		expect(context.structures).toHaveLength(0);
+	});
+
+	it("uses the existing assignment without a structure", async () => {
+		const { caller, year, student, programStructure } = await setup();
+		await caller.feeClearance.assignStudent({
+			studentId: student.id,
+			academicYearId: year.id,
+			feeStructureId: programStructure.id,
+			discountAmount: 0,
+		});
+		const result = await caller.feeClearance.recordStudentPayment({
+			studentId: student.id,
+			academicYearId: year.id,
+			amount: 250000,
+			currency: "XAF",
+			paymentDate: "2025-10-01",
+			paymentMethod: "cash",
+		});
+		expect(result.assigned).toBe(false);
+		const context = await caller.feeClearance.studentPaymentContext({
+			studentId: student.id,
+			academicYearId: year.id,
+		});
+		expect(context.assignment?.status).toBe("paid");
+	});
+
+	it("requires a structure when the student has no fees for the year", async () => {
+		const { caller, year, student } = await setup();
+		await expect(
+			caller.feeClearance.recordStudentPayment({
+				studentId: student.id,
+				academicYearId: year.id,
+				amount: 1000,
+				currency: "XAF",
+				paymentDate: "2025-10-01",
+				paymentMethod: "cash",
+			}),
+		).rejects.toHaveProperty("code", "BAD_REQUEST");
+	});
+
+	it("does not keep the new assignment when the payment is refused", async () => {
+		const { caller, year, student, generalStructure } = await setup();
+		await expect(
+			caller.feeClearance.recordStudentPayment({
+				studentId: student.id,
+				academicYearId: year.id,
+				feeStructureId: generalStructure.id,
+				amount: 500000,
+				currency: "XAF",
+				paymentDate: "2025-10-01",
+				paymentMethod: "cash",
+			}),
+		).rejects.toHaveProperty("code", "BAD_REQUEST");
+		const context = await caller.feeClearance.studentPaymentContext({
+			studentId: student.id,
+			academicYearId: year.id,
+		});
+		expect(context.assignment).toBeNull();
+	});
+});

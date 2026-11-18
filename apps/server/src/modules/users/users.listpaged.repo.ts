@@ -3,8 +3,11 @@ import {
 	count,
 	countDistinct,
 	eq,
+	exists,
 	ilike,
+	inArray,
 	isNull,
+	not,
 	or,
 	type SQL,
 	sql,
@@ -15,6 +18,7 @@ import {
 	classes,
 	type DomainUserStatus,
 	domainUsers,
+	type EnrollmentStatus,
 	enrollments,
 	students,
 } from "@/db/schema/app-schema";
@@ -30,12 +34,28 @@ export type ListPagedOpts = {
 	search?: string;
 	classId?: string;
 	academicYearId?: string;
+	/** `students`: profiles with a student record; `staff`: everyone else. */
+	audience?: "students" | "staff";
+	enrollmentStatus?: EnrollmentStatus;
+};
+
+/** Account roles that a role filter also matches (an owner administers). */
+const ROLE_ALIASES: Partial<Record<BusinessRole, string[]>> = {
+	administrator: ["administrator", "owner", "super_admin"],
 };
 
 export async function listPaged(opts: ListPagedOpts) {
 	const size = Math.min(Math.max(opts.pageSize ?? 25, 1), 100);
 	const offset = (Math.max(opts.page ?? 1, 1) - 1) * size;
-	const isStudent = opts.role === "student";
+	// Students are the profiles with a student record (most have no account,
+	// so the account role cannot identify them); the dashboard counts the same.
+	const isStudent = opts.audience === "students" || opts.role === "student";
+	const hasStudentRecord = exists(
+		db
+			.select({ id: students.id })
+			.from(students)
+			.where(eq(students.domainUserId, domainUsers.id)),
+	);
 
 	// Primary scope: profiles explicitly bound to this institution (new records).
 	// Fallback: legacy profiles linked via member.organizationId but lacking institutionId.
@@ -47,9 +67,28 @@ export async function listPaged(opts: ListPagedOpts) {
 				isNull(domainUsers.institutionId),
 				eq(member.organizationId, opts.organizationId),
 			),
+			// A student record of this institution also scopes the profile
+			exists(
+				db
+					.select({ id: students.id })
+					.from(students)
+					.where(
+						and(
+							eq(students.domainUserId, domainUsers.id),
+							eq(students.institutionId, opts.institutionId),
+						),
+					),
+			),
 		) as SQL,
 	];
-	if (opts.role) conditions.push(eq(member.role, opts.role));
+	if (isStudent) conditions.push(hasStudentRecord);
+	else {
+		if (opts.audience === "staff") conditions.push(not(hasStudentRecord));
+		if (opts.role)
+			conditions.push(
+				inArray(member.role, ROLE_ALIASES[opts.role] ?? [opts.role]),
+			);
+	}
 	if (opts.status) conditions.push(eq(domainUsers.status, opts.status));
 	if (opts.search) {
 		const term = `%${opts.search.toLowerCase()}%`;
@@ -66,6 +105,9 @@ export async function listPaged(opts: ListPagedOpts) {
 	}
 	if (isStudent && opts.academicYearId) {
 		conditions.push(eq(enrollments.academicYearId, opts.academicYearId));
+	}
+	if (isStudent && opts.enrollmentStatus) {
+		conditions.push(eq(enrollments.status, opts.enrollmentStatus));
 	}
 
 	const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -124,7 +166,7 @@ export async function listPaged(opts: ListPagedOpts) {
 
 		const totalCount = Number(total ?? 0);
 		return {
-			items: rows.map((r) => ({ ...r, role: r.role ?? null })),
+			items: rows.map((r) => ({ ...r, role: "student" as string | null })),
 			total: totalCount,
 			pageCount: Math.ceil(totalCount / size),
 		};
@@ -132,7 +174,12 @@ export async function listPaged(opts: ListPagedOpts) {
 
 	const [rows, [{ total }]] = await Promise.all([
 		db
-			.select(baseSelect)
+			.select({
+				...baseSelect,
+				role: sql<
+					string | null
+				>`COALESCE(${member.role}, CASE WHEN ${hasStudentRecord} THEN 'student' END)`,
+			})
 			.from(domainUsers)
 			.leftJoin(member, eq(member.id, domainUsers.memberId))
 			.where(where)
