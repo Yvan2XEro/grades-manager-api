@@ -153,7 +153,9 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 												</td>
 												<td className="px-2 py-1.5 text-right">
 													<Badge
-														variant={ueDecisionVariants[ue.decision] ?? "outline"}
+														variant={
+															ueDecisionVariants[ue.decision] ?? "outline"
+														}
 														className="px-1.5 py-0 text-[10px]"
 													>
 														{t(`admin.deliberations.ueDecision.${ue.decision}`)}

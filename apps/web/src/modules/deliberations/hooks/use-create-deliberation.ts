@@ -90,8 +90,8 @@ export function useCreateDeliberation(onDone: () => void) {
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.createSuccess"));
 			queryClient.invalidateQueries({
-			queryKey: trpc.deliberations.listPaged.queryKey(),
-		});
+				queryKey: trpc.deliberations.listPaged.queryKey(),
+			});
 			close();
 		},
 		onError: (err) => toast.error((err as Error).message),
@@ -105,8 +105,8 @@ export function useCreateDeliberation(onDone: () => void) {
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.initAndComputeSuccess"));
 			queryClient.invalidateQueries({
-			queryKey: trpc.deliberations.listPaged.queryKey(),
-		});
+				queryKey: trpc.deliberations.listPaged.queryKey(),
+			});
 			close();
 		},
 		onError: (err) => toast.error((err as Error).message),

@@ -18,7 +18,7 @@ export function exportDeliberationExcel(data: any) {
 		? data.name_fr || data.name_en
 		: data.name_en || data.name_fr;
 	const session = delib.type
-		? t(`admin.deliberations.type.${delib.type}`) +
+		? t(`admin.deliberations.type.${delib.type}` as never) +
 			(delib.semesterName ? ` — ${delib.semesterName}` : "")
 		: (delib.semesterName ?? "");
 
@@ -74,15 +74,19 @@ export function exportDeliberationExcel(data: any) {
 		for (const ue of s.ueResults ?? []) {
 			row.push(
 				ue.ueAverage != null ? round2(ue.ueAverage) : "",
-				ue.decision ? t(`admin.deliberations.ueDecision.${ue.decision}`) : "",
+				ue.decision
+					? t(`admin.deliberations.ueDecision.${ue.decision}` as never)
+					: "",
 				ue.creditsEarned,
 			);
 		}
 		row.push(
 			s.generalAverage != null ? round2(s.generalAverage) : "",
 			`${s.totalCreditsEarned} / ${s.totalCreditsPossible}`,
-			t(`admin.deliberations.decision.${s.finalDecision ?? "pending"}`),
-			s.mention ? t(`admin.deliberations.mention.${s.mention}`) : "",
+			t(
+				`admin.deliberations.decision.${s.finalDecision ?? "pending"}` as never,
+			),
+			s.mention ? t(`admin.deliberations.mention.${s.mention}` as never) : "",
 		);
 		return row;
 	});

@@ -140,7 +140,10 @@ export const PromoteAdmittedDialog = createCallable<Props, void>(
 										onCreateClass={createTargetClass}
 									/>
 								) : (
-									<Select value={targetClassId} onValueChange={setTargetClassId}>
+									<Select
+										value={targetClassId}
+										onValueChange={setTargetClassId}
+									>
 										<SelectTrigger>
 											<SelectValue
 												placeholder={t(

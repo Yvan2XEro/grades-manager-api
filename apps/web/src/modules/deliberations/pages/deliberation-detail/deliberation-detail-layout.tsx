@@ -121,8 +121,9 @@ export default function DeliberationDetail() {
 						deliberationId={deliberationId!}
 						status={status}
 						pendingCount={
-							results.filter((r) => (r.finalDecision ?? "pending") === "pending")
-								.length
+							results.filter(
+								(r) => (r.finalDecision ?? "pending") === "pending",
+							).length
 						}
 						promoted={!!delib.promotion}
 						onPromoteAdmitted={promoteAdmitted}
