@@ -6461,6 +6461,7 @@ interface Resources {
 				dueOn: "Due {{date}}";
 				receiptHint: "Receipts can be downloaded once the payment is recorded by the finance office.";
 				noPayments: "No payment recorded yet.";
+				downloadError: "The document could not be generated. Try again in a moment, or ask the finance office.";
 			};
 			history: {
 				title: "Financial history";

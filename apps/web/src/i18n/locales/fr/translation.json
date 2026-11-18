@@ -6464,7 +6464,8 @@
       "scheduleHint": "Cochez les tranches à payer, puis générez un ordre de paiement à présenter à la banque.",
       "dueOn": "À payer avant le {{date}}",
       "receiptHint": "Le reçu est téléchargeable dès que le paiement est enregistré par le service financier.",
-      "noPayments": "Aucun paiement enregistré pour le moment."
+      "noPayments": "Aucun paiement enregistré pour le moment.",
+      "downloadError": "Le document n'a pas pu être généré. Réessayez dans un instant, ou adressez-vous au service financier."
     },
     "history": {
       "title": "Historique financier",

@@ -6459,7 +6459,8 @@
       "scheduleHint": "Select the installments you want to pay, then generate a payment order to take to the bank.",
       "dueOn": "Due {{date}}",
       "receiptHint": "Receipts can be downloaded once the payment is recorded by the finance office.",
-      "noPayments": "No payment recorded yet."
+      "noPayments": "No payment recorded yet.",
+      "downloadError": "The document could not be generated. Try again in a moment, or ask the finance office."
     },
     "history": {
       "title": "Financial history",

@@ -11,15 +11,6 @@ export function useTeacherCourses() {
 	});
 }
 
-/** Grades already entered for an exam. */
-export function useExamGradesSummary(examId: string) {
-	return useQuery({
-		queryKey: ["grades-summary", examId],
-		queryFn: () =>
-			trpcClient.grades.listByExam.query({ examId }).then((r) => r.items),
-	});
-}
-
 /** Submits a locked exam for approval. */
 export function useSubmitExam(examId: string) {
 	const { t } = useTranslation();

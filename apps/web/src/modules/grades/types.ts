@@ -85,6 +85,9 @@ export interface ExamData {
 	status: string;
 	canEdit: boolean;
 	classCourseId: string;
+	/** Grades entered so far and their average (null when none). */
+	gradedCount: number;
+	average: number | null;
 }
 
 export interface CourseData {

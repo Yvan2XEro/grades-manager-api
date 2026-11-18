@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { downloadBase64 } from "@/lib/download";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 function PdfDownloadButton({
@@ -14,6 +15,7 @@ function PdfDownloadButton({
 	fetchPdf: () => Promise<{ pdf: string }>;
 	filename: string;
 }) {
+	const { t } = useTranslation();
 	const [pending, setPending] = useState(false);
 
 	async function handleDownload() {
@@ -21,6 +23,8 @@ function PdfDownloadButton({
 		try {
 			const result = await fetchPdf();
 			downloadBase64(result.pdf, filename, "application/pdf");
+		} catch {
+			toast.error(t("feeClearance.student.downloadError"));
 		} finally {
 			setPending(false);
 		}

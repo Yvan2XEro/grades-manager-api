@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
@@ -34,6 +34,9 @@ export type TeacherOverviewExam = {
 	status: string;
 	canEdit: boolean;
 	classCourseId: string;
+	/** Grades entered so far, and their average (null when none). */
+	gradedCount: number;
+	average: number | null;
 };
 
 export type TeacherOverviewCourse = {
@@ -345,8 +348,25 @@ export async function buildTeacherOverview(
 		},
 	);
 
+	// One aggregate query for every exam (the home page used to fetch the
+	// grades of each exam separately: hundreds of requests for a teacher)
+	const examIds = examResult.items.map((exam) => exam.id);
+	const gradeStats = examIds.length
+		? await db
+				.select({
+					examId: schema.grades.exam,
+					count: sql<number>`count(*)::int`,
+					average: sql<string | null>`avg(${schema.grades.score})`,
+				})
+				.from(schema.grades)
+				.where(inArray(schema.grades.exam, examIds))
+				.groupBy(schema.grades.exam)
+		: [];
+	const statsByExam = new Map(gradeStats.map((row) => [row.examId, row]));
+
 	const examsByClassCourse = new Map<string, TeacherOverviewExam[]>();
 	for (const exam of examResult.items) {
+		const stats = statsByExam.get(exam.id);
 		const bucket = examsByClassCourse.get(exam.classCourse) ?? [];
 		bucket.push({
 			id: exam.id,
@@ -358,6 +378,11 @@ export async function buildTeacherOverview(
 			status: exam.status ?? (exam.isLocked ? "locked" : "open"),
 			canEdit: exam.canEdit ?? false,
 			classCourseId: exam.classCourse,
+			gradedCount: Number(stats?.count ?? 0),
+			average:
+				stats?.average != null
+					? Number(Number(stats.average).toFixed(2))
+					: null,
 		});
 		examsByClassCourse.set(exam.classCourse, bucket);
 	}
