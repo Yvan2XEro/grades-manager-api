@@ -100,7 +100,9 @@ export default function ProfileHub() {
 						</div>
 					</div>
 					{canIssueDocuments && profile.student && (
-						<DropdownMenu>
+						// Not modal: the menu must release the page before the
+						// dialog it opens takes over (else pointer events stay off).
+						<DropdownMenu modal={false}>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
 									<FileText className="mr-2 h-4 w-4" />
@@ -112,7 +114,7 @@ export default function ProfileHub() {
 								{STUDENT_DOCUMENT_KINDS.map((kind) => (
 									<DropdownMenuItem
 										key={kind}
-										onSelect={() =>
+										onClick={() =>
 											GenerateDocumentDialog.call({
 												studentId: profile.student!.id,
 												studentName: fullName,

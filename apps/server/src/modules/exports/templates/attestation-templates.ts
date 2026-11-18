@@ -16,6 +16,8 @@ export const ATTESTATION_TEMPLATE_STANDARD = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -324,6 +326,8 @@ export const ATTESTATION_TEMPLATE_IPES = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -599,6 +603,8 @@ export const ATTESTATION_TEMPLATE_FACULTY = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -859,6 +865,8 @@ export const ATTESTATION_TEMPLATE = /* html */ `
 <title>Attestation — {{upper student.fullName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -1139,6 +1147,8 @@ export const ATTESTATION_TEMPLATE_CENTER = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {

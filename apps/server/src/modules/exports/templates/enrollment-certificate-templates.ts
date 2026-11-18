@@ -79,6 +79,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 
 	<div class="header">
 		<div class="header-side">
+			{{country.fr}}<br><em>{{country.mottoFr}}</em><br><span class="stars">********</span><br>
 			{{#if center}}
 				{{#each center.administrativeInstances}}{{#if showOnCertificates}}<strong>{{upper nameFr}}</strong><br><span class="stars">********</span><br>{{/if}}{{/each}}
 				<strong>{{upper center.name}}</strong><br>
@@ -86,7 +87,6 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				{{#if center.contactPhone}}<span class="contact-line">Tél. : {{center.contactPhone}}</span><br>{{/if}}
 				{{#if center.contactEmail}}<span class="contact-line">{{center.contactEmail}}</span>{{/if}}
 			{{else}}
-				{{country.fr}}<br><em>{{country.mottoFr}}</em><br><span class="stars">********</span><br>
 				{{ministry.fr}}<br>
 				{{#each tutelleChain}}<span class="stars">********</span><br><strong>{{upper this.nameFr}}</strong><br>{{/each}}
 				<span class="stars">********</span><br>
@@ -105,6 +105,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 			{{/if}}
 		</div>
 		<div class="header-side">
+			{{country.en}}<br><em>{{country.mottoEn}}</em><br><span class="stars">********</span><br>
 			{{#if center}}
 				{{#each center.administrativeInstances}}{{#if showOnCertificates}}<strong>{{upper nameEn}}</strong><br><span class="stars">********</span><br>{{/if}}{{/each}}
 				<strong>{{upper center.nameEn}}</strong><br>
@@ -112,7 +113,6 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				{{#if center.contactPhone}}<span class="contact-line">Tel: {{center.contactPhone}}</span><br>{{/if}}
 				{{#if center.contactEmail}}<span class="contact-line">{{center.contactEmail}}</span>{{/if}}
 			{{else}}
-				{{country.en}}<br><em>{{country.mottoEn}}</em><br><span class="stars">********</span><br>
 				{{ministry.en}}<br>
 				{{#each tutelleChain}}<span class="stars">********</span><br><strong>{{upper this.nameEn}}</strong><br>{{/each}}
 				<span class="stars">********</span><br>
