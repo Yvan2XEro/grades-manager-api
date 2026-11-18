@@ -76,7 +76,9 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 								return (
 									<CommandItem
 										key={item.to}
-										value={`${label} ${section.heading} ${item.to}`}
+										value={`${label} ${section.heading} ${item.to}${
+											item.keywordsKey ? ` ${t(item.keywordsKey)}` : ""
+										}`}
 										onSelect={() => handleSelect(item.to)}
 										className="gap-3"
 									>

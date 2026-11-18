@@ -29,6 +29,12 @@ const formatSchema = z.enum(["pdf", "html"]).default("pdf");
 export const generateDocumentSchema = z.object({
 	kind: documentKindSchema,
 	studentId: z.string(),
+	/**
+	 * Class the document is about (e.g. a past year's class for an enrollment
+	 * certificate). Defaults to the student's current class, or — for pass
+	 * certificates and diplomas — the class of their latest favourable jury.
+	 */
+	classId: z.string().optional(),
 	/** Optional — if provided, results are pulled from the deliberation's snapshot. */
 	deliberationId: z.string().optional(),
 	/**
@@ -93,3 +99,12 @@ export const resolveTemplateForClassSchema = z.object({
 export type ResolveTemplateForClassInput = z.infer<
 	typeof resolveTemplateForClassSchema
 >;
+
+export const classDocumentRosterSchema = z.object({
+	kind: documentKindSchema,
+	classId: z.string(),
+});
+
+export const studentDocumentOptionsSchema = z.object({
+	studentId: z.string(),
+});

@@ -142,6 +142,7 @@ export const bulkDocumentGenerationJob: BatchJobDefinition<Params> = {
 						{
 							kind: params.kind,
 							studentId,
+							classId: params.classId,
 							format: "pdf",
 							demoMode: params.demoMode,
 							period: "annual",

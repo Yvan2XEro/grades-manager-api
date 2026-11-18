@@ -135,7 +135,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				********************<br>
 				<strong>{{upper institution.nameFr}}</strong><br>
 				{{#if institution.postalBox}}********************<br>B.P {{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				{{/if}}
 				</p>
 			</div>
@@ -155,7 +155,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				********************<br>
 				<strong>{{upper institution.nameEn}}</strong><br>
 				{{#if institution.postalBox}}********************<br>PO box {{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				{{/if}}
 				</p>
 			</div>
@@ -451,7 +451,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				********************<br>
 				<strong>{{upper institution.nameFr}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 			<div class="header-logo-content">
@@ -474,13 +474,13 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				********************<br>
 				<strong>{{upper institution.nameEn}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 		</div>
 		<div class="header-row2">
 			<h1 class="header-title"><strong>RELEVE DE NOTES</strong> / TRANSCRIPT</h1>
-			<p><strong>Ref N°</strong>&nbsp;&nbsp;_____________&nbsp;/{{document.referenceNumber}}</p>
+			<p><strong>Ref N°</strong> {{document.referenceNumber}}</p>
 		</div>
 	</div>
 
@@ -603,8 +603,8 @@ body > .container { width: 100%; height: 100%; position: relative; }
 		</div>
 
 		<div class="signature">
-			<div><strong>Douala, le {{document.issueDate}}</strong>
-			<br/><i>Douala, the {{document.issueDate}}</i></div><br/>
+			<div><strong>{{institution.city}}, le {{document.issueDate}}</strong>
+			<br/><i>{{institution.city}}, the {{document.issueDate}}</i></div><br/>
 
 			{{#if parentInstitution}}
 			<div><strong>LE DOYEN {{parentInstitution.displaySigle}}</strong>
@@ -761,7 +761,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				********************<br>
 				<strong>{{upper institution.nameFr}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 			<div class="header-logo-content">
@@ -784,13 +784,13 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				********************<br>
 				<strong>{{upper institution.nameEn}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 		</div>
 		<div class="header-row2">
 			<h1 class="header-title"><strong>RELEVE DE NOTES</strong> / TRANSCRIPT</h1>
-			<p><strong>Ref N°</strong>&nbsp;&nbsp;_____________&nbsp;/{{document.referenceNumber}}</p>
+			<p><strong>Ref N°</strong> {{document.referenceNumber}}</p>
 		</div>
 	</div>
 
@@ -913,8 +913,8 @@ body > .container { width: 100%; height: 100%; position: relative; }
 		</div>
 
 		<div class="signature">
-			<div><strong>Douala, le {{document.issueDate}}</strong>
-			<br/><i>Douala, the {{document.issueDate}}</i></div><br/>
+			<div><strong>{{institution.city}}, le {{document.issueDate}}</strong>
+			<br/><i>{{institution.city}}, the {{document.issueDate}}</i></div><br/>
 
 			<div><strong>Le Doyen de la Faculté</strong>
 			<br/><i>The Dean of the Faculty</i></div>
@@ -1075,7 +1075,7 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 					********************<br>
 					<strong>{{upper institution.nameFr}}</strong>
 					{{#if institution.postalBox}}<br>B.P. {{institution.postalBox}}{{/if}}
-					{{#if institution.contactEmail}}<br>Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+					{{#if institution.contactEmail}}<br>Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 
@@ -1096,7 +1096,7 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 					********************<br>
 					<strong>{{upper institution.nameEn}}</strong>
 					{{#if institution.postalBox}}<br>P.O. Box {{institution.postalBox}}{{/if}}
-					{{#if institution.contactEmail}}<br>Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+					{{#if institution.contactEmail}}<br>Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 		</div>

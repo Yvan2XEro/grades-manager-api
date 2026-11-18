@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
+import { documentErrorMessage } from "@/lib/document-errors";
 import { fileDateStamp } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
@@ -10,7 +11,21 @@ import {
 	saveGeneratedDocuments,
 } from "../services/bulk-document-download";
 
-export type BulkDocumentKind = "diploma" | "transcript" | "attestation";
+export type BulkDocumentKind =
+	| "enrollment_certificate"
+	| "diploma"
+	| "transcript"
+	| "attestation";
+
+/** A student enrolled in the class, and whether the document may be issued. */
+export type BulkStudent = {
+	id: string;
+	registrationNumber: string;
+	profile: { firstName: string; lastName: string };
+	eligible: boolean;
+	reason: string | null;
+	decision: string | null;
+};
 
 type GenStatus =
 	| { state: "pending" }
@@ -75,41 +90,46 @@ export function useBulkDocumentGeneration() {
 		},
 	});
 
-	const { data: students, isLoading: studentsLoading } = useQuery({
-		queryKey: ["bulk-students", classId],
-		queryFn: async () =>
-			classId
-				? await trpcClient.students.list.query({ classId, limit: 500 })
-				: { items: [] },
+	// Every student enrolled in the class (pending / withdrawn ones too), with
+	// the server's verdict for the chosen kind: ineligible ones are shown with
+	// the reason and cannot be selected.
+	const { data: roster, isLoading: studentsLoading } = useQuery({
+		queryKey: ["bulk-roster", kind, classId],
+		queryFn: () =>
+			trpcClient.academicDocuments.classRoster.query({ kind, classId }),
 		enabled: !!classId,
 	});
-	const studentItems =
-		(
-			students as
-				| {
-						items: Array<{
-							id: string;
-							registrationNumber: string;
-							profile: { firstName: string; lastName: string };
-						}>;
-				  }
-				| undefined
-		)?.items ?? [];
+	const studentItems: BulkStudent[] = useMemo(
+		() =>
+			(roster ?? []).map((r) => ({
+				id: r.studentId,
+				registrationNumber: r.registrationNumber,
+				profile: { firstName: r.firstName, lastName: r.lastName },
+				eligible: r.eligible,
+				reason: r.reason,
+				decision: r.decision,
+			})),
+		[roster],
+	);
+	const eligibleItems = studentItems.filter((s) => s.eligible);
 
 	useEffect(() => {
-		setSelectedIds(new Set(studentItems.map((s) => s.id)));
+		setSelectedIds(
+			new Set(studentItems.filter((s) => s.eligible).map((s) => s.id)),
+		);
 		setGenStatus({});
 		setProgress({ done: 0, total: 0 });
-	}, [studentItems.length]);
+	}, [studentItems]);
 
 	const allSelected =
-		studentItems.length > 0 && selectedIds.size === studentItems.length;
+		eligibleItems.length > 0 && selectedIds.size === eligibleItems.length;
 	const toggleAll = () =>
 		setSelectedIds(
-			allSelected ? new Set() : new Set(studentItems.map((s) => s.id)),
+			allSelected ? new Set() : new Set(eligibleItems.map((s) => s.id)),
 		);
 	const toggleOne = (id: string) =>
 		setSelectedIds((prev) => {
+			if (!studentItems.find((s) => s.id === id)?.eligible) return prev;
 			const next = new Set(prev);
 			next.has(id) ? next.delete(id) : next.add(id);
 			return next;
@@ -120,6 +140,7 @@ export function useBulkDocumentGeneration() {
 			const res = await trpcClient.academicDocuments.generate.mutate({
 				kind,
 				studentId,
+				classId,
 				format: "pdf",
 				demoMode,
 				period,
@@ -142,6 +163,7 @@ export function useBulkDocumentGeneration() {
 			const res = await trpcClient.academicDocuments.generate.mutate({
 				kind,
 				studentId,
+				classId,
 				format: "html",
 				demoMode,
 				period,
@@ -178,9 +200,7 @@ export function useBulkDocumentGeneration() {
 				paper: true,
 			});
 		},
-		onError: (err: any) => {
-			toast.error(err?.message ?? t("admin.documents.bulk.toast.previewError"));
-		},
+		onError: (err) => toast.error(documentErrorMessage(t, err)),
 	});
 
 	const handleGenerate = async () => {
@@ -220,7 +240,7 @@ export function useBulkDocumentGeneration() {
 					},
 				}));
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : String(err);
+				const msg = documentErrorMessage(t, err);
 				results.push({ studentId: id, ok: false, error: msg });
 				setGenStatus((s) => ({
 					...s,
@@ -274,7 +294,7 @@ export function useBulkDocumentGeneration() {
 	}, [genStatus]);
 
 	const previewFirst = () => {
-		const first = [...selectedIds][0] ?? studentItems[0]?.id;
+		const first = [...selectedIds][0] ?? eligibleItems[0]?.id;
 		if (!first) {
 			toast.error(t("admin.documents.bulk.toast.noStudentToPreview"));
 			return;
@@ -302,6 +322,7 @@ export function useBulkDocumentGeneration() {
 		classes,
 		classesLoading,
 		studentItems,
+		eligibleCount: eligibleItems.length,
 		studentsLoading,
 		selectedIds,
 		allSelected,

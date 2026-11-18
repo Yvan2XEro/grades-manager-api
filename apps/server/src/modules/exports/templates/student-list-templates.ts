@@ -103,7 +103,7 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 				********************<br>
 				<strong>{{upper institution.nameFr}}</strong>
 				{{#if institution.postalBox}}<br>********************<br>B.P. {{institution.postalBox}}{{/if}}
-				{{#if institution.contactEmail}}<br>Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}<br>Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 			</div>
 			<div class="header-logos">
 				{{{logo svg=logos.universitySvg url=logos.university alt="University" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
@@ -121,7 +121,7 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 				********************<br>
 				<strong>{{upper institution.nameEn}}</strong>
 				{{#if institution.postalBox}}<br>********************<br>P.O. Box {{institution.postalBox}}{{/if}}
-				{{#if institution.contactEmail}}<br>Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}<br>Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 			</div>
 			{{/if}}
 		</div>

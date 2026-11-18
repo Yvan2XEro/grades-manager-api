@@ -19,6 +19,11 @@ import { getDefaultThemePayload } from "../exports/themes/presets-payload";
 import { assertFeeClearance } from "../fee-clearance/fee-clearance.gates";
 import { findGatingRule } from "../fee-clearance/fee-clearance.repo";
 import * as studentsRepo from "../students/students.repo";
+import {
+	checkDocumentEligibility,
+	classDocumentRoster,
+	enrollmentEligibility,
+} from "./academic-documents.eligibility";
 import * as repo from "./academic-documents.repo";
 import * as service from "./academic-documents.service";
 import * as zod from "./academic-documents.zod";
@@ -78,6 +83,13 @@ const SYSTEM_TEMPLATES: ReadonlyArray<{
 }> = [
 	// Standard variants
 	{
+		type: "enrollment_certificate",
+		variant: "standard",
+		name: "Certificat de scolarité — Modèle officiel",
+		description:
+			"Certificat (attestation) de scolarité : certifie l'inscription de l'étudiant dans une classe pour une année académique. Format A4 portrait, bilingue.",
+	},
+	{
 		type: "student_list",
 		variant: "standard",
 		name: "Liste d'étudiants — Modèle officiel",
@@ -108,6 +120,13 @@ const SYSTEM_TEMPLATES: ReadonlyArray<{
 	// Center variants — same kinds, but the header carries only institution +
 	// center data (admin instances + legal text + center logo). Pick these
 	// when a program is attached to a center.
+	{
+		type: "enrollment_certificate",
+		variant: "center",
+		name: "Certificat de scolarité — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête du centre (instances administratives, contacts) au lieu des tutelles.",
+	},
 	{
 		type: "student_list",
 		variant: "center",
@@ -252,10 +271,14 @@ export const academicDocumentsRouter = router({
 					input.deliberationId,
 				);
 			}
-			const result = await service.generateDocument(ctx.institution.id, input);
+			const result = await service.generateDocument(ctx.institution.id, input, {
+				issuedBy: ctx.profile?.id ?? null,
+			});
 			const ext = input.format === "html" ? "html" : "pdf";
 			return {
 				data: result.content,
+				referenceNumber: result.referenceNumber,
+				usedTemplate: result.usedTemplate,
 				filename: `${input.kind}_${input.studentId}_${new Date()
 					.toISOString()
 					.slice(0, 10)}.${ext}`,
@@ -285,6 +308,69 @@ export const academicDocumentsRouter = router({
 					.slice(0, 10)}.${ext}`,
 				mimeType: result.mimeType,
 				usedTemplate: result.usedTemplate,
+			};
+		}),
+
+	/**
+	 * Students enrolled in a class with, for the chosen kind, whether the
+	 * document may be issued and why not. Drives the batch page.
+	 */
+	classRoster: tenantGradingProcedure
+		.input(zod.classDocumentRosterSchema)
+		.query(async ({ ctx, input }) => {
+			return await classDocumentRoster(
+				ctx.institution.id,
+				input.kind,
+				input.classId,
+			);
+		}),
+
+	/**
+	 * What can be issued for one student (student file → Documents): their
+	 * enrollments (each one an enrollment certificate) and whether a pass
+	 * certificate / diploma may be issued.
+	 */
+	studentOptions: tenantGradingProcedure
+		.input(zod.studentDocumentOptionsSchema)
+		.query(async ({ ctx, input }) => {
+			const enrollments = await repo.listStudentEnrollments(
+				ctx.institution.id,
+				input.studentId,
+			);
+			const [attestation, diploma] = await Promise.all([
+				checkDocumentEligibility(
+					ctx.institution.id,
+					"attestation",
+					input.studentId,
+				),
+				checkDocumentEligibility(
+					ctx.institution.id,
+					"diploma",
+					input.studentId,
+				),
+			]);
+			return {
+				enrollments: enrollments.map((e) => {
+					const elig = enrollmentEligibility([e], e.classId);
+					return {
+						classId: e.classId,
+						className: e.className,
+						academicYearName: e.academicYearName,
+						status: e.status,
+						eligible: elig.eligible,
+						reason: elig.reason ?? null,
+					};
+				}),
+				attestation: {
+					eligible: attestation.eligible,
+					reason: attestation.reason ?? null,
+					decision: attestation.decision ?? null,
+				},
+				diploma: {
+					eligible: diploma.eligible,
+					reason: diploma.reason ?? null,
+					decision: diploma.decision ?? null,
+				},
 			};
 		}),
 
@@ -493,6 +579,7 @@ export const academicDocumentsRouter = router({
 			// Pre-resolve standard + center system templates per type so we do not
 			// re-query for every program.
 			const TYPES_WITH_VARIANTS: ExportTemplateType[] = [
+				"enrollment_certificate",
 				"diploma",
 				"transcript",
 				"attestation",
@@ -627,11 +714,19 @@ export const academicDocumentsRouter = router({
 				}
 			}
 
+			const eligibility = await checkDocumentEligibility(
+				ctx.institution.id,
+				kind,
+				student.id,
+			);
 			results.push({
 				kind,
 				isGated,
 				isCleared,
-				canDownload: !isGated || isCleared,
+				eligible: eligibility.eligible,
+				reason: eligibility.reason ?? null,
+				decision: eligibility.decision ?? null,
+				canDownload: (!isGated || isCleared) && eligibility.eligible,
 			});
 		}
 
@@ -667,13 +762,17 @@ export const academicDocumentsRouter = router({
 				await runDocumentGateCheck(ctx, gate, student.id, ctx.institution.id);
 			}
 
-			const result = await service.generateDocument(ctx.institution.id, {
-				kind: input.kind,
-				studentId: student.id,
-				format: "pdf",
-				demoMode: false,
-				period: "annual",
-			});
+			const result = await service.generateDocument(
+				ctx.institution.id,
+				{
+					kind: input.kind,
+					studentId: student.id,
+					format: "pdf",
+					demoMode: false,
+					period: "annual",
+				},
+				{ issuedBy: ctx.profile.id },
+			);
 
 			const { db } = await import("../../db");
 			const schema = await import("../../db/schema/app-schema");

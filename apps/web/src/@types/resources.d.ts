@@ -1359,7 +1359,7 @@ interface Resources {
 					"gradeEntry": "Grade entry";
 					"exportTemplates": "Export templates";
 					"classDocumentTemplates": "Per-class documents";
-					"documentBatch": "Bulk generation";
+					"documentBatch": "Official documents";
 					"monitoring": "Monitoring";
 					"notifications": "Notifications";
 					"batchJobs": "Batch Jobs";
@@ -1546,7 +1546,7 @@ interface Resources {
 				"preferences": "Preferences";
 				"statistics": "Statistics";
 				"documents": "Documents";
-				"documentBatch": "Batch generation";
+				"documentBatch": "Official documents";
 				"exports": "Exports";
 				"myFees": "My fees";
 				"approvals": "Approvals";
@@ -1559,6 +1559,9 @@ interface Resources {
 			"badges": {
 				"new": "New";
 				"updated": "Updated";
+			};
+			"keywords": {
+				"documents": "certificate enrollment certificate pass certificate attestation transcript diploma batch generation";
 			};
 		};
 		"auth": {
@@ -2559,8 +2562,8 @@ interface Resources {
 					"namesHint": "Official names in French and English, abbreviation and slogan.";
 					"system": "System";
 					"systemHint": "Default academic year and registration format.";
-					"documentParams": "Document Generation";
-					"documentParamsHint": "Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation.";
+					"documentParams": "Official documents";
+					"documentParamsHint": "Signatory (name and title) and city printed on enrollment certificates, pass certificates, transcripts and diplomas. Also synced to Diplomation.";
 				};
 			};
 			"studyCycles": {
@@ -5361,8 +5364,12 @@ interface Resources {
 						"description": "Roster for this class (configurable columns)";
 					};
 					"attestation": {
-						"label": "Attestation";
-						"description": "Certificate of success or enrollment";
+						"label": "Pass certificate";
+						"description": "Certifies that the student passed the year (favourable jury decision)";
+					};
+					"enrollment_certificate": {
+						"label": "Enrollment certificate";
+						"description": "Certifies that the student is enrolled in a class for an academic year";
 					};
 				};
 				"classTemplates": {
@@ -5427,11 +5434,11 @@ interface Resources {
 						"ok": "OK";
 						"error": "Failed";
 					};
-					"title": "Bulk generation";
-					"subtitle": "Generated in the browser. <strong>Do not close the tab</strong> during the operation.";
+					"title": "Official documents";
+					"subtitle": "Enrollment certificates, pass certificates, transcripts and diplomas for a whole class. The server generates them one student after the other: <strong>keep this tab open</strong> until the download starts.";
 					"previewTitle": "Preview: {{kind}} ({{student}})";
 					"templateUsed": "Template used: <strong>{{name}}</strong>";
-					"previewDescription": "HTML rendering with real data, without PDF rasterization.";
+					"previewDescription": "HTML rendering with real data; the reference number is assigned when the PDF is generated.";
 					"toast": {
 						"previewError": "Preview failed";
 						"noSelection": "No student selected";
@@ -5456,8 +5463,8 @@ interface Resources {
 					};
 					"students": {
 						"title": "Students";
-						"count_one": "{{count}} student in this class.";
-						"count_other": "{{count}} students in this class.";
+						"count_one": "{{count}} student enrolled in this class.";
+						"count_other": "{{count}} students enrolled in this class.";
 						"selected_one": "{{count}} selected.";
 						"selected_other": "{{count}} selected.";
 						"zip": "ZIP";
@@ -5466,7 +5473,10 @@ interface Resources {
 						"preview": "Preview";
 						"generate": "Generate {{count}}";
 						"generating": "Generating…";
-						"empty": "No students in this class.";
+						"empty": "No student enrolled in this class.";
+						"eligible_one": "{{count}} can receive this document.";
+						"eligible_other": "{{count}} can receive this document.";
+						"ineligibleHint": "The others are listed with the reason and cannot be selected.";
 					};
 					"table": {
 						"selectAll": "Select all";
@@ -5477,6 +5487,8 @@ interface Resources {
 						"status": "Status";
 						"preview": "Preview";
 						"previewFor": "Preview for {{name}}";
+						"eligibility": "Eligibility";
+						"eligible": "Eligible";
 					};
 				};
 				"generate": {
@@ -5485,16 +5497,20 @@ interface Resources {
 					"toast": {
 						"success": "Document generated and downloaded";
 						"error": "Generation failed";
+						"issued": "Document N° {{reference}} issued and downloaded";
 					};
-					"title": "Generate a document";
-					"description": "For <strong>{{name}}</strong>. The template used is the one assigned to the class (otherwise the institution default).";
+					"title": "Issue an official document";
+					"description": "For <strong>{{name}}</strong>. Each PDF gets its own reference number.";
 					"kind": "Document type";
 					"format": "Format";
 					"formatPdf": "PDF";
 					"formatHtml": "HTML (preview)";
 					"demoMode": "Demo mode";
 					"demoModeHint": "Adds a \"DEMO\" watermark";
-					"submit": "Generate";
+					"submit": "Download PDF";
+					"enrollment": "Enrollment";
+					"cannotIssue": "This document cannot be issued: {{reason}}.";
+					"preview": "Preview";
 				};
 				"theme": {
 					"groups": {
@@ -5972,13 +5988,13 @@ interface Resources {
 					"blocked": "Financial clearance required to download this document.";
 				};
 				"attestation": {
-					"title": "Enrollment Attestation";
-					"description": "Attestation confirming your enrollment for the current academic year.";
+					"title": "Pass certificate";
+					"description": "Certifies that you passed the academic year (available after a favourable jury decision).";
 					"blocked": "Financial clearance required to download this document.";
 				};
 				"enrollment_certificate": {
 					"title": "Enrollment Certificate";
-					"description": "Official certificate of enrollment (Certificat de scolarité) for the current academic year.";
+					"description": "Official certificate of your enrollment in your class for the academic year.";
 					"blocked": "Financial clearance required to download this document.";
 				};
 				"history": {
@@ -7224,6 +7240,7 @@ interface Resources {
 				"emergency": "Emergency";
 				"empty": "No guardians linked.";
 			};
+			"documents": "Documents";
 		};
 		"gradesHub": {
 			"title": "Grades & Documents";
@@ -7271,6 +7288,31 @@ interface Resources {
 					"courses": "Courses";
 				};
 			};
+		};
+		"documents": {
+			"errors": {
+				"renderFailed": "The document could not be generated. Try again or contact the administrator.";
+				"generic": "The document could not be generated.";
+			};
+			"ineligible": {
+				"not_enrolled": "Not enrolled in this class";
+				"enrollment_pending": "Enrollment not validated yet";
+				"enrollment_withdrawn": "Withdrawn from this class";
+				"no_deliberation": "No year-end jury decision yet";
+				"deliberation_not_closed": "Jury not closed yet";
+				"decision_pending": "Jury decision pending";
+				"decision_unfavourable": "Jury decision: {{decision}}";
+				"decision_unfavourable_generic": "Unfavourable jury decision";
+			};
+			"decisions": {
+				"admitted": "admitted";
+				"compensated": "admitted by compensation";
+				"deferred": "deferred";
+				"repeat": "repeat the year";
+				"excluded": "excluded";
+				"pending": "pending";
+			};
+			"notEligibleError": "This document cannot be issued: {{reason}}.";
 		};
 	};
 }

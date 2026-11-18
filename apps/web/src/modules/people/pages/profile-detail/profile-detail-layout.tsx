@@ -1,12 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, User } from "lucide-react";
+import { ArrowLeft, ChevronDown, FileText, Loader2, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
+import {
+	GenerateDocumentDialog,
+	STUDENT_DOCUMENT_KINDS,
+} from "@/modules/documents/components/generate-document-dialog";
 import { trpcClient } from "@/utils/trpc";
 import { ProfileContext } from "../../hooks/use-profile-context";
 
@@ -56,6 +66,9 @@ export default function ProfileHub() {
 	const basePath = `/profiles/${profileId}`;
 	const isStudent = !!profile.student;
 	const fullName = `${profile.firstName} ${profile.lastName}`;
+	// Staff (who see the access tab) issue official documents from here.
+	const canIssueDocuments =
+		!!profile.student && profile.availableTabs.includes("access");
 
 	return (
 		<ProfileContext.Provider
@@ -86,6 +99,35 @@ export default function ProfileHub() {
 							)}
 						</div>
 					</div>
+					{canIssueDocuments && profile.student && (
+						// Not modal: the menu must release the page before the
+						// dialog it opens takes over (else pointer events stay off).
+						<DropdownMenu modal={false}>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline">
+									<FileText className="mr-2 h-4 w-4" />
+									{t("profileHub.documents")}
+									<ChevronDown className="ml-1 h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								{STUDENT_DOCUMENT_KINDS.map((kind) => (
+									<DropdownMenuItem
+										key={kind}
+										onClick={() =>
+											GenerateDocumentDialog.call({
+												studentId: profile.student!.id,
+												studentName: fullName,
+												initialKind: kind,
+											})
+										}
+									>
+										{t(`admin.documents.kinds.${kind}.label`)}
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
 				</div>
 				<HubNav tabs={visibleTabs} basePath={basePath} />
 			</HubLayout>

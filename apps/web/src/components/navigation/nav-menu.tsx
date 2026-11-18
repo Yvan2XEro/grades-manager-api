@@ -38,6 +38,8 @@ export type NavItem = {
 	badge?: NavBadgeType;
 	/** The link is not active when the path starts with this prefix. */
 	excludePrefix?: string;
+	/** Extra words the command palette matches (synonyms of the page). */
+	keywordsKey?: ParseKeys;
 };
 
 export type NavGroup = {
@@ -155,6 +157,7 @@ export function useNavMenu(IC = "size-[15px] shrink-0"): NavMenu {
 						to: "/document-batch",
 						icon: <FileText className={IC} />,
 						labelKey: "navigation.sidebar.admin.documentBatch",
+						keywordsKey: "navigation.keywords.documents",
 					},
 				],
 			},
