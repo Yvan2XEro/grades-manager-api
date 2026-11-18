@@ -1002,6 +1002,54 @@ describe("deliberations router", () => {
 		});
 	});
 
+	describe("workflows.cohortAnalytics", () => {
+		it("uses the class's deliberation of its year and has no figures without one", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const {
+				academicYear,
+				klass,
+				targetClass,
+				classCourses: { cc1a, cc1b, cc2a, cc2b },
+				student,
+			} = await setupDeliberationFixture();
+			const instId = klass.institutionId;
+			await createExamsWithGrade(cc1a.id, student.id, instId, 14, 16);
+			await createExamsWithGrade(cc1b.id, student.id, instId, 10, 12);
+			await createExamsWithGrade(cc2a.id, student.id, instId, 10, 12);
+			await createExamsWithGrade(cc2b.id, student.id, instId, 12, 14);
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			await admin.deliberations.transition({ id: delib.id, action: "open" });
+			await admin.deliberations.compute({ id: delib.id });
+			await admin.deliberations.transition({ id: delib.id, action: "close" });
+			await admin.deliberations.promoteAdmitted({
+				deliberationId: delib.id,
+				targetClassId: targetClass.id,
+			});
+
+			const [source] = await admin.workflows.cohortAnalytics({
+				classId: klass.id,
+			});
+			expect(source.successRate).toBe(100);
+			expect(source.avgGeneral).toBeGreaterThan(10);
+			expect(source.gradingProgress).toBe(100);
+
+			// The new class has no deliberation and no exam yet: no figures,
+			// even though its student was deliberated in the previous class.
+			const [target] = await admin.workflows.cohortAnalytics({
+				classId: targetClass.id,
+			});
+			expect(target.successRate).toBeNull();
+			expect(target.avgGeneral).toBeNull();
+			expect(target.gradingProgress).toBeNull();
+			expect(target.totalStudents).toBe(1);
+		});
+	});
+
 	describe("classes.createPromotionTarget", () => {
 		it("creates the next-level class of the target year once, with a generated code and name", async () => {
 			const ctx = await adminWithRealProfile();
