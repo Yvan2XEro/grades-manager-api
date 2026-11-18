@@ -83,3 +83,21 @@ export function useRevokeDelegate(selectedExam: string, onRevoked: () => void) {
 		},
 	});
 }
+
+/** Sends the selected exam's grades to the dean for approval. */
+export function useSubmitForReview(selectedExam: string, courseId: string) {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: () => trpcClient.exams.submit.mutate({ examId: selectedExam }),
+		onSuccess: () => {
+			toast.success(t("teacher.gradeEntry.toast.submitSuccess"));
+			queryClient.invalidateQueries({
+				queryKey: ["class-course-exams", courseId],
+			});
+			queryClient.invalidateQueries({ queryKey: ["teacher-hub-courses"] });
+		},
+		onError: (error: Error) =>
+			toast.error(error.message || t("teacher.gradeEntry.toast.submitError")),
+	});
+}

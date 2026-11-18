@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import i18n from "@/i18n";
 import type { GradesByStudent, RosterStudent } from "../types";
+import { isValidScore } from "./score-cells";
 
 type TemplateColumn = "registrationNumber" | "firstName" | "lastName" | "score";
 
@@ -60,15 +61,28 @@ export function exportGradeTemplate({
 	XLSX.writeFile(workbook, fileName);
 }
 
+/** A row of the imported file that was not taken, with the reason. */
+export type SkippedImportRow = {
+	/** Spreadsheet row number (header = row 1). */
+	row: number;
+	label: string;
+	reason: "unknownStudent" | "invalidScore";
+	value?: string;
+};
+
 /**
  * Reads a filled template: students are matched by registration number, or
  * by first + last name. Returns the form values (`student_<id>`) of the
- * valid scores (0–20).
+ * valid scores (0–20, "12,5" or "12.5") and the rows that were skipped.
  */
 export function readGradeImport(
 	file: File,
 	students: RosterStudent[],
-): Promise<{ updates: Record<string, number>; importedCount: number }> {
+): Promise<{
+	updates: Record<string, number>;
+	importedCount: number;
+	skipped: SkippedImportRow[];
+}> {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = (e) => {
@@ -79,35 +93,46 @@ export function readGradeImport(
 				const jsonData = XLSX.utils.sheet_to_json(worksheet) as TemplateRow[];
 
 				const updates: Record<string, number> = {};
-				let importedCount = 0;
+				const skipped: SkippedImportRow[] = [];
 
-				jsonData.forEach((row) => {
+				jsonData.forEach((row, index) => {
 					const registrationNumber = readColumn(row, "registrationNumber");
 					const firstName = readColumn(row, "firstName");
 					const lastName = readColumn(row, "lastName");
 					const rawScore = readColumn(row, "score");
+					if (rawScore === undefined || rawScore === null || rawScore === "")
+						return;
+					const label =
+						[lastName, firstName].filter(Boolean).join(" ") ||
+						String(registrationNumber ?? "");
 					const student = students.find(
 						(s) =>
 							(registrationNumber !== undefined &&
-								s.registrationNumber === String(registrationNumber)) ||
+								s.registrationNumber === String(registrationNumber).trim()) ||
 							(s.firstName === firstName && s.lastName === lastName),
 					);
-
-					if (
-						student &&
-						rawScore !== undefined &&
-						rawScore !== "" &&
-						rawScore !== null
-					) {
-						const score = Number(rawScore);
-						if (!Number.isNaN(score) && score >= 0 && score <= 20) {
-							updates[`student_${student.id}`] = score;
-							importedCount++;
-						}
+					if (!student) {
+						skipped.push({ row: index + 2, label, reason: "unknownStudent" });
+						return;
 					}
+					const { ok, n } = isValidScore(String(rawScore));
+					if (!ok || n === undefined) {
+						skipped.push({
+							row: index + 2,
+							label,
+							reason: "invalidScore",
+							value: String(rawScore),
+						});
+						return;
+					}
+					updates[`student_${student.id}`] = n;
 				});
 
-				resolve({ updates, importedCount });
+				resolve({
+					updates,
+					importedCount: Object.keys(updates).length,
+					skipped,
+				});
 			} catch (error) {
 				reject(error);
 			}

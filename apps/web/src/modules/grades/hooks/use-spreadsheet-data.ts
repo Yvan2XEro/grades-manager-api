@@ -44,7 +44,10 @@ export function useSpreadsheetData(courseId: string | undefined) {
 			const { items } = await trpcClient.exams.list.query({
 				classCourseId: courseId,
 			});
-			return items.map(
+			const sorted = [...items].sort(
+				(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+			);
+			return sorted.map(
 				(e: any): SpreadsheetExam => ({
 					id: e.id,
 					name: e.name,

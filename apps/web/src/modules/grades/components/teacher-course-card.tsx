@@ -65,14 +65,18 @@ export function TeacherCourseCard({ course }: { course: CourseData }) {
 				</p>
 			) : (
 				<div className="divide-y">
-					{course.exams.map((exam) => (
-						<CompactExamRow
-							key={exam.id}
-							exam={exam}
-							studentCount={course.studentCount}
-							classCourseId={course.classCourseId}
-						/>
-					))}
+					{[...course.exams]
+						.sort(
+							(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+						)
+						.map((exam) => (
+							<CompactExamRow
+								key={exam.id}
+								exam={exam}
+								studentCount={course.studentCount}
+								classCourseId={course.classCourseId}
+							/>
+						))}
 				</div>
 			)}
 		</div>

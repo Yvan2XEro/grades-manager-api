@@ -442,11 +442,12 @@ interface Resources {
 					saving: "Saving...";
 					exportTemplate: "Export Template";
 					importGrades: "Import Grades";
-					lockRequiresApproval: "The exam must be approved before locking";
+					submit: "Submit for approval";
+					resubmit: "Submit again";
 				};
 				info: {
 					title: "Grading information";
-					description: "Grades should be entered on a scale of 0-20. Once grades are locked, they cannot be modified. Please review carefully before locking.";
+					description: "Grades are out of 20 (12.5 or 12,5). Save, then submit them for approval: you can correct them until the dean approves.";
 				};
 				table: {
 					registration: "Registration #";
@@ -461,6 +462,7 @@ interface Resources {
 				validation: {
 					min: "Minimum score is 0";
 					max: "Maximum score is 20";
+					range: "Enter a grade between 0 and 20 (e.g. 12.5)";
 				};
 				emptyStudents: {
 					title: "No students found";
@@ -500,8 +502,18 @@ interface Resources {
 					lockError: "Could not lock the exam";
 					exportError: "Please select an exam with students";
 					exportSuccess: "Template exported successfully";
-					importSuccess: "Imported {{count}} grades successfully";
+					importSuccess: "{{count}} grades imported and saved";
 					importError: "Failed to import grades";
+					noChanges: "No change to save";
+					importPartial: "{{count}} grades imported and saved, {{skipped}} rows skipped";
+					importEmpty: "No grade found in this file. Use the template exported from this page.";
+					importMore: "… and {{count}} more";
+					importSkip: {
+						unknownStudent: "Row {{row}}: {{label}} is not in this class";
+						invalidScore: 'Row {{row}}: {{label}}, "{{value}}" is not a grade between 0 and 20';
+					};
+					submitSuccess: "Grades sent to the dean for approval";
+					submitError: "Could not submit the grades";
 				};
 				template: {
 					registrationNumber: "Registration Number";
@@ -510,6 +522,13 @@ interface Resources {
 					score: "Score";
 					sheetName: "Grades";
 					filePrefix: "grades";
+				};
+				awaitingApproval: "Awaiting the dean's approval";
+				submitConfirm: {
+					title: "Submit the grades for approval?";
+					message: "The dean will review them. Until they are approved, you can still correct a grade; once approved, they are final.";
+					missing_one: "{{count}} student has no grade yet.";
+					missing_other: "{{count}} students have no grade yet.";
 				};
 			};
 			attendance: {
@@ -5058,6 +5077,7 @@ interface Resources {
 							programNameTaken: "This name is already used by program {{code}}.";
 							programWithoutCycleWarning: "Without a cycle, the program's levels cannot be offered to its classes.";
 							unknownProgramInFile: 'Unknown program "{{value}}": add it to the {{sheet}} sheet.';
+							courseWeightsOver100: "{{course}}: with its other exams ({{exams}}) the weights add up to {{total}} %. Remove those exams or adjust the model.";
 						};
 						changes: "Changes ({{count}})";
 					};

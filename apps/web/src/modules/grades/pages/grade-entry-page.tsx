@@ -1,5 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { confirmAction } from "@/components/callable/confirm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
@@ -10,13 +11,37 @@ import { GradeEntryHeader } from "../components/grade-entry-header";
 import { GradeEntryTable } from "../components/grade-entry-table";
 import { useGradeEntry } from "../hooks/use-grade-entry";
 import { useGradeEntryForm } from "../hooks/use-grade-entry-form";
-import { useLockExam } from "../hooks/use-grade-entry-mutations";
+import {
+	useLockExam,
+	useSubmitForReview,
+} from "../hooks/use-grade-entry-mutations";
 
 export default function GradeEntry() {
 	const { t } = useTranslation();
 	const entry = useGradeEntry();
 	const form = useGradeEntryForm(entry);
 	const lockExam = useLockExam(entry.selectedExam, entry.courseId);
+	const submitForReview = useSubmitForReview(
+		entry.selectedExam,
+		entry.courseId,
+	);
+	const missing = entry.rosterStudents.filter(
+		(s) => entry.gradesByStudent[s.id] === undefined,
+	).length;
+	const askSubmit = () =>
+		confirmAction({
+			title: t("teacher.gradeEntry.submitConfirm.title"),
+			message: [
+				missing > 0
+					? t("teacher.gradeEntry.submitConfirm.missing", { count: missing })
+					: null,
+				t("teacher.gradeEntry.submitConfirm.message"),
+			]
+				.filter(Boolean)
+				.join(" "),
+			confirmText: t("teacher.gradeEntry.actions.submit"),
+			onConfirm: () => submitForReview.mutate(),
+		});
 	useBreadcrumbEntity(
 		entry.courseId,
 		entry.courseInfo
@@ -70,6 +95,8 @@ export default function GradeEntry() {
 				onImportGrades={form.handleImportGrades}
 				onLock={() => lockExam.mutate()}
 				isLocking={lockExam.isPending}
+				onSubmitForReview={askSubmit}
+				isSubmitting={submitForReview.isPending}
 			/>
 
 			{selectedExam && rosterStudents.length > 0 ? (

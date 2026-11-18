@@ -4887,11 +4887,12 @@
         "saving": "Enregistrement...",
         "exportTemplate": "Exporter le modèle",
         "importGrades": "Importer les notes",
-        "lockRequiresApproval": "L'examen doit être approuvé avant verrouillage"
+        "submit": "Soumettre pour validation",
+        "resubmit": "Soumettre à nouveau"
       },
       "info": {
         "title": "Informations de notation",
-        "description": "Les notes doivent être saisies sur 20. Une fois verrouillées, elles ne peuvent plus être modifiées. Vérifiez-les avant de verrouiller."
+        "description": "Les notes sont sur 20 (12,5 ou 12.5). Enregistrez, puis soumettez-les pour validation : vous pouvez les corriger jusqu'à la validation du doyen."
       },
       "table": {
         "registration": "N° de matricule",
@@ -4905,7 +4906,8 @@
       },
       "validation": {
         "min": "La note minimale est 0",
-        "max": "La note maximale est 20"
+        "max": "La note maximale est 20",
+        "range": "Entrez une note entre 0 et 20 (ex. 12,5)"
       },
       "emptyStudents": {
         "title": "Aucun étudiant",
@@ -4945,8 +4947,18 @@
         "lockError": "Impossible de verrouiller l'évaluation",
         "exportError": "Veuillez sélectionner un examen avec des étudiants",
         "exportSuccess": "Modèle exporté avec succès",
-        "importSuccess": "{{count}} notes importées avec succès",
-        "importError": "Échec de l'importation des notes"
+        "importSuccess": "{{count}} notes importées et enregistrées",
+        "importError": "Échec de l'importation des notes",
+        "noChanges": "Aucune modification à enregistrer",
+        "importPartial": "{{count}} notes importées et enregistrées, {{skipped}} lignes ignorées",
+        "importEmpty": "Aucune note trouvée dans ce fichier. Utilisez le modèle exporté depuis cette page.",
+        "importMore": "… et {{count}} autres",
+        "importSkip": {
+          "unknownStudent": "Ligne {{row}} : {{label}} n'est pas dans cette classe",
+          "invalidScore": "Ligne {{row}} : {{label}}, « {{value}} » n'est pas une note entre 0 et 20"
+        },
+        "submitSuccess": "Notes envoyées au doyen pour validation",
+        "submitError": "Impossible de soumettre les notes"
       },
       "template": {
         "registrationNumber": "Matricule",
@@ -4955,6 +4967,13 @@
         "score": "Note",
         "sheetName": "Notes",
         "filePrefix": "notes"
+      },
+      "awaitingApproval": "En attente de validation du doyen",
+      "submitConfirm": {
+        "title": "Soumettre les notes pour validation ?",
+        "message": "Le doyen va les examiner. Tant qu'elles ne sont pas validées, vous pouvez encore corriger une note ; une fois validées, elles sont définitives.",
+        "missing_one": "{{count}} étudiant n'a pas encore de note.",
+        "missing_other": "{{count}} étudiants n'ont pas encore de note."
       }
     },
     "gradeExport": {

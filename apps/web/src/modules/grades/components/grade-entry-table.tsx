@@ -14,6 +14,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { isValidScore } from "../services/score-cells";
 import type { GradesByStudent, RosterStudent } from "../types";
 
 /** One score input per student of the selected exam, with the save button. */
@@ -70,22 +71,17 @@ export function GradeEntryTable({
 											<div className="flex flex-col gap-1">
 												<Input
 													key={`${selectedExam}-${student.id}`}
-													type="number"
+													type="text"
 													inputMode="decimal"
-													min="0"
-													max="20"
-													step="0.25"
+													autoComplete="off"
+													placeholder="/20"
 													className="w-28"
+													aria-invalid={Boolean(fieldError)}
 													disabled={inputsDisabled}
 													{...register(`student_${student.id}`, {
-														min: {
-															value: 0,
-															message: t("teacher.gradeEntry.validation.min"),
-														},
-														max: {
-															value: 20,
-															message: t("teacher.gradeEntry.validation.max"),
-														},
+														validate: (value) =>
+															isValidScore(String(value ?? "")).ok ||
+															t("teacher.gradeEntry.validation.range"),
 													})}
 												/>
 												{fieldError ? (

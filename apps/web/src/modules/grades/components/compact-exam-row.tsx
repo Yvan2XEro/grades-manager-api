@@ -36,12 +36,19 @@ export function CompactExamRow({
 				)
 			: null;
 	const allGraded = graded >= studentCount && studentCount > 0;
-	const canEnter = !exam.isLocked && ["draft", "open"].includes(exam.status);
+	// Grades stay editable until the dean approves; submission needs every
+	// student graded (the grade page also allows a partial submission).
+	const editable =
+		!exam.isLocked &&
+		["draft", "scheduled", "rejected", "submitted"].includes(exam.status);
 	const canSubmit =
-		(exam.isLocked && ["draft", "open"].includes(exam.status)) ||
-		exam.status === "locked";
+		!exam.isLocked &&
+		["draft", "scheduled", "rejected"].includes(exam.status) &&
+		allGraded;
+	const canEnter = editable;
 
-	const goToGradeEntry = () => navigate(`/grades/${classCourseId}`);
+	const goToGradeEntry = () =>
+		navigate(`/grades/${classCourseId}?exam=${exam.id}`);
 
 	const actionButton = () => {
 		if (canSubmit)
