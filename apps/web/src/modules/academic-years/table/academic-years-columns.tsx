@@ -1,14 +1,15 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format, isValid, parseISO } from "date-fns";
+import { isValid, parseISO } from "date-fns";
 import type { TFunction } from "i18next";
 import { Switch } from "@/components/ui/switch";
+import { formatDate } from "@/lib/date-format";
 import type { AcademicYearRow } from "../types";
 
-const formatDate = (t: TFunction, dateString: string) => {
+const formatYearDate = (t: TFunction, dateString: string) => {
 	try {
 		const date = parseISO(dateString);
 		if (!isValid(date)) return t("common.invalidDate");
-		return format(date, "MMM d, yyyy");
+		return formatDate(date);
 	} catch {
 		return t("common.invalidDate");
 	}
@@ -27,12 +28,12 @@ export function getAcademicYearsColumns(
 		{
 			id: "startDate",
 			header: t("admin.academicYears.table.startDate"),
-			cell: ({ row }) => formatDate(t, row.original.startDate),
+			cell: ({ row }) => formatYearDate(t, row.original.startDate),
 		},
 		{
 			id: "endDate",
 			header: t("admin.academicYears.table.endDate"),
-			cell: ({ row }) => formatDate(t, row.original.endDate),
+			cell: ({ row }) => formatYearDate(t, row.original.endDate),
 		},
 		{
 			id: "status",

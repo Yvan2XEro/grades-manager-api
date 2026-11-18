@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { Trash2, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { formatDate } from "@/lib/date-format";
 import { useRevokeDelegate } from "../hooks/use-grade-entry-mutations";
 import type { Delegate } from "../types";
 import { AssignDelegateDialog } from "./assign-delegate-dialog";
@@ -90,7 +90,7 @@ export function ExamDelegatesCard({
 										</p>
 										<p className="text-muted-foreground text-xs">
 											{t("teacher.gradeEntry.delegates.grantedAt", {
-												date: format(new Date(delegate.createdAt), "PPp"),
+												date: formatDate(delegate.createdAt, "PPp"),
 											})}
 										</p>
 										{delegate.grantedBy?.id ? (

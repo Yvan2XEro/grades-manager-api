@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import type { TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
+import { dateLocale } from "@/lib/date-format";
 import type { GradeAccessGrantRow } from "../types";
 
 export function getGradeAccessGrantsColumns(
@@ -51,6 +52,7 @@ export function getGradeAccessGrantsColumns(
 				<span className="text-muted-foreground text-xs">
 					{formatDistanceToNow(new Date(row.original.createdAt), {
 						addSuffix: true,
+						locale: dateLocale(),
 					})}
 				</span>
 			),

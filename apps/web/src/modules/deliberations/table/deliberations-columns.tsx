@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import type { TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
+import { dateLocale } from "@/lib/date-format";
 import { statusVariants } from "../services/deliberation-status";
 import type { DeliberationListItem } from "../types";
 
@@ -56,6 +57,7 @@ export function getDeliberationsColumns(
 				<span className="text-muted-foreground text-xs">
 					{formatDistanceToNow(new Date(row.original.createdAt), {
 						addSuffix: true,
+						locale: dateLocale(),
 					})}
 				</span>
 			),

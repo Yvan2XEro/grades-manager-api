@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { FileSpreadsheet, Loader2, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,6 +24,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { formatDate } from "@/lib/date-format";
 import type { ExamSelection } from "../hooks/use-exam-selection";
 import type { ExamItem, ExamSort } from "../types";
 import { StepBadge } from "./export-ui";
@@ -197,8 +197,7 @@ export function ExamSelectionCard({
 																{exam.name} • {exam.type}
 															</div>
 															<div className="text-muted-foreground text-xs">
-																{format(new Date(exam.date), "dd MMM yyyy")} •{" "}
-																{exam.percentage}%
+																{formatDate(exam.date)} • {exam.percentage}%
 															</div>
 														</label>
 													</div>

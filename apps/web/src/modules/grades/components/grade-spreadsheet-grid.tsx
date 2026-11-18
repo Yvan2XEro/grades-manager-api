@@ -81,7 +81,12 @@ export function GradeSpreadsheetGrid({
 								<span className="flex items-center gap-1">
 									{exam.name}
 									{exam.isLocked && (
-										<Lock className="h-3 w-3 text-muted-foreground" />
+										<Lock
+											className="h-3 w-3 text-muted-foreground"
+											aria-label={t("teacher.spreadsheet.lockedExam")}
+										>
+											<title>{t("teacher.spreadsheet.lockedExam")}</title>
+										</Lock>
 									)}
 								</span>
 								<span className="font-normal text-[10px] text-muted-foreground">

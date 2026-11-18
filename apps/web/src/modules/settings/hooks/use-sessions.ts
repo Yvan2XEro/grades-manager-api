@@ -14,11 +14,13 @@ export function useSessions() {
 
 	const loadSessions = useCallback(async () => {
 		try {
-			const response = await authClient.listSessions();
+			// Better-Auth client calls resolve to { data, error }
+			const { data, error } = await authClient.listSessions();
+			if (error) throw error;
+			const response = data as SessionResponse | null;
 			const rawSessions: SessionInfo[] = Array.isArray(response)
 				? response
-				: ((response as Exclude<SessionResponse, SessionInfo[]>)?.sessions ??
-					[]);
+				: (response?.sessions ?? []);
 			const currentToken = resolveToken(
 				session?.session as Record<string, unknown>,
 			);

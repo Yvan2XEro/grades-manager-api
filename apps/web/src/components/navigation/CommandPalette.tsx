@@ -1,23 +1,4 @@
-import type { ParseKeys } from "i18next";
-import {
-	BarChart2,
-	Bell,
-	BookOpen,
-	Building2,
-	Calendar,
-	CheckSquare,
-	ClipboardCheck,
-	ClipboardList,
-	FileText,
-	GitBranch,
-	GraduationCap,
-	Layers,
-	LayoutDashboard,
-	School,
-	Settings,
-	Users,
-} from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import {
@@ -29,18 +10,7 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "@/components/ui/command";
-
-type CommandEntry = {
-	labelKey: ParseKeys;
-	icon: ReactNode;
-	href: string;
-	keywords: string;
-};
-
-type CommandSection = {
-	groupKey: "main" | "academic" | "tools";
-	items: CommandEntry[];
-};
+import { useNavMenu } from "./nav-menu";
 
 type Props = {
 	open: boolean;
@@ -61,133 +31,23 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 		navigate(href);
 	};
 
-	const IC = "h-4 w-4";
-
-	const COMMANDS: CommandSection[] = [
-		{
-			groupKey: "main",
-			items: [
-				{
-					labelKey: "navigation.sidebar.admin.dashboard",
-					icon: <LayoutDashboard className={IC} />,
-					href: "/",
-					keywords: "home overview accueil",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.students",
-					icon: <GraduationCap className={IC} />,
-					href: "/users/people",
-					keywords: "students élèves étudiants",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.exams",
-					icon: <ClipboardCheck className={IC} />,
-					href: "/exams",
-					keywords: "exams tests épreuves",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.enrollments",
-					icon: <ClipboardList className={IC} />,
-					href: "/classes/enrollments",
-					keywords: "enrollments inscriptions",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.users",
-					icon: <Users className={IC} />,
-					href: "/users",
-					keywords: "users comptes accounts",
-				},
-			],
-		},
-		{
-			groupKey: "academic",
-			items: [
-				{
-					labelKey: "navigation.sidebar.admin.academicYears",
-					icon: <Calendar className={IC} />,
-					href: "/academic-years",
-					keywords: "années years",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.courses",
-					icon: <BookOpen className={IC} />,
-					href: "/programs/courses",
-					keywords: "courses matières",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.classes",
-					icon: <Layers className={IC} />,
-					href: "/classes",
-					keywords: "classes groupes",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.faculties",
-					icon: <Building2 className={IC} />,
-					href: "/institution/faculties",
-					keywords: "facultés institutions",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.programs",
-					icon: <School className={IC} />,
-					href: "/programs",
-					keywords: "programmes filières",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.studyCycles",
-					icon: <GitBranch className={IC} />,
-					href: "/institution/cycles",
-					keywords: "cycles licence master",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.teachingUnits",
-					icon: <Layers className={IC} />,
-					href: "/programs/teaching-units",
-					keywords: "UE teaching units unités",
-				},
-			],
-		},
-		{
-			groupKey: "tools",
-			items: [
-				{
-					labelKey: "navigation.sidebar.admin.examScheduler",
-					icon: <CheckSquare className={IC} />,
-					href: "/exams/scheduler",
-					keywords: "scheduler planificateur",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.gradeExport",
-					icon: <FileText className={IC} />,
-					href: "/grades/export",
-					keywords: "export grades notes résultats",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.deliberations",
-					icon: <ClipboardList className={IC} />,
-					href: "/academic-results/deliberations",
-					keywords: "délibérations jury",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.notifications",
-					icon: <Bell className={IC} />,
-					href: "/notifications/center",
-					keywords: "notifications alertes",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.monitoring",
-					icon: <BarChart2 className={IC} />,
-					href: "/monitoring",
-					keywords: "monitoring surveillance logs",
-				},
-				{
-					labelKey: "navigation.sidebar.admin.institution",
-					icon: <Settings className={IC} />,
-					href: "/institution",
-					keywords: "institution settings paramètres",
-				},
-			],
-		},
-	];
+	// Same entries as the sidebar of the user's role, so search never offers
+	// a page the role cannot open.
+	const menu = useNavMenu("h-4 w-4");
+	const sections =
+		menu.type === "grouped"
+			? menu.groups.map((g) => ({
+					key: g.key,
+					heading: t(g.titleKey),
+					items: g.items,
+				}))
+			: [
+					{
+						key: "main",
+						heading: t("navigation.command.groups.main"),
+						items: menu.items,
+					},
+				];
 
 	return (
 		<CommandDialog
@@ -207,19 +67,17 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 				<CommandEmpty>
 					{t("navigation.command.empty", { query: search })}
 				</CommandEmpty>
-				{COMMANDS.map((section, i) => (
-					<span key={section.groupKey}>
+				{sections.map((section, i) => (
+					<span key={section.key}>
 						{i > 0 && <CommandSeparator />}
-						<CommandGroup
-							heading={t(`navigation.command.groups.${section.groupKey}`)}
-						>
+						<CommandGroup heading={section.heading}>
 							{section.items.map((item) => {
 								const label = t(item.labelKey);
 								return (
 									<CommandItem
-										key={item.href}
-										value={`${label} ${item.keywords}`}
-										onSelect={() => handleSelect(item.href)}
+										key={item.to}
+										value={`${label} ${section.heading} ${item.to}`}
+										onSelect={() => handleSelect(item.to)}
 										className="gap-3"
 									>
 										<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border bg-muted text-muted-foreground">

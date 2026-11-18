@@ -220,7 +220,7 @@ interface Resources {
 				noMatchHint: "Try another search or clear the filters.";
 				searchPlaceholder: "Search for a course or a class…";
 				summary: "Summary";
-				noExams: "No exam for this course";
+				noExams: "No evaluation yet for this course. Evaluations (CC, exam) are scheduled by the registrar: once created, they appear here for grade entry.";
 				hubTitle: "My courses & grades";
 				hubDescription: "Grade entry, locking and submission per course";
 				noSearchMatch: "No course matches your search.";
@@ -1215,15 +1215,18 @@ interface Resources {
 				legend: {
 					hint: "Tab/Enter/arrows to move. Clear a cell to delete the grade. Saved automatically when leaving the cell.";
 					title: "Fast entry — autosave";
+					readOnlyTitle: "Read only — grades are locked";
+					readOnlyHint: "These evaluations are approved and locked. To correct a grade, ask the registrar or the dean to reopen the evaluation.";
 				};
 				matricule: "Registration no.";
 				noCourse: "No course selected";
-				noExams: "No exam for this course yet. Create one first.";
+				noExams: "No evaluation for this course yet. The registrar schedules evaluations; they will appear here once created.";
 				noStudents: "No student matches the search.";
 				pending: "pending";
 				perExamMode: "Per-exam mode";
 				searchStudent: "Search for a student…";
 				studentCol: "Student";
+				lockedExam: "Locked: approved evaluation, grades can no longer be edited";
 			};
 		};
 		navigation: {
@@ -1285,8 +1288,6 @@ interface Resources {
 				};
 				groups: {
 					main: "Main";
-					academic: "Academic";
-					tools: "Tools";
 				};
 			};
 			header: {

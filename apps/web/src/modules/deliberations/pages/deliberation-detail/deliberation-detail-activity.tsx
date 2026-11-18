@@ -1,5 +1,6 @@
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@/lib/date-format";
 import { useDeliberationContext } from "../../hooks/use-deliberation-context";
 
 export default function DeliberationActivityTab() {
@@ -39,7 +40,7 @@ export default function DeliberationActivityTab() {
 										)}
 									</div>
 									<span className="shrink-0 text-muted-foreground text-xs">
-										{new Date(log.createdAt).toLocaleString()}
+										{formatDate(log.createdAt, "PPp")}
 									</span>
 								</div>
 							);

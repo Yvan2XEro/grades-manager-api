@@ -436,6 +436,40 @@ export const examsStep: ImportStepDef = {
 			}
 		}
 
+		// Exams of a course outside the model (another type) keep counting in
+		// its average: flag courses whose weights would exceed 100 %.
+		for (const cc of classCourses) {
+			const own = exceptions.get(cc.id);
+			let total = 0;
+			for (const component of model) {
+				if (component.retakeOf) continue;
+				const exception = own?.get(normalize(component.type));
+				if (exception?.remove) continue;
+				total += exception?.percentage ?? component.percentage;
+			}
+			const extra = exams.filter(
+				(e) =>
+					e.classCourse === cc.id &&
+					e.sessionType !== "retake" &&
+					!model.some((c) => normalize(c.type) === normalize(e.type)),
+			);
+			for (const e of extra) total += Number(e.percentage);
+			if (extra.length && total > 100.01)
+				push(
+					MODEL,
+					0,
+					undefined,
+					"warning",
+					"courseWeightsOver100",
+					{
+						course: cc.courseCode,
+						total: Number(total.toFixed(2)),
+						exams: extra.map((e) => e.type).join(", "),
+					},
+					`${cc.courseCode}: with its other exams (${extra.map((e) => e.type).join(", ")}) the weights add up to ${total.toFixed(2)} %. Remove them or adjust the model.`,
+				);
+		}
+
 		return {
 			sheets: [summary],
 			issues,

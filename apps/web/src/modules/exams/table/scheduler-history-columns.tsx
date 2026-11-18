@@ -1,8 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import { TableProperties } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import type { SchedulerHistoryItem } from "../types";
 
 export function getSchedulerHistoryColumns(
@@ -13,7 +13,7 @@ export function getSchedulerHistoryColumns(
 		{
 			id: "date",
 			header: t("admin.exams.table.date"),
-			cell: ({ row }) => format(new Date(row.original.createdAt), "PPp"),
+			cell: ({ row }) => formatDate(row.original.createdAt, "PPp"),
 		},
 		{
 			id: "academicYear",

@@ -241,9 +241,7 @@
         "close": "fermer"
       },
       "groups": {
-        "main": "Principal",
-        "academic": "Académique",
-        "tools": "Outils"
+        "main": "Principal"
       }
     },
     "header": {
@@ -4010,7 +4008,8 @@
             "unknownCycle": "Cycle « {{value}} » inconnu : importez-le d'abord à l'étape « Cycles & niveaux ».",
             "programNameTaken": "Ce nom est déjà utilisé par le programme « {{code}} ».",
             "programWithoutCycleWarning": "Sans cycle, les niveaux du programme ne seront pas proposés pour ses classes.",
-            "unknownProgramInFile": "Programme « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} »."
+            "unknownProgramInFile": "Programme « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} ».",
+            "courseWeightsOver100": "{{course}} : avec ses autres évaluations ({{exams}}), les pondérations totalisent {{total}} %. Supprimez ces évaluations ou ajustez le modèle."
           },
           "changes": "Modifications ({{count}})"
         },
@@ -4768,7 +4767,7 @@
       "noMatchHint": "Essayez une autre recherche ou effacez les filtres.",
       "searchPlaceholder": "Rechercher un cours ou une classe…",
       "summary": "Summary",
-      "noExams": "Aucun examen pour ce cours",
+      "noExams": "Aucune évaluation pour ce cours. Les évaluations (CC, examen) sont programmées par la scolarité : dès leur création, elles apparaissent ici pour la saisie des notes.",
       "hubTitle": "Mes cours & notes",
       "hubDescription": "Saisie des notes, verrouillage et soumission par cours",
       "noSearchMatch": "Aucun cours ne correspond à votre recherche.",
@@ -5660,16 +5659,19 @@
       "invalidScore": "La note doit être comprise entre 0 et 20",
       "legend": {
         "hint": "Tab/Entrée/flèches pour naviguer. Videz une cellule pour supprimer la note. Enregistrement automatique en quittant la cellule.",
-        "title": "Saisie rapide — enregistrement automatique"
+        "title": "Saisie rapide — enregistrement automatique",
+        "readOnlyTitle": "Lecture seule — notes verrouillées",
+        "readOnlyHint": "Ces évaluations sont validées et verrouillées. Pour corriger une note, demandez à la scolarité ou au doyen de rouvrir l’évaluation."
       },
       "matricule": "Matricule",
       "noCourse": "Aucun cours sélectionné",
-      "noExams": "Aucun examen pour ce cours. Créez-en un d'abord.",
+      "noExams": "Aucune évaluation pour ce cours. La scolarité programme les évaluations ; elles apparaîtront ici dès leur création.",
       "noStudents": "Aucun étudiant ne correspond à la recherche.",
       "pending": "en cours",
       "perExamMode": "Mode examen unique",
       "searchStudent": "Rechercher un étudiant…",
-      "studentCol": "Étudiant"
+      "studentCol": "Étudiant",
+      "lockedExam": "Verrouillée : évaluation validée, les notes ne sont plus modifiables"
     }
   },
   "dean": {

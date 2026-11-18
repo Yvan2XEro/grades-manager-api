@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import type { EnrollmentRow } from "../types";
 
 export const enrollmentStudentName = (row: EnrollmentRow, t: TFunction) =>
@@ -49,14 +50,14 @@ export function getEnrollmentsColumns(
 					<p>
 						{t("admin.enrollments.fields.enrolledAt", {
 							value: enrollment.enrolledAt
-								? new Date(enrollment.enrolledAt).toLocaleDateString()
+								? formatDate(enrollment.enrolledAt)
 								: t("common.labels.notAvailable"),
 						})}
 					</p>
 					{enrollment.exitedAt && (
 						<p>
 							{t("admin.enrollments.fields.exitedAt", {
-								value: new Date(enrollment.exitedAt).toLocaleDateString(),
+								value: formatDate(enrollment.exitedAt),
 							})}
 						</p>
 					)}

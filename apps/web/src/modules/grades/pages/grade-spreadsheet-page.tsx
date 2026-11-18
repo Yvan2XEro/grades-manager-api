@@ -79,6 +79,8 @@ export default function GradeSpreadsheet() {
 		(s) => s === "dirty" || s === "saving",
 	).length;
 	const errorCount = Object.values(states).filter((s) => s === "error").length;
+	const readOnly =
+		exams.length > 0 && exams.every((ex) => ex.isLocked || !ex.canEdit);
 
 	return (
 		<div className="space-y-4">
@@ -123,10 +125,14 @@ export default function GradeSpreadsheet() {
 				<Card>
 					<CardHeader className="pb-3">
 						<CardTitle className="text-base">
-							{t("teacher.spreadsheet.legend.title")}
+							{readOnly
+								? t("teacher.spreadsheet.legend.readOnlyTitle")
+								: t("teacher.spreadsheet.legend.title")}
 						</CardTitle>
 						<CardDescription className="text-xs">
-							{t("teacher.spreadsheet.legend.hint")}
+							{readOnly
+								? t("teacher.spreadsheet.legend.readOnlyHint")
+								: t("teacher.spreadsheet.legend.hint")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="overflow-x-auto p-0">

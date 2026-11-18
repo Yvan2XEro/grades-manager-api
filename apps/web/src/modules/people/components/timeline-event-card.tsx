@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import {
 	Award,
 	CheckCircle2,
@@ -10,6 +9,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/date-format";
 import type { TimelineEvent } from "../types";
 
 // ── Icon & colour per event type ──────────────────────────────────────────────
@@ -140,7 +140,7 @@ export function TimelineEventCard({ event }: { event: TimelineEvent }) {
 				</div>
 
 				<div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-muted-foreground text-xs">
-					<span>{format(new Date(event.date), "dd MMM yyyy")}</span>
+					<span>{formatDate(event.date)}</span>
 					{event.academicYear && <span>{event.academicYear}</span>}
 					{event.className && <span>{event.className}</span>}
 					{event.generalAverage !== null &&

@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import type { ParseKeys, TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/date-format";
 import type { ExamRow } from "../types";
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -61,7 +61,7 @@ export function getExamsColumns(
 			id: "date",
 			header: t("admin.exams.table.date"),
 			meta: { className: "w-28" },
-			cell: ({ row }) => format(new Date(row.original.date), "MMM d, yyyy"),
+			cell: ({ row }) => formatDate(row.original.date),
 		},
 		{
 			id: "percentage",

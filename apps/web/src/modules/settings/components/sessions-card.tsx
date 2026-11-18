@@ -11,6 +11,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { dateLocale } from "@/lib/date-format";
 import { useSessions } from "../hooks/use-sessions";
 import { getBrowserLabel, resolveToken } from "../services/sessions";
 
@@ -39,7 +40,10 @@ export function SessionsCard() {
 							? new Date(entry.createdAt)
 							: null;
 						const relative = createdAt
-							? formatDistanceToNow(createdAt, { addSuffix: true })
+							? formatDistanceToNow(createdAt, {
+									addSuffix: true,
+									locale: dateLocale(),
+								})
 							: t("settings.sessions.unknownTime");
 						const browser = getBrowserLabel(entry.userAgent);
 						return (

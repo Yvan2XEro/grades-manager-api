@@ -9,7 +9,11 @@ import type {
 } from "../types";
 import { buildDocumentHeader, isInfoRow } from "./export-header";
 import { resolveRetakeGrades } from "./retake-grades";
-import { sortStudentsByName } from "./student-grades";
+import {
+	genderLabel,
+	sortStudentsByName,
+	weightedCourseAverage,
+} from "./student-grades";
 
 /** Average per course of the selected exams (retakes merged into their parent exam). */
 function courseAveragesOf(student: StudentExport, selectedExams: string[]) {
@@ -39,7 +43,10 @@ function courseAveragesOf(student: StudentExport, selectedExams: string[]) {
 	);
 
 	// Group resolved grades by course
-	const courseGrades = new Map<string, number[]>();
+	const courseGrades = new Map<
+		string,
+		{ score: number; percentage: number | string | null | undefined }[]
+	>();
 	for (const grade of student.grades) {
 		// Skip retake exams - their scores are merged into parent exams
 		if (grade.exam.sessionType === "retake") continue;
@@ -56,17 +63,17 @@ function courseAveragesOf(student: StudentExport, selectedExams: string[]) {
 			// Use resolved grade (with retake logic applied)
 			const resolved = resolvedGrades.get(grade.exam.id);
 			if (resolved) {
-				courseGrades.get(columnKey)?.push(resolved.score);
+				courseGrades
+					.get(columnKey)
+					?.push({ score: resolved.score, percentage: grade.exam.percentage });
 			}
 		}
 	}
 
 	const courseAverages = new Map<string, number>();
 	courseGrades.forEach((grades, course) => {
-		if (grades.length > 0) {
-			const average = grades.reduce((a, b) => a + b, 0) / grades.length;
-			courseAverages.set(course, Number(average.toFixed(2)));
-		}
+		const average = weightedCourseAverage(grades);
+		if (average !== null) courseAverages.set(course, average);
 	});
 	return courseAverages;
 }
@@ -98,7 +105,7 @@ export function exportTranscriptExcel({
 			? format(new Date(student.birth_date), "dd/MM/yyyy")
 			: "",
 		[t("admin.gradeExport.columns.birthPlace")]: student.birth_place || "",
-		[t("admin.gradeExport.columns.gender")]: student.gender || "",
+		[t("admin.gradeExport.columns.gender")]: genderLabel(t, student.gender),
 		...Object.fromEntries(courseAveragesOf(student, selectedExams)),
 	}));
 

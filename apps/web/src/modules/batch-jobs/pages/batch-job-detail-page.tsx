@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
+import { dateLocale } from "@/lib/date-format";
 import { BatchJobFailureSummary } from "../components/batch-job-failure-summary";
 import { BatchJobLogs } from "../components/batch-job-logs";
 import { BatchJobOverview } from "../components/batch-job-overview";
@@ -74,6 +75,7 @@ export default function BatchJobDetailPage() {
 						<p className="text-muted-foreground text-xs">
 							{formatDistanceToNow(new Date(job.createdAt), {
 								addSuffix: true,
+								locale: dateLocale(),
 							})}
 						</p>
 					</div>
