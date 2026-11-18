@@ -139,9 +139,17 @@ export const statsRepo = {
 			.groupBy(schema.classes.program, schema.programs.name)
 			.orderBy(desc(count()));
 
+		// Gender is stored with mixed spellings ("FEMALE", "female", "F"):
+		// normalise it so each gender is counted once.
+		const genderKey = sql<string | null>`CASE
+			WHEN LOWER(${schema.domainUsers.gender}) IN ('m', 'male', 'homme', 'masculin') THEN 'male'
+			WHEN LOWER(${schema.domainUsers.gender}) IN ('f', 'female', 'femme', 'feminin', 'féminin') THEN 'female'
+			WHEN ${schema.domainUsers.gender} IS NULL OR ${schema.domainUsers.gender} = '' THEN NULL
+			ELSE 'other'
+		END`;
 		const byGender = await db
 			.select({
-				gender: schema.domainUsers.gender,
+				gender: genderKey,
 				count: count(),
 			})
 			.from(schema.enrollments)
@@ -154,7 +162,7 @@ export const statsRepo = {
 				eq(schema.students.domainUserId, schema.domainUsers.id),
 			)
 			.where(baseWhere)
-			.groupBy(schema.domainUsers.gender);
+			.groupBy(genderKey);
 
 		return {
 			total: totalRow?.count ?? 0,

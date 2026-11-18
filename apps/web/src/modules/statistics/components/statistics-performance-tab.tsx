@@ -1,6 +1,7 @@
 import { GraduationCap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatPercent } from "@/lib/number-format";
 import { usePerformanceStats } from "../hooks/use-statistics";
 import { exportPerformanceStats } from "../services/statistics-export";
 import { ChartCard } from "./chart-card";
@@ -9,11 +10,12 @@ import { DonutChart } from "./donut-chart";
 import { StatFigure, StatTabHeader } from "./stat-tab-header";
 
 const DECISION_COLORS: Record<string, string> = {
-	passed: "var(--chart-2)",
-	failed: "var(--chart-4)",
-	repeating: "var(--chart-3)",
-	excluded: "var(--destructive)",
+	admitted: "var(--chart-2)",
+	compensated: "var(--chart-1)",
 	deferred: "var(--chart-5)",
+	repeat: "var(--chart-3)",
+	excluded: "var(--destructive)",
+	pending: "var(--chart-4)",
 };
 const MENTION_COLORS = [
 	"var(--chart-1)",
@@ -34,22 +36,23 @@ export function StatisticsPerformanceTab({
 	if (isLoading) return <Skeleton className="h-96 w-full" />;
 
 	const byDecision = (data?.byDecision ?? []).map((d) => ({
-		name: t(
-			`admin.statistics.performance.decision.${d.decision ?? "unknown"}`,
-			{ defaultValue: d.decision ?? "N/A" },
-		),
+		name: t(`admin.deliberations.decision.${d.decision ?? "pending"}`),
 		value: d.count,
 		color: DECISION_COLORS[d.decision ?? ""] ?? "var(--chart-5)",
 	}));
 	const byMention = (data?.byMention ?? []).map((m, i) => ({
-		name: t(`admin.statistics.performance.mention.${m.mention ?? "unknown"}`, {
-			defaultValue: m.mention ?? "N/A",
-		}),
+		name: m.mention
+			? t(`admin.deliberations.mention.${m.mention}`)
+			: t("admin.statistics.performance.mention.unknown"),
 		value: m.count,
 		color: MENTION_COLORS[i % MENTION_COLORS.length],
 	}));
 	const avg = data?.avgGeneralAverage ?? 0;
 	const total = byDecision.reduce((s, d) => s + d.value, 0);
+	// Same definition as the deliberation page and the dean dashboard
+	const passed = (data?.byDecision ?? [])
+		.filter((d) => d.decision === "admitted" || d.decision === "compensated")
+		.reduce((s, d) => s + d.count, 0);
 
 	return (
 		<div className="space-y-5">
@@ -60,6 +63,13 @@ export function StatisticsPerformanceTab({
 						value={total.toLocaleString()}
 						label={t("admin.statistics.performance.studentsDeliberated")}
 					/>
+					{total > 0 && (
+						<StatFigure
+							value={formatPercent(passed / total)}
+							label={t("admin.statistics.performance.passRate")}
+							hint={t("admin.statistics.performance.passRateHint")}
+						/>
+					)}
 					{avg > 0 && (
 						<StatFigure
 							value={`${avg.toFixed(2)}/20`}

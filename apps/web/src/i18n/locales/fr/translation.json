@@ -777,7 +777,7 @@
         "unknown": "Non renseigné"
       },
       "enrollment": {
-        "totalLabel": "Inscriptions actives",
+        "totalLabel": "Inscriptions de l'année (tous statuts)",
         "byProgram": "Inscrits par programme",
         "byStatus": "Répartition par statut",
         "byGender": "Répartition par genre",
@@ -793,14 +793,6 @@
         "avgGeneral": "Moyenne générale",
         "byDecision": "Résultats par décision",
         "byMention": "Résultats par mention",
-        "decision": {
-          "passed": "Admis",
-          "failed": "Échoué",
-          "repeating": "Redoublant",
-          "excluded": "Exclu",
-          "deferred": "Reporté",
-          "unknown": "Inconnu"
-        },
         "mention": {
           "passable": "Passable",
           "assez_bien": "Assez bien",
@@ -808,7 +800,9 @@
           "tres_bien": "Très bien",
           "excellent": "Excellent",
           "unknown": "Non attribuée"
-        }
+        },
+        "passRate": "Taux de réussite",
+        "passRateHint": "Étudiants admis et compensés parmi les étudiants délibérés dans les délibérations de l'année."
       },
       "finances": {
         "title": "Vue financière",
@@ -5778,8 +5772,8 @@
       "subtitle": "Vue d'ensemble par cohorte — saisie, résultats, taux de réussite",
       "students": "Étudiants",
       "pending": "En attente",
-      "avgProgress": "Avancement moyen",
-      "avgSuccess": "Taux réussite moyen",
+      "avgProgress": "Avancement de la saisie",
+      "avgSuccess": "Taux de réussite",
       "gradingProgress": "Avancement saisie",
       "approved": "approuvés",
       "submitted": "en attente",
@@ -5791,7 +5785,13 @@
       "successRate": "Taux réussite",
       "totalExams": "{{count}} au total",
       "submittedExams_one": "{{count}} examen en attente",
-      "submittedExams_other": "{{count}} examens en attente"
+      "submittedExams_other": "{{count}} examens en attente",
+      "hint": {
+        "students": "Inscriptions de l'année dans ces classes (tous statuts), comme sur la page Statistiques.",
+        "pending": "Examens dont les notes ont été soumises et attendent l'approbation.",
+        "progress": "Examens soumis ou approuvés parmi tous les examens des classes. Les classes sans examen ne sont pas comptées.",
+        "success": "Étudiants admis et compensés parmi les étudiants délibérés, d'après la délibération de l'année de chaque classe. Les classes non encore délibérées ne sont pas comptées."
+      }
     },
     "approvals": {
       "title": "Approbations en attente",

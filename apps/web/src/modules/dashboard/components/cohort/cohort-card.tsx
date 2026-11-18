@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { formatPercent } from "@/lib/number-format";
 import type { CohortData } from "../../types";
 
 function ProgressBar({
@@ -37,7 +38,7 @@ function progressColor(pct: number) {
 
 export function CohortCard({ cohort }: { cohort: CohortData }) {
 	const { t } = useTranslation();
-	const hasResults = cohort.avgGeneral !== null;
+	const hasResults = cohort.successRate !== null;
 
 	return (
 		<div className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -68,12 +69,14 @@ export function CohortCard({ cohort }: { cohort: CohortData }) {
 							{t("dean.cohort.gradingProgress")}
 						</span>
 						<span className="font-semibold text-foreground text-xs tabular-nums">
-							{cohort.gradingProgress}%
+							{cohort.gradingProgress !== null
+								? `${cohort.gradingProgress}%`
+								: "—"}
 						</span>
 					</div>
 					<ProgressBar
-						value={cohort.gradingProgress}
-						color={progressColor(cohort.gradingProgress)}
+						value={cohort.gradingProgress ?? 0}
+						color={progressColor(cohort.gradingProgress ?? 0)}
 					/>
 					<div className="mt-1 flex items-center gap-3 text-muted-foreground text-xs">
 						<span className="flex items-center gap-1">
@@ -96,15 +99,20 @@ export function CohortCard({ cohort }: { cohort: CohortData }) {
 					<div className="grid grid-cols-2 gap-3">
 						<div className="rounded-lg bg-muted/50 p-3 text-center">
 							<p className="font-bold text-foreground text-xl tabular-nums">
-								{cohort.avgGeneral!.toFixed(2)}
+								{cohort.avgGeneral !== null
+									? cohort.avgGeneral.toFixed(2)
+									: "—"}
 							</p>
 							<p className="text-muted-foreground text-xs">
 								{t("dean.cohort.avgGeneral")}
 							</p>
 						</div>
-						<div className="rounded-lg bg-muted/50 p-3 text-center">
+						<div
+							className="rounded-lg bg-muted/50 p-3 text-center"
+							title={t("dean.cohort.hint.success")}
+						>
 							<p className="font-bold text-foreground text-xl tabular-nums">
-								{cohort.successRate ?? 0}%
+								{formatPercent((cohort.successRate ?? 0) / 100)}
 							</p>
 							<p className="text-muted-foreground text-xs">
 								{t("dean.cohort.successRate")}

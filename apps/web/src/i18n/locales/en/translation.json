@@ -1709,7 +1709,7 @@
         "unknown": "Not specified"
       },
       "enrollment": {
-        "totalLabel": "Active enrollments",
+        "totalLabel": "Enrollments this year (all statuses)",
         "byProgram": "Students by program",
         "byStatus": "Status breakdown",
         "byGender": "Gender breakdown",
@@ -1725,14 +1725,6 @@
         "avgGeneral": "General average",
         "byDecision": "Results by decision",
         "byMention": "Results by mention",
-        "decision": {
-          "passed": "Passed",
-          "failed": "Failed",
-          "repeating": "Repeating",
-          "excluded": "Excluded",
-          "deferred": "Deferred",
-          "unknown": "Unknown"
-        },
         "mention": {
           "passable": "Pass",
           "assez_bien": "Fairly good",
@@ -1740,7 +1732,9 @@
           "tres_bien": "Very good",
           "excellent": "Excellent",
           "unknown": "Not assigned"
-        }
+        },
+        "passRate": "Pass rate",
+        "passRateHint": "Admitted and compensated students among the students deliberated in the year's deliberations."
       },
       "finances": {
         "title": "Financial overview",
@@ -5773,8 +5767,8 @@
       "subtitle": "Cohort overview — grading, results, success rates",
       "students": "Students",
       "pending": "Pending",
-      "avgProgress": "Avg. progress",
-      "avgSuccess": "Avg. success rate",
+      "avgProgress": "Grading progress",
+      "avgSuccess": "Pass rate",
       "gradingProgress": "Grading progress",
       "approved": "approved",
       "submitted": "pending",
@@ -5786,7 +5780,13 @@
       "successRate": "Success rate",
       "totalExams": "{{count}} total",
       "submittedExams_one": "{{count}} exam pending",
-      "submittedExams_other": "{{count}} exams pending"
+      "submittedExams_other": "{{count}} exams pending",
+      "hint": {
+        "students": "Enrollments of the year in these classes (all statuses), as on the statistics page.",
+        "pending": "Exams whose marks were submitted and wait for approval.",
+        "progress": "Submitted or approved exams among all exams of the classes. Classes without exams are not counted.",
+        "success": "Admitted and compensated students among deliberated students, from each class's deliberation of the year. Classes not deliberated yet are not counted."
+      }
     },
     "approvals": {
       "title": "Pending approvals",

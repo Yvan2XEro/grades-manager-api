@@ -30,9 +30,13 @@ export type CohortData = {
 	totalExams: number;
 	approvedExams: number;
 	submittedExams: number;
-	gradingProgress: number;
+	/** null when the class has no exam yet. */
+	gradingProgress: number | null;
+	deliberationStatus: string | null;
 	avgGeneral: number | null;
+	deliberatedCount: number;
 	admittedCount: number;
+	/** Percentage (one decimal), null without a deliberation. */
 	successRate: number | null;
 };
 

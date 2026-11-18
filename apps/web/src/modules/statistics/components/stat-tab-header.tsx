@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Download } from "lucide-react";
+import { Download, Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -29,15 +29,21 @@ export function StatFigure({
 	icon: Icon,
 	value,
 	label,
+	hint,
 }: {
 	icon?: LucideIcon;
 	value: ReactNode;
 	label: string;
+	/** Definition of the figure, shown on hover. */
+	hint?: string;
 }) {
 	const figure = (
-		<div>
+		<div title={hint}>
 			<p className="font-bold text-2xl tabular-nums">{value}</p>
-			<p className="text-muted-foreground text-sm">{label}</p>
+			<p className="flex items-center gap-1 text-muted-foreground text-sm">
+				{label}
+				{hint && <Info className="h-3.5 w-3.5" aria-label={hint} />}
+			</p>
 		</div>
 	);
 	if (!Icon) return figure;
