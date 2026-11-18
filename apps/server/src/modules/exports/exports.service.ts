@@ -114,6 +114,10 @@ type HeaderContext = {
 		nameEn: string;
 		abbreviation: string;
 		contactEmail: string;
+		contactPhone: string;
+		website: string;
+		sloganFr: string;
+		sloganEn: string;
 		postalBox: string;
 		addressFr: string;
 		addressEn: string;
@@ -1884,6 +1888,10 @@ export class ExportsService {
 				nameEn: institution?.nameEn ?? "",
 				abbreviation: institution?.abbreviation ?? "",
 				contactEmail: institution?.contactEmail ?? "",
+				contactPhone: institution?.contactPhone ?? "",
+				website: institution?.website ?? "",
+				sloganFr: institution?.sloganFr ?? "",
+				sloganEn: institution?.sloganEn ?? "",
 				postalBox: institution?.postalBox ?? "",
 				addressFr: institution?.addressFr ?? "",
 				addressEn: institution?.addressEn ?? "",

@@ -217,7 +217,9 @@ const Sidebar: React.FC = () => {
 								...g,
 								items: q
 									? g.items.filter((l) =>
-											t(l.labelKey).toLowerCase().includes(q),
+											`${t(l.labelKey)} ${l.keywordsKey ? t(l.keywordsKey) : ""}`
+												.toLowerCase()
+												.includes(q),
 										)
 									: g.items,
 							}))

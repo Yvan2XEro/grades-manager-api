@@ -2,7 +2,9 @@ import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { documentErrorMessage } from "@/lib/document-errors";
 import { downloadBase64 } from "@/lib/download";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 function PdfDownloadButton({
@@ -14,6 +16,7 @@ function PdfDownloadButton({
 	fetchPdf: () => Promise<{ pdf: string }>;
 	filename: string;
 }) {
+	const { t } = useTranslation();
 	const [pending, setPending] = useState(false);
 
 	async function handleDownload() {
@@ -21,6 +24,8 @@ function PdfDownloadButton({
 		try {
 			const result = await fetchPdf();
 			downloadBase64(result.pdf, filename, "application/pdf");
+		} catch (err) {
+			toast.error(documentErrorMessage(t, err));
 		} finally {
 			setPending(false);
 		}

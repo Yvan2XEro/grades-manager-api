@@ -285,7 +285,7 @@
         "gradeEntry": "Saisie des notes",
         "exportTemplates": "Modèles d'exportation",
         "classDocumentTemplates": "Documents par classe",
-        "documentBatch": "Génération en lot",
+        "documentBatch": "Documents officiels",
         "monitoring": "Supervision",
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
@@ -470,7 +470,7 @@
       "preferences": "Préférences",
       "statistics": "Statistiques",
       "documents": "Documents",
-      "documentBatch": "Génération en lot",
+      "documentBatch": "Documents officiels",
       "exports": "Exports",
       "myFees": "Mes frais",
       "approvals": "Approbations",
@@ -483,6 +483,9 @@
     "badges": {
       "new": "Nouveau",
       "updated": "Mis à jour"
+    },
+    "keywords": {
+      "documents": "attestation certificat scolarité inscription réussite relevé de notes diplôme génération en lot"
     }
   },
   "auth": {
@@ -1406,13 +1409,13 @@
         "noDefaultYear": "Aucune année par défaut",
         "noRegistrationFormat": "Aucun format de matricule (utiliser le format actif)",
         "abbreviation": "Abréviation",
-        "typePlaceholder": "Select type",
+        "typePlaceholder": "Choisir le type",
         "parentInstitutionPlaceholder": "Sélectionner l'établissement parent",
         "supervisingFacultyPlaceholder": "Sélectionner la faculté de tutelle",
         "defaultAcademicYearManagedHint": "L'année académique active se gère depuis Années académiques.",
         "registrationFormatManagedHint": "Le format de matricule actif se gère depuis Formats de matricule.",
-        "signatoryName": "Signatory name",
-        "signatoryTitle": "Signatory title",
+        "signatoryName": "Nom du signataire",
+        "signatoryTitle": "Titre du signataire",
         "city": "Ville (pour la ligne de date des documents)",
         "logoSvg": "Logo SVG (code source)",
         "logoSvgHint": "Si renseigné, le SVG est utilisé en priorité sur les exports (à la place du logo PNG/URL).",
@@ -1429,8 +1432,8 @@
         "namesHint": "Noms officiels en français et en anglais, abréviation et slogan.",
         "system": "Système",
         "systemHint": "Année académique par défaut et format de matricule.",
-        "documentParams": "Document Generation",
-        "documentParamsHint": "Signataire et ville utilisés sur les diplômes, attestations et relevés générés. Synchronisés automatiquement avec Diplomation."
+        "documentParams": "Documents officiels",
+        "documentParamsHint": "Signataire (nom et titre) et ville imprimés sur les certificats de scolarité, attestations de réussite, relevés et diplômes. Synchronisés aussi avec Diplomation."
       }
     },
     "studyCycles": {
@@ -4249,8 +4252,12 @@
           "description": "Liste des étudiants de cette classe (colonnes configurables)"
         },
         "attestation": {
-          "label": "Attestation",
-          "description": "Attestation de réussite ou d'inscription"
+          "label": "Attestation de réussite",
+          "description": "Atteste la réussite de l'année (décision favorable du jury)"
+        },
+        "enrollment_certificate": {
+          "label": "Certificat de scolarité",
+          "description": "Atteste que l'étudiant est inscrit dans une classe pour une année académique"
         }
       },
       "classTemplates": {
@@ -4315,11 +4322,11 @@
           "ok": "OK",
           "error": "Échec"
         },
-        "title": "Génération en lot",
-        "subtitle": "Génération côté navigateur. <strong>Ne fermez pas l'onglet</strong> pendant l'opération.",
+        "title": "Documents officiels",
+        "subtitle": "Certificats de scolarité, attestations de réussite, relevés et diplômes pour toute une classe. Le serveur les génère un étudiant après l'autre : <strong>gardez cet onglet ouvert</strong> jusqu'au téléchargement.",
         "previewTitle": "Aperçu : {{kind}} ({{student}})",
         "templateUsed": "Modèle utilisé : <strong>{{name}}</strong>",
-        "previewDescription": "Rendu HTML avec données réelles, sans rastérisation PDF.",
+        "previewDescription": "Rendu HTML avec les données réelles ; le numéro de référence est attribué à la génération du PDF.",
         "toast": {
           "previewError": "Échec de l'aperçu",
           "noSelection": "Aucun étudiant sélectionné",
@@ -4344,8 +4351,8 @@
         },
         "students": {
           "title": "Étudiants",
-          "count_one": "{{count}} étudiant dans cette classe.",
-          "count_other": "{{count}} étudiants dans cette classe.",
+          "count_one": "{{count}} étudiant inscrit dans cette classe.",
+          "count_other": "{{count}} étudiants inscrits dans cette classe.",
           "selected_one": "{{count}} sélectionné.",
           "selected_other": "{{count}} sélectionnés.",
           "zip": "ZIP",
@@ -4354,7 +4361,10 @@
           "preview": "Aperçu",
           "generate": "Générer {{count}}",
           "generating": "Génération en cours…",
-          "empty": "Aucun étudiant dans cette classe."
+          "empty": "Aucun étudiant inscrit dans cette classe.",
+          "eligible_one": "{{count}} peut recevoir ce document.",
+          "eligible_other": "{{count}} peuvent recevoir ce document.",
+          "ineligibleHint": "Les autres sont listés avec la raison et ne peuvent pas être sélectionnés."
         },
         "table": {
           "selectAll": "Tout sélectionner",
@@ -4364,7 +4374,9 @@
           "firstName": "Prénom(s)",
           "status": "Statut",
           "preview": "Aperçu",
-          "previewFor": "Aperçu pour {{name}}"
+          "previewFor": "Aperçu pour {{name}}",
+          "eligibility": "Éligibilité",
+          "eligible": "Éligible"
         }
       },
       "generate": {
@@ -4372,17 +4384,21 @@
         "htmlPreviewTitle": "Aperçu HTML : {{kind}}",
         "toast": {
           "success": "Document généré et téléchargé",
-          "error": "Échec de la génération"
+          "error": "Échec de la génération",
+          "issued": "Document N° {{reference}} délivré et téléchargé"
         },
-        "title": "Générer un document",
-        "description": "Pour <strong>{{name}}</strong>. Le modèle utilisé est celui assigné à la classe (sinon le défaut institution).",
+        "title": "Délivrer un document officiel",
+        "description": "Pour <strong>{{name}}</strong>. Chaque PDF reçoit son propre numéro de référence.",
         "kind": "Type de document",
         "format": "Format",
         "formatPdf": "PDF",
         "formatHtml": "HTML (aperçu)",
         "demoMode": "Mode démo",
         "demoModeHint": "Ajoute un filigrane « DÉMO »",
-        "submit": "Générer"
+        "submit": "Télécharger le PDF",
+        "enrollment": "Inscription",
+        "cannotIssue": "Ce document ne peut pas être délivré : {{reason}}.",
+        "preview": "Aperçu"
       },
       "theme": {
         "groups": {
@@ -5932,13 +5948,13 @@
         "blocked": "Quitus financier requis pour télécharger ce document."
       },
       "attestation": {
-        "title": "Attestation d inscription",
-        "description": "Attestation confirmant votre inscription pour l année académique en cours.",
+        "title": "Attestation de réussite",
+        "description": "Atteste votre réussite de l'année académique (disponible après une décision favorable du jury).",
         "blocked": "Quitus financier requis pour télécharger ce document."
       },
       "enrollment_certificate": {
         "title": "Certificat de scolarité",
-        "description": "Certificat officiel d inscription pour l année académique en cours.",
+        "description": "Certificat officiel de votre inscription dans votre classe pour l'année académique.",
         "blocked": "Quitus financier requis pour télécharger ce document."
       },
       "history": {
@@ -7141,7 +7157,8 @@
       "primary": "Principal",
       "emergency": "Urgence",
       "empty": "Aucun tuteur lié."
-    }
+    },
+    "documents": "Documents"
   },
   "gradesHub": {
     "title": "Notes & Documents",
@@ -7189,5 +7206,30 @@
         "courses": "Cours"
       }
     }
+  },
+  "documents": {
+    "errors": {
+      "renderFailed": "Le document n'a pas pu être généré. Réessayez ou contactez l'administrateur.",
+      "generic": "Le document n'a pas pu être généré."
+    },
+    "ineligible": {
+      "not_enrolled": "Non inscrit(e) dans cette classe",
+      "enrollment_pending": "Inscription pas encore validée",
+      "enrollment_withdrawn": "A quitté cette classe (inscription retirée)",
+      "no_deliberation": "Pas encore de décision du jury de fin d'année",
+      "deliberation_not_closed": "Délibération du jury non clôturée",
+      "decision_pending": "Décision du jury en attente",
+      "decision_unfavourable": "Décision du jury : {{decision}}",
+      "decision_unfavourable_generic": "Décision du jury défavorable"
+    },
+    "decisions": {
+      "admitted": "admis(e)",
+      "compensated": "admis(e) par compensation",
+      "deferred": "ajourné(e)",
+      "repeat": "redouble",
+      "excluded": "exclu(e)",
+      "pending": "en attente"
+    },
+    "notEligibleError": "Ce document ne peut pas être délivré : {{reason}}."
   }
 }

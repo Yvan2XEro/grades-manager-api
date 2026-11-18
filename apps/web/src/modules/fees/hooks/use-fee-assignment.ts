@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { documentErrorMessage } from "@/lib/document-errors";
 import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -80,8 +81,8 @@ export function usePdfDownload(
 		try {
 			const { pdf } = await fetchPdf(id);
 			downloadBase64(pdf, filename, "application/pdf");
-		} catch {
-			toast.error(t("common.error"));
+		} catch (err) {
+			toast.error(documentErrorMessage(t, err));
 		} finally {
 			setDownloadingId(null);
 		}

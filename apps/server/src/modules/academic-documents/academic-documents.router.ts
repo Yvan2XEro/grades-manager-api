@@ -714,11 +714,19 @@ export const academicDocumentsRouter = router({
 				}
 			}
 
+			const eligibility = await checkDocumentEligibility(
+				ctx.institution.id,
+				kind,
+				student.id,
+			);
 			results.push({
 				kind,
 				isGated,
 				isCleared,
-				canDownload: !isGated || isCleared,
+				eligible: eligibility.eligible,
+				reason: eligibility.reason ?? null,
+				decision: eligibility.decision ?? null,
+				canDownload: (!isGated || isCleared) && eligibility.eligible,
 			});
 		}
 
