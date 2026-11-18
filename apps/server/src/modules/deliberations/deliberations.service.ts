@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import type {
 	DeliberationDecision,
@@ -9,7 +9,6 @@ import type {
 import * as schema from "@/db/schema/app-schema";
 import { dispatchWebhook } from "@/lib/webhook-dispatch";
 import { conflict } from "@/modules/_shared/errors";
-import * as enrollmentsService from "../enrollments/enrollments.service";
 import {
 	type ExamWithRetake,
 	normalizeExamType,
@@ -186,7 +185,31 @@ export async function getById(id: string, institutionId: string) {
 
 	// Include student results
 	const studentResults = await repo.findStudentResultsByDeliberationId(id);
-	return { ...delib, studentResults };
+	// Last promotion run, so the UI can tell that promotion was already done
+	const lastPromotion = await db.query.deliberationLogs.findFirst({
+		where: and(
+			eq(schema.deliberationLogs.deliberationId, id),
+			eq(schema.deliberationLogs.action, "promoted"),
+		),
+		orderBy: desc(schema.deliberationLogs.createdAt),
+	});
+	const promotionDetails = (lastPromotion?.details ?? {}) as {
+		promotedCount?: number;
+		targetClassName?: string;
+		graduated?: boolean;
+	};
+	return {
+		...delib,
+		studentResults,
+		promotion: lastPromotion
+			? {
+					at: lastPromotion.createdAt,
+					promotedCount: promotionDetails.promotedCount ?? 0,
+					targetClassName: promotionDetails.targetClassName ?? null,
+					graduated: promotionDetails.graduated ?? false,
+				}
+			: null,
+	};
 }
 
 export async function list(
@@ -564,6 +587,13 @@ export async function compute(
 			});
 		}
 
+		// A student is only deliberated on complete results: every UE of the
+		// class must have a mark. Otherwise the average is partial and must not
+		// produce a rank, a mention or an automatic decision.
+		const allComplete =
+			ueResults.length > 0 && ueResults.every((ue) => ue.isComplete);
+		const incompleteUECount = ueResults.filter((ue) => !ue.isComplete).length;
+
 		// General average: credit-weighted UE averages
 		const uesWithAverages = ueResults.filter((ue) => ue.ueAverage !== null);
 		let generalAverage: number | null = null;
@@ -591,7 +621,6 @@ export async function compute(
 		// -------------------------------------------------------------------
 		// If generalAverage >= threshold, UEs that failed but are above the
 		// compensation bar are marked CMP (compensated) and their credits awarded.
-		const allComplete = ueResults.every((ue) => ue.isComplete);
 		if (
 			allComplete &&
 			generalAverage !== null &&
@@ -699,7 +728,7 @@ export async function compute(
 			overallAverage: generalAverage ?? promotionFacts.overallAverage,
 			creditsEarned: totalCreditsEarned,
 			compensableUECount,
-			allUEsComplete: ueResults.every((ue) => ue.isComplete),
+			allUEsComplete: allComplete,
 			consecutiveRepeats: 0, // Would need historical data
 			previousDeliberationDecision: null, // Would need previous deliberation lookup
 			totalUECount: ueResults.length,
@@ -733,11 +762,12 @@ export async function compute(
 			}
 		}
 
-		// Custom rules can override the default decision
+		// Custom rules can override the default decision — never for incomplete
+		// results: the jury has to look at them (missing marks) first.
 		let rulesEvaluated: schema.NewDeliberationStudentResult["rulesEvaluated"] =
 			[];
 
-		if (rules.length > 0) {
+		if (allComplete && rules.length > 0) {
 			const evalResult = await evaluateStudent(rules, deliberationFacts);
 			rulesEvaluated = evalResult.traces;
 			// Only override if rule engine produced a non-pending decision
@@ -750,7 +780,9 @@ export async function compute(
 			studentId: student.id,
 			registrationNumber: student.registrationNumber,
 			studentName: `${student.profile.lastName} ${student.profile.firstName}`,
-			generalAverage,
+			// The partial average of an incomplete student is kept in the facts
+			// snapshot only: it is not a general average.
+			generalAverage: allComplete ? generalAverage : null,
 			totalCreditsEarned,
 			totalCreditsPossible,
 			ueResults,
@@ -759,7 +791,11 @@ export async function compute(
 			rank: null,
 			mention: null,
 			rulesEvaluated,
-			factsSnapshot: deliberationFacts as unknown as Record<string, unknown>,
+			factsSnapshot: {
+				...(deliberationFacts as unknown as Record<string, unknown>),
+				partialAverage: allComplete ? null : generalAverage,
+				incompleteUECount,
+			},
 		});
 	}
 
@@ -868,16 +904,37 @@ export async function overrideDecision(
 		});
 	}
 
+	if (result.deliberationId !== delib.id) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Student result not found",
+		});
+	}
+
 	const previousDecision = result.finalDecision;
+	// Choosing the computed decision again restores it: the result is no longer
+	// an override and gets back its computed mention.
+	const restoresComputed = input.finalDecision === result.autoDecision;
+	let mention = input.mention
+		? (input.mention as DeliberationMention)
+		: result.mention;
+	if (restoresComputed && !input.mention) {
+		const gradeScale = await gradeScalesService.getForInstitution(institutionId);
+		mention =
+			result.rank !== null
+				? (gradeScalesService.computeMention(
+						result.generalAverage,
+						gradeScale.mentionRanges,
+					) as DeliberationMention | null)
+				: null;
+	}
 
 	const updated = await repo.updateStudentResult(input.studentResultId, {
 		finalDecision: input.finalDecision as DeliberationDecision,
-		isOverridden: true,
-		overrideReason: input.reason,
-		overriddenBy: actorId,
-		mention: input.mention
-			? (input.mention as DeliberationMention)
-			: result.mention,
+		isOverridden: !restoresComputed,
+		overrideReason: restoresComputed ? null : input.reason,
+		overriddenBy: restoresComputed ? null : actorId,
+		mention,
 	});
 
 	await repo.createLog({
@@ -889,7 +946,14 @@ export async function overrideDecision(
 			previousDecision,
 			newDecision: input.finalDecision,
 			reason: input.reason,
+			restored: restoresComputed,
 		},
+	});
+
+	// Keep the stored statistics in line with the final decisions
+	const allResults = await repo.findStudentResultsByDeliberationId(delib.id);
+	await repo.updateDeliberation(delib.id, institutionId, {
+		stats: computeStats(allResults),
 	});
 
 	return updated;
@@ -1150,7 +1214,7 @@ export async function promoteAdmitted(
 		});
 	}
 
-	const studentIds = admittedResults.map((r) => r.studentId);
+	const admittedIds = admittedResults.map((r) => r.studentId);
 
 	if (input.targetClassId) {
 		// --- Normal promotion: enroll students in the next class ---
@@ -1166,83 +1230,110 @@ export async function promoteAdmitted(
 				message: "Target class not found",
 			});
 		}
+		if (targetClass.academicYear === delib.academicYearId) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message:
+					"The target class must belong to a later academic year than the deliberation",
+			});
+		}
+		const targetClassId = targetClass.id;
+		const targetYearId = targetClass.academicYear;
 
-		await db.transaction(async (tx) => {
-			// Check for duplicate enrollments in target class
-			const existingEnrollments = await tx
+		const promotedIds = await db.transaction(async (tx) => {
+			// Idempotence: students that already have an enrollment in the target
+			// year (a previous promotion, or an enrollment made by hand) are skipped.
+			const existing = await tx
 				.select({ studentId: schema.enrollments.studentId })
 				.from(schema.enrollments)
 				.where(
 					and(
-						inArray(schema.enrollments.studentId, studentIds),
-						eq(schema.enrollments.classId, input.targetClassId!),
-						eq(schema.enrollments.status, "active"),
+						inArray(schema.enrollments.studentId, admittedIds),
+						eq(schema.enrollments.academicYearId, targetYearId),
 					),
 				);
-			if (existingEnrollments.length > 0) {
-				const ids = existingEnrollments.map((e) => e.studentId).join(", ");
-				throw new TRPCError({
-					code: "CONFLICT",
-					message: `Students already enrolled in target class: ${ids}`,
-				});
-			}
+			const alreadyEnrolled = new Set(existing.map((e) => e.studentId));
+			const toPromote = admittedIds.filter((sid) => !alreadyEnrolled.has(sid));
 
-			for (const studentId of studentIds) {
-				await enrollmentsService.closeActiveEnrollment(
-					studentId,
-					"completed",
-					undefined,
-					tx,
-				);
+			for (const studentId of toPromote) {
+				// Close the enrollment of the deliberated year only: it stays the
+				// record of that year (class lists, transcripts).
+				await tx
+					.update(schema.enrollments)
+					.set({ status: "completed", exitedAt: new Date() })
+					.where(
+						and(
+							eq(schema.enrollments.studentId, studentId),
+							eq(schema.enrollments.academicYearId, delib.academicYearId),
+							eq(schema.enrollments.status, "active"),
+						),
+					);
 				await tx.insert(schema.enrollments).values({
 					studentId,
-					classId: input.targetClassId!,
-					academicYearId: delib.academicYearId,
+					classId: targetClassId,
+					academicYearId: targetYearId,
 					institutionId,
 					status: "active",
 				});
 				await tx
 					.update(schema.students)
-					.set({ class: input.targetClassId! })
+					.set({ class: targetClassId })
 					.where(eq(schema.students.id, studentId));
 			}
+			return toPromote;
 		});
 
+		if (promotedIds.length > 0) {
+			await repo.createLog({
+				deliberationId: input.deliberationId,
+				action: "promoted",
+				actorId,
+				details: {
+					promotedCount: promotedIds.length,
+					targetClassId,
+					targetClassName: targetClass.name,
+				},
+			});
+		}
+
+		return {
+			promotedCount: promotedIds.length,
+			alreadyPromotedCount: admittedIds.length - promotedIds.length,
+		};
+	}
+
+	// --- Graduation: last cycle level — close enrollments as graduated ---
+	const graduatedIds = await db.transaction(async (tx) => {
+		const closed = await tx
+			.update(schema.enrollments)
+			.set({ status: "graduated", exitedAt: new Date() })
+			.where(
+				and(
+					inArray(schema.enrollments.studentId, admittedIds),
+					eq(schema.enrollments.academicYearId, delib.academicYearId),
+					eq(schema.enrollments.status, "active"),
+				),
+			)
+			.returning({ studentId: schema.enrollments.studentId });
+		return [...new Set(closed.map((row) => row.studentId))];
+	});
+
+	if (graduatedIds.length > 0) {
 		await repo.createLog({
 			deliberationId: input.deliberationId,
 			action: "promoted",
 			actorId,
 			details: {
-				promotedCount: studentIds.length,
-				targetClassId: input.targetClassId,
-				targetClassName: targetClass.name,
-			},
-		});
-	} else {
-		// --- Graduation: last cycle level — close enrollments as graduated ---
-		await db.transaction(async (tx) => {
-			for (const studentId of studentIds) {
-				await enrollmentsService.closeActiveEnrollment(
-					studentId,
-					"graduated",
-					undefined,
-					tx,
-				);
-			}
-		});
-
-		await repo.createLog({
-			deliberationId: input.deliberationId,
-			action: "promoted",
-			actorId,
-			details: {
-				promotedCount: studentIds.length,
+				promotedCount: graduatedIds.length,
 				graduated: true,
 			},
 		});
 	}
 
-	return { promotedCount: studentIds.length };
+	return {
+		promotedCount: graduatedIds.length,
+		alreadyPromotedCount: admittedIds.length - graduatedIds.length,
+	};
 }
 
 // ---------------------------------------------------------------------------
