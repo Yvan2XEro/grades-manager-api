@@ -58,7 +58,6 @@ export function useStudentDashboard() {
 		transcriptQuery.isPending ||
 		ledgerQuery.isPending;
 
-	const overallAvg = transcript?.overallAverage ?? 0;
 	const creditsEarned = ledger?.creditsEarned ?? 0;
 	const creditsRequired = ledger?.requiredCredits ?? 0;
 	const creditsInProgress = ledger?.creditsInProgress ?? 0;
@@ -75,6 +74,9 @@ export function useStudentDashboard() {
 	const validatedUnits = units.filter((u) => u.average >= 10).length;
 
 	const gradedUnits = units.filter((u) => u.courses.some((c) => c.average > 0));
+	// No average to show before the first mark
+	const overallAvg =
+		gradedUnits.length > 0 ? (transcript?.overallAverage ?? null) : null;
 	const onTrackUnits = gradedUnits.filter((u) => u.average >= 10).length;
 	const projectionRate =
 		gradedUnits.length > 0

@@ -5896,7 +5896,9 @@
       "courseCount_one": "{{count}} course",
       "courseCount_other": "{{count}} courses",
       "coefficient": "Coeff. {{value}}",
-      "ueCreditsEarned": "{{earned}}/{{total}} credits"
+      "ueCreditsEarned": "{{earned}}/{{total}} credits",
+      "noMarksYet": "No marks yet",
+      "noMarks": "No marks"
     },
     "exams": {
       "title": "Exam calendar",
@@ -6225,9 +6227,9 @@
       "deferred": "Deferred — you must retake failing subjects.",
       "repeat": "Repeating — you repeat the academic year.",
       "excluded": "Excluded — please contact administration.",
-      "pending": "Decision pending.",
+      "pending": "Results incomplete: the jury's decision is pending.",
       "unknown": "Unknown decision.",
-      "overridden": "Overridden"
+      "overridden": "Decided by the jury"
     },
     "publishedAt": "Published on {{date}}"
   },

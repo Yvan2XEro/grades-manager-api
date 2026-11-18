@@ -5901,7 +5901,9 @@
       "courseCount_one": "{{count}} cours",
       "courseCount_other": "{{count}} cours",
       "coefficient": "Coeff. {{value}}",
-      "ueCreditsEarned": "{{earned}}/{{total}} crédits"
+      "ueCreditsEarned": "{{earned}}/{{total}} crédits",
+      "noMarksYet": "Aucune note pour l'instant",
+      "noMarks": "Sans note"
     },
     "exams": {
       "title": "Calendrier des examens",
@@ -6230,9 +6232,9 @@
       "deferred": "Ajourné — vous devrez repasser les matières insuffisantes.",
       "repeat": "Redoublant — vous redoublez l'année.",
       "excluded": "Exclu — contactez l'administration.",
-      "pending": "Décision en attente.",
+      "pending": "Résultats incomplets : la décision du jury est en attente.",
       "unknown": "Décision inconnue.",
-      "overridden": "Surclassé"
+      "overridden": "Décision du jury"
     },
     "publishedAt": "Publié le {{date}}"
   },

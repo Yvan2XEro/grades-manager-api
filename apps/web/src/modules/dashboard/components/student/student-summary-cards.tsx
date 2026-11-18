@@ -12,7 +12,7 @@ export function StudentSummaryCards({
 	validatedUnits,
 	totalUnits,
 }: {
-	overallAvg: number;
+	overallAvg: number | null;
 	creditsEarned: number;
 	creditsRequired: number;
 	creditsInProgress: number;
@@ -28,11 +28,13 @@ export function StudentSummaryCards({
 			<SummaryCard
 				icon={<Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
 				label={t("student.performance.generalAverage")}
-				value={`${overallAvg.toFixed(2)} / 20`}
+				value={overallAvg !== null ? `${overallAvg.toFixed(2)} / 20` : "—"}
 				sub={
-					overallAvg >= 10
-						? t("student.performance.aboveThreshold")
-						: t("student.performance.belowThreshold")
+					overallAvg === null
+						? t("student.performance.noMarksYet")
+						: overallAvg >= 10
+							? t("student.performance.aboveThreshold")
+							: t("student.performance.belowThreshold")
 				}
 				color="bg-amber-50 dark:bg-amber-900/20"
 			/>

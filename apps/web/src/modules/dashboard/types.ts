@@ -57,6 +57,8 @@ export type UeResult = {
 	ueCredits: number;
 	ueAverage: number | null;
 	isValidated: boolean;
+	/** false while some courses of the UE have no mark. */
+	isComplete?: boolean;
 	creditsEarned: number;
 };
 
