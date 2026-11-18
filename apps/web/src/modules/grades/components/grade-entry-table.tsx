@@ -127,7 +127,7 @@ export function GradeEntryTable({
 					</Table>
 				</CardContent>
 				{!inputsDisabled && (
-					<CardFooter className="justify-end gap-2 border-t">
+					<CardFooter className="sticky bottom-0 z-10 justify-end gap-2 border-t bg-card/95 backdrop-blur">
 						<Button type="submit" disabled={isSaving || isLocking}>
 							{isSaving ? (
 								<>

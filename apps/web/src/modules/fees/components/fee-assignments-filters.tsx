@@ -47,18 +47,14 @@ export function FeeAssignmentsFilters({
 					onChange={(e) => onChange({ search: e.target.value })}
 				/>
 			</div>
-			<div>
-				<label className="mb-1 block text-muted-foreground text-xs">
-					{t("feeClearance.structures.fields.academicYear")}
-				</label>
-				<AcademicYearSelect
-					value={value.yearId || null}
-					onChange={(v) => onChange({ yearId: v ?? "", classId: "" })}
-					allowAll
-					autoSelectActive={false}
-					className="w-48"
-				/>
-			</div>
+			<AcademicYearSelect
+				value={value.yearId || null}
+				onChange={(v) => onChange({ yearId: v ?? "", classId: "" })}
+				allowAll
+				allLabel={t("common.allYears")}
+				autoSelectActive={false}
+				className="w-48"
+			/>
 			{classes && classes.length > 0 && (
 				<Select
 					value={value.classId || ALL_FILTER_VALUE}
