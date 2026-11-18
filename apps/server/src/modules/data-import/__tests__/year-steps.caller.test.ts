@@ -231,6 +231,54 @@ describe("guided import — academic year steps", () => {
 	});
 });
 
+describe("guided import — known people", () => {
+	it("attaches a new student to the person already registered with that e-mail", async () => {
+		const { ctx, caller } = await admin();
+		const institutionId = ctx.institution!.id;
+		const { s, program, past } = await fixture(institutionId);
+		const [person] = await db
+			.insert(schema.domainUsers)
+			.values({
+				firstName: "Christelle",
+				lastName: "Mballa",
+				primaryEmail: `christelle${s}@x.cm`,
+				institutionId,
+			})
+			.returning();
+		await importStep(caller, "year.classes", past.id, {
+			Classes: [CLASS_HEADERS, [`P${s}`, `P ${s}`, program.code, "L1"]],
+		});
+		const summary = await importStep(caller, "year.students", past.id, {
+			Étudiants: [
+				STUDENT_HEADERS,
+				[
+					`P${s}1`,
+					"Mballa",
+					"Christelle",
+					"12/03/2006",
+					"F",
+					`Christelle${s}@x.cm`,
+					`P${s}`,
+				],
+			],
+		});
+		expect(summary.sheets[0]).toMatchObject({ create: 1 });
+		const student = await db.query.students.findFirst({
+			where: eq(schema.students.registrationNumber, `P${s}1`),
+		});
+		expect(student?.domainUserId).toBe(person.id);
+		// No second profile: the existing one got the file's details
+		const sameName = await db.query.domainUsers.findMany({
+			where: and(
+				eq(schema.domainUsers.institutionId, institutionId),
+				eq(schema.domainUsers.lastName, "Mballa"),
+			),
+		});
+		expect(sameName).toHaveLength(1);
+		expect(sameName[0]?.gender).toBe("female");
+	});
+});
+
 describe("guided import — sending a fixed file again", () => {
 	it("supersedes the previous analysis that was never imported", async () => {
 		const { ctx, caller } = await admin();

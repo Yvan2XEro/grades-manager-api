@@ -94,3 +94,9 @@ export const bulkCreateSchema = z.object({
 });
 
 export type StudentProfilePayload = z.infer<typeof profileSchema>;
+
+export const enrollPersonSchema = z.object({
+	domainUserId: z.string(),
+	classId: z.string(),
+	registrationNumber: z.string().min(1).optional(),
+});

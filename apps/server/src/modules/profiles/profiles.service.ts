@@ -5,14 +5,15 @@ import * as authSchema from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
 import type { Context } from "@/lib/context";
 import { conflict, notFound } from "@/modules/_shared/errors";
-import { roleSatisfies } from "@/modules/authz";
+import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
 import * as usersService from "@/modules/users/users.service";
 import * as repo from "./profiles.repo";
 
 function assertAccess(ctx: Context, profileId: string) {
 	const isSelf = ctx.profile?.id === profileId;
-	const isAdmin = roleSatisfies(ctx.memberRole, ["administrator"]);
-	if (!isSelf && !isAdmin) {
+	// Deans read student files (results, enrollments) like administrators
+	const isStaff = roleSatisfies(ctx.memberRole, ADMIN_ROLES);
+	if (!isSelf && !isStaff) {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
 }

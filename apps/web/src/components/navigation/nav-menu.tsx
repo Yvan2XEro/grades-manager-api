@@ -249,27 +249,94 @@ export function useNavMenu(IC = "size-[15px] shrink-0"): NavMenu {
 		[],
 	);
 
-	const deanLinks = useMemo<NavItem[]>(
+	// The dean runs academic work: approvals, results, documents, statistics;
+	// institution settings, users and fees stay with the administrators.
+	const deanGroups = useMemo<NavGroup[]>(
 		() => [
 			{
-				to: "/",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.dean.dashboard",
+				key: "overview",
+				titleKey: "navigation.sidebar.groups.overview",
+				items: [
+					{
+						to: "/",
+						icon: <LayoutDashboard className={IC} />,
+						labelKey: "navigation.sidebar.dean.dashboard",
+					},
+					{
+						to: "/approvals",
+						icon: <ClipboardList className={IC} />,
+						labelKey: "navigation.sidebar.dean.pendingApprovals",
+					},
+					{
+						to: "/history",
+						icon: <FileCog className={IC} />,
+						labelKey: "navigation.sidebar.dean.history",
+					},
+				],
 			},
 			{
-				to: "/approvals",
-				icon: <ClipboardList className={IC} />,
-				labelKey: "navigation.sidebar.dean.pendingApprovals",
+				key: "structure",
+				titleKey: "navigation.sidebar.groups.structure",
+				items: [
+					{
+						to: "/programs",
+						icon: <School className={IC} />,
+						labelKey: "navigation.sidebar.admin.programs",
+					},
+					{
+						to: "/classes",
+						icon: <Users className={IC} />,
+						labelKey: "navigation.sidebar.admin.classes",
+					},
+					{
+						to: "/users/people",
+						icon: <GraduationCap className={IC} />,
+						labelKey: "navigation.sidebar.admin.students",
+					},
+				],
 			},
 			{
-				to: "/history",
-				icon: <FileCog className={IC} />,
-				labelKey: "navigation.sidebar.dean.history",
+				key: "assessment",
+				titleKey: "navigation.sidebar.groups.assessment",
+				items: [
+					{
+						to: "/exams",
+						icon: <ClipboardList className={IC} />,
+						labelKey: "navigation.sidebar.admin.exams",
+					},
+					{
+						to: "/document-batch",
+						icon: <FileText className={IC} />,
+						labelKey: "navigation.sidebar.admin.documentBatch",
+					},
+				],
 			},
 			{
-				to: "/monitoring",
-				icon: <TrendingUp className={IC} />,
-				labelKey: "navigation.sidebar.dean.monitoring",
+				key: "results",
+				titleKey: "navigation.sidebar.groups.results",
+				items: [
+					{
+						to: "/academic-results",
+						icon: <Gavel className={IC} />,
+						labelKey: "navigation.sidebar.admin.academicResults",
+					},
+				],
+			},
+			{
+				key: "analytics",
+				titleKey: "navigation.sidebar.groups.analytics",
+				items: [
+					{
+						to: "/statistics",
+						icon: <BarChart3 className={IC} />,
+						labelKey: "navigation.sidebar.admin.statistics",
+					},
+					{
+						to: "/monitoring",
+						icon: <TrendingUp className={IC} />,
+						labelKey: "navigation.sidebar.dean.monitoring",
+					},
+				],
 			},
 		],
 		[],
@@ -335,7 +402,7 @@ export function useNavMenu(IC = "size-[15px] shrink-0"): NavMenu {
 			case "owner":
 				return { type: "grouped" as const, groups: adminGroups };
 			case "dean":
-				return { type: "flat" as const, items: deanLinks };
+				return { type: "grouped" as const, groups: deanGroups };
 			case "teacher":
 				return { type: "flat" as const, items: teacherLinks };
 			case "grade_editor":
@@ -350,7 +417,7 @@ export function useNavMenu(IC = "size-[15px] shrink-0"): NavMenu {
 		adminGroups,
 		teacherLinks,
 		gradeEditorLinks,
-		deanLinks,
+		deanGroups,
 		studentLinks,
 	]);
 

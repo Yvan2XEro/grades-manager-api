@@ -51,7 +51,11 @@ const conflictMarkers = [
 	"duplicate key value",
 ];
 
-const buildProfilePayload = (p: StudentProfileInput) => ({
+const buildProfilePayload = (
+	p: StudentProfileInput,
+	institutionId: string,
+) => ({
+	institutionId,
 	firstName: p.firstName,
 	lastName: p.lastName,
 	primaryEmail: p.primaryEmail,
@@ -109,7 +113,7 @@ export async function createStudent(
 				}));
 			const [profile] = await tx
 				.insert(schema.domainUsers)
-				.values(buildProfilePayload(input.profile))
+				.values(buildProfilePayload(input.profile, klass.institutionId))
 				.returning();
 			const [student] = await tx
 				.insert(schema.students)
@@ -169,6 +173,76 @@ export async function createStudent(
 	}
 }
 
+/**
+ * Makes an existing person of the institution (created from "People", or an
+ * imported profile) a student of a class: registration number, student record
+ * and an active enrollment for the class's year. Avoids creating a second
+ * profile for someone the registrar already registered as a person.
+ */
+export async function enrollExistingPerson(
+	input: { domainUserId: string; classId: string; registrationNumber?: string },
+	institutionId: string,
+) {
+	const klass = await classesRepo.findById(input.classId, institutionId);
+	if (!klass)
+		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
+	const profile = await db.query.domainUsers.findFirst({
+		where: eq(schema.domainUsers.id, input.domainUserId),
+	});
+	if (
+		!profile ||
+		(profile.institutionId && profile.institutionId !== institutionId)
+	)
+		throw new TRPCError({ code: "NOT_FOUND", message: "Person not found" });
+	const existing = await db.query.students.findFirst({
+		where: eq(schema.students.domainUserId, profile.id),
+	});
+	if (existing)
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: "This person is already a student",
+		});
+	const studentId = await transaction(async (tx) => {
+		const registrationNumber =
+			input.registrationNumber ??
+			(await registrationNumbersService.issueRegistrationNumber({
+				klass,
+				profile: toRegistrationProfile({
+					firstName: profile.firstName,
+					lastName: profile.lastName,
+					primaryEmail: profile.primaryEmail,
+					nationality: profile.nationality,
+				}),
+				tx,
+			}));
+		if (!profile.institutionId)
+			await tx
+				.update(schema.domainUsers)
+				.set({ institutionId })
+				.where(eq(schema.domainUsers.id, profile.id));
+		const [student] = await tx
+			.insert(schema.students)
+			.values({
+				class: input.classId,
+				registrationNumber,
+				domainUserId: profile.id,
+				institutionId,
+			})
+			.returning();
+		await tx.insert(schema.enrollments).values({
+			studentId: student.id,
+			classId: input.classId,
+			academicYearId: klass.academicYear,
+			institutionId,
+			status: "active",
+		});
+		return student.id;
+	});
+	const created = await repo.findById(studentId, institutionId);
+	if (!created) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+	return created;
+}
+
 export async function bulkCreateStudents(
 	data: {
 		classId: string;
@@ -209,7 +283,7 @@ export async function bulkCreateStudents(
 				attemptedRegistration = registrationNumber;
 				const [profile] = await tx
 					.insert(schema.domainUsers)
-					.values(buildProfilePayload(s.profile))
+					.values(buildProfilePayload(s.profile, klass.institutionId))
 					.returning();
 				const admissionType = s.admissionType ?? "normal";
 				const transferCredits = s.transferCredits ?? 0;

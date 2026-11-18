@@ -8,6 +8,7 @@ import * as service from "./students.service";
 import {
 	baseSchema,
 	bulkCreateSchema,
+	enrollPersonSchema,
 	externalAdmissionSchema,
 	idSchema,
 	listSchema,
@@ -52,6 +53,11 @@ export const studentsRouter = router({
 			ctx.institution.id,
 		),
 	),
+	enrollPerson: tenantAdminProcedure
+		.input(enrollPersonSchema)
+		.mutation(({ ctx, input }) =>
+			service.enrollExistingPerson(input, ctx.institution.id),
+		),
 	admitExternal: tenantAdminProcedure
 		.input(externalAdmissionSchema)
 		.mutation(({ ctx, input }) =>
