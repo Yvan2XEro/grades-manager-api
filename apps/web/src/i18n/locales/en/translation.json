@@ -3714,6 +3714,32 @@
           "admissionDate": "Admission date is required",
           "admissionJustification": "Justification must be at least 10 characters"
         }
+      },
+      "enroll": {
+        "title": "Enroll a student",
+        "description": "Enrollment in a class of {{year}}: registration number, student file and class list in one step.",
+        "noActiveYear": "No active academic year: activate the current year first (Academic years).",
+        "class": "Class",
+        "classPlaceholder": "Choose the class",
+        "modeNew": "New student",
+        "modeExisting": "Person already registered",
+        "gender": "Sex",
+        "genderPlaceholder": "Choose",
+        "female": "Female",
+        "male": "Male",
+        "dateOfBirth": "Date of birth",
+        "placeOfBirth": "Place of birth",
+        "phone": "Phone",
+        "emailHint": "Used for the student's account and notifications.",
+        "searchPlaceholder": "Name, e-mail or registration number",
+        "searchHint": "Type at least 2 letters of the name or the e-mail.",
+        "noMatch": "Nobody found. Use \"New student\".",
+        "willEnroll": "This person will become a student of {{className}} and get a registration number.",
+        "willMove": "Already a student: they will be moved to {{className}} (their previous enrollment is closed).",
+        "alreadyInClass": "Already enrolled in this class.",
+        "submit": "Enroll",
+        "success": "{{name}} enrolled in {{className}} — registration number {{registrationNumber}}",
+        "conflict": "This e-mail or registration number is already used by another person."
       }
     },
     "users": {

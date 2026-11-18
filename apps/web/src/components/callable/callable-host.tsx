@@ -15,6 +15,7 @@ import { BulkGenerateClassesDialog } from "@/modules/classes/components/bulk-gen
 import { ClassCourseFormDialog } from "@/modules/classes/components/class-course-form-dialog";
 import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { CourseCatalogExportDialog } from "@/modules/classes/components/course-catalog-export-dialog";
+import { EnrollStudentDialog } from "@/modules/classes/components/enroll-student-dialog";
 import { CreateDeliberationDialog } from "@/modules/deliberations/components/create-deliberation-dialog";
 import { DeliberationRuleFormDialog } from "@/modules/deliberations/components/deliberation-rule-form-dialog";
 import { OverrideDecisionDialog } from "@/modules/deliberations/components/override-decision-dialog";
@@ -87,6 +88,7 @@ export function CallableHost() {
 			<AcademicYearFormDialog />
 			<BulkClassExportDialog />
 			<ClassFormDialog />
+			<EnrollStudentDialog />
 			<BulkGenerateClassesDialog />
 			<CreatePersonDialog />
 			<CourseFormDialog />

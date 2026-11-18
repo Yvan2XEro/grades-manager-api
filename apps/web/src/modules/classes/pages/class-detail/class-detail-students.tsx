@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { trpcClient } from "@/utils/trpc";
+import { EnrollStudentDialog } from "../../components/enroll-student-dialog";
 import { useClassContext } from "../../hooks/use-class-context";
 
 export default function ClassDetailStudents() {
@@ -31,11 +32,15 @@ export default function ClassDetailStudents() {
 		queryFn: () =>
 			trpcClient.students.list.query({ classId: cls.id, limit: 200 }),
 	});
-	const students = data?.items ?? [];
+	const students = [...(data?.items ?? [])].sort(
+		(a, b) =>
+			(a.profile?.lastName ?? "").localeCompare(b.profile?.lastName ?? "") ||
+			(a.profile?.firstName ?? "").localeCompare(b.profile?.firstName ?? ""),
+	);
 
 	return (
 		<Card className="flex min-h-64 flex-1 flex-col">
-			<CardHeader>
+			<CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
 				<CardTitle>
 					{t("classes.hub.tabs.students")}
 					{students.length > 0 && (
@@ -44,6 +49,13 @@ export default function ClassDetailStudents() {
 						</span>
 					)}
 				</CardTitle>
+				<Button
+					size="sm"
+					onClick={() => EnrollStudentDialog.call({ classId: cls.id })}
+				>
+					<UserPlus className="mr-2 h-4 w-4" />
+					{t("admin.students.enroll.title")}
+				</Button>
 			</CardHeader>
 			<CardContent className="flex min-h-0 flex-1 flex-col">
 				{isLoading ? null : students.length === 0 ? (

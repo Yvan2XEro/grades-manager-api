@@ -2726,6 +2726,32 @@
           "admissionDate": "La date d'admission est obligatoire",
           "admissionJustification": "La justification doit contenir au moins 10 caractères"
         }
+      },
+      "enroll": {
+        "title": "Inscrire un étudiant",
+        "description": "Inscription dans une classe de {{year}} : matricule, dossier étudiant et liste de classe en une seule étape.",
+        "noActiveYear": "Aucune année académique active : activez d'abord l'année en cours (Années académiques).",
+        "class": "Classe",
+        "classPlaceholder": "Choisissez la classe",
+        "modeNew": "Nouvel étudiant",
+        "modeExisting": "Personne déjà enregistrée",
+        "gender": "Sexe",
+        "genderPlaceholder": "Choisir",
+        "female": "Féminin",
+        "male": "Masculin",
+        "dateOfBirth": "Date de naissance",
+        "placeOfBirth": "Lieu de naissance",
+        "phone": "Téléphone",
+        "emailHint": "Sert au compte de l'étudiant et aux notifications.",
+        "searchPlaceholder": "Nom, e-mail ou matricule",
+        "searchHint": "Tapez au moins 2 lettres du nom ou de l'e-mail.",
+        "noMatch": "Aucune personne trouvée. Utilisez « Nouvel étudiant ».",
+        "willEnroll": "Cette personne deviendra étudiante de {{className}} et recevra un matricule.",
+        "willMove": "Déjà étudiant(e) : il/elle sera transféré(e) en {{className}} (l'inscription précédente est clôturée).",
+        "alreadyInClass": "Déjà inscrit(e) dans cette classe.",
+        "submit": "Inscrire",
+        "success": "{{name}} inscrit(e) en {{className}} — matricule {{registrationNumber}}",
+        "conflict": "Cet e-mail ou ce matricule est déjà utilisé par une autre personne."
       }
     },
     "users": {
