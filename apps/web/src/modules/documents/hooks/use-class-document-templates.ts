@@ -58,6 +58,7 @@ export function useClassDocumentTemplates() {
 		queryKey: ["templates-grouped"],
 		queryFn: async () => {
 			const map: Record<DocumentKind, Array<{ id: string; name: string }>> = {
+				enrollment_certificate: [],
 				diploma: [],
 				transcript: [],
 				attestation: [],
@@ -96,6 +97,7 @@ export function useClassDocumentTemplates() {
 
 	const presetsByKind = useMemo(() => {
 		const out: Record<DocumentKind, (typeof presetQueries)[number]["data"]> = {
+			enrollment_certificate: undefined,
 			diploma: undefined,
 			transcript: undefined,
 			attestation: undefined,
@@ -109,6 +111,7 @@ export function useClassDocumentTemplates() {
 
 	const assignmentsByKind = useMemo(() => {
 		const m: Record<DocumentKind, any> = {
+			enrollment_certificate: null,
 			diploma: null,
 			transcript: null,
 			attestation: null,
