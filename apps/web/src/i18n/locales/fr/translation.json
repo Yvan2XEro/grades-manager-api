@@ -3550,134 +3550,134 @@
       "emptyHint": "Les étudiants apparaissent ici une fois diplômés lors d'une délibération."
     },
     "academicYearTransitions": {
-      "title": "Passage d'annee",
-      "subtitle": "Preparez, revisez, approuvez et executez la destination annuelle de chaque etudiant.",
-      "generatedAt": "Genere {{date}}",
+      "title": "Passage d'année",
+      "subtitle": "Préparez, révisez, approuvez et exécutez le devenir de chaque étudiant pour l'année suivante.",
+      "generatedAt": "Généré {{date}}",
       "actions": {
         "refresh": "Actualiser",
-        "prepare": "Preparer le plan",
-        "preparing": "Preparation...",
+        "prepare": "Préparer le plan",
+        "preparing": "Préparation…",
         "submit": "Soumettre",
         "approve": "Approuver",
-        "execute": "Executer",
+        "execute": "Exécuter",
         "cancel": "Annuler",
-        "resolve": "Resoudre le cas",
+        "resolve": "Résoudre le cas",
         "submitBlocked": "{{count}} étudiant(s) bloqué(s) à résoudre d'abord.",
         "running": "En cours…"
       },
       "create": {
         "title": "Nouvelle transition",
-        "description": "Selectionnez l'annee source, l'annee cible et le perimetre. TKAMS prepare le devenir de chaque etudiant."
+        "description": "Sélectionnez l'année source, l'année cible et le périmètre. TKAMS prépare le devenir de chaque étudiant."
       },
       "plans": {
         "title": "Plans"
       },
       "fields": {
-        "sourceYear": "Annee academique source",
-        "targetYear": "Annee academique cible",
-        "scope": "Perimetre",
-        "deferredPolicy": "Politique des ajournes"
+        "sourceYear": "Année académique source",
+        "targetYear": "Année académique cible",
+        "scope": "Périmètre",
+        "deferredPolicy": "Politique des ajournés"
       },
       "placeholders": {
-        "sourceYear": "Selectionner l'annee source",
-        "targetYear": "Selectionner l'annee cible",
-        "scope": "Selectionner le perimetre",
-        "search": "Rechercher un etudiant ou matricule...",
-        "targetClass": "Selectionner la classe cible",
+        "sourceYear": "Sélectionner l'année source",
+        "targetYear": "Sélectionner l'année cible",
+        "scope": "Sélectionner le périmètre",
+        "search": "Rechercher un étudiant ou un matricule…",
+        "targetClass": "Sélectionner la classe cible",
         "reason": "Expliquez pourquoi cette correction est valide"
       },
       "scope": {
-        "allClasses": "Toutes les classes de l'annee source"
+        "allClasses": "Toutes les classes de l'année source"
       },
       "deferred": {
-        "review": "Envoyer les ajournes en revue",
-        "repeat": "Traiter les ajournes comme redoublants"
+        "review": "Envoyer les ajournés en revue",
+        "repeat": "Traiter les ajournés comme redoublants"
       },
       "metrics": {
-        "students": "etudiants"
+        "students": "étudiants"
       },
       "summary": {
         "total": "Total",
         "promote": "Promus",
         "repeat": "Redoublants",
-        "graduate": "Diplomes",
-        "blocked": "A traiter",
+        "graduate": "Diplômés",
+        "blocked": "À traiter",
         "overridden": "Corrections"
       },
       "review": {
         "title": "Espace de revue",
-        "description": "Traitez d'abord les cas bloques. Ouvrez une ligne pour inspecter et corriger."
+        "description": "Traitez d'abord les cas bloqués. Ouvrez une ligne pour l'examiner et la corriger."
       },
       "table": {
-        "student": "Etudiant",
+        "student": "Étudiant",
         "decision": "Décision",
         "source": "Classe d'origine",
         "outcome": "Action",
         "destination": "Destination",
-        "status": "Etat"
+        "status": "État"
       },
       "item": {
         "title": "Cas de transition"
       },
       "resolve": {
-        "title": "Resoudre l'exception",
+        "title": "Résoudre l'exception",
         "outcome": "Action finale",
         "targetClass": "Classe cible",
         "reason": "Motif"
       },
       "status": {
         "draft": "Brouillon",
-        "ready": "Pret",
+        "ready": "Prêt",
         "pending_approval": "En attente",
-        "approved": "Approuve",
+        "approved": "Approuvé",
         "running": "En cours",
-        "completed": "Termine",
-        "completed_with_errors": "Termine avec erreurs",
-        "stale": "Obsolete",
-        "cancelled": "Annule"
+        "completed": "Terminé",
+        "completed_with_errors": "Terminé avec erreurs",
+        "stale": "Obsolète",
+        "cancelled": "Annulé"
       },
       "itemStatus": {
-        "all": "Tous les etats",
-        "ready": "Pret",
-        "blocked": "Bloque",
+        "all": "Tous les états",
+        "ready": "Prêt",
+        "blocked": "Bloqué",
         "processing": "Traitement",
-        "succeeded": "Reussi",
-        "failed": "Echoue",
+        "succeeded": "Réussi",
+        "failed": "Échoué",
         "excluded": "Exclu"
       },
       "outcome": {
         "all": "Toutes les actions",
         "promote": "Promouvoir",
         "repeat": "Redoubler",
-        "graduate": "Diplomer",
+        "graduate": "Diplômer",
         "exclude": "Exclure",
-        "transfer": "Transferer",
+        "transfer": "Transférer",
         "suspend": "Suspendre",
-        "review": "A traiter"
+        "review": "À traiter"
       },
       "decision": {
         "admitted": "Admis",
         "compensated": "Admis par compensation",
-        "deferred": "Ajourne",
+        "deferred": "Ajourné",
         "repeat": "Redoublant",
         "excluded": "Exclu",
-        "pending": "En attente"
+        "pending": "Incomplet"
       },
       "blocker": {
-        "missing_signed_deliberation": "Deliberation annuelle signee manquante",
-        "missing_student_decision": "Decision etudiant manquante",
-        "existing_target_enrollment": "Inscription deja presente dans l'annee cible",
+        "missing_signed_deliberation": "Délibération annuelle signée manquante",
+        "missing_student_decision": "Décision de l'étudiant manquante",
+        "existing_target_enrollment": "Inscription déjà présente dans l'année cible",
         "missing_promotion_target": "Classe de promotion manquante",
-        "ambiguous_promotion_target": "Destination de promotion ambigue",
+        "ambiguous_promotion_target": "Destination de promotion ambiguë",
         "missing_repeat_target": "Classe de redoublement manquante",
-        "ambiguous_repeat_target": "Destination de redoublement ambigue",
-        "deferred_requires_review": "Decision ajournee a examiner",
-        "pending_decision": "Decision en attente"
+        "ambiguous_repeat_target": "Destination de redoublement ambiguë",
+        "deferred_requires_review": "Décision « Ajourné » à examiner",
+        "pending_decision": "Décision en attente (résultats incomplets)"
       },
       "empty": {
         "noPlans": "Aucun plan de transition.",
-        "selectPlan": "Creez ou selectionnez un plan pour commencer la revue.",
-        "noItems": "Aucun etudiant ne correspond aux filtres.",
+        "selectPlan": "Créez ou sélectionnez un plan pour commencer la revue.",
+        "noItems": "Aucun étudiant ne correspond aux filtres.",
         "notFound": "Plan de transition introuvable."
       },
       "tabs": {
@@ -3725,9 +3725,9 @@
         }
       },
       "toast": {
-        "created": "Plan de transition cree",
-        "updated": "Transition mise a jour",
-        "resolved": "Cas de transition resolu",
+        "created": "Plan de passage créé",
+        "updated": "Passage mis à jour",
+        "resolved": "Cas résolu",
         "submitted": "Plan soumis pour approbation.",
         "approved": "Plan approuvé — prêt à être exécuté.",
         "executed": "Exécution démarrée.",
@@ -3741,6 +3741,11 @@
         "approved": "Approuvé",
         "running": "En cours",
         "completed": "Terminé"
+      },
+      "howTo": {
+        "title": "Lequel utiliser ?",
+        "transition": "Le passage d'année (cette page) est la voie normale : un plan pour toutes les classes de l'année, qui traite admis, redoublants, diplômés et exclus, avec revue et approbation avant exécution.",
+        "shortcut": "« Promouvoir les admis » sur une délibération clôturée est un raccourci pour une seule classe : il n'inscrit que ses étudiants admis et compensés au niveau suivant. Un étudiant déjà inscrit dans l'année cible n'est jamais inscrit deux fois."
       }
     },
     "gradeScale": {
@@ -5292,9 +5297,9 @@
         "name": "Nom",
         "courseAverages": "Moyennes par cours",
         "overallAverage": "Moyenne générale",
-        "credits": "credits",
-        "decision": "decision",
-        "mention": "mention"
+        "credits": "Crédits",
+        "decision": "Décision",
+        "mention": "Mention"
       },
       "actions": {
         "promote": "Promouvoir",

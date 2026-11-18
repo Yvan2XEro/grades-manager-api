@@ -1121,9 +1121,9 @@
         "name": "Name",
         "courseAverages": "Course averages",
         "overallAverage": "Overall average",
-        "credits": "credits",
-        "decision": "decision",
-        "mention": "mention"
+        "credits": "Credits",
+        "decision": "Decision",
+        "mention": "Mention"
       },
       "actions": {
         "promote": "Promote",
@@ -4728,7 +4728,7 @@
         "deferred": "Deferred",
         "repeat": "Repeat",
         "excluded": "Excluded",
-        "pending": "Pending"
+        "pending": "Incomplete"
       },
       "blocker": {
         "missing_signed_deliberation": "Missing signed annual deliberation",
@@ -4808,6 +4808,11 @@
         "approved": "Approved",
         "running": "Running",
         "completed": "Completed"
+      },
+      "howTo": {
+        "title": "Which one to use?",
+        "transition": "Year transition (this page) is the standard way: one plan for every class of the year, covering admitted, repeating, graduating and excluded students, with review and approval before execution.",
+        "shortcut": "“Promote admitted” on a closed deliberation is a shortcut for one class: it only enrolls its admitted and compensated students in the next level. Students already enrolled in the target year are never enrolled twice."
       }
     },
     "gradeScale": {
