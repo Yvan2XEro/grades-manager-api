@@ -38,6 +38,8 @@ export type NavItem = {
 	badge?: NavBadgeType;
 	/** The link is not active when the path starts with this prefix. */
 	excludePrefix?: string;
+	/** Extra words the command palette matches (synonyms of the label). */
+	keywordsKey?: ParseKeys;
 };
 
 export type NavGroup = {
@@ -379,6 +381,12 @@ export function useNavMenu(IC = "size-[15px] shrink-0"): NavMenu {
 				to: "/enrollments",
 				icon: <ListChecks className={IC} />,
 				labelKey: "navigation.sidebar.student.enrollments",
+			},
+			{
+				to: "/fees",
+				icon: <CreditCard className={IC} />,
+				labelKey: "navigation.sidebar.student.fees",
+				keywordsKey: "navigation.sidebar.student.feesKeywords",
 			},
 			{
 				to: "/documents",

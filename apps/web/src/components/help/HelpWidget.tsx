@@ -7,14 +7,20 @@ import {
 	CircleHelp,
 	X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 import { useRoleGroup } from "@/components/navigation/RoleView";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getHelpSections } from "./help-content";
 import { ADMIN_WORKFLOW, getCurrentStepIndex } from "./workflow-steps";
 
+/**
+ * Help button of the header and its side panel. It lives in the header, not
+ * floating over the page, so it never covers a page's own buttons.
+ */
 export function HelpWidget() {
 	const [open, setOpen] = useState(false);
 	const [expanded, setExpanded] = useState<string | null>(null);
@@ -33,27 +39,39 @@ export function HelpWidget() {
 			? ADMIN_WORKFLOW[currentStepIndex + 1]
 			: null;
 
+	// Close on Escape and when the user navigates elsewhere
+	useEffect(() => {
+		if (!open) return;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") setOpen(false);
+		};
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
+	}, [open]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: runs on navigation
+	useEffect(() => {
+		setOpen(false);
+	}, [location.pathname]);
+
 	const toggleItem = (key: string) => {
 		setExpanded((prev) => (prev === key ? null : key));
 	};
 
 	return (
 		<>
-			{/* Floating button */}
-			<button
-				type="button"
+			<Button
+				variant="ghost"
+				size="icon"
+				className="h-8 w-8 text-muted-foreground hover:text-foreground"
 				onClick={() => setOpen(true)}
-				className={cn(
-					"fixed right-6 bottom-6 z-40 flex h-11 w-11 items-center justify-center rounded-full",
-					"bg-primary text-primary-foreground shadow-lg",
-					"transition-transform duration-200 hover:scale-110 active:scale-95",
-					open && "pointer-events-none opacity-0",
-				)}
-				aria-label={t("help.openButton", "Help")}
+				aria-label={t("help.openButton")}
+				title={t("help.openButton")}
 			>
-				<CircleHelp className="h-5 w-5" />
-			</button>
+				<CircleHelp className="h-4 w-4" />
+			</Button>
 
+			{createPortal(
+				<>
 			{/* Backdrop */}
 			{open && (
 				<div
@@ -75,7 +93,7 @@ export function HelpWidget() {
 					<div className="flex items-center gap-2">
 						<CircleHelp className="h-5 w-5 text-primary" />
 						<span className="font-semibold text-sm">
-							{t("help.title", "Help")}
+							{t("help.title")}
 						</span>
 					</div>
 					<button
@@ -99,7 +117,7 @@ export function HelpWidget() {
 						>
 							<div className="flex items-center gap-2">
 								<p className="font-semibold text-[11px] text-muted-foreground uppercase tracking-wider">
-									{t("help.workflow.title", "Setup progression")}
+									{t("help.workflow.title")}
 								</p>
 								<span className="text-[11px] text-muted-foreground/60">
 									{currentStepIndex + 1}/{ADMIN_WORKFLOW.length}
@@ -166,7 +184,7 @@ export function HelpWidget() {
 									>
 										<ArrowRight className="h-3 w-3 shrink-0" />
 										<span>
-											{t("help.workflow.next", "Next step")} :{" "}
+											{t("help.workflow.next")} :{" "}
 											<span className="font-semibold">
 												{nextStep.label[lang]}
 											</span>
@@ -175,7 +193,7 @@ export function HelpWidget() {
 								) : (
 									<div className="mt-1 flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-2 font-medium text-primary text-xs">
 										<Check className="h-3 w-3 shrink-0" />
-										<span>{t("help.workflow.done", "Setup complete")}</span>
+										<span>{t("help.workflow.done")}</span>
 									</div>
 								)}
 							</div>
@@ -228,10 +246,13 @@ export function HelpWidget() {
 				{/* Footer */}
 				<div className="border-border border-t px-5 py-3">
 					<p className="text-center text-[11px] text-muted-foreground/60">
-						{t("help.footer", "OverBrand · Grades Manager")}
+						{t("help.footer")}
 					</p>
 				</div>
 			</div>
+				</>,
+				document.body,
+			)}
 		</>
 	);
 }

@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { formatDate } from "@/lib/date-format";
+import { formatMoney } from "../services/fee-format";
 import { useCreateMyOrder } from "../hooks/use-my-fees";
 import type { PayableInstallment } from "../types";
 
@@ -48,9 +50,18 @@ export function GenerateOrderPanel({
 									)
 								}
 							/>
-							<span className="flex-1">{installment.label}</span>
-							<span className="font-medium">
-								{installment.amount.toLocaleString()} {currency}
+							<span className="min-w-0 flex-1">
+								<span className="block">{installment.label}</span>
+								{installment.dueDate && (
+									<span className="block text-muted-foreground text-xs">
+										{t("feeClearance.student.dueOn", {
+											date: formatDate(installment.dueDate, "PP"),
+										})}
+									</span>
+								)}
+							</span>
+							<span className="shrink-0 font-medium">
+								{formatMoney(installment.amount, currency)}
 							</span>
 							<Badge variant="outline">
 								{t(
@@ -83,8 +94,11 @@ export function GenerateOrderPanel({
 					<Plus className="mr-1 h-4 w-4" />
 				)}
 				{t("feeClearance.orders.generate")} (
-				{(installments.length > 0 ? selectedAmount : balance).toLocaleString()}{" "}
-				{currency})
+				{formatMoney(
+					installments.length > 0 ? selectedAmount : balance,
+					currency,
+				)}
+				)
 			</Button>
 		</div>
 	);

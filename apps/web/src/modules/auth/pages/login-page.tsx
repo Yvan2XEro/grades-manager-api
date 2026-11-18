@@ -7,6 +7,7 @@ import { toast } from "@/lib/toast";
 import { LoginForm } from "../components/login-form";
 import { LoginWithOrgPicker } from "../components/login-with-org-picker";
 import type { LoginFormData } from "../services/auth-schemas";
+import { withReturn } from "../services/return-url";
 
 /** Scoped mode (on-premise or subdomain); cloud mode picks the institution. */
 const Login: React.FC = () => {
@@ -36,7 +37,7 @@ const Login: React.FC = () => {
 	return (
 		<LoginForm
 			subtitle={t("auth.login.scopedSubtitle")}
-			forgotPasswordHref={`/auth/forgot?return=${callbackURL}`}
+			forgotPasswordHref={withReturn("/auth/forgot", callbackURL)}
 			onSubmit={onSubmit}
 		/>
 	);

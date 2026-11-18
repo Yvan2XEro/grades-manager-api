@@ -2,7 +2,6 @@ import type React from "react";
 import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { useStore } from "../../store";
-import { HelpWidget } from "../help/HelpWidget";
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";
 import { GridWaveFilter } from "../ui/grid-wave-filter";
@@ -41,7 +40,6 @@ const DashboardLayout: React.FC = () => {
 					</div>
 				</main>
 			</div>
-			<HelpWidget />
 		</div>
 	);
 };

@@ -73,10 +73,11 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 						<CommandGroup heading={section.heading}>
 							{section.items.map((item) => {
 								const label = t(item.labelKey);
+								const keywords = item.keywordsKey ? t(item.keywordsKey) : "";
 								return (
 									<CommandItem
 										key={item.to}
-										value={`${label} ${section.heading} ${item.to}`}
+										value={`${label} ${keywords} ${section.heading} ${item.to}`}
 										onSelect={() => handleSelect(item.to)}
 										className="gap-3"
 									>

@@ -15,7 +15,7 @@ export default function TeacherTimetablePage() {
 	return (
 		<MyTimetableView
 			subtitle={t("teacher.timetable.mySubtitle")}
-			emptyDescription={t("teacher.timetable.noSessionsDesc")}
+			emptyDescription={t("teacher.timetable.teacherNoSessionsDesc")}
 			period={period}
 			sessions={(data ?? []).map((s) => toGridSession(s))}
 			isPending={isPending}

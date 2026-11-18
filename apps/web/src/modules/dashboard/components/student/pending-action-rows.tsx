@@ -106,7 +106,7 @@ export function InfoRow({
 			)}
 			<button
 				type="button"
-				className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-muted-foreground opacity-0 transition-opacity hover:underline group-hover:opacity-100"
+				className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-muted-foreground transition-opacity hover:underline md:opacity-0 md:group-hover:opacity-100"
 				onClick={() => onMarkRead(item.id)}
 				disabled={isMarkingRead}
 			>

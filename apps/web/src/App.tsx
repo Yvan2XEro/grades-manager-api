@@ -57,7 +57,17 @@ function App() {
 
 	const memoUser = useMemo(() => {
 		if (!session || !session.user) return null;
-		const [firstName, ...rest] = (session.user.name || "").split(" ");
+		// Show the institutional profile's name (the one on every page and
+		// document), not the auth account's display name, which may differ
+		const activeProfile =
+			session.domainProfiles?.find(
+				(p) => p.memberId === session.activeMembership?.id,
+			) ?? session.domainProfiles?.[0];
+		const [accountFirstName, ...rest] = (session.user.name || "").split(" ");
+		const firstName = activeProfile?.firstName || accountFirstName;
+		const lastName = activeProfile
+			? activeProfile.lastName
+			: rest.join(" ");
 		const membershipRole = session.activeMembership?.role ?? null;
 		const role = normalizeRole(membershipRole);
 		return {
@@ -66,7 +76,7 @@ function App() {
 			image: session.user.image ?? null,
 			role,
 			firstName,
-			lastName: rest.join(" "),
+			lastName,
 			domainProfiles: session.domainProfiles,
 			permissions: {
 				canManageCatalog: roleGuards.manageCatalog.includes(role),
