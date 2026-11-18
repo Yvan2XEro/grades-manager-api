@@ -10,12 +10,6 @@ export type UeResult = NonNullable<StudentResult["ueResults"]>[number];
 export type LogEntry =
 	RouterOutputs["deliberations"]["getLogs"]["items"][number];
 
-export interface OverrideState {
-	studentResultId: string;
-	studentName: string;
-	currentDecision: string;
-}
-
 export type DeliberationAction = "open" | "close" | "sign" | "reopen";
 
 export interface RuleFormState {

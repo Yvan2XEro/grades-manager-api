@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { and, asc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import { normalizeCode } from "@/lib/strings";
@@ -355,11 +356,20 @@ export async function getPromoTargets(
 	const source = await repo.findById(sourceClassId, institutionId);
 	if (!source) throw notFound("Source class not found");
 
-	// All academic years for the institution so the UI can show a year picker
-	const availableYears = await db.query.academicYears.findMany({
+	// Academic years after the source class's year: promotion goes forward
+	const allYears = await db.query.academicYears.findMany({
 		where: eq(schema.academicYears.institutionId, institutionId),
-		orderBy: (ay, { desc }) => desc(ay.startDate),
+		orderBy: (ay, { asc }) => asc(ay.startDate),
 	});
+	const sourceStart = source.academicYearInfo?.startDate
+		? new Date(source.academicYearInfo.startDate).getTime()
+		: null;
+	const availableYears = allYears.filter(
+		(year) =>
+			year.id !== source.academicYear &&
+			(sourceStart === null ||
+				new Date(year.startDate).getTime() > sourceStart),
+	);
 
 	// Next cycle level (orderIndex + 1) in the same cycle
 	const nextLevel = source.cycleLevel
@@ -388,7 +398,93 @@ export async function getPromoTargets(
 				).items
 			: [];
 
-	return { targetClasses, isLastLevel, sourceClass: source, availableYears };
+	return {
+		targetClasses,
+		isLastLevel,
+		sourceClass: source,
+		nextLevel: nextLevel ?? null,
+		availableYears,
+	};
+}
+
+/**
+ * Creates (or returns, when it already exists) the class that promoted
+ * students of `sourceClassId` join in `targetAcademicYearId`: same program and
+ * option, next level of the cycle. Its code and name are generated so a dean
+ * never has to invent them.
+ */
+export async function createPromotionTarget(
+	sourceClassId: string,
+	targetAcademicYearId: string,
+	institutionId: string,
+) {
+	const targets = await getPromoTargets(
+		sourceClassId,
+		institutionId,
+		targetAcademicYearId,
+	);
+	const { sourceClass: source, nextLevel } = targets;
+	if (!nextLevel) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "The source class is on the last level of its cycle",
+		});
+	}
+	const targetYear = targets.availableYears.find(
+		(year) => year.id === targetAcademicYearId,
+	);
+	if (!targetYear) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message:
+				"The target academic year must come after the source class's year",
+		});
+	}
+	const existing = targets.targetClasses.find(
+		(c) => c.programOptionId === source.programOptionId,
+	);
+	if (existing) return { klass: existing, created: false };
+
+	// e.g. "SFM-BTS2-2627": program code, next level code, years of the target year
+	const yearDigits = (targetYear.name.match(/\d{2}(\d{2})/g) ?? [])
+		.map((y) => y.slice(-2))
+		.join("");
+	const baseCode = normalizeCode(
+		[source.programInfo?.code, nextLevel.code, yearDigits]
+			.filter(Boolean)
+			.join("-")
+			.replace(/\s+/g, ""),
+	);
+	const baseName =
+		`${source.programInfo?.name ?? ""} – ${nextLevel.name}`.trim();
+	const taken = await db.query.classes.findMany({
+		where: eq(schema.classes.academicYear, targetAcademicYearId),
+		columns: { code: true, name: true, program: true },
+	});
+	const codes = new Set(taken.map((c) => c.code));
+	const names = new Set(
+		taken.filter((c) => c.program === source.program).map((c) => c.name),
+	);
+	let code = baseCode;
+	let name = baseName;
+	for (let i = 2; codes.has(code) || names.has(name); i++) {
+		code = `${baseCode}-${i}`;
+		name = `${baseName} (${i})`;
+	}
+
+	const klass = await createClass(
+		{
+			program: source.program,
+			academicYear: targetAcademicYearId,
+			cycleLevelId: nextLevel.id,
+			programOptionId: source.programOptionId,
+			code,
+			name,
+			totalCredits: 0,
+		},
+		institutionId,
+	);
+	return { klass, created: true };
 }
 
 export async function promotionPreview(
@@ -402,6 +498,7 @@ export async function promotionPreview(
 	// Get students in source class (paginated)
 	const { items: students, nextCursor } = await studentsRepo.list({
 		classId: sourceClassId,
+		includeFormer: true,
 		institutionId,
 		cursor: opts.cursor,
 		limit: opts.limit ?? 50,

@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/db";
 import type {
 	DeliberationDecision,
@@ -385,6 +385,33 @@ export async function compute(
 		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
 	}
 
+	// Population: the class's current students plus everyone enrolled in it for
+	// the deliberated year (students promoted since then keep their results).
+	const enrolledIds = await db
+		.select({ studentId: schema.enrollments.studentId })
+		.from(schema.enrollments)
+		.where(
+			and(
+				eq(schema.enrollments.classId, klass.id),
+				eq(schema.enrollments.academicYearId, delib.academicYearId),
+				ne(schema.enrollments.status, "withdrawn"),
+			),
+		);
+	const currentIds = new Set(klass.students.map((s) => s.id));
+	const formerIds = enrolledIds
+		.map((e) => e.studentId)
+		.filter((sid) => !currentIds.has(sid));
+	const population =
+		formerIds.length > 0
+			? [
+					...klass.students,
+					...(await db.query.students.findMany({
+						where: inArray(schema.students.id, [...new Set(formerIds)]),
+						with: { profile: true },
+					})),
+				]
+			: klass.students;
+
 	// Filter classCourses by semester if semester-specific deliberation
 	let classCourses = klass.classCourses;
 	if (delib.semesterId) {
@@ -474,7 +501,7 @@ export async function compute(
 
 	const includeRetakes = delib.type === "retake";
 
-	for (const student of klass.students) {
+	for (const student of population) {
 		// Compute UE results for this student
 		const ueResults: DeliberationUeResult[] = [];
 		let totalCreditsEarned = 0;
@@ -919,7 +946,8 @@ export async function overrideDecision(
 		? (input.mention as DeliberationMention)
 		: result.mention;
 	if (restoresComputed && !input.mention) {
-		const gradeScale = await gradeScalesService.getForInstitution(institutionId);
+		const gradeScale =
+			await gradeScalesService.getForInstitution(institutionId);
 		mention =
 			result.rank !== null
 				? (gradeScalesService.computeMention(
@@ -1343,7 +1371,7 @@ export async function promoteAdmitted(
 function computeStats(
 	results: Array<{
 		generalAverage: number | null;
-		finalDecision: DeliberationDecision;
+		finalDecision: DeliberationDecision | null;
 	}>,
 ): DeliberationStats {
 	const total = results.length;

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 import type { DeliberationType } from "../services/deliberation-status";
 
 export type CreateDeliberationTab = "single" | "multi";
@@ -89,7 +89,9 @@ export function useCreateDeliberation(onDone: () => void) {
 			trpcClient.deliberations.create.mutate(buildInput(singleClassId!)),
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.createSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
+			queryClient.invalidateQueries({
+			queryKey: trpc.deliberations.listPaged.queryKey(),
+		});
 			close();
 		},
 		onError: (err) => toast.error((err as Error).message),
@@ -102,7 +104,9 @@ export function useCreateDeliberation(onDone: () => void) {
 			),
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.initAndComputeSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
+			queryClient.invalidateQueries({
+			queryKey: trpc.deliberations.listPaged.queryKey(),
+		});
 			close();
 		},
 		onError: (err) => toast.error((err as Error).message),
@@ -167,7 +171,9 @@ export function useCreateDeliberation(onDone: () => void) {
 			});
 		}
 
-		queryClient.invalidateQueries({ queryKey: ["deliberations"] });
+		queryClient.invalidateQueries({
+			queryKey: trpc.deliberations.listPaged.queryKey(),
+		});
 
 		if (errors.length === 0) {
 			toast.success(

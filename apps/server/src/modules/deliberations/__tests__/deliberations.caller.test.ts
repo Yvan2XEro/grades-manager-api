@@ -717,7 +717,13 @@ describe("deliberations router", () => {
 				priority: 1,
 				ruleset: {
 					conditions: {
-						all: [{ fact: "creditsEarned", operator: "greaterThanInclusive", value: 0 }],
+						all: [
+							{
+								fact: "creditsEarned",
+								operator: "greaterThanInclusive",
+								value: 0,
+							},
+						],
 					},
 					event: { type: "excluded" },
 				},
@@ -796,7 +802,7 @@ describe("deliberations router", () => {
 			const restored = await admin.deliberations.overrideDecision({
 				deliberationId: delib.id,
 				studentResultId: resultId,
-				finalDecision: dbResults[0].autoDecision,
+				finalDecision: dbResults[0].autoDecision ?? "admitted",
 				reason: "Back to computed",
 			});
 			expect(restored.finalDecision).toBe(dbResults[0].autoDecision);
@@ -889,7 +895,9 @@ describe("deliberations router", () => {
 			expect(activeEnrollments[0].classId).toBe(targetClass.id);
 			// The new enrollment belongs to the target class's year; the
 			// deliberated year keeps its (completed) enrollment.
-			expect(activeEnrollments[0].academicYearId).toBe(targetClass.academicYear);
+			expect(activeEnrollments[0].academicYearId).toBe(
+				targetClass.academicYear,
+			);
 			const previous = enrollments.find((e) => e.classId === klass.id);
 			expect(previous?.status).toBe("completed");
 
@@ -991,6 +999,44 @@ describe("deliberations router", () => {
 			});
 
 			expect(result.promotedCount).toBe(1);
+		});
+	});
+
+	describe("classes.createPromotionTarget", () => {
+		it("creates the next-level class of the target year once, with a generated code and name", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { klass, l2, academicYear } = await setupDeliberationFixture();
+			const laterYear = await createAcademicYear({
+				name: "2031-2032",
+				startDate: "2031-09-01",
+				endDate: "2032-07-31",
+			});
+
+			const targets = await admin.classes.promoTargets({
+				sourceClassId: klass.id,
+			});
+			expect(targets.availableYears.map((y) => y.id)).not.toContain(
+				academicYear.id,
+			);
+			expect(targets.nextLevel?.id).toBe(l2.id);
+
+			const first = await admin.classes.createPromotionTarget({
+				sourceClassId: klass.id,
+				targetAcademicYearId: laterYear.id,
+			});
+			expect(first.created).toBe(true);
+			expect(first.klass.cycleLevelId).toBe(l2.id);
+			expect(first.klass.academicYear).toBe(laterYear.id);
+			expect(first.klass.code).toContain("L2");
+			expect(first.klass.name).toContain(l2.name);
+
+			const second = await admin.classes.createPromotionTarget({
+				sourceClassId: klass.id,
+				targetAcademicYearId: laterYear.id,
+			});
+			expect(second.created).toBe(false);
+			expect(second.klass.id).toBe(first.klass.id);
 		});
 	});
 

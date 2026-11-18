@@ -427,7 +427,7 @@ export async function listStudents(
 	opts: Omit<Parameters<typeof repo.list>[0], "institutionId">,
 	institutionId: string,
 ) {
-	return repo.list({ ...opts, institutionId });
+	return repo.list({ ...opts, includeFormer: true, institutionId });
 }
 
 export async function getStudentById(id: string, institutionId: string) {

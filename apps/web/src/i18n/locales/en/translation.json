@@ -4169,7 +4169,7 @@
         "deferred": "Deferred",
         "repeat": "Repeat",
         "excluded": "Excluded",
-        "pending": "Pending"
+        "pending": "Incomplete"
       },
       "mention": {
         "passable": "Pass",
@@ -4249,14 +4249,28 @@
         "signedBy": "Signed by",
         "notYet": "Not yet",
         "juryNumber": "N° jury",
-        "fallbackTitle": "Deliberation"
+        "fallbackTitle": "Deliberation",
+        "ues": "UEs",
+        "missingUes_one": "{{count}} UE without marks",
+        "missingUes_other": "{{count}} UEs without marks"
       },
       "override": {
         "title": "Override decision",
         "currentDecision": "Current decision",
         "newDecision": "New decision",
         "reason": "Reason",
-        "reasonPlaceholder": "Explain why you are overriding this decision..."
+        "reasonPlaceholder": "Explain why you are overriding this decision...",
+        "partialAverage": "{{value}} (partial)",
+        "computedDecision": "Computed decision",
+        "restore": "Restore “{{decision}}”",
+        "restoreReason": "Computed decision restored",
+        "newDecisionPlaceholder": "Choose the jury's decision",
+        "computed": "computed",
+        "help": {
+          "deferred": "Deferred: not passed yet; the student can resit the failed UEs before a final decision.",
+          "repeat": "Repeat: the student repeats the same level next year.",
+          "excluded": "Excluded: the student may not continue in the program."
+        }
       },
       "logs": {
         "title": "Activity log",
@@ -4269,34 +4283,41 @@
         "signed": "Deliberation signed",
         "reopened": "Deliberation reopened (results hidden)",
         "exported": "Diplomation exported",
-        "promoted": "Students promoted"
+        "promoted": "Students promoted",
+        "promotedDetails": "{{count}} → {{className}}"
       },
       "promote": {
         "button": "Promote admitted",
         "title": "Promote admitted students",
-        "description": "{{count}} admitted/compensated students will be enrolled in the target class",
+        "description": "{{count}} admitted or compensated students will be enrolled in the target class.",
         "targetAcademicYear": "Target academic year",
         "targetAcademicYearPlaceholder": "Select the next academic year",
         "targetClass": "Target class",
         "targetClassPlaceholder": "Select destination class",
         "confirm": "Promote",
-        "success": "{{count}} students promoted successfully",
         "noAdmitted": "No admitted students to promote",
         "lastLevelTitle": "Last level of the cycle",
         "lastLevelHint": "There is no next class: admitted students complete the cycle and are marked as graduated.",
         "noTargetFound": {
-          "title": "title",
-          "searched": "searched",
-          "criteriaProgram": "Same program: {{program}}",
-          "criteriaLevel": "Next level after {{level}} (position {{nextIndex}})",
-          "criteriaYear": "criteriaYear",
-          "fix": "fix",
-          "goToClasses": "goToClasses"
+          "title": "The next-level class does not exist yet",
+          "description": "There is no {{program}} class of level “{{level}}” in {{year}}. It can be created now, with a generated code.",
+          "create": "Create “{{name}}”"
         },
-        "ctaDesc": "Students with an 'Admitted' decision can be promoted to the next academic level.",
+        "ctaDesc": "Students whose decision is “Admitted” or “Compensated” move up to the next level of the cycle (or graduate on the last level).",
         "ctaTitle": "Promote admitted students",
         "targetClassHint_one": "{{count}} admitted student will be enrolled in this class.",
-        "targetClassHint_other": "{{count}} admitted students will be enrolled in this class."
+        "targetClassHint_other": "{{count}} admitted students will be enrolled in this class.",
+        "othersStay": "Deferred, repeating and excluded students stay in this class. To re-enrol repeating students in the same level next year, use the year transition.",
+        "yearTransitionLink": "Year transition",
+        "done_one": "Promotion done on {{date}}: {{count}} student enrolled in {{className}}",
+        "done_other": "Promotion done on {{date}}: {{count}} students enrolled in {{className}}",
+        "doneGraduated_one": "Done on {{date}}: {{count}} student graduated",
+        "doneGraduated_other": "Done on {{date}}: {{count}} students graduated",
+        "alreadyPromoted_one": "{{count}} student was already enrolled for that year and was not enrolled twice.",
+        "alreadyPromoted_other": "{{count}} students were already enrolled for that year and were not enrolled twice.",
+        "success_one": "{{count}} student promoted",
+        "success_other": "{{count}} students promoted",
+        "classCreated": "Class “{{name}}” created"
       },
       "ueDecision": {
         "ADM": "Acquired",
@@ -4327,7 +4348,9 @@
         "closeTitle": "Close & publish to students?",
         "signTitle": "Sign deliberation?",
         "deleteTitle": "Delete deliberation?",
-        "reopenTitle": "Reopen deliberation?"
+        "reopenTitle": "Reopen deliberation?",
+        "closeIncomplete_one": "{{count}} student still has incomplete results and will appear as “Incomplete”.",
+        "closeIncomplete_other": "{{count}} students still have incomplete results and will appear as “Incomplete”."
       },
       "rules": {
         "title": "Deliberation rules",
@@ -4396,9 +4419,22 @@
         "credits": "Credits",
         "decision": "Decision",
         "mention": "Mention",
-        "stats": "Success rate: {{rate}}% | Admitted: {{admitted}} | Compensated: {{compensated}} | Deferred: {{deferred}}",
+        "stats": "Pass rate: {{rate}} | Admitted: {{admitted}} | Compensated: {{compensated}} | Deferred: {{deferred}} | Repeating: {{repeat}} | Excluded: {{excluded}} | Incomplete: {{incomplete}}",
         "sheetName": "Deliberation",
-        "filePrefix": "Deliberation"
+        "filePrefix": "Deliberation",
+        "title": "DELIBERATION MINUTES",
+        "session": "Session: {{value}}",
+        "classAverage": "Class average: {{value}}",
+        "signatures": "The jury",
+        "president": "Jury president",
+        "member": "Jury member",
+        "signatureLine": "Signature: ____________________"
+      },
+      "incomplete": {
+        "title_one": "{{count}} student has incomplete results",
+        "title_other": "{{count}} students have incomplete results",
+        "hintOpen": "Marks are missing: no average, rank, mention or decision is given. Enter the missing marks and compute again, or let the jury decide with “Override decision” before closing.",
+        "hintClosed": "These students appear as “Incomplete” on the minutes, without average, rank or mention."
       }
     },
     "gradeAccessGrants": {

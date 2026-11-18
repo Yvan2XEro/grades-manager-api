@@ -3171,7 +3171,7 @@
         "deferred": "Ajourné",
         "repeat": "Redoublant",
         "excluded": "Exclu",
-        "pending": "En attente"
+        "pending": "Incomplet"
       },
       "mention": {
         "passable": "Passable",
@@ -3251,14 +3251,28 @@
         "signedBy": "Signé par",
         "notYet": "Pas encore",
         "juryNumber": "N° jury",
-        "fallbackTitle": "Délibération"
+        "fallbackTitle": "Délibération",
+        "ues": "UE",
+        "missingUes_one": "{{count}} UE sans note",
+        "missingUes_other": "{{count}} UE sans notes"
       },
       "override": {
         "title": "Modifier la décision",
         "currentDecision": "Décision actuelle",
         "newDecision": "Nouvelle décision",
         "reason": "Motif",
-        "reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision..."
+        "reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision...",
+        "partialAverage": "{{value}} (partielle)",
+        "computedDecision": "Décision calculée",
+        "restore": "Rétablir « {{decision}} »",
+        "restoreReason": "Décision calculée rétablie",
+        "newDecisionPlaceholder": "Choisir la décision du jury",
+        "computed": "calculée",
+        "help": {
+          "deferred": "Ajourné : pas encore admis ; l'étudiant peut repasser les UE non acquises (rattrapage) avant une décision définitive.",
+          "repeat": "Redoublant : l'étudiant reprend le même niveau l'année suivante.",
+          "excluded": "Exclu : l'étudiant ne peut pas poursuivre dans la filière."
+        }
       },
       "logs": {
         "title": "Journal d'activité",
@@ -3271,34 +3285,41 @@
         "signed": "Délibération signée",
         "reopened": "Délibération rouverte (résultats masqués)",
         "exported": "Diplomation exportée",
-        "promoted": "Étudiants promus"
+        "promoted": "Étudiants promus",
+        "promotedDetails": "{{count}} → {{className}}"
       },
       "promote": {
         "button": "Promouvoir les admis",
         "title": "Promouvoir les admis",
-        "description": "{{count}} étudiants admis/compensés seront inscrits dans la classe cible",
+        "description": "{{count}} étudiants admis ou compensés seront inscrits dans la classe cible.",
         "targetAcademicYear": "Année académique cible",
         "targetAcademicYearPlaceholder": "Sélectionner l'année suivante",
         "targetClass": "Classe cible",
         "targetClassPlaceholder": "Sélectionner la classe de destination",
         "confirm": "Promouvoir",
-        "success": "{{count}} étudiants promus avec succès",
         "noAdmitted": "Aucun étudiant admis à promouvoir",
         "lastLevelTitle": "Dernier niveau du cycle",
         "lastLevelHint": "Il n'y a pas de classe suivante : les étudiants admis terminent le cycle et sont marqués diplômés.",
         "noTargetFound": {
-          "title": "title",
-          "searched": "searched",
-          "criteriaProgram": "Même programme : {{program}}",
-          "criteriaLevel": "Niveau suivant {{level}} (rang {{nextIndex}})",
-          "criteriaYear": "criteriaYear",
-          "fix": "fix",
-          "goToClasses": "goToClasses"
+          "title": "La classe du niveau suivant n'existe pas encore",
+          "description": "Il n'existe pas de classe {{program}} de niveau « {{level}} » en {{year}}. Elle peut être créée maintenant, avec un code généré.",
+          "create": "Créer « {{name}} »"
         },
-        "ctaDesc": "Les étudiants avec la décision « Admis » peuvent être promus au niveau suivant.",
+        "ctaDesc": "Les étudiants dont la décision est « Admis » ou « Compensé » passent au niveau suivant du cycle (ou sont diplômés au dernier niveau).",
         "ctaTitle": "Promouvoir les étudiants admis",
         "targetClassHint_one": "{{count}} étudiant admis sera inscrit dans cette classe.",
-        "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe."
+        "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe.",
+        "othersStay": "Les étudiants ajournés, redoublants ou exclus restent dans cette classe. Pour réinscrire les redoublants au même niveau l'année suivante, utilisez le passage d'année.",
+        "yearTransitionLink": "Passage d'année",
+        "done_one": "Promotion effectuée le {{date}} : {{count}} étudiant inscrit en {{className}}",
+        "done_other": "Promotion effectuée le {{date}} : {{count}} étudiants inscrits en {{className}}",
+        "doneGraduated_one": "Effectué le {{date}} : {{count}} étudiant diplômé",
+        "doneGraduated_other": "Effectué le {{date}} : {{count}} étudiants diplômés",
+        "alreadyPromoted_one": "{{count}} étudiant était déjà inscrit pour cette année : pas de double inscription.",
+        "alreadyPromoted_other": "{{count}} étudiants étaient déjà inscrits pour cette année : pas de double inscription.",
+        "success_one": "{{count}} étudiant promu",
+        "success_other": "{{count}} étudiants promus",
+        "classCreated": "Classe « {{name}} » créée"
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -3329,7 +3350,9 @@
         "closeTitle": "Clôturer et publier aux étudiants ?",
         "signTitle": "Signer la délibération ?",
         "deleteTitle": "Supprimer la délibération ?",
-        "reopenTitle": "Réouvrir la délibération ?"
+        "reopenTitle": "Réouvrir la délibération ?",
+        "closeIncomplete_one": "{{count}} étudiant a encore des résultats incomplets et figurera comme « Incomplet ».",
+        "closeIncomplete_other": "{{count}} étudiants ont encore des résultats incomplets et figureront comme « Incomplet »."
       },
       "rules": {
         "title": "Règles de délibération",
@@ -3398,9 +3421,22 @@
         "credits": "Crédits",
         "decision": "Décision",
         "mention": "Mention",
-        "stats": "Taux de réussite : {{rate}}% | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}}",
+        "stats": "Taux de réussite : {{rate}} | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}} | Redoublants : {{repeat}} | Exclus : {{excluded}} | Incomplets : {{incomplete}}",
         "sheetName": "Délibération",
-        "filePrefix": "Deliberation"
+        "filePrefix": "Deliberation",
+        "title": "PROCÈS-VERBAL DE DÉLIBÉRATION",
+        "session": "Session : {{value}}",
+        "classAverage": "Moyenne de la classe : {{value}}",
+        "signatures": "Le jury",
+        "president": "Président du jury",
+        "member": "Membre du jury",
+        "signatureLine": "Signature : ____________________"
+      },
+      "incomplete": {
+        "title_one": "{{count}} étudiant a des résultats incomplets",
+        "title_other": "{{count}} étudiants ont des résultats incomplets",
+        "hintOpen": "Des notes manquent : aucune moyenne, aucun rang, aucune mention ni décision n'est attribué. Saisissez les notes manquantes puis recalculez, ou faites trancher le jury avec « Modifier la décision » avant de clôturer.",
+        "hintClosed": "Ces étudiants figurent comme « Incomplet » au procès-verbal, sans moyenne, rang ni mention."
       }
     },
     "centers": {
