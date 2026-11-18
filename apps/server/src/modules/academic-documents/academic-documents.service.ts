@@ -1,13 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import Handlebars from "handlebars";
-import puppeteer from "puppeteer";
 import type {
 	ExportTemplate,
 	ExportTemplateType,
+	Institution,
+	InstitutionMetadata,
 	MentionRange,
 } from "../../db/schema/app-schema";
 import { DEFAULT_MENTION_RANGES } from "../../db/schema/app-schema";
 import * as expoTplRepo from "../export-templates/export-templates.repo";
+import { launchPdfBrowser, pdfRenderError } from "../exports/pdf-browser";
 import { loadTemplate, logoHelper } from "../exports/template-helper";
 import {
 	getDefaultTheme,
@@ -16,6 +18,7 @@ import {
 	type ThemeKind,
 } from "../exports/themes";
 import * as gradeScalesService from "../grade-scales/grade-scales.service";
+import { checkDocumentEligibility } from "./academic-documents.eligibility";
 import * as repo from "./academic-documents.repo";
 import type {
 	DocumentKind,
@@ -186,7 +189,20 @@ export async function resolveDocumentTemplate(
 			(await expoTplRepo.findDefaultTemplate(institutionId, type)) ?? null;
 	}
 
-	const templateBody = template?.templateBody ?? loadTemplate(type);
+	// No template saved: the bundled default matching the establishment type
+	// (IPES / faculty headers differ).
+	let templateBody = template?.templateBody;
+	if (!templateBody) {
+		const { db } = await import("../../db");
+		const schema = await import("../../db/schema/app-schema");
+		const { eq } = await import("drizzle-orm");
+		const [inst] = await db
+			.select({ type: schema.institutions.type })
+			.from(schema.institutions)
+			.where(eq(schema.institutions.id, institutionId))
+			.limit(1);
+		templateBody = loadTemplate(type, "standard", inst?.type);
+	}
 	const templateDefaults = (template?.themeDefaults ?? null) as Record<
 		string,
 		unknown
@@ -258,36 +274,144 @@ function formatDate(date: Date | string | null | undefined): string {
 	return d.toLocaleDateString("fr-FR");
 }
 
+/** Short code of each registered kind, printed in its reference number. */
+const REFERENCE_CODES: Partial<Record<DocumentKind, string>> = {
+	enrollment_certificate: "SCOL",
+	attestation: "ATT",
+	diploma: "DIP",
+	transcript: "RN",
+};
+
+/** Kinds whose issued PDFs get a register entry and their own number. */
+export function isRegisteredKind(kind: DocumentKind) {
+	return kind in REFERENCE_CODES;
+}
+
+/** Sigle printed on documents: abbreviation, else short name, else name. */
+function institutionSigle(
+	institution:
+		| {
+				abbreviation?: string | null;
+				shortName?: string | null;
+				nameFr?: string | null;
+		  }
+		| null
+		| undefined,
+) {
+	return (
+		institution?.abbreviation ||
+		institution?.shortName ||
+		institution?.nameFr ||
+		""
+	);
+}
+
 /**
- * Reference number builder.
- *
- * IPES (institution.type === "institution"):
- *   {YEAR}/{tutelleSigles top-down…}/VDPSAA/VDSSE/VDRC/CDAASSR/{institutionSigle}
- *   → e.g. 2026/UDO/FMSP/VDPSAA/VDSSE/VDRC/CDAASSR/IUD
- *
- * Faculty (institution.type === "faculty"):
- *   {YEAR}/{tutelleSigles…}/{institutionSigle}/VDPSAA/VDSSE/VDRC/CDAASSR/SSE
- *   → e.g. 2026/UDO/FMSP/VDPSAA/VDSSE/VDRC/CDAASSR/SSE
- *
- * The four constants (VDPSAA / VDSSE / VDRC / CDAASSR) are FMSP/UDo
- * service-codes inherited from the historical reference format. They stay
- * hardcoded for now — wire them through institution metadata if a tenant
- * needs different ones.
+ * Reference number of an issued document: `0007/2026/INSES/SCOL` —
+ * sequence of the (institution, kind, year) register, issue year, institution
+ * sigle, kind code. Previews show `XXXX` in place of the sequence: the number
+ * is only allocated when the PDF is issued.
  */
-function buildReferenceNumber(args: {
-	institutionType: "institution" | "faculty" | "university";
-	institutionSigle: string;
-	tutelleSigles: string[];
-	year: number;
-}): string {
-	const { institutionType, institutionSigle, tutelleSigles, year } = args;
-	const constants = ["VDPSAA", "VDSSE", "VDRC", "CDAASSR"];
-	const parents = tutelleSigles.filter(Boolean);
-	const parts: Array<string | number> =
-		institutionType === "faculty"
-			? [year, ...parents, institutionSigle, ...constants, "SSE"]
-			: [year, ...parents, ...constants, institutionSigle];
-	return parts.filter(Boolean).join("/");
+export function formatDocumentReference(
+	kind: DocumentKind,
+	sigle: string,
+	sequence: number | null,
+	year: number = new Date().getFullYear(),
+) {
+	const seq = sequence == null ? "XXXX" : String(sequence).padStart(4, "0");
+	return [
+		seq,
+		year,
+		sigle.replace(/\s+/g, "") || "INS",
+		REFERENCE_CODES[kind] ?? "DOC",
+	].join("/");
+}
+
+/**
+ * City printed on the "Issued in <city>, on <date>" line: the one configured
+ * with the signatory, else the first part of the institution address.
+ */
+function issueCity(
+	institution:
+		| { metadata?: unknown; addressFr?: string | null }
+		| null
+		| undefined,
+) {
+	const params = (institution?.metadata as InstitutionMetadata | null)
+		?.document_params;
+	if (params?.city) return params.city;
+	const first = (institution?.addressFr ?? "").split(",")[0]?.trim() ?? "";
+	return first.replace(/^(B\.?\s?P\.?|BP)\s*\d+\s*/i, "").trim();
+}
+
+/**
+ * Signatory block of official documents, from the institution's document
+ * parameters (Institution page). Defaults to the head of the institution.
+ */
+function signatoryBlock(
+	institution:
+		| {
+				metadata?: unknown;
+				type?: string | null;
+				abbreviation?: string | null;
+				shortName?: string | null;
+				nameFr?: string | null;
+		  }
+		| null
+		| undefined,
+) {
+	const params = (institution?.metadata as InstitutionMetadata | null)
+		?.document_params;
+	const sigle = institutionSigle(institution);
+	const isFaculty = institution?.type === "faculty";
+	const defaultFr = isFaculty
+		? `Doyen de la ${sigle}`
+		: `Directeur de l'${sigle}`;
+	const defaultEn = isFaculty
+		? `Dean of the ${sigle}`
+		: `Director of the ${sigle}`;
+	const title = params?.signatoryTitle?.trim() || "";
+	return {
+		name: params?.signatoryName?.trim() || "",
+		title,
+		titleFr: title || defaultFr,
+		titleEn: title || defaultEn,
+	};
+}
+
+/** Institution identity + contact block shared by every document template. */
+function institutionBlock(institution: Institution | null | undefined) {
+	const sigle = institutionSigle(institution);
+	return {
+		id: institution?.id,
+		type: institution?.type ?? "institution",
+		// Convenience booleans so templates can write `{{#if institution.isIPES}}`
+		// instead of `{{#if (eq institution.type 'institution')}}`.
+		// "IPES" = Institut Privé d'Enseignement Supérieur, modeled as the
+		// `"institution"` row type (not a faculty/university).
+		isIPES: institution?.type === "institution",
+		isFaculty: institution?.type === "faculty",
+		isUniversity: institution?.type === "university",
+		nameFr: institution?.nameFr ?? "",
+		nameEn: institution?.nameEn ?? "",
+		// Never empty: templates print "Directeur de l'{{abbreviation}}".
+		abbreviation: sigle,
+		shortName: institution?.shortName ?? "",
+		sloganFr: institution?.sloganFr ?? "",
+		sloganEn: institution?.sloganEn ?? institution?.sloganFr ?? "",
+		contactEmail: institution?.contactEmail ?? "",
+		contactPhone: institution?.contactPhone ?? "",
+		fax: institution?.fax ?? "",
+		website: institution?.website ?? "",
+		postalBox: institution?.postalBox ?? "",
+		city: issueCity(institution),
+		addressFr: institution?.addressFr ?? "",
+		addressEn: institution?.addressEn ?? institution?.addressFr ?? "",
+		logoUrl: institution?.logoUrl ?? null,
+		logoSvg: institution?.logoSvg ?? null,
+		watermarkLogoUrl: institution?.logoUrl ?? null,
+		watermarkLogoSvg: institution?.logoSvg ?? null,
+	};
 }
 
 function diplomaTitleFor(
@@ -386,6 +510,10 @@ export async function buildRenderData(args: {
 	mentionRanges?: MentionRange[];
 	/** Pass threshold from the institution's grade scale (default 10). */
 	gradeScalePassThreshold?: number;
+	/** Issued reference number; previews get a placeholder. */
+	referenceNumber?: string;
+	/** Status of the enrollment the document is about (enrollment certificate). */
+	enrollmentStatus?: string | null;
 }): Promise<DocumentRenderData> {
 	const { kind, studentCtx, deliberation, theme, demoMode } = args;
 	const period = args.period ?? "annual";
@@ -423,7 +551,9 @@ export async function buildRenderData(args: {
 		dateNaissance: student.profile.dateOfBirth ?? null,
 		generalAverage: deliberation?.result.generalAverage ?? null,
 		mention: deliberation?.result.mention ?? null,
-		ref: `${institution?.abbreviation ?? "INS"}/${student.registrationNumber}`,
+		ref:
+			args.referenceNumber ??
+			`${institutionSigle(institution)}/${student.registrationNumber}`,
 	};
 	const qrCodeImage = await generateQrCode(qrPayload);
 
@@ -471,18 +601,9 @@ export async function buildRenderData(args: {
 	const document = {
 		titleFr: titles.fr,
 		titleEn: titles.en,
-		referenceNumber: buildReferenceNumber({
-			institutionType: institution?.type ?? "institution",
-			institutionSigle:
-				institution?.abbreviation ||
-				institution?.shortName ||
-				institution?.nameFr ||
-				"INS",
-			tutelleSigles: (tutelleChain ?? []).map(
-				(p) => p.abbreviation || p.shortName || p.nameFr || "",
-			),
-			year: new Date().getFullYear(),
-		}),
+		referenceNumber:
+			args.referenceNumber ??
+			formatDocumentReference(kind, institutionSigle(institution), null),
 		issueDate: formatDate(new Date()),
 		academicYear: cls?.academicYear?.name ?? "",
 		yearObtention: cls?.academicYear?.name?.split("/")?.pop() ?? "",
@@ -579,28 +700,12 @@ export async function buildRenderData(args: {
 			postalBox: supervisingFaculty?.postalBox ?? "",
 			contactEmail: supervisingFaculty?.contactEmail ?? "",
 		},
-		institution: {
-			id: institution?.id,
-			type: institution?.type ?? "institution",
-			// Convenience booleans so templates can write `{{#if institution.isIPES}}`
-			// instead of `{{#if (eq institution.type 'institution')}}`.
-			// "IPES" = Institut Privé d'Enseignement Supérieur, modeled as the
-			// `"institution"` row type (not a faculty/university).
-			isIPES: institution?.type === "institution",
-			isFaculty: institution?.type === "faculty",
-			isUniversity: institution?.type === "university",
-			nameFr: institution?.nameFr ?? "",
-			nameEn: institution?.nameEn ?? "",
-			abbreviation: institution?.abbreviation ?? "",
-			contactEmail: institution?.contactEmail ?? "",
-			postalBox: institution?.postalBox ?? "",
-			city: institution?.addressFr ?? "",
-			addressFr: institution?.addressFr ?? "",
-			addressEn: institution?.addressEn ?? "",
-			logoUrl: institution?.logoUrl ?? null,
-			logoSvg: institution?.logoSvg ?? null,
-			watermarkLogoUrl: watermarkLogo,
-			watermarkLogoSvg: watermarkLogoSvg,
+		institution: institutionBlock(institution),
+		signatory: signatoryBlock(institution),
+		enrollment: {
+			status: args.enrollmentStatus ?? null,
+			// "is enrolled" for the running enrollment, "was enrolled" after.
+			isCurrent: (args.enrollmentStatus ?? "active") === "active",
 		},
 		// Full tutelle chain (top-down — highest authority first). Templates
 		// iterate with `{{#each tutelleChain}}` so the header adapts to any
@@ -679,8 +784,8 @@ export async function buildRenderData(args: {
 			},
 		],
 		authority: {
-			name: "—",
-			role: "Le Doyen",
+			name: signatoryBlock(institution).name || "—",
+			role: signatoryBlock(institution).title || "Le Doyen",
 		},
 		watermarkRepeat: Array.from({ length: 24 }),
 		showResults: kind === "attestation" && Boolean(deliberation),
@@ -733,17 +838,24 @@ export async function buildRenderData(args: {
 
 // ---------------- PDF rendering ----------------
 
-export async function renderPdf(html: string, theme: Record<string, unknown>) {
+export async function renderPdf(
+	html: string,
+	theme: Record<string, unknown>,
+): Promise<Buffer> {
+	try {
+		return await renderPdfUnsafe(html, theme);
+	} catch (err) {
+		throw pdfRenderError("document rendering", err);
+	}
+}
+
+async function renderPdfUnsafe(html: string, theme: Record<string, unknown>) {
 	const page = (theme.page ?? {}) as {
 		size?: string;
 		orientation?: string;
 		margins?: { top?: number; right?: number; bottom?: number; left?: number };
 	};
-	const browser = await puppeteer.launch({
-		headless: true,
-		args: ["--no-sandbox", "--disable-setuid-sandbox"],
-		executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-	});
+	const browser = await launchPdfBrowser();
 	try {
 		const p = await browser.newPage();
 		// Use `domcontentloaded` instead of `networkidle0` — the latter waits
@@ -821,8 +933,9 @@ export function compileAndRender(
 export async function generateDocument(
 	institutionId: string,
 	input: GenerateDocumentInput,
+	options: { issuedBy?: string | null } = {},
 ) {
-	const studentCtx = await repo.loadStudentContext(
+	let studentCtx = await repo.loadStudentContext(
 		institutionId,
 		input.studentId,
 	);
@@ -833,10 +946,35 @@ export async function generateDocument(
 		});
 	}
 
+	// Business rule: an enrollment certificate needs a validated enrollment,
+	// a pass certificate / diploma a favourable decision of a closed jury.
+	// Checked for previews too — a preview of a false document is one.
+	const eligibility = await checkDocumentEligibility(
+		institutionId,
+		input.kind,
+		input.studentId,
+		{ classId: input.classId, deliberationId: input.deliberationId },
+	);
+	if (!eligibility.eligible) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `DOCUMENT_NOT_ELIGIBLE:${eligibility.reason}`,
+		});
+	}
+	const contextClassId = eligibility.classId ?? input.classId ?? null;
+	if (contextClassId && contextClassId !== studentCtx.student.class) {
+		studentCtx =
+			(await repo.loadStudentContext(
+				institutionId,
+				input.studentId,
+				contextClassId,
+			)) ?? studentCtx;
+	}
+
 	const deliberation = await repo.loadDeliberationResult(
 		institutionId,
 		input.studentId,
-		input.deliberationId,
+		eligibility.deliberationId ?? input.deliberationId,
 	);
 
 	const resolved = await resolveDocumentTemplate(
@@ -854,33 +992,75 @@ export async function generateDocument(
 		studentCtx.student.classRef?.program?.id,
 	);
 
-	const data = await buildRenderData({
-		kind: input.kind,
-		studentCtx,
-		deliberation,
-		theme: resolved.theme,
-		demoMode: input.demoMode,
-		period: input.period,
-		semesterId: input.semesterId,
-		mentionRanges: gradeScale.mentionRanges,
-		gradeScalePassThreshold: gradeScale.passThreshold,
-	});
+	// Issued PDFs get the next number of the register; previews and demo
+	// documents never consume one.
+	const issue =
+		input.format === "pdf" && !input.demoMode && isRegisteredKind(input.kind)
+			? await repo.registerIssuedDocument({
+					institutionId,
+					studentId: input.studentId,
+					kind: input.kind,
+					classId: studentCtx.student.classRef?.id ?? null,
+					academicYearId:
+						eligibility.academicYearId ??
+						studentCtx.student.classRef?.academicYear?.id ??
+						null,
+					issuedBy: options.issuedBy ?? null,
+					formatReference: (sequence, year) =>
+						formatDocumentReference(
+							input.kind,
+							institutionSigle(studentCtx?.institution),
+							sequence,
+							year,
+						),
+				})
+			: null;
 
-	const html = compileAndRender(
-		resolved.templateBody,
-		data,
-		gradeScale.mentionRanges,
-	);
+	try {
+		const data = await buildRenderData({
+			kind: input.kind,
+			studentCtx,
+			deliberation,
+			theme: resolved.theme,
+			demoMode: input.demoMode,
+			period: input.period,
+			semesterId: input.semesterId,
+			mentionRanges: gradeScale.mentionRanges,
+			gradeScalePassThreshold: gradeScale.passThreshold,
+			referenceNumber: issue?.referenceNumber,
+			enrollmentStatus: eligibility.enrollmentStatus,
+		});
 
-	if (input.format === "html") {
-		return { content: html, mimeType: "text/html" as const };
+		const html = compileAndRender(
+			resolved.templateBody,
+			data,
+			gradeScale.mentionRanges,
+		);
+
+		if (input.format === "html") {
+			return {
+				content: html,
+				mimeType: "text/html" as const,
+				usedTemplate: resolved.template
+					? { id: resolved.template.id, name: resolved.template.name }
+					: undefined,
+			};
+		}
+
+		const pdf = await renderPdf(html, resolved.theme);
+		return {
+			content: pdf.toString("base64"),
+			mimeType: "application/pdf" as const,
+			referenceNumber: issue?.referenceNumber,
+			usedTemplate: resolved.template
+				? { id: resolved.template.id, name: resolved.template.name }
+				: undefined,
+		};
+	} catch (err) {
+		// No document was produced: free its register entry.
+		if (issue) await repo.deleteIssuedDocument(issue.id).catch(() => {});
+		throw err;
 	}
-
-	const pdf = await renderPdf(html, resolved.theme);
-	return {
-		content: pdf.toString("base64"),
-		mimeType: "application/pdf" as const,
-	};
 }
 
 /**
@@ -1033,23 +1213,8 @@ export async function generateStudentList(
 			fr: supervisingFaculty?.nameFr ?? institution?.nameFr ?? "",
 			en: supervisingFaculty?.nameEn ?? institution?.nameEn ?? "",
 		},
-		institution: {
-			id: institution?.id,
-			type: institution?.type ?? "institution",
-			isIPES: institution?.type === "institution",
-			isFaculty: institution?.type === "faculty",
-			isUniversity: institution?.type === "university",
-			nameFr: institution?.nameFr ?? "",
-			nameEn: institution?.nameEn ?? "",
-			abbreviation: institution?.abbreviation ?? "",
-			contactEmail: institution?.contactEmail ?? "",
-			postalBox: institution?.postalBox ?? "",
-			city: institution?.addressFr ?? "",
-			logoUrl: institution?.logoUrl ?? null,
-			logoSvg: institution?.logoSvg ?? null,
-			watermarkLogoUrl: institution?.logoUrl ?? null,
-			watermarkLogoSvg: institution?.logoSvg ?? null,
-		},
+		institution: institutionBlock(institution),
+		signatory: signatoryBlock(institution),
 		tutelleChain: tutelleChain.map((p) => ({
 			id: p.id,
 			type: p.type,
@@ -1166,10 +1331,7 @@ export async function generateStudentList(
 			"\n  error:",
 			err,
 		);
-		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
-			message: `Échec du rendu PDF (Puppeteer) : ${err instanceof Error ? err.message : String(err)}`,
-		});
+		throw pdfRenderError("student list", err);
 	}
 	return {
 		content: pdf.toString("base64"),
@@ -1222,24 +1384,7 @@ export async function previewTemplateBody(
 				});
 				if (!inst) return sample;
 				const chain = await repo.loadTutelleChain(institutionId);
-				sample.institution = {
-					...(sample.institution as Record<string, unknown>),
-					id: inst.id,
-					type: inst.type ?? "institution",
-					isIPES: inst.type === "institution",
-					isFaculty: inst.type === "faculty",
-					isUniversity: inst.type === "university",
-					nameFr: inst.nameFr ?? "",
-					nameEn: inst.nameEn ?? "",
-					abbreviation: inst.abbreviation ?? "",
-					contactEmail: inst.contactEmail ?? "",
-					postalBox: inst.postalBox ?? "",
-					city: inst.addressFr ?? "",
-					logoUrl: inst.logoUrl ?? null,
-					logoSvg: inst.logoSvg ?? null,
-					watermarkLogoUrl: inst.logoUrl ?? null,
-					watermarkLogoSvg: inst.logoSvg ?? null,
-				};
+				sample.institution = institutionBlock(inst);
 				sample.tutelleChain = chain.map((p) => ({
 					id: p.id,
 					type: p.type,
@@ -1269,18 +1414,12 @@ export async function previewTemplateBody(
 				// tutelle so the preview shows the correct sigles instead of
 				// the sample's hardcoded ones.
 				const docRecord = sample.document as Record<string, unknown>;
-				docRecord.referenceNumber = buildReferenceNumber({
-					institutionType: (inst.type ?? "institution") as
-						| "institution"
-						| "faculty"
-						| "university",
-					institutionSigle:
-						inst.abbreviation || inst.shortName || inst.nameFr || "INS",
-					tutelleSigles: chain.map(
-						(p) => p.abbreviation || p.shortName || p.nameFr || "",
-					),
-					year: new Date().getFullYear(),
-				});
+				docRecord.referenceNumber = formatDocumentReference(
+					input.kind,
+					institutionSigle(inst),
+					null,
+				);
+				sample.signatory = signatoryBlock(inst);
 				// Replace the stub center from buildSampleRenderData with the
 				// institution's actual first active center (with admin instances
 				// and legal texts) so center-variant previews mirror production.
@@ -1360,6 +1499,11 @@ function buildSampleRenderData(
 			contactEmail: "contact@iud-demo.cm",
 			postalBox: "15712",
 			city: "Douala",
+			contactPhone: "+237 6XX XX XX XX",
+			addressFr: "B.P. 15712 Douala, Cameroun",
+			addressEn: "PO Box 15712 Douala, Cameroon",
+			sloganFr: "Excellence et engagement",
+			website: "https://iud-demo.cm",
 			logoUrl: null,
 			watermarkLogoUrl: null,
 			type: "institution" as const,
@@ -1487,6 +1631,13 @@ function buildSampleRenderData(
 			},
 		],
 		authority: { name: "Pr. DEMO", role: "Le Doyen" },
+		signatory: {
+			name: "Pr. DEMO",
+			title: "",
+			titleFr: "Directeur de l'IUD",
+			titleEn: "Director of the IUD",
+		},
+		enrollment: { status: "active", isCurrent: true },
 		watermarkRepeat: Array.from({ length: 24 }),
 		showResults: kind === "attestation",
 		student: {
@@ -1534,12 +1685,7 @@ function buildSampleRenderData(
 		document: {
 			titleFr: diplomaTitleFor(kind, "MÉDECINE").fr,
 			titleEn: diplomaTitleFor(kind, "MÉDECINE").en,
-			referenceNumber: buildReferenceNumber({
-				institutionType: "institution",
-				institutionSigle: "IUD",
-				tutelleSigles: ["UDO", "FMSP"],
-				year: new Date().getFullYear(),
-			}),
+			referenceNumber: formatDocumentReference(kind, "IUD", null),
 			issueDate: formatDate(new Date()),
 			academicYear: "2023/2024",
 			yearObtention: "2024",

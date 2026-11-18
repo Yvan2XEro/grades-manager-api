@@ -1,7 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import Handlebars from "handlebars";
 import JSZip from "jszip";
-import puppeteer from "puppeteer";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { loadTutelleChain } from "../academic-documents/academic-documents.repo";
@@ -18,6 +17,7 @@ import type {
 	GeneratePVInput,
 	GenerateUEInput,
 } from "./exports.zod";
+import { launchPdfBrowser } from "./pdf-browser";
 import {
 	calculateStats,
 	calculateSuccessRate,
@@ -587,10 +587,7 @@ export class ExportsService {
 			) => Promise<Buffer>,
 		) => Promise<T>,
 	): Promise<T> {
-		const browser = await puppeteer.launch({
-			headless: true,
-			args: ["--no-sandbox", "--disable-setuid-sandbox"],
-			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+		const browser = await launchPdfBrowser({
 			// Bump Puppeteer's CDP protocolTimeout — large data-URI logos can
 			// take >30s to decode in headless Chrome under load (the default
 			// 30s timeout fires "Runtime.callFunctionOn timed out" mid-batch).
@@ -1941,10 +1938,7 @@ export class ExportsService {
 		html: string,
 		styleConfig: TemplateConfiguration["styleConfig"],
 	): Promise<Buffer> {
-		const browser = await puppeteer.launch({
-			headless: true,
-			args: ["--no-sandbox", "--disable-setuid-sandbox"],
-			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+		const browser = await launchPdfBrowser({
 			protocolTimeout: 180_000,
 		});
 
