@@ -1,17 +1,17 @@
-# Captures d'écran (optionnel)
+# Screenshots (optional)
 
-> **Note :** le site utilise désormais des **démos interactives** (et non des
-> captures statiques) dans le Hero, la section Différenciateurs et le Workflow.
-> Voir `src/marketing/demos/` (`GradeEntryDemo`, `RulesEngineDemo`,
-> `DeliberationDemo`) affichées via `DemoFrame`.
+> **Note:** the site now uses **interactive demos** (not static
+> screenshots) in the Hero, the Differentiators section and the Workflow.
+> See `src/marketing/demos/` (`GradeEntryDemo`, `RulesEngineDemo`,
+> `DeliberationDemo`), displayed via `DemoFrame`.
 
-Ce dossier et le composant `src/marketing/Showcase.tsx` restent **disponibles**
-si tu veux insérer de vraies captures ailleurs (ex. une page produit dédiée).
+This folder and the `src/marketing/Showcase.tsx` component remain **available**
+if you want to insert real screenshots elsewhere (e.g. a dedicated product page).
 
-## Utiliser une capture avec `<Showcase>`
+## Using a screenshot with `<Showcase>`
 
-1. Dépose ton image ici, ex. `screenshots/ma-vue.png`.
-2. Dans le composant voulu :
+1. Drop your image here, e.g. `screenshots/ma-vue.png`.
+2. In the target component:
 
    ```tsx
    import { Showcase } from "@/marketing/Showcase";
@@ -25,5 +25,5 @@ si tu veux insérer de vraies captures ailleurs (ex. une page produit dédiée).
    />
    ```
 
-Tant que `src` est absent, `Showcase` affiche un placeholder élégant indiquant
-le chemin et les dimensions attendus.
+As long as `src` is missing, `Showcase` displays a clean placeholder showing
+the expected path and dimensions.

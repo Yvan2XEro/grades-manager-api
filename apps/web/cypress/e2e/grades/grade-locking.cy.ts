@@ -6,7 +6,7 @@ describe("Grade Locking", () => {
 	describe("Lock Mechanism", () => {
 		it("prevents modifying locked grades", () => {
 			// Teacher enters and submits grades
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 
 			// Select class course
 			cy.get("#class-course, [data-testid='class-course-select']", {
@@ -21,7 +21,7 @@ describe("Grade Locking", () => {
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
 			// Dean approves and locks
-			cy.loginAs("dean", { route: "/dean/workflows" });
+			cy.loginAs("dean", { route: "/workflows" });
 			cy.findAllByRole("button", {
 				name: /approve.*lock|approuver.*verrouiller/i,
 			})
@@ -32,7 +32,7 @@ describe("Grade Locking", () => {
 			}).should("exist");
 
 			// Teacher tries to lock the approved exam
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -44,7 +44,7 @@ describe("Grade Locking", () => {
 			cy.contains(/locked|verrouillé/i, { timeout: 10000 }).should("exist");
 
 			// Now try to modify grades - should be prevented
-			cy.visit("/teacher/grades");
+			cy.visit("/grades");
 
 			cy.get('[data-testid="class-course-select"], #class-course', {
 				timeout: 10000,
@@ -68,7 +68,7 @@ describe("Grade Locking", () => {
 
 		it("shows appropriate message when trying to modify locked grades", () => {
 			// Complete the locking workflow first
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -78,7 +78,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("dean", { route: "/dean/workflows" });
+			cy.loginAs("dean", { route: "/workflows" });
 			cy.findAllByRole("button", {
 				name: /approve.*lock|approuver.*verrouiller/i,
 			})
@@ -86,7 +86,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -97,7 +97,7 @@ describe("Grade Locking", () => {
 			cy.contains(/locked|verrouillé/i, { timeout: 10000 }).should("exist");
 
 			// Try to access grade entry
-			cy.visit("/teacher/grades");
+			cy.visit("/grades");
 			cy.get('[data-testid="class-course-select"], #class-course', {
 				timeout: 10000,
 			}).click();
@@ -116,7 +116,7 @@ describe("Grade Locking", () => {
 
 		it("disables grade input fields when exam is locked", () => {
 			// Complete the locking workflow
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -126,7 +126,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("dean", { route: "/dean/workflows" });
+			cy.loginAs("dean", { route: "/workflows" });
 			cy.findAllByRole("button", {
 				name: /approve.*lock|approuver.*verrouiller/i,
 			})
@@ -134,7 +134,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -145,7 +145,7 @@ describe("Grade Locking", () => {
 			cy.contains(/locked|verrouillé/i, { timeout: 10000 }).should("exist");
 
 			// Check grade entry page
-			cy.visit("/teacher/grades");
+			cy.visit("/grades");
 			cy.get('[data-testid="class-course-select"], #class-course', {
 				timeout: 10000,
 			}).click();
@@ -170,7 +170,7 @@ describe("Grade Locking", () => {
 	describe("Lock Status Visibility", () => {
 		it("displays lock status indicator", () => {
 			// Complete locking workflow
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -180,7 +180,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("dean", { route: "/dean/workflows" });
+			cy.loginAs("dean", { route: "/workflows" });
 			cy.findAllByRole("button", {
 				name: /approve.*lock|approuver.*verrouiller/i,
 			})
@@ -188,7 +188,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -199,7 +199,7 @@ describe("Grade Locking", () => {
 			cy.contains(/locked|verrouillé/i, { timeout: 10000 }).should("exist");
 
 			// Visit grades page
-			cy.visit("/teacher/grades");
+			cy.visit("/grades");
 			cy.get('[data-testid="class-course-select"], #class-course', {
 				timeout: 10000,
 			}).click();
@@ -222,7 +222,7 @@ describe("Grade Locking", () => {
 
 		it("shows lock icon or badge in exam list", () => {
 			// Complete locking workflow
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -232,7 +232,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("dean", { route: "/dean/workflows" });
+			cy.loginAs("dean", { route: "/workflows" });
 			cy.findAllByRole("button", {
 				name: /approve.*lock|approuver.*verrouiller/i,
 			})
@@ -240,7 +240,7 @@ describe("Grade Locking", () => {
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
 
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -251,7 +251,7 @@ describe("Grade Locking", () => {
 			cy.contains(/locked|verrouillé/i, { timeout: 10000 }).should("exist");
 
 			// Visit workflow page to see exam list
-			cy.visit("/teacher/workflows");
+			cy.visit("/workflows");
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -265,7 +265,7 @@ describe("Grade Locking", () => {
 	describe("Lock Workflow States", () => {
 		it("follows proper workflow: unlocked → submitted → approved → locked", () => {
 			// Step 1: Unlocked state
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -281,7 +281,7 @@ describe("Grade Locking", () => {
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
 			// Step 3: Dean approves
-			cy.loginAs("dean", { route: "/dean/workflows" });
+			cy.loginAs("dean", { route: "/workflows" });
 			cy.findAllByRole("button", {
 				name: /approve.*lock|approuver.*verrouiller/i,
 			})
@@ -290,7 +290,7 @@ describe("Grade Locking", () => {
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
 
 			// Step 4: Teacher locks
-			cy.loginAs("teacher", { route: "/teacher/workflows" });
+			cy.loginAs("teacher", { route: "/workflows" });
 			cy.get("#class-course, [data-testid='class-course-select']", {
 				timeout: 10000,
 			}).click();
@@ -315,7 +315,7 @@ describe("Grade Locking", () => {
 
 	describe("Grade Entry Before Locking", () => {
 		it("allows grade entry before exam is locked", () => {
-			cy.loginAs("teacher", { route: "/teacher/grades" });
+			cy.loginAs("teacher", { route: "/grades" });
 
 			// Select unlocked exam
 			cy.get('[data-testid="class-course-select"], #class-course', {

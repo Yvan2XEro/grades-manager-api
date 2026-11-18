@@ -92,6 +92,20 @@ export async function findActiveJob(institutionId: string, type: string) {
 	});
 }
 
+/** Cancels the previewed (never run) jobs of a type. */
+export async function cancelPreviewedJobs(institutionId: string, type: string) {
+	await db
+		.update(schema.batchJobs)
+		.set({ status: "cancelled", completedAt: new Date() })
+		.where(
+			and(
+				eq(schema.batchJobs.institutionId, institutionId),
+				eq(schema.batchJobs.type, type),
+				eq(schema.batchJobs.status, "previewed"),
+			),
+		);
+}
+
 // ── Steps ──────────────────────────────────────────────────────────────
 
 export async function createSteps(steps: NewBatchJobStep[]) {

@@ -5,7 +5,7 @@ describe("Student Management - Bulk Import", () => {
 
 	describe("CSV/Excel Import", () => {
 		it("successfully imports valid CSV file with multiple students", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Look for import button
 			cy.findByRole("button", {
@@ -52,7 +52,7 @@ Carol,Williams,carol.williams@example.com,2000-11-30,Bafoussam,female`;
 		});
 
 		it("handles duplicate emails during bulk import", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// First, create a student
 			cy.findByRole("button", {
@@ -132,7 +132,7 @@ Duplicate,User,existing@example.com,2001-07-22,Douala,male`;
 		});
 
 		it("displays error report for invalid data", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,
@@ -170,7 +170,7 @@ NoEmail,User,,2000-11-30,Bafoussam,female`;
 		});
 
 		it("validates CSV format and headers", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,
@@ -206,7 +206,7 @@ Value1,Value2,Value3`;
 		});
 
 		it("requires class selection for bulk import", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,
@@ -238,7 +238,7 @@ Test,User,test@example.com,2000-03-15,Yaoundé,female`;
 
 	describe("Import Preview", () => {
 		it("shows preview of data before importing (if feature exists)", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,
@@ -275,7 +275,7 @@ Preview,User,preview@example.com,2000-03-15,Yaoundé,female`;
 
 	describe("Import Report", () => {
 		it("displays detailed import report after processing", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,
@@ -312,7 +312,7 @@ Report2,User2,report2@example.com,2001-07-22,Douala,male`;
 		});
 
 		it("shows specific errors for failed rows", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,
@@ -351,7 +351,7 @@ Valid,User,valid@example.com,2000-03-15,Yaoundé,female
 
 	describe("Large File Handling", () => {
 		it("handles importing many students at once", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,
@@ -392,7 +392,7 @@ Valid,User,valid@example.com,2000-03-15,Yaoundé,female
 
 	describe("Cancel Import", () => {
 		it("allows canceling import before processing", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /import|upload|bulk.*add|importer/i,

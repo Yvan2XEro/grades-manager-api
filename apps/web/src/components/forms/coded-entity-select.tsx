@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, SearchIcon, XIcon } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, SearchIcon, XIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,16 @@ export interface CodedEntitySelectProps<T extends CodedEntity> {
 	// Accessibility
 	id?: string;
 	name?: string;
+
+	// Quick create
+	/**
+	 * Shows an aligned "+" that creates a missing item in place (typically a
+	 * nested Callable form). Select the item from `onCreate` itself (e.g. by
+	 * id); resolving with it keeps it displayed until the list includes it.
+	 */
+	onCreate?: () => Promise<T | null | undefined>;
+	/** Accessible label of the "+" button. */
+	createLabel?: string;
 }
 
 /**
@@ -93,9 +103,34 @@ export function CodedEntitySelect<T extends CodedEntity>({
 	debounceMs = 300,
 	id,
 	name,
+	onCreate,
+	createLabel,
 }: CodedEntitySelectProps<T>) {
 	const { t } = useTranslation();
 	const [open, setOpen] = useState(false);
+	const [creating, setCreating] = useState(false);
+	// Keeps a freshly created item selectable until the list refetch includes it
+	const [created, setCreated] = useState<T | null>(null);
+	const allItems = useMemo(
+		() =>
+			created && !items.some((item) => item.code === created.code)
+				? [...items, created]
+				: items,
+		[items, created],
+	);
+
+	const handleCreate = async () => {
+		if (!onCreate) return;
+		setCreating(true);
+		try {
+			const item = await onCreate();
+			// Not `onChange(item.code)`: that closure predates the created item, so a
+			// consumer mapping code -> id against its list would clear the value.
+			if (item) setCreated(item);
+		} finally {
+			setCreating(false);
+		}
+	};
 	const [searchQuery, setSearchQuery] = useState("");
 	const debouncedSearch = useDebounce(searchQuery, debounceMs);
 
@@ -118,21 +153,21 @@ export function CodedEntitySelect<T extends CodedEntity>({
 	// Filter items locally based on search query
 	const filteredItems = useMemo(() => {
 		if (!searchQuery || searchMode === "server") {
-			return items;
+			return allItems;
 		}
 
 		const query = searchQuery.toLowerCase().trim();
-		return items.filter(
+		return allItems.filter(
 			(item) =>
 				item.code.toLowerCase().includes(query) ||
 				item.name.toLowerCase().includes(query),
 		);
-	}, [items, searchQuery, searchMode]);
+	}, [allItems, searchQuery, searchMode]);
 
 	// Find selected item
 	const selectedItem = useMemo(
-		() => items.find((item) => item.code === value),
-		[items, value],
+		() => allItems.find((item) => item.code === value),
+		[allItems, value],
 	);
 
 	// Handle selection
@@ -169,119 +204,140 @@ export function CodedEntitySelect<T extends CodedEntity>({
 				</Label>
 			)}
 
-			<Popover open={open} onOpenChange={setOpen}>
-				<PopoverTrigger asChild>
-					<Button
-						id={id}
-						variant="outline"
-						role="combobox"
-						aria-expanded={open}
-						aria-label={label}
-						disabled={disabled}
-						className={cn(
-							"w-full justify-between",
-							!value && "text-muted-foreground",
-							error && "border-destructive",
-						)}
-					>
-						<div className="flex items-center gap-2 overflow-hidden">
-							{icon && <span className="shrink-0">{icon}</span>}
-							{selectedItem && getItemIcon && (
-								<span className="shrink-0">{getItemIcon(selectedItem)}</span>
+			<div className="flex items-center gap-2">
+				<Popover open={open} onOpenChange={setOpen}>
+					<PopoverTrigger asChild>
+						<Button
+							id={id}
+							variant="outline"
+							role="combobox"
+							aria-expanded={open}
+							aria-label={label}
+							disabled={disabled}
+							className={cn(
+								"w-full min-w-0 flex-1 justify-between",
+								!value && "text-muted-foreground",
+								error && "border-destructive",
 							)}
-							<span className="truncate">{displayText}</span>
-						</div>
-						<div className="flex shrink-0 items-center gap-1">
-							{value && allowClear && !disabled && (
-								<XIcon
-									className="h-4 w-4 opacity-50 hover:opacity-100"
-									onClick={handleClear}
+						>
+							<div className="flex items-center gap-2 overflow-hidden">
+								{icon && <span className="shrink-0">{icon}</span>}
+								{selectedItem && getItemIcon && (
+									<span className="shrink-0">{getItemIcon(selectedItem)}</span>
+								)}
+								<span className="truncate">{displayText}</span>
+							</div>
+							<div className="flex shrink-0 items-center gap-1">
+								{value && allowClear && !disabled && (
+									<XIcon
+										className="h-4 w-4 opacity-50 hover:opacity-100"
+										onClick={handleClear}
+									/>
+								)}
+								<ChevronsUpDown className="h-4 w-4 opacity-50" />
+							</div>
+						</Button>
+					</PopoverTrigger>
+
+					<PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+						<Command shouldFilter={false}>
+							<div className="flex items-center border-b px-3">
+								<SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+								<input
+									className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+									placeholder={
+										searchPlaceholder ||
+										t("components.codedEntitySelect.searchPlaceholder")
+									}
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
 								/>
-							)}
-							<ChevronsUpDown className="h-4 w-4 opacity-50" />
-						</div>
-					</Button>
-				</PopoverTrigger>
+							</div>
 
-				<PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-					<Command shouldFilter={false}>
-						<div className="flex items-center border-b px-3">
-							<SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-							<input
-								className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-								placeholder={
-									searchPlaceholder ||
-									t("components.codedEntitySelect.searchPlaceholder")
-								}
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-							/>
-						</div>
+							<CommandList>
+								{isLoading && (
+									<div className="flex items-center justify-center py-6">
+										<Spinner className="h-6 w-6" />
+									</div>
+								)}
 
-						<CommandList>
-							{isLoading && (
-								<div className="flex items-center justify-center py-6">
-									<Spinner className="h-6 w-6" />
-								</div>
-							)}
+								{!isLoading && filteredItems.length === 0 && (
+									<CommandEmpty>
+										{emptyMessage ||
+											t("components.codedEntitySelect.noResults")}
+									</CommandEmpty>
+								)}
 
-							{!isLoading && filteredItems.length === 0 && (
-								<CommandEmpty>
-									{emptyMessage || t("components.codedEntitySelect.noResults")}
-								</CommandEmpty>
-							)}
-
-							{!isLoading && filteredItems.length > 0 && (
-								<CommandGroup>
-									{searchQuery && (
-										<div className="px-2 py-1.5 text-muted-foreground text-xs">
-											{t("components.codedEntitySelect.resultsCount", {
-												count: filteredItems.length,
-											})}
-										</div>
-									)}
-									{filteredItems.map((item) => (
-										<CommandItem
-											key={item.code}
-											value={item.code}
-											onSelect={handleSelect}
-											className="flex items-center gap-2"
-										>
-											<Check
-												className={cn(
-													"h-4 w-4 shrink-0",
-													value === item.code ? "opacity-100" : "opacity-0",
+								{!isLoading && filteredItems.length > 0 && (
+									<CommandGroup>
+										{searchQuery && (
+											<div className="px-2 py-1.5 text-muted-foreground text-xs">
+												{t("components.codedEntitySelect.resultsCount", {
+													count: filteredItems.length,
+												})}
+											</div>
+										)}
+										{filteredItems.map((item) => (
+											<CommandItem
+												key={item.code}
+												value={item.code}
+												onSelect={handleSelect}
+												className="flex items-center gap-2"
+											>
+												<Check
+													className={cn(
+														"h-4 w-4 shrink-0",
+														value === item.code ? "opacity-100" : "opacity-0",
+													)}
+												/>
+												{getItemIcon && (
+													<span className="shrink-0">{getItemIcon(item)}</span>
 												)}
-											/>
-											{getItemIcon && (
-												<span className="shrink-0">{getItemIcon(item)}</span>
-											)}
-											<div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
-												<div className="flex items-center gap-2">
-													<span className="font-mono font-semibold text-xs">
-														{item.code}
-													</span>
-													{getItemBadge && (
-														<Badge variant="secondary" className="text-xs">
-															{getItemBadge(item)}
-														</Badge>
+												<div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
+													<div className="flex items-center gap-2">
+														<span className="font-mono font-semibold text-xs">
+															{item.code}
+														</span>
+														{getItemBadge && (
+															<Badge variant="secondary" className="text-xs">
+																{getItemBadge(item)}
+															</Badge>
+														)}
+													</div>
+													<span className="truncate text-sm">{item.name}</span>
+													{getItemSubtitle && (
+														<span className="truncate text-muted-foreground text-xs">
+															{getItemSubtitle(item)}
+														</span>
 													)}
 												</div>
-												<span className="truncate text-sm">{item.name}</span>
-												{getItemSubtitle && (
-													<span className="truncate text-muted-foreground text-xs">
-														{getItemSubtitle(item)}
-													</span>
-												)}
-											</div>
-										</CommandItem>
-									))}
-								</CommandGroup>
-							)}
-						</CommandList>
-					</Command>
-				</PopoverContent>
-			</Popover>
+											</CommandItem>
+										))}
+									</CommandGroup>
+								)}
+							</CommandList>
+						</Command>
+					</PopoverContent>
+				</Popover>
+				{onCreate && (
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						className="shrink-0"
+						onClick={handleCreate}
+						disabled={disabled || creating}
+						aria-label={createLabel}
+						title={createLabel}
+					>
+						{creating ? (
+							<Spinner className="h-4 w-4" />
+						) : (
+							<Plus className="h-4 w-4" />
+						)}
+					</Button>
+				)}
+			</div>
 
 			{error && <p className="text-destructive text-sm">{error}</p>}
 

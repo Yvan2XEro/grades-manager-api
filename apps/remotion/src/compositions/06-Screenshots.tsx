@@ -1,6 +1,6 @@
 /**
  * 06-Screenshots — The Product (390 frames / 13 s)
- * Freeze "capture" moment · mockups 3D · calcul durée audio automatique
+ * Freeze "capture" moment · 3D mockups · automatic audio duration
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -32,10 +32,10 @@ import { TextReveal } from "../components/TextReveal";
 import { AUDIO, C, DUR, F } from "../lib/theme";
 import { sceneOpacity } from "../lib/transition";
 
-// Badge "CAPTURÉ" — useCurrentFrame() interne sera gelé à CAPTURE_FRAME par <Freeze>
-// Le compteur de frame affiché restera donc toujours "f160" même si la scène avance
+// "CAPTURED" badge — its inner useCurrentFrame() is frozen at CAPTURE_FRAME by <Freeze>
+// So the displayed frame counter always reads "f160" even as the scene advances
 const CapturedBadge: React.FC = () => {
-	const innerFrame = useCurrentFrame(); // ← toujours CAPTURE_FRAME grâce à Freeze
+	const innerFrame = useCurrentFrame(); // ← always CAPTURE_FRAME thanks to Freeze
 	return (
 		<AbsoluteFill style={{ pointerEvents: "none" }}>
 			<div
@@ -82,7 +82,7 @@ export const ScreenshotsScene: React.FC = () => {
 	const { fps } = useVideoConfig();
 	const op = sceneOpacity(frame, DUR.screenshots, 20, 24);
 
-	// Mockup 1 — Dashboard (gauche, en avant)
+	// Mockup 1 — Dashboard (left, in front)
 	const m1 = spring({
 		frame: frame - 14,
 		fps,
@@ -93,7 +93,7 @@ export const ScreenshotsScene: React.FC = () => {
 	const m1X = interpolate(m1, [0, 1], [-140, 0]);
 	const m1Float = Math.sin(frame * 0.02) * 8;
 
-	// Mockup 2 — Étudiants (droite, légèrement en arrière)
+	// Mockup 2 — Students (right, slightly behind)
 	const m2 = spring({
 		frame: frame - 36,
 		fps,
@@ -104,7 +104,7 @@ export const ScreenshotsScene: React.FC = () => {
 	const m2X = interpolate(m2, [0, 1], [160, 0]);
 	const m2Float = Math.sin(frame * 0.02 + 1.9) * 7;
 
-	// Mockup 3 — Notes (centre, premier plan)
+	// Mockup 3 — Grades (center, foreground)
 	const m3 = spring({
 		frame: frame - 60,
 		fps,
@@ -115,13 +115,13 @@ export const ScreenshotsScene: React.FC = () => {
 	const m3Y2 = interpolate(m3, [0, 1], [100, 0]);
 	const m3Float = Math.sin(frame * 0.02 + 3.5) * 6;
 
-	// Glows derrière chaque mockup
+	// Glows behind each mockup
 	const gPulse = 1 + Math.sin(frame * 0.03) * 0.06;
 
-	// Freeze — moment "capture d'écran" : tout se fige brièvement à frame 160
+	// Freeze — "screenshot" moment: everything freezes briefly at frame 160
 	const CAPTURE_FRAME = 160;
 	const isCaptured = frame >= CAPTURE_FRAME && frame < CAPTURE_FRAME + 18;
-	// Flash blanc pendant la capture
+	// White flash during the capture
 	const flashOp = isCaptured
 		? interpolate(
 				frame,
@@ -138,7 +138,7 @@ export const ScreenshotsScene: React.FC = () => {
 
 	return (
 		<AbsoluteFill style={{ background: C.bg, overflow: "hidden" }}>
-			{/* Son de transition */}
+			{/* Transition sound */}
 			{AUDIO.enabled && (
 				<Audio
 					src={staticFile("audio/transition.mp3")}
@@ -152,7 +152,7 @@ export const ScreenshotsScene: React.FC = () => {
 					sceneDuration={DUR.screenshots}
 				/>
 			)}
-			{/* Glows d'ambiance */}
+			{/* Ambient glows */}
 			<div
 				style={{
 					transform: `scale(${gPulse})`,
@@ -171,7 +171,7 @@ export const ScreenshotsScene: React.FC = () => {
 				<Glow x="85%" y="65%" size={550} color={C.green} opacity={op * 0.06} />
 			</div>
 
-			{/* Flash blanc de capture — simule l'obturateur */}
+			{/* White capture flash — simulates the shutter */}
 			{isCaptured && (
 				<AbsoluteFill
 					style={{
@@ -183,7 +183,7 @@ export const ScreenshotsScene: React.FC = () => {
 				/>
 			)}
 
-			{/* Freeze — le badge lit useCurrentFrame()=160 en permanence même si la scène avance */}
+			{/* Freeze — the badge reads useCurrentFrame()=160 permanently even as the scene advances */}
 			{frame >= CAPTURE_FRAME - 5 && frame <= CAPTURE_FRAME + 65 && (
 				<div
 					style={{
@@ -213,7 +213,7 @@ export const ScreenshotsScene: React.FC = () => {
 					position: "relative",
 				}}
 			>
-				{/* En-tête */}
+				{/* Header */}
 				<div
 					style={{
 						position: "absolute",
@@ -298,7 +298,7 @@ export const ScreenshotsScene: React.FC = () => {
 					/>
 				</div>
 
-				{/* Mockup 2 — Étudiants */}
+				{/* Mockup 2 — Students */}
 				<div
 					style={{
 						position: "absolute",
@@ -319,7 +319,7 @@ export const ScreenshotsScene: React.FC = () => {
 					/>
 				</div>
 
-				{/* Mockup 3 — Notes */}
+				{/* Mockup 3 — Grades */}
 				<div
 					style={{
 						position: "absolute",
@@ -339,7 +339,7 @@ export const ScreenshotsScene: React.FC = () => {
 					/>
 				</div>
 
-				{/* Labels flottants */}
+				{/* Floating labels */}
 				{LABELS.map(({ text, delay, ...pos }) => {
 					const prog = spring({
 						frame: frame - delay,

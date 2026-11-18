@@ -55,7 +55,7 @@ export async function updateCycle(
 	institutionId: string,
 	data: Partial<schema.NewStudyCycle>,
 ) {
-	const _existing = await ensureCycle(id, institutionId);
+	await ensureCycle(id, institutionId);
 	return repo.updateCycle(id, institutionId, data);
 }
 

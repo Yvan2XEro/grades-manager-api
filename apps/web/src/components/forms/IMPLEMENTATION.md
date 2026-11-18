@@ -29,16 +29,8 @@ Generic and reusable component combining:
 - ✅ React Hook Form integration
 - ✅ Accessibility (ARIA, keyboard nav)
 
-### 3. Usage Examples: `coded-entity-select.examples.tsx`
-**Location**: `apps/web/src/components/forms/coded-entity-select.examples.tsx`
-
-6 complete examples showing:
-1. **Program Select** - With faculty as subtitle
-2. **Class Select** - With cycle/level badges
-3. **Course Select** - With hours and teacher
-4. **Faculty Select** - Minimal configuration
-5. **Disabled State** - Disabled select
-6. **Full Form** - Complete form with cascade
+### 3. Usage examples
+Real usages live in the module forms (search for `CodedEntitySelect` under `apps/web/src/modules`).
 
 ### 4. Documentation: `README.md`
 **Location**: `apps/web/src/components/forms/README.md`

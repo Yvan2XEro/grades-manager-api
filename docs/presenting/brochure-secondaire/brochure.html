@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TKAMS Secondaire — Brochure commerciale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+/* ——— Secondaire accent override ——— */
+:root {
+  --tk-sec: oklch(0.70 0.15 70);        /* amber/or chaud — couleur signature Secondaire */
+  --tk-sec-soft: oklch(0.96 0.04 70);
+  --tk-sec-deep: oklch(0.50 0.14 70);
+}
+
+/* ——— Layout page ——— */
+.page { padding: 0; }
+.page-inner { min-height: 1123px; height: 100%; padding: 58px 66px 70px; display: flex; flex-direction: column; }
+.head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; margin-bottom: 32px; border-bottom: 1px solid var(--tk-border); }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--tk-font-display); font-weight: 700; letter-spacing: -0.01em; color: var(--tk-ink); }
+.brand img { height: 28px; width: auto; }
+.brand .edition { font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-sec); letter-spacing: 0.12em; text-transform: uppercase; background: var(--tk-sec-soft); padding: 2px 7px; border-radius: 999px; }
+.meta { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.foot { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--tk-border); display: flex; justify-content: space-between; color: var(--tk-muted); font-family: var(--tk-font-mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.num { color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 13px; font-weight: 600; letter-spacing: 0; }
+
+/* ——— Typography ——— */
+.eyebrow { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+.eyebrow .n { font-family: var(--tk-font-display); font-size: 13px; color: var(--tk-primary); font-weight: 700; }
+.eyebrow .l { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.18em; font-weight: 600; }
+h1, h2, h3, h4 { font-family: var(--tk-font-display); color: var(--tk-ink); margin: 0; }
+h1.title { font-size: 46px; line-height: 1.03; letter-spacing: -0.035em; font-weight: 650; max-width: 650px; margin-bottom: 18px; }
+h1.title em, h2 em { font-style: normal; color: var(--tk-primary); }
+h2 { font-size: 24px; line-height: 1.16; letter-spacing: -0.02em; font-weight: 600; margin-bottom: 12px; }
+h3 { font-size: 14px; line-height: 1.25; font-weight: 700; margin-bottom: 7px; }
+p { font-size: 11.6px; line-height: 1.6; color: var(--tk-ink-soft); margin: 0 0 10px; }
+.lede { font-size: 15px; line-height: 1.58; color: var(--tk-ink-soft); max-width: 660px; }
+.small { font-size: 10.4px; line-height: 1.52; color: var(--tk-muted); }
+
+/* ——— Grid & layout ——— */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.band { border-top: 1px solid var(--tk-border); border-bottom: 1px solid var(--tk-border); padding: 20px 0; margin: 24px 0; }
+.claim { font-family: var(--tk-font-display); font-size: 26px; line-height: 1.2; color: var(--tk-ink); letter-spacing: -0.02em; max-width: 650px; }
+
+/* ——— Cards & modules ——— */
+.card { border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 15px 16px; min-height: 132px; }
+.card .tag { display: inline-flex; width: fit-content; font-family: var(--tk-font-mono); font-size: 8.8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tk-primary); background: var(--tk-primary-soft); padding: 3px 7px; border-radius: 999px; margin-bottom: 10px; }
+.card .tag.sec { color: var(--tk-sec-deep); background: var(--tk-sec-soft); }
+.card p { font-size: 10.7px; line-height: 1.5; margin: 0; }
+.text-block { max-width: 650px; margin: 18px 0 10px; }
+.text-block p { font-size: 11.8px; }
+
+/* ——— KPIs ——— */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--tk-border); border-bottom: 1px solid var(--tk-border); margin: auto 0 22px; }
+.kpi { padding: 17px 12px; border-right: 1px solid var(--tk-border); }
+.kpi:last-child { border-right: 0; }
+.kpi .v { font-family: var(--tk-font-display); font-size: 27px; line-height: 1; color: var(--tk-ink); font-weight: 650; letter-spacing: -0.03em; }
+.kpi .l { margin-top: 6px; font-family: var(--tk-font-mono); color: var(--tk-muted); font-size: 8.8px; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ——— Steps / flow ——— */
+.flow { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 22px 0; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 10px; border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 12px 13px; min-height: 86px; }
+.step .s { font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-primary); margin-bottom: 8px; letter-spacing: 0.08em; }
+.step h3 { font-size: 12px; margin-bottom: 5px; }
+.step p { font-size: 9.7px; line-height: 1.42; margin: 0; }
+
+/* ——— Quote ——— */
+.quote { border-left: 2px solid var(--tk-sec); padding-left: 18px; margin: 22px 0; }
+.quote p { font-family: var(--tk-font-display); font-size: 21px; line-height: 1.28; letter-spacing: -0.015em; color: var(--tk-ink); margin: 0; }
+
+/* ——— Lines ——— */
+.list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 18px; margin-top: 16px; }
+.line { display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding-bottom: 9px; border-bottom: 1px solid var(--tk-border); }
+.line:last-child { border-bottom: 0; }
+.line .k { font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-primary); letter-spacing: 0.08em; text-transform: uppercase; }
+.line .v { font-size: 11px; color: var(--tk-ink-soft); line-height: 1.48; }
+
+/* ——— Matrix ——— */
+.matrix { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+.module { border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 13px 14px; }
+.module h3 { display: flex; justify-content: space-between; gap: 12px; font-size: 12.4px; margin-bottom: 6px; }
+.module h3 span { color: var(--tk-primary); font-family: var(--tk-font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.module h3 span.sec { color: var(--tk-sec-deep); }
+.module p { font-size: 10.3px; line-height: 1.48; margin: 0; }
+
+/* ——— Note callout ——— */
+.note { background: var(--tk-sec-soft); border-left: 2px solid var(--tk-sec); padding: 12px 15px; margin-top: 18px; color: var(--tk-ink); font-size: 10.8px; line-height: 1.52; }
+.note-primary { background: var(--tk-primary-soft); border-left: 2px solid var(--tk-primary); padding: 12px 15px; margin-top: 18px; color: var(--tk-ink); font-size: 10.8px; line-height: 1.52; }
+
+/* ——— Cover ——— */
+.cover { position: relative; overflow: hidden; background: var(--tk-bg); }
+.cover::before { content: ""; position: absolute; inset: 0; z-index: 0; background-image: radial-gradient(oklch(0.35 0.04 260 / 13%) 1px, transparent 1px); background-size: 22px 22px; opacity: 0.48; }
+.cover .topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 3; height: 4px; background: linear-gradient(90deg, var(--tk-primary), var(--tk-sec), oklch(0.78 0.18 55)); }
+.cover .glow { position: absolute; z-index: 0; border-radius: 999px; pointer-events: none; }
+.cover .cover-inner { position: relative; z-index: 1; min-height: 1123px; height: 100%; padding: 46px 52px 40px; display: flex; flex-direction: column; color: var(--tk-ink); overflow: hidden; }
+.cover .top { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--tk-border); }
+.cover img { height: 28px; width: auto; }
+.cover .corner { font-family: var(--tk-font-mono); font-size: 10px; line-height: 1.5; color: var(--tk-muted); text-align: right; letter-spacing: 0.1em; text-transform: uppercase; }
+.cover .center { position: relative; z-index: 2; margin-top: 38px; max-width: 700px; }
+.cover .kicker { display: inline-flex; align-items: center; gap: 9px; width: fit-content; font-family: var(--tk-font-mono); color: var(--tk-sec-deep); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 18px; padding: 7px 10px; border: 1px solid var(--tk-border); border-radius: 999px; background: oklch(1 0 0 / 58%); }
+.cover .kicker::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tk-sec); box-shadow: 0 0 0 5px oklch(0.70 0.15 70 / 16%); }
+.cover h1 { color: var(--tk-ink); font-size: 58px; line-height: 1.02; letter-spacing: -0.045em; font-weight: 800; max-width: 760px; margin-bottom: 18px; }
+.cover h1 em { position: relative; display: inline-block; font-style: normal; color: var(--tk-primary); }
+.cover h1 em::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.05em; z-index: -1; height: 0.26em; border-radius: 999px; background: oklch(0.48 0.2 277 / 14%); }
+.cover .deck { font-size: 16px; line-height: 1.55; color: var(--tk-ink-soft); max-width: 620px; }
+.cover .print-contact { display: grid; grid-template-columns: repeat(3, max-content); gap: 10px 18px; align-items: center; width: fit-content; margin-top: 22px; padding: 12px 14px; border: 1px solid var(--tk-border); border-radius: 14px; background: oklch(1 0 0 / 68%); }
+.cover .print-contact span { display: grid; gap: 3px; font-family: var(--tk-font-display); font-size: 12px; font-weight: 700; color: var(--tk-ink); }
+.cover .print-contact small { font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+.cover .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.cover .ctag { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--tk-border); border-radius: 999px; background: oklch(1 0 0 / 62%); font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.cover .ctag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--tk-sec); }
+
+/* ——— Cover mock UI ——— */
+.cover .product-shot { position: relative; z-index: 2; margin-top: 30px; border: 1px solid var(--tk-border); border-radius: 18px; background: oklch(1 0 0 / 82%); box-shadow: 0 30px 90px -55px oklch(0 0 0 / 42%); overflow: hidden; }
+.cover .shot-bar { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-bottom: 1px solid var(--tk-border); background: linear-gradient(180deg, oklch(0.98 0.01 260), oklch(0.95 0.012 260)); }
+.cover .shot-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--tk-muted); opacity: 0.55; }
+.cover .shot-url { margin-left: 5px; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); letter-spacing: 0.04em; }
+.cover .shot-body { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 14px; padding: 15px; }
+.cover .shot-main { border: 1px solid var(--tk-border); border-radius: 14px; background: var(--tk-bg); padding: 15px; }
+.cover .shot-title { font-family: var(--tk-font-display); font-size: 16px; line-height: 1.15; font-weight: 750; color: var(--tk-ink); margin-bottom: 12px; }
+.cover .shot-line { display: grid; grid-template-columns: 96px 1fr 62px; gap: 8px; padding: 8px 0; border-top: 1px solid var(--tk-border); font-size: 10px; color: var(--tk-ink-soft); align-items: center; }
+.cover .shot-line strong { color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 10.5px; }
+.cover .pill { width: fit-content; justify-self: end; padding: 4px 7px; border-radius: 999px; background: var(--tk-sec-soft); color: var(--tk-sec-deep); font-family: var(--tk-font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.07em; }
+.cover .pill-blue { background: var(--tk-primary-soft); color: var(--tk-primary-deep); }
+.cover .shot-side { display: grid; gap: 10px; }
+.cover .mini { border: 1px solid var(--tk-border); border-radius: 14px; background: var(--tk-surface); padding: 12px; }
+.cover .mini strong { display: block; color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 12px; margin-bottom: 4px; }
+.cover .mini span { color: var(--tk-muted); font-size: 9.8px; line-height: 1.42; }
+
+/* ——— Cover bottom stats ——— */
+.cover .bottom { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--tk-border); }
+.cover .bottom strong { display: block; color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 22px; line-height: 1; letter-spacing: -0.03em; margin-bottom: 6px; }
+.cover .bottom div { color: var(--tk-muted); font-family: var(--tk-font-mono); font-size: 8.8px; line-height: 1.45; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ——— CTA & contact page ——— */
+.cta { margin-top: 28px; border-top: 1px solid var(--tk-border); border-bottom: 1px solid var(--tk-border); padding: 24px 0; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; }
+.cta h2 { font-size: 34px; line-height: 1.06; }
+.contact { display: grid; gap: 10px; align-content: center; }
+.contact div { font-family: var(--tk-font-display); font-size: 14px; color: var(--tk-ink); }
+.contact span { display: block; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+
+/* ——— Pricing grid ——— */
+.pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 20px 0; }
+.pricing-col-head { font-family: var(--tk-font-display); font-size: 13px; font-weight: 700; color: var(--tk-ink); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.pricing-col-head .badge { font-family: var(--tk-font-mono); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; }
+.badge-sub { background: var(--tk-primary-soft); color: var(--tk-primary-deep); }
+.badge-life { background: var(--tk-sec-soft); color: var(--tk-sec-deep); }
+.pricing-rows { display: grid; gap: 8px; }
+.prow { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 12px 14px; }
+.prow.featured { border-color: var(--tk-primary); background: var(--tk-primary-soft); }
+.prow.featured-life { border-color: var(--tk-sec); background: var(--tk-sec-soft); }
+.prow-name { font-family: var(--tk-font-display); font-size: 12px; font-weight: 700; color: var(--tk-ink); margin-bottom: 2px; }
+.prow-size { font-family: var(--tk-font-mono); font-size: 8.5px; color: var(--tk-muted); letter-spacing: 0.07em; text-transform: uppercase; }
+.prow-price { text-align: right; }
+.prow-amount { font-family: var(--tk-font-display); font-size: 18px; font-weight: 750; color: var(--tk-ink); letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prow-unit { font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; text-align: right; }
+.market-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 0; }
+.market-card { border: 1px solid var(--tk-border); background: var(--tk-bg); padding: 10px 12px; }
+.market-card .mk { font-family: var(--tk-font-mono); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tk-muted); margin-bottom: 4px; }
+.market-card .mv { font-family: var(--tk-font-display); font-size: 12px; font-weight: 700; color: var(--tk-ink); }
+.market-card .md { font-size: 9.5px; color: var(--tk-ink-soft); line-height: 1.4; margin-top: 2px; }
+
+/* ——— Toolbar ——— */
+.screen-toolbar { position: fixed; right: 18px; bottom: 18px; z-index: 10; display: flex; gap: 8px; }
+.screen-toolbar a, .screen-toolbar button { border: 1px solid var(--tk-border); background: white; color: var(--tk-ink); font-family: var(--tk-font-display); font-size: 12px; padding: 9px 13px; text-decoration: none; cursor: pointer; box-shadow: 0 12px 28px -18px oklch(0 0 0 / 35%); }
+@media print { .screen-toolbar { display: none; } }
+</style>
+<script>
+if (new URLSearchParams(window.location.search).get("print") === "1") {
+  window.addEventListener("load", () => { setTimeout(() => window.print(), 250); });
+}
+</script>
+</head>
+<body>
+
+<div class="screen-toolbar no-print">
+  <a href="../index.html">Index</a>
+  <button type="button" onclick="window.print()">Exporter PDF</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 01 — COUVERTURE
+     ════════════════════════════════════════════════════════ -->
+<section class="page cover" data-screen-label="01 Couverture">
+  <div class="topbar"></div>
+  <div class="glow" style="width: 560px; height: 560px; top: -180px; right: -180px; background: radial-gradient(circle, oklch(0.48 0.2 277 / 12%), transparent 70%);"></div>
+  <div class="glow" style="width: 380px; height: 380px; bottom: 72px; left: -155px; background: radial-gradient(circle, oklch(0.70 0.15 70 / 12%), transparent 70%);"></div>
+  <div class="cover-inner">
+    <div class="top">
+      <img src="../assets/logo-tkams.png" alt="TKAMS" />
+      <div class="corner">Brochure commerciale · Édition Secondaire 2026<br>Directions · Scolarité · Enseignants</div>
+    </div>
+    <div class="center">
+      <div class="kicker">TKAMS Secondaire · SIS pour lycées et collèges</div>
+      <h1>Le cockpit complet d'un <em>lycée ou d'un collège</em>.</h1>
+      <p class="deck">Inscriptions, bulletins trimestriels, emplois du temps, portail parents, examens officiels MINESEC, notes et finances scolaires : une seule plateforme pour piloter l'intégralité de l'année scolaire.</p>
+      <div class="print-contact">
+        <span><small>Site web</small>https://tkams.com/</span>
+        <span><small>Email</small>contact@tkams.com</span>
+        <span><small>Téléphone</small>+237 652 761 931</span>
+      </div>
+      <div class="tags">
+        <span class="ctag">Bulletins trimestriels</span>
+        <span class="ctag">Portail parents</span>
+        <span class="ctag">BEPC · Probatoire · BAC</span>
+        <span class="ctag">Bilingue FR / EN</span>
+        <span class="ctag">Carte scolaire MINESEC</span>
+      </div>
+    </div>
+    <div class="product-shot">
+      <div class="shot-bar">
+        <span class="shot-dot" style="background: oklch(0.7 0.18 25);"></span>
+        <span class="shot-dot" style="background: oklch(0.75 0.16 86);"></span>
+        <span class="shot-dot" style="background: oklch(0.6 0.17 149);"></span>
+        <span class="shot-url">tkams.com/secondaire</span>
+      </div>
+      <div class="shot-body">
+        <div class="shot-main">
+          <div class="shot-title">Bulletin trimestriel — 3ème C · Trimestre 2</div>
+          <div class="shot-line"><strong>Mathématiques</strong><span>Moy : 15,40 · Coeff 7 · Rang : 3/42</span><span class="pill">Assidu</span></div>
+          <div class="shot-line"><strong>Sciences Phys.</strong><span>Moy : 13,20 · Coeff 5 · Rang : 7/42</span><span class="pill">Assidu</span></div>
+          <div class="shot-line"><strong>Moy. générale</strong><span>14,8 / 20 · Rang classe : 4 / 42</span><span class="pill-blue pill">Mention B</span></div>
+          <div class="shot-line"><strong>Décision conseil</strong><span>Passage en classe supérieure</span><span class="pill">Validé</span></div>
+        </div>
+        <div class="shot-side">
+          <div class="mini"><strong>Sans ressaisie</strong><span>Les notes saisies par les enseignants alimentent directement le bulletin imprimable.</span></div>
+          <div class="mini"><strong>Parents informés</strong><span>Le bulletin est disponible sur le portail parents dès sa publication par la scolarité.</span></div>
+          <div class="mini"><strong>Conforme MINESEC</strong><span>Les coefficients officiels par filière sont configurés et appliqués automatiquement.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div><strong>8</strong>Pages orientées valeur métier</div>
+      <div><strong>3</strong>Trimestres couverts nativement</div>
+      <div><strong>4</strong>Portails opérationnels</div>
+      <div><strong>2026</strong>Édition Secondaire</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 02 — PROMESSE
+     ════════════════════════════════════════════════════════ -->
+<section class="page" data-screen-label="02 Promesse">
+  <div class="page-inner">
+    <div class="head">
+      <div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS <span class="edition">Secondaire</span></div>
+      <div class="meta">Vue exécutive</div>
+    </div>
+    <div class="eyebrow"><span class="n">01</span><span class="l">Ce que le secondaire mérite enfin</span></div>
+    <h1 class="title">Une plateforme qui parle le langage quotidien d'un lycée ou d'un collège.</h1>
+    <p class="lede">TKAMS Secondaire structure l'ensemble du cycle scolaire autour d'un principe simple : chaque service doit pouvoir répondre rapidement à une question concrète. Qui est inscrit ? Qui a payé ? Qui est absent depuis plus de trois jours ? Quel est le rang de cet élève dans sa classe ? Le bulletin est-il prêt à imprimer ?</p>
+    <div class="grid-3">
+      <div class="card"><span class="tag sec">Clé</span><h3>Bulletins trimestriels automatiques</h3><p>Les notes, moyennes pondérées, rangs et appréciations constituent automatiquement le bulletin officiel — sans ressaisie, sans Excel parallèle.</p></div>
+      <div class="card"><span class="tag sec">Clé</span><h3>Portail parents natif</h3><p>Les familles consultent les notes récentes, les absences, les paiements et les communications sans appeler le secrétariat.</p></div>
+      <div class="card"><span class="tag sec">Clé</span><h3>Examens officiels MINESEC</h3><p>Les listes de candidature, convocations et registres pour le BEPC, le Probatoire et le BAC se préparent dans le système.</p></div>
+    </div>
+    <div class="band">
+      <div class="claim">Les modules fondamentaux ne sont pas optionnels : inscriptions, notes, assiduité, finances et documents fonctionnent ensemble dès le premier jour.</div>
+    </div>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Complet</span><h3>Notes structurées</h3><p>CC, devoirs sur table, examens, interrogations — chaque type de note a son poids dans la moyenne trimestrielle.</p></div>
+      <div class="card"><span class="tag">Complet</span><h3>Emploi du temps et salles</h3><p>Planning par classe, enseignant, matière, salle et trimestre avec détection des conflits avant le terrain.</p></div>
+      <div class="card"><span class="tag">Complet</span><h3>Finances scolaires</h3><p>Scolarité mensuelle, APE, exonérations, quittances et suivi des impayés par classe.</p></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v">3</div><div class="l">Trimestres couverts</div></div>
+      <div class="kpi"><div class="v">2</div><div class="l">Cycles : Collège + Lycée</div></div>
+      <div class="kpi"><div class="v">4</div><div class="l">Portails opérationnels</div></div>
+      <div class="kpi"><div class="v">0</div><div class="l">Bulletin calculé à la main</div></div>
+    </div>
+    <div class="foot"><span>TKAMS Secondaire · Vue exécutive</span><span class="num">02</span></div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 03 — PARCOURS ÉLÈVE
+     ════════════════════════════════════════════════════════ -->
+<section class="page" data-screen-label="03 Parcours élève">
+  <div class="page-inner">
+    <div class="head">
+      <div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS <span class="edition">Secondaire</span></div>
+      <div class="meta">Parcours élève</div>
+    </div>
+    <div class="eyebrow"><span class="n">02</span><span class="l">De l'inscription au bulletin</span></div>
+    <h1 class="title">Le dossier élève ne commence plus au guichet, et ne finit plus dans un classeur.</h1>
+    <p class="lede">TKAMS Secondaire structure la progression complète d'un élève : candidature, inscription, matricule MINESEC, paiement, emploi du temps, assiduité, notes, bulletins trimestriels, examens officiels et passage en classe supérieure.</p>
+    <div class="flow">
+      <div class="step"><div class="s">01</div><div><h3>Candidature</h3><p>Dépôt de dossier, pièces attendues, décision d'admission et conversion en élève inscrit.</p></div></div>
+      <div class="step"><div class="s">02</div><div><h3>Inscription</h3><p>Création du dossier élève, attribution du numéro matricule MINESEC, classe, section et filière.</p></div></div>
+      <div class="step"><div class="s">03</div><div><h3>Paiement</h3><p>Scolarité mensuelle, cotisation APE, tranches d'écolage, quittances et historique.</p></div></div>
+      <div class="step"><div class="s">04</div><div><h3>Scolarité</h3><p>Emploi du temps, présences, notes trimestrielles, bulletins et décision du conseil de classe.</p></div></div>
+      <div class="step"><div class="s">05</div><div><h3>Examens officiels</h3><p>Préparation des listes BEPC, Probatoire et BAC, convocations et saisie des résultats officiels.</p></div></div>
+    </div>
+    <div class="text-block">
+      <h2>Un portail parents qui réduit la pression sur la scolarité.</h2>
+      <p>Les parents consultent le statut scolaire de leur enfant, ses notes récentes, ses absences, l'état de ses paiements et les bulletins publiés — sans multiplier les passages au secrétariat. Les annonces et convocations leur parviennent directement.</p>
+      <p>Pour les familles avec plusieurs enfants dans le même établissement, un seul compte donne accès à l'ensemble des dossiers.</p>
+    </div>
+    <div class="list">
+      <div class="line"><div class="k">Admissions</div><div class="v">Passage du statut candidat à élève inscrit, avec conservation de la trace administrative et du matricule national.</div></div>
+      <div class="line"><div class="k">Finances</div><div class="v">Scolarité mensuelle, APE, tranches, reçus et suivi des impayés par famille et par classe.</div></div>
+      <div class="line"><div class="k">Scolarité</div><div class="v">Notes, emploi du temps, assiduité, bulletins et décisions dans le même environnement.</div></div>
+      <div class="line"><div class="k">Publication</div><div class="v">Les bulletins et décisions du conseil de classe deviennent visibles aux parents après validation institutionnelle.</div></div>
+    </div>
+    <div class="foot"><span>TKAMS Secondaire · Parcours élève</span><span class="num">03</span></div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 04 — NOTES & BULLETINS
+     ════════════════════════════════════════════════════════ -->
+<section class="page" data-screen-label="04 Notes et bulletins">
+  <div class="page-inner">
+    <div class="head">
+      <div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS <span class="edition">Secondaire</span></div>
+      <div class="meta">Notes · Bulletins · Conseil de classe</div>
+    </div>
+    <div class="eyebrow"><span class="n">03</span><span class="l">Le bulletin comme acte institutionnel</span></div>
+    <h1 class="title">Le bulletin trimestriel devient un document généré, pas un document saisi.</h1>
+    <p class="lede">TKAMS Secondaire calcule automatiquement les moyennes par matière et par trimestre selon les coefficients officiels, classe les élèves, génère les bulletins avec appréciations, mention et décision du conseil de classe — prêts à imprimer ou à diffuser aux parents.</p>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Structure</span><h3>Notes typées et pondérées</h3><p>CC, devoirs sur table, compositions, interrogations — chaque type de note a son poids. L'enseignant saisit depuis son portail ou en import.</p></div>
+      <div class="card"><span class="tag">Calcul</span><h3>Moyennes et rangs automatiques</h3><p>Moyenne pondérée par coefficient, rang dans la classe, total des points, mention et écart avec la moyenne de classe.</p></div>
+      <div class="card"><span class="tag">Document</span><h3>Bulletin imprimable</h3><p>L'en-tête de l'établissement, toutes les matières, les appréciations, la décision du conseil et la signature du directeur.</p></div>
+    </div>
+    <div class="quote"><p>Un bulletin mal calculé ou mal imprimé expose l'établissement. Avec TKAMS, le calcul est automatique et le bulletin sort en quelques secondes.</p></div>
+    <div class="matrix">
+      <div class="module"><h3>Conseil de classe <span class="sec">Décisions</span></h3><p>Passage, redoublement, mise en garde, félicitations et encouragements — saisis, tracés et publiés de manière contrôlée.</p></div>
+      <div class="module"><h3>Appréciations <span class="sec">Portail prof</span></h3><p>Les enseignants saisissent leurs appréciations par matière directement depuis leur espace. Elles rejoignent automatiquement le bulletin.</p></div>
+      <div class="module"><h3>Palmarès <span class="sec">Annuel</span></h3><p>Le classement de fin de trimestre et de fin d'année scolaire est généré automatiquement pour chaque classe.</p></div>
+      <div class="module"><h3>Historique <span class="sec">Traçabilité</span></h3><p>Tous les bulletins émis restent consultables par l'administration et accessibles aux parents autorisés.</p></div>
+    </div>
+    <div class="note">TKAMS Secondaire respecte les coefficients officiels du MINESEC par filière (A4, C, D, F, TI, G, H…) et par niveau. Les règles sont configurables par l'administration sans intervention technique.</div>
+    <div class="foot"><span>TKAMS Secondaire · Notes et bulletins</span><span class="num">04</span></div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 05 — VIE SCOLAIRE
+     ════════════════════════════════════════════════════════ -->
+<section class="page" data-screen-label="05 Vie scolaire">
+  <div class="page-inner">
+    <div class="head">
+      <div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS <span class="edition">Secondaire</span></div>
+      <div class="meta">Cours · Présence · Discipline</div>
+    </div>
+    <div class="eyebrow"><span class="n">04</span><span class="l">Vie scolaire opérationnelle</span></div>
+    <h1 class="title">Les cours, les présences, l'emploi du temps et la discipline se répondent.</h1>
+    <p class="lede">Les briques de vie scolaire de TKAMS Secondaire rapprochent l'organisation des cours du suivi réel des élèves. Les enseignants ont des vues utiles, les parents voient les absences dès leur saisie, l'administration identifie les conflits et les situations à risque avant qu'elles deviennent des problèmes.</p>
+    <div class="grid-2">
+      <div>
+        <h2>Emplois du temps hebdomadaires.</h2>
+        <p>Les séances de cours sont planifiées par classe, matière, enseignant, salle et trimestre. Les conflits de salle ou d'enseignant sont détectés avant le terrain. Les sections francophones et anglophones coexistent nativement dans le même établissement avec des emplois du temps distincts.</p>
+        <p>Les imports et exports restent disponibles pour les établissements qui souhaitent conserver leurs habitudes de travail tout en ramenant les données dans un système central.</p>
+      </div>
+      <div>
+        <h2>Assiduité et discipline exploitables.</h2>
+        <p>Le pointage par séance remplace les alertes informelles. Présences, retards, absences excusées, justificatifs, taux et seuils sont disponibles pour les enseignants, la scolarité et les parents.</p>
+        <p>Les sanctions disciplinaires, les appels aux parents et le suivi du conseil de discipline sont gérés dans le même espace que les notes et les présences — sans dossier papier parallèle.</p>
+      </div>
+    </div>
+    <div class="band">
+      <div class="claim">Le bilinguisme est natif. Sections francophones et anglophones coexistent dans le même établissement avec des curricula, des classes et des nomenclatures distincts.</div>
+    </div>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Infrastructures</span><h3>Salles et bâtiments</h3><p>Gestion des salles, capacités, bâtiments et alertes de conflit d'affectation avant publication de l'emploi du temps.</p></div>
+      <div class="card"><span class="tag">Suivi</span><h3>Rapports de présence</h3><p>Taux par élève, résumé par séance, export et lecture rapide des situations critiques. Alertes configurables par seuil.</p></div>
+      <div class="card"><span class="tag">Discipline</span><h3>Sanctions et suivi</h3><p>Sanctions, convocations aux parents, décisions du conseil de discipline et historique traçable pour chaque élève.</p></div>
+    </div>
+    <div class="foot"><span>TKAMS Secondaire · Vie scolaire</span><span class="num">05</span></div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 06 — PORTAIL PARENTS
+     ════════════════════════════════════════════════════════ -->
+<section class="page" data-screen-label="06 Portail parents">
+  <div class="page-inner">
+    <div class="head">
+      <div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS <span class="edition">Secondaire</span></div>
+      <div class="meta">Familles · Communication</div>
+    </div>
+    <div class="eyebrow"><span class="n">05</span><span class="l">Le lien direct entre l'établissement et les familles</span></div>
+    <h1 class="title">Les parents ne découvrent plus les problèmes à la réunion de fin de trimestre.</h1>
+    <p class="lede">Le portail parents de TKAMS Secondaire donne aux familles un accès immédiat aux informations essentielles : notes récentes, absences, paiements en cours et communications de l'établissement — sans passer par le secrétariat, sans attendre le bulletin papier.</p>
+    <div class="grid-3">
+      <div class="card"><span class="tag sec">Inclus</span><h3>Notes et bulletins</h3><p>Les parents consultent les notes saisies par les enseignants et reçoivent les bulletins trimestriels publiés, avec les décisions du conseil de classe.</p></div>
+      <div class="card"><span class="tag sec">Inclus</span><h3>Assiduité en temps réel</h3><p>Les absences et retards sont visibles dès leur saisie. Le motif, lorsqu'il est communiqué par l'enseignant, apparaît directement.</p></div>
+      <div class="card"><span class="tag sec">Inclus</span><h3>Finances scolaires</h3><p>L'état des paiements, les tranches dues, les reçus et les éventuelles mises en demeure sont accessibles sans passer à la caisse.</p></div>
+    </div>
+    <div class="quote"><p>Le portail parents n'est pas un gadget. C'est le moyen le plus direct de réduire les tensions en fin de trimestre — et de bâtir une relation de confiance avec les familles.</p></div>
+    <div class="matrix">
+      <div class="module"><h3>Alertes et notifications <span class="sec">Immédiat</span></h3><p>Notification lorsqu'une absence est saisie, qu'une note est disponible, qu'un bulletin est publié ou qu'un message de l'établissement est envoyé.</p></div>
+      <div class="module"><h3>Communication directe <span class="sec">Bidirectionnel</span></h3><p>L'établissement envoie annonces, convocations, circulaires et documents officiels directement aux familles. Les parents peuvent répondre.</p></div>
+      <div class="module"><h3>Confidentialité <span class="sec">Contrôlée</span></h3><p>Chaque parent accède uniquement aux informations de ses propres enfants, selon les droits définis par l'administration.</p></div>
+      <div class="module"><h3>Multi-enfants <span class="sec">Un compte</span></h3><p>Une famille avec plusieurs enfants dans le même établissement gère tous les dossiers depuis un seul accès parent.</p></div>
+    </div>
+    <div class="note">Le portail parents est inclus dans toutes les offres TKAMS Secondaire — ce n'est pas une option facturée séparément.</div>
+    <div class="foot"><span>TKAMS Secondaire · Portail parents</span><span class="num">06</span></div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 07 — FINANCES & MINESEC
+     ════════════════════════════════════════════════════════ -->
+<section class="page" data-screen-label="07 Finances et MINESEC">
+  <div class="page-inner">
+    <div class="head">
+      <div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS <span class="edition">Secondaire</span></div>
+      <div class="meta">Finances scolaires · Conformité MINESEC</div>
+    </div>
+    <div class="eyebrow"><span class="n">06</span><span class="l">Scolarité financière et conformité réglementaire</span></div>
+    <h1 class="title">La scolarité financière et la conformité MINESEC dans le même système.</h1>
+    <p class="lede">TKAMS Secondaire gère les frais de scolarité mensuelle, les cotisations APE, les retards, les quittances et les exonérations — et prépare les listes officielles pour les examens du MINESEC : BEPC, Probatoire et BAC.</p>
+    <div class="grid-3">
+      <div class="card"><span class="tag">Finances</span><h3>Frais de scolarité</h3><p>Configuration par classe, section ou catégorie d'élève. Suivi des paiements mensuels, retards, exonérations partielles et quitus par période.</p></div>
+      <div class="card"><span class="tag">MINESEC</span><h3>Examens officiels</h3><p>Préparation des listes de candidats, édition des convocations individuelles et enregistrement des résultats BEPC, Probatoire et BAC.</p></div>
+      <div class="card"><span class="tag">MINESEC</span><h3>Carte scolaire nationale</h3><p>Attribution et gestion des matricules nationaux conformément à la réforme numérique MINESEC. Un identifiant unique par élève.</p></div>
+    </div>
+    <div class="quote"><p>Un établissement qui présente ses élèves aux examens officiels avec des listes mal préparées prend un risque administratif. TKAMS Secondaire gère cela sans ressaisie.</p></div>
+    <div class="matrix">
+      <div class="module"><h3>Quittances et reçus <span class="sec">Traçabilité</span></h3><p>Chaque règlement laisse une trace : montant, date, mode de paiement, reçu consultable par la famille et l'administration.</p></div>
+      <div class="module"><h3>Cotisations APE <span class="sec">Séparé</span></h3><p>Les cotisations de l'Association des Parents d'Élèves sont suivies séparément des frais de scolarité, avec leurs propres états et reçus.</p></div>
+      <div class="module"><h3>Impayés et relances <span class="sec">Pilotage</span></h3><p>Vue consolidée des impayés par classe, par famille et par période. Identification rapide des élèves à régulariser avant les examens.</p></div>
+      <div class="module"><h3>Exonérations <span class="sec">Boursiers</span></h3><p>Les élèves boursiers, demi-exonérés ou relevant de conventions particulières sont gérés sans bricolage dans un fichier à part.</p></div>
+    </div>
+    <div class="note-primary">TKAMS ne remplace pas la comptabilité générale. Il relie la preuve de paiement aux droits scolaires : composer les examens, recevoir le bulletin, obtenir une attestation de scolarité.</div>
+    <div class="foot"><span>TKAMS Secondaire · Finances et MINESEC</span><span class="num">07</span></div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 08 — TARIFS & CONTACT
+     ════════════════════════════════════════════════════════ -->
+<section class="page" data-screen-label="08 Tarifs et contact">
+  <div class="page-inner">
+    <div class="head">
+      <div class="brand"><img src="../assets/logo-tkams.png" alt="">TKAMS <span class="edition">Secondaire</span></div>
+      <div class="meta">Offres · Contact</div>
+    </div>
+    <div class="eyebrow"><span class="n">07</span><span class="l">Déployer et passer à l'action</span></div>
+    <h1 class="title">TKAMS Secondaire s'installe en 4 étapes, sans rupture de service.</h1>
+    <p class="lede">La mise en service s'adapte au calendrier scolaire. Vous pouvez démarrer avec les inscriptions et les finances, puis ajouter les notes et le portail parents — ou déployer l'ensemble dès l'ouverture de l'année scolaire.</p>
+
+    <div class="pricing-grid">
+      <div>
+        <div class="pricing-col-head">Abonnement annuel <span class="badge badge-sub">Cloud + mises à jour + support</span></div>
+        <div class="pricing-rows">
+          <div class="prow"><div><div class="prow-name">Démarrage</div><div class="prow-size">≤ 200 élèves</div></div><div class="prow-price"><div class="prow-amount">175 000</div><div class="prow-unit">FCFA / an</div></div></div>
+          <div class="prow featured"><div><div class="prow-name">Standard</div><div class="prow-size">200 – 600 élèves</div></div><div class="prow-price"><div class="prow-amount">350 000</div><div class="prow-unit">FCFA / an</div></div></div>
+          <div class="prow"><div><div class="prow-name">Pro</div><div class="prow-size">600 – 2 000 élèves</div></div><div class="prow-price"><div class="prow-amount">650 000</div><div class="prow-unit">FCFA / an</div></div></div>
+          <div class="prow"><div><div class="prow-name">Réseau</div><div class="prow-size">Multi-sites</div></div><div class="prow-price"><div class="prow-amount" style="font-size:13px;">Sur devis</div></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="pricing-col-head">Licence à vie <span class="badge badge-life">Paiement unique · 5 ans hébergement inclus</span></div>
+        <div class="pricing-rows">
+          <div class="prow"><div><div class="prow-name">Démarrage</div><div class="prow-size">≤ 200 élèves</div></div><div class="prow-price"><div class="prow-amount">600 000</div><div class="prow-unit">FCFA une fois</div></div></div>
+          <div class="prow featured-life"><div><div class="prow-name">Standard</div><div class="prow-size">200 – 600 élèves</div></div><div class="prow-price"><div class="prow-amount">1 200 000</div><div class="prow-unit">FCFA une fois</div></div></div>
+          <div class="prow"><div><div class="prow-name">Pro</div><div class="prow-size">600 – 2 000 élèves</div></div><div class="prow-price"><div class="prow-amount">2 000 000</div><div class="prow-unit">FCFA une fois</div></div></div>
+          <div class="prow"><div><div class="prow-name">Réseau</div><div class="prow-size">Multi-sites</div></div><div class="prow-price"><div class="prow-amount" style="font-size:13px;">Sur devis</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:10px;font-size:9.8px;">Licence à vie : hébergement inclus 5 ans. Après la 5ème année, maintenance optionnelle à 15 % du prix initial/an (mises à jour, hébergement, support). Sans maintenance, le logiciel continue de fonctionner à la version en cours.</div>
+    <div class="market-strip">
+      <div class="market-card"><div class="mk">Repère marché · AppAcademia (concurrent)</div><div class="mv">5 000 – 12 000 FCFA / élève / an</div><div class="md">Pour 300 élèves : 1,5M – 3,6M FCFA/an. TKAMS Standard : 350 000 FCFA/an.</div></div>
+      <div class="market-card"><div class="mk">Repère · Licence à vie (ProsoftAfrica, sERP Ghana)</div><div class="mv">Modèle établi en Afrique</div><div class="md">Les écoles préfèrent un paiement unique sans abonnement perpétuel. TKAMS propose les deux.</div></div>
+    </div>
+
+    <div class="cta">
+      <div>
+        <h2>Une démo de 45 minutes, gratuite, sans engagement.</h2>
+        <p style="margin-top: 8px;">En 45 minutes, nous configurons un environnement à votre image — abonnement ou licence à vie, selon ce qui convient à votre établissement.</p>
+        <p>Paiement Mobile Money accepté · Hébergement Afrique centrale sur demande · Droit de sortie sans frais.</p>
+      </div>
+      <div class="contact">
+        <div><span>Contact commercial</span>contact@tkams.com</div>
+        <div><span>Téléphone &amp; WhatsApp</span>+237 652 761 931</div>
+        <div><span>Site web</span>https://tkams.com/</div>
+        <div><span>Déploiement</span>Lycées · Collèges · Instituts techniques · Groupes scolaires</div>
+        <div><span>Édition</span>TKAMS Secondaire 2026</div>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top: 24px;">
+      <div class="card"><span class="tag">Pour la direction</span><h3>Pilotage et conformité</h3><p>Décisions de conseil traçables, bulletins maîtrisés, statistiques exploitables et conformité MINESEC sans bricolage.</p></div>
+      <div class="card"><span class="tag">Pour la scolarité</span><h3>Moins de traitement manuel</h3><p>Moins de ressaisie, moins de demandes répétitives des parents, plus de statuts visibles et fiables en temps réel.</p></div>
+      <div class="card"><span class="tag">Pour les familles</span><h3>Transparence et confiance</h3><p>Notes, absences, paiements et bulletins consultables directement, sans attendre la prochaine réunion trimestrielle.</p></div>
+    </div>
+    <div class="foot"><span>TKAMS Secondaire · Fin</span><span class="num">08</span></div>
+  </div>
+</section>
+
+</body>
+</html>

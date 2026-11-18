@@ -1,191 +1,191 @@
-# Integration grades-manager-api → DIPLOMATION
+# grades-manager-api → DIPLOMATION integration
 
-## Objectif
+## Goal
 
-L'application **grades-manager-api** doit générer des fichiers Excel (.xlsx) prêts à l'emploi pour l'application **DIPLOMATION** (SGN-Notes), une application desktop Electron qui produit des documents académiques officiels (diplômes, relevés de notes, attestations) avec QR codes chiffrés.
+The **grades-manager-api** application must generate ready-to-use Excel files (.xlsx) for the **DIPLOMATION** application (SGN-Notes), an Electron desktop application that produces official academic documents (diplomas, transcripts, certificates) with encrypted QR codes.
 
-**Flux simplifié :**
+**Simplified flow:**
 
 ```
-grades-manager-api  →  Fichier Excel (.xlsx)  →  DIPLOMATION  →  PDF (diplômes, relevés, attestations)
+grades-manager-api  →  Excel file (.xlsx)  →  DIPLOMATION  →  PDF (diplomas, transcripts, certificates)
 ```
 
 ---
 
-## Table des matières
+## Table of contents
 
-1. [Vue d'ensemble des deux applications](#1-vue-densemble-des-deux-applications)
-2. [Fichiers Excel attendus par DIPLOMATION](#2-fichiers-excel-attendus-par-diplomation)
-3. [Mapping des données : grades-manager-api → DIPLOMATION](#3-mapping-des-données)
-4. [Règles de validation et formats](#4-règles-de-validation-et-formats)
-5. [Calculs et formules](#5-calculs-et-formules)
-6. [Plan d'implémentation](#6-plan-dimplémentation)
-7. [Endpoints API à créer](#7-endpoints-api-à-créer)
-8. [Exemples de données](#8-exemples-de-données)
+1. [Overview of the two applications](#1-overview-of-the-two-applications)
+2. [Excel files expected by DIPLOMATION](#2-excel-files-expected-by-diplomation)
+3. [Data mapping: grades-manager-api → DIPLOMATION](#3-data-mapping)
+4. [Validation rules and formats](#4-validation-rules-and-formats)
+5. [Calculations and formulas](#5-calculations-and-formulas)
+6. [Implementation plan](#6-implementation-plan)
+7. [API endpoints to create](#7-api-endpoints-to-create)
+8. [Data examples](#8-data-examples)
 
 ---
 
-## 1. Vue d'ensemble des deux applications
+## 1. Overview of the two applications
 
-### grades-manager-api (source des données)
+### grades-manager-api (data source)
 
-| Aspect | Détail |
+| Aspect | Detail |
 |--------|--------|
 | **Stack** | Bun + Hono + tRPC + Drizzle ORM + PostgreSQL |
-| **Rôle** | Gestion complète des données académiques |
-| **Données** | Étudiants, inscriptions, cours, UE, examens, notes, crédits, promotions |
-| **Exports existants** | PV de délibération, publications d'évaluations, publications d'UE (PDF/HTML) |
-| **Localisation** | `C:\Users\tefba\Desktop\OverBrand\grades-manager-api` |
+| **Role** | Full management of academic data |
+| **Data** | Students, enrollments, courses, teaching units (UE), exams, grades, credits, promotions |
+| **Existing exports** | Deliberation minutes (PV), evaluation publications, teaching unit publications (PDF/HTML) |
+| **Location** | `C:\Users\tefba\Desktop\OverBrand\grades-manager-api` |
 
-### DIPLOMATION (consommateur des données)
+### DIPLOMATION (data consumer)
 
-| Aspect | Détail |
+| Aspect | Detail |
 |--------|--------|
 | **Stack** | Electron + React + Vite + Tailwind + shadcn/ui |
-| **Rôle** | Génération de documents académiques officiels avec QR codes |
-| **Input** | Fichiers Excel (.xlsx, .xls) |
-| **Output** | PDF (diplômes, relevés de notes, attestations) + QR codes chiffrés |
-| **Documents** | 4 types : Diplôme, Relevé de Notes, Attestation, Attestation de Centre |
-| **Localisation** | `C:\Users\tefba\Documents\FMSP\DIPLOMATION` |
+| **Role** | Generation of official academic documents with QR codes |
+| **Input** | Excel files (.xlsx, .xls) |
+| **Output** | PDF (diplomas, transcripts, certificates) + encrypted QR codes |
+| **Documents** | 4 types: Diploma, Transcript, Certificate, Centre Certificate |
+| **Location** | `C:\Users\tefba\Documents\FMSP\DIPLOMATION` |
 
 ---
 
-## 2. Fichiers Excel attendus par DIPLOMATION
+## 2. Excel files expected by DIPLOMATION
 
-DIPLOMATION attend **4 types de fichiers Excel**, chacun avec des colonnes spécifiques.
+DIPLOMATION expects **4 types of Excel files**, each with specific columns.
 
 ---
 
-### 2.1 — DIPLÔME (`diplomation-diplomes.xlsx`)
+### 2.1 — DIPLOMA (`diplomation-diplomes.xlsx`)
 
-#### Colonnes OBLIGATOIRES
+#### REQUIRED columns
 
-| # | Nom de colonne exact | Type | Format | Contraintes | Exemple |
+| # | Exact column name | Type | Format | Constraints | Example |
 |---|----------------------|------|--------|-------------|---------|
-| 1 | `NOM` | texte | — | Min 2 caractères, non vide, pas "N/D" | `ANGOA SAAH` |
-| 2 | `PRENOM` | texte | — | Min 2 caractères, non vide, pas "N/D" | `GABRIELLE SANDRA` |
-| 3 | `MATRICULE` | texte | Alphanumérique | Min 3 caractères, **unique** dans le fichier | `17MM019` |
-| 4 | `DATE DE NAISSANCE` | texte | `DD/MM/YYYY` | Date valide, 1900 ≤ année ≤ année courante | `27/01/2000` |
-| 5 | `LIEU DE NAISSANCE` | texte | — | Min 2 caractères | `YAOUNDE` |
-| 6 | `PARCOURS` | texte | — | Min 1 caractère | `MÉDECINE` |
-| 7 | `SPECIALITE` | texte | — | Min 1 caractère | `MÉDECINE GÉNÉRALE` |
-| 8 | `MOYENNE` | nombre | Décimal (0-20) | 0 ≤ valeur ≤ 20, **minimum 10 pour générer** | `16.5` |
-| 9 | `GRADE` | texte | Lettre(s) | Valeurs acceptées : A+, A, B+, B, B-, C+, C, C-, D, E, F | `A+` |
-| 10 | `MENTION` | texte | — | Non vide, pas "N/D" | `TRES HONORABLE AVEC FELICITATIONS DU JURY` |
-| 11 | `TITRE DIPLOME FR` | texte | — | Non vide, pas "N/D" | `DIPLÔME D'ÉTAT DE DOCTEUR EN MÉDECINE` |
-| 12 | `TITRE DIPLOME EN` | texte | — | Non vide, pas "N/D" | `DOCTOR OF MEDICINE STATE DEGREE` |
-| 13 | `ANNEE OBTENTION` | texte/nombre | Année (4 chiffres) | Format année valide | `2024` |
-| 14 | `DATE JURY ADMISSION` | texte | `DD/MM/YYYY` | Date valide | `13/10/2017` |
-| 15 | `DATE JURY DELIBERATION` | texte | `DD/MM/YYYY` | Date valide | `28/07/2024` |
+| 1 | `NOM` | text | — | Min 2 characters, not empty, not "N/D" | `ANGOA SAAH` |
+| 2 | `PRENOM` | text | — | Min 2 characters, not empty, not "N/D" | `GABRIELLE SANDRA` |
+| 3 | `MATRICULE` | text | Alphanumeric | Min 3 characters, **unique** within the file | `17MM019` |
+| 4 | `DATE DE NAISSANCE` | text | `DD/MM/YYYY` | Valid date, 1900 ≤ year ≤ current year | `27/01/2000` |
+| 5 | `LIEU DE NAISSANCE` | text | — | Min 2 characters | `YAOUNDE` |
+| 6 | `PARCOURS` | text | — | Min 1 character | `MÉDECINE` |
+| 7 | `SPECIALITE` | text | — | Min 1 character | `MÉDECINE GÉNÉRALE` |
+| 8 | `MOYENNE` | number | Decimal (0-20) | 0 ≤ value ≤ 20, **minimum 10 to generate** | `16.5` |
+| 9 | `GRADE` | text | Letter(s) | Accepted values: A+, A, B+, B, B-, C+, C, C-, D, E, F | `A+` |
+| 10 | `MENTION` | text | — | Not empty, not "N/D" | `TRES HONORABLE AVEC FELICITATIONS DU JURY` |
+| 11 | `TITRE DIPLOME FR` | text | — | Not empty, not "N/D" | `DIPLÔME D'ÉTAT DE DOCTEUR EN MÉDECINE` |
+| 12 | `TITRE DIPLOME EN` | text | — | Not empty, not "N/D" | `DOCTOR OF MEDICINE STATE DEGREE` |
+| 13 | `ANNEE OBTENTION` | text/number | Year (4 digits) | Valid year format | `2024` |
+| 14 | `DATE JURY ADMISSION` | text | `DD/MM/YYYY` | Valid date | `13/10/2017` |
+| 15 | `DATE JURY DELIBERATION` | text | `DD/MM/YYYY` | Valid date | `28/07/2024` |
 
-#### Colonnes OPTIONNELLES
+#### OPTIONAL columns
 
-| # | Nom de colonne exact | Type | Exemple |
+| # | Exact column name | Type | Example |
 |---|----------------------|------|---------|
-| 16 | `OPTION` | texte | `Chirurgie` ou `N/A` |
-| 17 | `OPTION_EN` | texte | `Surgery` ou `N/A` |
-| 18 | `MENTION_EN` | texte | `HIGH HONORS WITH JURY COMMENDATION` |
+| 16 | `OPTION` | text | `Chirurgie` or `N/A` |
+| 17 | `OPTION_EN` | text | `Surgery` or `N/A` |
+| 18 | `MENTION_EN` | text | `HIGH HONORS WITH JURY COMMENDATION` |
 
 ---
 
-### 2.2 — ATTESTATION DE RÉUSSITE (`diplomation-attestations.xlsx`)
+### 2.2 — CERTIFICATE OF SUCCESS (`diplomation-attestations.xlsx`)
 
-#### Colonnes OBLIGATOIRES
+#### REQUIRED columns
 
-| # | Nom de colonne exact | Type | Format | Contraintes | Exemple |
+| # | Exact column name | Type | Format | Constraints | Example |
 |---|----------------------|------|--------|-------------|---------|
-| 1 | `NOM` | texte | — | Min 2 caractères | `DUPONT` |
-| 2 | `PRENOM` | texte | — | Min 2 caractères | `Jean` |
-| 3 | `MATRICULE` | texte | Alphanumérique | Min 3 caractères, unique | `2024001` |
-| 4 | `DATE DE NAISSANCE` | texte | `DD/MM/YYYY` | Date valide | `15/03/2005` |
-| 5 | `LIEU DE NAISSANCE` | texte | — | Min 2 caractères | `Douala` |
-| 6 | `MOYENNE` | nombre | Décimal (0-20) | 0 ≤ valeur ≤ 20, min 10 pour éligibilité | `15.5` |
-| 7 | `PARCOURS` | texte | — | Min 1 caractère | `Informatique` |
-| 8 | `SPECIALITE` | texte | — | Min 1 caractère | `Génie Logiciel` |
+| 1 | `NOM` | text | — | Min 2 characters | `DUPONT` |
+| 2 | `PRENOM` | text | — | Min 2 characters | `Jean` |
+| 3 | `MATRICULE` | text | Alphanumeric | Min 3 characters, unique | `2024001` |
+| 4 | `DATE DE NAISSANCE` | text | `DD/MM/YYYY` | Valid date | `15/03/2005` |
+| 5 | `LIEU DE NAISSANCE` | text | — | Min 2 characters | `Douala` |
+| 6 | `MOYENNE` | number | Decimal (0-20) | 0 ≤ value ≤ 20, min 10 for eligibility | `15.5` |
+| 7 | `PARCOURS` | text | — | Min 1 character | `Informatique` |
+| 8 | `SPECIALITE` | text | — | Min 1 character | `Génie Logiciel` |
 
-#### Colonnes OPTIONNELLES
+#### OPTIONAL columns
 
-| # | Nom de colonne exact | Type | Exemple | Description |
+| # | Exact column name | Type | Example | Description |
 |---|----------------------|------|---------|-------------|
-| 9 | `NIVEAU` | texte | `L3` | Niveau académique |
-| 10 | `SEMESTRE` | texte | `2` | Numéro de semestre |
-| 11 | `CYCLE` | texte | `Licence` | Cycle d'études |
-| 12 | `FILIERE` | texte | `Informatique` | Filière |
-| 13 | `ANNEE ACADEMIQUE` | texte | `2024-2025` | Année académique |
-| 14 | `SEXE` | texte | `M` ou `F` | Genre |
-| 15 | `EMAIL` | texte | `jean@example.com` | Adresse email |
-| 16 | `OPTION` | texte | `Réseaux` | Option/spécialisation |
-| 17 | `GRADE` | texte | `B+` | Grade lettre |
-| 18 | `MENTION` | texte | `Bien` | Mention |
-| 19 | `FINALITE` | texte | `Professionnelle` | Type de diplôme |
-| 20 | `TOTAL CREDIT` | nombre | `180` | Total crédits obtenus |
-| 21 | `DOMAINE` | texte | `Sciences et Technologies` | Domaine d'études |
-| 22 | `DATE JURY` | texte | `15/06/2024` | Date du jury |
+| 9 | `NIVEAU` | text | `L3` | Academic level |
+| 10 | `SEMESTRE` | text | `2` | Semester number |
+| 11 | `CYCLE` | text | `Licence` | Study cycle |
+| 12 | `FILIERE` | text | `Informatique` | Field of study |
+| 13 | `ANNEE ACADEMIQUE` | text | `2024-2025` | Academic year |
+| 14 | `SEXE` | text | `M` or `F` | Gender |
+| 15 | `EMAIL` | text | `jean@example.com` | Email address |
+| 16 | `OPTION` | text | `Réseaux` | Option/specialization |
+| 17 | `GRADE` | text | `B+` | Letter grade |
+| 18 | `MENTION` | text | `Bien` | Honors (mention) |
+| 19 | `FINALITE` | text | `Professionnelle` | Degree type |
+| 20 | `TOTAL CREDIT` | number | `180` | Total credits earned |
+| 21 | `DOMAINE` | text | `Sciences et Technologies` | Field of study (domain) |
+| 22 | `DATE JURY` | text | `15/06/2024` | Jury date |
 
-#### Colonnes supplémentaires OBLIGATOIRES si `establishmentType = "faculty"`
+#### Additional REQUIRED columns if `establishmentType = "faculty"`
 
-| # | Nom de colonne exact | Type | Exemple |
+| # | Exact column name | Type | Example |
 |---|----------------------|------|---------|
-| 23 | `DOMAINE_EN` | texte | `Science and Technology` |
-| 24 | `PARCOURS_EN` | texte | `Computer Science` |
-| 25 | `SPECIALITE_EN` | texte | `Software Engineering` |
-| 26 | `FINALITE_EN` | texte | `Professional` |
+| 23 | `DOMAINE_EN` | text | `Science and Technology` |
+| 24 | `PARCOURS_EN` | text | `Computer Science` |
+| 25 | `SPECIALITE_EN` | text | `Software Engineering` |
+| 26 | `FINALITE_EN` | text | `Professional` |
 
-#### Colonnes OPTIONNELLES (mode faculty)
+#### OPTIONAL columns (faculty mode)
 
-| # | Nom de colonne exact | Type | Exemple |
+| # | Exact column name | Type | Example |
 |---|----------------------|------|---------|
-| 27 | `OPTION_EN` | texte | `Networks` |
-| 28 | `MENTION_EN` | texte | `Good` |
+| 27 | `OPTION_EN` | text | `Networks` |
+| 28 | `MENTION_EN` | text | `Good` |
 
 ---
 
-### 2.3 — RELEVÉ DE NOTES / TRANSCRIPT (`diplomation-releves.xlsx`)
+### 2.3 — TRANSCRIPT (`diplomation-releves.xlsx`)
 
-#### Colonnes OBLIGATOIRES
+#### REQUIRED columns
 
-| # | Nom de colonne exact | Type | Format | Contraintes | Exemple |
+| # | Exact column name | Type | Format | Constraints | Example |
 |---|----------------------|------|--------|-------------|---------|
-| 1 | `NOM` | texte | — | Min 2 caractères | `MARTIN` |
-| 2 | `PRENOM` | texte | — | Min 2 caractères | `Sophie` |
-| 3 | `MATRICULE` | texte | Alphanumérique | Min 3 caractères, unique | `2024001` |
-| 4 | `DATE DE NAISSANCE` | texte | `DD/MM/YYYY` | Date valide | `15/03/2005` |
-| 5 | `LIEU DE NAISSANCE` | texte | — | Min 2 caractères | `Yaoundé` |
+| 1 | `NOM` | text | — | Min 2 characters | `MARTIN` |
+| 2 | `PRENOM` | text | — | Min 2 characters | `Sophie` |
+| 3 | `MATRICULE` | text | Alphanumeric | Min 3 characters, unique | `2024001` |
+| 4 | `DATE DE NAISSANCE` | text | `DD/MM/YYYY` | Valid date | `15/03/2005` |
+| 5 | `LIEU DE NAISSANCE` | text | — | Min 2 characters | `Yaoundé` |
 
-#### Colonnes OPTIONNELLES (métadonnées)
+#### OPTIONAL columns (metadata)
 
-| # | Nom de colonne exact | Type | Exemple | Description |
+| # | Exact column name | Type | Example | Description |
 |---|----------------------|------|---------|-------------|
-| 6 | `NIVEAU` | texte | `L2` | Niveau de classe |
-| 7 | `SEMESTRE` | texte | `1` | Numéro de semestre |
-| 8 | `CYCLE` | texte | `Licence` | Cycle d'études |
-| 9 | `FILIERE` | texte | `Informatique` | Filière/programme |
-| 10 | `ANNEE ACADEMIQUE` | texte | `2024-2025` | Année académique (format YYYY-YYYY) |
-| 11 | `SEXE` | texte | `F` | Genre |
-| 12 | `EMAIL` | texte | `sophie@example.com` | Adresse email |
+| 6 | `NIVEAU` | text | `L2` | Class level |
+| 7 | `SEMESTRE` | text | `1` | Semester number |
+| 8 | `CYCLE` | text | `Licence` | Study cycle |
+| 9 | `FILIERE` | text | `Informatique` | Field of study/program |
+| 10 | `ANNEE ACADEMIQUE` | text | `2024-2025` | Academic year (YYYY-YYYY format) |
+| 11 | `SEXE` | text | `F` | Gender |
+| 12 | `EMAIL` | text | `sophie@example.com` | Email address |
 
-#### Colonnes DYNAMIQUES (notes par cours)
+#### DYNAMIC columns (grades per course)
 
-Chaque cours (EC) est représenté par **une colonne** dont le nom est le nom du cours :
+Each course (EC) is represented by **one column** whose name is the course name:
 
-| Format de colonne | Type | Plage | Exemple |
+| Column format | Type | Range | Example |
 |-------------------|------|-------|---------|
-| `{Nom du cours}` | nombre | 0-20 | Colonne `Mathématiques` → valeur `15.5` |
-| `{Nom du cours 2}` | nombre | 0-20 | Colonne `Physique` → valeur `12.0` |
+| `{Course name}` | number | 0-20 | Column `Mathématiques` → value `15.5` |
+| `{Course name 2}` | number | 0-20 | Column `Physique` → value `12.0` |
 | ... | ... | ... | ... |
 
-#### Colonnes DYNAMIQUES (sessions par cours) — optionnelles
+#### DYNAMIC columns (sessions per course) — optional
 
-Chaque cours peut avoir une colonne de session préfixée par `S/` :
+Each course can have a session column prefixed with `S/`:
 
-| Format de colonne | Type | Format valeur | Exemple |
+| Column format | Type | Value format | Example |
 |-------------------|------|---------------|---------|
-| `S/{Nom du cours}` | texte | `N/YYYY-YYYY` ou `R/YYYY-YYYY` | `S/Mathématiques` → `N/2024-2025` |
+| `S/{Course name}` | text | `N/YYYY-YYYY` or `R/YYYY-YYYY` | `S/Mathématiques` → `N/2024-2025` |
 
-- `N` = Session Normale
-- `R` = Session de Rattrapage
+- `N` = Normal session
+- `R` = Retake session
 
-#### Exemple de structure complète
+#### Full structure example
 
 | NOM | PRENOM | MATRICULE | DATE DE NAISSANCE | LIEU DE NAISSANCE | NIVEAU | SEMESTRE | ANNEE ACADEMIQUE | Anatomie Humaine | Physiologie | S/Anatomie Humaine | S/Physiologie |
 |-----|--------|-----------|-------------------|-------------------|--------|----------|------------------|------------------|-------------|---------------------|---------------|
@@ -193,235 +193,235 @@ Chaque cours peut avoir une colonne de session préfixée par `S/` :
 
 ---
 
-### 2.4 — ATTESTATION DE CENTRE (`diplomation-attestations-centre.xlsx`)
+### 2.4 — CENTRE CERTIFICATE (`diplomation-attestations-centre.xlsx`)
 
-#### Colonnes OBLIGATOIRES
+#### REQUIRED columns
 
-| # | Nom de colonne exact | Type | Format | Contraintes | Exemple |
+| # | Exact column name | Type | Format | Constraints | Example |
 |---|----------------------|------|--------|-------------|---------|
-| 1 | `NOM` | texte | — | Min 2 caractères | `MARTIN` |
-| 2 | `PRENOM` | texte | — | Min 2 caractères | `Sophie` |
-| 3 | `MATRICULE` | texte | Alphanumérique | Min 3 caractères, unique | `2024001` |
-| 4 | `DATE DE NAISSANCE` | texte | `DD/MM/YYYY` | Date valide, 1900 ≤ année ≤ courante | `15/03/2005` |
-| 5 | `LIEU DE NAISSANCE` | texte | — | Min 2 caractères | `Douala` |
-| 6 | `SPECIALITE` | texte | — | Min 3 caractères | `Systèmes et Réseaux` |
-| 7 | `SESSION_EXAMEN` | texte | — | Min 3 caractères | `septembre 2025` |
-| 8 | `LIEU_DELIVRANCE` | texte | — | Min 2 caractères | `Douala` |
-| 9 | `MENTION` | texte | — | Non vide | `Bien` |
-| 10 | `GRADE` | texte | Lettre(s) | Grade valide | `B+` |
-| 11 | `MOYENNE` | nombre | Décimal (0-20) | 0 ≤ valeur ≤ 20 | `15.5` |
+| 1 | `NOM` | text | — | Min 2 characters | `MARTIN` |
+| 2 | `PRENOM` | text | — | Min 2 characters | `Sophie` |
+| 3 | `MATRICULE` | text | Alphanumeric | Min 3 characters, unique | `2024001` |
+| 4 | `DATE DE NAISSANCE` | text | `DD/MM/YYYY` | Valid date, 1900 ≤ year ≤ current | `15/03/2005` |
+| 5 | `LIEU DE NAISSANCE` | text | — | Min 2 characters | `Douala` |
+| 6 | `SPECIALITE` | text | — | Min 3 characters | `Systèmes et Réseaux` |
+| 7 | `SESSION_EXAMEN` | text | — | Min 3 characters | `septembre 2025` |
+| 8 | `LIEU_DELIVRANCE` | text | — | Min 2 characters | `Douala` |
+| 9 | `MENTION` | text | — | Not empty | `Bien` |
+| 10 | `GRADE` | text | Letter(s) | Valid grade | `B+` |
+| 11 | `MOYENNE` | number | Decimal (0-20) | 0 ≤ value ≤ 20 | `15.5` |
 
-#### Colonnes OPTIONNELLES
+#### OPTIONAL columns
 
-| # | Nom de colonne exact | Type | Exemple | Description |
+| # | Exact column name | Type | Example | Description |
 |---|----------------------|------|---------|-------------|
-| 12 | `SPECIALITE_EN` | texte | `Systems and Networks` | Spécialité en anglais |
-| 13 | `MENTION_EN` | texte | `Good` | Mention en anglais |
-| 14 | `NUMERO_ORDRE` | texte | `001` | Numéro d'ordre du jury |
-| 15 | `OPTION` | texte | `Sécurité Informatique` | Option |
-| 16 | `OPTION_EN` | texte | `Cybersecurity` | Option en anglais |
-| 17 | `ANNEE_ACADEMIQUE` | texte | `2024-2025` | Année académique |
-| 18 | `TITRE_ATTESTATION_FR` | texte | `Attestation de Réussite` | Titre FR |
-| 19 | `TITRE_ATTESTATION_EN` | texte | `Certificate of Success` | Titre EN |
-| 20 | `SPECIALITE_ABR` | texte | `SR` | Abréviation spécialité |
+| 12 | `SPECIALITE_EN` | text | `Systems and Networks` | Specialty in English |
+| 13 | `MENTION_EN` | text | `Good` | Honors in English |
+| 14 | `NUMERO_ORDRE` | text | `001` | Jury order number |
+| 15 | `OPTION` | text | `Sécurité Informatique` | Option |
+| 16 | `OPTION_EN` | text | `Cybersecurity` | Option in English |
+| 17 | `ANNEE_ACADEMIQUE` | text | `2024-2025` | Academic year |
+| 18 | `TITRE_ATTESTATION_FR` | text | `Attestation de Réussite` | FR title |
+| 19 | `TITRE_ATTESTATION_EN` | text | `Certificate of Success` | EN title |
+| 20 | `SPECIALITE_ABR` | text | `SR` | Specialty abbreviation |
 
 ---
 
-## 3. Mapping des données
+## 3. Data mapping
 
-> **Légende :**
-> - ✅ **AUTO** = Fourni automatiquement depuis la base de données
-> - 🔶 **CALC** = Calculé automatiquement depuis d'autres champs
-> - ❌ **VIDE** = Non disponible dans grades-manager-api — **la colonne sera présente mais vide**, à compléter manuellement dans le fichier Excel avant import dans DIPLOMATION
-
----
-
-### 3.1 — Mapping DIPLÔME
-
-#### Colonnes remplies automatiquement (✅ AUTO + 🔶 CALC)
-
-| Colonne DIPLOMATION | Statut | Source | Transformation |
-|---------------------|--------|--------|----------------|
-| `NOM` | ✅ AUTO | `domainUsers.lastName` | Majuscules |
-| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | Tel quel |
-| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | Tel quel |
-| `DATE DE NAISSANCE` | ✅ AUTO | `domainUsers.dateOfBirth` | Formatter en `DD/MM/YYYY` |
-| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | Tel quel (vide si non renseigné dans le profil) |
-| `PARCOURS` | ✅ AUTO | `programs.name` | Tel quel |
-| `SPECIALITE` | ✅ AUTO | `programOptions.name` | Tel quel (fallback: `programs.name` si pas d'option) |
-| `MOYENNE` | ✅ AUTO | `studentPromotionSummaries.overallAverage` | Arrondi 2 décimales |
-| `ANNEE OBTENTION` | ✅ AUTO | `academicYears.name` | Extraire l'année finale (ex: `2024/2025` → `2025`) |
-| `GRADE` | 🔶 CALC | Calculé depuis `overallAverage` | Voir table §5.1 |
-| `MENTION` | 🔶 CALC | Calculé depuis `overallAverage` | Voir table §5.2 (mentions diplômes) |
-| `MENTION_EN` | 🔶 CALC | Calculé depuis `overallAverage` | Traduction anglaise automatique de la mention |
-
-#### Colonnes laissées VIDES (❌)
-
-| Colonne DIPLOMATION | Statut | Raison | Action requise |
-|---------------------|--------|--------|----------------|
-| `TITRE DIPLOME FR` | ❌ VIDE | Pas de champ "titre officiel du diplôme" dans la DB. Varie selon le contexte institutionnel officiel. | À remplir manuellement. Ex: `DIPLÔME D'ÉTAT DE DOCTEUR EN MÉDECINE` |
-| `TITRE DIPLOME EN` | ❌ VIDE | Idem, version anglaise. | À remplir manuellement. Ex: `DOCTOR OF MEDICINE STATE DEGREE` |
-| `DATE JURY ADMISSION` | ❌ VIDE | Le champ `enrollments.admissionDate` représente la date d'inscription, pas la date du jury d'admission officiel. | À remplir manuellement. Format `DD/MM/YYYY` |
-| `DATE JURY DELIBERATION` | ❌ VIDE | Aucun champ correspondant dans le schéma. C'est la date du jury final de soutenance/délibération. | À remplir manuellement. Format `DD/MM/YYYY` |
-| `OPTION` | ❌ VIDE | Le champ `programOptions.name` sert déjà pour `SPECIALITE`. L'option est un sous-niveau supplémentaire qui n'existe pas. | À remplir si applicable, sinon laisser vide |
-| `OPTION_EN` | ❌ VIDE | Pas de traductions anglaises dans les tables `programs`/`programOptions`. | À remplir si applicable |
+> **Legend:**
+> - ✅ **AUTO** = Provided automatically from the database
+> - 🔶 **CALC** = Calculated automatically from other fields
+> - ❌ **EMPTY** = Not available in grades-manager-api — **the column will be present but empty**, to be filled in manually in the Excel file before importing into DIPLOMATION
 
 ---
 
-### 3.2 — Mapping ATTESTATION
+### 3.1 — DIPLOMA mapping
 
-#### Colonnes remplies automatiquement (✅ AUTO + 🔶 CALC)
+#### Columns filled automatically (✅ AUTO + 🔶 CALC)
 
-| Colonne DIPLOMATION | Statut | Source | Transformation |
+| DIPLOMATION column | Status | Source | Transformation |
 |---------------------|--------|--------|----------------|
-| `NOM` | ✅ AUTO | `domainUsers.lastName` | Majuscules |
-| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | Tel quel |
-| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | Tel quel |
+| `NOM` | ✅ AUTO | `domainUsers.lastName` | Uppercase |
+| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | As is |
+| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | As is |
+| `DATE DE NAISSANCE` | ✅ AUTO | `domainUsers.dateOfBirth` | Format as `DD/MM/YYYY` |
+| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | As is (empty if not set in the profile) |
+| `PARCOURS` | ✅ AUTO | `programs.name` | As is |
+| `SPECIALITE` | ✅ AUTO | `programOptions.name` | As is (fallback: `programs.name` if there is no option) |
+| `MOYENNE` | ✅ AUTO | `studentPromotionSummaries.overallAverage` | Rounded to 2 decimals |
+| `ANNEE OBTENTION` | ✅ AUTO | `academicYears.name` | Extract the final year (e.g. `2024/2025` → `2025`) |
+| `GRADE` | 🔶 CALC | Calculated from `overallAverage` | See table §5.1 |
+| `MENTION` | 🔶 CALC | Calculated from `overallAverage` | See table §5.2 (diploma honors) |
+| `MENTION_EN` | 🔶 CALC | Calculated from `overallAverage` | Automatic English translation of the honors |
+
+#### Columns left EMPTY (❌)
+
+| DIPLOMATION column | Status | Reason | Action required |
+|---------------------|--------|--------|----------------|
+| `TITRE DIPLOME FR` | ❌ EMPTY | No "official diploma title" field in the DB. Varies with the official institutional context. | Fill in manually. E.g. `DIPLÔME D'ÉTAT DE DOCTEUR EN MÉDECINE` |
+| `TITRE DIPLOME EN` | ❌ EMPTY | Same, English version. | Fill in manually. E.g. `DOCTOR OF MEDICINE STATE DEGREE` |
+| `DATE JURY ADMISSION` | ❌ EMPTY | The `enrollments.admissionDate` field is the enrollment date, not the date of the official admission jury. | Fill in manually. Format `DD/MM/YYYY` |
+| `DATE JURY DELIBERATION` | ❌ EMPTY | No matching field in the schema. This is the date of the final defense/deliberation jury. | Fill in manually. Format `DD/MM/YYYY` |
+| `OPTION` | ❌ EMPTY | The `programOptions.name` field is already used for `SPECIALITE`. The option is an additional sub-level that does not exist. | Fill in if applicable, otherwise leave empty |
+| `OPTION_EN` | ❌ EMPTY | No English translations in the `programs`/`programOptions` tables. | Fill in if applicable |
+
+---
+
+### 3.2 — CERTIFICATE mapping
+
+#### Columns filled automatically (✅ AUTO + 🔶 CALC)
+
+| DIPLOMATION column | Status | Source | Transformation |
+|---------------------|--------|--------|----------------|
+| `NOM` | ✅ AUTO | `domainUsers.lastName` | Uppercase |
+| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | As is |
+| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | As is |
 | `DATE DE NAISSANCE` | ✅ AUTO | `domainUsers.dateOfBirth` | `DD/MM/YYYY` |
-| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | Tel quel |
-| `MOYENNE` | ✅ AUTO | `studentPromotionSummaries.overallAverage` | Arrondi 2 décimales |
-| `PARCOURS` | ✅ AUTO | `programs.name` | Tel quel |
-| `SPECIALITE` | ✅ AUTO | `programOptions.name` | Tel quel |
-| `NIVEAU` | ✅ AUTO | `cycleLevels.code` | Ex: `L3`, `M2`, `BTS2` |
-| `SEMESTRE` | ✅ AUTO | `semesters.orderIndex` | Ex: `1`, `2` |
-| `CYCLE` | ✅ AUTO | `studyCycles.name` | Ex: `Licence`, `Master`, `BTS` |
-| `FILIERE` | ✅ AUTO | `programs.name` | Tel quel |
-| `ANNEE ACADEMIQUE` | ✅ AUTO | `academicYears.name` | Remplacer `/` par `-` → `2024-2025` |
+| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | As is |
+| `MOYENNE` | ✅ AUTO | `studentPromotionSummaries.overallAverage` | Rounded to 2 decimals |
+| `PARCOURS` | ✅ AUTO | `programs.name` | As is |
+| `SPECIALITE` | ✅ AUTO | `programOptions.name` | As is |
+| `NIVEAU` | ✅ AUTO | `cycleLevels.code` | E.g. `L3`, `M2`, `BTS2` |
+| `SEMESTRE` | ✅ AUTO | `semesters.orderIndex` | E.g. `1`, `2` |
+| `CYCLE` | ✅ AUTO | `studyCycles.name` | E.g. `Licence`, `Master`, `BTS` |
+| `FILIERE` | ✅ AUTO | `programs.name` | As is |
+| `ANNEE ACADEMIQUE` | ✅ AUTO | `academicYears.name` | Replace `/` with `-` → `2024-2025` |
 | `SEXE` | ✅ AUTO | `domainUsers.gender` | `male` → `M`, `female` → `F` |
-| `EMAIL` | ✅ AUTO | `domainUsers.primaryEmail` | Tel quel |
-| `TOTAL CREDIT` | ✅ AUTO | `studentPromotionSummaries.creditsEarned` | Tel quel |
-| `GRADE` | 🔶 CALC | Calculé depuis `overallAverage` | Voir table §5.1 |
-| `MENTION` | 🔶 CALC | Calculé depuis `overallAverage` | Voir table §5.2 (mentions attestations) |
-| `MENTION_EN` | 🔶 CALC | Calculé depuis `overallAverage` | Traduction anglaise automatique |
+| `EMAIL` | ✅ AUTO | `domainUsers.primaryEmail` | As is |
+| `TOTAL CREDIT` | ✅ AUTO | `studentPromotionSummaries.creditsEarned` | As is |
+| `GRADE` | 🔶 CALC | Calculated from `overallAverage` | See table §5.1 |
+| `MENTION` | 🔶 CALC | Calculated from `overallAverage` | See table §5.2 (certificate honors) |
+| `MENTION_EN` | 🔶 CALC | Calculated from `overallAverage` | Automatic English translation |
 
-#### Colonnes laissées VIDES (❌)
+#### Columns left EMPTY (❌)
 
-| Colonne DIPLOMATION | Statut | Raison | Action requise |
+| DIPLOMATION column | Status | Reason | Action required |
 |---------------------|--------|--------|----------------|
-| `OPTION` | ❌ VIDE | Sous-niveau de spécialisation absent du schéma. | À remplir si applicable |
-| `FINALITE` | ❌ VIDE | Pas de champ "finalité" (professionnelle, recherche, etc.) dans le schéma. | À remplir manuellement. Ex: `Professionnelle` |
-| `DOMAINE` | ❌ VIDE | Pas de champ "domaine d'études" (regroupement au-dessus du programme). | À remplir manuellement. Ex: `Sciences et Technologies` |
-| `DATE JURY` | ❌ VIDE | Aucun champ de date de jury dans le schéma. | À remplir manuellement. Format `DD/MM/YYYY` |
-| `DOMAINE_EN` | ❌ VIDE | Pas de traductions anglaises dans la DB. | À remplir si mode faculty |
-| `PARCOURS_EN` | ❌ VIDE | Pas de champ `nameEn` sur la table `programs`. | À remplir si mode faculty |
-| `SPECIALITE_EN` | ❌ VIDE | Pas de champ `nameEn` sur la table `programOptions`. | À remplir si mode faculty |
-| `FINALITE_EN` | ❌ VIDE | Voir `FINALITE`. | À remplir si mode faculty |
-| `OPTION_EN` | ❌ VIDE | Voir `OPTION`. | À remplir si applicable |
+| `OPTION` | ❌ EMPTY | Specialization sub-level missing from the schema. | Fill in if applicable |
+| `FINALITE` | ❌ EMPTY | No "purpose" field (professional, research, etc.) in the schema. | Fill in manually. E.g. `Professionnelle` |
+| `DOMAINE` | ❌ EMPTY | No "field of study" field (grouping above the program). | Fill in manually. E.g. `Sciences et Technologies` |
+| `DATE JURY` | ❌ EMPTY | No jury date field in the schema. | Fill in manually. Format `DD/MM/YYYY` |
+| `DOMAINE_EN` | ❌ EMPTY | No English translations in the DB. | Fill in if faculty mode |
+| `PARCOURS_EN` | ❌ EMPTY | No `nameEn` field on the `programs` table. | Fill in if faculty mode |
+| `SPECIALITE_EN` | ❌ EMPTY | No `nameEn` field on the `programOptions` table. | Fill in if faculty mode |
+| `FINALITE_EN` | ❌ EMPTY | See `FINALITE`. | Fill in if faculty mode |
+| `OPTION_EN` | ❌ EMPTY | See `OPTION`. | Fill in if applicable |
 
 ---
 
-### 3.3 — Mapping RELEVÉ DE NOTES
+### 3.3 — TRANSCRIPT mapping
 
-#### Colonnes remplies automatiquement (✅ AUTO)
+#### Columns filled automatically (✅ AUTO)
 
-| Colonne DIPLOMATION | Statut | Source | Transformation |
+| DIPLOMATION column | Status | Source | Transformation |
 |---------------------|--------|--------|----------------|
-| `NOM` | ✅ AUTO | `domainUsers.lastName` | Majuscules |
-| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | Tel quel |
-| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | Tel quel |
+| `NOM` | ✅ AUTO | `domainUsers.lastName` | Uppercase |
+| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | As is |
+| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | As is |
 | `DATE DE NAISSANCE` | ✅ AUTO | `domainUsers.dateOfBirth` | `DD/MM/YYYY` |
-| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | Tel quel |
-| `NIVEAU` | ✅ AUTO | `cycleLevels.code` | Ex: `L1`, `BTS1` |
-| `SEMESTRE` | ✅ AUTO | `semesters.orderIndex` | Ex: `1`, `2` |
-| `CYCLE` | ✅ AUTO | `studyCycles.name` | Ex: `Licence`, `BTS` |
-| `FILIERE` | ✅ AUTO | `programs.name` | Tel quel |
+| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | As is |
+| `NIVEAU` | ✅ AUTO | `cycleLevels.code` | E.g. `L1`, `BTS1` |
+| `SEMESTRE` | ✅ AUTO | `semesters.orderIndex` | E.g. `1`, `2` |
+| `CYCLE` | ✅ AUTO | `studyCycles.name` | E.g. `Licence`, `BTS` |
+| `FILIERE` | ✅ AUTO | `programs.name` | As is |
 | `ANNEE ACADEMIQUE` | ✅ AUTO | `academicYears.name` | Format `YYYY-YYYY` |
 | `SEXE` | ✅ AUTO | `domainUsers.gender` | `male` → `M`, `female` → `F` |
-| `EMAIL` | ✅ AUTO | `domainUsers.primaryEmail` | Tel quel |
-| `{Nom du cours}` | 🔶 CALC | `grades` + `exams` via `classCourses` | Moyenne pondérée CC+Examen par cours (voir §5.3) |
-| `S/{Nom du cours}` | 🔶 CALC | `exams.sessionType` + `academicYears.name` | `normal` → `N/YYYY-YYYY`, `retake` → `R/YYYY-YYYY` |
+| `EMAIL` | ✅ AUTO | `domainUsers.primaryEmail` | As is |
+| `{Course name}` | 🔶 CALC | `grades` + `exams` via `classCourses` | Weighted CC+Exam average per course (see §5.3) |
+| `S/{Course name}` | 🔶 CALC | `exams.sessionType` + `academicYears.name` | `normal` → `N/YYYY-YYYY`, `retake` → `R/YYYY-YYYY` |
 
-#### Colonnes laissées VIDES (❌)
+#### Columns left EMPTY (❌)
 
-**Aucune colonne vide pour le relevé de notes.** Toutes les données nécessaires sont disponibles dans grades-manager-api. Les colonnes dynamiques (notes et sessions) sont générées automatiquement depuis les examens et notes enregistrés.
+**No empty columns for the transcript.** All the required data is available in grades-manager-api. The dynamic columns (grades and sessions) are generated automatically from the recorded exams and grades.
 
 ---
 
-### 3.4 — Mapping ATTESTATION DE CENTRE
+### 3.4 — CENTRE CERTIFICATE mapping
 
-#### Colonnes remplies automatiquement (✅ AUTO + 🔶 CALC)
+#### Columns filled automatically (✅ AUTO + 🔶 CALC)
 
-| Colonne DIPLOMATION | Statut | Source | Transformation |
+| DIPLOMATION column | Status | Source | Transformation |
 |---------------------|--------|--------|----------------|
-| `NOM` | ✅ AUTO | `domainUsers.lastName` | Majuscules |
-| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | Tel quel |
-| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | Tel quel |
+| `NOM` | ✅ AUTO | `domainUsers.lastName` | Uppercase |
+| `PRENOM` | ✅ AUTO | `domainUsers.firstName` | As is |
+| `MATRICULE` | ✅ AUTO | `students.registrationNumber` | As is |
 | `DATE DE NAISSANCE` | ✅ AUTO | `domainUsers.dateOfBirth` | `DD/MM/YYYY` |
-| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | Tel quel |
-| `SPECIALITE` | ✅ AUTO | `programOptions.name` | Tel quel |
-| `MOYENNE` | ✅ AUTO | `studentPromotionSummaries.overallAverage` | Arrondi 2 décimales |
+| `LIEU DE NAISSANCE` | ✅ AUTO | `domainUsers.placeOfBirth` | As is |
+| `SPECIALITE` | ✅ AUTO | `programOptions.name` | As is |
+| `MOYENNE` | ✅ AUTO | `studentPromotionSummaries.overallAverage` | Rounded to 2 decimals |
 | `ANNEE_ACADEMIQUE` | ✅ AUTO | `academicYears.name` | Format `YYYY-YYYY` |
-| `GRADE` | 🔶 CALC | Calculé depuis `overallAverage` | Voir table §5.1 |
-| `MENTION` | 🔶 CALC | Calculé depuis `overallAverage` | Voir table §5.2 (mentions attestations) |
-| `MENTION_EN` | 🔶 CALC | Calculé depuis `overallAverage` | Traduction anglaise automatique |
+| `GRADE` | 🔶 CALC | Calculated from `overallAverage` | See table §5.1 |
+| `MENTION` | 🔶 CALC | Calculated from `overallAverage` | See table §5.2 (certificate honors) |
+| `MENTION_EN` | 🔶 CALC | Calculated from `overallAverage` | Automatic English translation |
 
-#### Colonnes laissées VIDES (❌)
+#### Columns left EMPTY (❌)
 
-| Colonne DIPLOMATION | Statut | Raison | Action requise |
+| DIPLOMATION column | Status | Reason | Action required |
 |---------------------|--------|--------|----------------|
-| `SESSION_EXAMEN` | ❌ VIDE | Pas de concept de "session d'examen" (juin/septembre) dans le schéma. L'API propose ce champ en paramètre d'input, mais s'il n'est pas fourni, la colonne reste vide. | À remplir manuellement. Ex: `juin 2025` |
-| `LIEU_DELIVRANCE` | ❌ VIDE | Pas de champ "lieu de délivrance" dédié. `institutions.addressFr` contient l'adresse complète, pas la ville seule. | À remplir manuellement. Ex: `Douala` |
-| `NUMERO_ORDRE` | ❌ VIDE | Pas de numéro d'ordre séquentiel du jury dans le schéma. | À remplir manuellement. Ex: `001` |
-| `SPECIALITE_EN` | ❌ VIDE | Pas de champ `nameEn` sur la table `programOptions`. | À remplir si nécessaire |
-| `OPTION` | ❌ VIDE | Sous-niveau absent. | À remplir si applicable |
-| `OPTION_EN` | ❌ VIDE | Voir `OPTION`. | À remplir si applicable |
-| `TITRE_ATTESTATION_FR` | ❌ VIDE | Titre personnalisé de l'attestation, non prévu dans le schéma. | À remplir si nécessaire. Ex: `Attestation de Réussite` |
-| `TITRE_ATTESTATION_EN` | ❌ VIDE | Idem, version anglaise. | À remplir si nécessaire. Ex: `Certificate of Success` |
-| `SPECIALITE_ABR` | ❌ VIDE | Pas d'abréviation de spécialité dans le schéma. | À remplir si nécessaire. Ex: `SR` |
+| `SESSION_EXAMEN` | ❌ EMPTY | No "exam session" concept (June/September) in the schema. The API offers this field as an input parameter, but if it is not provided, the column stays empty. | Fill in manually. E.g. `juin 2025` |
+| `LIEU_DELIVRANCE` | ❌ EMPTY | No dedicated "place of issue" field. `institutions.addressFr` holds the full address, not just the city. | Fill in manually. E.g. `Douala` |
+| `NUMERO_ORDRE` | ❌ EMPTY | No sequential jury order number in the schema. | Fill in manually. E.g. `001` |
+| `SPECIALITE_EN` | ❌ EMPTY | No `nameEn` field on the `programOptions` table. | Fill in if needed |
+| `OPTION` | ❌ EMPTY | Sub-level missing. | Fill in if applicable |
+| `OPTION_EN` | ❌ EMPTY | See `OPTION`. | Fill in if applicable |
+| `TITRE_ATTESTATION_FR` | ❌ EMPTY | Custom certificate title, not provided for in the schema. | Fill in if needed. E.g. `Attestation de Réussite` |
+| `TITRE_ATTESTATION_EN` | ❌ EMPTY | Same, English version. | Fill in if needed. E.g. `Certificate of Success` |
+| `SPECIALITE_ABR` | ❌ EMPTY | No specialty abbreviation in the schema. | Fill in if needed. E.g. `SR` |
 
 ---
 
-### 3.5 — Résumé : Taux de couverture par type de document
+### 3.5 — Summary: coverage rate per document type
 
-| Type de document | Colonnes totales | ✅ AUTO | 🔶 CALC | ❌ VIDE | Taux de couverture |
+| Document type | Total columns | ✅ AUTO | 🔶 CALC | ❌ EMPTY | Coverage rate |
 |------------------|-----------------|---------|---------|--------|-------------------|
-| **Diplôme** | 18 | 9 | 3 | 6 | **67%** (12/18) |
-| **Attestation** | 28 | 16 | 3 | 9 | **68%** (19/28) |
-| **Relevé de Notes** | 12 + dynamiques | 10 + dynamiques | 2 (par cours) | 0 | **100%** |
-| **Attestation Centre** | 20 | 8 | 3 | 9 | **55%** (11/20) |
+| **Diploma** | 18 | 9 | 3 | 6 | **67%** (12/18) |
+| **Certificate** | 28 | 16 | 3 | 9 | **68%** (19/28) |
+| **Transcript** | 12 + dynamic | 10 + dynamic | 2 (per course) | 0 | **100%** |
+| **Centre Certificate** | 20 | 8 | 3 | 9 | **55%** (11/20) |
 
-> **Le relevé de notes est le seul document 100% automatisable.**
-> Pour les autres, l'utilisateur devra compléter les colonnes vides dans le fichier Excel avant de l'importer dans DIPLOMATION.
+> **The transcript is the only fully (100%) automatable document.**
+> For the others, the user will have to fill in the empty columns in the Excel file before importing it into DIPLOMATION.
 
 ---
 
-## 4. Règles de validation et formats
+## 4. Validation rules and formats
 
-### 4.1 — Formats de dates
+### 4.1 — Date formats
 
-| Règle | Détail |
+| Rule | Detail |
 |-------|--------|
-| Séparateurs acceptés par DIPLOMATION | `/`, `-`, `.` |
-| Format requis | `DD/MM/YYYY` (jour/mois/année) |
-| Jour valide | 1-31 (vérifié selon le mois) |
-| Mois valide | 1-12 |
-| Année valide | 1900 à année courante |
+| Separators accepted by DIPLOMATION | `/`, `-`, `.` |
+| Required format | `DD/MM/YYYY` (day/month/year) |
+| Valid day | 1-31 (checked against the month) |
+| Valid month | 1-12 |
+| Valid year | 1900 to current year |
 
-**Transformation** : `domainUsers.dateOfBirth` (type `date` PostgreSQL) → formater en `DD/MM/YYYY`.
+**Transformation**: `domainUsers.dateOfBirth` (PostgreSQL `date` type) → format as `DD/MM/YYYY`.
 
-### 4.2 — Formats numériques
+### 4.2 — Numeric formats
 
-| Règle | Détail |
+| Rule | Detail |
 |-------|--------|
-| Échelle de notation | 0 à 20 |
-| Séparateur décimal accepté | `.` (point) et `,` (virgule) |
-| Précision | 2 décimales |
-| Seuil de réussite (diplôme) | ≥ 10.00 |
+| Grading scale | 0 to 20 |
+| Accepted decimal separator | `.` (dot) and `,` (comma) |
+| Precision | 2 decimals |
+| Pass threshold (diploma) | ≥ 10.00 |
 
-### 4.3 — Formats texte
+### 4.3 — Text formats
 
-| Règle | Détail |
+| Rule | Detail |
 |-------|--------|
-| Accents | Préservés (É, È, Ê, Ç, À, etc.) |
-| Casse des colonnes | Insensible (`NOM`, `nom`, `Nom` acceptés) |
-| Espaces | Retirés en début/fin (trim) |
-| Valeurs interdites | `""` (vide), `"N/D"` pour les champs obligatoires |
+| Accents | Preserved (É, È, Ê, Ç, À, etc.) |
+| Column name case | Insensitive (`NOM`, `nom`, `Nom` accepted) |
+| Whitespace | Stripped at start/end (trim) |
+| Forbidden values | `""` (empty), `"N/D"` for required fields |
 
-### 4.4 — Noms de colonnes alternatifs acceptés
+### 4.4 — Accepted alternative column names
 
-DIPLOMATION accepte ces noms alternatifs (case-insensitive) :
+DIPLOMATION accepts these alternative names (case-insensitive):
 
-| Nom principal | Alternatives acceptées |
+| Primary name | Accepted alternatives |
 |---------------|------------------------|
 | `NOM` | `nom`, `surname`, `last_name`, `family_name`, `nom de famille` |
 | `PRENOM` | `prenom`, `firstname`, `first_name`, `given_name`, `prénom` |
@@ -435,15 +435,15 @@ DIPLOMATION accepte ces noms alternatifs (case-insensitive) :
 | `SEXE` | `genre`, `gender`, `sex` |
 | `EMAIL` | `e-mail`, `mail`, `adresse email`, `courriel` |
 
-**Recommandation** : Utiliser les noms principaux (colonne de gauche) pour maximiser la compatibilité.
+**Recommendation**: Use the primary names (left column) to maximize compatibility.
 
 ---
 
-## 5. Calculs et formules
+## 5. Calculations and formulas
 
-### 5.1 — Table de conversion Moyenne → Grade
+### 5.1 — Average → Grade conversion table
 
-| Moyenne | Grade |
+| Average | Grade |
 |---------|-------|
 | ≥ 18.00 | `A+` |
 | ≥ 16.00 | `A` |
@@ -457,11 +457,11 @@ DIPLOMATION accepte ces noms alternatifs (case-insensitive) :
 | ≥ 6.00 | `E` |
 | < 6.00 | `F` |
 
-### 5.2 — Table de conversion Moyenne → Mention
+### 5.2 — Average → Honors (mention) conversion table
 
-#### Mentions pour Diplômes
+#### Honors for Diplomas
 
-| Moyenne | Mention FR | Mention EN |
+| Average | Honors FR | Honors EN |
 |---------|-----------|-----------|
 | ≥ 18.00 | `TRES HONORABLE AVEC FELICITATIONS DU JURY` | `HIGHEST HONORS WITH JURY COMMENDATION` |
 | ≥ 16.00 | `TRES HONORABLE` | `HIGHEST HONORS` |
@@ -469,9 +469,9 @@ DIPLOMATION accepte ces noms alternatifs (case-insensitive) :
 | ≥ 12.00 | `ASSEZ BIEN` | `GOOD` |
 | ≥ 10.00 | `PASSABLE` | `SATISFACTORY` |
 
-#### Mentions pour Attestations
+#### Honors for Certificates
 
-| Moyenne | Mention FR | Mention EN |
+| Average | Honors FR | Honors EN |
 |---------|-----------|-----------|
 | ≥ 18.00 | `Excellent` | `Excellent` |
 | ≥ 16.00 | `Très Bien` | `Very Good` |
@@ -483,87 +483,87 @@ DIPLOMATION accepte ces noms alternatifs (case-insensitive) :
 | ≥ 6.00 | `Très Faible` | `Very Weak` |
 | < 6.00 | `Nul` | `Null` |
 
-### 5.3 — Formules de calcul des notes
+### 5.3 — Grade calculation formulas
 
-#### Moyenne par cours (EC)
-
-```
-moyenne_cours = Σ(note_examen × pourcentage_examen) / 100
-```
-
-Exemple : CC=12 (40%) + Examen=15 (60%) → `(12×40 + 15×60) / 100 = 13.8`
-
-#### Résolution des rattrapages
-
-- **Politique `replace`** : la note de rattrapage remplace la note normale
-- **Politique `best_of`** : on garde `max(note_normale, note_rattrapage)`
-
-#### Moyenne par UE (Unité d'Enseignement)
+#### Average per course (EC)
 
 ```
-moyenne_UE = Σ(moyenne_cours × coefficient_cours) / Σ(coefficient_cours)
+course_average = Σ(exam_grade × exam_percentage) / 100
 ```
 
-#### Moyenne générale (pondérée par crédits)
+Example: CC=12 (40%) + Exam=15 (60%) → `(12×40 + 15×60) / 100 = 13.8`
+
+#### Retake resolution
+
+- **`replace` policy**: the retake grade replaces the normal grade
+- **`best_of` policy**: keep `max(normal_grade, retake_grade)`
+
+#### Average per UE (teaching unit)
 
 ```
-moyenne_generale = Σ(moyenne_UE × credits_UE) / Σ(credits_UE)
+UE_average = Σ(course_average × course_coefficient) / Σ(course_coefficient)
 ```
 
-### 5.4 — Décisions académiques
+#### Overall average (weighted by credits)
 
-| Condition | Décision |
+```
+overall_average = Σ(UE_average × UE_credits) / Σ(UE_credits)
+```
+
+### 5.4 — Academic decisions
+
+| Condition | Decision |
 |-----------|----------|
-| moyenne_UE ≥ note_passage (10) ET toutes les notes présentes | `Ac` (Acquis) |
-| Au moins une note manquante dans l'UE | `Inc` (Incomplet) |
-| moyenne_UE < note_passage | `Nac` (Non Acquis) |
+| UE_average ≥ passing_grade (10) AND all grades present | `Ac` (Acquired) |
+| At least one grade missing in the UE | `Inc` (Incomplete) |
+| UE_average < passing_grade | `Nac` (Not acquired) |
 
-### 5.5 — Crédits
+### 5.5 — Credits
 
-| Condition | Crédits attribués |
+| Condition | Credits awarded |
 |-----------|-------------------|
-| UE validée (`Ac`) | Totalité des crédits de l'UE |
-| UE non validée (`Nac` ou `Inc`) | 0 crédit |
+| UE validated (`Ac`) | All of the UE's credits |
+| UE not validated (`Nac` or `Inc`) | 0 credits |
 
 ---
 
-## 6. Plan d'implémentation
+## 6. Implementation plan
 
-### Phase 1 : Module d'export DIPLOMATION (Backend)
+### Phase 1: DIPLOMATION export module (Backend)
 
-**Nouveau module** : `apps/server/src/modules/diplomation-export/`
+**New module**: `apps/server/src/modules/diplomation-export/`
 
 ```
 apps/server/src/modules/diplomation-export/
-├── index.ts                          # Export du router
-├── diplomation-export.router.ts      # Endpoints tRPC
-├── diplomation-export.service.ts     # Logique métier
-├── diplomation-export.repo.ts        # Requêtes base de données
-├── diplomation-export.zod.ts         # Schémas de validation (input)
-├── diplomation-export.helpers.ts     # Fonctions de calcul (grade, mention)
-├── diplomation-export.types.ts       # Types TypeScript
+├── index.ts                          # Router export
+├── diplomation-export.router.ts      # tRPC endpoints
+├── diplomation-export.service.ts     # Business logic
+├── diplomation-export.repo.ts        # Database queries
+├── diplomation-export.zod.ts         # Validation schemas (input)
+├── diplomation-export.helpers.ts     # Calculation functions (grade, honors)
+├── diplomation-export.types.ts       # TypeScript types
 └── __tests__/
     └── diplomation-export.caller.test.ts  # Tests
 ```
 
-### Phase 2 : Intégration du router
+### Phase 2: Router integration
 
-Ajouter le module dans `apps/server/src/routers/index.ts` :
+Add the module in `apps/server/src/routers/index.ts`:
 
 ```typescript
 diplomationExport: diplomationExportRouter,
 ```
 
-### Phase 3 : Frontend (boutons d'export)
+### Phase 3: Frontend (export buttons)
 
-Ajouter des boutons dans l'interface web pour déclencher le téléchargement des fichiers Excel :
+Add buttons in the web interface to trigger the download of the Excel files:
 
-- Page de classe → "Exporter pour DIPLOMATION" → choix du type (Diplôme, Attestation, Relevé, Attestation Centre)
-- Génération côté backend → téléchargement du .xlsx
+- Class page → "Exporter pour DIPLOMATION" → choice of type (Diploma, Certificate, Transcript, Centre Certificate)
+- Generation on the backend → download of the .xlsx
 
-### Phase 4 : Dépendance
+### Phase 4: Dependency
 
-Ajouter la librairie Excel au backend :
+Add the Excel library to the backend:
 
 ```bash
 bun add exceljs --filter server
@@ -571,106 +571,106 @@ bun add exceljs --filter server
 
 ---
 
-## 7. Endpoints API à créer
+## 7. API endpoints to create
 
-### 7.1 — Export Diplômes
+### 7.1 — Diplomas export
 
 ```
 POST /trpc/diplomationExport.generateDiplomas
 ```
 
-**Input :**
+**Input:**
 ```typescript
 {
-  classId: string;              // ID de la classe (obligatoire)
-  academicYearId: string;       // ID de l'année académique (obligatoire)
+  classId: string;              // Class ID (required)
+  academicYearId: string;       // Academic year ID (required)
 }
 ```
 
-**Colonnes remplies :** NOM, PRENOM, MATRICULE, DATE DE NAISSANCE, LIEU DE NAISSANCE, PARCOURS, SPECIALITE, MOYENNE, GRADE, MENTION, MENTION_EN, ANNEE OBTENTION
-**Colonnes VIDES à compléter :** TITRE DIPLOME FR, TITRE DIPLOME EN, DATE JURY ADMISSION, DATE JURY DELIBERATION, OPTION, OPTION_EN
+**Filled columns:** NOM, PRENOM, MATRICULE, DATE DE NAISSANCE, LIEU DE NAISSANCE, PARCOURS, SPECIALITE, MOYENNE, GRADE, MENTION, MENTION_EN, ANNEE OBTENTION
+**EMPTY columns to fill in:** TITRE DIPLOME FR, TITRE DIPLOME EN, DATE JURY ADMISSION, DATE JURY DELIBERATION, OPTION, OPTION_EN
 
-**Output :** Fichier `.xlsx` en base64 ou téléchargement direct
+**Output:** `.xlsx` file as base64 or direct download
 
-### 7.2 — Export Attestations
+### 7.2 — Certificates export
 
 ```
 POST /trpc/diplomationExport.generateAttestations
 ```
 
-**Input :**
+**Input:**
 ```typescript
 {
-  classId: string;              // ID de la classe (obligatoire)
-  academicYearId: string;       // ID de l'année académique (obligatoire)
-  semesterId?: string;          // Optionnel, pour un semestre spécifique
+  classId: string;              // Class ID (required)
+  academicYearId: string;       // Academic year ID (required)
+  semesterId?: string;          // Optional, for a specific semester
 }
 ```
 
-**Colonnes remplies :** NOM, PRENOM, MATRICULE, DATE DE NAISSANCE, LIEU DE NAISSANCE, MOYENNE, PARCOURS, SPECIALITE, NIVEAU, SEMESTRE, CYCLE, FILIERE, ANNEE ACADEMIQUE, SEXE, EMAIL, TOTAL CREDIT, GRADE, MENTION, MENTION_EN
-**Colonnes VIDES à compléter :** OPTION, FINALITE, DOMAINE, DATE JURY, DOMAINE_EN, PARCOURS_EN, SPECIALITE_EN, FINALITE_EN, OPTION_EN
+**Filled columns:** NOM, PRENOM, MATRICULE, DATE DE NAISSANCE, LIEU DE NAISSANCE, MOYENNE, PARCOURS, SPECIALITE, NIVEAU, SEMESTRE, CYCLE, FILIERE, ANNEE ACADEMIQUE, SEXE, EMAIL, TOTAL CREDIT, GRADE, MENTION, MENTION_EN
+**EMPTY columns to fill in:** OPTION, FINALITE, DOMAINE, DATE JURY, DOMAINE_EN, PARCOURS_EN, SPECIALITE_EN, FINALITE_EN, OPTION_EN
 
-### 7.3 — Export Relevés de Notes
+### 7.3 — Transcripts export
 
 ```
 POST /trpc/diplomationExport.generateTranscripts
 ```
 
-**Input :**
+**Input:**
 ```typescript
 {
-  classId: string;              // ID de la classe (obligatoire)
-  semesterId: string;           // ID du semestre (obligatoire)
-  academicYearId: string;       // ID de l'année académique (obligatoire)
+  classId: string;              // Class ID (required)
+  semesterId: string;           // Semester ID (required)
+  academicYearId: string;       // Academic year ID (required)
 }
 ```
 
-**Colonnes remplies :** TOUTES (100% automatique)
-**Colonnes VIDES :** Aucune
+**Filled columns:** ALL (100% automatic)
+**EMPTY columns:** None
 
-### 7.4 — Export Attestations de Centre
+### 7.4 — Centre Certificates export
 
 ```
 POST /trpc/diplomationExport.generateCentreAttestations
 ```
 
-**Input :**
+**Input:**
 ```typescript
 {
-  classId: string;              // ID de la classe (obligatoire)
-  academicYearId: string;       // ID de l'année académique (obligatoire)
+  classId: string;              // Class ID (required)
+  academicYearId: string;       // Academic year ID (required)
 }
 ```
 
-**Colonnes remplies :** NOM, PRENOM, MATRICULE, DATE DE NAISSANCE, LIEU DE NAISSANCE, SPECIALITE, MOYENNE, ANNEE_ACADEMIQUE, GRADE, MENTION, MENTION_EN
-**Colonnes VIDES à compléter :** SESSION_EXAMEN, LIEU_DELIVRANCE, NUMERO_ORDRE, SPECIALITE_EN, OPTION, OPTION_EN, TITRE_ATTESTATION_FR, TITRE_ATTESTATION_EN, SPECIALITE_ABR
+**Filled columns:** NOM, PRENOM, MATRICULE, DATE DE NAISSANCE, LIEU DE NAISSANCE, SPECIALITE, MOYENNE, ANNEE_ACADEMIQUE, GRADE, MENTION, MENTION_EN
+**EMPTY columns to fill in:** SESSION_EXAMEN, LIEU_DELIVRANCE, NUMERO_ORDRE, SPECIALITE_EN, OPTION, OPTION_EN, TITRE_ATTESTATION_FR, TITRE_ATTESTATION_EN, SPECIALITE_ABR
 
 ---
 
-## 8. Exemples de données
+## 8. Data examples
 
-### 8.1 — Exemple Excel Diplôme
+### 8.1 — Diploma Excel example
 
 | NOM | PRENOM | MATRICULE | DATE DE NAISSANCE | LIEU DE NAISSANCE | PARCOURS | SPECIALITE | MOYENNE | GRADE | MENTION | TITRE DIPLOME FR | TITRE DIPLOME EN | ANNEE OBTENTION | DATE JURY ADMISSION | DATE JURY DELIBERATION |
 |-----|--------|-----------|-------------------|-------------------|----------|------------|---------|-------|---------|------------------|------------------|-----------------|---------------------|------------------------|
 | NDONG | Alain | INSES-2024-0001 | 15/06/1998 | Douala | BTS Sciences Infirmières | Soins Infirmiers | 14.50 | B+ | HONORABLE | BREVET DE TECHNICIEN SUPÉRIEUR EN SCIENCES INFIRMIÈRES | HIGHER TECHNICIAN CERTIFICATE IN NURSING SCIENCES | 2025 | 01/09/2024 | 15/07/2025 |
 | EYEBE | Rachel | INSES-2024-0002 | 22/03/2000 | Yaoundé | BTS Sciences Infirmières | Soins Infirmiers | 16.20 | A | TRES HONORABLE | BREVET DE TECHNICIEN SUPÉRIEUR EN SCIENCES INFIRMIÈRES | HIGHER TECHNICIAN CERTIFICATE IN NURSING SCIENCES | 2025 | 01/09/2024 | 15/07/2025 |
 
-### 8.2 — Exemple Excel Attestation
+### 8.2 — Certificate Excel example
 
 | NOM | PRENOM | MATRICULE | DATE DE NAISSANCE | LIEU DE NAISSANCE | MOYENNE | PARCOURS | SPECIALITE | NIVEAU | CYCLE | ANNEE ACADEMIQUE | GRADE | MENTION | TOTAL CREDIT | SEXE |
 |-----|--------|-----------|-------------------|-------------------|---------|----------|------------|--------|-------|------------------|-------|---------|--------------|------|
 | NDONG | Alain | INSES-2024-0001 | 15/06/1998 | Douala | 14.50 | BTS Sciences Infirmières | Soins Infirmiers | BTS2 | BTS | 2024-2025 | B+ | Bien | 120 | M |
 | EYEBE | Rachel | INSES-2024-0002 | 22/03/2000 | Yaoundé | 16.20 | BTS Sciences Infirmières | Soins Infirmiers | BTS2 | BTS | 2024-2025 | A | Très Bien | 120 | F |
 
-### 8.3 — Exemple Excel Relevé de Notes
+### 8.3 — Transcript Excel example
 
 | NOM | PRENOM | MATRICULE | DATE DE NAISSANCE | LIEU DE NAISSANCE | NIVEAU | SEMESTRE | CYCLE | FILIERE | ANNEE ACADEMIQUE | Anatomie Humaine | Physiologie | Soins Infirmiers de Base | S/Anatomie Humaine | S/Physiologie | S/Soins Infirmiers de Base |
 |-----|--------|-----------|-------------------|-------------------|--------|----------|-------|---------|------------------|------------------|-------------|--------------------------|---------------------|---------------|----------------------------|
 | NDONG | Alain | INSES-2024-0001 | 15/06/1998 | Douala | BTS1 | 1 | BTS | Sciences Infirmières | 2024-2025 | 14.00 | 12.50 | 16.00 | N/2024-2025 | N/2024-2025 | N/2024-2025 |
 | EYEBE | Rachel | INSES-2024-0002 | 22/03/2000 | Yaoundé | BTS1 | 1 | BTS | Sciences Infirmières | 2024-2025 | 17.00 | 15.00 | 16.50 | N/2024-2025 | R/2024-2025 | N/2024-2025 |
 
-### 8.4 — Exemple Excel Attestation de Centre
+### 8.4 — Centre Certificate Excel example
 
 | NOM | PRENOM | MATRICULE | DATE DE NAISSANCE | LIEU DE NAISSANCE | SPECIALITE | SESSION_EXAMEN | LIEU_DELIVRANCE | MENTION | GRADE | MOYENNE | ANNEE_ACADEMIQUE |
 |-----|--------|-----------|-------------------|-------------------|------------|----------------|-----------------|---------|-------|---------|------------------|
@@ -679,13 +679,13 @@ POST /trpc/diplomationExport.generateCentreAttestations
 
 ---
 
-## Annexe A — Tables de la base de données utilisées
+## Appendix A — Database tables used
 
-### Chemin des requêtes pour chaque export
+### Query path for each export
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DIPLÔME / ATTESTATION                        │
+│                    DIPLOMA / CERTIFICATE                        │
 │                                                                 │
 │  classes ──→ enrollments ──→ students ──→ domainUsers           │
 │    │                            │                               │
@@ -698,11 +698,11 @@ POST /trpc/diplomationExport.generateCentreAttestations
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                    RELEVÉ DE NOTES                              │
+│                    TRANSCRIPT                                   │
 │                                                                 │
 │  classes ──→ classCourses ──→ courses ──→ teachingUnits         │
 │    │              │                                             │
-│    │              └── exams ──→ grades (par étudiant)            │
+│    │              └── exams ──→ grades (per student)             │
 │    │                                                            │
 │    ├── enrollments ──→ students ──→ domainUsers                 │
 │    │                                                            │
@@ -714,81 +714,81 @@ POST /trpc/diplomationExport.generateCentreAttestations
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Fichiers source clés (grades-manager-api)
+### Key source files (grades-manager-api)
 
-| Fichier | Contenu |
+| File | Contents |
 |---------|---------|
-| `apps/server/src/db/schema/app-schema.ts` | Schéma complet de la base (1984 lignes) |
-| `apps/server/src/modules/exports/exports.service.ts` | Service d'export existant (PV, Eval, UE) |
-| `apps/server/src/modules/exports/exports.repo.ts` | Requêtes DB pour les exports |
-| `apps/server/src/modules/exports/template-helper.ts` | Helpers de template (appréciations, formatage) |
-| `apps/server/src/modules/student-promotion-summaries/` | Calcul des résumés de promotion |
+| `apps/server/src/db/schema/app-schema.ts` | Full database schema (1984 lines) |
+| `apps/server/src/modules/exports/exports.service.ts` | Existing export service (PV, Eval, UE) |
+| `apps/server/src/modules/exports/exports.repo.ts` | DB queries for the exports |
+| `apps/server/src/modules/exports/template-helper.ts` | Template helpers (appreciations, formatting) |
+| `apps/server/src/modules/student-promotion-summaries/` | Calculation of promotion summaries |
 
-### Fichiers source clés (DIPLOMATION)
+### Key source files (DIPLOMATION)
 
-| Fichier | Contenu |
+| File | Contents |
 |---------|---------|
-| `src/lib/diploma-generator/types.ts` | Types DiplomaStudentRecord |
-| `src/types/student.ts` | Types StudentRecord, CourseRecord |
-| `src/lib/validators/excel-columns.ts` | Validation des colonnes Excel |
-| `src/lib/helpers/grades.ts` | Calculs de grades et mentions |
-| `src/lib/helpers/excel-template-generator.ts` | Génération de templates Excel |
-| `src/lib/form-schemas/diploma-theme-settings.ts` | Paramètres de thème (40+) |
+| `src/lib/diploma-generator/types.ts` | DiplomaStudentRecord types |
+| `src/types/student.ts` | StudentRecord, CourseRecord types |
+| `src/lib/validators/excel-columns.ts` | Excel column validation |
+| `src/lib/helpers/grades.ts` | Grade and honors calculations |
+| `src/lib/helpers/excel-template-generator.ts` | Excel template generation |
+| `src/lib/form-schemas/diploma-theme-settings.ts` | Theme settings (40+) |
 
 ---
 
-## Annexe B — Inventaire complet des colonnes VIDES (non fournies)
+## Appendix B — Full inventory of EMPTY columns (not provided)
 
-Ces colonnes seront **présentes dans le fichier Excel mais avec des cellules vides**. L'utilisateur doit les remplir manuellement dans le fichier Excel avant de l'importer dans DIPLOMATION.
+These columns will be **present in the Excel file but with empty cells**. The user must fill them in manually in the Excel file before importing it into DIPLOMATION.
 
-### Diplôme (6 colonnes vides sur 18)
+### Diploma (6 empty columns out of 18)
 
-| Colonne vide | Obligatoire dans DIPLOMATION ? | Pourquoi absente | Exemple à remplir |
+| Empty column | Required in DIPLOMATION? | Why it is missing | Example to fill in |
 |--------------|-------------------------------|------------------|-------------------|
-| `TITRE DIPLOME FR` | **OUI** | Titre officiel du diplôme, non modélisé. Varie selon le contexte institutionnel. | `BREVET DE TECHNICIEN SUPÉRIEUR EN SCIENCES INFIRMIÈRES` |
-| `TITRE DIPLOME EN` | **OUI** | Idem, version anglaise. | `HIGHER TECHNICIAN CERTIFICATE IN NURSING SCIENCES` |
-| `DATE JURY ADMISSION` | **OUI** | Date du jury initial d'admission, différente de la date d'inscription. | `01/09/2024` |
-| `DATE JURY DELIBERATION` | **OUI** | Date du jury final de délibération. Aucun champ dans le schéma. | `15/07/2025` |
-| `OPTION` | Non (optionnel) | Sous-niveau de spécialisation, absent du schéma. | `Chirurgie` ou laisser vide |
-| `OPTION_EN` | Non (optionnel) | Pas de traduction anglaise des programmes dans la DB. | `Surgery` ou laisser vide |
+| `TITRE DIPLOME FR` | **YES** | Official diploma title, not modeled. Varies with the institutional context. | `BREVET DE TECHNICIEN SUPÉRIEUR EN SCIENCES INFIRMIÈRES` |
+| `TITRE DIPLOME EN` | **YES** | Same, English version. | `HIGHER TECHNICIAN CERTIFICATE IN NURSING SCIENCES` |
+| `DATE JURY ADMISSION` | **YES** | Date of the initial admission jury, different from the enrollment date. | `01/09/2024` |
+| `DATE JURY DELIBERATION` | **YES** | Date of the final deliberation jury. No field in the schema. | `15/07/2025` |
+| `OPTION` | No (optional) | Specialization sub-level, missing from the schema. | `Chirurgie` or leave empty |
+| `OPTION_EN` | No (optional) | No English translation of programs in the DB. | `Surgery` or leave empty |
 
-### Attestation (9 colonnes vides sur 28)
+### Certificate (9 empty columns out of 28)
 
-| Colonne vide | Obligatoire dans DIPLOMATION ? | Pourquoi absente | Exemple à remplir |
+| Empty column | Required in DIPLOMATION? | Why it is missing | Example to fill in |
 |--------------|-------------------------------|------------------|-------------------|
-| `OPTION` | Non | Sous-niveau absent du schéma. | `Réseaux` |
-| `FINALITE` | Non | Pas de concept "finalité" (professionnelle/recherche) dans le schéma. | `Professionnelle` |
-| `DOMAINE` | Non | Pas de regroupement "domaine" au-dessus du programme. | `Sciences et Technologies` |
-| `DATE JURY` | Non | Aucune date de jury. | `15/06/2025` |
-| `DOMAINE_EN` | **OUI si mode faculty** | Pas de traductions anglaises dans la DB. | `Science and Technology` |
-| `PARCOURS_EN` | **OUI si mode faculty** | Pas de champ `nameEn` sur `programs`. | `Nursing Sciences` |
-| `SPECIALITE_EN` | **OUI si mode faculty** | Pas de champ `nameEn` sur `programOptions`. | `Nursing Care` |
-| `FINALITE_EN` | **OUI si mode faculty** | Voir `FINALITE`. | `Professional` |
-| `OPTION_EN` | Non | Voir `OPTION`. | `Networks` |
+| `OPTION` | No | Sub-level missing from the schema. | `Réseaux` |
+| `FINALITE` | No | No "purpose" concept (professional/research) in the schema. | `Professionnelle` |
+| `DOMAINE` | No | No "domain" grouping above the program. | `Sciences et Technologies` |
+| `DATE JURY` | No | No jury date. | `15/06/2025` |
+| `DOMAINE_EN` | **YES if faculty mode** | No English translations in the DB. | `Science and Technology` |
+| `PARCOURS_EN` | **YES if faculty mode** | No `nameEn` field on `programs`. | `Nursing Sciences` |
+| `SPECIALITE_EN` | **YES if faculty mode** | No `nameEn` field on `programOptions`. | `Nursing Care` |
+| `FINALITE_EN` | **YES if faculty mode** | See `FINALITE`. | `Professional` |
+| `OPTION_EN` | No | See `OPTION`. | `Networks` |
 
-### Relevé de Notes (0 colonnes vides)
+### Transcript (0 empty columns)
 
-**Aucune colonne vide.** Toutes les données sont disponibles dans grades-manager-api.
+**No empty columns.** All the data is available in grades-manager-api.
 
-### Attestation de Centre (9 colonnes vides sur 20)
+### Centre Certificate (9 empty columns out of 20)
 
-| Colonne vide | Obligatoire dans DIPLOMATION ? | Pourquoi absente | Exemple à remplir |
+| Empty column | Required in DIPLOMATION? | Why it is missing | Example to fill in |
 |--------------|-------------------------------|------------------|-------------------|
-| `SESSION_EXAMEN` | **OUI** | Pas de concept "session d'examen" (juin/septembre) dans le schéma. | `juin 2025` |
-| `LIEU_DELIVRANCE` | **OUI** | Pas de champ dédié "ville de délivrance". | `Douala` |
-| `NUMERO_ORDRE` | Non (warning si absent) | Pas de numéro d'ordre séquentiel du jury. | `001` |
-| `SPECIALITE_EN` | Non | Pas de traduction anglaise de la spécialité. | `Nursing Care` |
-| `OPTION` | Non | Sous-niveau absent. | `Sécurité Informatique` |
-| `OPTION_EN` | Non | Voir `OPTION`. | `Cybersecurity` |
-| `TITRE_ATTESTATION_FR` | Non | Titre personnalisé non prévu dans le schéma. | `Attestation de Réussite` |
-| `TITRE_ATTESTATION_EN` | Non | Idem, version anglaise. | `Certificate of Success` |
-| `SPECIALITE_ABR` | Non | Pas d'abréviation stockée. | `SR` |
+| `SESSION_EXAMEN` | **YES** | No "exam session" concept (June/September) in the schema. | `juin 2025` |
+| `LIEU_DELIVRANCE` | **YES** | No dedicated "city of issue" field. | `Douala` |
+| `NUMERO_ORDRE` | No (warning if missing) | No sequential jury order number. | `001` |
+| `SPECIALITE_EN` | No | No English translation of the specialty. | `Nursing Care` |
+| `OPTION` | No | Sub-level missing. | `Sécurité Informatique` |
+| `OPTION_EN` | No | See `OPTION`. | `Cybersecurity` |
+| `TITRE_ATTESTATION_FR` | No | Custom title not provided for in the schema. | `Attestation de Réussite` |
+| `TITRE_ATTESTATION_EN` | No | Same, English version. | `Certificate of Success` |
+| `SPECIALITE_ABR` | No | No stored abbreviation. | `SR` |
 
 ---
 
-## Annexe C — Configuration institution existante
+## Appendix C — Existing institution configuration
 
-La table `institutions` contient un champ `metadata` (JSONB) avec la structure `export_config` :
+The `institutions` table holds a `metadata` field (JSONB) with the `export_config` structure:
 
 ```typescript
 {
@@ -826,4 +826,4 @@ La table `institutions` contient un champ `metadata` (JSONB) avec la structure `
 }
 ```
 
-Cette configuration est **réutilisable** pour les exports DIPLOMATION (appréciations, note de passage, échelle).
+This configuration is **reusable** for the DIPLOMATION exports (appreciations, passing grade, scale).

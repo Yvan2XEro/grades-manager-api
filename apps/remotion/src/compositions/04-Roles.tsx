@@ -1,6 +1,6 @@
 /**
- * 04-Roles — Hiérarchie (420 frames / 14 s)
- * Neo-Brutalisme + Neumorphisme + @remotion/shapes décor + Trail sur les cartes
+ * 04-Roles — Hierarchy (420 frames / 14 s)
+ * Neo-Brutalism + Neumorphism + @remotion/shapes decor + Trail on the cards
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -125,7 +125,7 @@ export const RolesScene: React.FC = () => {
 			<DotGrid opacity={op * 0.11} size={38} dotSize={1.5} color={C.primary} />
 			<Glow x="50%" y="22%" size={800} color={C.primary} opacity={op * 0.05} />
 
-			{/* Shapes décoratives — coins très subtils */}
+			{/* Decorative shapes — very subtle corners */}
 			<div
 				style={{
 					position: "absolute",
@@ -163,7 +163,7 @@ export const RolesScene: React.FC = () => {
 					gap: 0,
 				}}
 			>
-				{/* En-tête */}
+				{/* Header */}
 				<div style={{ marginBottom: 38 }}>
 					<div style={{ overflow: "hidden", marginBottom: 10 }}>
 						<div
@@ -226,7 +226,7 @@ export const RolesScene: React.FC = () => {
 					</TextReveal>
 				</div>
 
-				{/* Cards neumorphiques */}
+				{/* Neumorphic cards */}
 				<div style={{ display: "flex", gap: 14, flex: 1 }}>
 					{ROLES.map(({ Icon, color, name, level, perms }, i) => {
 						const prog = spring({
@@ -258,7 +258,7 @@ export const RolesScene: React.FC = () => {
 										position: "relative",
 									}}
 								>
-									{/* Bande top brutalist */}
+									{/* Brutalist top band */}
 									<div
 										style={{ height: 5, background: color, flexShrink: 0 }}
 									/>
@@ -272,7 +272,7 @@ export const RolesScene: React.FC = () => {
 											flex: 1,
 										}}
 									>
-										{/* Icône en cercle neumorphique */}
+										{/* Icon in a neumorphic circle */}
 										<div
 											style={{
 												width: 54,
@@ -288,7 +288,7 @@ export const RolesScene: React.FC = () => {
 											<Icon size={26} color={color} strokeWidth={1.5} />
 										</div>
 
-										{/* Nom + badge niveau brutalist */}
+										{/* Name + brutalist level badge */}
 										<div
 											style={{
 												display: "flex",
@@ -308,7 +308,7 @@ export const RolesScene: React.FC = () => {
 											>
 												{name}
 											</div>
-											{/* Badge brutalist — fond plein couleur */}
+											{/* Brutalist badge — solid color background */}
 											<div
 												style={{
 													display: "inline-flex",
@@ -333,7 +333,7 @@ export const RolesScene: React.FC = () => {
 											</div>
 										</div>
 
-										{/* Divider en creux neumorphique */}
+										{/* Inset neumorphic divider */}
 										<div
 											style={{
 												height: 2,
@@ -383,7 +383,7 @@ export const RolesScene: React.FC = () => {
 											))}
 										</div>
 
-										{/* Numéro filigrane */}
+										{/* Watermark number */}
 										<div
 											style={{
 												position: "absolute",
@@ -407,7 +407,7 @@ export const RolesScene: React.FC = () => {
 					})}
 				</div>
 
-				{/* Note hiérarchie — neumorphique */}
+				{/* Hierarchy note — neumorphic */}
 				{(() => {
 					const prog = spring({
 						frame: frame - 155,

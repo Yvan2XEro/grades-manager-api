@@ -60,7 +60,7 @@ export function FilterBar({
 
 				{activeCount > 0 && (
 					<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
-						{activeCount} actif{activeCount > 1 ? "s" : ""}
+						{t("components.filterBar.activeCount", { count: activeCount })}
 					</Badge>
 				)}
 

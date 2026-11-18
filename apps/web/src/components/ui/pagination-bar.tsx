@@ -28,10 +28,10 @@ export function PaginationBar({
 	const pageLabel =
 		page !== undefined
 			? totalPages !== undefined
-				? `${t("common.pagination.page", { defaultValue: "Page" })} ${page} / ${totalPages}`
+				? `${t("common.pagination.page")} ${page} / ${totalPages}`
 				: hasNext
-					? `${t("common.pagination.page", { defaultValue: "Page" })} ${page}`
-					: `${t("common.pagination.page", { defaultValue: "Page" })} ${page} / ${page}`
+					? `${t("common.pagination.page")} ${page}`
+					: `${t("common.pagination.page")} ${page} / ${page}`
 			: null;
 
 	return (
@@ -43,7 +43,7 @@ export function PaginationBar({
 				disabled={!hasPrev || isLoading}
 			>
 				<ChevronLeft className="mr-1 h-4 w-4" />
-				{t("common.pagination.previous", { defaultValue: "Précédent" })}
+				{t("common.pagination.previous")}
 			</Button>
 			{pageLabel && (
 				<span className="px-2 text-center text-muted-foreground text-sm tabular-nums">
@@ -56,7 +56,7 @@ export function PaginationBar({
 				onClick={onNext}
 				disabled={!hasNext || isLoading}
 			>
-				{t("common.pagination.next", { defaultValue: "Suivant" })}
+				{t("common.pagination.next")}
 				<ChevronRight className="ml-1 h-4 w-4" />
 			</Button>
 		</div>

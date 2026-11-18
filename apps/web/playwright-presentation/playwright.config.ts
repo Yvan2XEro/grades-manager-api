@@ -8,8 +8,8 @@ export default defineConfig({
 		["list"],
 	],
 	use: {
-		// Vite dev server (port par défaut, pas de port explicite dans vite.config.ts)
-		// Si le port diffère sur ta machine, passe PLAYWRIGHT_BASE_URL=http://localhost:XXXX
+		// Vite dev server (default port, no explicit port in vite.config.ts)
+		// If the port differs on your machine, pass PLAYWRIGHT_BASE_URL=http://localhost:XXXX
 		baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5174",
 		headless: false,
 		slowMo: 700,
@@ -21,7 +21,7 @@ export default defineConfig({
 		actionTimeout: 15_000,
 		navigationTimeout: 20_000,
 	},
-	// Flows séquentiels — un seul navigateur à la fois
+	// Sequential flows — one browser at a time
 	workers: 1,
 	retries: 0,
 	projects: [

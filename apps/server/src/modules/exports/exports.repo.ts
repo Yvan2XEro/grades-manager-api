@@ -17,7 +17,11 @@ import {
 export class ExportsRepo {
 	private db = db;
 
-	constructor(private readonly institutionId: string) {}
+	private readonly institutionId: string;
+
+	constructor(institutionId: string) {
+		this.institutionId = institutionId;
+	}
 
 	/** Lookup the parent class_course of an exam (used by eligibility checks) */
 	async getExamMeta(examId: string) {
@@ -55,7 +59,7 @@ export class ExportsRepo {
 
 	/**
 	 * Get institution with its optional parent institution
-	 * L'institution parente est optionnelle - une institution n'est pas forcément parrainée
+	 * The parent institution is optional - an institution is not necessarily sponsored
 	 */
 	async getInstitution() {
 		const institution = await this.db.query.institutions.findFirst({

@@ -1,125 +1,125 @@
-# Conception du module Délibérations
+# Deliberations module design
 
-## Vue d'ensemble
+## Overview
 
-Le module **Délibérations** gère le processus officiel par lequel un jury académique examine les résultats d'une classe pour un semestre ou une année académique, prend des décisions individuelles par étudiant, et produit un procès-verbal officiel.
+The **Deliberations** module manages the official process by which an academic jury reviews a class's results for a semester or an academic year, makes individual decisions for each student, and produces an official report (PV).
 
-Ce module s'inspire directement du module **Promotion Rules** existant (même architecture en 3 couches, même pattern evaluate → execute, même audit trail), mais couvre un périmètre plus large :
-
-```
-Promotions : Évalue des règles → déplace des étudiants entre classes
-Délibérations : Examine les résultats → prend des décisions officielles → génère des PV → alimente DIPLOMATION
-```
-
-### Positionnement dans le workflow global
+This module is directly inspired by the existing **Promotion Rules** module (same 3-layer architecture, same evaluate → execute pattern, same audit trail), but covers a broader scope:
 
 ```
-Notes saisies → Examens validés/verrouillés
+Promotions: Evaluates rules → moves students between classes
+Deliberations: Reviews results → makes official decisions → generates PVs → feeds DIPLOMATION
+```
+
+### Position in the overall workflow
+
+```
+Grades entered → Exams approved/locked
                         ↓
-              Délibération ouverte (jury constitué)
+              Deliberation opened (jury formed)
                         ↓
-              Calcul automatique des résultats (facts)
+              Automatic computation of results (facts)
                         ↓
-              Jury examine, ajuste les décisions
+              Jury reviews, adjusts the decisions
                         ↓
-              Délibération clôturée (PV signé)
+              Deliberation closed (PV signed)
                         ↓
-              Export vers DIPLOMATION (Excel)
+              Export to DIPLOMATION (Excel)
                         ↓
-              Promotion/passage (module existant)
+              Promotion/progression (existing module)
 ```
 
 ---
 
-## Table des matières
+## Table of contents
 
-1. [Concepts métier](#1-concepts-métier)
-2. [Schéma de base de données](#2-schéma-de-base-de-données)
-3. [Types et interfaces](#3-types-et-interfaces)
-4. [Endpoints API (Router)](#4-endpoints-api-router)
-5. [Logique métier (Service)](#5-logique-métier-service)
-6. [Requêtes base de données (Repo)](#6-requêtes-base-de-données-repo)
-7. [Schémas de validation (Zod)](#7-schémas-de-validation-zod)
-8. [Workflow complet](#8-workflow-complet)
-9. [Règles de délibération (json-rules-engine)](#9-règles-de-délibération)
-10. [Intégration avec les modules existants](#10-intégration-avec-les-modules-existants)
-11. [Lien avec DIPLOMATION](#11-lien-avec-diplomation)
-12. [Structure des fichiers](#12-structure-des-fichiers)
+1. [Business concepts](#1-business-concepts)
+2. [Database schema](#2-database-schema)
+3. [Types and interfaces](#3-types-and-interfaces)
+4. [API endpoints (Router)](#4-api-endpoints-router)
+5. [Business logic (Service)](#5-business-logic-service)
+6. [Database queries (Repo)](#6-database-queries-repo)
+7. [Validation schemas (Zod)](#7-validation-schemas-zod)
+8. [Complete workflow](#8-complete-workflow)
+9. [Deliberation rules (json-rules-engine)](#9-deliberation-rules)
+10. [Integration with existing modules](#10-integration-with-existing-modules)
+11. [Link with DIPLOMATION](#11-link-with-diplomation)
+12. [File structure](#12-file-structure)
 13. [Tests](#13-tests)
 
 ---
 
-## 1. Concepts métier
+## 1. Business concepts
 
-### Qu'est-ce qu'une délibération ?
+### What is a deliberation?
 
-Une **délibération** est l'acte officiel par lequel un **jury** composé d'enseignants et d'administrateurs :
+A **deliberation** is the official act by which a **jury** made up of teachers and administrators:
 
-1. **Examine** les résultats académiques d'une classe pour un semestre ou une année
-2. **Valide ou invalide** les UE (Unités d'Enseignement) de chaque étudiant
-3. **Attribue** les crédits correspondants
-4. **Décide** du sort de chaque étudiant (admis, ajourné, redoublant, exclu, etc.)
-5. **Attribue** les mentions (Très Bien, Bien, Assez Bien, Passable)
-6. **Signe** le procès-verbal officiel
+1. **Reviews** the academic results of a class for a semester or a year
+2. **Validates or invalidates** each student's UEs (teaching units)
+3. **Awards** the corresponding credits
+4. **Decides** the outcome for each student (admitted, deferred, repeating, excluded, etc.)
+5. **Awards** honors (Très Bien, Bien, Assez Bien, Passable)
+6. **Signs** the official report (PV)
 
-### Différence avec le module Promotions
+### Difference from the Promotions module
 
-| Aspect | Promotions | Délibérations |
+| Aspect | Promotions | Deliberations |
 |--------|-----------|---------------|
-| **Quand** | Après la délibération | Avant la promotion |
-| **Qui décide** | Règles automatiques (json-rules-engine) | Jury humain (avec suggestions automatiques) |
-| **Granularité** | Par étudiant (promu oui/non) | Par UE + par étudiant + mentions |
-| **Output** | Déplacement d'inscriptions entre classes | PV officiel + décisions + données pour DIPLOMATION |
-| **Modifications** | Pas de modification manuelle | Le jury peut **surcharger** les décisions calculées |
-| **Statut** | Exécution unique | Cycle de vie (draft → open → closed → signed) |
+| **When** | After the deliberation | Before the promotion |
+| **Who decides** | Automatic rules (json-rules-engine) | Human jury (with automatic suggestions) |
+| **Granularity** | Per student (promoted yes/no) | Per UE + per student + honors |
+| **Output** | Enrollments moved between classes | Official PV + decisions + data for DIPLOMATION |
+| **Modifications** | No manual modification | The jury can **override** the computed decisions |
+| **Status** | Single execution | Lifecycle (draft → open → closed → signed) |
 
-### Types de délibérations
+### Types of deliberations
 
-| Type | Portée | Quand |
+| Type | Scope | When |
 |------|--------|-------|
-| **Semestrielle** | Un semestre d'une classe | Fin de chaque semestre |
-| **Annuelle** | Année complète d'une classe | Fin d'année (combine les 2 semestres) |
-| **Rattrapage** | Après session de rattrapage | Après les examens de rattrapage |
+| **Semester** | One semester of a class | End of each semester |
+| **Annual** | Full year of a class | End of year (combines the 2 semesters) |
+| **Retake** | After the retake session | After the retake exams |
 
-### Décisions possibles par étudiant
+### Possible decisions per student
 
-| Décision | Code | Description | Condition typique |
+| Decision | Code | Description | Typical condition |
 |----------|------|-------------|-------------------|
-| **Admis** | `ADMITTED` | Étudiant valide l'année/semestre | Moyenne ≥ 10, crédits suffisants |
-| **Admis par compensation** | `ADMITTED_COMPENSATED` | Certaines UE < 10 mais moyenne générale ≥ 10 | Moyenne ≥ 10, pas d'échec éliminatoire |
-| **Ajourné** | `DEFERRED` | Doit repasser certains examens (rattrapage) | Moyenne < 10 mais récupérable |
-| **Redoublant** | `REPEAT` | Doit refaire l'année | Moyenne très basse ou trop d'échecs |
-| **Exclu** | `EXCLUDED` | Exclusion du programme | Redoublement consécutif, fraude, etc. |
-| **En attente** | `PENDING` | Notes incomplètes, pas de décision | UE incomplètes |
+| **Admitted** | `ADMITTED` | Student passes the year/semester | Average ≥ 10, sufficient credits |
+| **Admitted by compensation** | `ADMITTED_COMPENSATED` | Some UEs < 10 but overall average ≥ 10 | Average ≥ 10, no eliminatory failure |
+| **Deferred** | `DEFERRED` | Must retake some exams (retake session) | Average < 10 but recoverable |
+| **Repeating** | `REPEAT` | Must repeat the year | Very low average or too many failures |
+| **Excluded** | `EXCLUDED` | Exclusion from the program | Consecutive repeats, fraud, etc. |
+| **Pending** | `PENDING` | Incomplete grades, no decision | Incomplete UEs |
 
-### Décisions possibles par UE
+### Possible decisions per UE
 
-| Décision | Code | Description |
+| Decision | Code | Description |
 |----------|------|-------------|
-| **Acquis** | `ACQUIRED` | Moyenne UE ≥ note de passage, toutes notes présentes |
-| **Non Acquis** | `NOT_ACQUIRED` | Moyenne UE < note de passage |
-| **Incomplet** | `INCOMPLETE` | Notes manquantes |
-| **Acquis par compensation** | `COMPENSATED` | UE < 10 mais compensée par la moyenne générale |
+| **Acquired** | `ACQUIRED` | UE average ≥ passing grade, all grades present |
+| **Not acquired** | `NOT_ACQUIRED` | UE average < passing grade |
+| **Incomplete** | `INCOMPLETE` | Missing grades |
+| **Acquired by compensation** | `COMPENSATED` | UE < 10 but compensated by the overall average |
 
 ---
 
-## 2. Schéma de base de données
+## 2. Database schema
 
 ### Table `deliberations`
 
-Représente une session de délibération pour une classe donnée.
+Represents a deliberation session for a given class.
 
 ```typescript
 export const deliberations = pgTable("deliberations", {
   id:               text("id").primaryKey().$defaultFn(() => sql`gen_random_uuid()`),
   institutionId:    text("institution_id").notNull().references(() => institutions.id, { onDelete: "cascade" }),
 
-  // Contexte académique
+  // Academic context
   classId:          text("class_id").notNull().references(() => classes.id, { onDelete: "restrict" }),
-  semesterId:       text("semester_id").references(() => semesters.id, { onDelete: "set null" }),  // null = année complète
+  semesterId:       text("semester_id").references(() => semesters.id, { onDelete: "set null" }),  // null = full year
   academicYearId:   text("academic_year_id").notNull().references(() => academicYears.id, { onDelete: "restrict" }),
 
-  // Type et statut
+  // Type and status
   type:             text("type").notNull(),        // "semester" | "annual" | "retake"
   status:           text("status").notNull().default("draft"),  // "draft" | "open" | "closed" | "signed"
 
@@ -127,12 +127,12 @@ export const deliberations = pgTable("deliberations", {
   juryMembers:      jsonb("jury_members").notNull().default([]),  // JuryMember[]
   presidentId:      text("president_id").references(() => domainUsers.id, { onDelete: "set null" }),
 
-  // Métadonnées
-  label:            text("label"),                  // Libellé libre : "Délibération S1 2024-2025 L1 Info"
-  notes:            text("notes"),                  // Observations générales du jury
-  sessionDate:      timestamp("session_date", { withTimezone: true }),  // Date de la session du jury
+  // Metadata
+  label:            text("label"),                  // Free-form label: "Délibération S1 2024-2025 L1 Info"
+  notes:            text("notes"),                  // General observations of the jury
+  sessionDate:      timestamp("session_date", { withTimezone: true }),  // Date of the jury session
 
-  // Statistiques (calculées à la clôture)
+  // Statistics (computed at closing)
   studentsCount:    integer("students_count").default(0),
   admittedCount:    integer("admitted_count").default(0),
   deferredCount:    integer("deferred_count").default(0),
@@ -141,7 +141,7 @@ export const deliberations = pgTable("deliberations", {
   globalSuccessRate: doublePrecision("global_success_rate").default(0),
   globalAverage:    doublePrecision("global_average").default(0),
 
-  // Lien avec une règle de délibération (optionnel)
+  // Link to a deliberation rule (optional)
   ruleId:           text("rule_id").references(() => deliberationRules.id, { onDelete: "set null" }),
 
   // Timestamps
@@ -159,26 +159,26 @@ export const deliberations = pgTable("deliberations", {
 ]);
 ```
 
-**Cycle de vie des statuts :**
+**Status lifecycle:**
 
 ```
 draft → open → closed → signed
          ↑        ↓
-         └── reopen (retour à open si besoin de correction)
+         └── reopen (back to open if a correction is needed)
 ```
 
-| Statut | Description | Actions possibles |
+| Status | Description | Possible actions |
 |--------|-------------|-------------------|
-| `draft` | Créée, jury pas encore constitué | Modifier jury, ouvrir |
-| `open` | Jury en session, décisions en cours | Calculer, ajuster décisions, clôturer |
-| `closed` | Décisions finalisées, PV généré | Signer, réouvrir si erreur |
-| `signed` | PV signé, délibération terminée | Lecture seule, export DIPLOMATION |
+| `draft` | Created, jury not yet formed | Edit jury, open |
+| `open` | Jury in session, decisions in progress | Compute, adjust decisions, close |
+| `closed` | Decisions finalized, PV generated | Sign, reopen on error |
+| `signed` | PV signed, deliberation finished | Read-only, DIPLOMATION export |
 
 ---
 
 ### Table `deliberation_student_results`
 
-Résultat individuel de chaque étudiant dans une délibération.
+Individual result of each student in a deliberation.
 
 ```typescript
 export const deliberationStudentResults = pgTable("deliberation_student_results", {
@@ -186,38 +186,38 @@ export const deliberationStudentResults = pgTable("deliberation_student_results"
   deliberationId:   text("deliberation_id").notNull().references(() => deliberations.id, { onDelete: "cascade" }),
   studentId:        text("student_id").notNull().references(() => students.id, { onDelete: "cascade" }),
 
-  // Décision
+  // Decision
   decision:         text("decision").notNull().default("PENDING"),
     // "ADMITTED" | "ADMITTED_COMPENSATED" | "DEFERRED" | "REPEAT" | "EXCLUDED" | "PENDING"
   decisionSource:   text("decision_source").notNull().default("auto"),
-    // "auto" (calculé par les règles) | "manual" (surchargé par le jury)
+    // "auto" (computed by the rules) | "manual" (overridden by the jury)
 
-  // Mention
+  // Honor
   mention:          text("mention"),          // "TRES BIEN" | "BIEN" | "ASSEZ BIEN" | "PASSABLE" | null
   mentionEn:        text("mention_en"),       // English translation
 
-  // Résultats calculés (snapshot au moment de la délibération)
+  // Computed results (snapshot at the time of the deliberation)
   overallAverage:        doublePrecision("overall_average"),
   overallAverageUnweighted: doublePrecision("overall_average_unweighted"),
   totalCreditsEarned:    integer("total_credits_earned").default(0),
   totalCreditsAttempted: integer("total_credits_attempted").default(0),
   requiredCredits:       integer("required_credits").default(0),
 
-  // Grade lettre
+  // Letter grade
   grade:            text("grade"),            // "A+", "A", "B+", etc.
 
-  // Rang dans la classe
+  // Rank in the class
   rank:             integer("rank"),
   rankOutOf:        integer("rank_out_of"),
 
-  // Détails par UE (snapshot)
+  // Per-UE details (snapshot)
   ueResults:        jsonb("ue_results").notNull().default([]),
     // DeliberationUEResult[]
 
-  // Observations du jury pour cet étudiant
+  // Jury observations for this student
   juryObservation:  text("jury_observation"),
 
-  // Snapshot complet des facts au moment de la délibération (audit)
+  // Full snapshot of the facts at the time of the deliberation (audit)
   evaluationData:   jsonb("evaluation_data").notNull().default({}),
 
   createdAt:        timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -234,7 +234,7 @@ export const deliberationStudentResults = pgTable("deliberation_student_results"
 
 ### Table `deliberation_rules`
 
-Règles de délibération configurables (comme `promotionRules` mais pour les décisions de délibération).
+Configurable deliberation rules (like `promotionRules` but for deliberation decisions).
 
 ```typescript
 export const deliberationRules = pgTable("deliberation_rules", {
@@ -244,16 +244,16 @@ export const deliberationRules = pgTable("deliberation_rules", {
   name:             text("name").notNull(),         // "Règles de délibération L1 INSES"
   description:      text("description"),
 
-  // Scope (optionnel, pour cibler la règle)
+  // Scope (optional, to target the rule)
   programId:        text("program_id").references(() => programs.id, { onDelete: "set null" }),
   cycleLevelId:     text("cycle_level_id").references(() => cycleLevels.id, { onDelete: "set null" }),
 
-  // Règles json-rules-engine pour chaque type de décision
-  admissionRuleset:      jsonb("admission_ruleset").notNull(),     // Conditions pour ADMITTED
-  compensationRuleset:   jsonb("compensation_ruleset"),            // Conditions pour ADMITTED_COMPENSATED
-  deferralRuleset:       jsonb("deferral_ruleset"),                // Conditions pour DEFERRED
-  repeatRuleset:         jsonb("repeat_ruleset"),                  // Conditions pour REPEAT
-  exclusionRuleset:      jsonb("exclusion_ruleset"),               // Conditions pour EXCLUDED
+  // json-rules-engine rules for each decision type
+  admissionRuleset:      jsonb("admission_ruleset").notNull(),     // Conditions for ADMITTED
+  compensationRuleset:   jsonb("compensation_ruleset"),            // Conditions for ADMITTED_COMPENSATED
+  deferralRuleset:       jsonb("deferral_ruleset"),                // Conditions for DEFERRED
+  repeatRuleset:         jsonb("repeat_ruleset"),                  // Conditions for REPEAT
+  exclusionRuleset:      jsonb("exclusion_ruleset"),               // Conditions for EXCLUDED
 
   // Configuration
   passingGrade:     doublePrecision("passing_grade").notNull().default(10),
@@ -275,7 +275,7 @@ export const deliberationRules = pgTable("deliberation_rules", {
 
 ### Table `deliberation_logs`
 
-Journal d'audit de toutes les actions sur une délibération.
+Audit log of all actions on a deliberation.
 
 ```typescript
 export const deliberationLogs = pgTable("deliberation_logs", {
@@ -286,11 +286,11 @@ export const deliberationLogs = pgTable("deliberation_logs", {
   action:           text("action").notNull(),
     // "created" | "opened" | "computed" | "decision_overridden" | "closed" | "reopened" | "signed"
 
-  // Détails de l'action
+  // Action details
   targetStudentId:  text("target_student_id").references(() => students.id, { onDelete: "set null" }),
-  previousValue:    jsonb("previous_value"),   // Ancien état (ex: décision avant override)
-  newValue:         jsonb("new_value"),         // Nouveau état
-  reason:           text("reason"),             // Justification (obligatoire pour les overrides)
+  previousValue:    jsonb("previous_value"),   // Previous state (e.g. decision before override)
+  newValue:         jsonb("new_value"),         // New state
+  reason:           text("reason"),             // Justification (required for overrides)
 
   createdAt:        timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
@@ -302,40 +302,40 @@ export const deliberationLogs = pgTable("deliberation_logs", {
 
 ---
 
-### Résumé des relations
+### Relationship summary
 
 ```
 deliberationRules (1:N deliberations)
-  └── Règles réutilisables par programme/niveau
+  └── Rules reusable per program/level
 
 deliberations (1:N deliberationStudentResults)
-  ├── class, semester, academicYear (contexte)
+  ├── class, semester, academicYear (context)
   ├── juryMembers (JSONB)
   ├── presidentId → domainUsers
   ├── ruleId → deliberationRules
-  └── deliberationStudentResults (1 par étudiant)
+  └── deliberationStudentResults (1 per student)
        ├── decision, mention, grade, rank
-       ├── ueResults (JSONB: décision par UE)
-       └── evaluationData (JSONB: snapshot des facts)
+       ├── ueResults (JSONB: decision per UE)
+       └── evaluationData (JSONB: snapshot of the facts)
 
 deliberationLogs (audit trail)
-  └── Toutes les actions avec acteur, raison, avant/après
+  └── All actions with actor, reason, before/after
 ```
 
 ---
 
-## 3. Types et interfaces
+## 3. Types and interfaces
 
 ### JuryMember
 
 ```typescript
 interface JuryMember {
-  profileId: string;        // Référence domainUsers.id
-  name: string;             // Nom affiché (snapshot)
+  profileId: string;        // References domainUsers.id
+  name: string;             // Displayed name (snapshot)
   role: string;             // "president" | "rapporteur" | "member" | "secretary"
-  title: string;            // Titre : "Pr.", "Dr.", "M.", "Mme"
-  department?: string;      // Département
-  signature?: string;       // URL de signature (optionnel)
+  title: string;            // Title: "Pr.", "Dr.", "M.", "Mme"
+  department?: string;      // Department
+  signature?: string;       // Signature URL (optional)
 }
 ```
 
@@ -346,12 +346,12 @@ interface DeliberationUEResult {
   teachingUnitId: string;
   teachingUnitCode: string;
   teachingUnitName: string;
-  credits: number;              // Crédits de l'UE
+  credits: number;              // Credits of the UE
 
-  average: number | null;       // Moyenne UE calculée
+  average: number | null;       // Computed UE average
   decision: string;             // "ACQUIRED" | "NOT_ACQUIRED" | "INCOMPLETE" | "COMPENSATED"
   decisionSource: string;       // "auto" | "manual"
-  creditsEarned: number;        // Crédits obtenus (= credits si acquis, 0 sinon)
+  creditsEarned: number;        // Credits earned (= credits if acquired, 0 otherwise)
 
   courses: DeliberationCourseResult[];
 }
@@ -362,19 +362,19 @@ interface DeliberationCourseResult {
   courseName: string;
   coefficient: number;
 
-  ccScore: number | null;       // Note CC
-  examScore: number | null;     // Note Examen
-  average: number | null;       // Moyenne pondérée du cours
-  isRetake: boolean;            // Vient d'un rattrapage
+  ccScore: number | null;       // CC (continuous assessment) grade
+  examScore: number | null;     // Exam grade
+  average: number | null;       // Weighted course average
+  isRetake: boolean;            // Comes from a retake
   sessionType: string;          // "normal" | "retake"
 }
 ```
 
-### DeliberationFacts (étend StudentPromotionFacts)
+### DeliberationFacts (extends StudentPromotionFacts)
 
 ```typescript
 interface DeliberationFacts extends StudentPromotionFacts {
-  // Champs additionnels pour la délibération
+  // Additional fields for the deliberation
   ueDecisions: Record<string, {
     average: number | null;
     decision: "ACQUIRED" | "NOT_ACQUIRED" | "INCOMPLETE";
@@ -382,14 +382,14 @@ interface DeliberationFacts extends StudentPromotionFacts {
     creditsEarned: number;
   }>;
 
-  compensableUEs: number;        // Nombre d'UE entre minCompensable et passingGrade
-  nonCompensableUEs: number;     // Nombre d'UE sous minCompensable
-  allUEsComplete: boolean;       // Toutes les UE ont toutes les notes
+  compensableUEs: number;        // Number of UEs between minCompensable and passingGrade
+  nonCompensableUEs: number;     // Number of UEs below minCompensable
+  allUEsComplete: boolean;       // All UEs have all their grades
 
-  // Historique (pour les règles de redoublement/exclusion)
-  previousDeliberationDecision?: string;  // Décision de l'année précédente
-  consecutiveRepeats: number;             // Nombre de redoublements consécutifs
-  totalRepeats: number;                   // Nombre total de redoublements
+  // History (for repeat/exclusion rules)
+  previousDeliberationDecision?: string;  // Decision of the previous year
+  consecutiveRepeats: number;             // Number of consecutive repeats
+  totalRepeats: number;                   // Total number of repeats
 }
 ```
 
@@ -409,7 +409,7 @@ interface ClassDeliberationPreview {
   globalAverage: number;
   globalSuccessRate: number;
 
-  // Résultats par étudiant
+  // Per-student results
   students: StudentDeliberationPreview[];
 }
 
@@ -426,8 +426,8 @@ interface StudentDeliberationPreview {
   mention: string | null;
   rank: number;
 
-  suggestedDecision: string;     // Décision calculée par les règles
-  currentDecision: string;       // Décision actuelle (auto ou surchargée)
+  suggestedDecision: string;     // Decision computed by the rules
+  currentDecision: string;       // Current decision (auto or overridden)
   decisionSource: string;        // "auto" | "manual"
 
   ueResults: DeliberationUEResult[];
@@ -441,199 +441,199 @@ interface StudentDeliberationPreview {
 
 ---
 
-## 4. Endpoints API (Router)
+## 4. API endpoints (Router)
 
-### Gestion des délibérations
+### Deliberation management
 
-| Endpoint | Procédure | Input | Description |
+| Endpoint | Procedure | Input | Description |
 |----------|-----------|-------|-------------|
-| `create` | `adminProcedure` | `CreateDeliberationInput` | Créer une nouvelle délibération (status=draft) |
-| `update` | `adminProcedure` | `UpdateDeliberationInput` | Modifier jury, notes, label (status=draft/open) |
-| `getById` | `protectedProcedure` | `{ id: string }` | Récupérer une délibération avec ses résultats |
-| `list` | `protectedProcedure` | `ListDeliberationsInput` | Lister les délibérations avec filtres |
-| `delete` | `adminProcedure` | `{ id: string }` | Supprimer (uniquement si status=draft) |
+| `create` | `adminProcedure` | `CreateDeliberationInput` | Create a new deliberation (status=draft) |
+| `update` | `adminProcedure` | `UpdateDeliberationInput` | Edit jury, notes, label (status=draft/open) |
+| `getById` | `protectedProcedure` | `{ id: string }` | Fetch a deliberation with its results |
+| `list` | `protectedProcedure` | `ListDeliberationsInput` | List deliberations with filters |
+| `delete` | `adminProcedure` | `{ id: string }` | Delete (only if status=draft) |
 
-### Cycle de vie
+### Lifecycle
 
-| Endpoint | Procédure | Input | Description |
+| Endpoint | Procedure | Input | Description |
 |----------|-----------|-------|-------------|
-| `open` | `adminProcedure` | `{ id: string }` | Passer draft → open (vérifie jury constitué) |
-| `compute` | `adminProcedure` | `{ id: string, ruleId?: string }` | Calculer/recalculer les résultats de tous les étudiants |
-| `close` | `adminProcedure` | `{ id: string }` | Passer open → closed (fige les résultats) |
-| `reopen` | `adminProcedure` | `{ id: string, reason: string }` | Passer closed → open (avec justification obligatoire) |
-| `sign` | `adminProcedure` | `{ id: string }` | Passer closed → signed (définitif) |
+| `open` | `adminProcedure` | `{ id: string }` | Move draft → open (checks the jury is formed) |
+| `compute` | `adminProcedure` | `{ id: string, ruleId?: string }` | Compute/recompute the results of all students |
+| `close` | `adminProcedure` | `{ id: string }` | Move open → closed (freezes the results) |
+| `reopen` | `adminProcedure` | `{ id: string, reason: string }` | Move closed → open (with a required justification) |
+| `sign` | `adminProcedure` | `{ id: string }` | Move closed → signed (final) |
 
-### Décisions
+### Decisions
 
-| Endpoint | Procédure | Input | Description |
+| Endpoint | Procedure | Input | Description |
 |----------|-----------|-------|-------------|
-| `overrideStudentDecision` | `adminProcedure` | `OverrideDecisionInput` | Surcharger la décision d'un étudiant |
-| `overrideUEDecision` | `adminProcedure` | `OverrideUEDecisionInput` | Surcharger la décision d'une UE |
-| `bulkOverrideDecisions` | `adminProcedure` | `BulkOverrideInput` | Surcharger plusieurs décisions à la fois |
-| `resetStudentDecision` | `adminProcedure` | `{ deliberationId, studentId }` | Remettre la décision automatique |
+| `overrideStudentDecision` | `adminProcedure` | `OverrideDecisionInput` | Override a student's decision |
+| `overrideUEDecision` | `adminProcedure` | `OverrideUEDecisionInput` | Override a UE's decision |
+| `bulkOverrideDecisions` | `adminProcedure` | `BulkOverrideInput` | Override several decisions at once |
+| `resetStudentDecision` | `adminProcedure` | `{ deliberationId, studentId }` | Restore the automatic decision |
 
-### Consultation
+### Viewing
 
-| Endpoint | Procédure | Input | Description |
+| Endpoint | Procedure | Input | Description |
 |----------|-----------|-------|-------------|
-| `preview` | `protectedProcedure` | `{ id: string }` | Aperçu complet avec stats |
-| `getStudentResult` | `protectedProcedure` | `{ deliberationId, studentId }` | Résultat détaillé d'un étudiant |
-| `getStatistics` | `protectedProcedure` | `{ id: string }` | Statistiques agrégées |
-| `getLogs` | `protectedProcedure` | `{ deliberationId, cursor?, limit? }` | Journal d'audit |
+| `preview` | `protectedProcedure` | `{ id: string }` | Full preview with stats |
+| `getStudentResult` | `protectedProcedure` | `{ deliberationId, studentId }` | Detailed result of a student |
+| `getStatistics` | `protectedProcedure` | `{ id: string }` | Aggregated statistics |
+| `getLogs` | `protectedProcedure` | `{ deliberationId, cursor?, limit? }` | Audit log |
 
 ### Exports
 
-| Endpoint | Procédure | Input | Description |
+| Endpoint | Procedure | Input | Description |
 |----------|-----------|-------|-------------|
-| `generatePV` | `adminProcedure` | `{ id: string, format: "pdf" \| "html" }` | Générer le PV de délibération |
-| `exportForDiplomation` | `adminProcedure` | `ExportDiplomationInput` | Générer le fichier Excel pour DIPLOMATION |
+| `generatePV` | `adminProcedure` | `{ id: string, format: "pdf" \| "html" }` | Generate the deliberation PV |
+| `exportForDiplomation` | `adminProcedure` | `ExportDiplomationInput` | Generate the Excel file for DIPLOMATION |
 
-### Règles de délibération
+### Deliberation rules
 
-| Endpoint | Procédure | Input | Description |
+| Endpoint | Procedure | Input | Description |
 |----------|-----------|-------|-------------|
-| `rules.create` | `adminProcedure` | `CreateDelibRuleInput` | Créer une règle de délibération |
-| `rules.update` | `adminProcedure` | `UpdateDelibRuleInput` | Modifier une règle |
-| `rules.delete` | `adminProcedure` | `{ id: string }` | Supprimer (si pas utilisée) |
-| `rules.list` | `protectedProcedure` | `ListDelibRulesInput` | Lister les règles |
-| `rules.getById` | `protectedProcedure` | `{ id: string }` | Détail d'une règle |
+| `rules.create` | `adminProcedure` | `CreateDelibRuleInput` | Create a deliberation rule |
+| `rules.update` | `adminProcedure` | `UpdateDelibRuleInput` | Edit a rule |
+| `rules.delete` | `adminProcedure` | `{ id: string }` | Delete (if not in use) |
+| `rules.list` | `protectedProcedure` | `ListDelibRulesInput` | List the rules |
+| `rules.getById` | `protectedProcedure` | `{ id: string }` | Rule details |
 
 ---
 
-## 5. Logique métier (Service)
+## 5. Business logic (Service)
 
 ### `deliberations.service.ts`
 
 #### `create(input, institutionId)`
 
 ```
-1. Vérifier que la classe existe et appartient à l'institution
-2. Vérifier qu'il n'existe pas déjà une délibération pour (class, semester, year, type)
-3. Créer la délibération avec status="draft"
-4. Logger "created"
-5. Retourner la délibération
+1. Check that the class exists and belongs to the institution
+2. Check that no deliberation already exists for (class, semester, year, type)
+3. Create the deliberation with status="draft"
+4. Log "created"
+5. Return the deliberation
 ```
 
 #### `open(id, actorId, institutionId)`
 
 ```
-1. Vérifier status = "draft"
-2. Vérifier que juryMembers est non vide (au moins 1 membre)
-3. Vérifier que presidentId est défini
-4. Mettre à jour status = "open", openedAt = now()
-5. Logger "opened"
+1. Check status = "draft"
+2. Check that juryMembers is not empty (at least 1 member)
+3. Check that presidentId is set
+4. Update status = "open", openedAt = now()
+5. Log "opened"
 ```
 
 #### `compute(id, ruleId, actorId, institutionId)`
 
 ```
-1. Vérifier status = "open"
-2. Charger la règle de délibération (ruleId ou deliberation.ruleId)
-3. Récupérer tous les étudiants inscrits dans la classe pour l'année
-4. Pour chaque étudiant :
-   a. Calculer les DeliberationFacts (réutilise buildStudentFacts + extensions)
-   b. Calculer les résultats par UE :
-      - Récupérer notes CC + Examen (avec résolution rattrapages)
-      - Calculer moyenne par cours
-      - Calculer moyenne par UE
-      - Déterminer décision UE (ACQUIRED / NOT_ACQUIRED / INCOMPLETE)
-      - Appliquer compensation si autorisée :
-        * UE avec note entre minCompensable et passingGrade
-        * ET moyenne générale ≥ passingGrade
-        → décision = "COMPENSATED"
-   c. Calculer la moyenne générale (pondérée par crédits)
-   d. Calculer le grade lettre et la mention
-   e. Évaluer la décision via json-rules-engine :
-      - Tester admissionRuleset → ADMITTED
-      - Tester compensationRuleset → ADMITTED_COMPENSATED
-      - Tester deferralRuleset → DEFERRED
-      - Tester repeatRuleset → REPEAT
-      - Tester exclusionRuleset → EXCLUDED
-      - Si aucun match → PENDING
-   f. Calculer le rang (classement par moyenne décroissante)
-5. Upsert les deliberationStudentResults
-6. Mettre à jour les statistiques de la délibération
-7. Logger "computed"
-8. Retourner le preview complet
+1. Check status = "open"
+2. Load the deliberation rule (ruleId or deliberation.ruleId)
+3. Fetch all students enrolled in the class for the year
+4. For each student:
+   a. Compute the DeliberationFacts (reuses buildStudentFacts + extensions)
+   b. Compute the per-UE results:
+      - Fetch CC + Exam grades (with retake resolution)
+      - Compute the average per course
+      - Compute the average per UE
+      - Determine the UE decision (ACQUIRED / NOT_ACQUIRED / INCOMPLETE)
+      - Apply compensation if allowed:
+        * UE with a grade between minCompensable and passingGrade
+        * AND overall average ≥ passingGrade
+        → decision = "COMPENSATED"
+   c. Compute the overall average (weighted by credits)
+   d. Compute the letter grade and the honor
+   e. Evaluate the decision via json-rules-engine:
+      - Test admissionRuleset → ADMITTED
+      - Test compensationRuleset → ADMITTED_COMPENSATED
+      - Test deferralRuleset → DEFERRED
+      - Test repeatRuleset → REPEAT
+      - Test exclusionRuleset → EXCLUDED
+      - If nothing matches → PENDING
+   f. Compute the rank (ordered by descending average)
+5. Upsert the deliberationStudentResults
+6. Update the deliberation statistics
+7. Log "computed"
+8. Return the full preview
 ```
 
 #### `overrideStudentDecision(input, actorId, institutionId)`
 
 ```
-1. Vérifier status = "open"
-2. Vérifier que le résultat existe
-3. Sauvegarder l'ancienne décision
-4. Mettre à jour :
+1. Check status = "open"
+2. Check that the result exists
+3. Save the previous decision
+4. Update:
    - decision = input.newDecision
    - decisionSource = "manual"
-   - juryObservation = input.reason (obligatoire)
-5. Logger "decision_overridden" avec previousValue et newValue
-6. Recalculer les statistiques de la délibération
+   - juryObservation = input.reason (required)
+5. Log "decision_overridden" with previousValue and newValue
+6. Recompute the deliberation statistics
 ```
 
 #### `overrideUEDecision(input, actorId, institutionId)`
 
 ```
-1. Vérifier status = "open"
-2. Récupérer le résultat de l'étudiant
-3. Modifier l'UE concernée dans ueResults :
+1. Check status = "open"
+2. Fetch the student's result
+3. Modify the relevant UE in ueResults:
    - decision = input.newDecision
    - decisionSource = "manual"
    - creditsEarned = (newDecision in ["ACQUIRED","COMPENSATED"]) ? ueCredits : 0
-4. Recalculer totalCreditsEarned pour l'étudiant
-5. Logger "ue_decision_overridden"
+4. Recompute totalCreditsEarned for the student
+5. Log "ue_decision_overridden"
 ```
 
 #### `close(id, actorId, institutionId)`
 
 ```
-1. Vérifier status = "open"
-2. Vérifier qu'aucun étudiant n'a decision = "PENDING"
-   (tous doivent avoir une décision)
-3. Figer les résultats : prendre un snapshot de evaluationData pour chaque étudiant
-4. Calculer les statistiques finales
-5. Mettre à jour status = "closed", closedAt = now()
-6. Logger "closed"
+1. Check status = "open"
+2. Check that no student has decision = "PENDING"
+   (all must have a decision)
+3. Freeze the results: take a snapshot of evaluationData for each student
+4. Compute the final statistics
+5. Update status = "closed", closedAt = now()
+6. Log "closed"
 ```
 
 #### `reopen(id, reason, actorId, institutionId)`
 
 ```
-1. Vérifier status = "closed" (pas "signed")
-2. Vérifier que reason est non vide
-3. Mettre à jour status = "open", closedAt = null
-4. Logger "reopened" avec reason
+1. Check status = "closed" (not "signed")
+2. Check that reason is not empty
+3. Update status = "open", closedAt = null
+4. Log "reopened" with reason
 ```
 
 #### `sign(id, actorId, institutionId)`
 
 ```
-1. Vérifier status = "closed"
-2. Vérifier que l'acteur est le président du jury OU un super_admin
-3. Mettre à jour status = "signed", signedAt = now()
-4. Logger "signed"
-5. Après signature : la délibération est DÉFINITIVE (lecture seule)
+1. Check status = "closed"
+2. Check that the actor is the jury president OR a super_admin
+3. Update status = "signed", signedAt = now()
+4. Log "signed"
+5. After signing: the deliberation is FINAL (read-only)
 ```
 
 ---
 
-## 6. Requêtes base de données (Repo)
+## 6. Database queries (Repo)
 
 ### `deliberations.repo.ts`
 
-#### Requêtes principales
+#### Main queries
 
 ```typescript
-// Créer une délibération
+// Create a deliberation
 createDeliberation(data): Promise<Deliberation>
 
-// Mettre à jour
+// Update
 updateDeliberation(id, data): Promise<Deliberation>
 
-// Récupérer par ID avec résultats
+// Fetch by ID with results
 getDeliberationById(id, institutionId): Promise<Deliberation & { results: StudentResult[] }>
 
-// Lister avec filtres et pagination
+// List with filters and pagination
 listDeliberations(opts: {
   institutionId: string;
   classId?: string;
@@ -644,44 +644,44 @@ listDeliberations(opts: {
   limit?: number;
 }): Promise<{ items: Deliberation[], nextCursor?: string }>
 
-// Vérifier l'unicité
+// Check uniqueness
 findExistingDeliberation(classId, semesterId, academicYearId, type): Promise<Deliberation | null>
 
-// Supprimer (draft only)
+// Delete (draft only)
 deleteDeliberation(id): Promise<void>
 ```
 
-#### Résultats étudiants
+#### Student results
 
 ```typescript
-// Upsert un résultat étudiant
+// Upsert a student result
 upsertStudentResult(data): Promise<StudentResult>
 
-// Upsert en lot
+// Bulk upsert
 bulkUpsertStudentResults(deliberationId, results[]): Promise<void>
 
-// Récupérer un résultat
+// Fetch a result
 getStudentResult(deliberationId, studentId): Promise<StudentResult | null>
 
-// Récupérer tous les résultats d'une délibération
+// Fetch all results of a deliberation
 getDeliberationResults(deliberationId): Promise<StudentResult[]>
 
-// Mettre à jour une décision
+// Update a decision
 updateStudentDecision(deliberationId, studentId, decision, decisionSource, observation?): Promise<void>
 
-// Mettre à jour les résultats UE d'un étudiant
+// Update a student's UE results
 updateStudentUEResults(deliberationId, studentId, ueResults): Promise<void>
 ```
 
-#### Données pour le calcul (réutilise ExportsRepo)
+#### Data for the computation (reuses ExportsRepo)
 
 ```typescript
-// Réutilise les requêtes existantes de exports.repo.ts :
+// Reuses the existing queries of exports.repo.ts:
 // - getPVData(classId, semesterId, academicYearId)
 // - getUEData(teachingUnitId, classId, semesterId, academicYearId)
-// Ces requêtes fournissent déjà : étudiants, cours, UE, examens, notes
+// These queries already provide: students, courses, UEs, exams, grades
 
-// Requêtes additionnelles :
+// Additional queries:
 getStudentDeliberationHistory(studentId, institutionId): Promise<{
   previousDecisions: { academicYearId: string, decision: string }[];
   consecutiveRepeats: number;
@@ -692,7 +692,7 @@ getStudentDeliberationHistory(studentId, institutionId): Promise<{
 #### Logs
 
 ```typescript
-// Ajouter un log
+// Add a log
 addLog(data: {
   deliberationId: string;
   actorId: string;
@@ -703,19 +703,19 @@ addLog(data: {
   reason?: string;
 }): Promise<void>
 
-// Lister les logs
+// List the logs
 getLogs(deliberationId, cursor?, limit?): Promise<{ items: Log[], nextCursor?: string }>
 ```
 
 ---
 
-## 7. Schémas de validation (Zod)
+## 7. Validation schemas (Zod)
 
 ```typescript
-// === Création ===
+// === Creation ===
 const createDeliberationSchema = z.object({
   classId: z.string().min(1),
-  semesterId: z.string().optional(),       // null = annuelle
+  semesterId: z.string().optional(),       // null = annual
   academicYearId: z.string().min(1),
   type: z.enum(["semester", "annual", "retake"]),
   label: z.string().optional(),
@@ -731,18 +731,18 @@ const createDeliberationSchema = z.object({
   sessionDate: z.date().optional(),
 });
 
-// === Mise à jour ===
+// === Update ===
 const updateDeliberationSchema = z.object({
   id: z.string().min(1),
   label: z.string().optional(),
   notes: z.string().optional(),
-  juryMembers: z.array(/* même schema que ci-dessus */).optional(),
+  juryMembers: z.array(/* same schema as above */).optional(),
   presidentId: z.string().optional(),
   sessionDate: z.date().optional(),
   ruleId: z.string().optional(),
 });
 
-// === Override décision étudiant ===
+// === Student decision override ===
 const overrideStudentDecisionSchema = z.object({
   deliberationId: z.string().min(1),
   studentId: z.string().min(1),
@@ -750,7 +750,7 @@ const overrideStudentDecisionSchema = z.object({
   reason: z.string().min(10, "La justification doit faire au moins 10 caractères"),
 });
 
-// === Override décision UE ===
+// === UE decision override ===
 const overrideUEDecisionSchema = z.object({
   deliberationId: z.string().min(1),
   studentId: z.string().min(1),
@@ -759,7 +759,7 @@ const overrideUEDecisionSchema = z.object({
   reason: z.string().min(10),
 });
 
-// === Override en lot ===
+// === Bulk override ===
 const bulkOverrideSchema = z.object({
   deliberationId: z.string().min(1),
   overrides: z.array(z.object({
@@ -769,19 +769,19 @@ const bulkOverrideSchema = z.object({
   })).min(1),
 });
 
-// === Calcul ===
+// === Computation ===
 const computeSchema = z.object({
   id: z.string().min(1),
   ruleId: z.string().optional(),
 });
 
-// === Réouverture ===
+// === Reopening ===
 const reopenSchema = z.object({
   id: z.string().min(1),
   reason: z.string().min(10, "La raison de réouverture est obligatoire"),
 });
 
-// === Liste ===
+// === List ===
 const listDeliberationsSchema = z.object({
   classId: z.string().optional(),
   academicYearId: z.string().optional(),
@@ -791,18 +791,18 @@ const listDeliberationsSchema = z.object({
   limit: z.number().min(1).max(100).default(50),
 });
 
-// === Export DIPLOMATION ===
+// === DIPLOMATION export ===
 const exportDiplomationSchema = z.object({
   deliberationId: z.string().min(1),
   exportType: z.enum(["diploma", "attestation", "transcript", "centre_attestation"]),
-  // Champs optionnels (pré-remplissage des colonnes vides)
+  // Optional fields (pre-filling of empty columns)
   titreDiplomeFr: z.string().optional(),
   titreDiplomeEn: z.string().optional(),
   sessionExamen: z.string().optional(),
   lieuDelivrance: z.string().optional(),
 });
 
-// === Règle de délibération ===
+// === Deliberation rule ===
 const createDelibRuleSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
@@ -822,15 +822,15 @@ const createDelibRuleSchema = z.object({
 
 ---
 
-## 8. Workflow complet
+## 8. Complete workflow
 
-### Scénario type : Délibération de fin de semestre
+### Typical scenario: end-of-semester deliberation
 
 ```
-PHASE 1 — PRÉPARATION
+PHASE 1 — PREPARATION
 ═══════════════════════
 
-1. Admin crée la délibération
+1. Admin creates the deliberation
    POST deliberations.create {
      classId: "L1-INFO-2024",
      semesterId: "S1",
@@ -840,7 +840,7 @@ PHASE 1 — PRÉPARATION
    }
    → status = "draft"
 
-2. Admin constitue le jury
+2. Admin forms the jury
    PUT deliberations.update {
      id: "delib-001",
      juryMembers: [
@@ -854,42 +854,42 @@ PHASE 1 — PRÉPARATION
    }
 
 
-PHASE 2 — OUVERTURE ET CALCUL
+PHASE 2 — OPENING AND COMPUTATION
 ══════════════════════════════
 
-3. Admin ouvre la délibération
+3. Admin opens the deliberation
    POST deliberations.open { id: "delib-001" }
    → status = "open"
-   → Vérifie : jury non vide, président défini
+   → Checks: jury not empty, president set
 
-4. Admin lance le calcul automatique
+4. Admin runs the automatic computation
    POST deliberations.compute {
      id: "delib-001",
-     ruleId: "rule-L1-standard"    // Optionnel, sinon utilise la règle liée
+     ruleId: "rule-L1-standard"    // Optional, otherwise uses the linked rule
    }
-   → Pour chaque étudiant :
-     - Calcule les notes CC + Examen par cours
-     - Résout les rattrapages (replace/best_of)
-     - Calcule les moyennes par UE
-     - Détermine les décisions par UE (Acquis/Non Acquis/Incomplet)
-     - Applique la compensation si autorisée
-     - Calcule la moyenne générale
-     - Évalue les règles de délibération
-     - Attribue le grade et la mention
-     - Calcule le rang
-   → Retourne le preview complet
+   → For each student:
+     - Computes the CC + Exam grades per course
+     - Resolves retakes (replace/best_of)
+     - Computes the averages per UE
+     - Determines the decisions per UE (Acquired/Not acquired/Incomplete)
+     - Applies compensation if allowed
+     - Computes the overall average
+     - Evaluates the deliberation rules
+     - Assigns the grade and the honor
+     - Computes the rank
+   → Returns the full preview
 
 
-PHASE 3 — EXAMEN PAR LE JURY
+PHASE 3 — REVIEW BY THE JURY
 ═════════════════════════════
 
-5. Le jury examine les résultats
+5. The jury reviews the results
    GET deliberations.preview { id: "delib-001" }
-   → Affiche tous les étudiants avec leurs décisions suggérées
+   → Shows all students with their suggested decisions
 
-6. Le jury surcharge certaines décisions
+6. The jury overrides some decisions
 
-   Exemple 1 : Un étudiant avec 9.8 de moyenne, le jury décide de l'admettre
+   Example 1: A student with a 9.8 average; the jury decides to admit them
    POST deliberations.overrideStudentDecision {
      deliberationId: "delib-001",
      studentId: "student-042",
@@ -897,7 +897,7 @@ PHASE 3 — EXAMEN PAR LE JURY
      reason: "Moyenne très proche du seuil (9.8/10), progression régulière, pas d'échec éliminatoire"
    }
 
-   Exemple 2 : Le jury compense une UE
+   Example 2: The jury compensates a UE
    POST deliberations.overrideUEDecision {
      deliberationId: "delib-001",
      studentId: "student-042",
@@ -907,60 +907,60 @@ PHASE 3 — EXAMEN PAR LE JURY
    }
 
 
-PHASE 4 — CLÔTURE
+PHASE 4 — CLOSING
 ══════════════════
 
-7. Admin clôture la délibération
+7. Admin closes the deliberation
    POST deliberations.close { id: "delib-001" }
-   → Vérifie : aucun étudiant en "PENDING"
-   → Fige les résultats (snapshot evaluationData)
-   → Calcule les statistiques finales
+   → Checks: no student in "PENDING"
+   → Freezes the results (evaluationData snapshot)
+   → Computes the final statistics
    → status = "closed"
 
-8. (Optionnel) Si erreur détectée après clôture
+8. (Optional) If an error is found after closing
    POST deliberations.reopen {
      id: "delib-001",
      reason: "Erreur sur la note de l'étudiant NDONG en Physique, correction nécessaire"
    }
    → status = "open"
-   → Le jury peut modifier puis re-clôturer
+   → The jury can edit and then close again
 
 
-PHASE 5 — SIGNATURE ET EXPORTS
+PHASE 5 — SIGNATURE AND EXPORTS
 ═══════════════════════════════
 
-9. Le président signe
+9. The president signs
    POST deliberations.sign { id: "delib-001" }
-   → status = "signed" (DÉFINITIF)
-   → Plus aucune modification possible
+   → status = "signed" (FINAL)
+   → No further modification possible
 
-10. Admin génère le PV officiel
+10. Admin generates the official PV
     POST deliberations.generatePV {
       id: "delib-001",
       format: "pdf"
     }
-    → PDF avec en-tête institutionnel, tableau des résultats, signatures du jury
+    → PDF with institutional header, results table, jury signatures
 
-11. Admin exporte pour DIPLOMATION
+11. Admin exports for DIPLOMATION
     POST deliberations.exportForDiplomation {
       deliberationId: "delib-001",
       exportType: "attestation"
     }
-    → Fichier Excel .xlsx au format DIPLOMATION
-    → Colonnes remplies automatiquement depuis les résultats de délibération
-    → Colonnes vides marquées (voir docs/integration-diplomation.md §3)
+    → Excel .xlsx file in DIPLOMATION format
+    → Columns filled automatically from the deliberation results
+    → Empty columns flagged (see docs/integration-diplomation.md §3)
 
 
-PHASE 6 — PROMOTION (module existant)
+PHASE 6 — PROMOTION (existing module)
 ══════════════════════════════════════
 
-12. Les étudiants ADMITTED/ADMITTED_COMPENSATED sont éligibles à la promotion
-    → Le module promotionRules existant prend le relais
-    → evaluateClass utilise les données mises à jour
-    → applyPromotion déplace les étudiants vers la classe suivante
+12. ADMITTED/ADMITTED_COMPENSATED students are eligible for promotion
+    → The existing promotionRules module takes over
+    → evaluateClass uses the updated data
+    → applyPromotion moves the students to the next class
 ```
 
-### Diagramme d'états
+### State diagram
 
 ```
                   ┌───────┐
@@ -979,21 +979,21 @@ PHASE 6 — PROMOTION (module existant)
             │         │ sign()
             │         ▼
             │     ┌────────┐
-            │     │ signed │  ← DÉFINITIF
+            │     │ signed │  ← FINAL
             │     └────────┘
             │
-            └── compute() (peut être appelé plusieurs fois en status "open")
+            └── compute() (can be called several times in "open" status)
 ```
 
 ---
 
-## 9. Règles de délibération
+## 9. Deliberation rules
 
-### Format json-rules-engine
+### json-rules-engine format
 
-Les règles utilisent les `DeliberationFacts` comme source de données.
+The rules use the `DeliberationFacts` as their data source.
 
-#### Règle d'admission standard
+#### Standard admission rule
 
 ```json
 {
@@ -1011,7 +1011,7 @@ Les règles utilisent les `DeliberationFacts` comme source de données.
 }
 ```
 
-#### Règle de compensation
+#### Compensation rule
 
 ```json
 {
@@ -1032,7 +1032,7 @@ Les règles utilisent les `DeliberationFacts` comme source de données.
 }
 ```
 
-#### Règle d'ajournement (rattrapage)
+#### Deferral rule (retake)
 
 ```json
 {
@@ -1051,7 +1051,7 @@ Les règles utilisent les `DeliberationFacts` comme source de données.
 }
 ```
 
-#### Règle de redoublement
+#### Repeat rule
 
 ```json
 {
@@ -1078,7 +1078,7 @@ Les règles utilisent les `DeliberationFacts` comme source de données.
 }
 ```
 
-#### Règle d'exclusion
+#### Exclusion rule
 
 ```json
 {
@@ -1095,38 +1095,38 @@ Les règles utilisent les `DeliberationFacts` comme source de données.
 }
 ```
 
-### Ordre d'évaluation des règles
+### Rule evaluation order
 
-Les règles sont évaluées dans un ordre de priorité strict :
+The rules are evaluated in a strict priority order:
 
 ```
-1. exclusionRuleset     → EXCLUDED (priorité la plus haute)
+1. exclusionRuleset     → EXCLUDED (highest priority)
 2. repeatRuleset        → REPEAT
 3. deferralRuleset      → DEFERRED
 4. compensationRuleset  → ADMITTED_COMPENSATED
 5. admissionRuleset     → ADMITTED
-6. (aucun match)        → PENDING
+6. (no match)           → PENDING
 ```
 
-Le premier match gagne. Cela garantit qu'un étudiant exclu ne peut pas être "sauvé" par une règle d'admission.
+The first match wins. This guarantees that an excluded student cannot be "saved" by an admission rule.
 
 ---
 
-## 10. Intégration avec les modules existants
+## 10. Integration with existing modules
 
-### Modules réutilisés
+### Reused modules
 
-| Module existant | Ce qu'il fournit à la délibération |
+| Existing module | What it provides to the deliberation |
 |----------------|-----------------------------------|
-| `exports.repo` | Requêtes `getPVData`, `getUEData` pour récupérer notes, examens, UE |
-| `exports.service` | `processPVData`, `resolveStudentGradesWithRetakes` pour le calcul des moyennes |
+| `exports.repo` | `getPVData`, `getUEData` queries to fetch grades, exams, UEs |
+| `exports.service` | `processPVData`, `resolveStudentGradesWithRetakes` for computing averages |
 | `template-helper` | `getExportConfig`, `getAppreciation`, `formatNumber` |
-| `student-facts.service` | `buildStudentFacts` pour calculer les StudentPromotionFacts |
-| `student-credit-ledger` | `computeUeCredits` pour les crédits par UE |
-| `promotion-rules` | Après la délibération, les étudiants admis deviennent éligibles aux promotions |
-| `institutions` | Configuration `export_config` (note de passage, appréciations, signatures) |
+| `student-facts.service` | `buildStudentFacts` to compute the StudentPromotionFacts |
+| `student-credit-ledger` | `computeUeCredits` for the credits per UE |
+| `promotion-rules` | After the deliberation, admitted students become eligible for promotions |
+| `institutions` | `export_config` configuration (passing grade, appraisals, signatures) |
 
-### Nouvelles dépendances
+### New dependencies
 
 ```
 deliberations.service
@@ -1136,112 +1136,112 @@ deliberations.service
   ├── imports from student-credit-ledger (computeUeCredits)
   ├── imports from template-helper (getExportConfig)
   ├── imports from json-rules-engine (Engine)
-  └── imports from exceljs (pour l'export DIPLOMATION)
+  └── imports from exceljs (for the DIPLOMATION export)
 ```
 
-### Impact sur les modules existants
+### Impact on existing modules
 
 | Module | Impact |
 |--------|--------|
-| `exports` | Aucune modification. Les exports PV existants continuent de fonctionner indépendamment. La délibération **consomme** les mêmes données mais ajoute les décisions du jury. |
-| `promotions` | Aucune modification. Le module de promotion peut consulter les résultats de délibération pour vérifier qu'un étudiant a été admis avant de le promouvoir. |
-| `grades` | Aucune modification. La délibération lit les notes mais ne les modifie jamais. |
-| `student-promotion-summaries` | Aucune modification. La délibération crée ses propres snapshots (evaluationData) indépendamment des summaries existantes. |
+| `exports` | No modification. The existing PV exports keep working independently. The deliberation **consumes** the same data but adds the jury's decisions. |
+| `promotions` | No modification. The promotion module can consult the deliberation results to check that a student was admitted before promoting them. |
+| `grades` | No modification. The deliberation reads the grades but never modifies them. |
+| `student-promotion-summaries` | No modification. The deliberation creates its own snapshots (evaluationData) independently of the existing summaries. |
 
 ---
 
-## 11. Lien avec DIPLOMATION
+## 11. Link with DIPLOMATION
 
-L'endpoint `exportForDiplomation` génère un fichier Excel à partir des résultats d'une délibération **signée**.
+The `exportForDiplomation` endpoint generates an Excel file from the results of a **signed** deliberation.
 
-### Avantage par rapport à un export "brut"
+### Advantage over a "raw" export
 
-Quand l'export part d'une **délibération signée** plutôt que des données brutes :
+When the export starts from a **signed deliberation** rather than from raw data:
 
-| Donnée | Export brut (sans délibération) | Export depuis délibération |
+| Data | Raw export (without deliberation) | Export from deliberation |
 |--------|--------------------------------|---------------------------|
-| Décision | Calculée à la volée, non validée | **Officielle**, validée par le jury |
-| Mention | Calculée depuis la moyenne | **Confirmée/surchargée** par le jury |
-| Moyenne | Dernière valeur en base | **Figée** au moment de la clôture |
-| Crédits | Calculés dynamiquement | **Validés** par le jury (avec compensations) |
-| Rang | Non calculé | **Officiel** |
-| Audit | Aucun | Qui a décidé quoi, quand, pourquoi |
+| Decision | Computed on the fly, not validated | **Official**, validated by the jury |
+| Honor | Computed from the average | **Confirmed/overridden** by the jury |
+| Average | Latest value in the database | **Frozen** at closing time |
+| Credits | Computed dynamically | **Validated** by the jury (with compensations) |
+| Rank | Not computed | **Official** |
+| Audit | None | Who decided what, when, why |
 
-### Colonnes DIPLOMATION alimentées par la délibération
+### DIPLOMATION columns fed by the deliberation
 
-#### Diplôme — Colonnes supplémentaires remplies grâce à la délibération
+#### Diploma — Additional columns filled thanks to the deliberation
 
-| Colonne | Sans délibération | Avec délibération |
+| Column | Without deliberation | With deliberation |
 |---------|-------------------|-------------------|
-| `MENTION` | 🔶 Calculé | ✅ Mention officielle du jury |
-| `GRADE` | 🔶 Calculé | ✅ Grade officiel |
-| `DATE JURY DELIBERATION` | ❌ VIDE | ✅ `deliberations.sessionDate` |
+| `MENTION` | 🔶 Computed | ✅ Official honor from the jury |
+| `GRADE` | 🔶 Computed | ✅ Official grade |
+| `DATE JURY DELIBERATION` | ❌ EMPTY | ✅ `deliberations.sessionDate` |
 
-#### Attestation — Colonnes supplémentaires
+#### Attestation — Additional columns
 
-| Colonne | Sans délibération | Avec délibération |
+| Column | Without deliberation | With deliberation |
 |---------|-------------------|-------------------|
-| `MENTION` | 🔶 Calculé | ✅ Officielle |
-| `GRADE` | 🔶 Calculé | ✅ Officiel |
-| `DATE JURY` | ❌ VIDE | ✅ `deliberations.sessionDate` |
-| `TOTAL CREDIT` | ✅ Depuis summaries | ✅ Depuis résultats validés par le jury |
+| `MENTION` | 🔶 Computed | ✅ Official |
+| `GRADE` | 🔶 Computed | ✅ Official |
+| `DATE JURY` | ❌ EMPTY | ✅ `deliberations.sessionDate` |
+| `TOTAL CREDIT` | ✅ From summaries | ✅ From results validated by the jury |
 
-### Données toujours non disponibles (même avec délibération)
+### Data still unavailable (even with a deliberation)
 
-Ces colonnes restent vides même avec le module de délibération :
+These columns remain empty even with the deliberation module:
 
-- `TITRE DIPLOME FR / EN` — Titre officiel du diplôme (contexte institutionnel)
-- `DATE JURY ADMISSION` — Date du jury initial d'admission
-- `DOMAINE / DOMAINE_EN` — Domaine d'études
-- `FINALITE / FINALITE_EN` — Finalité (professionnelle/recherche)
-- `PARCOURS_EN / SPECIALITE_EN` — Traductions anglaises
-- `SESSION_EXAMEN` — Session d'examen (juin/septembre)
-- `LIEU_DELIVRANCE` — Lieu de délivrance
-- `TITRE_ATTESTATION_FR / EN` — Titres personnalisés
+- `TITRE DIPLOME FR / EN` — Official title of the diploma (institutional context)
+- `DATE JURY ADMISSION` — Date of the initial admission jury
+- `DOMAINE / DOMAINE_EN` — Field of study
+- `FINALITE / FINALITE_EN` — Purpose (professional/research)
+- `PARCOURS_EN / SPECIALITE_EN` — English translations
+- `SESSION_EXAMEN` — Exam session (June/September)
+- `LIEU_DELIVRANCE` — Place of issue
+- `TITRE_ATTESTATION_FR / EN` — Custom titles
 
 ---
 
-## 12. Structure des fichiers
+## 12. File structure
 
 ```
 apps/server/src/modules/deliberations/
-├── index.ts                            # Export du router
-├── deliberations.router.ts             # Endpoints tRPC (section 4)
-├── deliberations.service.ts            # Logique métier (section 5)
-├── deliberations.repo.ts               # Requêtes DB (section 6)
-├── deliberations.zod.ts                # Schémas Zod (section 7)
-├── deliberations.types.ts              # Types TypeScript (section 3)
-├── deliberation-facts.service.ts       # Calcul des DeliberationFacts
-├── deliberation-rules.service.ts       # Évaluation des règles json-rules-engine
-├── deliberation-rules.router.ts        # CRUD des règles (sous-router)
-├── deliberation-rules.repo.ts          # Requêtes pour les règles
-├── deliberation-rules.zod.ts           # Validation des règles
-├── deliberation-export.service.ts      # Génération Excel DIPLOMATION
-├── deliberation-pv.service.ts          # Génération PV PDF/HTML
+├── index.ts                            # Router export
+├── deliberations.router.ts             # tRPC endpoints (section 4)
+├── deliberations.service.ts            # Business logic (section 5)
+├── deliberations.repo.ts               # DB queries (section 6)
+├── deliberations.zod.ts                # Zod schemas (section 7)
+├── deliberations.types.ts              # TypeScript types (section 3)
+├── deliberation-facts.service.ts       # Computation of the DeliberationFacts
+├── deliberation-rules.service.ts       # Evaluation of the json-rules-engine rules
+├── deliberation-rules.router.ts        # Rules CRUD (sub-router)
+├── deliberation-rules.repo.ts          # Queries for the rules
+├── deliberation-rules.zod.ts           # Rule validation
+├── deliberation-export.service.ts      # DIPLOMATION Excel generation
+├── deliberation-pv.service.ts          # PDF/HTML PV generation
 └── __tests__/
-    ├── deliberations.caller.test.ts    # Tests du cycle de vie
-    ├── deliberation-compute.test.ts    # Tests du calcul
-    ├── deliberation-rules.test.ts      # Tests des règles
-    └── deliberation-export.test.ts     # Tests de l'export
+    ├── deliberations.caller.test.ts    # Lifecycle tests
+    ├── deliberation-compute.test.ts    # Computation tests
+    ├── deliberation-rules.test.ts      # Rule tests
+    └── deliberation-export.test.ts     # Export tests
 ```
 
-### Ajout au router principal
+### Adding to the main router
 
 ```typescript
 // apps/server/src/routers/index.ts
 import { deliberationsRouter } from "../modules/deliberations";
 
 export const appRouter = router({
-  // ... routers existants
+  // ... existing routers
   deliberations: deliberationsRouter,
 });
 ```
 
-### Ajout au schéma
+### Adding to the schema
 
 ```typescript
 // apps/server/src/db/schema/app-schema.ts
-// Ajouter les 4 nouvelles tables :
+// Add the 4 new tables:
 // - deliberations
 // - deliberationStudentResults
 // - deliberationRules
@@ -1252,7 +1252,7 @@ export const appRouter = router({
 
 ## 13. Tests
 
-### Tests du cycle de vie
+### Lifecycle tests
 
 ```typescript
 describe("deliberations lifecycle", () => {
@@ -1266,7 +1266,7 @@ describe("deliberations lifecycle", () => {
 });
 ```
 
-### Tests du calcul
+### Computation tests
 
 ```typescript
 describe("deliberations compute", () => {
@@ -1283,7 +1283,7 @@ describe("deliberations compute", () => {
 });
 ```
 
-### Tests des décisions
+### Decision tests
 
 ```typescript
 describe("deliberation decisions", () => {
@@ -1298,7 +1298,7 @@ describe("deliberation decisions", () => {
 });
 ```
 
-### Tests de l'export
+### Export tests
 
 ```typescript
 describe("deliberation export", () => {
@@ -1314,35 +1314,35 @@ describe("deliberation export", () => {
 
 ---
 
-## Annexe A — Comparaison architecturale avec Promotion Rules
+## Appendix A — Architectural comparison with Promotion Rules
 
 | Aspect | Promotion Rules | Deliberations |
 |--------|----------------|---------------|
 | **Tables** | promotionRules, promotionExecutions, promotionExecutionResults | deliberationRules, deliberations, deliberationStudentResults, deliberationLogs |
-| **Statuts** | Pas de statut (exécution unique) | draft → open → closed → signed |
-| **Règles** | 1 ruleset unique | 5 rulesets (admission, compensation, deferral, repeat, exclusion) |
-| **Granularité** | Par étudiant (promu/non promu) | Par UE + par étudiant + mention + rang |
-| **Override** | Non (tout automatique) | Oui (jury peut surcharger) |
-| **Audit** | executionResults.evaluationData | deliberationLogs (journal complet) |
-| **Output** | Déplacement d'inscriptions | PV officiel + export DIPLOMATION |
-| **Réutilisation** | buildStudentFacts, json-rules-engine | Idem + exports.repo, processPVData |
-| **Autorisation** | adminProcedure / protectedProcedure | Idem |
+| **Statuses** | No status (single execution) | draft → open → closed → signed |
+| **Rules** | 1 single ruleset | 5 rulesets (admission, compensation, deferral, repeat, exclusion) |
+| **Granularity** | Per student (promoted/not promoted) | Per UE + per student + honor + rank |
+| **Override** | No (fully automatic) | Yes (the jury can override) |
+| **Audit** | executionResults.evaluationData | deliberationLogs (full log) |
+| **Output** | Enrollments moved | Official PV + DIPLOMATION export |
+| **Reuse** | buildStudentFacts, json-rules-engine | Same + exports.repo, processPVData |
+| **Authorization** | adminProcedure / protectedProcedure | Same |
 | **Pattern** | evaluate → apply | create → open → compute → override → close → sign |
 
 ---
 
-## Annexe B — Estimation de complexité
+## Appendix B — Complexity estimate
 
-| Composant | Fichiers | Estimation |
+| Component | Files | Estimate |
 |-----------|----------|------------|
-| Schéma DB (4 tables) | 1 fichier (ajout à app-schema.ts) | ~ 200 lignes |
-| Types | deliberations.types.ts | ~ 150 lignes |
-| Zod | deliberations.zod.ts + deliberation-rules.zod.ts | ~ 200 lignes |
-| Repo | deliberations.repo.ts + deliberation-rules.repo.ts | ~ 400 lignes |
-| Service (calcul) | deliberations.service.ts + deliberation-facts.service.ts | ~ 600 lignes |
-| Service (règles) | deliberation-rules.service.ts | ~ 200 lignes |
-| Service (export) | deliberation-export.service.ts | ~ 300 lignes |
-| Service (PV) | deliberation-pv.service.ts | ~ 200 lignes |
-| Router | deliberations.router.ts + deliberation-rules.router.ts | ~ 300 lignes |
-| Tests | 4 fichiers de tests | ~ 500 lignes |
-| **Total** | **~15 fichiers** | **~3050 lignes** |
+| DB schema (4 tables) | 1 file (addition to app-schema.ts) | ~ 200 lines |
+| Types | deliberations.types.ts | ~ 150 lines |
+| Zod | deliberations.zod.ts + deliberation-rules.zod.ts | ~ 200 lines |
+| Repo | deliberations.repo.ts + deliberation-rules.repo.ts | ~ 400 lines |
+| Service (computation) | deliberations.service.ts + deliberation-facts.service.ts | ~ 600 lines |
+| Service (rules) | deliberation-rules.service.ts | ~ 200 lines |
+| Service (export) | deliberation-export.service.ts | ~ 300 lines |
+| Service (PV) | deliberation-pv.service.ts | ~ 200 lines |
+| Router | deliberations.router.ts + deliberation-rules.router.ts | ~ 300 lines |
+| Tests | 4 test files | ~ 500 lines |
+| **Total** | **~15 files** | **~3050 lines** |

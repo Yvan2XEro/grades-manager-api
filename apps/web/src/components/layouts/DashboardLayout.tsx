@@ -1,6 +1,6 @@
 import type React from "react";
 import { useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet } from "react-router";
 import { useStore } from "../../store";
 import { HelpWidget } from "../help/HelpWidget";
 import Header from "../navigation/Header";
@@ -9,17 +9,6 @@ import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const DashboardLayout: React.FC = () => {
 	const { user, setSidebarOpen } = useStore();
-	const navigate = useNavigate();
-	const location = useLocation();
-
-	// Redirect if not authenticated
-	useEffect(() => {
-		if (!user) {
-			navigate(`/auth/login?return=${location.pathname}`, {
-				replace: true,
-			});
-		}
-	}, [user, navigate, location.pathname]);
 
 	// Close sidebar on mobile when navigating
 	useEffect(() => {
@@ -28,15 +17,17 @@ const DashboardLayout: React.FC = () => {
 		}
 	}, [setSidebarOpen]);
 
+	// App only mounts this layout with a session (the `*` route sends guests to
+	// login with a return URL); the store user follows the session on the next tick
 	if (!user) {
 		return null;
 	}
 
 	return (
 		<div className="relative isolate flex h-dvh overflow-hidden bg-background">
-			{/* Définition du filtre SVG d'ondulation — doit précéder le motif */}
+			{/* SVG wave filter definition — must come before the pattern */}
 			<GridWaveFilter />
-			{/* Motif de fond — z:-1 pour rester strictement derrière le contenu */}
+			{/* Background pattern — z:-1 to stay strictly behind the content */}
 			<div className="-z-10 pointer-events-none absolute inset-0 bg-dot-pattern" />
 			<Sidebar />
 
@@ -44,7 +35,8 @@ const DashboardLayout: React.FC = () => {
 				<Header />
 
 				<main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
-					<div className="min-w-0 px-4 py-6 md:px-8">
+					{/* Bounded on md+ so list pages can keep only their table rows scrolling */}
+					<div className="flex min-h-full min-w-0 flex-col px-4 pt-6 *:w-full *:shrink-0 after:block after:h-6 after:shrink-0 md:h-full md:px-8">
 						<Outlet />
 					</div>
 				</main>

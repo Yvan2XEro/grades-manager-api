@@ -15,8 +15,6 @@ import * as creditLedger from "../student-credit-ledger/student-credit-ledger.se
 import * as studentsRepo from "../students/students.repo";
 import * as repo from "./grades.repo";
 
-const _CSV_HEADERS = ["registrationNumber", "score"];
-
 async function requireExamForInstitution(
 	examId: string,
 	institutionId: string,
@@ -78,19 +76,6 @@ async function requireCourseForInstitution(
 function ensureExamEditable(exam: schema.Exam | undefined | null) {
 	if (!exam) throw notFound();
 	if (exam.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
-}
-
-/** Resolve academicYearId from exam → classCourse → class chain. */
-async function resolveAcademicYearId(
-	classCourseId: string,
-): Promise<string | null> {
-	const [row] = await db
-		.select({ academicYear: schema.classes.academicYear })
-		.from(schema.classCourses)
-		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
-		.where(eq(schema.classCourses.id, classCourseId))
-		.limit(1);
-	return row?.academicYear ?? null;
 }
 
 /** Recompute credit ledger for a student after a grade change. */

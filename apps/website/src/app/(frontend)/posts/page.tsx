@@ -11,6 +11,7 @@ import {
 	SectionHeading,
 	SectionLabel,
 } from "@/marketing/Editorial";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import PageClient from "./page.client";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export default async function Page() {
 	});
 
 	return (
-		<main className="min-h-screen bg-tk-bg pt-[68px]">
+		<main className="tk-dotgrid min-h-screen bg-tk-bg pt-[var(--tk-header-h)]">
 			<PageClient />
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="pt-12 pb-10 lg:pt-16">
@@ -78,5 +79,12 @@ export async function generateMetadata(): Promise<Metadata> {
 	return {
 		title: `${d.title} — TKAMS`,
 		description: d.sub,
+		// Mirrors this page's own title and description. Without it every
+		// page inherited the site-wide default, so sharing /tarifs showed
+		// the home page's text and image.
+		openGraph: mergeOpenGraph({
+			title: `${d.title} — TKAMS`,
+			description: d.sub,
+		}),
 	};
 }

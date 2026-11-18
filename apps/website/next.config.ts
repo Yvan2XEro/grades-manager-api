@@ -42,6 +42,12 @@ const nextConfig: NextConfig = {
 					protocol: url.protocol.replace(":", "") as "http" | "https",
 				};
 			}),
+			// Stock photography used by the homepage concept pages under
+			// /concepts. Replace with owned imagery before any of these ships.
+			{
+				hostname: "images.unsplash.com",
+				protocol: "https" as const,
+			},
 		],
 	},
 	webpack: (webpackConfig) => {

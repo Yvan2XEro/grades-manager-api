@@ -5,7 +5,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 	describe("Bulk Class Enrollment", () => {
 		it("enrolls entire class with one action", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			// Select academic year
 			cy.get('[data-testid="academic-year-select"]', {
@@ -34,7 +34,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("displays count of enrolled students", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -58,7 +58,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("handles already enrolled students gracefully", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -99,7 +99,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("enrolls all students in selected class courses", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -131,7 +131,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 	describe("Bulk Enrollment Confirmation", () => {
 		it("shows confirmation dialog before enrolling", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -153,7 +153,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("displays enrollment summary in confirmation", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -176,7 +176,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("allows canceling bulk enrollment", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -202,7 +202,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 	describe("Bulk Enrollment Report", () => {
 		it("shows enrollment report after bulk operation", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -233,7 +233,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("reports any conflicts during bulk enrollment", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -275,7 +275,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 	describe("Bulk Enrollment Performance", () => {
 		it("handles enrolling large class efficiently", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -302,7 +302,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("provides loading indicator during bulk enrollment", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -338,7 +338,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 	describe("Selective Bulk Enrollment", () => {
 		it("allows selecting specific students for bulk enrollment", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -374,7 +374,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("allows deselecting students from bulk enrollment", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -409,7 +409,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 	describe("Bulk Enrollment by Course", () => {
 		it("shows course-wise enrollment status", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -440,7 +440,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		});
 
 		it("displays enrollment count per course", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -473,7 +473,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 	describe("Bulk Unenrollment", () => {
 		it("allows bulk unenrolling entire class (if feature exists)", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,

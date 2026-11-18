@@ -1,260 +1,260 @@
-# Fonctionnalités Critiques à Tester avec Cypress
+# Critical Features to Test with Cypress
 
-Ce document liste les fonctionnalités critiques du système de gestion des notes qui doivent être couvertes par des tests E2E Cypress.
+This document lists the critical features of the grades management system that must be covered by Cypress E2E tests.
 
-## Priorité 1 - Fonctionnalités Core (Must Have)
+## Priority 1 - Core Features (Must Have)
 
-### 1. Authentification et Autorisation
+### 1. Authentication and Authorization
 **Module**: `auth`
-**Fichiers concernés**: `apps/web/src/pages/auth/`
+**Files involved**: `apps/web/src/pages/auth/`
 
-#### Tests à implémenter:
-- [ ] **Login administrateur**
-  - Connexion réussie avec credentials valides
-  - Redirection vers dashboard admin après connexion
-  - Message d'erreur avec credentials invalides
-  - Persistance de session après rafraîchissement
+#### Tests to implement:
+- [ ] **Administrator login**
+  - Successful login with valid credentials
+  - Redirect to the admin dashboard after login
+  - Error message with invalid credentials
+  - Session persists after a page refresh
 
-- [ ] **Login enseignant**
-  - Connexion réussie
-  - Redirection vers dashboard enseignant
-  - Accès uniquement aux fonctionnalités autorisées
+- [ ] **Teacher login**
+  - Successful login
+  - Redirect to the teacher dashboard
+  - Access only to authorized features
 
-- [ ] **Login étudiant**
-  - Connexion réussie
-  - Accès uniquement au dashboard étudiant
-  - Pas d'accès aux pages admin/enseignant
+- [ ] **Student login**
+  - Successful login
+  - Access only to the student dashboard
+  - No access to admin/teacher pages
 
-- [ ] **Déconnexion**
-  - Logout correct
-  - Redirection vers page de login
-  - Session invalidée
+- [ ] **Logout**
+  - Logout works correctly
+  - Redirect to the login page
+  - Session invalidated
 
-### 2. Gestion des Notes (Grade Entry)
+### 2. Grade Management (Grade Entry)
 **Module**: `grades`, `exams`
-**Fichiers concernés**: `apps/web/src/pages/teacher/GradeEntry.tsx`
+**Files involved**: `apps/web/src/pages/teacher/GradeEntry.tsx`
 
-#### Tests à implémenter:
-- [ ] **Saisie de notes par l'enseignant**
-  - Sélection d'un cours et d'un examen
-  - Saisie de notes pour plusieurs étudiants
-  - Validation des notes (0-20)
-  - Sauvegarde réussie des notes
-  - Message de confirmation
+#### Tests to implement:
+- [ ] **Grade entry by the teacher**
+  - Selecting a course and an exam
+  - Entering grades for several students
+  - Grade validation (0-20)
+  - Grades saved successfully
+  - Confirmation message
 
-- [ ] **Modification de notes existantes**
-  - Chargement des notes existantes
-  - Modification d'une note
-  - Sauvegarde de la modification
-  - Vérification de la mise à jour
+- [ ] **Editing existing grades**
+  - Loading existing grades
+  - Editing a grade
+  - Saving the change
+  - Verifying the update
 
-- [ ] **Verrouillage des notes**
-  - Notes verrouillées après validation finale
-  - Impossibilité de modifier des notes verrouillées
-  - Message d'information approprié
+- [ ] **Grade locking**
+  - Grades locked after final validation
+  - Locked grades cannot be edited
+  - Appropriate information message
 
-### 3. Gestion des Étudiants
+### 3. Student Management
 **Module**: `students`
-**Fichiers concernés**: `apps/web/src/pages/admin/StudentManagement.tsx`
+**Files involved**: `apps/web/src/pages/admin/StudentManagement.tsx`
 
-#### Tests à implémenter:
-- [ ] **Création d'étudiant**
-  - Remplissage du formulaire complet
-  - Sélection d'une classe
-  - Génération automatique du numéro d'enregistrement
-  - Vérification de la création dans la liste
+#### Tests to implement:
+- [ ] **Student creation**
+  - Filling in the full form
+  - Selecting a class
+  - Automatic generation of the registration number
+  - Verifying the student appears in the list
 
-- [ ] **Importation en masse d'étudiants**
-  - Upload d'un fichier CSV/Excel valide
-  - Traitement et création de plusieurs étudiants
-  - Rapport de succès/erreurs
-  - Gestion des doublons
+- [ ] **Bulk student import**
+  - Uploading a valid CSV/Excel file
+  - Processing and creating several students
+  - Success/error report
+  - Duplicate handling
 
-- [ ] **Modification d'étudiant**
-  - Édition des informations personnelles
-  - Changement de classe
-  - Sauvegarde des modifications
+- [ ] **Student editing**
+  - Editing personal information
+  - Changing class
+  - Saving the changes
 
-- [ ] **Recherche et filtrage**
-  - Recherche par nom
-  - Recherche par numéro d'enregistrement
-  - Filtrage par classe
-  - Résultats corrects affichés
+- [ ] **Search and filtering**
+  - Search by name
+  - Search by registration number
+  - Filtering by class
+  - Correct results displayed
 
-### 4. Gestion des Inscriptions (Enrollments)
+### 4. Enrollment Management (Enrollments)
 **Module**: `enrollments`
-**Fichiers concernés**: `apps/web/src/pages/admin/EnrollmentManagement.tsx`
+**Files involved**: `apps/web/src/pages/admin/EnrollmentManagement.tsx`
 
-#### Tests à implémenter:
-- [ ] **Inscription individuelle**
-  - Sélection d'un étudiant
-  - Sélection d'une classe
-  - Sélection d'une année académique
-  - Création de l'inscription
-  - Statut "active"
+#### Tests to implement:
+- [ ] **Individual enrollment**
+  - Selecting a student
+  - Selecting a class
+  - Selecting an academic year
+  - Creating the enrollment
+  - Status "active"
 
-- [ ] **Inscription en masse d'une classe**
-  - Sélection d'une classe entière
-  - Inscription automatique de tous les étudiants
-  - Vérification du nombre d'inscriptions créées
-  - Gestion des conflits (déjà inscrits)
+- [ ] **Bulk enrollment of a class**
+  - Selecting an entire class
+  - Automatic enrollment of all students
+  - Verifying the number of enrollments created
+  - Conflict handling (already enrolled)
 
-- [ ] **Clôture d'inscription**
-  - Changement de statut vers "completed"
-  - Historique préservé
-  - Impossibilité de modifier une inscription clôturée
+- [ ] **Enrollment closure**
+  - Status change to "completed"
+  - History preserved
+  - A closed enrollment cannot be edited
 
-### 5. Gestion des Examens
+### 5. Exam Management
 **Module**: `exams`, `exam-scheduler`
-**Fichiers concernés**:
+**Files involved**:
 - `apps/web/src/pages/admin/ExamManagement.tsx`
 - `apps/web/src/pages/admin/ExamScheduler.tsx`
 
-#### Tests à implémenter:
-- [ ] **Création d'examen manuel**
-  - Sélection d'un cours
-  - Sélection d'un type d'examen
-  - Définition de la date
-  - Définition du coefficient
-  - Création réussie
+#### Tests to implement:
+- [ ] **Manual exam creation**
+  - Selecting a course
+  - Selecting an exam type
+  - Setting the date
+  - Setting the coefficient
+  - Successful creation
 
-- [ ] **Planification automatique d'examens**
-  - Configuration des paramètres de planification
-  - Sélection de classes multiples
-  - Lancement de la génération
-  - Vérification de la création des examens
-  - Rapport de planification
+- [ ] **Automatic exam scheduling**
+  - Configuring the scheduling parameters
+  - Selecting multiple classes
+  - Starting the generation
+  - Verifying the exams were created
+  - Scheduling report
 
-- [ ] **Gestion des conflits de planning**
-  - Détection de conflits de date
-  - Message d'alerte approprié
-  - Résolution des conflits
+- [ ] **Schedule conflict handling**
+  - Detection of date conflicts
+  - Appropriate warning message
+  - Conflict resolution
 
-## Priorité 2 - Fonctionnalités Métier Importantes
+## Priority 2 - Important Business Features
 
-### 6. Règles de Passage (Promotion Rules)
+### 6. Promotion Rules
 **Module**: `promotion-rules`
-**Fichiers concernés**: `apps/web/src/pages/admin/promotion-rules/`
+**Files involved**: `apps/web/src/pages/admin/promotion-rules/`
 
-#### Tests à implémenter:
-- [ ] **Création de règle de passage**
-  - Remplissage du formulaire
-  - Définition du JSON de règle valide
-  - Activation de la règle
-  - Vérification dans la liste
+#### Tests to implement:
+- [ ] **Promotion rule creation**
+  - Filling in the form
+  - Defining a valid rule JSON
+  - Activating the rule
+  - Verifying it in the list
 
-- [ ] **Évaluation des étudiants**
-  - Sélection d'une règle
-  - Sélection d'une classe source
-  - Lancement de l'évaluation
-  - Visualisation des étudiants éligibles/non-éligibles
-  - Vérification des critères (moyenne, crédits, etc.)
+- [ ] **Student evaluation**
+  - Selecting a rule
+  - Selecting a source class
+  - Starting the evaluation
+  - Viewing eligible/ineligible students
+  - Verifying the criteria (average, credits, etc.)
 
-- [ ] **Exécution du passage**
-  - Sélection des étudiants éligibles
-  - Sélection de la classe cible
-  - Confirmation de l'opération
-  - Vérification du changement de classe
-  - Historique d'exécution créé
+- [ ] **Promotion execution**
+  - Selecting eligible students
+  - Selecting the target class
+  - Confirming the operation
+  - Verifying the class change
+  - Execution history created
 
-- [ ] **Consultation de l'historique**
-  - Liste des exécutions passées
-  - Détails d'une exécution
-  - Statistiques (taux de réussite, etc.)
+- [ ] **Viewing the history**
+  - List of past executions
+  - Details of an execution
+  - Statistics (success rate, etc.)
 
-### 7. Numéros d'Enregistrement (Registration Numbers)
+### 7. Registration Numbers
 **Module**: `registration-numbers`
-**Fichiers concernés**:
+**Files involved**:
 - `apps/web/src/pages/admin/RegistrationNumberFormats.tsx`
 - `apps/web/src/pages/admin/RegistrationNumberFormatDetail.tsx`
 
-#### Tests à implémenter:
-- [ ] **Création de format**
-  - Définition de segments (literal, counter, field)
-  - Prévisualisation du format
-  - Activation du format
-  - Désactivation automatique des autres formats
+#### Tests to implement:
+- [ ] **Format creation**
+  - Defining segments (literal, counter, field)
+  - Format preview
+  - Activating the format
+  - Automatic deactivation of the other formats
 
-- [ ] **Génération automatique**
-  - Création d'étudiant sans numéro manuel
-  - Vérification de la génération automatique
-  - Incrémentation correcte du compteur
-  - Unicité des numéros générés
+- [ ] **Automatic generation**
+  - Creating a student without a manual number
+  - Verifying automatic generation
+  - Correct counter increment
+  - Uniqueness of generated numbers
 
-### 8. Export de Notes
+### 8. Grade Export
 **Module**: `grades`
-**Fichiers concernés**: `apps/web/src/pages/admin/GradeExport.tsx`
+**Files involved**: `apps/web/src/pages/admin/GradeExport.tsx`
 
-#### Tests à implémenter:
-- [ ] **Export Excel par classe**
-  - Sélection d'une classe
-  - Sélection d'examens spécifiques
-  - Téléchargement du fichier Excel
-  - Vérification du contenu (noms, notes, moyennes)
+#### Tests to implement:
+- [ ] **Excel export per class**
+  - Selecting a class
+  - Selecting specific exams
+  - Downloading the Excel file
+  - Verifying the content (names, grades, averages)
 
-- [ ] **Export procès-verbal**
-  - Génération du PV pour une classe
-  - Inclusion de toutes les notes
-  - Calculs de moyennes corrects
-  - Téléchargement réussi
+- [ ] **Official minutes (procès-verbal) export**
+  - Generating the PV for a class
+  - All grades included
+  - Correct average calculations
+  - Successful download
 
-### 9. Gestion des Classes
+### 9. Class Management
 **Module**: `classes`
-**Fichiers concernés**: `apps/web/src/pages/admin/ClassManagement.tsx`
+**Files involved**: `apps/web/src/pages/admin/ClassManagement.tsx`
 
-#### Tests à implémenter:
-- [ ] **Création de classe**
-  - Sélection d'un programme
-  - Sélection d'un niveau de cycle
-  - Sélection d'une option
-  - Définition du code et nom
-  - Création réussie
+#### Tests to implement:
+- [ ] **Class creation**
+  - Selecting a program
+  - Selecting a cycle level
+  - Selecting an option
+  - Setting the code and name
+  - Successful creation
 
-- [ ] **Attribution de cours à une classe**
-  - Sélection d'une classe
-  - Ajout de cours multiples
-  - Définition des heures hebdomadaires
-  - Attribution d'enseignants
-  - Vérification des assignations
+- [ ] **Assigning courses to a class**
+  - Selecting a class
+  - Adding multiple courses
+  - Setting the weekly hours
+  - Assigning teachers
+  - Verifying the assignments
 
-## Priorité 3 - Workflows et Notifications
+## Priority 3 - Workflows and Notifications
 
-### 10. Workflows d'Approbation
+### 10. Approval Workflows
 **Module**: `workflows`
-**Fichiers concernés**:
+**Files involved**:
 - `apps/web/src/pages/teacher/WorkflowManager.tsx`
 - `apps/web/src/pages/dean/WorkflowApprovals.tsx`
 
-#### Tests à implémenter:
-- [ ] **Création de demande d'approbation (enseignant)**
-  - Soumission d'une demande de modification de note
-  - Statut "pending"
-  - Notification au doyen
+#### Tests to implement:
+- [ ] **Creating an approval request (teacher)**
+  - Submitting a grade change request
+  - Status "pending"
+  - Notification to the dean
 
-- [ ] **Approbation/Rejet (doyen)**
-  - Consultation des demandes en attente
-  - Approbation d'une demande
-  - Application automatique de la modification
-  - Notification à l'enseignant
+- [ ] **Approval/Rejection (dean)**
+  - Viewing pending requests
+  - Approving a request
+  - Automatic application of the change
+  - Notification to the teacher
 
 ### 11. Notifications
 **Module**: `notifications`
-**Fichiers concernés**: `apps/web/src/pages/admin/NotificationsCenter.tsx`
+**Files involved**: `apps/web/src/pages/admin/NotificationsCenter.tsx`
 
-#### Tests à implémenter:
-- [ ] **Réception de notifications**
-  - Création d'événement déclencheur
-  - Notification apparaît dans le centre
-  - Badge de compteur mis à jour
+#### Tests to implement:
+- [ ] **Receiving notifications**
+  - Creating a triggering event
+  - Notification appears in the center
+  - Counter badge updated
 
-- [ ] **Marquage comme lue**
-  - Clic sur notification
-  - Notification marquée comme lue
-  - Badge mis à jour
+- [ ] **Marking as read**
+  - Clicking a notification
+  - Notification marked as read
+  - Badge updated
 
-## Structure des Tests
+## Test Structure
 
-### Organisation recommandée:
+### Recommended organization:
 ```
 apps/web/cypress/e2e/
 ├── auth/
@@ -292,29 +292,29 @@ apps/web/cypress/e2e/
     └── approval-processing.cy.ts
 ```
 
-## Données de Test
+## Test Data
 
-### Fixtures nécessaires:
-- `students.json` - Liste d'étudiants types
-- `classes.json` - Classes avec programmes et niveaux
-- `exams.json` - Examens avec différents types
-- `grades.json` - Notes échantillons
-- `users.json` - Utilisateurs de test (admin, teacher, student)
-- `promotion-rules.json` - Règles de passage types
+### Required fixtures:
+- `students.json` - List of sample students
+- `classes.json` - Classes with programs and levels
+- `exams.json` - Exams of various types
+- `grades.json` - Sample grades
+- `users.json` - Test users (admin, teacher, student)
+- `promotion-rules.json` - Sample promotion rules
 
-### Seeds requis:
-- Année académique active
-- Programmes avec options
-- Facultés et cycles d'études
-- Types d'examens standards
-- Formats de numéros d'enregistrement
+### Required seeds:
+- Active academic year
+- Programs with options
+- Faculties and study cycles
+- Standard exam types
+- Registration number formats
 
-## Commandes Cypress Personnalisées
+## Custom Cypress Commands
 
-### À implémenter dans `cypress/support/commands.ts`:
+### To implement in `cypress/support/commands.ts`:
 
 ```typescript
-// Authentification
+// Authentication
 cy.loginAsAdmin()
 cy.loginAsTeacher()
 cy.loginAsStudent()
@@ -324,44 +324,44 @@ cy.logout()
 cy.visitAdminPage(pageName)
 cy.visitTeacherPage(pageName)
 
-// Données de test
+// Test data
 cy.createStudent(data)
 cy.createClass(data)
 cy.createExam(data)
 cy.enrollStudent(studentId, classId)
 
-// Nettoyage
+// Cleanup
 cy.resetDatabase()
 cy.clearNotifications()
 ```
 
-## Critères de Succès
+## Success Criteria
 
-Un test est considéré comme réussi si:
-1. ✅ Il s'exécute de manière déterministe (pas de flakiness)
-2. ✅ Il démarre d'un état connu (seeds/fixtures)
-3. ✅ Il vérifie le comportement métier (pas juste l'UI)
-4. ✅ Il nettoie après lui-même
-5. ✅ Il échoue clairement avec un message explicite
-6. ✅ Il s'exécute en moins de 30 secondes
+A test is considered successful if:
+1. ✅ It runs deterministically (no flakiness)
+2. ✅ It starts from a known state (seeds/fixtures)
+3. ✅ It checks business behavior (not just the UI)
+4. ✅ It cleans up after itself
+5. ✅ It fails clearly with an explicit message
+6. ✅ It runs in under 30 seconds
 
-## Métriques de Couverture Cibles
+## Target Coverage Metrics
 
-- **Priorité 1**: 100% de couverture requise
-- **Priorité 2**: 80% de couverture recommandée
-- **Priorité 3**: 50% de couverture acceptable
+- **Priority 1**: 100% coverage required
+- **Priority 2**: 80% coverage recommended
+- **Priority 3**: 50% coverage acceptable
 
-## Prochaines Étapes
+## Next Steps
 
-1. [ ] Configurer Cypress selon `cypress-e2e-guide.md`
-2. [ ] Implémenter les commandes personnalisées
-3. [ ] Créer les fixtures de base
-4. [ ] Commencer par les tests Priorité 1 (auth + grades)
-5. [ ] Mettre en place CI pour exécution automatique
-6. [ ] Documenter les patterns de test découverts
+1. [ ] Configure Cypress following `cypress-e2e-guide.md`
+2. [ ] Implement the custom commands
+3. [ ] Create the base fixtures
+4. [ ] Start with the Priority 1 tests (auth + grades)
+5. [ ] Set up CI for automatic execution
+6. [ ] Document the test patterns discovered
 
-## Références
+## References
 
-- [Guide d'installation Cypress](./cypress-e2e-guide.md)
-- [Architecture du système](./architecture.md)
-- [Guide de seeding](./seed-playbook.md)
+- [Cypress installation guide](./cypress-e2e-guide.md)
+- [System architecture](./architecture.md)
+- [Seeding guide](./seed-playbook.md)

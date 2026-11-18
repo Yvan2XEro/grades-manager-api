@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
-// ─── Comptes créés par le seed (20-users.yaml) ────────────────────────────────
+// ─── Accounts created by the seed (20-users.yaml) ──────────────────────────────
 export const CREDENTIALS = {
 	admin: {
 		email: "admin@inses.cm",
@@ -28,7 +28,7 @@ export const CREDENTIALS = {
 	},
 } as const;
 
-// ─── Données métier seedées ────────────────────────────────────────────────────
+// ─── Seeded business data ──────────────────────────────────────────────────────
 export const SEED_DATA = {
 	institution: {
 		name: "INSES - Institut Supérieur de l'Espoir",
@@ -74,7 +74,7 @@ export type Role = keyof typeof CREDENTIALS;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Connecte un utilisateur et attend que le dashboard soit chargé.
+ * Signs a user in and waits for the dashboard to load.
  */
 export async function loginAs(page: Page, role: Role): Promise<void> {
 	const { email, password, dashboardPath } = CREDENTIALS[role];
@@ -91,7 +91,7 @@ export async function loginAs(page: Page, role: Role): Promise<void> {
 }
 
 /**
- * Prend une capture PNG nommée dans presentation-assets/screenshots/.
+ * Takes a named PNG screenshot in presentation-assets/screenshots/.
  */
 export async function capture(page: Page, name: string): Promise<void> {
 	await page.waitForLoadState("networkidle");
@@ -102,7 +102,7 @@ export async function capture(page: Page, name: string): Promise<void> {
 }
 
 /**
- * Pause visible dans la vidéo (laisse le temps de lire l'écran).
+ * Visible pause in the video (gives time to read the screen).
  */
 export async function pause(ms = 1200): Promise<void> {
 	await new Promise((r) => setTimeout(r, ms));

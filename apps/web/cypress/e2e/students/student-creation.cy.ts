@@ -5,7 +5,7 @@ describe("Student Management - Creation", () => {
 
 	describe("Creating a Student", () => {
 		it("successfully creates a student with complete form", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Click create/add student button
 			cy.findByRole("button", {
@@ -62,7 +62,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("auto-generates registration number when format is active", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Click create student
 			cy.findByRole("button", {
@@ -118,7 +118,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("displays validation errors for missing required fields", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /add.*student|create.*student|new.*student|ajouter.*étudiant|nouvel.*étudiant/i,
@@ -136,7 +136,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("validates email format", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /add.*student|create.*student|new.*student|ajouter.*étudiant|nouvel.*étudiant/i,
@@ -170,7 +170,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("prevents duplicate emails", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			// Create first student
 			cy.findByRole("button", {
@@ -255,7 +255,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("shows created student in the list immediately", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			const firstName = "NewStudent";
 			const lastName = "TestUser";
@@ -307,7 +307,7 @@ describe("Student Management - Creation", () => {
 
 	describe("Form Validation", () => {
 		it("requires first name", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /add.*student|create.*student|new.*student|ajouter.*étudiant|nouvel.*étudiant/i,
@@ -332,7 +332,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("requires last name", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /add.*student|create.*student|new.*student|ajouter.*étudiant|nouvel.*étudiant/i,
@@ -357,7 +357,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("requires class selection", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /add.*student|create.*student|new.*student|ajouter.*étudiant|nouvel.*étudiant/i,
@@ -387,7 +387,7 @@ describe("Student Management - Creation", () => {
 
 	describe("Cancel Creation", () => {
 		it("allows canceling student creation", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /add.*student|create.*student|new.*student|ajouter.*étudiant|nouvel.*étudiant/i,
@@ -406,7 +406,7 @@ describe("Student Management - Creation", () => {
 		});
 
 		it("discards data when canceling", () => {
-			cy.loginAs("administrator", { route: "/admin/students" });
+			cy.loginAs("administrator", { route: "/users/people" });
 
 			cy.findByRole("button", {
 				name: /add.*student|create.*student|new.*student|ajouter.*étudiant|nouvel.*étudiant/i,

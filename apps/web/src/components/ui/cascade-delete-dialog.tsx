@@ -1,4 +1,5 @@
 import { AlertTriangle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./button";
 import {
 	Dialog,
@@ -30,6 +31,7 @@ export function CascadeDeleteDialog({
 	impacts,
 	isLoading,
 }: CascadeDeleteDialogProps) {
+	const { t } = useTranslation();
 	const hasImpacts = impacts.some((i) => i.count > 0);
 
 	return (
@@ -38,14 +40,14 @@ export function CascadeDeleteDialog({
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2 text-destructive">
 						<AlertTriangle className="h-5 w-5" />
-						Supprimer {entityName}
+						{t("common.cascadeDelete.title", { name: entityName })}
 					</DialogTitle>
 				</DialogHeader>
 
 				{hasImpacts && (
 					<div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
 						<p className="mb-2 font-medium text-destructive text-sm">
-							Cette action supprimera définitivement :
+							{t("common.cascadeDelete.willDelete")}
 						</p>
 						<ul className="space-y-1">
 							{impacts
@@ -67,19 +69,21 @@ export function CascadeDeleteDialog({
 				)}
 
 				<p className="text-muted-foreground text-sm">
-					Cette action est irréversible.
+					{t("common.cascadeDelete.irreversible")}
 				</p>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={onClose} disabled={isLoading}>
-						Annuler
+						{t("common.actions.cancel")}
 					</Button>
 					<Button
 						variant="destructive"
 						onClick={onConfirm}
 						disabled={isLoading}
 					>
-						{isLoading ? "Suppression..." : "Tout supprimer"}
+						{isLoading
+							? t("common.cascadeDelete.deleting")
+							: t("common.cascadeDelete.deleteAll")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

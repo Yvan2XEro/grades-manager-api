@@ -71,7 +71,7 @@ export async function validateGrades(
 	approverId: string | null | undefined,
 	institutionId: string,
 ) {
-	const exam = await requireExam(examId, institutionId);
+	await requireExam(examId, institutionId);
 	const updated = await examsService.validateExam(
 		examId,
 		approverId ?? null,
@@ -150,7 +150,7 @@ export async function rejectGrades(
 	rejectorId: string | null | undefined,
 	institutionId: string,
 ) {
-	const exam = await requireExam(examId, institutionId);
+	await requireExam(examId, institutionId);
 	const updated = await examsService.validateExam(
 		examId,
 		rejectorId ?? null,

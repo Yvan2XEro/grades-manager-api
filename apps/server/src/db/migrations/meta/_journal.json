@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1784632303052,
-      "tag": "0000_flawless_eternity",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1785337488965,
-      "tag": "0001_goofy_ultimatum",
+      "when": 1794997009767,
+      "tag": "0000_init",
       "breakpoints": true
     }
   ]

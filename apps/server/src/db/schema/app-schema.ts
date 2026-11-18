@@ -586,6 +586,11 @@ export const teachingUnits = pgTable(
 			.$type<TeachingUnitSemester>()
 			.notNull()
 			.default("annual"),
+		/** Level of the program's cycle the unit is taught in (L1, M2…); drives
+		 * which courses a class of that level receives. */
+		cycleLevelId: text("cycle_level_id").references(() => cycleLevels.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -1325,6 +1330,11 @@ export const enrollments = pgTable(
 		index("idx_enrollments_class_id").on(t.classId),
 		index("idx_enrollments_year_id").on(t.academicYearId),
 		index("idx_enrollments_admission_type").on(t.admissionType),
+		// A mid-year transfer closes the enrollment before opening another one,
+		// so only open enrollments are unique per student and year
+		uniqueIndex("uq_enrollments_open_student_year")
+			.on(t.studentId, t.academicYearId)
+			.where(sql`${t.status} in ('pending', 'active')`),
 	],
 );
 
@@ -2261,7 +2271,7 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
 	enrollments: many(enrollments),
 }));
 
-export const studyCyclesRelations = relations(studyCycles, ({ one, many }) => ({
+export const studyCyclesRelations = relations(studyCycles, ({ many }) => ({
 	levels: many(cycleLevels),
 }));
 
@@ -2959,6 +2969,28 @@ export const batchJobs = pgTable(
 		index("idx_batch_jobs_type_status").on(t.type, t.status),
 		index("idx_batch_jobs_scope_lock").on(t.institutionId, t.type, t.status),
 	],
+);
+
+/**
+ * What a guided-import job created or changed, row by row, so the import can
+ * be undone: created rows are deleted, changed rows get their `before`
+ * values back (latest entries first).
+ */
+export const importJournalEntries = pgTable(
+	"import_journal_entries",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		jobId: text("job_id")
+			.notNull()
+			.references(() => batchJobs.id, { onDelete: "cascade" }),
+		seq: integer("seq").notNull(),
+		tableName: text("table_name").notNull(),
+		rowId: text("row_id").notNull(),
+		action: text("action").$type<"create" | "update">().notNull(),
+		/** Changed fields before the import (updates only). */
+		before: jsonb("before").$type<Record<string, unknown>>(),
+	},
+	(t) => [index("idx_import_journal_job").on(t.jobId, t.seq)],
 );
 
 export const batchJobSteps = pgTable(

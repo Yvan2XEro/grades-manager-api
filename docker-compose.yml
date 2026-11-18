@@ -1,19 +1,23 @@
 # Production deployment — TKAMS portal (tkams.com)
 # Deployed as a Compose stack in Dokploy (uses Traefik for routing + SSL).
 #
+# The website image is built and pushed to GHCR by GitHub Actions
+# (.github/workflows/build-and-push.yml); the server never builds it.
+#   push to main / tag v* → latest   push to dev → dev
+# Pick another tag with WEBSITE_IMAGE_TAG (e.g. dev, 1.4.0, main-<sha>).
+#
 # First deploy:
 #   cp .env.website .env
 #   fill in secrets, then:
 #   docker compose pull && docker compose up -d
 #
-# Update (pulls latest code and rebuilds):
-#   git pull && docker compose up -d --build
+# Update:
+#   docker compose pull website && docker compose up -d website
 
 services:
   website:
-    build:
-      context: .
-      dockerfile: apps/website/Dockerfile
+    image: ghcr.io/yvan2xero/tkams-website:${WEBSITE_IMAGE_TAG:-latest}
+    pull_policy: always
     environment:
       NODE_ENV: production
       DATABASE_URL: mongodb://mongo:27017/tkams-website
@@ -39,8 +43,6 @@ services:
       GHCR_IMAGE_OWNER: ${GHCR_IMAGE_OWNER:-yvan2xero}
       GHCR_IMAGE_NAME: ${GHCR_IMAGE_NAME:-tkams}
       CRON_SECRET: ${CRON_SECRET:-}
-    # No pre-built image — Compose builds directly from source on the server.
-    # To update: git pull && docker compose up -d --build
     networks:
       - dokploy-network
       - internal

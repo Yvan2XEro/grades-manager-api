@@ -751,7 +751,7 @@ describe("cross-tenant roster regression (JVL-51)", () => {
 	});
 });
 
-// ── Attendance exemption (JVL-54 override audité) ────────────────────────────
+// ── Attendance exemption (JVL-54 audited override) ────────────────────────────
 
 describe("attendance exemption", () => {
 	async function setupBelowThreshold() {

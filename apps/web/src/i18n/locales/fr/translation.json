@@ -11,10 +11,30 @@
     },
     "filterBar": {
       "label": "Filtres",
-      "reset": "Réinitialiser"
+      "reset": "Réinitialiser",
+      "activeCount_one": "{{count}} actif",
+      "activeCount_other": "{{count}} actifs"
     },
     "datePicker": {
       "placeholder": "Choisir une date"
+    },
+    "gradingProgress": {
+      "missing_one": "{{count}} manquant",
+      "missing_other": "{{count}} manquants"
+    },
+    "weeklyGrid": {
+      "days": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Jeu",
+        "fri": "Ven",
+        "sat": "Sam",
+        "sun": "Dim"
+      }
+    },
+    "loadingScreen": {
+      "label": "Chargement"
     }
   },
   "common": {
@@ -37,14 +57,19 @@
       "deselectAll": "Tout désélectionner",
       "selectAll": "Tout sélectionner",
       "clear": "Effacer",
-      "clearFilters": "Réinitialiser les filtres"
+      "clearFilters": "Réinitialiser les filtres",
+      "followJob": "Suivre le traitement",
+      "apply": "Appliquer"
     },
     "fields": {
       "email": "E-mail",
       "password": "Mot de passe",
       "confirmPassword": "Confirmer le mot de passe",
       "firstName": "Prénom",
-      "lastName": "Nom"
+      "lastName": "Nom",
+      "name": "Nom",
+      "role": "Rôle",
+      "status": "Statut"
     },
     "status": {
       "active": "Actif",
@@ -65,7 +90,9 @@
     "pagination": {
       "next": "Suivant",
       "previous": "Précédent",
-      "page": "Page"
+      "page": "Page",
+      "showing": "{{start}}–{{end}} sur {{total}}",
+      "perPage": "{{count}} / page"
     },
     "errors": {
       "unknown": "Erreur inconnue"
@@ -108,12 +135,53 @@
     "create": "Créer",
     "yes": "Oui",
     "no": "Non",
-    "add": "Add",
-    "error": "Error",
-    "hide": "Hide",
+    "add": "Ajouter",
+    "error": "Erreur",
+    "hide": "Masquer",
     "total": "Total",
     "confirmDeleteDesc": "Cette action est irréversible.",
-    "clearFilters": "Réinitialiser les filtres"
+    "clearFilters": "Réinitialiser les filtres",
+    "back": "Retour",
+    "done": "Terminé",
+    "filters": {
+      "all": "Tous",
+      "allStatuses": "Tous les statuts"
+    },
+    "notFound": "Introuvable",
+    "saving": "Enregistrement…",
+    "suspended": "Suspendu",
+    "documentPreview": {
+      "frameTitle": "Aperçu du document"
+    },
+    "cascadeDelete": {
+      "title": "Supprimer {{name}}",
+      "willDelete": "Cette action supprimera définitivement :",
+      "irreversible": "Cette action est irréversible.",
+      "deleting": "Suppression...",
+      "deleteAll": "Tout supprimer"
+    },
+    "logo": "Logo",
+    "a11y": {
+      "breadcrumb": "Fil d'Ariane",
+      "more": "Plus",
+      "close": "Fermer",
+      "pagination": "Pagination",
+      "previousPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "morePages": "Autres pages",
+      "loading": "Chargement",
+      "hidePassword": "Masquer le mot de passe",
+      "showPassword": "Afficher le mot de passe",
+      "selectRow": "Sélectionner la ligne",
+      "clearSearch": "Effacer la recherche"
+    },
+    "itemCount_one": "{{count}} élément",
+    "itemCount_other": "{{count}} éléments",
+    "validation": {
+      "required": "Obligatoire"
+    }
   },
   "navigation": {
     "breadcrumbs": {
@@ -155,7 +223,12 @@
       "logos": "Logos",
       "authorization": "Autorisation",
       "instances": "Instances",
-      "contact": "Contact"
+      "contact": "Contact",
+      "importLegacy": "Import avancé",
+      "importCycles": "Cycles & niveaux",
+      "importPrograms": "Programmes & options",
+      "importCurriculum": "UE & EC",
+      "setup": "Mise en route & import"
     },
     "command": {
       "placeholder": "Rechercher une page…",
@@ -182,14 +255,30 @@
       "languageSelectPlaceholder": "Sélectionnez la langue",
       "profileMenuAria": "Ouvrir le menu profil",
       "search": "Rechercher…",
-      "language": "Langue"
+      "language": "Langue",
+      "lightMode": "Mode clair",
+      "darkMode": "Mode sombre",
+      "dashboard": "Tableau de bord",
+      "sound": {
+        "aria": "Paramètres sonores",
+        "volume": "Volume",
+        "disable": "Désactiver",
+        "enable": "Activer",
+        "theme": "Thème sonore",
+        "themes": {
+          "default": "Défaut",
+          "soft": "Doux",
+          "playful": "Vif",
+          "minimal": "Minimal"
+        }
+      }
     },
     "sidebar": {
       "search": "Rechercher...",
       "noResults": "Aucun résultat",
       "admin": {
         "dashboard": "Tableau de bord",
-        "academicYears": "Annees academiques",
+        "academicYears": "Années académiques",
         "exams": "Examens",
         "users": "Utilisateurs",
         "classCourses": "Cours de classes",
@@ -199,14 +288,14 @@
         "exportTemplates": "Modèles d'exportation",
         "classDocumentTemplates": "Documents par classe",
         "documentBatch": "Génération en lot",
-        "monitoring": "Monitoring",
+        "monitoring": "Supervision",
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
         "dataImport": "Import de données",
         "feeClearance": "Quitus / Frais",
         "statistics": "Statistiques",
-        "students": "Etudiants",
-        "studentPromotion": "Promotion des etudiants",
+        "students": "Étudiants",
+        "studentPromotion": "Promotion des étudiants",
         "courses": "Cours",
         "classes": "Classes",
         "faculties": "Institutions",
@@ -228,12 +317,13 @@
         "registrationNumbers": "Formats de matricule",
         "apiKeys": "Clés API",
         "gradeManagement": "Gestion des notes",
-        "promotion": "Passage d'annee",
+        "promotion": "Passage d'année",
         "configuration": "Configuration",
         "timetable": "Emploi du temps",
         "admissions": "Admissions",
         "guardians": "Parents",
-        "academicResults": "Résultats & Promotion"
+        "academicResults": "Résultats & Promotion",
+        "setup": "Mise en route & import"
       },
       "groups": {
         "overview": "Vue d'ensemble",
@@ -263,9 +353,9 @@
       },
       "dean": {
         "dashboard": "Tableau de bord",
-        "workflows": "Workflows",
+        "workflows": "Approbations",
         "history": "Historique",
-        "monitoring": "Monitoring",
+        "monitoring": "Supervision",
         "pendingApprovals": "Approbations en attente"
       },
       "student": {
@@ -287,6 +377,114 @@
       "administrator": "Administrateur",
       "super_admin": "Super administrateur",
       "owner": "Propriétaire"
+    },
+    "pages": {
+      "people": "Personnes",
+      "enrollments": "Inscriptions",
+      "admissions": "Admissions",
+      "exams": "Examens",
+      "deliberations": "Délibérations",
+      "feeAssignments": "Affectations de frais",
+      "academicYears": "Années académiques",
+      "myFees": "Mes frais",
+      "courseEnrollment": "Inscription aux cours",
+      "examCalendar": "Calendrier des examens",
+      "documents": "Documents",
+      "notifications": "Notifications",
+      "openProfile": "Ouvrir la fiche"
+    },
+    "crumbs": {
+      "academicYears": "Années académiques",
+      "institution": "Institution",
+      "overview": "Vue d'ensemble",
+      "faculties": "Facultés",
+      "cycles": "Cycles",
+      "levels": "Niveaux",
+      "centers": "Centres",
+      "logos": "Logos",
+      "authorization": "Autorisation",
+      "instances": "Instances",
+      "contact": "Contact",
+      "programs": "Programmes",
+      "teachingUnits": "Unités d'enseignement",
+      "courses": "Cours",
+      "options": "Options",
+      "programTemplates": "Modèles",
+      "classes": "Classes",
+      "courseAssignments": "Affectations de cours",
+      "enrollments": "Inscriptions",
+      "students": "Étudiants",
+      "users": "Utilisateurs",
+      "people": "Personnes",
+      "guardians": "Parents",
+      "apiKeys": "Clés API",
+      "identity": "Identité",
+      "results": "Résultats",
+      "finances": "Finances",
+      "accountAccess": "Accès au compte",
+      "exams": "Examens",
+      "examList": "Épreuves",
+      "examTypes": "Types d'épreuves",
+      "examScheduler": "Programmation des examens",
+      "participation": "Participation",
+      "gradeExport": "Export des notes",
+      "gradeAccess": "Accès aux notes",
+      "retakes": "Rattrapages",
+      "exportTemplates": "Modèles d'export",
+      "classDocuments": "Documents de classe",
+      "academicResults": "Résultats & promotion",
+      "deliberations": "Délibérations",
+      "promotion": "Passage d'année",
+      "jury": "Jury",
+      "activity": "Activité",
+      "graduation": "Diplômés",
+      "feeClearance": "Frais de scolarité",
+      "feeStructures": "Barèmes de frais",
+      "feeAssignments": "Affectations de frais",
+      "installments": "Échéances",
+      "impact": "Impact",
+      "history": "Historique",
+      "feeGating": "Restriction d'accès",
+      "timetable": "Emploi du temps",
+      "schedule": "Planning",
+      "rooms": "Salles",
+      "attendance": "Présences",
+      "attendanceRates": "Taux de présence",
+      "attendanceAlerts": "Alertes de présence",
+      "configuration": "Configuration",
+      "regNumbers": "Formats de matricule",
+      "gradeScale": "Barème de notes",
+      "deliberationRules": "Règles de délibération",
+      "batchJobs": "Traitements par lots",
+      "monitoring": "Supervision",
+      "notifications": "Notifications",
+      "notificationCenter": "Centre de notifications",
+      "admissions": "Admissions",
+      "setup": "Mise en route & import",
+      "importCycles": "Cycles & niveaux",
+      "importPrograms": "Programmes & options",
+      "importCurriculum": "UE & EC",
+      "fastEntry": "Saisie rapide",
+      "new": "Nouveau",
+      "settings": "Paramètres",
+      "account": "Compte",
+      "profile": "Profil",
+      "preferences": "Préférences",
+      "statistics": "Statistiques",
+      "documents": "Documents",
+      "documentBatch": "Génération en lot",
+      "exports": "Exports",
+      "myFees": "Mes frais",
+      "approvals": "Approbations",
+      "timeline": "Historique",
+      "workflows": "Workflows",
+      "details": "Détails",
+      "myCourses": "Mes cours",
+      "importYears": "Années académiques"
+    },
+    "badges": {
+      "new": "Nouveau",
+      "updated": "Mis à jour"
     }
   },
   "auth": {
@@ -306,8 +504,9 @@
       "noAccount": "Pas de compte ?",
       "registerLink": "Créer un compte",
       "notMember": "Vous n'êtes pas membre de cette organisation. Contactez votre administrateur.",
-      "rememberMe": "Remember Me",
-      "subtitle": "Subtitle"
+      "rememberMe": "Se souvenir de moi pendant 30 jours",
+      "subtitle": "Connectez-vous pour accéder à vos établissements.",
+      "scopedSubtitle": "Connectez-vous à votre espace."
     },
     "register": {
       "title": "Créer un compte",
@@ -346,9 +545,9 @@
       "error": "Impossible de mettre à jour le mot de passe",
       "backToLogin": "Retour à la connexion",
       "subtitle": "Choisissez un nouveau mot de passe sécurisé pour votre compte.",
-      "signInNow": "Sign In Now",
-      "successMessage": "Success Message",
-      "successTitle": "Success Title"
+      "signInNow": "Se connecter maintenant",
+      "successMessage": "Redirection vers la connexion dans {{countdown}} secondes...",
+      "successTitle": "Mot de passe mis à jour"
     },
     "logout": {
       "success": "Déconnexion réussie",
@@ -364,10 +563,10 @@
       "passwordsMismatch": "Les mots de passe ne correspondent pas"
     },
     "orgPicker": {
-      "back": "Back",
-      "noOrgs": "No Orgs",
-      "subtitle": "Subtitle",
-      "title": "Title"
+      "back": "Changer de compte",
+      "noOrgs": "Aucun établissement trouvé pour ce compte. Contactez votre administrateur.",
+      "subtitle": "Sélectionnez l'établissement auquel vous souhaitez accéder.",
+      "title": "Choisissez votre établissement"
     }
   },
   "admin": {
@@ -534,7 +733,30 @@
         "scheduleExam": "Planifier un examen",
         "enrollments": "Gérer les inscriptions",
         "academicYears": "Années académiques",
-        "statistics": "Statistiques détaillées"
+        "statistics": "Statistiques détaillées",
+        "title": "Raccourcis",
+        "exams": "Planifier un examen"
+      },
+      "alerts": {
+        "examsPending_one": "{{count}} examen en attente d'approbation",
+        "examsPending_other": "{{count}} examens en attente d'approbation",
+        "examsLink": "Voir les examens soumis",
+        "deliberations_one": "{{count}} délibération en cours",
+        "deliberations_other": "{{count}} délibérations en cours",
+        "deliberationsLink": "Voir les délibérations"
+      },
+      "fees": {
+        "title": "Scolarité",
+        "viewAll": "Voir tout",
+        "expected": "Attendu",
+        "collected": "Collecté",
+        "remaining": "Restant",
+        "rate": "Taux de collecte"
+      },
+      "statusStats": {
+        "title": "Statut des inscriptions",
+        "subtitle": "Répartition par état",
+        "empty": "Aucune inscription"
       }
     },
     "statistics": {
@@ -621,6 +843,41 @@
           "waitlisted": "Liste d'attente",
           "enrolled": "Inscrit"
         }
+      },
+      "excel": {
+        "notAvailable": "N/D",
+        "files": {
+          "students": "statistiques-etudiants.xlsx",
+          "performance": "statistiques-performance.xlsx",
+          "finances": "statistiques-finances.xlsx",
+          "admissions": "statistiques-admissions.xlsx"
+        },
+        "sheets": {
+          "byProgram": "Par programme",
+          "byStatus": "Par statut",
+          "byGender": "Par genre",
+          "byDecision": "Par décision",
+          "byMention": "Par mention",
+          "overview": "Vue d'ensemble",
+          "monthly": "Mensuel",
+          "byMethod": "Par méthode"
+        },
+        "columns": {
+          "program": "Programme",
+          "enrolled": "Inscrits",
+          "status": "Statut",
+          "count": "Nombre",
+          "gender": "Genre",
+          "decision": "Décision",
+          "students": "Étudiants",
+          "mention": "Mention",
+          "indicator": "Indicateur",
+          "amount": "Montant",
+          "month": "Mois",
+          "method": "Méthode",
+          "transactions": "Transactions",
+          "applications": "Candidatures"
+        }
       }
     },
     "apiKeys": {
@@ -690,7 +947,9 @@
       "fields": {
         "jobType": "Type de traitement",
         "academicYear": "Année académique",
-        "class": "Classe"
+        "class": "Classe",
+        "jobTypePlaceholder": "Sélectionnez un type de tâche...",
+        "classPlaceholder": "Sélectionnez une classe..."
       },
       "actions": {
         "create": "Nouveau traitement",
@@ -725,7 +984,15 @@
       "types": {
         "creditLedger.recompute": "Recalcul des crédits",
         "studentFacts.refreshClass": "Mise à jour des bilans étudiants (classe)",
-        "academicYear.setup": "Configuration de l'année académique"
+        "academicYear.setup": "Configuration de l'année académique",
+        "import.step": "Import guidé",
+        "import.academicStructure": "Import de la structure académique",
+        "import.people": "Import des personnes",
+        "import.enrollments": "Import des inscriptions",
+        "import.gradesBulk": "Import des notes",
+        "promotion.applyBatch": "Promotion en lot",
+        "timetable.copyFromYear": "Copie de l'emploi du temps",
+        "documents.generateBulk": "Génération de documents en lot"
       },
       "preview": {
         "title": "Aperçu du traitement",
@@ -735,6 +1002,7 @@
         "confirmRun": "Êtes-vous sûr de vouloir exécuter ce traitement ? Cette opération peut prendre plusieurs minutes."
       },
       "detail": {
+        "timedOut": "Le traitement a expiré",
         "title": "Détails du traitement",
         "steps": "Étapes",
         "logs": "Journaux",
@@ -749,16 +1017,16 @@
           "error": "Erreur"
         },
         "logStep": "Étape",
-        "failed": "Failed",
-        "failureSummary": "Failure Summary",
-        "items": "Items",
-        "notFound": "Not Found",
-        "originalJob": "Original Job",
-        "processed": "Processed",
-        "rollbackJob": "Rollback Job",
-        "skipped": "Skipped",
-        "step": "Step",
-        "unknownError": "Unknown Error"
+        "failed": "Échecs : {{count}}",
+        "failureSummary": "Le traitement a échoué",
+        "items": "éléments",
+        "notFound": "Traitement introuvable",
+        "originalJob": "Voir le traitement d'origine",
+        "processed": "Traités : {{count}}",
+        "rollbackJob": "Voir le traitement d'annulation",
+        "skipped": "Ignorés : {{count}}",
+        "step": "Étape {{current}}/{{total}}",
+        "unknownError": "Erreur inconnue"
       },
       "toast": {
         "previewSuccess": "Aperçu généré avec succès",
@@ -774,10 +1042,10 @@
         "skipped": "Ignoré"
       },
       "confirm": {
-        "cancelMessage": "Cancel Message",
-        "cancelTitle": "Cancel Title",
-        "rollbackMessage": "Rollback Message",
-        "rollbackTitle": "Rollback Title"
+        "cancelMessage": "L'annulation arrête immédiatement le traitement. Les données déjà traitées ne seront pas restaurées.",
+        "cancelTitle": "Annuler le traitement ?",
+        "rollbackMessage": "Un traitement d'annulation sera créé pour défaire les modifications de ce traitement. Cette action est elle-même irréversible.",
+        "rollbackTitle": "Annuler les effets du traitement ?"
       }
     },
     "academicYears": {
@@ -845,7 +1113,8 @@
         "assign": "Affecter un cours",
         "assignUe": "Assigner un UE",
         "autoEnroll": "Inscrire les étudiants",
-        "exportPdf": "Exporter PDF"
+        "exportPdf": "Exporter PDF",
+        "manage": "Tout gérer"
       },
       "ueAssign": {
         "title": "Assigner une unité d'enseignement",
@@ -932,6 +1201,15 @@
         "classesLabel": "Classes à inclure",
         "selectedCount": "classe(s) sélectionnée(s)",
         "generate": "Générer le PDF"
+      },
+      "deleteConfirm": {
+        "description": "Cette action est irréversible.",
+        "title": "Retirer ce cours de la classe ?"
+      },
+      "fields": {
+        "code": "Code",
+        "course": "Cours",
+        "teacher": "Enseignant"
       }
     },
     "classes": {
@@ -939,7 +1217,8 @@
       "subtitle": "Créez des classes pour chaque programme et année académique",
       "actions": {
         "add": "Ajouter une classe",
-        "bulkGenerate": "Génération en masse"
+        "bulkGenerate": "Génération en masse",
+        "bulkExport": "Exporter en lot"
       },
       "empty": {
         "title": "Aucune classe",
@@ -968,7 +1247,11 @@
         "error": "Échec de l'export de la liste des étudiants",
         "excelSuccess": "Liste des étudiants exportée avec succès",
         "excelError": "Échec de l'export de la liste des étudiants",
-        "sheetName": "Étudiants"
+        "sheetName": "Étudiants",
+        "templateUsed": "Modèle utilisé : {{name}}",
+        "templateUsedCenter": "Modèle utilisé : {{name}} (centre)",
+        "templateFallback": "Le modèle officiel n'a pas pu être rendu ({{error}}). Génération basique via jsPDF.",
+        "institutionFallback": "Institution"
       },
       "form": {
         "createTitle": "Ajouter une classe",
@@ -993,7 +1276,8 @@
         "totalCreditsLabel": "Crédits totaux",
         "totalCreditsPlaceholder": "ex. 30",
         "emptyCycleLevels": "Aucun niveau de cycle disponible pour la faculté sélectionnée.",
-        "programSummary": "Faculté : {{value}}"
+        "programSummary": "Faculté : {{value}}",
+        "emptyProgramOptions": "Aucune option disponible"
       },
       "toast": {
         "createSuccess": "Classe créée avec succès",
@@ -1002,7 +1286,8 @@
         "updateError": "Impossible de mettre à jour la classe",
         "deleteSuccess": "Classe supprimée avec succès",
         "deleteError": "Impossible de supprimer la classe",
-        "bulkGenerateSuccess": "Classes générées avec succès"
+        "bulkGenerateSuccess": "Classes générées avec succès",
+        "bulkGenerateResult": "{{created}} classe(s) créée(s), {{skipped}} ignorée(s)"
       },
       "delete": {
         "title": "Supprimer la classe",
@@ -1043,7 +1328,12 @@
         "title": "Génération en masse de classes",
         "yearLabel": "Année académique",
         "sourceYearLabel": "Cloner les affectations depuis (optionnel)",
-        "sourceYearHint": "Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes."
+        "sourceYearHint": "Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes.",
+        "sourceYearPlaceholder": "Aucune (optionnel)"
+      },
+      "studentsEmpty": {
+        "description": "Inscrivez des étudiants depuis l'onglet Inscriptions.",
+        "title": "Aucun étudiant inscrit"
       }
     },
     "institution": {
@@ -1070,7 +1360,7 @@
         "identity": "Identité & branding",
         "identityHint": "Les champs français et anglais alimentent les en-têtes bilingues (relevés, diplômes, etc.).",
         "code": "Sigle / Code",
-        "shortName": "Abréviation",
+        "shortName": "Nom court",
         "nameFr": "Nom officiel (FR)",
         "nameEn": "Nom officiel (EN)",
         "legalNameFr": "Dénomination légale (FR)",
@@ -1117,20 +1407,23 @@
         "noSupervisingFaculty": "Aucune",
         "noDefaultYear": "Aucune année par défaut",
         "noRegistrationFormat": "Aucun format de matricule (utiliser le format actif)",
-        "abbreviation": "Abbreviation",
+        "abbreviation": "Abréviation",
         "typePlaceholder": "Select type",
-        "parentInstitutionPlaceholder": "Select parent institution",
-        "supervisingFacultyPlaceholder": "Select supervising faculty",
-        "defaultAcademicYearManagedHint": "Manage the active academic year from Academic Years.",
-        "registrationFormatManagedHint": "Manage the active registration format from Registration Formats.",
+        "parentInstitutionPlaceholder": "Sélectionner l'établissement parent",
+        "supervisingFacultyPlaceholder": "Sélectionner la faculté de tutelle",
+        "defaultAcademicYearManagedHint": "L'année académique active se gère depuis Années académiques.",
+        "registrationFormatManagedHint": "Le format de matricule actif se gère depuis Formats de matricule.",
         "signatoryName": "Signatory name",
         "signatoryTitle": "Signatory title",
-        "city": "City (for document date line)",
-        "logoSvg": "Logo Svg",
-        "logoSvgHint": "Logo Svg Hint"
+        "city": "Ville (pour la ligne de date des documents)",
+        "logoSvg": "Logo SVG (code source)",
+        "logoSvgHint": "Si renseigné, le SVG est utilisé en priorité sur les exports (à la place du logo PNG/URL).",
+        "logoSvgAlternative": "…ou code SVG (utilisé en priorité sur les exports)",
+        "signatoryTitlePlaceholder": "Directeur Général",
+        "readFileError": "Impossible de lire le fichier"
       },
       "sections": {
-        "contact": "Contact",
+        "contact": "Contact et localisation",
         "contactHint": "Téléphone, e-mail, fax et adresse postale affichés sur les documents officiels.",
         "media": "Médias",
         "mediaHint": "Logo et image de couverture utilisés dans les rapports générés et les tableaux de bord.",
@@ -1139,7 +1432,7 @@
         "system": "Système",
         "systemHint": "Année académique par défaut et format de matricule.",
         "documentParams": "Document Generation",
-        "documentParamsHint": "Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation."
+        "documentParamsHint": "Signataire et ville utilisés sur les diplômes, attestations et relevés générés. Synchronisés automatiquement avec Diplomation."
       }
     },
     "studyCycles": {
@@ -1183,7 +1476,8 @@
         "duration": "Durée (années)",
         "minCredits": "Crédits minimum",
         "autoLevelsPreview": "Aperçu des niveaux auto-générés",
-        "nameEn": "Name (English)"
+        "nameEn": "Name (English)",
+        "creditsShort": "{{value}} cr"
       },
       "toast": {
         "createSuccess": "Cycle créé",
@@ -1228,7 +1522,8 @@
         "programCycleSummary": "Cycle : {{value}}",
         "teacherLabel": "Enseignant par défaut",
         "teacherPlaceholder": "Sélectionner un enseignant",
-        "programFacultySummary": "Faculté : {{value}}"
+        "programFacultySummary": "Faculté : {{value}}",
+        "teachingUnitPlaceholder": "Sélectionner une unité d'enseignement"
       },
       "toast": {
         "createSuccess": "Cours créé avec succès",
@@ -1392,11 +1687,11 @@
         "domainFrLabel": "Domaine (FR)",
         "domainEnLabel": "Domain (EN)",
         "specialiteFrLabel": "Spécialité (FR)",
-        "specialiteEnLabel": "Specialization (EN)",
+        "specialiteEnLabel": "Spécialité (EN)",
         "diplomaTitleFrLabel": "Titre diplôme (FR)",
-        "diplomaTitleEnLabel": "Diploma title (EN)",
+        "diplomaTitleEnLabel": "Titre diplôme (EN)",
         "attestationValidityFrLabel": "Validité attestation (FR)",
-        "attestationValidityEnLabel": "Attestation validity (EN)",
+        "attestationValidityEnLabel": "Validité attestation (EN)",
         "centerLabel": "Centre",
         "centerPlaceholder": "Aucun centre",
         "centerNone": "Aucun (programme général)",
@@ -1411,7 +1706,8 @@
         "name": "Le nom doit comporter au moins 2 caractères",
         "code": "Le code est obligatoire",
         "faculty": "Veuillez sélectionner une faculté",
-        "cycle": "Veuillez sélectionner un cycle"
+        "cycle": "Veuillez sélectionner un cycle",
+        "nameRequired": "Le nom est obligatoire"
       },
       "toast": {
         "createSuccess": "Programme créé avec succès",
@@ -1450,20 +1746,67 @@
           "deleteError": "Impossible de supprimer l'option",
           "update": "Option mise à jour",
           "updateError": "Impossible de mettre à jour l'option"
+        },
+        "add": "Ajouter une option",
+        "deleteConfirm": {
+          "description": "Cette action est irréversible.",
+          "title": "Supprimer l'option ?"
+        },
+        "emptyState": {
+          "description": "Ajoutez des spécialités ou parcours à ce programme.",
+          "title": "Aucune option"
+        },
+        "fields": {
+          "code": "Code",
+          "description": "Description",
+          "name": "Nom"
         }
       },
       "duplicate": {
-        "button": "Button",
-        "cloneCurriculum": "Clone Curriculum",
-        "description": "Description",
-        "noCycles": "No Cycles",
-        "submit": "Submit",
-        "targetCycles": "Target Cycles",
-        "title": "Title",
+        "button": "Dupliquer vers cycle…",
+        "cloneCurriculum": "Cloner également les UE et EC",
+        "description": "{{count}} programme(s) seront copiés vers chaque cycle sélectionné. Le code et le nom seront préfixés par ceux du cycle.",
+        "noCycles": "Aucun cycle disponible",
+        "submit": "Dupliquer",
+        "targetCycles": "Cycles cibles",
+        "title": "Dupliquer vers un autre cycle",
         "toast": {
-          "error": "Error",
-          "success": "Success"
+          "error": "Erreur lors de la duplication",
+          "success": "{{created}} programme(s) créé(s), {{skipped}} ignoré(s)"
         }
+      },
+      "fields": {
+        "center": "Centre",
+        "cycle": "Cycle",
+        "description": "Description",
+        "isCenterProgram": "Programme de centre",
+        "name": "Nom (FR)",
+        "nameEn": "Nom (EN)",
+        "code": "Code",
+        "abbreviation": "Abréviation",
+        "domainFr": "Domaine (FR)",
+        "domainEn": "Domaine (EN)",
+        "specialiteFr": "Spécialité (FR)",
+        "specialiteEn": "Spécialité (EN)",
+        "diplomaTitleFr": "Intitulé du diplôme (FR)",
+        "diplomaTitleEn": "Intitulé du diplôme (EN)",
+        "attestationValidityFr": "Validité de l'attestation (FR)",
+        "attestationValidityEn": "Validité de l'attestation (EN)"
+      },
+      "templateTypes": {
+        "diploma": "Diplôme",
+        "transcript": "Relevé de notes",
+        "attestation": "Attestation",
+        "enrollment_certificate": "Certificat de scolarité",
+        "student_list": "Liste d'étudiants",
+        "pv": "Procès-verbal",
+        "evaluation": "Publication d'évaluation",
+        "ec": "Publication d'EC",
+        "ue": "Publication d'UE",
+        "deliberation": "Délibération",
+        "payment_order": "Ordre de paiement",
+        "payment_receipt": "Reçu de paiement",
+        "financial_clearance": "Quitus financier"
       }
     },
     "exams": {
@@ -1614,7 +1957,7 @@
         "description": "Sélectionnez un examen approuvé pour voir l'éligibilité des étudiants."
       },
       "toast": {
-        "overrideSuccess": "Dérogation appliquée avec succès",
+        "overrideSuccess": "Dérogation appliquée",
         "overrideError": "Impossible d'appliquer la dérogation",
         "removeSuccess": "Dérogation supprimée",
         "removeError": "Impossible de supprimer la dérogation"
@@ -1630,7 +1973,8 @@
         "date": "Date du rattrapage",
         "scoringPolicy": "Politique de notation",
         "scoringPolicyHelp": "Comment calculer la note finale après le rattrapage"
-      }
+      },
+      "searchPlaceholder": "Nom ou n° d’inscription…"
     },
     "examTypes": {
       "title": "Types d'examen",
@@ -1753,7 +2097,9 @@
           "download": "Télécharger le HTML",
           "noPreview": "Aucun aperçu disponible",
           "clickGenerate": "Cliquez sur « Générer un aperçu » après avoir ajouté votre contenu.",
-          "required": "Le contenu du modèle ne peut pas être vide."
+          "required": "Le contenu du modèle ne peut pas être vide.",
+          "resizeAria": "Redimensionner la hauteur",
+          "resizeHint": "Glisser pour redimensionner, double-clic pour réinitialiser"
         },
         "columns": {
           "title": "Configuration des colonnes",
@@ -1823,7 +2169,56 @@
         "preview": {
           "success": "Aperçu généré avec succès",
           "error": "Échec de la génération de l'aperçu"
+        },
+        "livePreview": "Aperçu en direct",
+        "rendering": "rendu en cours…",
+        "layout": "Disposition :",
+        "sideBySide": "Côte à côte",
+        "stacked": "Empilé",
+        "hbs": {
+          "variable": "variable",
+          "ifCondition": "condition si",
+          "unlessCondition": "condition sauf si",
+          "iterate": "itérer",
+          "with": "se placer dans le contexte",
+          "or": "(...args) → booléen : vrai si un argument est vrai",
+          "logo": "(svg=, url=, alt?, class?, style?) → affiche le SVG en ligne s'il est défini, sinon <img src=url>",
+          "headerBilingual": "En-tête 3 colonnes (FR + armoiries + EN)",
+          "headerCenter": "En-tête variante Centre (institution + centre)",
+          "studentsTable": "Tableau de la liste des étudiants",
+          "signatures3": "Bloc 3 signatures (impétrant / recteur / ministre)",
+          "watermarkBlock": "Bloc filigrane (logo + texte)"
         }
+      },
+      "types": {
+        "pv": "PV (Procès-verbal)",
+        "evaluation": "Évaluation",
+        "ue": "UE (Unité d'enseignement)",
+        "deliberation": "Délibération",
+        "diploma": "Diplôme",
+        "transcript": "Relevé de notes",
+        "attestation": "Attestation",
+        "student_list": "Liste d'étudiants"
+      },
+      "system": {
+        "seedFailed": "Échecs ({{count}}) : {{details}}",
+        "seedCreated": "Modèles officiels créés : {{created}}",
+        "seedAllPresent": "Tous les modèles officiels sont déjà présents.",
+        "linked_one": "{{count}} affectation programme → modèle (re)créée (variante centre pour les programmes de centre, standard sinon).",
+        "linked_other": "{{count}} affectations programme → modèle (re)créées (variante centre pour les programmes de centre, standard sinon).",
+        "linkFailed_one": "{{count}} affectation en échec : {{details}}",
+        "linkFailed_other": "{{count}} affectations en échec : {{details}}",
+        "seedError": "Erreur lors de l'initialisation",
+        "exportPartial": "{{count}} modèles exportés, {{failed}} échecs : {{details}}",
+        "exportSuccess_one": "{{count}} modèle exporté en PDF (ZIP)",
+        "exportSuccess_other": "{{count}} modèles exportés en PDF (ZIP)",
+        "exportError": "Erreur lors de l'export des modèles",
+        "exportAllHint": "Génère un PDF par modèle (16 fichiers : 8 types × standard + centre) avec les vraies infos d'institution et de centre, étudiant fictif. Téléchargement ZIP.",
+        "exportAllPending": "Génération en cours…",
+        "exportAll": "Télécharger tous les modèles (PDF)",
+        "seedHint": "Crée les 3 modèles officiels (diplôme, relevé, attestation) si absents",
+        "seed": "Initialiser les modèles officiels",
+        "zipName": "apercu-modeles"
       }
     },
     "examScheduler": {
@@ -1865,7 +2260,9 @@
       "classes": {
         "title": "Classes concernées",
         "description": "Toutes les classes de l'année sélectionnée sont incluses par défaut. Décochez celles à exclure.",
-        "selectAll": "Sélectionner toutes les classes"
+        "selectAll": "Sélectionner toutes les classes",
+        "selectedCount_one": "{{count}} classe sélectionnée",
+        "selectedCount_other": "{{count}} classes sélectionnées"
       },
       "retakeExams": {
         "title": "Examens éligibles au rattrapage",
@@ -1874,7 +2271,9 @@
         "noExams": "Aucun examen approuvé sans rattrapage trouvé pour les critères sélectionnés.",
         "examCount": "{{count}} examens",
         "examCount_one": "{{count}} examen",
-        "examCount_other": "{{count}} examens"
+        "examCount_other": "{{count}} examens",
+        "selectedCount_one": "{{count}} examen sélectionné",
+        "selectedCount_other": "{{count}} examens sélectionnés"
       },
       "actions": {
         "schedule": "Programmer les examens",
@@ -2002,14 +2401,44 @@
             "exam": "Examen",
             "weight": "Pondération"
           }
+        },
+        "title": "Procès-verbal",
+        "description": "PV complet avec toutes les UE, moyennes et décisions",
+        "missingSemester": "Sélectionnez un semestre",
+        "semester": "Semestre",
+        "semesterPlaceholder": "Sélectionner un semestre",
+        "includeRetakes": "Inclure les notes de rattrapage",
+        "previewPdf": "Prévisualiser le PDF",
+        "generatePdf": "Générer le PDF",
+        "excel": {
+          "documentTitle": "PROCÈS-VERBAL DES RÉSULTATS",
+          "ueHeader": "{{name}} ({{code}}) [{{credits}} cr.]",
+          "courseCc": "{{name}} CC",
+          "courseEx": "{{name}} EX",
+          "courseAverage": "Moy (×{{coefficient}})",
+          "ueAverage": "Moy UE",
+          "credits": "Crédits",
+          "decision": "Décision",
+          "totalCredits": "Total crédits"
         }
       },
       "exams": {
         "title": "Sélectionnez les évaluations à inclure",
         "emptyTitle": "Aucune évaluation trouvée",
         "emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe.",
-        "loadingDescription": "Loading Description",
-        "loadingTitle": "Loading Title"
+        "loadingDescription": "Récupération de tous les examens et de leurs cours pour cette classe.",
+        "loadingTitle": "Chargement des évaluations…",
+        "selectedCount_one": "{{selected}} / {{count}} évaluation sélectionnée",
+        "selectedCount_other": "{{selected}} / {{count}} évaluations sélectionnées",
+        "searchPlaceholder": "Rechercher une matière ou une évaluation...",
+        "sort": {
+          "course": "Par matière",
+          "date": "Par date",
+          "type": "Par type"
+        },
+        "courseCount_one": "{{selected}} / {{count}} évaluation",
+        "courseCount_other": "{{selected}} / {{count}} évaluations",
+        "noMatch": "Aucune évaluation trouvée pour « {{query}} »"
       },
       "columns": {
         "lastName": "Nom",
@@ -2017,7 +2446,17 @@
         "registration": "Numéro de matricule",
         "birthDate": "Date de naissance",
         "birthPlace": "Lieu de naissance",
-        "gender": "Sexe"
+        "gender": "Sexe",
+        "code": "Code",
+        "title": "Intitulé",
+        "coefficient": "Coef.",
+        "ueName": "Nom de l'UE",
+        "credits": "Crédits",
+        "course": "Cours",
+        "type": "Type",
+        "date": "Date",
+        "excel": "Excel",
+        "pdf": "PDF"
       },
       "sheetName": "Notes",
       "filePrefix": "notes",
@@ -2035,9 +2474,84 @@
         "ueGenerateError": "Échec de la génération UE",
         "bulkEvaluationsError": "Échec de la génération en masse des évaluations",
         "bulkUesError": "Échec de la génération en masse des UE",
-        "ecGenerateError": "Ec Generate Error",
-        "ecPreviewError": "Ec Preview Error"
-      }
+        "ecGenerateError": "Échec de la génération des EC",
+        "ecPreviewError": "Impossible de générer l'aperçu des EC",
+        "bulkExportError": "L'export massif a échoué"
+      },
+      "bulk": {
+        "title": "Export massif (ZIP)",
+        "description": "Génère un fichier ZIP contenant tous les PDF classés par programme et classe. Filtré par l'année et le semestre sélectionnés en haut de page si renseignés.",
+        "running": "Génération en cours · {{seconds}}s",
+        "allClasses": "Toutes classes",
+        "selectedClass": "Classe sélectionnée",
+        "warning": "⚠️ La génération massive peut prendre plusieurs minutes selon le volume (1 PDF ≈ 1-2 s). Le serveur réutilise un seul navigateur Chromium pour accélérer le lot.",
+        "kinds": {
+          "eval": {
+            "title": "Évaluations",
+            "short": "Évaluations",
+            "description": "Un PDF par examen. Aucune vérification d'éligibilité."
+          },
+          "ec": {
+            "title": "EC (Éléments Constitutifs)",
+            "short": "EC",
+            "description": "Un PDF par EC. Ignoré automatiquement si pondérations ≠ 100 %."
+          },
+          "ue": {
+            "title": "UE (Unités d'Enseignement)",
+            "short": "UE",
+            "description": "Un PDF par UE × classe × semestre. Ignoré automatiquement si l'UE est incomplète."
+          }
+        },
+        "report": {
+          "title": "Rapport d'export — {{kind}}",
+          "downloaded": "ZIP téléchargé :",
+          "total": "Total candidats",
+          "generated": "Générés",
+          "skipped": "Ignorés",
+          "skippedDetail": "Détail des éléments ignorés",
+          "id": "ID",
+          "reason": "Raison"
+        }
+      },
+      "ec": {
+        "title": "Par EC",
+        "description": "Publication PDF par Élément Constitutif — agrège toutes les évaluations (CC + TP + Examen) avec moyenne EC. Nécessite que la somme des pondérations des examens de l'EC soit à 100 %."
+      },
+      "ue": {
+        "title": "Par Unité d'Enseignement",
+        "description": "Publication PDF par UE — nécessite un semestre sélectionné",
+        "creditsShort": "{{count}} cr."
+      },
+      "downloadAll": "Tout télécharger",
+      "evaluations": {
+        "title": "Par évaluation",
+        "description": "Export individuel par évaluation sélectionnée",
+        "downloadAllPdf": "Tout télécharger en PDF"
+      },
+      "transcript": {
+        "description": "Export Excel combiné avec la moyenne par cours pour les évaluations sélectionnées",
+        "missingExams": "Sélectionnez des évaluations",
+        "documentTitle": "RELEVÉ DE NOTES"
+      },
+      "preview": {
+        "description": "Prévisualisation HTML avant génération PDF",
+        "pvWithRetakes": "Prévisualisation - Procès-verbal (avec rattrapages)",
+        "pvWithoutRetakes": "Prévisualisation - Procès-verbal (sans rattrapages)",
+        "evaluation": "Prévisualisation - Publication Évaluation",
+        "ue": "Prévisualisation - Publication UE",
+        "ec": "Prévisualisation - Publication EC"
+      },
+      "header": {
+        "class": "Classe :",
+        "program": "Programme :",
+        "semester": "Semestre :",
+        "academicYear": "Année académique :"
+      },
+      "excel": {
+        "publicationTitle": "PUBLICATION DES NOTES - {{course}} ({{type}})",
+        "dateLine": "Date : {{date}}"
+      },
+      "contextTitle": "Contexte"
     },
     "students": {
       "title": "Gestion des étudiants",
@@ -2287,8 +2801,8 @@
         "createSubmit": "Créer un utilisateur",
         "profileSection": "Profile",
         "systemAccessSection": "System Access",
-        "canConnectLabel": "Can log in",
-        "canConnectDescription": "Creates a system account with login access",
+        "canConnectLabel": "Peut se connecter",
+        "canConnectDescription": "Crée un compte système avec accès à la connexion",
         "memberRoleLabel": "Role",
         "memberRolePlaceholder": "Select a role"
       },
@@ -2333,8 +2847,8 @@
         "email": "Saisissez une adresse e-mail valide",
         "role": "Veuillez sélectionner un rôle",
         "passwordRequired": "Le mot de passe est obligatoire",
-        "passwordMin": "Password must be at least 8 characters",
-        "memberRoleRequired": "Role is required when system access is enabled"
+        "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
+        "memberRoleRequired": "Le rôle est obligatoire lorsque l'accès au système est activé"
       }
     },
     "enrollments": {
@@ -2353,7 +2867,15 @@
         "cycleLevel": "Niveau : {{value}}",
         "option": "Option : {{value}}",
         "window": "Fenêtre : {{status}}",
-        "semester": "Semestre"
+        "semester": "Semestre",
+        "labels": {
+          "students_one": "étudiant",
+          "students_other": "étudiants",
+          "cycle": "Cycle :",
+          "level": "Niveau :",
+          "option": "Option :",
+          "window": "Fenêtre :"
+        }
       },
       "listTitle": "Inscriptions",
       "fields": {
@@ -2425,19 +2947,22 @@
         "active": "Actif",
         "pending": "En attente",
         "completed": "Terminé",
-        "withdrawn": "Retiré"
+        "withdrawn": "Retiré",
+        "graduated": "Diplômé"
       },
       "bulkEnroll": {
-        "classesLabel": "Classes Label",
-        "description": "Description",
-        "noClasses": "No Classes",
-        "noSelection": "No Selection",
-        "openButton": "Open Button",
-        "partial": "Partial",
-        "requireYear": "Require Year",
-        "run": "Run",
-        "success": "Success",
-        "title": "Title"
+        "classesLabel": "Classes ({{n}} sélectionnées)",
+        "description": "Sélectionnez une ou plusieurs classes. Tous les étudiants de chaque classe seront inscrits à tous ses cours (tous semestres confondus). Pour cibler un semestre précis, utilisez « Inscrire toute la classe » classe par classe.",
+        "noClasses": "Aucune classe pour cette année.",
+        "noSelection": "Aucune sélection",
+        "openButton": "Inscription de masse",
+        "partial": "{{count}} inscriptions créées, {{err}} erreur(s).",
+        "requireYear": "Choisissez d'abord une année",
+        "run": "Lancer l'inscription",
+        "success": "{{count}} inscriptions créées sur {{n}} classe(s).",
+        "title": "Inscription de masse",
+        "resultCreated": "{{created}} créées",
+        "resultCreatedSkipped": "{{created}} créées, {{skipped}} déjà existantes"
       }
     },
     "notifications": {
@@ -2473,18 +2998,22 @@
       "actions": {
         "flush": "Vider la file",
         "ack": "Accuser réception",
-        "retry": "Retry"
+        "retry": "Relancer"
       },
       "toast": {
         "flushed": "Notifications en attente supprimées",
-        "retried": "Retried"
+        "retried": "Notification remise en file d'attente"
       },
       "gradeValidated": "Validation des notes terminée",
       "gradeValidatedDesc": "Un examen a été validé et verrouillé pour publication.",
       "windowOpened": "Fenêtre d'inscription ouverte",
       "windowOpenedDesc": "Les étudiants peuvent s'inscrire pour la classe sélectionnée.",
       "justNow": "À l'instant",
-      "flushConfirmDesc": "Cela va immédiatement tenter l'envoi de toutes les notifications en attente. Continuer ?"
+      "flushConfirmDesc": "Cela va immédiatement tenter l'envoi de toutes les notifications en attente. Continuer ?",
+      "channels": {
+        "email": "E-mail",
+        "webhook": "Webhook"
+      }
     },
     "teachingUnits": {
       "title": "Unités d'enseignement",
@@ -2498,7 +3027,9 @@
         "description": "Description",
         "credits": "ECTS",
         "programCycle": "Cycle : {{value}}",
-        "programFaculty": "Faculté : {{value}}"
+        "programFaculty": "Faculté : {{value}}",
+        "semester": "Semestre",
+        "level": "Niveau"
       },
       "semesters": {
         "annual": "Annuel",
@@ -2541,7 +3072,8 @@
         "name": "Le nom de l'unité est obligatoire.",
         "code": "Le code de l'unité est obligatoire.",
         "credits": "Les crédits doivent être positifs ou nuls.",
-        "program": "Le programme est obligatoire."
+        "program": "Le programme est obligatoire.",
+        "required": "Sélectionnez une unité d'enseignement"
       },
       "courses": {
         "title": "Éléments constitutifs",
@@ -2594,232 +3126,9 @@
         "prereqSaved": "Prérecquis enregistrés",
         "programRequired": "Sélectionnez d'abord un programme"
       },
-      "programFacultySummary": "Faculté : {{value}}"
-    },
-    "promotionRules": {
-      "title": "Règles de passage",
-      "subtitle": "Système automatisé de gestion des promotions d'étudiants",
-      "dashboard": {
-        "title": "Règles de passage",
-        "subtitle": "Système automatisé de gestion des promotions d'étudiants",
-        "stats": {
-          "activeRules": "Règles actives",
-          "totalRules": "{{count}} règles au total",
-          "recentExecutions": "Exécutions récentes",
-          "last30Days": "30 derniers jours",
-          "studentsPromoted": "Étudiants promus",
-          "acrossExecutions": "Toutes exécutions confondues"
-        },
-        "actions": {
-          "manageRules": "Gérer les règles",
-          "manageRulesDesc": "Créer, modifier et configurer les critères de promotion avec des définitions de règles flexibles",
-          "viewRules": "Voir les règles",
-          "evaluateExecute": "Évaluer et exécuter",
-          "evaluateExecuteDesc": "Prévisualiser les étudiants éligibles et appliquer les promotions aux candidats sélectionnés",
-          "startEvaluation": "Démarrer l'évaluation",
-          "executionHistory": "Historique des exécutions",
-          "executionHistoryDesc": "Consulter les journaux détaillés des promotions passées, y compris les résultats au niveau des étudiants et les pistes d'audit",
-          "viewHistory": "Voir l'historique"
-        },
-        "recentActivity": {
-          "title": "Activité récente",
-          "studentsPromoted": "{{count}} étudiants promus",
-          "unknownRule": "Règle inconnue",
-          "details": "Détails"
-        }
-      },
-      "rulesList": {
-        "title": "Règles de passage",
-        "subtitle": "Gérer les critères de promotion et les configurations de règles",
-        "actions": {
-          "createRule": "Créer une règle"
-        },
-        "emptyState": {
-          "noRules": "Aucune règle trouvée",
-          "createFirst": "Créez votre première règle"
-        },
-        "dialog": {
-          "create": {
-            "title": "Créer une règle de passage",
-            "description": "Définir les critères de promotion automatique des étudiants"
-          },
-          "edit": {
-            "title": "Modifier la règle de passage",
-            "description": "Mettre à jour la configuration de la règle"
-          },
-          "form": {
-            "ruleName": "Nom de la règle",
-            "ruleNamePlaceholder": "ex. Passage standard L1 vers L2",
-            "description": "Description",
-            "descriptionPlaceholder": "Décrire quand cette règle doit être appliquée",
-            "ruleset": "Ensemble de règles (JSON)",
-            "rulesetPlaceholder": "Saisir l'ensemble de règles JSON",
-            "rulesetHelp": "Utiliser le format json-rules-engine. Voir la documentation pour les faits disponibles."
-          },
-          "actions": {
-            "cancel": "Annuler",
-            "create": "Créer la règle",
-            "creating": "Création...",
-            "save": "Enregistrer les modifications",
-            "saving": "Enregistrement..."
-          },
-          "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette règle ?"
-        },
-        "toast": {
-          "createSuccess": "Règle créée avec succès",
-          "createError": "Impossible de créer la règle : {{error}}",
-          "updateSuccess": "Règle mise à jour avec succès",
-          "updateError": "Impossible de mettre à jour la règle : {{error}}",
-          "deleteSuccess": "Règle supprimée avec succès",
-          "deleteError": "Impossible de supprimer la règle : {{error}}",
-          "invalidJson": "JSON invalide dans l'ensemble de règles"
-        }
-      },
-      "evaluate": {
-        "title": "Évaluer le passage",
-        "subtitle": "Prévisualiser quels étudiants sont éligibles pour le passage",
-        "form": {
-          "title": "Paramètres d'évaluation",
-          "ruleLabel": "Règle de passage",
-          "rulePlaceholder": "Sélectionner une règle",
-          "classLabel": "Classe source",
-          "classPlaceholder": "Sélectionner une classe",
-          "yearLabel": "Année académique",
-          "yearPlaceholder": "Sélectionner une année",
-          "refreshDescription": "Assurez-vous que les faits étudiants sont à jour avant l'évaluation. Le recalcul regénère toutes les métriques pour la classe et l'année sélectionnées."
-        },
-        "tabs": {
-          "eligible": "Éligibles ({{count}})",
-          "notEligible": "Non éligibles ({{count}})"
-        },
-        "actions": {
-          "evaluate": "Évaluer les étudiants",
-          "evaluating": "Évaluation...",
-          "refreshFacts": "Recalculer les faits",
-          "refreshingFacts": "Recalcul...",
-          "selectAll": "Sélectionner tous les éligibles",
-          "deselectAll": "Tout désélectionner",
-          "proceed": "Continuer avec {{count}} étudiant(s)"
-        },
-        "summary": {
-          "total": "Total d'étudiants",
-          "eligible": "Éligibles",
-          "notEligible": "Non éligibles",
-          "selected": "Sélectionnés"
-        },
-        "emptyState": {
-          "noEligible": "Aucun étudiant éligible trouvé",
-          "allEligible": "Tous les étudiants sont éligibles !"
-        },
-        "toast": {
-          "selectAll": "Veuillez sélectionner tous les champs requis",
-          "selectStudent": "Veuillez sélectionner au moins un étudiant",
-          "refreshSuccess": "Faits étudiants recalculés avec succès",
-          "refreshError": "Impossible de recalculer les faits : {{error}}"
-        }
-      },
-      "execute": {
-        "title": "Exécuter la promotion",
-        "subtitle": "Confirmer et appliquer les promotions des étudiants",
-        "noData": {
-          "message": "Aucune donnée de promotion trouvée. Veuillez commencer par la page d'évaluation.",
-          "button": "Aller à l'évaluation"
-        },
-        "form": {
-          "targetClassLabel": "Classe cible",
-          "targetClassPlaceholder": "Sélectionner la classe cible",
-          "executeButton": "Exécuter la promotion"
-        },
-        "summary": {
-          "title": "Résumé de la promotion",
-          "rule": "Règle",
-          "sourceClass": "Classe source",
-          "targetClass": "Classe cible",
-          "studentsToPromote": "Étudiants à promouvoir",
-          "studentCount": "{{count}} étudiants"
-        },
-        "confirmation": {
-          "title": "Confirmer la promotion",
-          "description": "Cette action promouvra {{count}} étudiant(s) de {{source}} vers {{target}}. Cette action est irréversible.",
-          "cancel": "Annuler",
-          "confirm": "Confirmer la promotion"
-        },
-        "process": {
-          "title": "Ce qui va se passer",
-          "step1": "Les inscriptions actuelles seront marquées comme terminées",
-          "step2": "De nouvelles inscriptions seront créées dans la classe cible",
-          "step3": "Les références de classe des étudiants seront mises à jour",
-          "step4": "Une piste d'audit complète sera enregistrée"
-        },
-        "toast": {
-          "success": "Promotion appliquée avec succès !",
-          "error": "Impossible d'appliquer la promotion : {{error}}",
-          "missingInfo": "Informations requises manquantes"
-        }
-      },
-      "history": {
-        "title": "Historique des exécutions",
-        "subtitle": "Consulter les exécutions de promotions passées et leurs résultats",
-        "table": {
-          "title": "Exécutions récentes",
-          "date": "Date",
-          "rule": "Règle",
-          "classes": "Source → Cible",
-          "students": "Étudiants",
-          "successRate": "Taux de réussite",
-          "executedBy": "Exécuté par",
-          "actions": "Actions",
-          "viewDetails": "Détails",
-          "user": "Utilisateur"
-        },
-        "badges": {
-          "evaluated": "{{count}} évalués",
-          "promoted": "{{count}} promus"
-        },
-        "emptyState": "Aucune exécution trouvée",
-        "details": {
-          "title": "Détails de l'exécution",
-          "description": "Résultats détaillés pour cette exécution de promotion",
-          "stats": {
-            "evaluated": "Évalués",
-            "promoted": "Promus",
-            "date": "Date",
-            "rule": "Règle utilisée"
-          },
-          "studentResults": {
-            "title": "Résultats des étudiants",
-            "studentId": "ID de l'étudiant",
-            "status": "Statut",
-            "average": "Moyenne",
-            "credits": "Crédits",
-            "successRate": "Taux de réussite",
-            "promoted": "Promu",
-            "notPromoted": "Non promu"
-          }
-        }
-      },
-      "studentCard": {
-        "eligible": "Éligible",
-        "notEligible": "Non éligible",
-        "metrics": {
-          "average": "Moyenne",
-          "credits": "Crédits",
-          "successRate": "Taux de réussite"
-        },
-        "progress": {
-          "creditCompletion": "Complétion des crédits"
-        },
-        "details": {
-          "title": "Métriques détaillées",
-          "failedCourses": "Cours échoués",
-          "requiredCredits": "Crédits requis"
-        },
-        "actions": {
-          "select": "Sélectionner",
-          "deselect": "Désélectionner",
-          "viewDetails": "Voir les détails"
-        }
-      }
+      "programFacultySummary": "Faculté : {{value}}",
+      "noLevel": "Non renseigné",
+      "levelHint": "Les classes de ce niveau reçoivent les EC de l'UE lors de l'import d'une année."
     },
     "deliberations": {
       "title": "Délibérations",
@@ -2898,12 +3207,19 @@
         "tabSingle": "Classe unique",
         "tabMulti": "Multi-classes",
         "juryNumber": "Numéro de jury",
-        "juryNumberPlaceholder": "ex: J2024-001",
+        "juryNumberPlaceholder": "ex : J2024-001",
         "classes": "Classes",
         "selectYearFirst": "Sélectionnez d'abord une année académique",
         "noClasses": "Aucune classe pour cette année",
         "batchCreating": "Création en cours…",
-        "batchSubmit": "batchSubmit"
+        "tabSingleClass": "Classe unique",
+        "tabMultiClass": "Multi-classes",
+        "batchSubmitCount_one": "Créer pour {{count}} classe",
+        "batchSubmitCount_other": "Créer pour {{count}} classes",
+        "juryNumberExample": "ex. : J2024-001",
+        "batchErrorCount_one": "{{count}} erreur",
+        "batchErrorCount_other": "{{count}} erreurs",
+        "batchFailures": "Échecs : {{names}}"
       },
       "detail": {
         "tabs": {
@@ -2936,7 +3252,8 @@
         "signedAt": "Signé le",
         "signedBy": "Signé par",
         "notYet": "Pas encore",
-        "juryNumber": "N° jury"
+        "juryNumber": "N° jury",
+        "fallbackTitle": "Délibération"
       },
       "override": {
         "title": "Modifier la décision",
@@ -2969,20 +3286,21 @@
         "confirm": "Promouvoir",
         "success": "{{count}} étudiants promus avec succès",
         "noAdmitted": "Aucun étudiant admis à promouvoir",
-        "lastLevelTitle": "lastLevelTitle",
-        "lastLevelHint": "lastLevelHint",
+        "lastLevelTitle": "Dernier niveau du cycle",
+        "lastLevelHint": "Il n'y a pas de classe suivante : les étudiants admis terminent le cycle et sont marqués diplômés.",
         "noTargetFound": {
           "title": "title",
           "searched": "searched",
-          "criteriaProgram": "criteriaProgram",
-          "criteriaLevel": "criteriaLevel",
+          "criteriaProgram": "Même programme : {{program}}",
+          "criteriaLevel": "Niveau suivant {{level}} (rang {{nextIndex}})",
           "criteriaYear": "criteriaYear",
           "fix": "fix",
           "goToClasses": "goToClasses"
         },
-        "targetClassHint": "targetClassHint",
-        "ctaDesc": "Cta Desc",
-        "ctaTitle": "Cta Title"
+        "ctaDesc": "Les étudiants avec la décision « Admis » peuvent être promus au niveau suivant.",
+        "ctaTitle": "Promouvoir les étudiants admis",
+        "targetClassHint_one": "{{count}} étudiant admis sera inscrit dans cette classe.",
+        "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe."
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -3000,8 +3318,10 @@
         "exportSuccess": "Export prêt",
         "error": "Une erreur est survenue",
         "initAndComputeSuccess": "Délibération créée et résultats calculés",
-        "batchCreateSuccess": "batchCreateSuccess",
-        "batchCreatePartial": "batchCreatePartial"
+        "batchCreatedCount_one": "{{count}} délibération créée",
+        "batchCreatedCount_other": "{{count}} délibérations créées",
+        "batchCreatedPartial_one": "{{created}} créée(s), {{count}} erreur",
+        "batchCreatedPartial_other": "{{created}} créée(s), {{count}} erreurs"
       },
       "confirm": {
         "delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
@@ -3063,6 +3383,26 @@
         "allStatuses": "Tous les statuts",
         "allTypes": "Tous les types",
         "allYears": "Toutes les années"
+      },
+      "excel": {
+        "program": "Programme : {{value}}",
+        "class": "Classe : {{value}}",
+        "academicYear": "Année académique : {{value}}",
+        "semester": "Semestre : {{value}}",
+        "rank": "Rang",
+        "registrationNumber": "Matricule",
+        "lastName": "Nom",
+        "firstName": "Prénom",
+        "ueAverage": "{{code}} Moy",
+        "ueDecision": "{{code}} Déc",
+        "ueCredits": "{{code}} Cré",
+        "generalAverage": "Moy. gén.",
+        "credits": "Crédits",
+        "decision": "Décision",
+        "mention": "Mention",
+        "stats": "Taux de réussite : {{rate}}% | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}}",
+        "sheetName": "Délibération",
+        "filePrefix": "Deliberation"
       }
     },
     "centers": {
@@ -3079,7 +3419,7 @@
         "backToList": "Retour à la liste"
       },
       "sections": {
-        "identity": "Informations Générales",
+        "identity": "Informations générales",
         "logos": "Logos",
         "adminInstances": "Instances Administratives",
         "authorization": "Textes d'Autorisation",
@@ -3110,9 +3450,11 @@
         "country": "Pays",
         "addressFr": "Adresse (FR)",
         "addressEn": "Adresse (EN)",
-        "adminInstanceLogoSvg": "Admin Instance Logo Svg",
-        "logoSvg": "Logo Svg",
-        "watermarkLogoSvg": "Watermark Logo Svg"
+        "adminInstanceLogoSvg": "…ou code SVG (prioritaire)",
+        "logoSvg": "…ou code SVG (prioritaire)",
+        "watermarkLogoSvg": "…ou code SVG (prioritaire)",
+        "code": "Code",
+        "countryPlaceholder": "Cameroun"
       },
       "actions": {
         "addInstance": "Ajouter une instance",
@@ -3121,12 +3463,18 @@
       },
       "adminInstances": {
         "empty": "Aucune instance administrative — cliquez sur Ajouter pour en créer.",
-        "itemTitle": "itemTitle"
+        "itemTitle": "Instance n°{{n}}",
+        "nameFr": "Nom (français)",
+        "nameEn": "Nom (anglais)",
+        "acronymFr": "Acronyme (français)",
+        "acronymEn": "Acronyme (anglais)"
       },
       "legalTexts": {
         "title": "Textes Légaux (Vu les lois...)",
         "empty": "Aucun texte légal",
-        "itemTitle": "itemTitle"
+        "itemTitle": "Texte légal n°{{n}}",
+        "textFr": "Texte (français)",
+        "textEn": "Texte (anglais)"
       },
       "toast": {
         "deleteSuccess": "Centre supprimé",
@@ -3150,25 +3498,28 @@
       "delete": {
         "title": "Supprimer le centre",
         "message": "Êtes-vous sûr de vouloir supprimer ce centre ? Cette action est irréversible."
+      },
+      "validation": {
+        "required": "Requis"
       }
     },
     "graduation": {
-      "title": "title",
-      "subtitle": "subtitle",
-      "totalGraduates": "totalGraduates",
-      "searchPlaceholder": "searchPlaceholder",
+      "title": "Diplômés",
+      "subtitle": "Étudiants ayant terminé leur formation",
+      "totalGraduates": "Total des diplômés",
+      "searchPlaceholder": "Rechercher par nom ou matricule…",
       "table": {
-        "student": "student",
-        "registration": "registration",
-        "program": "program",
-        "level": "level",
-        "credits": "credits",
-        "graduatedAt": "graduatedAt"
+        "student": "Étudiant",
+        "registration": "Matricule",
+        "program": "Programme",
+        "level": "Niveau",
+        "credits": "Crédits",
+        "graduatedAt": "Diplômé le"
       },
-      "noResults": "noResults",
-      "empty": "empty",
-      "noResultsHint": "noResultsHint",
-      "emptyHint": "emptyHint"
+      "noResults": "Aucun diplômé ne correspond",
+      "empty": "Aucun diplômé pour le moment",
+      "noResultsHint": "Essayez une autre recherche.",
+      "emptyHint": "Les étudiants apparaissent ici une fois diplômés lors d'une délibération."
     },
     "academicYearTransitions": {
       "title": "Passage d'annee",
@@ -3231,7 +3582,7 @@
       },
       "table": {
         "student": "Etudiant",
-        "decision": "Decision",
+        "decision": "Décision",
         "source": "Classe d'origine",
         "outcome": "Action",
         "destination": "Destination",
@@ -3321,7 +3672,12 @@
         "issues": "Bloqueurs actifs",
         "signed": "Signée",
         "missing": "Manquante",
-        "empty": "Aucune donnée — le plan n'a pas encore d'éléments."
+        "empty": "Aucune donnée — le plan n'a pas encore d'éléments.",
+        "enrollments": "Étudiants inscrits",
+        "incompleteCourses": "Inscriptions aux cours en cours",
+        "preflightTitle": "Diagnostic avant lancement",
+        "signedDelibs": "Délibérations signées",
+        "unlockedExams": "Examens approuvés non verrouillés"
       },
       "audit": {
         "comingSoon": "Journal d'audit — bientôt disponible.",
@@ -3336,7 +3692,8 @@
           "completed": "Terminé avec succès",
           "completed_with_errors": "Terminé avec erreurs",
           "cancelled": "Annulé",
-          "stale": "Marqué obsolète"
+          "stale": "Marqué obsolète",
+          "override": "Décision modifiée"
         }
       },
       "toast": {
@@ -3438,42 +3795,831 @@
       }
     },
     "dataImport": {
-      "title": "Import de données",
-      "subtitle": "Importez vos données depuis un fichier Excel ou CSV",
-      "tabs": {
-        "structure": "Structure académique",
-        "people": "Personnes",
-        "enrollments": "Inscriptions",
-        "grades": "Notes"
+      "guided": {
+        "title": "Mise en route & import des données",
+        "description": "Configurez votre institution étape par étape : son profil, sa structure académique, puis les données de chaque année. Chaque étape se fait par import Excel ou à la main.",
+        "how": {
+          "order": {
+            "title": "Dans l'ordre",
+            "text": "D'abord le profil et les fondations (une fois), puis chaque année, de la plus ancienne à la plus récente."
+          },
+          "template": {
+            "title": "Un modèle par étape",
+            "text": "Le modèle Excel est pré-rempli avec vos données et propose les codes connus en listes déroulantes."
+          },
+          "checked": {
+            "title": "Vérifié avant d'enregistrer",
+            "text": "Chaque fichier est contrôlé ligne par ligne ; vous voyez ce qui sera créé ou modifié avant de valider."
+          }
+        },
+        "status": {
+          "done": "Fait",
+          "skipped": "Passé",
+          "todo": "À faire"
+        },
+        "steps": {
+          "foundation": {
+            "cycles": "Cycles & niveaux",
+            "programs": "Programmes & options",
+            "curriculum": "UE & EC"
+          },
+          "year": {
+            "classes": "Classes",
+            "students": "Étudiants & inscriptions",
+            "courses": "Cours des classes",
+            "exams": "Examens",
+            "grades": "Notes",
+            "close": "Clôture",
+            "decisions": "Décisions officielles",
+            "teachers": "Enseignants",
+            "guardians": "Parents",
+            "fees": "Frais"
+          }
+        },
+        "stepDescriptions": {
+          "foundation": {
+            "cycles": "Les cycles de formation (Licence, Master, BTS…) et leurs niveaux (L1, L2, L3…). Tout le reste en dépend.",
+            "programs": "Les programmes (filières) rattachés à un cycle, et leurs options ou parcours.",
+            "curriculum": "La maquette pédagogique : les unités d'enseignement (UE) de chaque programme et leurs éléments constitutifs (EC)."
+          },
+          "year": {
+            "classes": "Les classes (promotions) de l'année : chacune appartient à un programme, une option et un niveau de son cycle.",
+            "students": "Les étudiants de l'année et leur classe. Un étudiant déjà connu d'une autre année est retrouvé par son matricule, son e-mail, ou ses nom et date de naissance : une seule fiche par personne, une inscription par année.",
+            "courses": "Chaque classe reçoit les EC de son niveau dans la maquette, avec un enseignant « à renseigner » quand aucun n'est connu. Le fichier est facultatif : il donne les enseignants et les coefficients, ajoute un EC hors maquette ou en retire un non enseigné. Les étudiants sont inscrits aux cours de leur classe.",
+            "exams": "Décrivez une fois le modèle d'évaluation (ex. CC 40 %, Examen 60 %, Rattrapage qui remplace l'Examen) : il crée les examens de tous les cours. La feuille Exceptions ajuste un cours en particulier.",
+            "grades": "Le modèle contient une feuille par classe, comme un procès-verbal : une ligne par étudiant, une colonne par EC et examen, déjà remplie avec les notes connues.",
+            "close": "Une fois les notes importées, clôturez l'année : les délibérations de chaque classe sont calculées et laissées ouvertes pour que vous les vérifiiez.",
+            "decisions": "Facultatif : importez les décisions de jury des procès-verbaux. Les écarts avec les décisions calculées sont listés ; importer retient la décision officielle, tracée comme dérogation.",
+            "teachers": "Facultatif : les enseignants, créés sans compte (un compte peut leur être donné ensuite depuis la page Utilisateurs). Ils sont ensuite retrouvés par leur e-mail pour l'attribution des cours.",
+            "guardians": "Facultatif : les parents et tuteurs des étudiants de l'année, une ligne par lien parent ↔ étudiant.",
+            "fees": "Facultatif : ce que chaque étudiant devait pour l'année et ce qu'il a payé, en total ou versement par versement. Les statuts (soldé, partiel, impayé) sont recalculés."
+          }
+        },
+        "yearSteps": {
+          "classes": "Classes",
+          "assignments": "Affectations",
+          "enrollments": "Inscriptions",
+          "exams": "Examens",
+          "grades": "Notes"
+        },
+        "progress": {
+          "title": "Mise en route : {{done}}/{{total}} étapes",
+          "ready": "Votre institution est prête",
+          "next": "Prochaine étape : {{label}}",
+          "readyHint": "Vous pouvez reprendre les années passées depuis l'import des données.",
+          "hide": "Masquer",
+          "continue": "Continuer",
+          "continueSetup": "Continuer la mise en route"
+        },
+        "milestones": {
+          "profile": "Profil de l'institution",
+          "year": "Année académique",
+          "classes": "Classes {{year}}",
+          "classesNoYear": "Classes de l'année",
+          "enrollments": "Inscriptions {{year}}",
+          "enrollmentsNoYear": "Inscriptions"
+        },
+        "profile": {
+          "title": "1. Profil de l'institution",
+          "text": "Le nom, le logo et les coordonnées figurent sur les relevés, les attestations et les listes. Les facultés et les centres se créent aussi depuis la page Institution.",
+          "name": "Nom",
+          "logo": "Logo",
+          "contact": "E-mail ou téléphone",
+          "address": "Adresse",
+          "complete": "Compléter le profil",
+          "edit": "Modifier"
+        },
+        "foundations": {
+          "title": "2. Fondations",
+          "text": "La structure académique de l'institution, à importer une seule fois et dans cet ordre. Chaque étape s'appuie sur la précédente.",
+          "start": "Commencer",
+          "review": "Revoir / compléter"
+        },
+        "years": {
+          "title": "3. Années académiques",
+          "text": "Les données de chaque année, de la plus ancienne à la plus récente. L'import d'une année (classes, étudiants et inscriptions, cours, examens, notes) est en cours de conception ; pour l'instant, chaque année affiche ce qu'elle contient déjà.",
+          "add": "Gérer les années",
+          "foundationsFirst": "Terminez d'abord les fondations : les classes d'une année s'appuient sur les programmes et les niveaux.",
+          "empty": "Aucune année académique. Créez la première pour commencer.",
+          "active": "Active",
+          "import": "Importer",
+          "resume": "Reprendre"
+        },
+        "stepPage": {
+          "back": "Mise en route & import",
+          "position": "Fondations · étape {{index}}/{{total}}",
+          "previousMissing": "L'étape « {{label}} » n'est pas encore faite : les références vers ses données seront signalées en erreur.",
+          "goThere": "Y aller",
+          "otherOptions": "Autres options :",
+          "manual": "Saisir manuellement",
+          "reactivate": "Réactiver cette étape",
+          "notApplicable": "Cette étape ne s'applique pas à mon institution"
+        },
+        "phases": {
+          "prepare": "Préparer le fichier",
+          "review": "Vérifier",
+          "done": "Importé"
+        },
+        "prepare": {
+          "downloadTitle": "① Télécharger le modèle",
+          "downloadText": "Le modèle contient déjà les données existantes : complétez-le, corrigez-le si besoin, puis renvoyez-le. Les lignes existantes sont mises à jour (repérées par leur code), les nouvelles sont créées.",
+          "download": "Télécharger le modèle pré-rempli",
+          "sheet": "Feuille « {{name}} »",
+          "requiredNote": "* obligatoire. Les listes déroulantes du modèle proposent les codes déjà connus.",
+          "uploadTitle": "② Envoyer le fichier rempli",
+          "uploadText": "Rien n'est enregistré à cette étape : le fichier est d'abord vérifié ligne par ligne, puis vous validez l'import."
+        },
+        "drop": {
+          "checking": "Vérification de {{name}}…",
+          "hint": "Glissez le fichier rempli ici, ou cliquez pour le choisir",
+          "accept": "Excel (.xlsx), 10 Mo maximum"
+        },
+        "review": {
+          "create": "à créer",
+          "update": "à mettre à jour",
+          "unchanged": "inchangées",
+          "skipped": "ignorées (erreurs)",
+          "errorRows": "{{count}} ligne(s) contiennent des erreurs",
+          "errorRowsHint": "et ne seront pas importées. Corrigez-les dans {{file}} puis renvoyez-le, ou importez dès maintenant les lignes valides.",
+          "theFile": "le fichier",
+          "noError": "Le fichier ne contient aucune erreur.",
+          "another": "Envoyer un autre fichier",
+          "nothing": "Rien à importer",
+          "import": "Importer {{count}} ligne(s)",
+          "annotated": "Télécharger le fichier annoté",
+          "annotatedName": "{{name}} - annoté.xlsx"
+        },
+        "issues": {
+          "errors": "Erreurs ({{count}})",
+          "warnings": "Avertissements ({{count}})",
+          "sheet": "Feuille",
+          "row": "Ligne",
+          "column": "Colonne",
+          "problem": "Problème",
+          "codes": {
+            "missingSheet": "Feuille « {{sheet}} » absente du fichier : rien n'y sera importé.",
+            "missingColumn": "Colonne obligatoire « {{column}} » introuvable dans l'en-tête.",
+            "required": "Valeur obligatoire manquante.",
+            "enum": "« {{value}} » n'est pas permis ({{allowed}}).",
+            "integer": "« {{value}} » doit être un nombre entier.",
+            "number": "« {{value}} » doit être un nombre.",
+            "email": "« {{value}} » n'est pas une adresse e-mail valide.",
+            "date": "« {{value}} » n'est pas une date (jj/mm/aaaa ou aaaa-mm-jj).",
+            "duplicate": "Doublon : déjà présent ligne {{row}}.",
+            "unknownProgram": "Programme « {{value}} » inconnu : importez-le d'abord dans les Fondations.",
+            "programWithoutCycle": "Le programme {{value}} n'a pas de cycle, ses niveaux sont donc inconnus : renseignez son cycle dans les Fondations.",
+            "unknownLevel": "Le niveau « {{value}} » n'existe pas dans le cycle {{cycle}} ({{allowed}}).",
+            "unknownOption": "L'option « {{value}} » n'existe pas dans le programme {{program}}.",
+            "classNameTaken": "Ce nom est déjà utilisé par la classe {{code}} dans ce programme et cette année.",
+            "unknownClass": "Classe {{value}} inconnue pour {{year}} : importez-la à l'étape Classes.",
+            "unknownGender": "« {{value}} » n'est ni M ni F : laissé vide.",
+            "ambiguousStudent": "Plusieurs étudiants connus correspondent à cette ligne ({{candidates}}) : indiquez le matricule.",
+            "registrationMismatch": "Cette personne est déjà connue sous {{student}} : le matricule {{value}} ne correspond pas.",
+            "noRegistrationFormat": "Aucun matricule fourni et aucun format de matricule actif pour en générer un.",
+            "unknownCourse": "L'EC {{value}} n'est pas dans la maquette du programme de {{class}}.",
+            "unknownTeacher": "Aucun enseignant avec l'e-mail {{value}} : le cours est gardé sans enseignant.",
+            "unitsWithoutLevel": "UE sans niveau, leurs EC ne sont pas proposés : {{units}}. Renseignez leur niveau dans les Fondations (UE & EC).",
+            "coursesWithoutTeacher": "{{count}} cours sans enseignant : ils pourront être attribués plus tard.",
+            "unknownRetakeTarget": "« {{value}} » n'est pas un type d'examen du modèle.",
+            "weightsNot100": "Les pondérations du modèle totalisent {{total}} %, pas 100 %.",
+            "noClassCourses": "{{year}} n'a encore aucun cours : importez-les à l'étape Cours des classes.",
+            "unknownClassCourse": "L'EC {{course}} n'est pas enseigné dans la classe {{class}}.",
+            "examLocked": "L'examen {{type}} de {{course}} est verrouillé : laissé inchangé.",
+            "sheetNotAClass": "La feuille « {{sheet}} » n'est pas une classe de {{year}} : ignorée.",
+            "unknownExam": "L'EC {{course}} n'a pas d'examen « {{value}} » : ajoutez-le à l'étape Examens.",
+            "studentNotInClass": "Aucun étudiant {{value}} inscrit en {{class}} cette année.",
+            "notEnrolledInCourse": "{{value}} n'est pas inscrit à {{course}}.",
+            "invalidScore": "« {{value}} » n'est pas une note entre 0 et {{max}} (ou ABS).",
+            "duplicateGrade": "Cette note est donnée deux fois dans le fichier.",
+            "absencesAsZero": "{{count}} absence(s) (ABS) enregistrée(s) comme 0.",
+            "yearNotClosed": "{{year}} n'a pas encore de délibération calculée : clôturez d'abord l'année.",
+            "unknownDecision": "« {{value}} » n'est pas une décision de jury connue.",
+            "noDeliberationResult": "Aucun résultat de délibération pour {{value}} en {{year}}.",
+            "deliberationNotOpen": "La délibération de cet étudiant est close : elle ne peut plus être modifiée.",
+            "decisionGap": "La décision officielle « {{value}} » diffère de la décision calculée ({{computed}}).",
+            "ambiguousTeacher": "Plusieurs enseignants s'appellent {{name}} : indiquez l'e-mail.",
+            "studentNotInYear": "Aucun étudiant {{value}} inscrit en {{year}}.",
+            "unknownRelationship": "« {{value}} » n'est pas un lien connu (Père, Mère, Tuteur, Oncle, Tante, Autre).",
+            "guardianContactMissing": "Un e-mail ou un numéro de téléphone est obligatoire.",
+            "invalidAmount": "« {{value}} » n'est pas un montant.",
+            "noFeeForStudent": "Aucun montant dû pour cet étudiant : ajoutez une ligne dans la feuille Frais.",
+            "unknownUnit": "UE « {{value}} » inconnue pour ce programme : ajoutez-la dans la feuille « {{sheet}} ».",
+            "unknownDefaultTeacher": "Aucun enseignant « {{value}} » : l'EC sera importé sans enseignant par défaut.",
+            "unknownCycleInFile": "Cycle « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} ».",
+            "levelOrderTaken": "L'ordre {{order}} est déjà pris par le niveau « {{level}} » de ce cycle.",
+            "unknownCycle": "Cycle « {{value}} » inconnu : importez-le d'abord à l'étape « Cycles & niveaux ».",
+            "programNameTaken": "Ce nom est déjà utilisé par le programme « {{code}} ».",
+            "programWithoutCycleWarning": "Sans cycle, les niveaux du programme ne seront pas proposés pour ses classes.",
+            "unknownProgramInFile": "Programme « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} »."
+          },
+          "changes": "Modifications ({{count}})"
+        },
+        "done": {
+          "title": "Import terminé",
+          "sheet": "{{sheet}} : {{created}} créé(s), {{updated}} mis à jour",
+          "another": "Importer un autre fichier",
+          "log": "Voir le journal",
+          "next": "Étape suivante : {{label}}",
+          "back": "Retour à la mise en route"
+        },
+        "runFailed": "L'import ne s'est pas terminé correctement. Consultez le détail du traitement.",
+        "manualTitle": {
+          "profile": "Profil de l'institution",
+          "foundation": {
+            "cycles": "Cycles de formation",
+            "programs": "Programmes",
+            "curriculum": "Unités d'enseignement"
+          },
+          "year": "Années académiques"
+        },
+        "yearImport": {
+          "title": "Importer {{year}}",
+          "steps": "Étapes de l'année",
+          "kind": {
+            "past": "Année passée",
+            "current": "Année en cours"
+          },
+          "kindText": {
+            "past": "Cette année est terminée : elle est importée comme historique. Les inscriptions sont closes et les étudiants gardent leur classe actuelle, sauf si cette année est leur plus récente.",
+            "current": "Cette année est en cours : les inscriptions sont actives et les étudiants sont placés dans la classe importée."
+          },
+          "count": {
+            "year": {
+              "classes_one": "{{count}} classe",
+              "classes_other": "{{count}} classes",
+              "students_one": "{{count}} inscription",
+              "students_other": "{{count}} inscriptions",
+              "courses_one": "{{count}} cours",
+              "courses_other": "{{count}} cours",
+              "exams_one": "{{count}} examen",
+              "exams_other": "{{count}} examens",
+              "grades_one": "{{count}} note",
+              "grades_other": "{{count}} notes",
+              "close_one": "{{count}} délibération",
+              "close_other": "{{count}} délibérations",
+              "decisions_one": "{{count}} décision officielle",
+              "decisions_other": "{{count}} décisions officielles",
+              "teachers_one": "{{count}} enseignant affecté",
+              "teachers_other": "{{count}} enseignants affectés",
+              "guardians_one": "{{count}} lien parent",
+              "guardians_other": "{{count}} liens parents",
+              "fees_one": "{{count}} dossier de frais",
+              "fees_other": "{{count}} dossiers de frais"
+            }
+          },
+          "optional": "facultatif"
+        },
+        "sheetHelp": {
+          "year": {
+            "classes": {
+              "0": "Une classe par ligne, pour l'année importée."
+            },
+            "students": {
+              "0": "Un étudiant par ligne, avec sa classe de l'année. Un étudiant déjà connu est retrouvé par son matricule, son e-mail ou ses nom, prénom et date de naissance."
+            },
+            "courses": {
+              "0": "Facultatif : chaque classe reçoit déjà les EC de son niveau dans la maquette. Une ligne sert à indiquer l'enseignant, corriger un coefficient, ajouter un EC hors maquette ou retirer un EC non enseigné cette année."
+            },
+            "exams": {
+              "0": "Le modèle d'évaluation appliqué à tous les cours de l'année : un type d'examen par ligne avec sa pondération. Un rattrapage indique l'examen qu'il remplace.",
+              "1": "Facultatif : une ligne par examen d'un cours qui s'écarte du modèle (pondération, date) ou qui n'a pas lieu."
+            },
+            "grades": {
+              "0": "Une feuille par classe, nommée par son code : une ligne par étudiant (matricule), une colonne par EC et examen (« INF111 | CC »). Note de 0 à 20, virgule ou point ; ABS pour un absent (compte 0) ; vide = pas de note.",
+              "1": "Autre format accepté : une note par ligne, pour les exports d'autres logiciels."
+            },
+            "decisions": {
+              "0": "Facultatif, après la clôture de l'année : la décision du jury de chaque étudiant, telle qu'elle figure au procès-verbal. Les écarts avec les décisions calculées sont signalés ; importer retient la décision officielle."
+            },
+            "teachers": {
+              "0": "Facultatif : un enseignant par ligne. Il est retrouvé par son e-mail, sinon par ses nom et prénom ; il est créé sans compte (un compte peut lui être donné ensuite)."
+            },
+            "guardians": {
+              "0": "Facultatif : une ligne par lien parent ↔ étudiant. Un parent est retrouvé par son e-mail, sinon par son téléphone ; il faut l'un des deux."
+            },
+            "fees": {
+              "0": "Facultatif : une ligne par étudiant avec le montant dû pour l'année, la remise éventuelle et le total payé (si les paiements ne sont pas détaillés dans la feuille Paiements).",
+              "1": "Facultatif : le détail des paiements, une ligne par versement. Un versement déjà enregistré (même date, montant et référence) n'est pas recréé."
+            }
+          },
+          "foundation": {
+            "cycles": {
+              "0": "Un cycle par ligne (Licence, Master, BTS…).",
+              "1": "Les niveaux de chaque cycle, dans l'ordre (L1, L2, L3…)."
+            },
+            "programs": {
+              "0": "Un programme (filière) par ligne.",
+              "1": "Les options (parcours) de chaque programme. Chaque programme reçoit automatiquement une option « default » si vous n'en déclarez aucune."
+            },
+            "curriculum": {
+              "0": "Les unités d'enseignement de chaque programme.",
+              "1": "Les éléments constitutifs (matières) de chaque UE."
+            }
+          }
+        },
+        "columnHelp": {
+          "year": {
+            "classes": {
+              "code": "Ex. IGL-L1. Unique dans l'année.",
+              "optionCode": "Vide : option par défaut du programme.",
+              "levelCode": "Niveau du cycle du programme (ex. L1, M2)."
+            },
+            "students": {
+              "registrationNumber": "Vide : généré selon le format de matricule de l'institution.",
+              "dateOfBirth": "jj/mm/aaaa",
+              "gender": "M ou F",
+              "classCode": "Classe de l'étudiant pour l'année importée."
+            },
+            "courses": {
+              "remove": "« oui » : l'EC n'est pas créé pour cette classe (un cours existant n'est jamais supprimé)."
+            },
+            "exams": {
+              "percentage": "Vide pour un rattrapage (il prend la pondération de l'examen remplacé).",
+              "retakeOf": "Pour un rattrapage : le type d'examen qu'il remplace (ex. Examen).",
+              "policy": "Rattrapage : la note remplace celle de l'examen, ou la meilleure des deux est gardée.",
+              "date": "jj/mm/aaaa",
+              "remove": "« oui » : cet examen n'est pas créé pour ce cours."
+            },
+            "decisions": {
+              "decision": "Admis, Admis par compensation, Ajourné, Redouble, Exclu (ou ADM, ADC, AJ, RED, EXC)."
+            },
+            "guardians": {
+              "relationship": "Père, Mère, Tuteur, Oncle, Tante, Autre",
+              "primary": "« oui » pour le parent à contacter en premier."
+            },
+            "fees": {
+              "date": "jj/mm/aaaa",
+              "method": "Espèces, Virement, Mobile money, Chèque"
+            }
+          },
+          "foundation": {
+            "curriculum": {
+              "levelCode": "Niveau où l'UE est enseignée (ex. L1) : ses EC sont proposés aux classes de ce niveau.",
+              "0": {
+                "code": "Ex. INF111"
+              },
+              "1": {
+                "code": "Ex. INF111-EC1",
+                "coefficient": "1 par défaut",
+                "teacherEmail": "Enseignant par défaut"
+              }
+            },
+            "cycles": {
+              "0": {
+                "code": "Ex. LIC, MAS, BTS",
+                "credits": "180 pour une Licence LMD"
+              },
+              "1": {
+                "code": "Ex. L1, L2, M1",
+                "order": "1 pour la première année du cycle",
+                "minCredits": "60 par défaut"
+              }
+            },
+            "programs": {
+              "0": {
+                "code": "Ex. INF, GL, SIN",
+                "cycleCode": "Cycle importé à l'étape « Cycles & niveaux »"
+              },
+              "1": {
+                "code": "Ex. GEN, RES, IA"
+              }
+            }
+          }
+        },
+        "close": {
+          "title": "Clôturer l'année",
+          "text": "Calcule les résultats de l'année à partir des notes importées. Vous pouvez la relancer après une correction.",
+          "lock": "Les examens de cette année passée sont validés et verrouillés.",
+          "credits": "Les crédits de chaque étudiant sont recalculés.",
+          "deliberations": "Une délibération annuelle par classe est calculée et laissée ouverte pour vérification.",
+          "noGrades": "Aucune note n'a encore été importée pour cette année.",
+          "run": "Clôturer l'année",
+          "again": "Recalculer",
+          "done": "Année clôturée",
+          "report": "{{locked}} examen(s) verrouillé(s), {{students}} étudiant(s) recalculé(s), délibérations : {{created}} créée(s), {{recomputed}} recalculée(s), {{skipped}} déjà close(s).",
+          "review": "Vérifier les délibérations",
+          "next": "Comparer aux décisions officielles"
+        },
+        "changes": {
+          "none": "Rien à créer ni à mettre à jour.",
+          "action": "Action",
+          "what": "Ligne concernée",
+          "values": "Valeurs (avant → après)",
+          "create": "Création",
+          "update": "Mise à jour",
+          "truncated": "Les {{shown}} premières modifications sur {{total}} sont affichées."
+        },
+        "history": {
+          "title": "Imports de cette année",
+          "counts": "{{created}} créé(s), {{updated}} mis à jour",
+          "undo": "Annuler",
+          "undoTitle": "Annuler l'import « {{step}} » ?",
+          "undoText": "Ce qu'il a créé ({{created}}) est supprimé et ce qu'il a modifié ({{updated}}) retrouve sa valeur d'avant. C'est refusé tant qu'un import plus récent en dépend.",
+          "undoFailed": "L'import n'a pas pu être annulé.",
+          "undone": "Import annulé",
+          "undoneBadge": "Annulé",
+          "blocked": "Des données ajoutées depuis dépendent de cet import : annulez d'abord les imports plus récents.",
+          "notUndoable": "Non annulable",
+          "undoConfirm": "Annuler l'import",
+          "keep": "Le conserver"
+        },
+        "workbook": {
+          "title": "Toute l'année dans un seul classeur",
+          "text": "Facultatif : déposez un classeur contenant les feuilles de plusieurs étapes (Classes, Étudiants, Cours, Modèle, une feuille par classe pour les notes…). Chaque étape y vérifie ensuite ses propres feuilles, dans l'ordre.",
+          "covers": "contient : {{steps}}",
+          "forget": "Retirer",
+          "nothing": "Aucune feuille de ce classeur ne correspond à une étape de l'année.",
+          "inWorkbook": "Dans le classeur de l'année",
+          "stepCovered": "Le classeur {{name}} contient les feuilles de cette étape.",
+          "check": "Les vérifier"
+        }
+      }
+    },
+    "documents": {
+      "kinds": {
+        "diploma": {
+          "label": "Diplôme",
+          "description": "Diplôme d'État officiel"
+        },
+        "transcript": {
+          "label": "Relevé de notes",
+          "description": "Relevé officiel des notes de l'étudiant"
+        },
+        "student_list": {
+          "label": "Liste d'étudiants",
+          "description": "Liste des étudiants de cette classe (colonnes configurables)"
+        },
+        "attestation": {
+          "label": "Attestation",
+          "description": "Attestation de réussite ou d'inscription"
+        }
       },
-      "downloadTemplate": "Télécharger le modèle",
-      "uploadZone": "Glissez votre fichier ici ou cliquez pour sélectionner",
-      "uploadZoneAccept": "Excel (.xlsx) ou CSV (.csv) · max 10 Mo",
+      "classTemplates": {
+        "toast": {
+          "assigned": "Modèle assigné",
+          "assignError": "Échec de l'assignation",
+          "removed": "Assignation retirée : la classe utilisera le modèle par défaut",
+          "previewError": "Échec de l'aperçu",
+          "seedCreated": "Modèles système créés : {{created}}",
+          "seedCreatedWithSkipped": "Modèles système créés : {{created}} (déjà présents : {{skipped}})",
+          "seedAlreadyPresent": "Modèles système déjà présents",
+          "seedError": "Échec de la création des modèles système",
+          "noTemplate": "Aucun modèle disponible : exécutez d'abord la création des modèles système"
+        },
+        "previewSubtitle": "{{classLabel}} · données fictives : utilisez « Générer » sur la fiche étudiant pour produire le document final",
+        "title": "Modèles de documents par classe",
+        "subtitle": "Choisissez le modèle de diplôme, relevé et attestation pour chaque classe. Vous pouvez surcharger le thème par classe (couleurs, polices, tailles, etc.) sans toucher au modèle d'institution.",
+        "seedCreate": "Créer les modèles système",
+        "seedReset": "Réinitialiser les modèles système",
+        "targetClass": {
+          "title": "Classe ciblée",
+          "description": "Sélectionnez la classe à configurer. Si rien n'est assigné, c'est le modèle par défaut du programme ou de l'institution qui s'applique.",
+          "placeholder": "Choisir une classe..."
+        },
+        "card": {
+          "assigned": "Assigné",
+          "institutionDefault": "Défaut institution",
+          "templateUsed": "Modèle utilisé",
+          "templatePlaceholder": "(défaut institution)",
+          "customTheme": "Thème personnalisé pour cette classe",
+          "noTemplateHint": "Aucun modèle disponible : créez d'abord les modèles système",
+          "editThemeHint": "Modifier le thème de cette classe",
+          "createThemeHint": "Créer une personnalisation pour cette classe (utilise le modèle par défaut)",
+          "customizeTheme": "Personnaliser le thème",
+          "preview": "Aperçu",
+          "reset": "Réinitialiser"
+        },
+        "editor": {
+          "title": "Personnaliser · {{kind}}",
+          "subtitle": "{{classLabel}} · les surcharges s'appliquent uniquement à cette classe",
+          "modifiedGroups_one": "{{count}} groupe modifié",
+          "modifiedGroups_other": "{{count}} groupes modifiés",
+          "preview": "Aperçu",
+          "refreshPreview": "Rafraîchir l'aperçu",
+          "livePreview": "Aperçu en direct",
+          "previewHint": "Cliquez sur « Rafraîchir l'aperçu » pour générer le rendu"
+        }
+      },
       "preview": {
-        "valid": "{{count}} ligne(s) valide(s)",
-        "skipped": "{{count}} ligne(s) ignorée(s) (déjà existantes)",
-        "errors": "{{count}} erreur(s)",
-        "warnings": "{{count}} avertissement(s)",
-        "row": "Ligne",
-        "column": "Colonne",
-        "message": "Message",
-        "noErrors": "Aucune erreur"
+        "title": "Aperçu du document",
+        "downloadHtml": "Télécharger HTML",
+        "frameTitle": "Aperçu",
+        "fileName": "apercu-document"
       },
-      "confirm": "Lancer l'import",
-      "uploading": "Téléversement…",
-      "previewing": "Analyse du fichier…",
-      "noFile": "Aucun fichier sélectionné",
-      "errorBlocker": "Corrigez les erreurs avant de confirmer l'import",
-      "toast": {
-        "uploadOk": "Fichier reçu",
-        "importStarted": "Import lancé"
+      "bulk": {
+        "summary": "{{ok}} OK · {{error}} en échec",
+        "failuresTitle_one": "{{count}} échec",
+        "failuresTitle_other": "{{count}} échecs",
+        "status": {
+          "pending": "En attente",
+          "running": "Génération",
+          "ok": "OK",
+          "error": "Échec"
+        },
+        "title": "Génération en lot",
+        "subtitle": "Génération côté navigateur. <strong>Ne fermez pas l'onglet</strong> pendant l'opération.",
+        "previewTitle": "Aperçu : {{kind}} ({{student}})",
+        "templateUsed": "Modèle utilisé : <strong>{{name}}</strong>",
+        "previewDescription": "Rendu HTML avec données réelles, sans rastérisation PDF.",
+        "toast": {
+          "previewError": "Échec de l'aperçu",
+          "noSelection": "Aucun étudiant sélectionné",
+          "zipError": "Échec du regroupement ZIP : {{error}}",
+          "generated_one": "{{count}} document généré",
+          "generated_other": "{{count}} documents générés",
+          "noStudentToPreview": "Aucun étudiant à prévisualiser"
+        },
+        "filters": {
+          "title": "Filtres",
+          "description": "Choisissez le type de document, l'année académique et la classe.",
+          "type": "Type",
+          "period": "Période",
+          "annual": "Annuel",
+          "semester": "Semestriel",
+          "semesterLabel": "Semestre",
+          "latest": "Le plus récent",
+          "academicYear": "Année académique",
+          "allYears": "Toutes",
+          "class": "Classe",
+          "classPlaceholder": "Choisir une classe…"
+        },
+        "students": {
+          "title": "Étudiants",
+          "count_one": "{{count}} étudiant dans cette classe.",
+          "count_other": "{{count}} étudiants dans cette classe.",
+          "selected_one": "{{count}} sélectionné.",
+          "selected_other": "{{count}} sélectionnés.",
+          "zip": "ZIP",
+          "demoMode": "Mode démo",
+          "previewHint": "Aperçu du document pour le premier étudiant sélectionné",
+          "preview": "Aperçu",
+          "generate": "Générer {{count}}",
+          "generating": "Génération en cours…",
+          "empty": "Aucun étudiant dans cette classe."
+        },
+        "table": {
+          "selectAll": "Tout sélectionner",
+          "selectOne": "Sélectionner {{name}}",
+          "registrationNumber": "Matricule",
+          "lastName": "Nom",
+          "firstName": "Prénom(s)",
+          "status": "Statut",
+          "preview": "Aperçu",
+          "previewFor": "Aperçu pour {{name}}"
+        }
       },
-      "prereqHint": {
-        "people": "Importez d'abord la structure académique si les classes n'existent pas encore.",
-        "enrollments": "Les étudiants et les classes doivent exister avant les inscriptions.",
-        "grades": "Les examens doivent exister avant d'importer les notes."
+      "generate": {
+        "trigger": "Générer un document académique",
+        "htmlPreviewTitle": "Aperçu HTML : {{kind}}",
+        "toast": {
+          "success": "Document généré et téléchargé",
+          "error": "Échec de la génération"
+        },
+        "title": "Générer un document",
+        "description": "Pour <strong>{{name}}</strong>. Le modèle utilisé est celui assigné à la classe (sinon le défaut institution).",
+        "kind": "Type de document",
+        "format": "Format",
+        "formatPdf": "PDF",
+        "formatHtml": "HTML (aperçu)",
+        "demoMode": "Mode démo",
+        "demoModeHint": "Ajoute un filigrane « DÉMO »",
+        "submit": "Générer"
       },
-      "newFile": "Nouveau fichier"
+      "theme": {
+        "groups": {
+          "fonts": {
+            "label": "Polices",
+            "description": "Choisissez la police pour chaque zone (titre, corps, en-tête, etc.)"
+          },
+          "sizes": {
+            "label": "Tailles de texte",
+            "description": "Tailles en points (pt) : ajustez selon la lisibilité."
+          },
+          "colors": {
+            "label": "Couleurs",
+            "description": "Couleurs principales et accents."
+          },
+          "borders": {
+            "label": "Bordures",
+            "description": "Largeur des bordures décoratives en pixels."
+          },
+          "logos": {
+            "label": "Logos",
+            "description": "Tailles et décalages des logos en pixels."
+          },
+          "qrCode": {
+            "label": "QR code",
+            "description": "Affichage et taille du QR code."
+          },
+          "titleEffects": {
+            "label": "Effets de titre",
+            "description": "Ombre, espacement et hauteur du titre."
+          },
+          "spacing": {
+            "label": "Espacements",
+            "description": "Marges entre les sections (mm)."
+          },
+          "display": {
+            "label": "Affichage",
+            "description": "Bilingue, langue principale, options visuelles."
+          },
+          "watermark": {
+            "label": "Filigrane",
+            "description": "Texte et logo en filigrane (ORIGINAL, etc.)."
+          },
+          "page": {
+            "label": "Format de page",
+            "description": "Format papier, orientation et marges (mm)."
+          },
+          "table": {
+            "label": "Tableau",
+            "description": "Apparence des tableaux dans le relevé."
+          }
+        },
+        "tabs": {
+          "typography": "Typographie",
+          "colors": "Couleurs",
+          "sizes": "Tailles",
+          "options": "Options"
+        },
+        "fields": {
+          "main": "Principale",
+          "title": "Titre",
+          "subtitle": "Sous-titre",
+          "header": "En-tête",
+          "legalText": "Texte légal",
+          "studentName": "Nom étudiant",
+          "studentInfo": "Infos étudiant",
+          "footer": "Pied de page",
+          "signature": "Signature",
+          "mention": "Mention",
+          "reference": "Référence",
+          "body": "Corps",
+          "table": "Tableau",
+          "tableHeader": "En-tête tableau",
+          "tableBody": "Corps tableau",
+          "primary": "Primaire",
+          "secondary": "Secondaire",
+          "accent": "Accent",
+          "fullName": "Nom complet",
+          "matricule": "Matricule",
+          "diplomaTitle": "Titre du diplôme",
+          "yearObtention": "Année d'obtention",
+          "juryDates": "Dates jury",
+          "outerBorder": "Bordure ext.",
+          "innerBorder": "Bordure int.",
+          "tableHeaderBg": "Fond en-tête",
+          "tableHeaderText": "Texte en-tête",
+          "tableBorder": "Bordure tableau",
+          "alternateRow": "Ligne alternée",
+          "passingGrade": "Note réussie",
+          "failingGrade": "Note échec",
+          "border": "Bordure",
+          "content": "Contenu",
+          "summary": "Résumé",
+          "referenceNumber": "Numéro de réf.",
+          "outerWidth": "Largeur ext.",
+          "innerWidth": "Largeur int.",
+          "rowHeight": "Hauteur ligne",
+          "borderWidth": "Largeur bordure",
+          "alternateRows": "Lignes alternées",
+          "showCoefficient": "Coefficient",
+          "showCredits": "Crédits",
+          "showAppreciation": "Appréciation",
+          "highlightFailures": "Surligner échecs",
+          "institutionLogoSize": "Logo institution",
+          "facultyLogoSize": "Logo faculté",
+          "universityLogoSize": "Logo université",
+          "ministryLogoSize": "Logo ministère",
+          "coatOfArmsSize": "Armoiries",
+          "watermarkLogoSize": "Logo filigrane",
+          "facultyLogoOffsetX": "Logo faculté X",
+          "facultyLogoOffsetY": "Logo faculté Y",
+          "coatOfArmsOffsetX": "Armoiries X",
+          "coatOfArmsOffsetY": "Armoiries Y",
+          "ministryLogoOffsetX": "Logo ministère X",
+          "ministryLogoOffsetY": "Logo ministère Y",
+          "enabled": "Activé",
+          "compactPayload": "QR compact",
+          "size": "Taille",
+          "offsetX": "Décalage X",
+          "offsetY": "Décalage Y",
+          "lineHeight": "Hauteur de ligne",
+          "letterSpacing": "Espacement lettres",
+          "shadow": "Ombre",
+          "shadowColor": "Couleur ombre",
+          "shadowOffsetX": "Ombre X",
+          "shadowOffsetY": "Ombre Y",
+          "shadowBlur": "Flou ombre",
+          "headerLineHeight": "Interligne en-tête",
+          "titleBlockMarginTop": "Marge titre haut",
+          "titleBlockMarginBottom": "Marge titre bas",
+          "ministerBlockMarginBottom": "Marge ministre bas",
+          "recipientBlockMarginBottom": "Marge destinataire bas",
+          "signatureBlockMarginTop": "Marge signature haut",
+          "sectionSpacing": "Espacement section",
+          "bodyLineHeight": "Interligne corps",
+          "paragraphSpacing": "Espacement paragraphe",
+          "bilingual": "Bilingue (FR/EN)",
+          "primaryLanguage": "Langue principale",
+          "showQRCode": "Afficher QR code",
+          "qrCodeSize": "Taille QR code",
+          "showSemesterBreakdown": "Détail par semestre",
+          "showRanking": "Afficher rang",
+          "showRefNumber": "N° de référence",
+          "showStamp": "Cachet",
+          "decorative": "Décoratif",
+          "text": "Texte",
+          "color": "Couleur",
+          "textOpacity": "Opacité texte",
+          "logoOpacity": "Opacité logo",
+          "logoSize": "Taille logo",
+          "textSize": "Taille texte",
+          "orientation": "Orientation",
+          "margins": "Marges",
+          "top": "Haut",
+          "right": "Droite",
+          "bottom": "Bas",
+          "left": "Gauche"
+        },
+        "preset": "Préréglage :",
+        "presetPlaceholder": "Appliquer un préréglage",
+        "resetAll": "Réinitialiser tout",
+        "pageSize": {
+          "letter": "Lettre US"
+        },
+        "orientation": {
+          "portrait": "Portrait",
+          "landscape": "Paysage"
+        }
+      },
+      "studentList": {
+        "trigger": "Exporter (modèle)",
+        "triggerHint": "Exporter cette liste avec un modèle officiel",
+        "triggerDisabledHint": "Sélectionnez d'abord une classe, un programme ou une année",
+        "toast": {
+          "templateUsed": "Modèle utilisé : {{name}}",
+          "templateUsedCenter": "Modèle utilisé : {{name}} (centre)",
+          "error": "Échec de la génération"
+        },
+        "previewTitle": "Aperçu HTML : liste d'étudiants",
+        "title": "Exporter la liste d'étudiants",
+        "forClass": "Pour la classe sélectionnée.",
+        "forProgram": "Pour le programme sélectionné.",
+        "forStudents_one": "Pour {{count}} étudiant sélectionné.",
+        "forStudents_other": "Pour {{count}} étudiants sélectionnés.",
+        "forFilters": "Selon les filtres en cours.",
+        "template": "Modèle",
+        "templateDefault": "(défaut institution)",
+        "noTemplate": "Aucun modèle : créez-en via Initialiser les modèles officiels",
+        "defaultSuffix": " (défaut)",
+        "demoModeHint": "Filigrane « DÉMO »"
+      },
+      "bulkClassExport": {
+        "title": "Exporter les listes en lot",
+        "description": "Génère les listes d'étudiants pour les classes sélectionnées : en un fichier unique (Excel multi-onglets) ou en un fichier séparé par classe (ZIP).",
+        "format": "Format",
+        "formatXlsx": "Excel (.xlsx)",
+        "formatPdf": "PDF (rendu via modèle)",
+        "mode": "Mode",
+        "unified": "Fichier unique",
+        "excelOnly": " (Excel uniquement)",
+        "separated": "Fichiers séparés (ZIP)",
+        "classesCount": "Classes ({{selected}} / {{total}})",
+        "table": {
+          "code": "Code",
+          "name": "Nom",
+          "program": "Programme",
+          "year": "Année",
+          "status": "Statut"
+        },
+        "progress": "Export en cours…",
+        "submit": "Exporter ({{count}})",
+        "toast": {
+          "noSelection": "Aucune classe sélectionnée",
+          "success": "{{ok}} / {{total}} liste(s) exportée(s)",
+          "error": "Échec de l'export"
+        },
+        "institutionFallback": "Établissement",
+        "sheet": {
+          "title": "Liste d'étudiants : {{name}}",
+          "code": "Code : {{value}}",
+          "program": "Programme : {{value}}",
+          "year": "Année : {{value}}",
+          "headcount": "Effectif : {{value}}",
+          "registrationNumber": "Matricule",
+          "lastName": "Nom",
+          "firstName": "Prénom(s)",
+          "dateOfBirth": "Date de naissance",
+          "gender": "Genre",
+          "genderOther": "Autre",
+          "sheetName": "Étudiants"
+        },
+        "file": {
+          "unified": "listes_classes",
+          "perClass": "liste"
+        }
+      }
     }
   },
   "teacher": {
@@ -3580,7 +4726,7 @@
       "delegatedDashboardBadge": "Délégué",
       "actions": {
         "viewGrades": "Voir les notes",
-        "fastEntry": "Fast Entry"
+        "fastEntry": "Saisie rapide"
       },
       "empty": {
         "title": "Aucun cours attribué",
@@ -3597,13 +4743,13 @@
           "cycleInfo": "Cycle: {{value}}"
         },
         "validation": {
-          "code": "Code is required"
+          "code": "Le code est obligatoire"
         }
       },
       "filters": {
         "allClasses": "All Classes",
         "allDelegations": "All Delegations",
-        "allExamTypes": "All Exam Types",
+        "allExamTypes": "Tous les types d'examen",
         "allPrograms": "All Programs",
         "allSemesters": "All Semesters",
         "allStatuses": "All Statuses",
@@ -3618,10 +4764,28 @@
         "status": "Status",
         "teacher": "Teacher"
       },
-      "noMatch": "No Match",
-      "noMatchHint": "No Match Hint",
-      "searchPlaceholder": "Search Placeholder",
-      "summary": "Summary"
+      "noMatch": "Aucun cours correspondant",
+      "noMatchHint": "Essayez une autre recherche ou effacez les filtres.",
+      "searchPlaceholder": "Rechercher un cours ou une classe…",
+      "summary": "Summary",
+      "noExams": "Aucun examen pour ce cours",
+      "hubTitle": "Mes cours & notes",
+      "hubDescription": "Saisie des notes, verrouillage et soumission par cours",
+      "noSearchMatch": "Aucun cours ne correspond à votre recherche.",
+      "examRow": {
+        "submit": "Soumettre",
+        "enter": "Saisir",
+        "view": "Voir",
+        "average": "moy {{value}}"
+      },
+      "toolbar": {
+        "actionRequired": "Action requise",
+        "sort": {
+          "relevance": "Pertinence",
+          "name": "Nom A→Z",
+          "class": "Classe"
+        }
+      }
     },
     "courses.manage": {
       "title": "Gestion des cours",
@@ -3724,7 +4888,7 @@
         "saving": "Enregistrement...",
         "exportTemplate": "Exporter le modèle",
         "importGrades": "Importer les notes",
-        "lockRequiresApproval": "Lock Requires Approval"
+        "lockRequiresApproval": "L'examen doit être approuvé avant verrouillage"
       },
       "info": {
         "title": "Informations de notation",
@@ -3784,6 +4948,14 @@
         "exportSuccess": "Modèle exporté avec succès",
         "importSuccess": "{{count}} notes importées avec succès",
         "importError": "Échec de l'importation des notes"
+      },
+      "template": {
+        "registrationNumber": "Matricule",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "score": "Note",
+        "sheetName": "Notes",
+        "filePrefix": "notes"
       }
     },
     "gradeExport": {
@@ -3899,7 +5071,7 @@
         "name": "Le nom doit comporter au moins 2 caractères",
         "faculty": "Veuillez sélectionner une faculté",
         "cycle": "Veuillez sélectionner un cycle",
-        "code": "Code is required"
+        "code": "Le code est obligatoire"
       },
       "toast": {
         "createSuccess": "Programme créé avec succès",
@@ -4093,9 +5265,6 @@
         "noData": "noData"
       },
       "lastLevel": "lastLevel",
-      "selectSourceFirst": "selectSourceFirst",
-      "noTargetAvailable": "noTargetAvailable",
-      "lastLevelHint": "lastLevelHint",
       "emptyState": {
         "title": "title",
         "description": "description"
@@ -4218,13 +5387,23 @@
         "sun": "Dimanche"
       },
       "errors": {
-        "endBeforeStart": "L'heure de fin doit être après l'heure de début."
+        "endBeforeStart": "L'heure de fin doit être après l'heure de début.",
+        "timeFormat": "L'heure doit être au format HH:MM",
+        "validUntilBeforeValidFrom": "La date de fin de validité doit être postérieure à la date de début"
       },
       "confirmDelete": "Supprimer cette séance ?",
       "confirmDeleteDesc": "Cette action est irréversible.",
       "allYears": "Toutes les années",
       "print": "Imprimer",
-      "copyFromYear": "Copier depuis une autre année"
+      "copyFromYear": "Copier depuis une autre année",
+      "sessionCount_one": "{{count}} séance",
+      "sessionCount_other": "{{count}} séances",
+      "printDoc": {
+        "classCount_one": "{{count}} classe",
+        "classCount_other": "{{count}} classes",
+        "generatedOn": "Généré le {{date}}",
+        "time": "Heure"
+      }
     },
     "rooms": {
       "title": "Salles",
@@ -4476,21 +5655,21 @@
       }
     },
     "spreadsheet": {
-      "errors": "Errors",
-      "filled": "Filled",
-      "invalidScore": "Invalid Score",
+      "errors": "erreurs",
+      "filled": "remplies",
+      "invalidScore": "La note doit être comprise entre 0 et 20",
       "legend": {
-        "hint": "Hint",
-        "title": "Title"
+        "hint": "Tab/Entrée/flèches pour naviguer. Videz une cellule pour supprimer la note. Enregistrement automatique en quittant la cellule.",
+        "title": "Saisie rapide — enregistrement automatique"
       },
       "matricule": "Matricule",
-      "noCourse": "No Course",
-      "noExams": "No Exams",
-      "noStudents": "No Students",
-      "pending": "Pending",
-      "perExamMode": "Per Exam Mode",
-      "searchStudent": "Search Student",
-      "studentCol": "Student Col"
+      "noCourse": "Aucun cours sélectionné",
+      "noExams": "Aucun examen pour ce cours. Créez-en un d'abord.",
+      "noStudents": "Aucun étudiant ne correspond à la recherche.",
+      "pending": "en cours",
+      "perExamMode": "Mode examen unique",
+      "searchStudent": "Rechercher un étudiant…",
+      "studentCol": "Étudiant"
     }
   },
   "dean": {
@@ -4502,12 +5681,12 @@
       "actions": {
         "validate": "Valider et verrouiller",
         "bulkValidate": "Validation en masse",
-        "reject": "Reject"
+        "reject": "Rejeter"
       },
       "toast": {
         "validated": "Examen approuvé",
         "bulkValidated": "Examens validés avec succès",
-        "rejected": "Rejected"
+        "rejected": "Examen rejeté"
       },
       "notifications": "Notifications du workflow",
       "notificationsEmpty": "Aucune notification",
@@ -4529,11 +5708,11 @@
       "confirm": {
         "title": "Valider et verrouiller ?",
         "bulkMessage": "bulkMessage",
-        "singleMessage": "singleMessage"
+        "singleMessage": "Approuver et verrouiller « {{name}} » ? C'est irréversible : les notes ne seront plus modifiables."
       },
-      "dateFrom": "Date From",
+      "dateFrom": "Soumis à partir du",
       "rejectDialog": {
-        "subtitle": "Subtitle",
+        "subtitle": "Indiquez le motif du rejet de « {{name}} ». L'enseignant le verra.",
         "title": "Title"
       }
     },
@@ -4552,7 +5731,10 @@
       "actionRequired": "Action requise",
       "noDeliberation": "Délibération non encore effectuée",
       "avgGeneral": "Moy. générale",
-      "successRate": "Taux réussite"
+      "successRate": "Taux réussite",
+      "totalExams": "{{count}} au total",
+      "submittedExams_one": "{{count}} examen en attente",
+      "submittedExams_other": "{{count}} examens en attente"
     },
     "approvals": {
       "title": "Approbations en attente",
@@ -4577,7 +5759,10 @@
       "score": "Note",
       "searchPlaceholder": "Rechercher un examen...",
       "allClasses": "Toutes les classes",
-      "allYears": "Toutes les années"
+      "allYears": "Toutes les années",
+      "minMax": "min {{min}} · max {{max}}",
+      "selectAllExams": "Sélectionner tous les examens",
+      "selectExam": "Sélectionner {{name}}"
     },
     "history": {
       "title": "Historique des approbations",
@@ -4592,17 +5777,17 @@
       "searchPlaceholder": "Rechercher un examen...",
       "allClasses": "Toutes les classes",
       "allYears": "Toutes les années",
-      "allTeachers": "All Teachers",
-      "dateFrom": "Date From",
-      "dateTo": "Date To",
-      "teacherFilter": "Teacher Filter"
+      "allTeachers": "Tous les enseignants",
+      "dateFrom": "Du",
+      "dateTo": "Au",
+      "teacherFilter": "Tous les enseignants"
     },
     "auditHistory": {
-      "by": "By",
-      "empty": "Empty",
-      "system": "System",
-      "title": "Title",
-      "toggle": "Toggle"
+      "by": "par",
+      "empty": "Aucun événement enregistré.",
+      "system": "Système",
+      "title": "Journal d'audit",
+      "toggle": "Journal d'audit"
     }
   },
   "student": {
@@ -4648,7 +5833,13 @@
       "credits": "{{count}} crédit",
       "creditsPlural": "{{count}} crédits",
       "rank": "Rang {{rank}} dans la classe",
-      "mention": "Mention : {{mention}}"
+      "mention": "Mention : {{mention}}",
+      "ueCredits_one": "{{count}} crédit",
+      "ueCredits_other": "{{count}} crédits",
+      "courseCount_one": "{{count}} cours",
+      "courseCount_other": "{{count}} cours",
+      "coefficient": "Coeff. {{value}}",
+      "ueCreditsEarned": "{{earned}}/{{total}} crédits"
     },
     "exams": {
       "title": "Calendrier des examens",
@@ -4671,7 +5862,8 @@
       "enrolled": "Inscrit",
       "unenroll": "Se désinscrire",
       "enroll": "S'inscrire",
-      "selected": "{{count}} cours sélectionné(s) sur {{total}}"
+      "selected": "{{count}} cours sélectionné(s) sur {{total}}",
+      "coefficient": "Coef. {{value}}"
     },
     "dashboard": {
       "title": "Mon espace",
@@ -4760,7 +5952,7 @@
         "excluded": "Exclu",
         "pending": "En cours"
       },
-      "eventCount": "Event Count"
+      "eventCount": "{{count}} événement(s)"
     },
     "enrollment": {
       "title": "Inscription",
@@ -4864,7 +6056,10 @@
         "change": "Changer l'avatar",
         "uploading": "Envoi en cours...",
         "success": "Avatar mis à jour",
-        "error": "Échec de l'envoi de l'avatar"
+        "error": "Échec de l'envoi de l'avatar",
+        "cropTitle": "Recadrer la photo de profil",
+        "cropPreviewAlt": "Aperçu",
+        "cropError": "Erreur lors du recadrage"
       },
       "email": {
         "change": "Changer l'email",
@@ -4940,7 +6135,9 @@
         "revoked": "Session révoquée",
         "revokedAll": "Autres sessions révoquées",
         "error": "Impossible de charger les sessions"
-      }
+      },
+      "unknownBrowser": "Navigateur inconnu",
+      "otherBrowser": "Navigateur"
     },
     "preferences": {
       "title": "Préférences",
@@ -4998,7 +6195,16 @@
       "program": "Filière",
       "computing": "Calcul de l'aperçu…",
       "preview": "Aperçu",
-      "confirm": "Confirmer ({{count}} étudiant(s))"
+      "confirm": "Confirmer ({{count}} étudiant(s))",
+      "toAssign": "à assigner",
+      "alreadyAssigned_one": "{{count}} déjà assigné — ignoré",
+      "alreadyAssigned_other": "{{count}} déjà assignés — ignorés",
+      "col": {
+        "student": "Étudiant",
+        "registration": "Matricule",
+        "amount": "Montant"
+      },
+      "allAssigned": "Tous les étudiants ont déjà une assignation pour cette année."
     },
     "structures": {
       "title": "Barèmes de frais",
@@ -5067,11 +6273,18 @@
         "student": "Étudiant",
         "status": "Statut"
       },
-      "forceMatch": "Force Match",
-      "forced": "Forced",
-      "xlsxLoaded": "Xlsx Loaded",
+      "forceMatch": "Forcer",
+      "forced": "Forcé",
+      "xlsxLoaded": "{{count}} lignes chargées depuis le fichier Excel",
       "notes": "Note de batch (optionnelle)",
-      "notesPlaceholder": "Ex : virement du 15 juillet 2026"
+      "notesPlaceholder": "Ex : virement du 15 juillet 2026",
+      "status": {
+        "matched": "Correspondance",
+        "duplicate": "Doublon",
+        "unknown_ref": "Référence inconnue",
+        "amount_mismatch": "Montant incorrect"
+      },
+      "expectedAmount": "(attendu : {{amount}})"
     },
     "assignments": {
       "title": "Paiements étudiants",
@@ -5111,7 +6324,9 @@
       "discountReasonLabel": "Motif (optionnel)",
       "exemptNotes": "Motif d'exonération (optionnel)",
       "exemptConfirmTitle": "Exonérer cet étudiant ?",
-      "exemptConfirmDescription": "L'étudiant sera marqué comme exonéré. Vous pouvez saisir un motif facultatif."
+      "exemptConfirmDescription": "L'étudiant sera marqué comme exonéré. Vous pouvez saisir un motif facultatif.",
+      "selectedStudents_one": "{{count}} étudiant sélectionné",
+      "selectedStudents_other": "{{count}} étudiants sélectionnés"
     },
     "payments": {
       "title": "Historique des paiements",
@@ -5145,7 +6360,9 @@
         "diploma": "Délivrance de diplôme",
         "reenrollment": "Réinscription",
         "document_generation": "Génération de documents"
-      }
+      },
+      "enabledHint": "Les étudiants doivent être en règle pour effectuer cette action",
+      "disabledHint": "Contrôle désactivé — tous les étudiants ont accès"
     },
     "orders": {
       "title": "Ordres de paiement",
@@ -5203,13 +6420,14 @@
       "empty": "Aucune affectation trouvée pour cet étudiant.",
       "noEvents": "Aucun événement financier.",
       "viewDetail": "Détail",
-      "viewHistory": "Historique financier"
+      "viewHistory": "Historique financier",
+      "subtitleFor": "Tous les paiements et ordres de {{name}}"
     },
     "payment": {
       "methods": {
         "bank_transfer": "Bank transfer",
-        "cash": "Cash",
-        "check": "Check",
+        "cash": "Espèces",
+        "check": "Chèque",
         "mobile_money": "Mobile money"
       }
     }
@@ -5263,10 +6481,10 @@
     "noData": "Aucune séance de présence enregistrée pour ce cours.",
     "title": "Taux de présence",
     "exportFilename": "taux-presence.xlsx",
-    "export": "Export",
-    "rate": "Rate",
-    "student": "Student",
-    "subtitle": "Subtitle"
+    "export": "Exporter",
+    "rate": "Taux de présence",
+    "student": "Étudiant",
+    "subtitle": "Taux de présence par étudiant"
   },
   "timetableHub": {
     "title": "Emploi du temps & Présences",
@@ -5529,7 +6747,9 @@
       "editStep": "Modifier",
       "noValue": "Non renseigné",
       "priorHigherEdYes": "Oui, j’ai déjà suivi des études supérieures",
-      "priorHigherEdNo": "Non, c’est ma première inscription dans l’enseignement supérieur"
+      "priorHigherEdNo": "Non, c’est ma première inscription dans l’enseignement supérieur",
+      "optionalShort": "opt.",
+      "resumeOrRestart": "Reprendre là où vous en étiez ou recommencer depuis le début."
     },
     "recap": {
       "identity": "État civil",
@@ -5553,7 +6773,8 @@
         "bacCert": "Attestation de réussite au BAC / GCE A-Level",
         "bacTranscript": "Relevé de notes du BAC / GCE A-Level",
         "priorTranscript": "Relevé de notes de dernière année + attestation de réussite (si études sup.)"
-      }
+      },
+      "physicalNotice": "Ces pièces seront demandées lors du dépôt physique de votre dossier."
     },
     "validation": {
       "firstNameRequired": "Le prénom est requis",
@@ -5696,16 +6917,43 @@
         "reviewed": "Décision enregistrée",
         "documentReviewed": "Document revu",
         "converted": "Candidature convertie en dossier étudiant"
-      }
+      },
+      "totalCount_one": "{{count}} candidature au total",
+      "totalCount_other": "{{count}} candidatures au total",
+      "filteredCount_one": "{{count}} candidature correspondant aux filtres",
+      "filteredCount_other": "{{count}} candidatures correspondant aux filtres"
+    },
+    "sections": {
+      "father": "Père",
+      "mother": "Mère",
+      "guardian": "Tuteur légal",
+      "emergency": "Contact d'urgence",
+      "contact": "Contact",
+      "nationalityOrigin": "Nationalité & origine",
+      "programChoices": "Vœux de formation"
+    },
+    "placeholders": {
+      "example": "Ex : {{value}}",
+      "guardianRelation": "Ex : Oncle, Frère aîné",
+      "email": "votre@email.com",
+      "whatsapp": "Si différent du téléphone",
+      "nationality": "Ex : Camerounaise",
+      "bacSeries": "Ex : C, D, A-Level...",
+      "bacInstitution": "Ex : Lycée Général Leclerc",
+      "bacMatricule": "N° matricule OBC",
+      "priorInstitution": "Ex : Université de Yaoundé I",
+      "priorField": "Ex : Informatique",
+      "personalStatement": "Décrivez votre projet professionnel et vos motivations..."
     }
   },
   "institutionHub": {
     "title": "Institution & Structure",
-    "description": "Gérez le profil de votre institution, les facultés et les cycles académiques",
+    "description": "Gérez le profil de votre institution, les facultés, les cycles académiques et les centres",
     "tabs": {
       "overview": "Institution",
       "faculties": "Facultés",
-      "cycles": "Cycles d'étude"
+      "cycles": "Cycles d'étude",
+      "centers": "Centres"
     }
   },
   "programsHub": {
@@ -5743,7 +6991,77 @@
       "regNumber": "Matricule",
       "enrollmentStatus": "Inscription",
       "empty": "Aucune personne trouvée.",
-      "deleteConfirm": "Cette action supprimera définitivement le profil et ne peut pas être annulée."
+      "deleteConfirm": "Cette action supprimera définitivement le profil et ne peut pas être annulée.",
+      "account": "Compte",
+      "created": "Personne créée.",
+      "hasAccount": "Actif",
+      "manageAccess": "Gérer l'accès",
+      "noAccount": "Aucun"
+    },
+    "account": {
+      "overview": {
+        "title": "Compte d'accès",
+        "description": "Statut du compte de connexion lié à ce profil.",
+        "emailVerified": "Email vérifié",
+        "emailNotVerified": "Email non vérifié",
+        "suspended": "Suspendu",
+        "active": "Actif",
+        "role": "Rôle",
+        "memberSince": "Membre depuis",
+        "noAccountTitle": "Aucun compte d'accès",
+        "noAccountDescription": "Ce profil n'est pas lié à un compte de connexion. L'utilisateur ne peut pas se connecter à la plateforme."
+      },
+      "provisioning": {
+        "title": "Provisionnement",
+        "description": "Créez un nouveau compte ou liez un compte existant à ce profil.",
+        "createTab": "Créer un compte",
+        "linkTab": "Lier un compte existant"
+      },
+      "security": {
+        "title": "Actions de sécurité",
+        "description": "Gérez l'accès et la sécurité du compte de cet utilisateur.",
+        "resetTitle": "Réinitialiser le mot de passe",
+        "resetDescription": "Envoie un email de réinitialisation à",
+        "sendEmail": "Envoyer l'email",
+        "reactivateTitle": "Réactiver le compte",
+        "suspendTitle": "Suspendre le compte",
+        "reactivateDescription": "Permet à l'utilisateur de se reconnecter à la plateforme.",
+        "suspendDescription": "Bloque immédiatement toutes les connexions de cet utilisateur.",
+        "reactivate": "Réactiver",
+        "suspend": "Suspendre"
+      },
+      "create": {
+        "emailPlaceholder": "prenom.nom@example.com",
+        "rolePlaceholder": "Choisir un rôle",
+        "submit": "Créer le compte"
+      },
+      "link": {
+        "emailLabel": "Email du compte existant",
+        "emailPlaceholder": "utilisateur@example.com",
+        "hint": "L'utilisateur doit déjà être membre de l'organisation. Son profil sera lié à ce compte d'accès.",
+        "submit": "Lier le compte"
+      },
+      "validation": {
+        "emailInvalid": "Email invalide",
+        "passwordMin": "Mot de passe de 8 caractères minimum",
+        "roleRequired": "Rôle requis"
+      },
+      "errors": {
+        "emailExists": "Un compte avec cet email existe déjà.",
+        "createFailed": "Erreur lors de la création du compte.",
+        "notMember": "Cet utilisateur n'est pas membre de l'organisation.",
+        "alreadyLinked": "Ce compte est déjà lié à un autre profil.",
+        "linkFailed": "Erreur lors de la liaison du compte."
+      },
+      "toast": {
+        "created": "Compte créé avec succès.",
+        "linked": "Compte lié avec succès.",
+        "resetSent": "Email de réinitialisation envoyé.",
+        "resetFailed": "Erreur lors de l'envoi de l'email.",
+        "suspended": "Compte suspendu.",
+        "reactivated": "Compte réactivé.",
+        "statusFailed": "Erreur lors de la mise à jour du statut."
+      }
     }
   },
   "profileHub": {
@@ -5822,7 +7140,7 @@
       "regNumbers": "Formats de matricule",
       "gradeScale": "Barème de notes",
       "templates": "Modèles d'export",
-      "rules": "Moteur de règles"
+      "rules": "Règles de délibération"
     }
   },
   "academicResultsHub": {

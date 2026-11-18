@@ -40,6 +40,12 @@ export const InitTheme: React.FC = () => {
     }
 
     document.documentElement.setAttribute('data-theme', themeToSet)
+
+    // Marks that scripting is available, before first paint. Scroll-reveal
+    // animations are scoped to .js so that content stays visible when this
+    // script never runs (JS disabled, blocked, or a non-executing crawler)
+    // instead of being stranded at opacity 0.
+    document.documentElement.classList.add('js')
   })();
   `,
 			}}

@@ -79,10 +79,7 @@ export function Combobox({
 					)}
 				>
 					<span className="flex-1 truncate text-left">
-						{selected
-							? selected.label
-							: (placeholder ??
-								t("common.select", { defaultValue: "Sélectionner..." }))}
+						{selected ? selected.label : (placeholder ?? t("common.select"))}
 					</span>
 					<div className="flex shrink-0 items-center gap-1">
 						{clearable && selected && (
@@ -102,17 +99,11 @@ export function Combobox({
 				<Command>
 					{options.length > searchThreshold && (
 						<CommandInput
-							placeholder={
-								searchPlaceholder ??
-								t("common.search", { defaultValue: "Rechercher..." })
-							}
+							placeholder={searchPlaceholder ?? t("common.search")}
 						/>
 					)}
 					<CommandList>
-						<CommandEmpty>
-							{emptyText ??
-								t("common.noResults", { defaultValue: "Aucun résultat." })}
-						</CommandEmpty>
+						<CommandEmpty>{emptyText ?? t("common.noResults")}</CommandEmpty>
 						<CommandGroup>
 							{options.map((option) => (
 								<CommandItem

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
@@ -89,16 +90,11 @@ describe("enrollments router", () => {
 			institutionId: foreignInstitution.id,
 		});
 		const student = await createStudent({ class: klass.id });
-		const [enrollment] = await db
-			.insert(schema.enrollments)
-			.values({
-				studentId: student.id,
-				classId: klass.id,
-				academicYearId: academicYear.id,
-				status: "active",
-				institutionId: foreignInstitution.id,
-			})
-			.returning();
+		// createStudent enrolls the student in the class
+		const enrollment = await db.query.enrollments.findFirst({
+			where: eq(schema.enrollments.studentId, student.id),
+		});
+		if (!enrollment) throw new Error("enrollment not created");
 		await expect(
 			admin.enrollments.getById({ id: enrollment.id }),
 		).rejects.toHaveProperty("code", "NOT_FOUND");

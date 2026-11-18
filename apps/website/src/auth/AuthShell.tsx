@@ -2,12 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
 import type { Dict } from "@/i18n";
-import { DemoFrame } from "@/marketing/demos/DemoFrame";
 
 /**
- * Editorial split-screen shell for the auth pages (login / signup):
- * left = light brand panel showcasing a live product demo; right = form.
+ * Split-screen shell for the auth pages (login / signup):
+ * left = brand panel showing a live product demo; right = form.
  * The brand panel is hidden on small screens (form stays centered).
+ *
+ * The `demo` node now brings its own product shell — the pages pass the
+ * `app-demo/` screens, which reproduce the real application chrome. The old
+ * `DemoFrame` wrapper was removed from here: it drew a mock browser window
+ * around a screen that already has one, and it was the last place on the site
+ * still showing that second, non-product interface.
  */
 export function AuthShell({
 	dict: d,
@@ -58,7 +63,7 @@ export function AuthShell({
 					<p className="mb-6 max-w-md font-bold font-display text-[clamp(1.25rem,1.8vw,1.75rem)] text-tk-ink leading-[1.2] tracking-[-0.02em]">
 						{d.footer.tagline}
 					</p>
-					<DemoFrame url="app.tkams.com">{demo}</DemoFrame>
+					{demo}
 				</div>
 
 				<div className="relative z-[1] flex items-center gap-2 font-code text-[0.72rem] text-tk-muted">

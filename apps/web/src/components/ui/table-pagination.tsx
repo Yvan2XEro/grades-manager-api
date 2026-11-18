@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
 	Pagination,
 	PaginationContent,
@@ -32,6 +33,7 @@ export function TablePagination({
 	onPageChange,
 	onPageSizeChange,
 }: TablePaginationProps) {
+	const { t } = useTranslation();
 	const start = Math.min((page - 1) * pageSize + 1, total);
 	const end = Math.min(page * pageSize, total);
 
@@ -58,7 +60,9 @@ export function TablePagination({
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-3 pt-2">
 			<p className="text-muted-foreground text-sm">
-				{total === 0 ? "No results" : `Showing ${start}–${end} of ${total}`}
+				{total === 0
+					? t("common.noResults")
+					: t("common.pagination.showing", { start, end, total })}
 			</p>
 
 			<div className="flex items-center gap-3">
@@ -120,7 +124,7 @@ export function TablePagination({
 						<SelectContent>
 							{[10, 25, 50, 100].map((s) => (
 								<SelectItem key={s} value={String(s)}>
-									{s} / page
+									{t("common.pagination.perPage", { count: s })}
 								</SelectItem>
 							))}
 						</SelectContent>

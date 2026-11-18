@@ -1,0 +1,91 @@
+import { conflict, notFound } from "../../lib/errors";
+import * as repo from "./subjects.repo";
+
+export async function groups(institutionId: string) {
+	return repo.distinctGroups(institutionId);
+}
+
+export async function list(
+	institutionId: string,
+	opts: {
+		search?: string;
+		subjectGroup?: string;
+		orderBy?: string;
+		orderDir?: string;
+		page?: number;
+		pageSize?: number;
+	} = {},
+) {
+	const { items, total } = await repo.findAll(institutionId, opts);
+	return { items, total, page: opts.page ?? 1, pageSize: opts.pageSize ?? 25 };
+}
+
+export async function create(
+	data: {
+		name: string;
+		nameFr?: string;
+		code: string;
+		minesecCode?: string;
+		subjectGroup?: string;
+	},
+	institutionId: string,
+) {
+	const existing = await repo.findByCode(data.code, institutionId);
+	if (existing) throw conflict("SUBJECT_CODE_EXISTS");
+	return repo.insert({
+		institutionId,
+		name: data.name,
+		nameFr: data.nameFr ?? "",
+		code: data.code,
+		minesecCode: data.minesecCode,
+		subjectGroup: data.subjectGroup,
+	});
+}
+
+export async function bulkCreate(
+	rows: {
+		name: string;
+		nameFr?: string;
+		code: string;
+		minesecCode?: string;
+		subjectGroup?: string;
+	}[],
+	institutionId: string,
+) {
+	const values = rows.map((r) => ({
+		institutionId,
+		name: r.name,
+		nameFr: r.nameFr ?? "",
+		code: r.code,
+		minesecCode: r.minesecCode,
+		subjectGroup: r.subjectGroup,
+	}));
+	return repo.bulkInsert(values);
+}
+
+export async function deleteSubject(id: string, institutionId: string) {
+	const existing = await repo.findById(id, institutionId);
+	if (!existing) throw notFound("SUBJECT_NOT_FOUND");
+	return repo.remove(id, institutionId);
+}
+
+export async function updateSubject(
+	id: string,
+	institutionId: string,
+	data: {
+		name?: string;
+		nameFr?: string;
+		code?: string;
+		minesecCode?: string;
+		subjectGroup?: string;
+	},
+) {
+	const existing = await repo.findById(id, institutionId);
+	if (!existing) throw notFound("SUBJECT_NOT_FOUND");
+	if (data.code && data.code !== existing.code) {
+		const duplicate = await repo.findByCode(data.code, institutionId);
+		if (duplicate) throw conflict("SUBJECT_CODE_EXISTS");
+	}
+	const updated = await repo.update(id, institutionId, data);
+	return updated!;
+}

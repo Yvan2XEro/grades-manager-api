@@ -1,6 +1,6 @@
 /**
- * AnimatedRings — Anneaux SVG qui s'expansent en boucle depuis un point central.
- * Crée un effet de sonar / pulse cinématique.
+ * AnimatedRings — SVG rings that expand in a loop from a central point.
+ * Creates a cinematic sonar / pulse effect.
  */
 import type React from "react";
 import { interpolate, useCurrentFrame } from "remotion";

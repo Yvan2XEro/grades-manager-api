@@ -1,0 +1,147 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+import { z } from "zod";
+import { toast } from "@/lib/toast";
+import { trpc, trpcClient } from "@/utils/trpc";
+import { useProgramList } from "./use-programs";
+
+const buildUnitSchema = (t: TFunction) =>
+	z.object({
+		name: z.string().min(2, t("admin.teachingUnits.validation.name")),
+		code: z.string().min(2, t("admin.teachingUnits.validation.code")),
+		description: z.string().optional(),
+		credits: z
+			.number()
+			.int()
+			.nonnegative(t("admin.teachingUnits.validation.credits")),
+		semester: z.enum(["fall", "spring", "annual"]),
+		cycleLevelId: z.string().nullable().optional(),
+		programId: z.string().min(1, t("admin.teachingUnits.validation.program")),
+	});
+
+export type TeachingUnitFormData = z.infer<ReturnType<typeof buildUnitSchema>>;
+
+const defaultValues: TeachingUnitFormData = {
+	name: "",
+	code: "",
+	description: "",
+	credits: 0,
+	semester: "annual",
+	cycleLevelId: null,
+	programId: "",
+};
+
+/** Levels of the cycle of a program (where its units can be taught). */
+export function useProgramLevels(programId?: string) {
+	const { data: program } = useQuery({
+		...trpc.programs.getById.queryOptions({ id: programId ?? "" }),
+		enabled: Boolean(programId),
+	});
+	const { data: levels } = useQuery({
+		...trpc.cycleLevels.list.queryOptions({ cycleId: program?.cycleId ?? "" }),
+		enabled: Boolean(program?.cycleId),
+	});
+	return program?.cycleId ? (levels?.items ?? []) : [];
+}
+
+/** Form state of a teaching unit, shared by the create dialog and the detail page. */
+export function useTeachingUnitFormState(
+	values?: Partial<TeachingUnitFormData>,
+) {
+	const { t } = useTranslation();
+	const schema = useMemo(() => buildUnitSchema(t), [t]);
+	return useForm<TeachingUnitFormData>({
+		resolver: zodResolver(schema),
+		defaultValues: { ...defaultValues, ...values },
+	});
+}
+
+/**
+ * Form of the teaching unit detail page: creates the unit when
+ * `teachingUnitId` is `"new"` (then opens it), updates it otherwise.
+ */
+export function useTeachingUnitForm(teachingUnitId: string) {
+	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+	const isCreateMode = teachingUnitId === "new";
+
+	const programs = useProgramList();
+
+	const { data: teachingUnit } = useQuery({
+		...trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId }),
+		enabled: !isCreateMode,
+	});
+
+	const form = useTeachingUnitFormState();
+
+	useEffect(() => {
+		if (teachingUnit) {
+			form.reset({
+				name: teachingUnit.name,
+				code: teachingUnit.code,
+				description: teachingUnit.description ?? "",
+				credits: teachingUnit.credits,
+				semester: teachingUnit.semester,
+				cycleLevelId: teachingUnit.cycleLevelId ?? null,
+				programId: teachingUnit.programId,
+			});
+		}
+	}, [teachingUnit, form]);
+
+	const invalidateLists = () => {
+		queryClient.invalidateQueries(trpc.teachingUnits.list.queryFilter());
+		if (!isCreateMode) {
+			queryClient.invalidateQueries(
+				trpc.teachingUnits.getById.queryOptions({ id: teachingUnitId }),
+			);
+		}
+	};
+
+	const createMutation = useMutation({
+		mutationFn: (payload: TeachingUnitFormData) =>
+			trpcClient.teachingUnits.create.mutate(payload),
+		onSuccess: (unit) => {
+			toast.success(t("admin.teachingUnits.toast.created"));
+			invalidateLists();
+			navigate(`/programs/teaching-units/${unit.id}/details`);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const updateMutation = useMutation({
+		mutationFn: (payload: TeachingUnitFormData) =>
+			trpcClient.teachingUnits.update.mutate({
+				id: teachingUnitId,
+				...payload,
+			}),
+		onSuccess: () => {
+			toast.success(t("admin.teachingUnits.toast.updated"));
+			invalidateLists();
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const onSubmit = (values: TeachingUnitFormData) =>
+		isCreateMode
+			? createMutation.mutate(values)
+			: updateMutation.mutate(values);
+
+	return {
+		form,
+		programs,
+		isCreateMode,
+		isPending:
+			form.formState.isSubmitting ||
+			createMutation.isPending ||
+			updateMutation.isPending,
+		onSubmit,
+	};
+}
+
+export type TeachingUnitFormController = ReturnType<typeof useTeachingUnitForm>;

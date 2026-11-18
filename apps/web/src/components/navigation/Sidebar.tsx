@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
+import type { ParseKeys } from "i18next";
 import {
 	BarChart3,
 	Bell,
 	BookOpen,
-	Building,
 	Building2,
 	Calendar,
 	CalendarClock,
@@ -12,7 +12,6 @@ import {
 	FileCog,
 	FileSpreadsheet,
 	FileText,
-	FileUp,
 	Gavel,
 	GraduationCap,
 	Heart,
@@ -20,6 +19,7 @@ import {
 	LayoutDashboard,
 	ListChecks,
 	PlayCircle,
+	Rocket,
 	School,
 	Search,
 	Settings2,
@@ -37,17 +37,28 @@ import { cn } from "@/lib/utils";
 import { useStore } from "../../store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-const ROOT_PATHS = new Set([
-	"/admin",
-	"/teacher",
-	"/grade-editor",
-	"/dean",
-	"/student",
-]);
+// Home links match exactly, not as a prefix of every path
+const ROOT_PATHS = new Set(["/"]);
 
 type NavBadgeType = "new" | "updated";
 
+type NavItem = {
+	to: string;
+	icon: React.ReactNode;
+	labelKey: ParseKeys;
+	badge?: NavBadgeType;
+	/** The link is not active when the path starts with this prefix. */
+	excludePrefix?: string;
+};
+
+type NavGroup = {
+	key: string;
+	titleKey: ParseKeys;
+	items: NavItem[];
+};
+
 function NavBadge({ type }: { type: NavBadgeType }) {
+	const { t } = useTranslation();
 	return (
 		<span
 			className={cn(
@@ -57,7 +68,9 @@ function NavBadge({ type }: { type: NavBadgeType }) {
 					: "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400",
 			)}
 		>
-			{type === "new" ? "New" : "Upd"}
+			{type === "new"
+				? t("navigation.badges.new")
+				: t("navigation.badges.updated")}
 		</span>
 	);
 }
@@ -70,19 +83,25 @@ const Sidebar: React.FC = () => {
 
 	const IC = "size-[15px] shrink-0";
 
-	const adminGroups = useMemo(
+	const adminGroups = useMemo<NavGroup[]>(
 		() => [
 			{
 				key: "overview",
 				titleKey: "navigation.sidebar.groups.overview",
 				items: [
 					{
-						to: "/admin",
+						to: "/",
 						icon: <LayoutDashboard className={IC} />,
 						labelKey: "navigation.sidebar.admin.dashboard",
 					},
 					{
-						to: "/admin/academic-years",
+						to: "/import",
+						icon: <Rocket className={IC} />,
+						labelKey: "navigation.sidebar.admin.setup",
+						badge: "new",
+					},
+					{
+						to: "/academic-years",
 						icon: <Calendar className={IC} />,
 						labelKey: "navigation.sidebar.admin.academicYears",
 					},
@@ -93,30 +112,25 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.structure",
 				items: [
 					{
-						to: "/admin/institution",
+						to: "/institution",
 						icon: <Building2 className={IC} />,
 						labelKey: "navigation.sidebar.admin.institution",
 					},
 					{
-						to: "/admin/centers",
-						icon: <Building className={IC} />,
-						labelKey: "navigation.sidebar.admin.centers",
-					},
-					{
-						to: "/admin/programs",
+						to: "/programs",
 						icon: <School className={IC} />,
 						labelKey: "navigation.sidebar.admin.programs",
 					},
 					{
-						to: "/admin/classes",
+						to: "/classes",
 						icon: <Users className={IC} />,
 						labelKey: "navigation.sidebar.admin.classes",
 					},
 					{
-						to: "/admin/timetable",
+						to: "/timetable",
 						icon: <CalendarClock className={IC} />,
 						labelKey: "navigation.sidebar.admin.timetable",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 				],
 			},
@@ -125,18 +139,18 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.inscriptions",
 				items: [
 					{
-						to: "/admin/users/people",
+						to: "/users/people",
 						icon: <GraduationCap className={IC} />,
 						labelKey: "navigation.sidebar.admin.students",
 					},
 					{
-						to: "/admin/admissions",
+						to: "/admissions",
 						icon: <ClipboardList className={IC} />,
 						labelKey: "navigation.sidebar.admin.admissions",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 					{
-						to: "/admin/users/guardians",
+						to: "/users/guardians",
 						icon: <Heart className={IC} />,
 						labelKey: "navigation.sidebar.admin.guardians",
 					},
@@ -147,7 +161,7 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.people",
 				items: [
 					{
-						to: "/admin/users",
+						to: "/users",
 						icon: <UserCog className={IC} />,
 						labelKey: "navigation.sidebar.admin.users",
 					},
@@ -158,12 +172,12 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.assessment",
 				items: [
 					{
-						to: "/admin/exams",
+						to: "/exams",
 						icon: <ClipboardList className={IC} />,
 						labelKey: "navigation.sidebar.admin.exams",
 					},
 					{
-						to: "/admin/document-batch",
+						to: "/document-batch",
 						icon: <FileText className={IC} />,
 						labelKey: "navigation.sidebar.admin.documentBatch",
 					},
@@ -174,7 +188,7 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.results",
 				items: [
 					{
-						to: "/admin/academic-results",
+						to: "/academic-results",
 						icon: <Gavel className={IC} />,
 						labelKey: "navigation.sidebar.admin.academicResults",
 					},
@@ -185,10 +199,10 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.analytics",
 				items: [
 					{
-						to: "/admin/statistics",
+						to: "/statistics",
 						icon: <BarChart3 className={IC} />,
 						labelKey: "navigation.sidebar.admin.statistics",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 				],
 			},
@@ -197,34 +211,29 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.system",
 				items: [
 					{
-						to: "/admin/configuration",
+						to: "/configuration",
 						icon: <Settings2 className={IC} />,
 						labelKey: "navigation.sidebar.admin.configuration",
 					},
 					{
-						to: "/admin/monitoring",
+						to: "/monitoring",
 						icon: <LayoutDashboard className={IC} />,
 						labelKey: "navigation.sidebar.admin.monitoring",
 					},
 					{
-						to: "/admin/batch-jobs",
+						to: "/batch-jobs",
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 					{
-						to: "/admin/import",
-						icon: <FileUp className={IC} />,
-						labelKey: "navigation.sidebar.admin.dataImport",
-					},
-					{
-						to: "/admin/fee-clearance",
+						to: "/fee-clearance",
 						icon: <CreditCard className={IC} />,
 						labelKey: "navigation.sidebar.admin.feeClearance",
-						badge: "new" as NavBadgeType,
+						badge: "new",
 					},
 					{
-						to: "/admin/notifications",
+						to: "/notifications/center",
 						icon: <Bell className={IC} />,
 						labelKey: "navigation.sidebar.admin.notifications",
 					},
@@ -234,30 +243,30 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const teacherLinks = useMemo(
+	const teacherLinks = useMemo<NavItem[]>(
 		() => [
 			{
-				to: "/teacher",
+				to: "/",
 				icon: <BookOpen className={IC} />,
 				labelKey: "navigation.sidebar.teacher.myCourses",
 			},
 			{
-				to: "/teacher/timetable",
+				to: "/timetable",
 				icon: <CalendarClock className={IC} />,
 				labelKey: "navigation.sidebar.teacher.timetable",
 			},
 			{
-				to: "/teacher/attendance",
+				to: "/attendance",
 				icon: <ClipboardList className={IC} />,
 				labelKey: "navigation.sidebar.teacher.attendance",
 			},
 			{
-				to: "/teacher/attendance/rates",
+				to: "/attendance/rates",
 				icon: <BarChart3 className={IC} />,
 				labelKey: "navigation.sidebar.teacher.attendanceRates",
 			},
 			{
-				to: "/teacher/exports",
+				to: "/exports",
 				icon: <FileSpreadsheet className={IC} />,
 				labelKey: "navigation.sidebar.teacher.exports",
 			},
@@ -265,25 +274,25 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const deanLinks = useMemo(
+	const deanLinks = useMemo<NavItem[]>(
 		() => [
 			{
-				to: "/dean",
+				to: "/",
 				icon: <LayoutDashboard className={IC} />,
 				labelKey: "navigation.sidebar.dean.dashboard",
 			},
 			{
-				to: "/dean/approvals",
+				to: "/approvals",
 				icon: <ClipboardList className={IC} />,
 				labelKey: "navigation.sidebar.dean.pendingApprovals",
 			},
 			{
-				to: "/dean/history",
+				to: "/history",
 				icon: <FileCog className={IC} />,
 				labelKey: "navigation.sidebar.dean.history",
 			},
 			{
-				to: "/dean/monitoring",
+				to: "/monitoring",
 				icon: <TrendingUp className={IC} />,
 				labelKey: "navigation.sidebar.dean.monitoring",
 			},
@@ -291,15 +300,15 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const gradeEditorLinks = useMemo(
+	const gradeEditorLinks = useMemo<NavItem[]>(
 		() => [
 			{
-				to: "/grade-editor",
+				to: "/",
 				icon: <BookOpen className={IC} />,
 				labelKey: "navigation.sidebar.teacher.myCourses",
 			},
 			{
-				to: "/grade-editor/exports",
+				to: "/exports",
 				icon: <FileSpreadsheet className={IC} />,
 				labelKey: "navigation.sidebar.teacher.exports",
 			},
@@ -307,35 +316,35 @@ const Sidebar: React.FC = () => {
 		[],
 	);
 
-	const studentLinks = useMemo(
+	const studentLinks = useMemo<NavItem[]>(
 		() => [
 			{
-				to: "/student",
+				to: "/",
 				icon: <LayoutDashboard className={IC} />,
 				labelKey: "navigation.sidebar.student.dashboard",
 			},
 			{
-				to: "/student/exams",
+				to: "/exams",
 				icon: <Calendar className={IC} />,
 				labelKey: "navigation.sidebar.student.exams",
 			},
 			{
-				to: "/student/timetable",
+				to: "/timetable",
 				icon: <CalendarClock className={IC} />,
 				labelKey: "navigation.sidebar.student.timetable",
 			},
 			{
-				to: "/student/enrollments",
+				to: "/enrollments",
 				icon: <ListChecks className={IC} />,
 				labelKey: "navigation.sidebar.student.enrollments",
 			},
 			{
-				to: "/student/documents",
+				to: "/documents",
 				icon: <FileText className={IC} />,
 				labelKey: "navigation.sidebar.student.documents",
 			},
 			{
-				to: "/student/timeline",
+				to: "/timeline",
 				icon: <History className={IC} />,
 				labelKey: "navigation.sidebar.student.timeline",
 			},
@@ -370,7 +379,7 @@ const Sidebar: React.FC = () => {
 		studentLinks,
 	]);
 
-	const allLinks = useMemo(
+	const allLinks = useMemo<NavItem[]>(
 		() =>
 			menuContent.type === "grouped"
 				? menuContent.groups.flatMap((g) => g.items)
@@ -426,7 +435,7 @@ const Sidebar: React.FC = () => {
 						<motion.img
 							key="favicon"
 							src="/favicon.ico"
-							alt="Logo"
+							alt={t("common.logo")}
 							className="size-6 object-contain"
 							initial={{ opacity: 0, scale: 0.65, rotate: -15 }}
 							animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -454,7 +463,7 @@ const Sidebar: React.FC = () => {
 							{/* Floating logo */}
 							<motion.img
 								src={logoSrc}
-								alt="Logo"
+								alt={t("common.logo")}
 								className="h-7 w-auto"
 								animate={{ y: [0, -2, 0] }}
 								transition={{
@@ -557,9 +566,7 @@ const Sidebar: React.FC = () => {
 						if (q && visible.length === 0) {
 							return (
 								<p className="px-3 py-6 text-center text-[12px] text-muted-foreground">
-									{t("navigation.sidebar.noResults", {
-										defaultValue: "Aucun résultat",
-									})}
+									{t("navigation.sidebar.noResults")}
 								</p>
 							);
 						}
@@ -670,6 +677,14 @@ const Sidebar: React.FC = () => {
 					</p>
 					<p className="text-center text-[10px] text-muted-foreground/40">
 						Cédric TEFOYE · Kana Yvan
+					</p>
+					<p className="mt-1 text-center text-[10px] text-muted-foreground/40">
+						<a
+							href="mailto:support@tkams.com"
+							className="transition-colors hover:text-muted-foreground/60"
+						>
+							support@tkams.com
+						</a>
 					</p>
 				</div>
 			)}

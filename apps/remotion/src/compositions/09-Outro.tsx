@@ -1,6 +1,6 @@
 /**
  * 09-Outro — Brand Finale (330 frames / 11 s)
- * NoiseBackground · Loop rings · interpolateColors · durée audio auto
+ * NoiseBackground · Loop rings · interpolateColors · automatic audio duration
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -43,22 +43,22 @@ export const OutroScene: React.FC = () => {
 	const { fps } = useVideoConfig();
 	const op = sceneOpacity(frame, DUR.outro, 20, 0);
 
-	// ── Logo — Scan laser horizontal (gauche → droite) ──────────────
-	// Le clip-path révèle progressivement le logo via un balayage horizontal
+	// ── Logo — Horizontal laser scan (left → right) ──────────────
+	// The clip-path progressively reveals the logo with a horizontal sweep
 	const scanProg = spring({
 		frame: frame - 4,
 		fps,
 		config: { damping: 18, stiffness: 85, mass: 1.1 },
 		durationInFrames: 52,
 	});
-	// scanPct : 0% → 115% (dépasse le bord droit pour la ligne de fin)
+	// scanPct: 0% → 115% (overshoots the right edge for the trailing line)
 	const scanPct = interpolate(scanProg, [0, 1], [0, 115]);
-	// Ligne laser : légèrement en avance sur le clip (précède de ~5%)
+	// Laser line: slightly ahead of the clip (leads by ~5%)
 	const laserPct = Math.min(110, scanPct + 3);
-	// Glow du drop-shadow : intense pendant le scan, stable après
+	// Drop-shadow glow: intense during the scan, steady afterwards
 	const logoGlow = interpolate(scanPct, [0, 30, 90, 115], [0, 28, 14, 12]);
 
-	// Ligne
+	// Line
 	const lineProg = spring({
 		frame: frame - 58,
 		fps,
@@ -77,7 +77,7 @@ export const OutroScene: React.FC = () => {
 	const headOp = interpolate(headProg, [0, 1], [0, 1]);
 	const headY = interpolate(headProg, [0, 1], [44, 0]);
 
-	// Sous-titre
+	// Subtitle
 	const subProg = spring({
 		frame: frame - 85,
 		fps,
@@ -107,7 +107,7 @@ export const OutroScene: React.FC = () => {
 
 	const glowPulse = 1 + Math.sin(frame * 0.04) * 0.04;
 
-	// interpolateColors — fond qui se réchauffe légèrement vers la fin
+	// interpolateColors — background warms slightly toward the end
 	const bgColor = interpolateColors(
 		frame,
 		[0, DUR.outro * 0.75],
@@ -137,7 +137,7 @@ export const OutroScene: React.FC = () => {
 				/>
 			)}
 
-			{/* Fond organique noise2D */}
+			{/* Organic noise2D background */}
 			<NoiseBackground
 				color={C.violet}
 				opacity={0.022}
@@ -147,7 +147,7 @@ export const OutroScene: React.FC = () => {
 
 			<DotGrid opacity={op * 0.18} size={38} dotSize={1.5} color={C.primary} />
 
-			{/* Loop — AnimatedRings en boucle perpétuelle indépendante du frame global */}
+			{/* Loop — AnimatedRings in a perpetual loop, independent of the global frame */}
 			<div style={{ position: "absolute", inset: 0, opacity: op * 0.55 }}>
 				<Loop durationInFrames={110}>
 					<AnimatedRings
@@ -189,7 +189,7 @@ export const OutroScene: React.FC = () => {
 					alignItems: "center",
 				}}
 			>
-				{/* Logo TKAMS — scan laser horizontal */}
+				{/* TKAMS logo — horizontal laser scan */}
 				<div
 					style={{
 						position: "relative",
@@ -197,7 +197,7 @@ export const OutroScene: React.FC = () => {
 						display: "inline-block",
 					}}
 				>
-					{/* Logo révélé par clip-path balayant de gauche à droite */}
+					{/* Logo revealed by a clip-path sweeping left to right */}
 					<div
 						style={{
 							clipPath: `polygon(0 0, ${Math.min(100, scanPct)}% 0, ${Math.min(100, scanPct)}% 100%, 0 100%)`,
@@ -215,7 +215,7 @@ export const OutroScene: React.FC = () => {
 						/>
 					</div>
 
-					{/* Ligne laser — bord lumineux qui précède la révélation */}
+					{/* Laser line — glowing edge ahead of the reveal */}
 					{laserPct <= 108 && (
 						<div
 							style={{
@@ -238,7 +238,7 @@ export const OutroScene: React.FC = () => {
 						/>
 					)}
 
-					{/* Reflet lumineux résiduel après le passage du laser */}
+					{/* Residual light reflection after the laser passes */}
 					<div
 						style={{
 							position: "absolute",
@@ -249,7 +249,7 @@ export const OutroScene: React.FC = () => {
 					/>
 				</div>
 
-				{/* Ligne */}
+				{/* Line */}
 				<div
 					style={{
 						width: lineW,
@@ -283,7 +283,7 @@ export const OutroScene: React.FC = () => {
 					</h1>
 				</div>
 
-				{/* Sous-titre */}
+				{/* Subtitle */}
 				<div
 					style={{
 						opacity: subOp,
@@ -308,7 +308,7 @@ export const OutroScene: React.FC = () => {
 					</p>
 				</div>
 
-				{/* CTA neumorphiques */}
+				{/* Neumorphic CTAs */}
 				<div
 					style={{
 						opacity: ctaOp,

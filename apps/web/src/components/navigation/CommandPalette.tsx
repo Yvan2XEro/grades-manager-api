@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import {
 	BarChart2,
 	Bell,
@@ -16,7 +17,7 @@ import {
 	Settings,
 	Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import {
@@ -28,6 +29,18 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "@/components/ui/command";
+
+type CommandEntry = {
+	labelKey: ParseKeys;
+	icon: ReactNode;
+	href: string;
+	keywords: string;
+};
+
+type CommandSection = {
+	groupKey: "main" | "academic" | "tools";
+	items: CommandEntry[];
+};
 
 type Props = {
 	open: boolean;
@@ -50,126 +63,126 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 
 	const IC = "h-4 w-4";
 
-	const COMMANDS = [
+	const COMMANDS: CommandSection[] = [
 		{
-			groupKey: "main" as const,
+			groupKey: "main",
 			items: [
 				{
 					labelKey: "navigation.sidebar.admin.dashboard",
 					icon: <LayoutDashboard className={IC} />,
-					href: "/admin",
+					href: "/",
 					keywords: "home overview accueil",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.students",
 					icon: <GraduationCap className={IC} />,
-					href: "/admin/students",
+					href: "/users/people",
 					keywords: "students élèves étudiants",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.exams",
 					icon: <ClipboardCheck className={IC} />,
-					href: "/admin/exams",
+					href: "/exams",
 					keywords: "exams tests épreuves",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.enrollments",
 					icon: <ClipboardList className={IC} />,
-					href: "/admin/classes/enrollments",
+					href: "/classes/enrollments",
 					keywords: "enrollments inscriptions",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.users",
 					icon: <Users className={IC} />,
-					href: "/admin/users",
+					href: "/users",
 					keywords: "users comptes accounts",
 				},
 			],
 		},
 		{
-			groupKey: "academic" as const,
+			groupKey: "academic",
 			items: [
 				{
 					labelKey: "navigation.sidebar.admin.academicYears",
 					icon: <Calendar className={IC} />,
-					href: "/admin/academic-years",
+					href: "/academic-years",
 					keywords: "années years",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.courses",
 					icon: <BookOpen className={IC} />,
-					href: "/admin/programs/courses",
+					href: "/programs/courses",
 					keywords: "courses matières",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.classes",
 					icon: <Layers className={IC} />,
-					href: "/admin/classes",
+					href: "/classes",
 					keywords: "classes groupes",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.faculties",
 					icon: <Building2 className={IC} />,
-					href: "/admin/institution/faculties",
+					href: "/institution/faculties",
 					keywords: "facultés institutions",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.programs",
 					icon: <School className={IC} />,
-					href: "/admin/programs",
+					href: "/programs",
 					keywords: "programmes filières",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.studyCycles",
 					icon: <GitBranch className={IC} />,
-					href: "/admin/institution/cycles",
+					href: "/institution/cycles",
 					keywords: "cycles licence master",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.teachingUnits",
 					icon: <Layers className={IC} />,
-					href: "/admin/programs/teaching-units",
+					href: "/programs/teaching-units",
 					keywords: "UE teaching units unités",
 				},
 			],
 		},
 		{
-			groupKey: "tools" as const,
+			groupKey: "tools",
 			items: [
 				{
 					labelKey: "navigation.sidebar.admin.examScheduler",
 					icon: <CheckSquare className={IC} />,
-					href: "/admin/exams/scheduler",
+					href: "/exams/scheduler",
 					keywords: "scheduler planificateur",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.gradeExport",
 					icon: <FileText className={IC} />,
-					href: "/admin/grades/export",
+					href: "/grades/export",
 					keywords: "export grades notes résultats",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.deliberations",
 					icon: <ClipboardList className={IC} />,
-					href: "/admin/academic-results/deliberations",
+					href: "/academic-results/deliberations",
 					keywords: "délibérations jury",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.notifications",
 					icon: <Bell className={IC} />,
-					href: "/admin/notifications",
+					href: "/notifications/center",
 					keywords: "notifications alertes",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.monitoring",
 					icon: <BarChart2 className={IC} />,
-					href: "/admin/monitoring",
+					href: "/monitoring",
 					keywords: "monitoring surveillance logs",
 				},
 				{
 					labelKey: "navigation.sidebar.admin.institution",
 					icon: <Settings className={IC} />,
-					href: "/admin/institution",
+					href: "/institution",
 					keywords: "institution settings paramètres",
 				},
 			],

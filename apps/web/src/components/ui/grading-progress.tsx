@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Progress } from "./progress";
 
@@ -16,6 +17,7 @@ export function GradingProgress({
 	onShowMissing,
 	className,
 }: GradingProgressProps) {
+	const { t } = useTranslation();
 	const percentage = total > 0 ? Math.round((graded / total) * 100) : 0;
 	const missing = total - graded;
 	const isComplete = graded >= total && total > 0;
@@ -35,7 +37,7 @@ export function GradingProgress({
 					onClick={onShowMissing}
 					className="whitespace-nowrap text-muted-foreground text-xs underline underline-offset-2 transition-colors hover:text-foreground"
 				>
-					{missing} manquant{missing > 1 ? "s" : ""}
+					{t("components.gradingProgress.missing", { count: missing })}
 				</button>
 			)}
 		</div>

@@ -7,20 +7,18 @@ import logo from "/logo.png";
 import logoBg from "/logo-bg.png";
 import { useBranding } from "../../hooks/use-branding";
 import { useStore } from "../../store";
-import { roleLayoutMap } from "../navigation/Redirector";
 import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const AuthLayout: React.FC = () => {
 	const { user } = useStore();
 	const { t } = useTranslation();
-	const { institutionName, slogan, logoUrl, coverImageUrl, shortName } =
-		useBranding();
+	const { institutionName, slogan, logoUrl, shortName } = useBranding();
 
 	const [callbackURL] = useQueryState("return", {});
 	// Redirect if already authenticated with a real role (guest = no active org, show login form)
 	if (user && user.role !== "guest") {
 		if (callbackURL) return <Navigate to={callbackURL} replace />;
-		return roleLayoutMap[user.role];
+		return <Navigate to="/" replace />;
 	}
 
 	return (

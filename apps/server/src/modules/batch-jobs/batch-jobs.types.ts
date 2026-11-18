@@ -8,10 +8,12 @@ export const BATCH_JOB_TYPES = [
 	"academicYear.setup",
 	"documents.generateBulk",
 	"timetable.copyFromYear",
+	// Former single-file importers: no longer run, kept so past jobs display
 	"import.academicStructure",
 	"import.people",
 	"import.enrollments",
 	"import.gradesBulk",
+	"import.step",
 ] as const;
 
 export type BatchJobType = (typeof BATCH_JOB_TYPES)[number];
@@ -59,6 +61,8 @@ export interface BatchJobDefinition<TParams = Record<string, unknown>> {
 	type: BatchJobType;
 	/** Human-readable label for the job type. */
 	label: string;
+	/** A new preview cancels a previewed job of this type that was never run. */
+	supersedePreview?: boolean;
 	/** Validate and parse raw params. Throws on invalid. */
 	parseParams: (raw: unknown) => TParams;
 	/** Dry-run: compute what would happen without mutating data. */

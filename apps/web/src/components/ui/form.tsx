@@ -2,7 +2,7 @@
 
 import type * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, type HTMLMotionProps, motion } from "framer-motion";
 import * as React from "react";
 import {
 	Controller,
@@ -141,9 +141,13 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 	);
 }
 
-function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
+function FormMessage({
+	className,
+	children,
+	...props
+}: Omit<HTMLMotionProps<"p">, "children"> & { children?: React.ReactNode }) {
 	const { error, formMessageId } = useFormField();
-	const body = error ? String(error?.message ?? "") : props.children;
+	const body = error ? String(error?.message ?? "") : children;
 
 	return (
 		<AnimatePresence mode="wait">

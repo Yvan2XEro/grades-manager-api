@@ -1,18 +1,22 @@
 # Build context: monorepo root
 # docker build -f apps/website/Dockerfile -t ghcr.io/yvan2xero/tkams-website .
 
-FROM oven/bun:1.2-alpine AS base
+# Next runs under Node (next/font/google fails under the Bun runtime); Bun
+# only installs the workspace dependencies.
+FROM node:22-alpine AS base
+RUN apk add --no-cache libc6-compat && npm install -g bun@1.3.10
 ENV PUPPETEER_SKIP_DOWNLOAD=true CYPRESS_INSTALL_BINARY=0
 
 # ── Deps ──────────────────────────────────────────────────────────────────────
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY bun.lock bunfig.toml package.json ./
-COPY apps/website/package.json  apps/website/package.json
-COPY apps/server/package.json   apps/server/package.json
-COPY apps/web/package.json      apps/web/package.json
-COPY apps/remotion/package.json apps/remotion/package.json
+COPY apps/website/package.json    apps/website/package.json
+COPY apps/server/package.json     apps/server/package.json
+COPY apps/web/package.json        apps/web/package.json
+COPY apps/remotion/package.json   apps/remotion/package.json
+COPY apps/secondary/package.json  apps/secondary/package.json
+COPY packages/emails/package.json packages/emails/package.json
 RUN bun install --frozen-lockfile
 
 # ── Builder ───────────────────────────────────────────────────────────────────

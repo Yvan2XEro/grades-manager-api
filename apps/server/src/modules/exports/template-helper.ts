@@ -147,8 +147,8 @@ export function loadExportConfig(): ExportConfig {
 
 /**
  * Convert institution data from database to ExportConfig format
- * Handles optional hierarchyoptional: Institution → Parent Institution (peut être de type faculty)
- * Une institution n'est pas forcément parrainée par une faculté
+ * Handles an optional hierarchy: Institution → Parent Institution (may be of type faculty)
+ * An institution is not necessarily sponsored by a faculty
  */
 /** Convert MentionRange[] from the grade-scale model to the ExportConfig appreciations format. */
 export function mentionRangesToAppreciations(
@@ -172,15 +172,15 @@ export function institutionToExportConfig(
 	const metadata = institution.metadata as InstitutionMetadata;
 	const exportConfig = metadata?.export_config;
 
-	// Extract parent institution data (optionnel)
+	// Extract parent institution data (optional)
 	const parentInst = institution.parentInstitution;
 
-	// Si l'institution parente est de type "faculty", on l'utilise comme faculté de supervision
-	// Sinon, la faculté de supervision est null (optionnel)
+	// If the parent institution is of type "faculty", use it as the supervising faculty
+	// Otherwise, the supervising faculty is null (optional)
 	const supervisingFaculty = parentInst?.type === "faculty" ? parentInst : null;
 
-	// Si le parent n'est pas une faculté, chercher le "grand-parent" comme université
-	// Sinon, utiliser le parent direct
+	// If the parent is not a faculty, look up the "grandparent" as the university
+	// Otherwise, use the direct parent
 	const university = supervisingFaculty ? null : parentInst;
 
 	// Default values matching the previous export-config fallback
@@ -193,10 +193,10 @@ export function institutionToExportConfig(
 			contact_email: institution.contactEmail ?? undefined,
 			fax: institution.fax ?? undefined,
 			postal_box: institution.postalBox ?? undefined,
-			// Supervising faculty/school information (optionnel)
+			// Supervising faculty/school information (optional)
 			faculty_name_fr: supervisingFaculty?.nameFr,
 			faculty_name_en: supervisingFaculty?.nameEn,
-			// Parent university information (optionnel)
+			// Parent university information (optional)
 			university_name_fr: university?.nameFr,
 			university_name_en: university?.nameEn,
 			university_logo_url: university?.logoUrl ?? undefined,

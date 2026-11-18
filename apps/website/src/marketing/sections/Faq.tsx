@@ -15,12 +15,13 @@ export function Faq({ dict: d, number = "09" }: FaqProps) {
 
 	return (
 		<EditorialSection
+			level="supporting"
 			id="faq"
 			number={number}
 			label={d.faq.label}
 			heading={d.faq.title}
 			lede={
-				<p className="max-w-[42ch] font-body text-[1.0625rem] text-tk-ink-2 leading-[1.7]">
+				<p className="max-w-[42ch] font-body text-[length:var(--tk-text-lead)] text-tk-ink-2 leading-[1.7]">
 					{d.faq.sub}
 				</p>
 			}
@@ -29,7 +30,6 @@ export function Faq({ dict: d, number = "09" }: FaqProps) {
 					{d.nav.contact} →
 				</a>
 			}
-			bg="bg-tk-surface"
 		>
 			<div>
 				{d.faq.items.map((item, i) => {
@@ -45,7 +45,7 @@ export function Faq({ dict: d, number = "09" }: FaqProps) {
 								aria-expanded={isOpen}
 								className="flex w-full items-center justify-between gap-4 py-5 text-left"
 							>
-								<span className="font-body font-semibold text-[1.0625rem] text-tk-ink">
+								<span className="font-body font-semibold text-[length:var(--tk-text-lead)] text-tk-ink">
 									{item.q}
 								</span>
 								<Plus
@@ -63,7 +63,7 @@ export function Faq({ dict: d, number = "09" }: FaqProps) {
 								}`}
 							>
 								<div className="overflow-hidden">
-									<p className="max-w-[60ch] font-body text-[0.95rem] text-tk-ink-2 leading-[1.7]">
+									<p className="max-w-[60ch] font-body text-[length:var(--tk-text-body)] text-tk-ink-2 leading-[1.7]">
 										{item.a}
 									</p>
 								</div>

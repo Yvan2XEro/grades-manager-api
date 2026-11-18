@@ -1,5 +1,5 @@
 /**
- * Grille de points subtile — adaptée au thème clair
+ * Subtle dot grid — suited to the light theme
  */
 import type React from "react";
 import { C } from "../lib/theme";

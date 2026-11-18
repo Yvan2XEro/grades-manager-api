@@ -60,7 +60,7 @@ export function LanguagePrompt({ suggested = "fr" }: { suggested?: Locale }) {
 					<h2 className="font-bold font-display text-[1.25rem] text-tk-ink tracking-[-0.02em]">
 						Choisissez votre langue
 					</h2>
-					<p className="mt-1 font-body text-[0.9rem] text-tk-ink-2">
+					<p className="mt-1 font-body text-[length:var(--tk-text-body)] text-tk-ink-2">
 						Choose your language
 					</p>
 				</div>
@@ -81,19 +81,19 @@ export function LanguagePrompt({ suggested = "fr" }: { suggested?: Locale }) {
 										: "border-tk-border bg-tk-bg hover:border-tk-primary hover:bg-tk-primary-soft"
 								}`}
 							>
-								<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-tk-border bg-tk-surface font-bold font-code text-[0.7rem] text-tk-primary">
+								<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-tk-border bg-tk-surface font-bold font-code text-[length:var(--tk-text-xs)] text-tk-primary">
 									{o.flag}
 								</span>
 								<span className="flex-1">
-									<span className="block font-body font-semibold text-[0.95rem] text-tk-ink">
+									<span className="block font-body font-semibold text-[length:var(--tk-text-body)] text-tk-ink">
 										{o.native}
 									</span>
-									<span className="block font-body text-[0.8rem] text-tk-muted">
+									<span className="block font-body text-[length:var(--tk-text-sm)] text-tk-muted">
 										{o.label}
 									</span>
 								</span>
 								{isSuggested ? (
-									<span className="rounded-full bg-tk-primary-soft px-2 py-0.5 font-code font-semibold text-[0.65rem] text-tk-primary uppercase tracking-[0.08em]">
+									<span className="rounded-full bg-tk-primary-soft px-2 py-0.5 font-code font-semibold text-[length:var(--tk-text-xs)] text-tk-primary uppercase tracking-[0.08em]">
 										Auto
 									</span>
 								) : null}
@@ -104,7 +104,7 @@ export function LanguagePrompt({ suggested = "fr" }: { suggested?: Locale }) {
 
 				<div className="border-tk-border border-t px-5 py-4">
 					<div className="flex items-center justify-between gap-3">
-						<p className="font-body text-[0.78rem] text-tk-muted">
+						<p className="font-body text-[length:var(--tk-text-sm)] text-tk-muted">
 							Français par défaut dans{" "}
 							<span className="font-code font-semibold text-tk-ink">
 								{secondsLeft}s
@@ -115,7 +115,7 @@ export function LanguagePrompt({ suggested = "fr" }: { suggested?: Locale }) {
 							type="button"
 							disabled={isPending}
 							onClick={() => choose("fr")}
-							className="font-code font-semibold text-[0.72rem] text-tk-primary uppercase tracking-[0.08em] transition-opacity duration-150 hover:opacity-70 disabled:cursor-wait"
+							className="font-code font-semibold text-[length:var(--tk-text-xs)] text-tk-primary uppercase tracking-[0.08em] transition-opacity duration-150 hover:opacity-70 disabled:cursor-wait"
 						>
 							Continuer
 						</button>

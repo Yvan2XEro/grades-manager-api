@@ -31,16 +31,38 @@ const getPagesSitemap = unstable_cache(
 
 		const dateFallback = new Date().toISOString();
 
-		const defaultSitemap = [
-			{
-				loc: `${SITE_URL}/search`,
-				lastmod: dateFallback,
-			},
-			{
-				loc: `${SITE_URL}/posts`,
-				lastmod: dateFallback,
-			},
+		/*
+		 * The hand-built marketing pages.
+		 *
+		 * This route only ever queried the Payload `pages` collection, so every
+		 * page written in code — the homepage included — was absent from the
+		 * sitemap. Those are the pages worth ranking, so they are listed here
+		 * explicitly. Add a route to this array when you add a marketing page.
+		 */
+		const staticRoutes = [
+			"/",
+			"/produit",
+			"/secondaire",
+			"/fonctionnalites",
+			"/securite",
+			"/integrations",
+			"/solutions",
+			"/tarifs",
+			"/engagements",
+			"/comparatif",
+			"/onreceipt",
+			"/about",
+			"/contact",
+			"/posts",
+			"/search",
+			"/legal/privacy",
+			"/legal/terms",
 		];
+
+		const defaultSitemap = staticRoutes.map((route) => ({
+			loc: route === "/" ? `${SITE_URL}/` : `${SITE_URL}${route}`,
+			lastmod: dateFallback,
+		}));
 
 		const sitemap = results.docs
 			? results.docs
@@ -56,7 +78,17 @@ const getPagesSitemap = unstable_cache(
 					})
 			: [];
 
-		return [...defaultSitemap, ...sitemap];
+		/*
+		 * A CMS page slugged "home" — or one sharing a slug with a coded route —
+		 * would otherwise emit a second entry for a URL already listed above.
+		 * The static entry wins: it is the page that actually renders.
+		 */
+		const staticLocs = new Set(defaultSitemap.map((e) => e.loc));
+
+		return [
+			...defaultSitemap,
+			...sitemap.filter((entry) => !staticLocs.has(entry.loc)),
+		];
 	},
 	["pages-sitemap"],
 	{

@@ -3,11 +3,16 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { admin, customSession, organization } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
-import { Resend } from "resend";
 import { domainUsersRepo } from "@/modules/domain-users";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
 import { adminRoles, superadminRoles } from "./auth-roles";
+import {
+	defaultEmailSend,
+	sendResetPassword,
+	sendStaffInvitation,
+	sendWelcomeInstitution,
+} from "./email";
 import {
 	organizationAccessControl,
 	organizationRoles,
@@ -65,11 +70,6 @@ const orgScopedLoginHook = createAuthMiddleware(async (ctx) => {
 	pendingOrgByUser.set(foundUser.id, org.id);
 });
 
-const resend = process.env.RESEND_API_KEY
-	? new Resend(process.env.RESEND_API_KEY)
-	: null;
-const emailFrom = process.env.EMAIL_FROM ?? "noreply@example.com";
-
 type SessionWithActiveOrganization = {
 	activeOrganizationId?: string | null;
 };
@@ -115,46 +115,83 @@ export const auth = betterAuth({
 		organization({
 			ac: organizationAccessControl,
 			roles: organizationRoles,
+			allowUserToCreateOrganization: true,
+			sendInvitationEmail: async ({
+				invitation,
+				organization: org,
+				inviter,
+			}) => {
+				const base =
+					process.env.CORS_ORIGINS?.split(",")[0]?.trim() ??
+					"http://localhost:5173";
+				const url = `${base}/#/accept-invitation/${invitation.id}?email=${encodeURIComponent(invitation.email)}`;
+				await sendStaffInvitation({
+					to: invitation.email,
+					name: invitation.email.split("@")[0],
+					role: invitation.role,
+					institution: org.name,
+					invitedBy: inviter.user.name,
+					url,
+				}).catch((err) => console.error("[email] sendInvitationEmail", err));
+			},
+			organizationHooks: {
+				afterCreateOrganization: async ({ organization: org, member }) => {
+					await sendWelcomeInstitution({
+						to: member.user.email,
+						name: member.user.name,
+						institution: org.name,
+					}).catch((err) => console.error("[email] welcome institution", err));
+				},
+			},
 		}),
 	],
 	trustedOrigins: process.env.CORS_ORIGINS?.split(",") || [],
 	emailAndPassword: {
 		enabled: true,
+		sendResetPassword: async ({ user, url }) => {
+			// Better Auth places ?token= before the # for hash routers.
+			// Rebuild as /#/reset-password?token=xxx (hash-router compatible).
+			const token = new URL(url).searchParams.get("token");
+			const base =
+				process.env.CORS_ORIGINS?.split(",")[0]?.trim() ??
+				"http://localhost:5173";
+			const frontendUrl = `${base}/#/reset-password?token=${token}`;
+			await sendResetPassword({
+				to: user.email,
+				name: user.name,
+				url: frontendUrl,
+			}).catch((err) => console.error("[email] sendResetPassword", err));
+		},
 	},
 	emailVerification: {
 		sendVerificationEmail: async ({ user, url }) => {
-			if (!resend) {
-				console.warn(
-					"[auth] RESEND_API_KEY not set – skipping verification email",
-				);
-				return;
-			}
-			void resend.emails.send({
-				from: emailFrom,
-				to: user.email,
-				subject: "Verify your email",
-				html: `<a href="${url}">Verify your email</a>`,
-			});
+			await defaultEmailSend(
+				user.email,
+				"Verify your email",
+				`<a href="${url}">Verify your email</a>`,
+			).catch((err) => console.warn("[auth] verification email failed", err));
 		},
 	},
 	user: {
 		changeEmail: {
 			enabled: true,
-			sendChangeEmailVerification: async ({ user, newEmail, url }) => {
-				console.log(url);
-				if (!resend) {
-					console.warn(
-						"[auth] RESEND_API_KEY not set – skipping change-email verification",
-					);
-					return;
-				}
+			sendChangeEmailVerification: async ({
+				user,
+				newEmail,
+				url,
+			}: {
+				user: { email: string };
+				newEmail: string;
+				url: string;
+			}) => {
 				// Send to the CURRENT email so the account owner must confirm the change
-				void resend.emails.send({
-					from: emailFrom,
-					to: user.email,
-					subject: "Confirm your email change",
-					html: `<p>A request was made to change your email to <strong>${newEmail}</strong>.</p><a href="${url}">Confirm this change</a><p>If you did not request this, ignore this email.</p>`,
-				});
+				await defaultEmailSend(
+					user.email,
+					"Confirm your email change",
+					`<p>A request was made to change your email to <strong>${newEmail}</strong>.</p><a href="${url}">Confirm this change</a><p>If you did not request this, ignore this email.</p>`,
+				).catch((err) =>
+					console.warn("[auth] change-email verification failed", err),
+				);
 			},
 		},
 	},

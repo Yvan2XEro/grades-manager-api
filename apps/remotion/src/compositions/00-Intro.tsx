@@ -1,6 +1,6 @@
 /**
  * 00-Intro — Brand Identity TKAMS (360 frames / 12 s)
- * Logo centré · typographie épurée · noise2D + shapes décoratifs + Trail comet
+ * Centered logo · clean typography · noise2D + decorative shapes + Trail comet
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -35,7 +35,7 @@ import { ParticleBurst } from "../components/ParticleBurst";
 import { AUDIO, C, DUR, F } from "../lib/theme";
 import { sceneOpacity } from "../lib/transition";
 
-// Composant interne — Trail nécessite un enfant qui lit useCurrentFrame()
+// Inner component — Trail needs a child that reads useCurrentFrame()
 const IntroComet: React.FC = () => {
 	const frame = useCurrentFrame();
 	const progress = interpolate(frame, [5, 72], [0, 1], {
@@ -77,7 +77,7 @@ export const IntroScene: React.FC = () => {
 	const op = sceneOpacity(frame, DUR.intro, 0, 28);
 
 	// ── Logo — Clip-path circle burst + overshoot scale ──────────────
-	// Phase 1 : cercle de révélation part de 0 et s'étend comme un sonar
+	// Phase 1: the reveal circle starts at 0 and expands like a sonar
 	const clipProg = spring({
 		frame: frame - 4,
 		fps,
@@ -86,7 +86,7 @@ export const IntroScene: React.FC = () => {
 	});
 	const clipRadius = interpolate(clipProg, [0, 1], [0, 500]); // px
 
-	// Phase 2 : scale overshoot — logo "rebondit" légèrement après révélation
+	// Phase 2: scale overshoot — the logo "bounces" slightly after the reveal
 	const scaleProg = spring({
 		frame: frame - 10,
 		fps,
@@ -95,7 +95,7 @@ export const IntroScene: React.FC = () => {
 	});
 	const logoScale = interpolate(scaleProg, [0, 1], [1.18, 1.0]);
 
-	// Glow burst intense au moment de la révélation, se stabilise ensuite
+	// Intense glow burst at the moment of the reveal, then settles
 	const burstProg = spring({
 		frame: frame - 4,
 		fps,
@@ -104,7 +104,7 @@ export const IntroScene: React.FC = () => {
 	});
 	const logoGlow = interpolate(burstProg, [0, 0.25, 1], [0, 72, 18]);
 
-	// ── Ligne décorative ──────────────────────────────
+	// ── Decorative line ──────────────────────────────
 	const lineProg = spring({
 		frame: frame - 60,
 		fps,
@@ -113,8 +113,8 @@ export const IntroScene: React.FC = () => {
 	});
 	const lineW = interpolate(lineProg, [0, 1], [0, 480]);
 
-	// ── Séparateur "Grades Manager" ───────────────────
-	// Deux mots révélés indépendamment
+	// ── "Grades Manager" separator ───────────────────
+	// Two words revealed independently
 	const word1Delay = 68;
 	const word2Delay = 80;
 
@@ -131,7 +131,7 @@ export const IntroScene: React.FC = () => {
 	// ── Badges ────────────────────────────────────────
 	const bdgBase = 128;
 
-	// ── Glow pulsant (subtil) ─────────────────────────
+	// ── Pulsing glow (subtle) ─────────────────────────
 	const glowPulse = 1 + Math.sin(frame * 0.04) * 0.05;
 
 	return (
@@ -143,7 +143,7 @@ export const IntroScene: React.FC = () => {
 				overflow: "hidden",
 			}}
 		>
-			{/* Son de transition au démarrage */}
+			{/* Transition sound at start */}
 			{AUDIO.enabled && (
 				<Audio
 					src={staticFile("audio/transition.mp3")}
@@ -158,7 +158,7 @@ export const IntroScene: React.FC = () => {
 				/>
 			)}
 
-			{/* Fond organique noise2D — blobs de lumière subtils */}
+			{/* Organic noise2D background — subtle light blobs */}
 			<NoiseBackground
 				color={C.primary}
 				opacity={0.028}
@@ -166,10 +166,10 @@ export const IntroScene: React.FC = () => {
 				count={3}
 			/>
 
-			{/* DotGrid — motif de fond discret */}
+			{/* DotGrid — discreet background pattern */}
 			<DotGrid opacity={op * 0.2} size={38} dotSize={1.5} color={C.primary} />
 
-			{/* Formes géométriques décoratives aux coins */}
+			{/* Decorative geometric shapes in the corners */}
 			<div
 				style={{
 					position: "absolute",
@@ -196,12 +196,12 @@ export const IntroScene: React.FC = () => {
 				/>
 			</div>
 
-			{/* Trail comet — traverse l'écran au démarrage */}
+			{/* Trail comet — crosses the screen at start */}
 			<Trail layers={8} lagInFrames={2} trailOpacity={0.42}>
 				<IntroComet />
 			</Trail>
 
-			{/* Glow ambiance */}
+			{/* Ambient glow */}
 			<div
 				style={{
 					transform: `scale(${glowPulse})`,
@@ -221,7 +221,7 @@ export const IntroScene: React.FC = () => {
 				<Glow x="78%" y="72%" size={440} color={C.green} opacity={0.03} />
 			</div>
 
-			{/* ── Contenu principal ────────────────────── */}
+			{/* ── Main content ────────────────────── */}
 			<div
 				style={{
 					opacity: op,
@@ -233,9 +233,9 @@ export const IntroScene: React.FC = () => {
 					gap: 0,
 				}}
 			>
-				{/* Logo TKAMS — clip-path circle burst depuis le centre */}
+				{/* TKAMS logo — clip-path circle burst from the center */}
 				<div style={{ position: "relative", marginBottom: 38 }}>
-					{/* Burst flash pré-révélation — halo blanc intense qui précède le logo */}
+					{/* Pre-reveal flash burst — intense white halo ahead of the logo */}
 					<div
 						style={{
 							position: "absolute",
@@ -252,7 +252,7 @@ export const IntroScene: React.FC = () => {
 						}}
 					/>
 
-					{/* Logo avec clip-path circle + overshoot scale */}
+					{/* Logo with clip-path circle + overshoot scale */}
 					<div
 						style={{
 							transform: `scale(${logoScale})`,
@@ -272,7 +272,7 @@ export const IntroScene: React.FC = () => {
 						</div>
 					</div>
 
-					{/* ParticleBurst — explose au moment où le logo est pleinement révélé */}
+					{/* ParticleBurst — bursts when the logo is fully revealed */}
 					<div
 						style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
 					>
@@ -288,7 +288,7 @@ export const IntroScene: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Ligne gradient décorative */}
+				{/* Decorative gradient line */}
 				<div
 					style={{
 						width: lineW,
@@ -299,7 +299,7 @@ export const IntroScene: React.FC = () => {
 					}}
 				/>
 
-				{/* Headline produit */}
+				{/* Product headline */}
 				<div style={{ textAlign: "center", overflow: "hidden" }}>
 					{(["Gestion académique", "multi-tenant"] as const).map((line, i) => {
 						const delay = i === 0 ? word1Delay : word2Delay;
@@ -387,7 +387,7 @@ export const IntroScene: React.FC = () => {
 					})}
 				</div>
 
-				{/* Powered by — très discret en bas */}
+				{/* Powered by — very discreet, at the bottom */}
 				{(() => {
 					const p = spring({
 						frame: frame - 158,

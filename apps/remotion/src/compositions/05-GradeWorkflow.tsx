@@ -1,6 +1,6 @@
 /**
- * 05-GradeWorkflow — Pipeline examen (450 frames / 15 s)
- * Trail comet sur le rail · calcul durée audio automatique
+ * 05-GradeWorkflow — Exam pipeline (450 frames / 15 s)
+ * Trail comet on the rail · automatic audio duration
  */
 
 import { getAudioDuration } from "@remotion/media-utils";
@@ -40,19 +40,19 @@ import { TextReveal } from "../components/TextReveal";
 import { AUDIO, C, DUR, F } from "../lib/theme";
 import { sceneOpacity } from "../lib/transition";
 
-// Composant interne — Trail nécessite un enfant avec useCurrentFrame() interne
-// La comète parcourt le rail de gauche à droite en suivant beamProgress
+// Inner component — Trail needs a child that calls useCurrentFrame() itself
+// The comet travels the rail from left to right following beamProgress
 const BeamComet: React.FC = () => {
 	const frame = useCurrentFrame();
 	const beamProg = interpolate(frame, [44, 215], [0, 1], {
 		extrapolateLeft: "clamp",
 		extrapolateRight: "clamp",
 	});
-	// Position approximative sur le rail (padding 80 + H_PADDING sur 1920)
+	// Approximate position on the rail (padding 80 + H_PADDING over 1920)
 	const railLeft = 80 + H_PADDING + NODE_SIZE / 2;
 	const railRight = 1920 - 80 - H_PADDING - NODE_SIZE / 2;
 	const cometX = interpolate(beamProg, [0, 1], [railLeft, railRight]);
-	// Y approximatif : padding 54 + header ~190 + NODE_SIZE/2 = ~288
+	// Approximate Y: padding 54 + header ~190 + NODE_SIZE/2 = ~288
 	const cometY = 288;
 	const cometOp = interpolate(beamProg, [0, 0.04, 0.96, 1], [0, 1, 1, 0]);
 	return (
@@ -122,8 +122,8 @@ const STEPS = [
 	},
 ] as const;
 
-const NODE_SIZE = 90; // diamètre des cercles
-const H_PADDING = 52; // padding horizontal du rail
+const NODE_SIZE = 90; // circle diameter
+const H_PADDING = 52; // horizontal padding of the rail
 
 export const GradeWorkflowScene: React.FC = () => {
 	const frame = useCurrentFrame();
@@ -135,7 +135,7 @@ export const GradeWorkflowScene: React.FC = () => {
 		extrapolateRight: "clamp",
 	});
 
-	// Pré-calcul des animations par étape
+	// Precompute per-step animations
 	const anims = STEPS.map((_, i) => {
 		const prog = spring({
 			frame: frame - 28 - i * 18,
@@ -177,7 +177,7 @@ export const GradeWorkflowScene: React.FC = () => {
 			<DotGrid opacity={op * 0.12} size={40} dotSize={1.5} color={C.primary} />
 			<Glow x="50%" y="82%" size={800} color={C.primary} opacity={op * 0.06} />
 
-			{/* Trail comet — suit le beam le long du rail avec motion blur cinématique */}
+			{/* Trail comet — follows the beam along the rail with cinematic motion blur */}
 			<div style={{ opacity: op }}>
 				<Trail layers={9} lagInFrames={2} trailOpacity={0.55}>
 					<BeamComet />
@@ -194,7 +194,7 @@ export const GradeWorkflowScene: React.FC = () => {
 					gap: 0,
 				}}
 			>
-				{/* En-tête */}
+				{/* Header */}
 				<div style={{ marginBottom: 52 }}>
 					<div style={{ overflow: "hidden", marginBottom: 10 }}>
 						<div
@@ -249,7 +249,7 @@ export const GradeWorkflowScene: React.FC = () => {
 					</TextReveal>
 				</div>
 
-				{/* ── Pipeline (layout en 2 rangées) ── */}
+				{/* ── Pipeline (two-row layout) ── */}
 				<div
 					style={{
 						flex: 1,
@@ -259,9 +259,9 @@ export const GradeWorkflowScene: React.FC = () => {
 						gap: 0,
 					}}
 				>
-					{/* ─── RANGÉE 1 : Nœuds + Rail ─────────────────────────────── */}
-					{/* Le rail est positionné top:50% + translateY(-50%) dans ce div
-					    dont la hauteur = NODE_SIZE → rail parfaitement centré sur les cercles */}
+					{/* ─── ROW 1: Nodes + Rail ─────────────────────────────── */}
+					{/* The rail is positioned top:50% + translateY(-50%) inside this div
+					    whose height = NODE_SIZE → rail perfectly centered on the circles */}
 					<div
 						style={{
 							position: "relative",
@@ -272,7 +272,7 @@ export const GradeWorkflowScene: React.FC = () => {
 							alignItems: "center",
 						}}
 					>
-						{/* Rail neumorphique en creux */}
+						{/* Inset neumorphic rail */}
 						<div
 							style={{
 								position: "absolute",
@@ -288,7 +288,7 @@ export const GradeWorkflowScene: React.FC = () => {
 							}}
 						/>
 
-						{/* Barre de progression colorée */}
+						{/* Colored progress bar */}
 						<div
 							style={{
 								position: "absolute",
@@ -304,7 +304,7 @@ export const GradeWorkflowScene: React.FC = () => {
 							}}
 						/>
 
-						{/* Nœuds neumorphiques */}
+						{/* Neumorphic nodes */}
 						{STEPS.map(({ Icon, color, label }, i) => {
 							const a = anims[i];
 							return (
@@ -344,7 +344,7 @@ export const GradeWorkflowScene: React.FC = () => {
 						})}
 					</div>
 
-					{/* ─── RANGÉE 2 : Labels ───────────────────────────────────── */}
+					{/* ─── ROW 2: Labels ───────────────────────────────────── */}
 					<div
 						style={{
 							display: "flex",
@@ -398,7 +398,7 @@ export const GradeWorkflowScene: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Avertissement neumorphique */}
+				{/* Neumorphic warning */}
 				{(() => {
 					const prog = spring({
 						frame: frame - 242,

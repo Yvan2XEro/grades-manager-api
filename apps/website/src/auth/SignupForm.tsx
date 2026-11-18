@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import type { Dict } from "@/i18n";
-import { GradeEntryDemo } from "@/marketing/demos/GradeEntryDemo";
+import type { Dict, Locale } from "@/i18n";
+import { GradeEntryDemo } from "@/marketing/app-demo/GradeEntryDemo";
 import { AuthShell } from "./AuthShell";
 
 type FormData = {
@@ -67,7 +67,7 @@ export function SignupForm({ dict: d }: { dict: Dict }) {
 
 	if (verifyEmail) {
 		return (
-			<AuthShell dict={d} demo={<GradeEntryDemo t={d.demos.grade} />}>
+			<AuthShell dict={d} demo={<GradeEntryDemo locale={d.locale as Locale} />}>
 				<div className="flex flex-col items-center gap-4 py-8 text-center">
 					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-[oklch(0.95_0.05_250)] text-3xl">
 						✉️
@@ -93,7 +93,7 @@ export function SignupForm({ dict: d }: { dict: Dict }) {
 	}
 
 	return (
-		<AuthShell dict={d} demo={<GradeEntryDemo t={d.demos.grade} />}>
+		<AuthShell dict={d} demo={<GradeEntryDemo locale={d.locale as Locale} />}>
 			<div>
 				<h1 className="mb-1 font-bold font-display text-[1.625rem] text-tk-ink tracking-[-0.03em]">
 					{d.auth.signup.title}

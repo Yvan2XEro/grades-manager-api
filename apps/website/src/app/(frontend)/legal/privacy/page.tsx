@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type React from "react";
 import { getDict, getLocale } from "@/i18n";
+import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 
 export default async function PrivacyPage() {
 	const locale = await getLocale();
@@ -11,7 +12,9 @@ export default async function PrivacyPage() {
 	return (
 		<main
 			style={{
-				paddingTop: "68px",
+				// Token, not a literal: the header grew a utility strip above the bar
+				// on large screens, and a hard-coded 68px would slide under it.
+				paddingTop: "var(--tk-header-h)",
 				minHeight: "100vh",
 				background: "var(--tk-bg)",
 			}}
@@ -33,7 +36,8 @@ export default async function PrivacyPage() {
 					</p>
 					<h1
 						style={{
-							fontFamily: "var(--font-sora), system-ui, sans-serif",
+							fontFamily:
+								"var(--font-display-family), ui-sans-serif, system-ui, sans-serif",
 							fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
 							fontWeight: 800,
 							letterSpacing: "-0.04em",
@@ -65,7 +69,8 @@ export default async function PrivacyPage() {
 						maxWidth: "48rem",
 						margin: "0 auto",
 						color: "var(--tk-ink)",
-						fontFamily: "var(--font-inter), system-ui, sans-serif",
+						fontFamily:
+							"var(--font-body-family), ui-sans-serif, system-ui, sans-serif",
 						lineHeight: 1.75,
 					}}
 				>
@@ -186,7 +191,54 @@ export default async function PrivacyPage() {
 								</p>
 							</LegalSection>
 
-							<LegalSection title="9. Contact">
+							{/*
+							 * Section 9 — the one the page was missing entirely, and the
+							 * target of the cookie notice's "En savoir plus" link.
+							 *
+							 * The table is exhaustive as of this writing and was compiled by
+							 * auditing the source, not from memory: `tkams_locale` in
+							 * `i18n/actions.ts`, `payload-token` from Payload auth,
+							 * `payload-theme` and `tkams-demo-sound` in localStorage. If a
+							 * measurement or advertising tool is ever added, this section
+							 * must list it AND the notice must become a real consent manager
+							 * — see the note at the top of `CookieNotice.tsx`.
+							 */}
+							<LegalSection title="9. Cookies et stockage local" id="cookies">
+								<p>
+									Ce site ne dépose aucun cookie publicitaire et n&apos;utilise
+									aucun outil de mesure d&apos;audience tiers. Seuls les
+									éléments strictement nécessaires à son fonctionnement et à vos
+									préférences sont enregistrés :
+								</p>
+								<ul>
+									<li>
+										<strong>tkams_locale</strong> (cookie) — mémorise la langue
+										que vous avez choisie. Durée : 12 mois.
+									</li>
+									<li>
+										<strong>payload-token</strong> (cookie) — maintient votre
+										session, uniquement après connexion à votre espace. Durée :
+										la session.
+									</li>
+									<li>
+										<strong>payload-theme</strong> (stockage local) — mémorise
+										le thème clair ou sombre.
+									</li>
+									<li>
+										<strong>tkams-demo-sound</strong> (stockage local) —
+										mémorise si vous avez coupé le son des démonstrations.
+									</li>
+								</ul>
+								<p>
+									Ces éléments relèvent des cookies strictement nécessaires ou
+									de préférence : ils ne requièrent pas de consentement
+									préalable, mais vous pouvez les supprimer à tout moment depuis
+									les réglages de votre navigateur. Le site reste utilisable
+									sans eux ; seules vos préférences ne seront plus mémorisées.
+								</p>
+							</LegalSection>
+
+							<LegalSection title="10. Contact">
 								<p>
 									Pour toute question relative à la protection de vos données :
 									<a
@@ -303,7 +355,40 @@ export default async function PrivacyPage() {
 								</p>
 							</LegalSection>
 
-							<LegalSection title="9. Contact">
+							<LegalSection title="9. Cookies and local storage" id="cookies">
+								<p>
+									This site sets no advertising cookies and uses no third-party
+									analytics. Only what is strictly necessary for it to work, and
+									what records your own preferences, is stored:
+								</p>
+								<ul>
+									<li>
+										<strong>tkams_locale</strong> (cookie) — remembers the
+										language you chose. Duration: 12 months.
+									</li>
+									<li>
+										<strong>payload-token</strong> (cookie) — keeps you signed
+										in, only once you have logged into your account. Duration:
+										the session.
+									</li>
+									<li>
+										<strong>payload-theme</strong> (local storage) — remembers
+										the light or dark theme.
+									</li>
+									<li>
+										<strong>tkams-demo-sound</strong> (local storage) —
+										remembers whether you muted the demonstrations.
+									</li>
+								</ul>
+								<p>
+									These are strictly necessary or preference cookies: they do
+									not require prior consent, but you can delete them at any time
+									from your browser settings. The site remains usable without
+									them — only your preferences will no longer be remembered.
+								</p>
+							</LegalSection>
+
+							<LegalSection title="10. Contact">
 								<p>
 									For any questions regarding the protection of your data:
 									<a
@@ -328,15 +413,29 @@ export default async function PrivacyPage() {
 function LegalSection({
 	title,
 	children,
+	id,
 }: {
 	title: string;
 	children: React.ReactNode;
+	/**
+	 * Optional anchor target. The cookie notice links to `#cookies`, so that
+	 * section needs a real id — `scroll-margin-top` clears the fixed header,
+	 * which would otherwise cover the heading it just scrolled to.
+	 */
+	id?: string;
 }) {
 	return (
-		<div style={{ marginBottom: "2.5rem" }}>
+		<div
+			id={id}
+			style={{
+				marginBottom: "2.5rem",
+				scrollMarginTop: "calc(var(--tk-header-h) + 1rem)",
+			}}
+		>
 			<h2
 				style={{
-					fontFamily: "var(--font-sora), system-ui, sans-serif",
+					fontFamily:
+						"var(--font-display-family), ui-sans-serif, system-ui, sans-serif",
 					fontSize: "1.1875rem",
 					fontWeight: 700,
 					color: "var(--tk-ink)",
@@ -358,4 +457,8 @@ function LegalSection({
 export const metadata: Metadata = {
 	title: "Politique de confidentialité — TKAMS",
 	description: "Politique de confidentialité de TKAMS par OverBrand.",
+	openGraph: mergeOpenGraph({
+		title: "Politique de confidentialité — TKAMS",
+		description: "Politique de confidentialité de TKAMS par OverBrand.",
+	}),
 };

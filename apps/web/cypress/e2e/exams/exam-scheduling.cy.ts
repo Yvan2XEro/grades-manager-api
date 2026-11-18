@@ -5,7 +5,7 @@ describe("Exam Management - Automated Scheduling", () => {
 
 	describe("Accessing Exam Scheduler", () => {
 		it("navigates to exam scheduler page", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Should show scheduler interface
 			cy.contains(/schedule|planification|scheduler/i, {
@@ -14,7 +14,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("displays scheduling configuration options", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Should show configuration fields
 			cy.get("body", { timeout: 10000 }).should("exist");
@@ -30,7 +30,7 @@ describe("Exam Management - Automated Scheduling", () => {
 
 	describe("Configuring Automatic Scheduling", () => {
 		it("allows selecting multiple classes for scheduling", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Look for class selection
 			cy.get(
@@ -61,7 +61,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("allows setting exam period/date range", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Look for date range inputs
 			cy.get("body").then(($body) => {
@@ -97,7 +97,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("allows selecting exam types to generate", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Look for exam type selection
 			cy.get("body").then(($body) => {
@@ -120,7 +120,7 @@ describe("Exam Management - Automated Scheduling", () => {
 
 	describe("Launching Exam Generation", () => {
 		it("successfully generates exams for selected classes", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Configure scheduling
 			cy.get("body", { timeout: 10000 }).then(($body) => {
@@ -164,7 +164,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("displays generation progress indicator", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Select configuration
 			cy.get("body", { timeout: 10000 }).then(($body) => {
@@ -198,7 +198,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("shows generation report after completion", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const classCheckboxes = $body.find('input[type="checkbox"]');
@@ -224,7 +224,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("displays count of generated exams", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const classCheckboxes = $body.find('input[type="checkbox"]');
@@ -248,7 +248,7 @@ describe("Exam Management - Automated Scheduling", () => {
 
 	describe("Scheduling Validation", () => {
 		it("requires class selection before generating", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Try to generate without selecting classes
 			cy.findByRole("button", {
@@ -257,7 +257,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("validates date range", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body").then(($body) => {
 				const hasDateInputs =
@@ -284,7 +284,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("prevents generating without exam types", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body").then(($body) => {
 				const hasExamTypeSelection =
@@ -310,7 +310,7 @@ describe("Exam Management - Automated Scheduling", () => {
 
 	describe("Bulk Scheduling Features", () => {
 		it("generates exams for multiple classes simultaneously", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Select multiple classes
 			cy.get("body", { timeout: 10000 }).then(($body) => {
@@ -344,7 +344,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("applies scheduling rules consistently across classes", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const classCheckboxes = $body.find('input[type="checkbox"]');
@@ -369,7 +369,7 @@ describe("Exam Management - Automated Scheduling", () => {
 
 	describe("Scheduling Report", () => {
 		it("lists all generated exams with details", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const classCheckboxes = $body.find('input[type="checkbox"]');
@@ -397,7 +397,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("shows class and course for each generated exam", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const classCheckboxes = $body.find('input[type="checkbox"]');
@@ -419,7 +419,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("displays exam dates in the report", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const classCheckboxes = $body.find('input[type="checkbox"]');
@@ -447,7 +447,7 @@ describe("Exam Management - Automated Scheduling", () => {
 		});
 
 		it("allows viewing scheduled exams in main exam list", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const classCheckboxes = $body.find('input[type="checkbox"]');
@@ -465,7 +465,7 @@ describe("Exam Management - Automated Scheduling", () => {
 			}).should("exist");
 
 			// Navigate to main exam list
-			cy.visit("/admin/exams");
+			cy.visit("/exams");
 
 			// Should see generated exams
 			cy.get("body", { timeout: 10000 }).then(($body) => {
@@ -477,7 +477,7 @@ describe("Exam Management - Automated Scheduling", () => {
 
 	describe("Canceling Scheduling", () => {
 		it("allows canceling before generation starts", () => {
-			cy.loginAs("administrator", { route: "/admin/exam-scheduler" });
+			cy.loginAs("administrator", { route: "/exams/scheduler" });
 
 			// Configure but don't generate
 			cy.get("body", { timeout: 10000 }).then(($body) => {

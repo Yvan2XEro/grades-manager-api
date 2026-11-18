@@ -11,9 +11,6 @@ export async function createRoom(
 		campus?: string;
 	},
 ) {
-	const existing = await repo
-		.findById(input.code, institutionId)
-		.catch(() => null);
 	// code uniqueness is enforced by DB unique constraint; catch conflict
 	try {
 		return await repo.create({

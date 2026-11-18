@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -20,6 +21,7 @@ export function DebouncedSearchField({
 	className,
 	disabled,
 }: DebouncedSearchFieldProps) {
+	const { t } = useTranslation();
 	const [internalValue, setInternalValue] = useState(value);
 
 	useEffect(() => {
@@ -61,7 +63,7 @@ export function DebouncedSearchField({
 					disabled={disabled}
 				>
 					<X className="h-4 w-4" />
-					<span className="sr-only">Clear search</span>
+					<span className="sr-only">{t("common.a11y.clearSearch")}</span>
 				</Button>
 			) : null}
 		</div>

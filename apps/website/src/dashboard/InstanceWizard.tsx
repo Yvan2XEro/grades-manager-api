@@ -93,13 +93,19 @@ function Step1({
 	});
 	const orgName = watch("orgName");
 	const subdomain = watch("subdomain");
+	const isSecondary = watch("institutionType") === "secondary";
 
 	useEffect(() => {
 		if (orgName) setValue("subdomain", toSlug(orgName));
 	}, [orgName, setValue]);
 
 	return (
-		<form onSubmit={handleSubmit(onNext)} className="flex flex-col gap-5">
+		<form
+			onSubmit={handleSubmit((values) => {
+				if (!isSecondary) onNext(values);
+			})}
+			className="flex flex-col gap-5"
+		>
 			<div>
 				<label className={labelCls}>{inst.name}</label>
 				<input
@@ -120,48 +126,67 @@ function Step1({
 					))}
 				</select>
 			</div>
-			<div>
-				<label className={labelCls}>{inst.country}</label>
-				<input
-					type="text"
-					{...register("country", { required: d.register.errors.required })}
-					className={inputCls}
-				/>
-				{errors.country && <p className={errorCls}>{errors.country.message}</p>}
-			</div>
-			<div>
-				<label className={labelCls}>{inst.subdomain}</label>
-				<div className="flex items-center overflow-hidden rounded-[0.625rem] border border-tk-border bg-tk-bg transition-colors duration-150 focus-within:border-tk-primary">
-					<input
-						type="text"
-						{...register("subdomain", {
-							required: d.register.errors.required,
-							pattern: {
-								value: /^[a-z0-9-]+$/,
-								message: d.register.errors.subdomain_pattern,
-							},
-							minLength: { value: 2, message: d.register.errors.subdomain_min },
-						})}
-						className="flex-1 bg-transparent px-4 py-3 font-body text-[0.9375rem] text-tk-ink outline-none"
-					/>
-					<span className="whitespace-nowrap border-tk-border border-l bg-tk-bg-deep px-4 py-3 font-code text-[0.875rem] text-tk-muted">
-						.{BASE_DOMAIN}
-					</span>
+			{isSecondary ? (
+				<div className="rounded-xl border border-tk-border bg-tk-surface p-6">
+					<p className="mb-4 text-tk-ink-2">{d.secondary.setup_notice}</p>
+					<a
+						href={`mailto:contact@tkams.com?subject=${encodeURIComponent(d.secondary.contact_subject)}`}
+						className="tk-btn-primary"
+					>
+						{d.secondary.cta}
+					</a>
 				</div>
-				{errors.subdomain ? (
-					<p className={errorCls}>{errors.subdomain.message}</p>
-				) : subdomain ? (
-					<p className="mt-1 font-body text-[0.8125rem] text-tk-muted">
-						{inst.subdomain_hint}{" "}
-						<span className="font-medium text-tk-primary">
-							https://{subdomain}.{BASE_DOMAIN}
-						</span>
-					</p>
-				) : null}
-			</div>
-			<button type="submit" className="tk-btn-primary mt-1 justify-center">
-				{d.register.next}
-			</button>
+			) : (
+				<>
+					<div>
+						<label className={labelCls}>{inst.country}</label>
+						<input
+							type="text"
+							{...register("country", { required: d.register.errors.required })}
+							className={inputCls}
+						/>
+						{errors.country && (
+							<p className={errorCls}>{errors.country.message}</p>
+						)}
+					</div>
+					<div>
+						<label className={labelCls}>{inst.subdomain}</label>
+						<div className="flex items-center overflow-hidden rounded-[0.625rem] border border-tk-border bg-tk-bg transition-colors duration-150 focus-within:border-tk-primary">
+							<input
+								type="text"
+								{...register("subdomain", {
+									required: d.register.errors.required,
+									pattern: {
+										value: /^[a-z0-9-]+$/,
+										message: d.register.errors.subdomain_pattern,
+									},
+									minLength: {
+										value: 2,
+										message: d.register.errors.subdomain_min,
+									},
+								})}
+								className="flex-1 bg-transparent px-4 py-3 font-body text-[0.9375rem] text-tk-ink outline-none"
+							/>
+							<span className="whitespace-nowrap border-tk-border border-l bg-tk-bg-deep px-4 py-3 font-code text-[0.875rem] text-tk-muted">
+								.{BASE_DOMAIN}
+							</span>
+						</div>
+						{errors.subdomain ? (
+							<p className={errorCls}>{errors.subdomain.message}</p>
+						) : subdomain ? (
+							<p className="mt-1 font-body text-[0.8125rem] text-tk-muted">
+								{inst.subdomain_hint}{" "}
+								<span className="font-medium text-tk-primary">
+									https://{subdomain}.{BASE_DOMAIN}
+								</span>
+							</p>
+						) : null}
+					</div>
+					<button type="submit" className="tk-btn-primary mt-1 justify-center">
+						{d.register.next}
+					</button>
+				</>
+			)}
 		</form>
 	);
 }

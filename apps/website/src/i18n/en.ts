@@ -1,4 +1,80 @@
 export const en = {
+	secondary: {
+		setup_notice:
+			"Your secondary school has a dedicated setup path. Contact our team to prepare your TKAMS Secondary workspace.",
+		announcement: "New · TKAMS now supports secondary education too.",
+		discover: "Explore secondary education →",
+		label: "One brand, two paths",
+		title: "A TKAMS path for every institution.",
+		intro:
+			"Our expertise began in higher education. It now extends to secondary schools, with tools suited to each level of education.",
+		higher_title: "Higher education",
+		higher_desc:
+			"Universities, colleges and institutes: LMD academic management, from admissions to deliberations and graduation.",
+		higher_cta: "Explore higher education →",
+		secondary_title: "Secondary education",
+		secondary_desc:
+			"Secondary schools: students, classes, grades, report cards, class councils, attendance and school fees.",
+		available: "Available now",
+		scope: "TKAMS for higher education",
+		scope_desc:
+			"Explore our established offering for universities, colleges and LMD institutes below.",
+		page_title: "TKAMS Secondary: your school, throughout the school year.",
+		page_intro:
+			"From student enrolment to term report cards, bring school leaders and teachers together in a workspace built for secondary education.",
+		features_title: "Tools for everyday school management",
+		features: [
+			{
+				title: "Students and enrolment",
+				desc: "Maintain student records, enrol students in classes and review enrolment for the school year.",
+			},
+			{
+				title: "Classes, tracks and subjects",
+				desc: "Organise classes and tracks, set subject coefficients and assign teachers to their classes and subjects.",
+			},
+			{
+				title: "Grades and comments",
+				desc: "Teachers enter grades and comments for the classes and subjects assigned to them.",
+			},
+			{
+				title: "Report cards and class councils",
+				desc: "Generate term report cards with weighted averages and rankings. Record class council decisions and observations.",
+			},
+			{
+				title: "Attendance and school fees",
+				desc: "Track attendance and absences, record payments and review outstanding school fee balances.",
+			},
+			{
+				title: "Official exam administration",
+				desc: "Organise sessions and candidate registrations, then prepare candidate lists within your school.",
+			},
+		],
+		journey_title: "Guided setup for an organised team",
+		journey_desc:
+			"Enter your school details and academic year, then prepare tracks, subjects, coefficients, classes and staff. CSV templates help import configuration data. The interface is available in French and English.",
+		cta: "Request a secondary school demo →",
+		contact_subject: "TKAMS Secondary demo",
+		pricing: "Tell us about your secondary school",
+		pricing_desc:
+			"Share your enrolment numbers and requirements to receive a proposal tailored to your secondary school.",
+		articles_title: "Discover TKAMS Secondary",
+		articles_cta: "Read the blog articles →",
+		faq_title: "Your questions about secondary education",
+		faq: [
+			{
+				q: "Is TKAMS Secondary available now?",
+				a: "Yes. TKAMS Secondary is available for secondary schools. Contact our team for a demonstration and help setting up your school.",
+			},
+			{
+				q: "Does TKAMS still support higher education?",
+				a: "Yes. Higher education remains our original focus. Its LMD tools serve universities, colleges and institutes, while secondary schools have a path suited to the school year.",
+			},
+			{
+				q: "Are payments collected online?",
+				a: "The workflow presented records payments and tracks school fee balances. Recording a payment method does not itself collect money online.",
+			},
+		],
+	},
 	locale: "en",
 	nav: {
 		features: "Features",
@@ -14,8 +90,7 @@ export const en = {
 		login: "Sign in",
 	},
 	hero: {
-		kicker:
-			"★ Student Information System · LMD · admissions · finance · portals",
+		kicker: "Student Information System · LMD · admissions · finance · portals",
 		headline_1: "The SIS that turns your weeks of deliberations into",
 		headline_2: "hours.",
 		sub: "TKAMS covers the full academic cycle — admissions, tuition fees, schedules, attendance, exams, deliberations, official documents and graduation — in one platform built for LMD institutions in francophone Africa.",
@@ -24,6 +99,49 @@ export const en = {
 		badge_lmd: "LMD native",
 		badge_bi: "Multi-role portals",
 		badge_live: "In production",
+		cities: "Douala · Yaoundé",
+	},
+	estimator: {
+		question: "How many students do you manage?",
+		students: "students",
+		result_label: "Your annual licence",
+		per_year: "FCFA excl. tax / year",
+		per_student_line: "2,000 FCFA per student",
+		at_floor: "Minimum tier applied",
+		admin_seats: "administrator accounts",
+		per_month: "FCFA per student per month",
+		weeks_value: "3 h",
+		weeks_label: "to deliberate, instead of three weeks",
+		setup_label: "go-live on shared SaaS",
+	},
+	domains: {
+		title: "One piece of software for the whole cycle",
+		link: "See the full functional coverage →",
+		items: [
+			{
+				name: "Student records",
+				desc: "From the application file to class enrolment.",
+			},
+			{
+				name: "Assessment",
+				desc: "Exams, grades, juries and progression.",
+			},
+			{
+				name: "Finance",
+				desc: "Payments, clearance, and access tied to settlement.",
+			},
+			{
+				name: "Documents",
+				desc: "Official papers generated, signed and verifiable.",
+			},
+		],
+	},
+	proof: {
+		title: "The software, as your teams use it",
+		sub: "These are not mockups — they are TKAMS screens.",
+		delib: "The jury decides, the engine applies your rules.",
+		grades: "Teachers enter marks, averages follow.",
+		doc: "The transcript comes out signed, verifiable by scan.",
 	},
 	stats: {
 		title: "A complete platform, in production",
@@ -198,10 +316,10 @@ export const en = {
 			{
 				name: "Standard",
 				badge: "",
-				price: "2,000",
+				price: "2,800",
 				unit: "FCFA / student / year",
-				admin_price: "+ 5,000 FCFA / admin / year",
-				min: "Minimum: 750,000 FCFA excl. tax",
+				admin_price: "+ 7,000 FCFA / admin / year",
+				min: "Minimum tier: 1,000,000 FCFA excl. tax",
 				desc: "Shared SaaS. Ideal for institutions getting started.",
 				features: [
 					"All modules included",
@@ -216,9 +334,9 @@ export const en = {
 			{
 				name: "Pro",
 				badge: "Recommended",
-				price: "2,000",
+				price: "2,800",
 				unit: "FCFA / student / year",
-				admin_price: "+ 5,000 FCFA / admin / year",
+				admin_price: "+ 7,000 FCFA / admin / year",
 				min: "Same pricing — dedicated infrastructure",
 				desc: "Dedicated SaaS or on-premise. For institutions that require isolation.",
 				features: [
@@ -238,7 +356,7 @@ export const en = {
 				price: "Custom",
 				unit: "",
 				admin_price: "",
-				min: "On-premise installation: 1,500,000 FCFA excl. tax",
+				min: "On-premise installation: 2,100,000 FCFA excl. tax",
 				desc: "Multi-entity, consolidated reporting, advanced customization.",
 				features: [
 					"Everything in Pro",
@@ -254,29 +372,27 @@ export const en = {
 		],
 	},
 	deployment: {
+		axis_low: "We host",
+		axis_high: "You host",
 		title: "Four deployment modes",
 		sub: "Choose the level of control that fits your IT department.",
 		modes: [
 			{
-				icon: "☁",
 				title: "Shared SaaS",
 				desc: "Shared infrastructure, deployed in 48h, zero maintenance on the client side.",
 				tag: "Fastest",
 			},
 			{
-				icon: "⚡",
 				title: "Dedicated SaaS",
 				desc: "Your own cloud instance, complete data isolation, same automatic updates.",
 				tag: "Maximum isolation",
 			},
 			{
-				icon: "⚙",
 				title: "Hybrid",
 				desc: "Sensitive data on-premise, application services in the OverBrand cloud.",
 				tag: "Optimal balance",
 			},
 			{
-				icon: "🏛",
 				title: "On-premise",
 				desc: "Complete installation on your servers. Total control. One-time installation fee.",
 				tag: "Total control",
@@ -305,6 +421,11 @@ export const en = {
 		pioneer_tag: "Pioneer program",
 	},
 	demos: {
+		caption_grade:
+			"Live demo · edit a grade, the average and the decision recompute",
+		caption_rules:
+			"Live demo · adjust the parameters, the cohort is re-evaluated instantly",
+		caption_delib: "Live demo · run the deliberation and generate the minutes",
 		grade: {
 			course: "Year 3 · Computer Science",
 			unit: "Algorithms unit · CW 40% + Exam 60%",
@@ -411,6 +532,10 @@ export const en = {
 		sub: "And if your question isn't here, just write to us.",
 		items: [
 			{
+				q: "Is TKAMS Secondary available now?",
+				a: "Yes. TKAMS Secondary is available for secondary schools. Contact our team for a demonstration and help setting up your school.",
+			},
+			{
 				q: "Is TKAMS really built for the LMD system?",
 				a: "Yes. Teaching units, course units, ECTS, coefficients, retake sessions and deliberations are native — designed for LMD, not bolted on.",
 			},
@@ -420,7 +545,7 @@ export const en = {
 			},
 			{
 				q: "Can we import our existing data?",
-				a: "Yes — file import (Excel / YAML) right when the instance is created, or assisted migration for larger volumes.",
+				a: "Higher education supports Excel / YAML imports. For secondary education, CSV templates support the setup of tracks, subjects, coefficients, classes and staff. Contact us to prepare your data migration.",
 			},
 			{
 				q: "Is the platform bilingual?",
@@ -447,10 +572,10 @@ export const en = {
 		label: "About",
 		title: "A platform born in the field of African academia",
 		intro:
-			"TKAMS — Tefoye and Kana Academic Management System — is published by OverBrand, in direct contact with LMD institutions across francophone Africa.",
+			"TKAMS — Tefoye and Kana Academic Management System — is published by OverBrand. Born alongside LMD institutions in francophone Africa, TKAMS now also serves secondary schools.",
 		mission_title: "What we believe",
 		mission:
-			"LMD academic management deserves better than scattered spreadsheets and handwritten deliberations. TKAMS brings the whole cycle — from the academic catalog to graduation — into a single, auditable and bilingual platform.",
+			"Give teams tools suited to their institutions: LMD academic management for higher education and school management for secondary education. The same commitment to clarity, with workflows suited to each level.",
 		values: [
 			{
 				title: "LMD first",
@@ -473,7 +598,7 @@ export const en = {
 	blog: {
 		label: "The blog",
 		title: "News & resources",
-		sub: "Product announcements, LMD best practices and field feedback.",
+		sub: "Product news, academic management and school life across higher and secondary education.",
 		empty: "No articles yet.",
 		no_image: "No image",
 		author: "Author",
@@ -494,7 +619,7 @@ export const en = {
 		},
 	},
 	produit: {
-		label: "The product",
+		label: "Higher education",
 		title: "See TKAMS in action",
 		sub: "Grade entry, rules engine, deliberation, attendance tracking and validations — interactive end-to-end demos. Everything runs live, no sign-up needed.",
 		demos: {
@@ -514,8 +639,8 @@ export const en = {
 	},
 	solutions: {
 		label: "Solutions",
-		title: "An answer for every role in the institution",
-		sub: "From teaching staff to IT management, TKAMS adapts to each role.",
+		title: "A path suited to your institution",
+		sub: "Higher or secondary education: discover the path that fits your team.",
 		roles: [
 			{
 				role: "Teachers",
@@ -582,7 +707,7 @@ export const en = {
 	},
 	tarifs: {
 		label: "Pricing",
-		title: "Simple pricing, per student",
+		title: "TKAMS pricing for higher education",
 		sub: "No hidden fees. Data migration and onboarding included from the start.",
 		included_title: "Everything is included",
 		included_sub: "One price, no surprises on the invoice.",
@@ -728,7 +853,7 @@ export const en = {
 		},
 	},
 	footer: {
-		tagline: "The SIS that transforms your deliberations.",
+		tagline: "Academic management, from higher to secondary education.",
 		developed_by: "Developed by OverBrand",
 		cities: "Douala · Yaoundé",
 		copyright: "© 2026 OverBrand · TKAMS",
@@ -762,6 +887,12 @@ export const en = {
 			submit: "Send message",
 			sending: "Sending…",
 			success: "Message sent! We'll get back to you shortly.",
+			success_title: "Message sent",
+			card_title: "Write to us",
+			card_sub: "Every field but the phone number is needed for us to reply.",
+			required: "This field is required",
+			optional: "optional",
+			server_error: "An error occurred. Please try again.",
 		},
 		info: {
 			email_label: "Email",

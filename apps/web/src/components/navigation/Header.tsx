@@ -62,11 +62,11 @@ import { NotificationBell } from "./NotificationBell";
 const isMac =
 	typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
 
-const THEMES: { id: SoundTheme; label: string; emoji: string }[] = [
-	{ id: "default", label: "Défaut", emoji: "🎵" },
-	{ id: "soft", label: "Doux", emoji: "🌙" },
-	{ id: "playful", label: "Vif", emoji: "🎮" },
-	{ id: "minimal", label: "Minimal", emoji: "·" },
+const THEMES: { id: SoundTheme; emoji: string }[] = [
+	{ id: "default", emoji: "🎵" },
+	{ id: "soft", emoji: "🌙" },
+	{ id: "playful", emoji: "🎮" },
+	{ id: "minimal", emoji: "·" },
 ];
 
 function VolumeIcon({ vol, enabled }: { vol: number; enabled: boolean }) {
@@ -178,7 +178,7 @@ const Header: React.FC = () => {
 							<Breadcrumb className="hidden md:flex">
 								<BreadcrumbList>
 									{crumbs.map((crumb, index) => (
-										<React.Fragment key={crumb.label}>
+										<React.Fragment key={crumb.href ?? crumb.label}>
 											{index > 0 && <BreadcrumbSeparator />}
 											<BreadcrumbItem>
 												{crumb.href ? (
@@ -196,7 +196,7 @@ const Header: React.FC = () => {
 						) : (
 							<h1 className="hidden font-semibold text-foreground text-sm md:block">
 								{t(`navigation.header.${user?.role ?? "admin"}Dashboard`, {
-									defaultValue: "Dashboard",
+									defaultValue: t("navigation.header.dashboard"),
 								})}
 							</h1>
 						)}
@@ -236,7 +236,9 @@ const Header: React.FC = () => {
 							className="h-8 w-8 text-muted-foreground hover:text-foreground"
 							onClick={toggleDarkMode}
 							aria-label={
-								resolvedTheme === "dark" ? "Mode clair" : "Mode sombre"
+								resolvedTheme === "dark"
+									? t("navigation.header.lightMode")
+									: t("navigation.header.darkMode")
 							}
 						>
 							{resolvedTheme === "dark" ? (
@@ -253,7 +255,7 @@ const Header: React.FC = () => {
 									variant="ghost"
 									size="icon"
 									className="h-8 w-8 text-muted-foreground hover:text-foreground"
-									aria-label="Paramètres sonores"
+									aria-label={t("navigation.header.sound.aria")}
 								>
 									<VolumeIcon vol={volume} enabled={soundOn} />
 								</Button>
@@ -263,13 +265,17 @@ const Header: React.FC = () => {
 									{/* Volume */}
 									<div className="space-y-2">
 										<div className="flex items-center justify-between">
-											<span className="font-medium text-sm">Volume</span>
+											<span className="font-medium text-sm">
+												{t("navigation.header.sound.volume")}
+											</span>
 											<button
 												type="button"
 												onClick={handleToggleSound}
 												className="text-muted-foreground text-xs underline-offset-2 hover:text-foreground hover:underline"
 											>
-												{soundOn ? "Désactiver" : "Activer"}
+												{soundOn
+													? t("navigation.header.sound.disable")
+													: t("navigation.header.sound.enable")}
 											</button>
 										</div>
 										<div className="flex items-center gap-3">
@@ -293,7 +299,9 @@ const Header: React.FC = () => {
 									<div className="space-y-2">
 										<div className="flex items-center gap-1.5">
 											<Music2 className="h-3.5 w-3.5 text-muted-foreground" />
-											<span className="font-medium text-sm">Thème sonore</span>
+											<span className="font-medium text-sm">
+												{t("navigation.header.sound.theme")}
+											</span>
 										</div>
 										<div className="grid grid-cols-2 gap-1.5">
 											{THEMES.map((th) => (
@@ -309,7 +317,7 @@ const Header: React.FC = () => {
 													)}
 												>
 													<span className="text-sm">{th.emoji}</span>
-													{th.label}
+													{t(`navigation.header.sound.themes.${th.id}`)}
 												</button>
 											))}
 										</div>
@@ -378,9 +386,7 @@ const Header: React.FC = () => {
 								<DropdownMenuSub>
 									<DropdownMenuSubTrigger className="gap-2">
 										<Languages className="h-4 w-4" />
-										{t("navigation.header.language", {
-											defaultValue: "Langue",
-										})}
+										{t("navigation.header.language")}
 									</DropdownMenuSubTrigger>
 									<DropdownMenuSubContent>
 										{(["fr", "en"] as const).map((lang) => (

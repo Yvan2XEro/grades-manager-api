@@ -1,8 +1,8 @@
 import { interpolate } from "remotion";
 
 /**
- * Enveloppe d'opacité pour les transitions entre scènes.
- * Chaque scène fait un fade-in propre et un fade-out propre.
+ * Opacity envelope for transitions between scenes.
+ * Each scene gets a clean fade-in and a clean fade-out.
  */
 export function sceneOpacity(
 	frame: number,

@@ -1,0 +1,211 @@
+import { BookUser, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Confirm } from "@/components/callable/confirm";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import { useBreadcrumbs } from "@/contexts/breadcrumbs-context";
+import { errorToast } from "@/lib/error-toast";
+import { subjectLabel } from "@/lib/subject-label";
+import { trpc } from "@/utils/trpc";
+import { AssignSubjectDialog } from "./assign-subject-dialog";
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+type Assignment = {
+	assignment: {
+		id: string;
+		staffId: string;
+		subjectId: string;
+		classId: string;
+		academicYearId: string;
+	};
+	staff: { id: string; firstName: string; lastName: string; email: string };
+	subject: {
+		id: string;
+		name: string;
+		nameFr: string | null;
+		code: string | null;
+	};
+	class: {
+		id: string;
+		name: string;
+		code: string | null;
+		level: string | null;
+	};
+};
+
+export function SubjectAssignments() {
+	const { t, i18n } = useTranslation();
+	useBreadcrumbs([
+		{ label: t("nav.dashboard", "Dashboard"), href: "/" },
+		{ label: t("nav.subject_assignments", "Subject Assignments") },
+	]);
+	const [selectedClassId, setSelectedClassId] = useState<string>("");
+	const utils = trpc.useUtils();
+
+	const { data: years = [] } = trpc.academicYears.list.useQuery();
+	const activeYear = years.find((y) => y.status === "active") ?? years[0];
+	const yearId = activeYear?.id ?? "";
+
+	const { data: classesData } = trpc.classes.list.useQuery(
+		{ academicYearId: yearId, page: 1, pageSize: 100 },
+		{ enabled: !!yearId },
+	);
+	const classes = classesData?.items ?? [];
+
+	const classId = selectedClassId || classes[0]?.id || "";
+
+	const { data: assignments = [], isLoading } =
+		trpc.subjectAssignments.list.useQuery(
+			{ academicYearId: yearId, classId: classId || undefined },
+			{ enabled: !!yearId },
+		);
+
+	const remove = trpc.subjectAssignments.delete.useMutation({
+		onSuccess: () => utils.subjectAssignments.list.invalidate(),
+		onError: (err) => errorToast(err, t),
+	});
+
+	const existingSubjectIds = (assignments as Assignment[]).map(
+		(a) => a.subject.id,
+	);
+
+	return (
+		<div className="space-y-6">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div>
+					<h1 className="font-bold text-2xl text-foreground">
+						{t("subject_assignments.title", "Subject Assignments")}
+					</h1>
+					<p className="text-muted-foreground text-sm">
+						{t(
+							"subject_assignments.subtitle",
+							"Assign teachers to subjects per class",
+						)}
+					</p>
+				</div>
+				<Button
+					onClick={() =>
+						AssignSubjectDialog.call({
+							classId,
+							academicYearId: yearId,
+							existingSubjectIds,
+						})
+					}
+					disabled={!yearId || !classId}
+				>
+					<Plus className="mr-2 h-4 w-4" />
+					{t("subject_assignments.assign", "Assign")}
+				</Button>
+			</div>
+
+			<div className="w-56">
+				<label className="mb-1 block font-medium text-muted-foreground text-xs">
+					{t("subject_assignments.select_class", "Class")}
+				</label>
+				<Combobox
+					options={classes.map((c) => ({ value: c.id, label: c.name }))}
+					value={classId}
+					onValueChange={setSelectedClassId}
+					placeholder={t("subject_assignments.select_class", "Select class…")}
+					disabled={!yearId || classes.length === 0}
+				/>
+			</div>
+
+			{!yearId || !classId ? (
+				<div className="rounded-xl border border-border bg-muted/30 p-10 text-center text-muted-foreground">
+					{t(
+						"subject_assignments.select_class",
+						"Select a class to view assignments",
+					)}
+				</div>
+			) : isLoading ? (
+				<div className="space-y-2">
+					{[1, 2, 3, 4].map((n) => (
+						<div
+							key={n}
+							className="h-12 animate-pulse rounded-lg border border-border bg-muted/20"
+						/>
+					))}
+				</div>
+			) : (assignments as Assignment[]).length === 0 ? (
+				<div className="rounded-xl border border-border bg-muted/30 p-10 text-center">
+					<BookUser className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+					<p className="text-muted-foreground text-sm">
+						{t(
+							"subject_assignments.unassigned",
+							"No subjects assigned for this class",
+						)}
+					</p>
+				</div>
+			) : (
+				<div className="overflow-hidden rounded-xl border border-border">
+					<table className="w-full text-sm">
+						<thead className="border-border border-b bg-muted/60 text-muted-foreground">
+							<tr>
+								<th className="px-4 py-3 text-left font-medium text-foreground">
+									{t("subject_assignments.col_subject", "Subject")}
+								</th>
+								<th className="px-4 py-3 text-left font-medium text-foreground">
+									{t("subject_assignments.col_teacher", "Teacher")}
+								</th>
+								<th className="px-4 py-3 text-right font-medium text-foreground">
+									{t("common.actions", "Actions")}
+								</th>
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-border">
+							{(assignments as Assignment[]).map((a) => (
+								<tr
+									key={a.assignment.id}
+									className="transition-colors hover:bg-muted/20"
+								>
+									<td className="px-4 py-3">
+										<span className="font-medium text-foreground">
+											{subjectLabel(a.subject, i18n.language)}
+										</span>
+										{a.subject.code && (
+											<Badge className="ml-2 bg-muted text-muted-foreground text-xs">
+												{a.subject.code}
+											</Badge>
+										)}
+									</td>
+									<td className="px-4 py-3 text-muted-foreground">
+										{a.staff.lastName} {a.staff.firstName}
+									</td>
+									<td className="px-4 py-3 text-right">
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-7 px-2 text-destructive hover:text-destructive"
+											onClick={async () => {
+												const ok = await Confirm.call({
+													title: t(
+														"subject_assignments.delete_title",
+														"Remove assignment?",
+													),
+													description: t(
+														"subject_assignments.delete_desc",
+														"This teacher will be unassigned from the subject.",
+													),
+													confirmLabel: t("common.delete", "Delete"),
+													destructive: true,
+												});
+												if (!ok) return;
+												remove.mutate({ id: a.assignment.id });
+											}}
+										>
+											<Trash2 className="h-3 w-3" />
+										</Button>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</div>
+	);
+}

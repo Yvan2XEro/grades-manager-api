@@ -1,32 +1,32 @@
 /**
- * Flow 06 — Exports, Rapports & Administration système
+ * Flow 06 — Exports, Reports & System administration
  *
- * Questions utilisateurs auxquelles ce flow répond :
- *  - "Comment générer un relevé de notes complet pour imprimer ?"
- *  - "Comment configurer et personnaliser les templates d'export ?"
- *  - "Comment surveiller la santé du système et les tâches en cours ?"
- *  - "Comment configurer l'intégration avec le système de diplomation externe ?"
- *  - "Où voir les notifications envoyées aux étudiants et enseignants ?"
- *  - "Comment gérer les numéros d'inscription automatiques ?"
+ * User questions this flow answers:
+ *  - "How do I generate a complete transcript to print?"
+ *  - "How do I configure and customize export templates?"
+ *  - "How do I monitor system health and running jobs?"
+ *  - "How do I set up the integration with the external diploma system?"
+ *  - "Where do I see the notifications sent to students and teachers?"
+ *  - "How do I manage automatic registration numbers?"
  */
 import { test } from "@playwright/test";
 import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 1 : Générer et exporter le relevé de notes d'une promotion
-// Question : "Comment produire le document officiel de notes pour la classe INF25 ?"
+// SCENARIO 1: Generate and export a cohort's transcript
+// Question: "How do I produce the official grades document for class INF25?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("14 - Export des notes : relevé officiel par classe", async ({ page }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Page d'export des notes ─────────────────────────────────────
+	// ── STEP 1: Grade export page ─────────────────────────────────────────────
 	await page.goto("/admin/grade-export");
 	await page.waitForLoadState("networkidle");
 	await pause(1400);
 	await capture(page, "06g-grade-export-landing");
 
-	// ── ÉTAPE 2 : Filtrer par classe INF25-BTS1A ──────────────────────────────
-	// "Je veux le relevé complet de la classe infirmiers A"
+	// ── STEP 2: Filter by class INF25-BTS1A ───────────────────────────────────
+	// "I want the full transcript of nursing class A"
 	const classFilter = page.locator('[data-testid="class-select"]').first();
 	if (await classFilter.isVisible()) {
 		await classFilter.click();
@@ -44,8 +44,8 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 		await capture(page, "06h-export-inf25-filtre");
 	}
 
-	// ── ÉTAPE 3 : Voir la table complète des notes par cours ─────────────────
-	// Colonnes : Étudiant | Anatomie | Physiologie | Soins | Moyenne | Décision
+	// ── STEP 3: See the full grade table per course ───────────────────────────
+	// Columns: Student | Anatomy | Physiology | Care | Average | Decision
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(600);
 	await capture(page, "06i-export-table-notes-entetes");
@@ -54,7 +54,7 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 	await pause(800);
 	await capture(page, "06j-export-table-notes-corps");
 
-	// Survoler les lignes d'étudiants
+	// Hover over the student rows
 	const studentRows = page.locator("table tbody tr");
 	const count = await studentRows.count();
 	for (let i = 0; i < Math.min(count, 4); i++) {
@@ -63,8 +63,8 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 	}
 	await capture(page, "06k-export-lignes-etudiants-survol");
 
-	// ── ÉTAPE 4 : Bouton d'export — les différents formats disponibles ────────
-	// "Puis-je exporter en PDF, Excel, ou CSV ?"
+	// ── STEP 4: Export button — the available formats ─────────────────────────
+	// "Can I export to PDF, Excel, or CSV?"
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 	const exportBtn = page
@@ -78,7 +78,7 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 		await pause(800);
 		await capture(page, "06l-bouton-export-hover");
 
-		// Si menu déroulant avec formats
+		// If there is a dropdown menu with formats
 		await exportBtn.click();
 		await pause(700);
 		const exportMenu = page
@@ -93,7 +93,7 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 		}
 	}
 
-	// ── ÉTAPE 5 : Changer de classe — COMPT25-BTS1A ───────────────────────────
+	// ── STEP 5: Switch class — COMPT25-BTS1A ──────────────────────────────────
 	if (await classFilter.isVisible()) {
 		await classFilter.click();
 		await pause(600);
@@ -118,21 +118,21 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 2 : Configurer les templates d'export personnalisés
-// Question : "Comment créer un template de relevé aux couleurs de l'institution ?"
+// SCENARIO 2: Configure custom export templates
+// Question: "How do I create a transcript template in the institution's colors?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("15 - Templates d'export : configuration et personnalisation", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Liste des templates d'export existants ─────────────────────
+	// ── STEP 1: List of existing export templates ─────────────────────────────
 	await page.goto("/admin/export-templates");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "06p-export-templates-liste");
 
-	// ── ÉTAPE 2 : Survoler les templates disponibles ─────────────────────────
+	// ── STEP 2: Hover over the available templates ────────────────────────────
 	const templates = page.locator("table tbody tr, [class*='card']");
 	const count = await templates.count();
 	for (let i = 0; i < Math.min(count, 4); i++) {
@@ -141,15 +141,15 @@ test("15 - Templates d'export : configuration et personnalisation", async ({
 	}
 	if (count > 0) await capture(page, "06q-templates-survol");
 
-	// ── ÉTAPE 3 : Ouvrir un template pour voir sa structure ──────────────────
-	// "Comment est configuré le template de relevé de notes officiel ?"
+	// ── STEP 3: Open a template to see its structure ──────────────────────────
+	// "How is the official transcript template configured?"
 	if (await templates.first().isVisible()) {
 		await templates.first().click();
 		await page.waitForLoadState("networkidle");
 		await pause(1200);
 		await capture(page, "06r-template-detail-structure");
 
-		// Voir la configuration complète
+		// See the full configuration
 		await page.evaluate(() =>
 			window.scrollTo({ top: 400, behavior: "smooth" }),
 		);
@@ -162,7 +162,7 @@ test("15 - Templates d'export : configuration et personnalisation", async ({
 		await pause(700);
 		await capture(page, "06t-template-detail-bas");
 
-		// Onglets de configuration
+		// Configuration tabs
 		const tabs = page.locator('[role="tab"]');
 		const tabCount = await tabs.count();
 		for (let i = 1; i < Math.min(tabCount, 3); i++) {
@@ -175,8 +175,8 @@ test("15 - Templates d'export : configuration et personnalisation", async ({
 		await pause(600);
 	}
 
-	// ── ÉTAPE 4 : Délégation de saisie ───────────────────────────────────────
-	// "Comment autoriser un grade-editor à saisir des notes sur un examen précis ?"
+	// ── STEP 4: Grade entry delegation ────────────────────────────────────────
+	// "How do I allow a grade-editor to enter grades on a specific exam?"
 	await page.goto("/admin/grade-access");
 	await page.waitForLoadState("networkidle");
 	await pause(1300);
@@ -186,7 +186,7 @@ test("15 - Templates d'export : configuration et personnalisation", async ({
 	await pause(800);
 	await capture(page, "06w-grade-access-delegation-details");
 
-	// Hover sur les accords de délégation
+	// Hover over the delegation grants
 	const delegateRows = page.locator("table tbody tr, [class*='card']");
 	const delegateCount = await delegateRows.count();
 	for (let i = 0; i < Math.min(delegateCount, 3); i++) {
@@ -197,22 +197,22 @@ test("15 - Templates d'export : configuration et personnalisation", async ({
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 3 : Monitoring système, batch jobs et administration technique
-// Question : "Comment surveiller la santé du système ? Où voir les erreurs ?"
+// SCENARIO 3: System monitoring, batch jobs and technical administration
+// Question: "How do I monitor system health? Where do I see errors?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("16 - Monitoring, batch jobs et administration système", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Dashboard de monitoring ────────────────────────────────────
-	// "Est-ce que tout fonctionne correctement ? Y a-t-il des erreurs ?"
+	// ── STEP 1: Monitoring dashboard ──────────────────────────────────────────
+	// "Is everything working correctly? Are there any errors?"
 	await page.goto("/admin/monitoring");
 	await page.waitForLoadState("networkidle");
 	await pause(1500);
 	await capture(page, "06y-monitoring-overview");
 
-	// KPIs techniques : jobs en cours, notifications en attente, erreurs...
+	// Technical KPIs: running jobs, pending notifications, errors...
 	await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
 	await pause(900);
 	await capture(page, "06z-monitoring-kpis-techniques");
@@ -223,14 +223,14 @@ test("16 - Monitoring, batch jobs et administration système", async ({
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 
-	// ── ÉTAPE 2 : Batch jobs — tâches lourdes en arrière-plan ────────────────
-	// "Comment lancer un import massif d'étudiants ou une migration de données ?"
+	// ── STEP 2: Batch jobs — heavy background tasks ───────────────────────────
+	// "How do I run a bulk student import or a data migration?"
 	await page.goto("/admin/batch-jobs");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "07b-batch-jobs-liste");
 
-	// Survoler les jobs disponibles
+	// Hover over the available jobs
 	const jobs = page.locator("table tbody tr, [class*='card']");
 	const jobCount = await jobs.count();
 	if (jobCount > 0) {
@@ -240,7 +240,7 @@ test("16 - Monitoring, batch jobs et administration système", async ({
 		}
 		await capture(page, "07c-batch-job-survol");
 
-		// Ouvrir un job pour voir ses logs et son historique d'exécution
+		// Open a job to see its logs and run history
 		await jobs.first().click();
 		await page.waitForLoadState("networkidle");
 		await pause(1200);
@@ -264,16 +264,16 @@ test("16 - Monitoring, batch jobs et administration système", async ({
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCÉNARIO 4 : Institution, intégration externe et clés API
-// Question : "Comment configurer l'intégration avec le système de diplomation ?"
+// SCENARIO 4: Institution, external integration and API keys
+// Question: "How do I set up the integration with the diploma system?"
 // ─────────────────────────────────────────────────────────────────────────────
 test("17 - Configuration institution, API keys et notifications", async ({
 	page,
 }) => {
 	await loginAs(page, "admin");
 
-	// ── ÉTAPE 1 : Fiche de l'institution INSES ───────────────────────────────
-	// "Comment modifier les informations officielles de l'établissement ?"
+	// ── STEP 1: INSES institution record ──────────────────────────────────────
+	// "How do I edit the institution's official information?"
 	await page.goto("/admin/institution");
 	await page.waitForLoadState("networkidle");
 	await pause(1400);
@@ -289,8 +289,8 @@ test("17 - Configuration institution, API keys et notifications", async ({
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 
-	// ── ÉTAPE 2 : Numéros d'inscription automatiques ─────────────────────────
-	// "Comment est généré le numéro INSES25-0001 ? Peut-on le personnaliser ?"
+	// ── STEP 2: Automatic registration numbers ────────────────────────────────
+	// "How is the number INSES25-0001 generated? Can it be customized?"
 	await page.goto("/admin/registration-numbers");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
@@ -300,19 +300,19 @@ test("17 - Configuration institution, API keys et notifications", async ({
 	await pause(700);
 	await capture(page, "07k-numeros-inscription-format");
 
-	// ── ÉTAPE 3 : Clés API pour le système de diplomation externe ────────────
-	// "Comment l'institution externe accède-t-elle aux données de diplomation ?"
+	// ── STEP 3: API keys for the external diploma system ──────────────────────
+	// "How does the external institution access the diploma data?"
 	await page.goto("/admin/api-keys");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
 	await capture(page, "07l-api-keys-gestion");
 
-	// La clé brute n'est jamais visible — seulement le hash
+	// The raw key is never visible — only the hash
 	await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
 	await pause(700);
 	await capture(page, "07m-api-keys-table-hashes");
 
-	// Bouton "Créer une nouvelle clé"
+	// "Create a new key" button
 	const createKeyBtn = page
 		.locator(
 			'button:has-text("Créer"), button:has-text("Create"), button:has-text("Generate"), button:has-text("Ajouter")',
@@ -330,8 +330,8 @@ test("17 - Configuration institution, API keys et notifications", async ({
 		await pause(400);
 	}
 
-	// ── ÉTAPE 4 : Notifications envoyées ─────────────────────────────────────
-	// "Comment vérifier que les notifications email ont bien été envoyées ?"
+	// ── STEP 4: Sent notifications ────────────────────────────────────────────
+	// "How do I check that the email notifications were actually sent?"
 	await page.goto("/admin/notifications");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
@@ -341,7 +341,7 @@ test("17 - Configuration institution, API keys et notifications", async ({
 	await pause(800);
 	await capture(page, "07q-notifications-detail-envois");
 
-	// Hover sur les notifications récentes
+	// Hover over the recent notifications
 	const notifRows = page.locator("table tbody tr");
 	const notifCount = await notifRows.count();
 	for (let i = 0; i < Math.min(notifCount, 4); i++) {
@@ -350,8 +350,8 @@ test("17 - Configuration institution, API keys et notifications", async ({
 	}
 	if (notifCount > 0) await capture(page, "07r-notifications-survol-statut");
 
-	// ── ÉTAPE 5 : Gestion des utilisateurs et domaine ────────────────────────
-	// "Comment créer un compte enseignant ou admin dans le système ?"
+	// ── STEP 5: User and domain management ────────────────────────────────────
+	// "How do I create a teacher or admin account in the system?"
 	await page.goto("/admin/users");
 	await page.waitForLoadState("networkidle");
 	await pause(1200);
@@ -361,7 +361,7 @@ test("17 - Configuration institution, API keys et notifications", async ({
 	await pause(700);
 	await capture(page, "07t-users-liste-roles");
 
-	// Survoler les utilisateurs pour voir leurs rôles
+	// Hover over the users to see their roles
 	const userRows = page.locator("table tbody tr");
 	const userCount = await userRows.count();
 	for (let i = 0; i < Math.min(userCount, 4); i++) {

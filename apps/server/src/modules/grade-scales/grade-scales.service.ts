@@ -75,8 +75,11 @@ export async function getRawForInstitution(
 	institutionId: string,
 	programId?: string | null,
 ) {
-	if (programId) return repo.findByProgram(institutionId, programId);
-	return repo.findByInstitution(institutionId);
+	// null (not undefined) when no scale is configured: tRPC/React Query reject undefined data
+	const row = programId
+		? await repo.findByProgram(institutionId, programId)
+		: await repo.findByInstitution(institutionId);
+	return row ?? null;
 }
 
 export async function upsert(

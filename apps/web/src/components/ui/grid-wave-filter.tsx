@@ -20,7 +20,7 @@ export function GridWaveFilter() {
 					height="116%"
 					colorInterpolationFilters="linearRGB"
 				>
-					{/* Turbulence lente — génère le champ de déplacement */}
+					{/* Slow turbulence — generates the displacement field */}
 					<feTurbulence
 						type="fractalNoise"
 						baseFrequency="0.013 0.022"
@@ -28,7 +28,7 @@ export function GridWaveFilter() {
 						seed="5"
 						result="noise"
 					>
-						{/* Animation : la fréquence ondule lentement → vagues organiques */}
+						{/* Animation: the frequency undulates slowly → organic waves */}
 						<animate
 							attributeName="baseFrequency"
 							values="0.010 0.018;0.016 0.030;0.013 0.024;0.010 0.018"
@@ -38,7 +38,7 @@ export function GridWaveFilter() {
 							keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1"
 						/>
 					</feTurbulence>
-					{/* Déplacement : max ±3 px sur une grille de 10 px = ondulation subtile */}
+					{/* Displacement: max ±3 px on a 10 px grid = subtle undulation */}
 					<feDisplacementMap
 						in="SourceGraphic"
 						in2="noise"

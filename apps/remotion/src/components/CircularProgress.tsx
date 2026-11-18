@@ -1,21 +1,21 @@
 /**
- * CircularProgress — Arc SVG animé via strokeDashoffset.
- * À utiliser dans un <svg> parent ou autonome.
+ * CircularProgress — SVG arc animated via strokeDashoffset.
+ * Use inside a parent <svg> or standalone.
  */
 import type React from "react";
 import { C } from "../lib/theme";
 
 interface Props {
-	/** Centre en px (absolu dans le repère parent) */
+	/** Center in px (absolute in the parent coordinate space) */
 	cx: number;
 	cy: number;
 	r: number;
-	/** Progression 0–1 */
+	/** Progress 0–1 */
 	progress: number;
 	color?: string;
 	trackColor?: string;
 	strokeWidth?: number;
-	/** Si true, rend un <svg> autonome positionné en absolu */
+	/** If true, renders a standalone absolutely positioned <svg> */
 	standalone?: boolean;
 }
 
@@ -34,7 +34,7 @@ export const CircularProgress: React.FC<Props> = ({
 
 	const inner = (
 		<g>
-			{/* Piste */}
+			{/* Track */}
 			<circle
 				cx={cx}
 				cy={cy}
@@ -43,7 +43,7 @@ export const CircularProgress: React.FC<Props> = ({
 				stroke={trackColor}
 				strokeWidth={strokeWidth}
 			/>
-			{/* Arc de progression */}
+			{/* Progress arc */}
 			<circle
 				cx={cx}
 				cy={cy}

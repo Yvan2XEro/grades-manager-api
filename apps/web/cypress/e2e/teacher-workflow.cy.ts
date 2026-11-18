@@ -11,7 +11,7 @@ describe("Teacher exam workflow", () => {
 
 	it("submits, gets approved, and locks an exam", () => {
 		// Teacher submits an exam for approval.
-		cy.loginAs("teacher", { route: "/teacher/workflows" });
+		cy.loginAs("teacher", { route: "/workflows" });
 		selectFirstClassCourse();
 		cy.findAllByRole("button", { name: /Submit/i })
 			.first()
@@ -20,7 +20,7 @@ describe("Teacher exam workflow", () => {
 		cy.logout();
 
 		// Dean approves the submitted exam.
-		cy.loginAs("dean", { route: "/dean/workflows" });
+		cy.loginAs("dean", { route: "/workflows" });
 		cy.findAllByRole("button", { name: /Approve & lock/i })
 			.first()
 			.click();
@@ -28,7 +28,7 @@ describe("Teacher exam workflow", () => {
 		cy.logout();
 
 		// Teacher locks the approved exam.
-		cy.loginAs("teacher", { route: "/teacher/workflows" });
+		cy.loginAs("teacher", { route: "/workflows" });
 		selectFirstClassCourse();
 		cy.findAllByRole("button", { name: /Lock/i }).first().click();
 		cy.contains(/Exam locked/i, { timeout: 10000 }).should("exist");

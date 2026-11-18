@@ -1,6 +1,6 @@
 /**
- * PerspectiveGrid — Grille SVG avec point de fuite central.
- * Crée l'effet "sol 3D" des présentations Linear / Vercel.
+ * PerspectiveGrid — SVG grid with a central vanishing point.
+ * Creates the "3D floor" effect of Linear / Vercel presentations.
  */
 import type React from "react";
 import { C } from "../lib/theme";
@@ -8,7 +8,7 @@ import { C } from "../lib/theme";
 interface Props {
 	opacity?: number;
 	color?: string;
-	/** Y du point de fuite (0–1080). Défaut = 520, correspond à ~48 % de la hauteur */
+	/** Y of the vanishing point (0–1080). Default = 520, i.e. ~48 % of the height */
 	vanishY?: number;
 	cols?: number;
 	rows?: number;
@@ -25,17 +25,17 @@ export const PerspectiveGrid: React.FC<Props> = ({
 	const H = 1080;
 	const VX = W / 2;
 
-	// Lignes verticales : du point de fuite vers le bas
+	// Vertical lines: from the vanishing point downward
 	const vLines = Array.from({ length: cols + 1 }, (_, i) => {
 		const bx = (i / cols) * W;
 		return { x1: VX, y1: vanishY, x2: bx, y2: H };
 	});
 
-	// Lignes horizontales : espacement exponentiel (rapproché près du VP)
+	// Horizontal lines: exponential spacing (tighter near the VP)
 	const hLines = Array.from({ length: rows }, (_, i) => {
 		const t = ((i + 1) / rows) ** 1.8;
 		const y = vanishY + t * (H - vanishY);
-		// Calcul de la largeur à cette profondeur (perspective linéaire)
+		// Width at this depth (linear perspective)
 		const tt = (y - vanishY) / (H - vanishY);
 		return { y, xMin: VX - tt * VX, xMax: VX + tt * (W - VX) };
 	});
@@ -54,7 +54,7 @@ export const PerspectiveGrid: React.FC<Props> = ({
 			preserveAspectRatio="xMidYMid slice"
 		>
 			<defs>
-				{/* Masque : la grille s'efface vers le haut (horizon) */}
+				{/* Mask: the grid fades out toward the top (horizon) */}
 				<linearGradient
 					id="pgMaskGrad"
 					x1="0"
@@ -79,7 +79,7 @@ export const PerspectiveGrid: React.FC<Props> = ({
 			</defs>
 
 			<g mask="url(#pgMask)">
-				{/* Lignes radiantes (verticales en perspective) */}
+				{/* Radiating lines (vertical in perspective) */}
 				{vLines.map(({ x1, y1, x2, y2 }, i) => (
 					<line
 						key={`v${i}`}
@@ -93,7 +93,7 @@ export const PerspectiveGrid: React.FC<Props> = ({
 					/>
 				))}
 
-				{/* Lignes horizontales */}
+				{/* Horizontal lines */}
 				{hLines.map(({ y, xMin, xMax }, i) => (
 					<line
 						key={`h${i}`}
@@ -107,7 +107,7 @@ export const PerspectiveGrid: React.FC<Props> = ({
 					/>
 				))}
 
-				{/* Point de fuite — glow subtil */}
+				{/* Vanishing point — subtle glow */}
 				<circle cx={VX} cy={vanishY} r={60} fill={color} opacity={0.04} />
 				<circle cx={VX} cy={vanishY} r={20} fill={color} opacity={0.06} />
 			</g>

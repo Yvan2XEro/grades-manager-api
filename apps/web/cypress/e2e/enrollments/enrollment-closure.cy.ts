@@ -5,7 +5,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 	describe("Closing Individual Enrollment", () => {
 		it("changes enrollment status to 'completed'", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			// Select academic year and class
 			cy.get('[data-testid="academic-year-select"]', {
@@ -68,7 +68,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("preserves enrollment history after closure", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -141,7 +141,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("prevents modifications to closed enrollment", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -224,7 +224,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 	describe("Closing Enrollment Window", () => {
 		it("displays enrollment window status", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -241,7 +241,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("shows open/closed window indicator", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -262,7 +262,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("allows closing enrollment window for entire class", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -323,7 +323,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 	describe("Immutability After Closure", () => {
 		it("prevents new enrollments after closure", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -407,7 +407,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("prevents withdrawals after closure", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -478,7 +478,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("shows read-only view of closed enrollments", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -543,7 +543,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 	describe("Closure Confirmation", () => {
 		it("requires confirmation before closing enrollment", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -596,7 +596,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("shows warning about immutability in confirmation", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -642,7 +642,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		});
 
 		it("allows canceling closure operation", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,
@@ -700,7 +700,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 	describe("Reopening Closed Enrollment", () => {
 		it("allows reopening closed enrollment (if feature exists)", () => {
-			cy.loginAs("administrator", { route: "/admin/enrollments" });
+			cy.loginAs("administrator", { route: "/classes/enrollments" });
 
 			cy.get('[data-testid="academic-year-select"]', {
 				timeout: 10000,

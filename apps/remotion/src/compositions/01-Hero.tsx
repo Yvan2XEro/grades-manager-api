@@ -67,7 +67,7 @@ export const HeroScene: React.FC = () => {
 		durationInFrames: 35,
 	});
 
-	// interpolateColors — fond qui se réchauffe subtilement pendant la scène
+	// interpolateColors — background warms up subtly during the scene
 	const bgColor = interpolateColors(
 		frame,
 		[0, DUR.hero * 0.8],
@@ -76,7 +76,7 @@ export const HeroScene: React.FC = () => {
 
 	return (
 		<AbsoluteFill style={{ background: bgColor, overflow: "hidden" }}>
-			{/* Son de transition */}
+			{/* Transition sound */}
 			{AUDIO.enabled && (
 				<Audio
 					src={staticFile("audio/transition.mp3")}
@@ -113,7 +113,7 @@ export const HeroScene: React.FC = () => {
 					gap: 72,
 				}}
 			>
-				{/* Texte gauche */}
+				{/* Left text */}
 				<div
 					style={{
 						flex: "0 0 700px",
@@ -160,7 +160,7 @@ export const HeroScene: React.FC = () => {
 						</div>
 					</div>
 
-					{/* Titre 3 lignes — 120 px */}
+					{/* 3-line title — 120 px */}
 					<TextReveal
 						delay={12}
 						stiffness={110}
@@ -242,7 +242,7 @@ export const HeroScene: React.FC = () => {
 						</p>
 					</TextReveal>
 
-					{/* Stats — fitText adapte la taille à la largeur du conteneur */}
+					{/* Stats — fitText fits the size to the container width */}
 					<div style={{ display: "flex", gap: 48, marginTop: 40 }}>
 						{STATS.map(({ value, suffix, label }, i) => {
 							const elapsed = Math.max(0, frame - 80 - i * 18);
