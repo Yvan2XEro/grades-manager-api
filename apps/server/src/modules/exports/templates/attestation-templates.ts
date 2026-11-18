@@ -86,7 +86,7 @@ td { border: none; border-bottom: 1px solid #00000040; }
 .recteur-sign { margin-top: 65px; padding-bottom: 100px; }
 
 .qr-code { float: left; position: relative; }
-.qr-image { width: 100px; height: 100px; background-color: #eee; display: block; }
+.qr-image { width: 80px; height: 80px; background-color: #eee; display: block; }
 .qr-image img { width: 100%; height: 100%; object-fit: contain; }
 
 .disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 30px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
@@ -273,7 +273,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 			<div class="sign-{{institution.type}}">
 				<p>{{#if signatory.title}}<strong>{{signatory.title}}</strong>{{else}}<strong>Le Directeur de l'{{institution.abbreviation}}</strong><br>
 				<em>The Director of the {{institution.abbreviation}}</em>{{/if}}</p>
-				{{#if signatory.name}}<p style="margin-top: 70px;"><strong><u>{{signatory.name}}</u></strong></p>{{/if}}
+				{{#if signatory.name}}<p style="margin-top: 34px;"><strong><u>{{signatory.name}}</u></strong></p>{{/if}}
 			</div>
 			{{/if}}
 		</div>
@@ -390,7 +390,7 @@ td { border-bottom: 1px solid #00000040; }
 .recteur-sign { margin-top: 65px; padding-bottom: 100px; }
 
 .qr-code { float: left; position: relative; }
-.qr-image { width: 100px; height: 100px; background-color: #eee; display: block; }
+.qr-image { width: 80px; height: 80px; background-color: #eee; display: block; }
 .qr-image img { width: 100%; height: 100%; object-fit: contain; }
 
 .disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 30px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
@@ -557,7 +557,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 			<div class="sign-ipes">
 				<p>{{#if signatory.title}}<strong>{{signatory.title}}</strong>{{else}}<strong>Le Directeur de l'{{institution.abbreviation}}</strong><br>
 				<em>The Director of the {{institution.abbreviation}}</em>{{/if}}</p>
-				{{#if signatory.name}}<p style="margin-top: 70px;"><strong><u>{{signatory.name}}</u></strong></p>{{/if}}
+				{{#if signatory.name}}<p style="margin-top: 34px;"><strong><u>{{signatory.name}}</u></strong></p>{{/if}}
 			</div>
 		</div>
 
