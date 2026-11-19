@@ -80,6 +80,14 @@ Four fix agents then worked on separate git worktrees, one per area: documents, 
 - **Forgot password.** The confirmation stays on the page, with a resend button.
 - **Course assignment.** Only the class's program courses are offered, sorted by name.
 
+## Follow-up fixes
+
+- Unpaid installments past their due date read "Overdue since …" in red on the student fees page.
+- Batch documents in demo mode ("Specimen (test print)") carry a SPECIMEN — NOT VALID mark on every page.
+- The admin dashboard warns when the active academic year is over and offers to create or activate the next year.
+- A new academic year ends the day before the same date of the next year (1 Sept 2026 → 31 Aug 2027).
+- The website Docker image no longer downloads Google Fonts during the build: the fonts are bundled in `apps/website/src/fonts`.
+
 ## For production
 
 1. **New migration** `apps/server/src/db/migrations/0001_issued_documents.sql` creates the register of issued documents. Apply it as usual.
@@ -89,8 +97,6 @@ Four fix agents then worked on separate git worktrees, one per area: documents, 
 
 ## Still open
 
-- Installments past their due date are not highlighted on the student fees page.
-- The batch document "demo mode" adds no watermark.
 - The PV, evaluation, EC and UE publication templates receive the institution contact data, but their layout does not use it yet.
 - The Cypress end-to-end suite was not run.
 - No rendered image of a real PDF was reviewed. The documents were checked as the same HTML at A4 print size, plus the page count of the real PDFs.
