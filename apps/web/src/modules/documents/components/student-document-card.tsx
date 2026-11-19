@@ -2,13 +2,13 @@ import { useMutation } from "@tanstack/react-query";
 import type { ParseKeys } from "i18next";
 import { Download, FileText, GraduationCap, IdCard, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
 	documentErrorMessage,
 	ineligibilityLabel,
 } from "@/lib/document-errors";
 import { downloadBase64 } from "@/lib/download";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 export type DocKind = "transcript" | "attestation" | "enrollment_certificate";
@@ -67,7 +67,10 @@ export function DocumentCard({
 			trpcClient.academicDocuments.myGenerateDocument.mutate({ kind }),
 		onSuccess: (res) => {
 			downloadBase64(res.data, res.filename, "application/pdf");
+			toast.success(t("student.documents.downloaded"));
 		},
+		// Never fail silently: the card can be off-screen on a phone
+		onError: (err) => toast.error(documentErrorMessage(t, err)),
 	});
 
 	return (
@@ -94,14 +97,6 @@ export function DocumentCard({
 							<Lock className="h-3.5 w-3.5" />
 							<span>{ineligibilityLabel(t, reason, decision)}</span>
 						</div>
-					)}
-
-					{generateMut.isError && (
-						<Alert variant="destructive" className="mt-3 py-2">
-							<AlertDescription className="text-xs">
-								{documentErrorMessage(t, generateMut.error)}
-							</AlertDescription>
-						</Alert>
 					)}
 				</div>
 

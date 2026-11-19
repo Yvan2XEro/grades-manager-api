@@ -8,6 +8,12 @@ import type {
 	MentionRange,
 } from "../../db/schema/app-schema";
 import { DEFAULT_MENTION_RANGES } from "../../db/schema/app-schema";
+import type { DeliberationUeResult } from "../deliberations/deliberations.types";
+import {
+	getStudentYearResults,
+	type StudentYearResults,
+} from "../deliberations/student-year-results";
+import type { UeSemester } from "../deliberations/ue-results";
 import * as expoTplRepo from "../export-templates/export-templates.repo";
 import { launchPdfBrowser, pdfRenderError } from "../exports/pdf-browser";
 import { loadTemplate, logoHelper } from "../exports/template-helper";
@@ -202,6 +208,9 @@ export async function resolveDocumentTemplate(
 			.where(eq(schema.institutions.id, institutionId))
 			.limit(1);
 		templateBody = loadTemplate(type, "standard", inst?.type);
+	}
+	if (type === "transcript") {
+		templateBody = upgradeLegacyTranscriptBody(templateBody);
 	}
 	const templateDefaults = (template?.themeDefaults ?? null) as Record<
 		string,
@@ -496,10 +505,100 @@ function decisionLabel(decision: string | null | undefined): string {
 
 export type DocumentRenderData = Record<string, unknown>;
 
+/**
+ * Results printed on a document: a jury snapshot (`loadDeliberationResult`)
+ * or a student's year results (`documentResultsFromYear`).
+ */
+export type DocumentResults = {
+	result: {
+		generalAverage: number | null;
+		totalCreditsEarned: number;
+		totalCreditsPossible: number;
+		mention: string | null;
+		finalDecision: string | null;
+		autoDecision?: string | null;
+		rank: number | null;
+		ueResults: Array<
+			DeliberationUeResult & { semester?: UeSemester | null }
+		> | null;
+	};
+	deliberation: {
+		openedAt: Date | null;
+		deliberationDate: Date | null;
+		juryNumber: string | null;
+	} | null;
+} | null;
+
+/** A student's year results in the shape the document templates read. */
+export function documentResultsFromYear(
+	results: StudentYearResults,
+): DocumentResults {
+	return {
+		result: {
+			generalAverage: results.generalAverage,
+			totalCreditsEarned: results.totalCreditsEarned,
+			totalCreditsPossible: results.totalCreditsPossible,
+			mention: results.mention,
+			finalDecision: results.decision,
+			rank: results.rank,
+			ueResults: results.ueResults,
+		},
+		deliberation: results.jury,
+	};
+}
+
+/**
+ * Bundled transcript templates are copied into the database when an
+ * institution seeds its templates, so older copies keep the old markup:
+ * the final-exam mark under "NOTE/20", "/30" credits, a "semester" average
+ * label on annual transcripts and the mention under "GRADE". Rewrites those
+ * exact snippets so stored copies print the same figures as the jury.
+ */
+export function upgradeLegacyTranscriptBody(body: string): string {
+	return body
+		.replace(
+			// Standard layout: per-course NOTE then MOYENNE → course mark, UE average
+			/<td class="table-note">\{\{formatNumber this\.exam\}\}<\/td>(\s*)<td class="table-average"><strong>\{\{formatNumber this\.average\}\}<\/strong><\/td>/g,
+			'<td class="table-note">{{formatNumber this.average}}</td>$1<td class="table-average"><strong>{{formatNumber ../average}}</strong></td>',
+		)
+		.replace(
+			'<td class="summary-label">TOTAL CREDIT</td>',
+			'<td class="summary-label">TOTAL CREDITS /{{summary.creditsTotal}}</td>',
+		)
+		.replace(
+			'<td colspan="2" class="summary-label">MOYENNE / 20</td>',
+			'<td colspan="2" class="summary-label">{{summary.averageLabel}}/20</td>',
+		)
+		.replaceAll(
+			'<td class="table-note">{{formatNumber this.exam}}</td>',
+			'<td class="table-note">{{formatNumber this.average}}</td>',
+		)
+		.replaceAll(
+			"TOTAL CREDITS /30</td>",
+			"TOTAL CREDITS /{{summary.creditsTotal}}</td>",
+		)
+		.replaceAll(
+			"MOYENNE SEMESTRIELLE/20</td>",
+			"{{summary.averageLabel}}/20</td>",
+		)
+		.replaceAll(
+			'<td class="summary-value"><strong>{{getAppreciation summary.generalAverage}}</strong></td>',
+			'<td class="summary-value"><strong>{{summary.gradeLetter}}</strong></td>',
+		)
+		.replaceAll(
+			"<p><strong>SEMESTRE: —</strong><br>",
+			"<p><strong>SEMESTRE: {{summary.semesterLabel}}</strong><br>",
+		)
+		.replace(
+			/(<td class="summary-value"><strong>\{\{class\.name\}\}<\/strong><\/td>\s*<td class="summary-value"><strong>)—(<\/strong><\/td>)/g,
+			"$1{{summary.semesterLabel}}$2",
+		);
+}
+
 export async function buildRenderData(args: {
 	kind: DocumentKind;
 	studentCtx: repo.StudentDocumentContext;
-	deliberation: Awaited<ReturnType<typeof repo.loadDeliberationResult>>;
+	deliberation: DocumentResults;
 	theme: Record<string, unknown>;
 	demoMode: boolean;
 	/** "semester" | "annual" — defaults to "annual". Drives the document title. */
@@ -557,29 +656,23 @@ export async function buildRenderData(args: {
 	};
 	const qrCodeImage = await generateQrCode(qrPayload);
 
-	const summary = {
-		generalAverage: deliberation?.result.generalAverage ?? null,
-		creditsEarned: deliberation?.result.totalCreditsEarned ?? 0,
-		creditsTotal: deliberation?.result.totalCreditsPossible ?? 0,
-		mention: mentionLabel(deliberation?.result.mention, args.mentionRanges),
-		decision: decisionLabel(
-			deliberation?.result.finalDecision ?? deliberation?.result.autoDecision,
-		),
-		rank: deliberation?.result.rank ?? null,
-		classSize: null as number | null,
-	};
-
-	// Group ueResults into "semesters" for the transcript template.
+	// Group ueResults by semester for the transcript template (UEs without a
+	// known semester share one group).
 	const ueResults = deliberation?.result.ueResults ?? [];
 	const semesterMap = new Map<
 		string,
-		{ name: string; ues: Array<Record<string, unknown>> }
+		{ name: string; order: number; ues: Array<Record<string, unknown>> }
 	>();
 	for (const ue of ueResults) {
-		const semKey = "Semestre courant";
+		const sem = ue.semester ?? null;
+		const semKey = sem?.id ?? "_";
 		if (!semesterMap.has(semKey))
-			semesterMap.set(semKey, { name: semKey, ues: [] });
-		semesterMap.get(semKey)!.ues.push({
+			semesterMap.set(semKey, {
+				name: sem?.name ?? "—",
+				order: sem?.orderIndex ?? Number.MAX_SAFE_INTEGER,
+				ues: [],
+			});
+		semesterMap.get(semKey)?.ues.push({
 			code: ue.ueCode,
 			name: ue.ueName,
 			credits: ue.ueCredits,
@@ -592,11 +685,46 @@ export async function buildRenderData(args: {
 				coefficient: c.coefficient ?? 1,
 				cc: c.cc ?? null,
 				exam: c.ex ?? null,
+				// Course mark /20: the exams weighted by their percentages,
+				// exactly as the jury computes it.
 				average: c.average ?? null,
 			})),
 		});
 	}
-	const semesters = Array.from(semesterMap.values());
+	const semesters = Array.from(semesterMap.values())
+		.sort((a, b) => a.order - b.order)
+		.map(({ name, ues }) => ({ name, ues }));
+
+	const mentionKey = deliberation?.result.mention ?? null;
+	const summary = {
+		generalAverage: deliberation?.result.generalAverage ?? null,
+		creditsEarned: deliberation?.result.totalCreditsEarned ?? 0,
+		creditsTotal: deliberation?.result.totalCreditsPossible ?? 0,
+		mention: mentionLabel(mentionKey, args.mentionRanges),
+		/** Letter of the mention ("C"), printed in the GRADE column. */
+		gradeLetter:
+			(mentionKey &&
+				(args.mentionRanges ?? DEFAULT_MENTION_RANGES).find(
+					(r) => r.key === mentionKey,
+				)?.gradeLetter) ||
+			"—",
+		decision: decisionLabel(
+			deliberation?.result.finalDecision ?? deliberation?.result.autoDecision,
+		),
+		rank: deliberation?.result.rank ?? null,
+		classSize: null as number | null,
+		scope: period,
+		averageLabel:
+			period === "semester" ? "MOYENNE SEMESTRIELLE" : "MOYENNE ANNUELLE",
+		averageLabelEn:
+			period === "semester" ? "Semester average" : "Annual average",
+		/** Semester(s) the document covers ("Semestre 1", "Semestre 1 – Semestre 2"). */
+		semesterLabel:
+			semesters
+				.map((s) => s.name)
+				.filter((n) => n !== "—")
+				.join(" – ") || "—",
+	};
 
 	const document = {
 		titleFr: titles.fr,
@@ -763,10 +891,10 @@ export async function buildRenderData(args: {
 			// `{{#each tutelleChain}}` instead.
 		},
 		jury: {
-			admissionDate: formatDate(deliberation?.deliberation.openedAt) || "—",
+			admissionDate: formatDate(deliberation?.deliberation?.openedAt) || "—",
 			deliberationDate:
-				formatDate(deliberation?.deliberation.deliberationDate) || "—",
-			number: deliberation?.deliberation.juryNumber ?? "",
+				formatDate(deliberation?.deliberation?.deliberationDate) || "—",
+			number: deliberation?.deliberation?.juryNumber ?? "",
 		},
 		legalGrounds: [
 			{
@@ -975,7 +1103,41 @@ export async function generateDocument(
 			message: `DOCUMENT_NOT_ELIGIBLE:${eligibility.reason}`,
 		});
 	}
-	const contextClassId = eligibility.classId ?? input.classId ?? null;
+	let contextClassId = eligibility.classId ?? input.classId ?? null;
+	let academicYearId = eligibility.academicYearId ?? null;
+	let period = input.period;
+	let deliberation: DocumentResults;
+	if (input.kind === "transcript") {
+		// A transcript is about one academic year (or one semester of it): the
+		// class the student was enrolled in that year and the figures of its
+		// closed jury, or the live marks computed with the jury's formula.
+		const yearResults = await getStudentYearResults(
+			institutionId,
+			input.studentId,
+			{
+				academicYearId: input.academicYearId,
+				classId: input.classId,
+				deliberationId: input.deliberationId,
+				semesterId: input.period === "semester" ? input.semesterId : null,
+			},
+		);
+		if (!yearResults) {
+			throw new TRPCError({
+				code: "PRECONDITION_FAILED",
+				message: "DOCUMENT_NOT_ELIGIBLE:not_enrolled",
+			});
+		}
+		contextClassId = yearResults.class.id;
+		academicYearId = yearResults.academicYear.id;
+		period = yearResults.scope;
+		deliberation = documentResultsFromYear(yearResults);
+	} else {
+		deliberation = await repo.loadDeliberationResult(
+			institutionId,
+			input.studentId,
+			eligibility.deliberationId ?? input.deliberationId,
+		);
+	}
 	if (contextClassId && contextClassId !== studentCtx.student.class) {
 		studentCtx =
 			(await repo.loadStudentContext(
@@ -984,12 +1146,6 @@ export async function generateDocument(
 				contextClassId,
 			)) ?? studentCtx;
 	}
-
-	const deliberation = await repo.loadDeliberationResult(
-		institutionId,
-		input.studentId,
-		eligibility.deliberationId ?? input.deliberationId,
-	);
 
 	const resolved = await resolveDocumentTemplate(
 		institutionId,
@@ -1016,7 +1172,7 @@ export async function generateDocument(
 					kind: input.kind,
 					classId: studentCtx.student.classRef?.id ?? null,
 					academicYearId:
-						eligibility.academicYearId ??
+						academicYearId ??
 						studentCtx.student.classRef?.academicYear?.id ??
 						null,
 					issuedBy: options.issuedBy ?? null,
@@ -1037,7 +1193,7 @@ export async function generateDocument(
 			deliberation,
 			theme: resolved.theme,
 			demoMode: input.demoMode,
-			period: input.period,
+			period,
 			semesterId: input.semesterId,
 			mentionRanges: gradeScale.mentionRanges,
 			gradeScalePassThreshold: gradeScale.passThreshold,
@@ -1742,9 +1898,14 @@ function buildSampleRenderData(
 						creditsEarned: 60,
 						creditsTotal: 60,
 						mention: "Bien",
+						gradeLetter: "C",
 						decision: "ADMIS",
 						rank: 3,
 						classSize: 60,
+						scope: "annual",
+						averageLabel: "MOYENNE ANNUELLE",
+						averageLabelEn: "Annual average",
+						semesterLabel: "Semestre 1 – Semestre 2",
 					},
 		semesters: [
 			{

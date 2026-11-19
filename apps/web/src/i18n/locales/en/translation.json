@@ -4502,7 +4502,9 @@
         "signatures": "The jury",
         "president": "Jury president",
         "member": "Jury member",
-        "signatureLine": "Signature: ____________________"
+        "signatureLine": "Signature: ____________________",
+        "observations": "Observations",
+        "overrideObservation": "Decision changed by the jury: {{reason}}"
       },
       "incomplete": {
         "title_one": "{{count}} student has incomplete results",
@@ -5581,7 +5583,10 @@
         "submit": "Download PDF",
         "enrollment": "Enrollment",
         "cannotIssue": "This document cannot be issued: {{reason}}.",
-        "preview": "Preview"
+        "preview": "Preview",
+        "academicYear": "Academic year",
+        "yearWithJury": "jury decision",
+        "yearWithoutGrades": "no marks yet"
       },
       "theme": {
         "groups": {
@@ -6079,7 +6084,8 @@
       "history": {
         "title": "Download history",
         "empty": "No documents downloaded yet."
-      }
+      },
+      "downloaded": "Document downloaded"
     },
     "timeline": {
       "title": "Academic Timeline",
@@ -7301,7 +7307,22 @@
       "academicYear": "Year",
       "credits": "Credits",
       "status": "Status",
-      "empty": "No course results found."
+      "empty": "No enrollment with results for this student.",
+      "noCourses": "No courses in this class for this year.",
+      "cc": "CC",
+      "exam": "Exam",
+      "average": "Average /20",
+      "source": {
+        "jurySigned": "Signed jury results",
+        "juryClosed": "Closed jury results",
+        "provisional": "Provisional — not deliberated yet"
+      },
+      "generalAverage": "General average",
+      "partialAverage": "Partial average (marks missing)",
+      "creditsEarned": "Credits earned",
+      "decision": "Jury decision",
+      "notDeliberated": "Not deliberated yet",
+      "mention": "Mention"
     },
     "finances": {
       "academicYear": "Academic Year",

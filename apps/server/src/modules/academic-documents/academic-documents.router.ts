@@ -8,6 +8,7 @@ import {
 	tenantProcedure,
 	tenantProtectedProcedure,
 } from "../../lib/trpc";
+import { listStudentResultYears } from "../deliberations/student-year-results";
 import * as expoTplRepo from "../export-templates/export-templates.repo";
 import { loadTemplate, type TemplateVariant } from "../exports/template-helper";
 import {
@@ -337,7 +338,7 @@ export const academicDocumentsRouter = router({
 				ctx.institution.id,
 				input.studentId,
 			);
-			const [attestation, diploma] = await Promise.all([
+			const [attestation, diploma, transcriptYears] = await Promise.all([
 				checkDocumentEligibility(
 					ctx.institution.id,
 					"attestation",
@@ -348,6 +349,7 @@ export const academicDocumentsRouter = router({
 					"diploma",
 					input.studentId,
 				),
+				listStudentResultYears(ctx.institution.id, input.studentId),
 			]);
 			return {
 				enrollments: enrollments.map((e) => {
@@ -371,6 +373,9 @@ export const academicDocumentsRouter = router({
 					reason: diploma.reason ?? null,
 					decision: diploma.decision ?? null,
 				},
+				// A transcript is for one year: the years the student was enrolled
+				// in, and the one to offer first (latest with a jury, else marks).
+				transcript: transcriptYears,
 			};
 		}),
 

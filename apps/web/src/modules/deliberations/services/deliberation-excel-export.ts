@@ -60,6 +60,7 @@ export function exportDeliberationExcel(data: any) {
 		t("admin.deliberations.excel.credits"),
 		t("admin.deliberations.excel.decision"),
 		t("admin.deliberations.excel.mention"),
+		t("admin.deliberations.excel.observations"),
 	);
 	headerRows.push(colHeaders);
 
@@ -87,6 +88,12 @@ export function exportDeliberationExcel(data: any) {
 				`admin.deliberations.decision.${s.finalDecision ?? "pending"}` as never,
 			),
 			s.mention ? t(`admin.deliberations.mention.${s.mention}` as never) : "",
+			// The jury's reason when it changed the computed decision
+			s.isOverridden && s.overrideReason
+				? t("admin.deliberations.excel.overrideObservation", {
+						reason: s.overrideReason,
+					})
+				: "",
 		);
 		return row;
 	});
@@ -160,6 +167,7 @@ export function exportDeliberationExcel(data: any) {
 		{ wch: 10 },
 		{ wch: 14 },
 		{ wch: 12 },
+		{ wch: 40 },
 	];
 	const wb = XLSX.utils.book_new();
 	XLSX.utils.book_append_sheet(

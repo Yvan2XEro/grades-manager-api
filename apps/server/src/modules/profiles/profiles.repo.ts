@@ -59,28 +59,6 @@ export async function listEnrollments(
 		.orderBy(desc(schema.academicYears.startDate));
 }
 
-export async function listCourseResults(
-	studentId: string,
-	_institutionId: string,
-	academicYearId?: string,
-) {
-	return db.query.studentCourseEnrollments.findMany({
-		where: academicYearId
-			? and(
-					eq(schema.studentCourseEnrollments.studentId, studentId),
-					eq(schema.studentCourseEnrollments.academicYearId, academicYearId),
-				)
-			: eq(schema.studentCourseEnrollments.studentId, studentId),
-		with: {
-			course: {
-				with: { teachingUnit: true },
-			},
-			academicYear: true,
-		},
-		orderBy: desc(schema.studentCourseEnrollments.academicYearId),
-	});
-}
-
 export async function listFeeAssignments(
 	studentId: string,
 	institutionId: string,

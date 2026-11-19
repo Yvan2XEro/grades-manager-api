@@ -90,6 +90,7 @@ export const GenerateDocumentDialog = createCallable<{
 		initialKind ?? "enrollment_certificate",
 	);
 	const [classId, setClassId] = useState<string>("");
+	const [academicYearId, setAcademicYearId] = useState<string>("");
 
 	const { data: options, isLoading } = useQuery({
 		queryKey: ["academic-documents", "student-options", studentId],
@@ -104,6 +105,11 @@ export const GenerateDocumentDialog = createCallable<{
 	const selectedEnrollment = enrollments.find(
 		(e) => e.classId === selectedClassId,
 	);
+	// A transcript is for one year: default to the latest year with a jury
+	// (else with marks), not blindly the active year.
+	const transcriptYears = options?.transcript.years ?? [];
+	const selectedYearId =
+		academicYearId || options?.transcript.defaultAcademicYearId || "";
 
 	const verdict =
 		kind === "enrollment_certificate"
@@ -118,7 +124,9 @@ export const GenerateDocumentDialog = createCallable<{
 				? options?.attestation
 				: kind === "diploma"
 					? options?.diploma
-					: { eligible: true, reason: null, decision: null };
+					: transcriptYears.length > 0
+						? { eligible: true, reason: null, decision: null }
+						: { eligible: false, reason: "not_enrolled", decision: null };
 	const canIssue = !!verdict?.eligible;
 
 	const generate = useMutation({
@@ -129,6 +137,9 @@ export const GenerateDocumentDialog = createCallable<{
 				format,
 				...(kind === "enrollment_certificate" && selectedClassId
 					? { classId: selectedClassId }
+					: {}),
+				...(kind === "transcript" && selectedYearId
+					? { academicYearId: selectedYearId }
 					: {}),
 			}),
 		onSuccess: (result) => {
@@ -206,6 +217,28 @@ export const GenerateDocumentDialog = createCallable<{
 										<SelectItem key={e.classId} value={e.classId}>
 											{e.academicYearName} — {e.className}
 											{!e.eligible && ` (${ineligibilityLabel(t, e.reason)})`}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+					{kind === "transcript" && transcriptYears.length > 0 && (
+						<div className="space-y-1">
+							<Label>{t("admin.documents.generate.academicYear")}</Label>
+							<Select value={selectedYearId} onValueChange={setAcademicYearId}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{transcriptYears.map((y) => (
+										<SelectItem key={y.academicYearId} value={y.academicYearId}>
+											{y.academicYearName} — {y.className}
+											{y.hasJury
+												? ` (${t("admin.documents.generate.yearWithJury")})`
+												: !y.hasGrades
+													? ` (${t("admin.documents.generate.yearWithoutGrades")})`
+													: ""}
 										</SelectItem>
 									))}
 								</SelectContent>

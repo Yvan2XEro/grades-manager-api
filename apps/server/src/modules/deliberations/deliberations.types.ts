@@ -160,6 +160,9 @@ export type DiplomationExportData = {
 		totalCreditsEarned: number;
 		totalCreditsPossible: number;
 		finalDecision: DeliberationDecision | null;
+		/** The jury changed the computed decision; `overrideReason` says why. */
+		isOverridden: boolean;
+		overrideReason: string | null;
 		mention: DeliberationMention | null;
 		gradeLetter: string | null;
 		mentionEn: string | null;
