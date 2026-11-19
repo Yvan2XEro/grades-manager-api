@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import type { AttendanceSessionsState } from "../hooks/use-attendance-session";
 
 /** "New session" button and the sessions of the selected class course. */
@@ -40,11 +41,7 @@ export function AttendanceSessionList({
 							}`}
 						>
 							<div className="font-medium">
-								{new Date(s.sessionDate).toLocaleDateString(undefined, {
-									day: "2-digit",
-									month: "short",
-									year: "numeric",
-								})}
+								{formatDate(s.sessionDate, "PP")}
 							</div>
 							{total > 0 && (
 								<div className="text-xs opacity-70">

@@ -1,3 +1,4 @@
+import { formatDate as formatDateIn } from "@/lib/date-format";
 import type {
 	ItemStatus,
 	Summary,
@@ -70,12 +71,9 @@ export function outcomeVariant(outcome: TransitionOutcome) {
 	return "secondary" as const;
 }
 
+/** Date and time in the UI language ("14 nov. 2026 à 12:42"). */
 export function formatDate(value: Date | string | null | undefined) {
-	if (!value) return "-";
-	return new Intl.DateTimeFormat(undefined, {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(value));
+	return formatDateIn(value, "PPp") || "-";
 }
 
 export const TRANSITION_STEPS = [

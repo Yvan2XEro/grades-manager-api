@@ -303,6 +303,45 @@ describe("exams router", () => {
 				pageCount: expect.any(Number),
 			});
 		});
+
+		it("gives each exam its course weight total, retakes excluded", async () => {
+			const admin = createCaller(asAdmin());
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+			const cc1 = await admin.exams.create({
+				name: "CC",
+				type: "CC",
+				date: new Date(),
+				percentage: 40,
+				classCourseId: cc.id,
+			});
+			if (!cc1) throw new Error("Failed to create exam");
+			// A retake replaces its parent: it must not count, nor block a new exam
+			const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = cc1 as any;
+			await db.insert(schema.exams).values({
+				...rest,
+				name: "CC retake",
+				sessionType: "retake",
+				parentExamId: cc1.id,
+			});
+			await admin.exams.create({
+				name: "Final",
+				type: "EXAMEN",
+				date: new Date(),
+				percentage: 50,
+				classCourseId: cc.id,
+			});
+
+			const result = await admin.exams.listPaged({
+				page: 1,
+				pageSize: 25,
+				classId: cc.class,
+			});
+			const mine = result.items.filter((e) => e.classCourse === cc.id);
+			expect(mine).toHaveLength(3);
+			expect(mine.every((e) => e.courseWeightTotal === 90)).toBe(true);
+		});
 	});
 
 	describe("retake eligibility endpoints", () => {

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { trpc } from "@/utils/trpc";
+import { ClassNoCoursesHint } from "../../components/class-no-courses-hint";
 import { ClassContext } from "../../hooks/use-class-context";
 
 const TABS = [
@@ -66,6 +67,7 @@ export default function ClassDetailLayout() {
 						</div>
 					</div>
 				</div>
+				<ClassNoCoursesHint cls={cls} />
 				<HubNav tabs={TABS} basePath={`/classes/${classId}`} />
 			</HubLayout>
 		</ClassContext.Provider>

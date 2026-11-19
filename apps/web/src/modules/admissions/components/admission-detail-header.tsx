@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import type { ApplicationDetail } from "../types";
 import { ApplicationStatusBadge } from "./application-status-badge";
 
@@ -30,7 +31,7 @@ export function AdmissionDetailHeader({ app }: { app: ApplicationDetail }) {
 				<p className="text-muted-foreground text-sm">
 					{app.program.name} · {app.academicYear.name}
 					{app.submittedAt
-						? ` · ${t("admissions.admin.cols.date")} ${new Date(app.submittedAt).toLocaleDateString("fr-FR")}`
+						? ` · ${t("admissions.admin.cols.date")} ${formatDate(app.submittedAt, "P")}`
 						: ""}
 				</p>
 			</div>

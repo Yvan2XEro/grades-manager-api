@@ -98,3 +98,18 @@ export function useDeleteClassCourses() {
 		},
 	});
 }
+
+/** Course assignments of one class (shared by its hub header and Courses tab). */
+export function useCoursesOfClass(classId: string) {
+	const queryClient = useQueryClient();
+	const queryKey = ["classCourses", "byClass", classId];
+	const query = useQuery({
+		queryKey,
+		queryFn: () => trpcClient.classCourses.list.query({ classId, limit: 200 }),
+	});
+	return {
+		...query,
+		courses: query.data?.items ?? [],
+		invalidate: () => queryClient.invalidateQueries({ queryKey }),
+	};
+}

@@ -13,6 +13,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { PAYMENT_METHODS, type PaymentMethod } from "../types";
@@ -66,19 +67,10 @@ export const ConfirmOrderDialog = createCallable<
 				</AlertDialogHeader>
 				<div className="grid gap-3 px-1 py-2">
 					<div className="grid gap-1">
-						<label
-							className="font-medium text-sm"
-							htmlFor="confirm-payment-date"
-						>
+						<span className="font-medium text-sm">
 							{t("feeClearance.orders.fields.paymentDate")}
-						</label>
-						<input
-							id="confirm-payment-date"
-							type="date"
-							className="rounded-md border px-3 py-1.5 text-sm"
-							value={paymentDate}
-							onChange={(e) => setPaymentDate(e.target.value)}
-						/>
+						</span>
+						<DatePicker value={paymentDate} onChange={setPaymentDate} />
 					</div>
 					<div className="grid gap-1">
 						<label

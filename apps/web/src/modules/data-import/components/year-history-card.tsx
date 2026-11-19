@@ -5,6 +5,7 @@ import { Confirm } from "@/components/callable/confirm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate } from "@/lib/date-format";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 import { G, stepLabel } from "../services/import-steps";
@@ -19,7 +20,7 @@ export function YearHistoryCard({
 }: {
 	academicYearId: string;
 }) {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const { data: imports = [] } = useQuery(
 		trpc.dataImport.history.queryOptions({ academicYearId }),
@@ -75,8 +76,7 @@ export function YearHistoryCard({
 								{stepLabel(job.step, t)}
 							</span>
 							<span className="text-muted-foreground text-xs">
-								{job.completedAt &&
-									new Date(job.completedAt).toLocaleString(i18n.language)}
+								{job.completedAt && formatDate(job.completedAt, "PPp")}
 								{job.by && ` · ${job.by}`}
 							</span>
 							<span className="text-xs">

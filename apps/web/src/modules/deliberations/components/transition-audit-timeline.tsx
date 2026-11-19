@@ -8,6 +8,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate } from "@/lib/date-format";
 import { cn } from "@/lib/utils";
 
 import type { TransitionAudit } from "../types";
@@ -112,12 +113,7 @@ export function TransitionAuditTimeline({
 										</p>
 										<p className="text-muted-foreground text-xs">
 											{event.actorName ? `${event.actorName} · ` : ""}
-											{event.at
-												? new Intl.DateTimeFormat(undefined, {
-														dateStyle: "medium",
-														timeStyle: "short",
-													}).format(new Date(event.at))
-												: "—"}
+											{event.at ? formatDate(event.at, "PPp") : "—"}
 										</p>
 										{isOverride && event.overrideReason && (
 											<p className="mt-1 text-muted-foreground text-xs italic">

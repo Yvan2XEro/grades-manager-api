@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import { formatDate } from "@/lib/date-format";
 
 /** "Today", "Tomorrow", `+3j` or `-2j` relative to the current day. */
 export function daysUntil(date: Date | string, t: TFunction) {
@@ -25,6 +26,5 @@ export function urgencyColor(date: Date | string) {
 	return "text-emerald-600 dark:text-emerald-400";
 }
 
-/** Short month of a date, in French (calendar tiles). */
-export const shortMonth = (date: Date | string) =>
-	new Date(date).toLocaleDateString("fr-FR", { month: "short" });
+/** Short month of a date, in the UI language (calendar tiles). */
+export const shortMonth = (date: Date | string) => formatDate(date, "LLL");

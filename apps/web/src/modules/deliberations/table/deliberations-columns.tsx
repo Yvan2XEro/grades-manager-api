@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import type { TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
 import { dateLocale, formatDate } from "@/lib/date-format";
-import { statusVariants } from "../services/deliberation-status";
+import { DeliberationStatusProgress } from "../components/deliberation-status-stepper";
 import type { DeliberationListItem } from "../types";
 
 export function getDeliberationsColumns(
@@ -37,9 +37,7 @@ export function getDeliberationsColumns(
 			id: "status",
 			header: t("admin.deliberations.columns.status"),
 			cell: ({ row }) => (
-				<Badge variant={statusVariants[row.original.status] ?? "outline"}>
-					{t(`admin.deliberations.status.${row.original.status}`)}
-				</Badge>
+				<DeliberationStatusProgress status={row.original.status} />
 			),
 		},
 		{

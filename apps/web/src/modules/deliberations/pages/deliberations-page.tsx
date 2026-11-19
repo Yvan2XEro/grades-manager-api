@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/select";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { CreateDeliberationDialog } from "../components/create-deliberation-dialog";
-import { DeliberationStatusStepper } from "../components/deliberation-status-stepper";
 import {
 	useDeleteDeliberation,
 	useDeliberations,
@@ -105,56 +104,51 @@ export default function DeliberationsList() {
 				/>
 			}
 			toolbar={
-				<>
-					<DeliberationStatusStepper
-						currentStatus={statusFilter !== "all" ? statusFilter : "draft"}
+				<div className="flex flex-wrap items-center gap-3">
+					<AcademicYearSelect
+						value={academicYearId}
+						onChange={handleFilter(setAcademicYearId)}
+						placeholder={t("admin.deliberations.filters.allYears")}
+						autoSelectActive
+						className="w-[200px]"
 					/>
-					<div className="flex flex-wrap items-center gap-3">
-						<AcademicYearSelect
-							value={academicYearId}
-							onChange={handleFilter(setAcademicYearId)}
-							placeholder={t("admin.deliberations.filters.allYears")}
-							autoSelectActive
-							className="w-[200px]"
-						/>
-						<Select
-							value={statusFilter}
-							onValueChange={handleFilter(setStatusFilter)}
-						>
-							<SelectTrigger className="w-[160px]">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">
-									{t("admin.deliberations.filters.allStatuses")}
+					<Select
+						value={statusFilter}
+						onValueChange={handleFilter(setStatusFilter)}
+					>
+						<SelectTrigger className="w-[160px]">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">
+								{t("admin.deliberations.filters.allStatuses")}
+							</SelectItem>
+							{DELIBERATION_STATUSES.map((s) => (
+								<SelectItem key={s} value={s}>
+									{t(`admin.deliberations.status.${s}`)}
 								</SelectItem>
-								{DELIBERATION_STATUSES.map((s) => (
-									<SelectItem key={s} value={s}>
-										{t(`admin.deliberations.status.${s}`)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<Select
-							value={typeFilter}
-							onValueChange={handleFilter(setTypeFilter)}
-						>
-							<SelectTrigger className="w-[160px]">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">
-									{t("admin.deliberations.filters.allTypes")}
+							))}
+						</SelectContent>
+					</Select>
+					<Select
+						value={typeFilter}
+						onValueChange={handleFilter(setTypeFilter)}
+					>
+						<SelectTrigger className="w-[160px]">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">
+								{t("admin.deliberations.filters.allTypes")}
+							</SelectItem>
+							{DELIBERATION_TYPES.map((ty) => (
+								<SelectItem key={ty} value={ty}>
+									{t(`admin.deliberations.type.${ty}`)}
 								</SelectItem>
-								{DELIBERATION_TYPES.map((ty) => (
-									<SelectItem key={ty} value={ty}>
-										{t(`admin.deliberations.type.${ty}`)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-				</>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
 			}
 			footer={
 				<TablePagination

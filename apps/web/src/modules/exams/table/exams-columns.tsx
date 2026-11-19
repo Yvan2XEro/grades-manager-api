@@ -1,7 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ParseKeys, TFunction } from "i18next";
+import { AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/date-format";
+import { formatPercent } from "@/lib/number-format";
 import type { ExamRow } from "../types";
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -67,7 +69,35 @@ export function getExamsColumns(
 			id: "percentage",
 			header: t("admin.exams.table.percentage"),
 			meta: { className: "w-24" },
-			cell: ({ row }) => `${row.original.percentage}%`,
+			cell: ({ row }) => {
+				const total = row.original.courseWeightTotal;
+				const off = total !== undefined && Math.abs(total - 100) > 0.01;
+				return (
+					<span className="inline-flex items-center gap-1">
+						{formatPercent(
+							row.original.percentage / 100,
+							Number.isInteger(row.original.percentage) ? 0 : 1,
+						)}
+						{off && (
+							<span
+								title={t("admin.exams.weights.offTotal", {
+									total: formatPercent(total / 100, 0),
+								})}
+							>
+								<AlertTriangle
+									className="h-3.5 w-3.5 shrink-0 text-amber-500"
+									aria-hidden="true"
+								/>
+								<span className="sr-only">
+									{t("admin.exams.weights.offTotal", {
+										total: formatPercent(total / 100, 0),
+									})}
+								</span>
+							</span>
+						)}
+					</span>
+				);
+			},
 		},
 		{
 			id: "status",

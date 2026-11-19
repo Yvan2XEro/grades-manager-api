@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -66,10 +67,9 @@ export function CreateDeliberationFields({
 				)}
 				<div className="space-y-2">
 					<Label>{t("admin.deliberations.form.deliberationDate")}</Label>
-					<Input
-						type="date"
+					<DatePicker
 						value={fields.deliberationDate}
-						onChange={(e) => patch({ deliberationDate: e.target.value })}
+						onChange={(value) => patch({ deliberationDate: value })}
 					/>
 				</div>
 				<div className="space-y-2">

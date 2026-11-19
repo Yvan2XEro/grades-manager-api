@@ -24,7 +24,9 @@ export function ListLayout({
 	return (
 		<div className="flex min-h-0 flex-1 flex-col gap-4">
 			{header}
-			{toolbar}
+			{/* Never squeezed by the table: an open filter panel (overflow
+			    hidden, so no intrinsic min height) would otherwise be cut */}
+			{toolbar && <div className="flex shrink-0 flex-col gap-4">{toolbar}</div>}
 			<Card className="flex min-h-64 flex-1 flex-col gap-0 overflow-hidden py-0">
 				{children}
 			</Card>

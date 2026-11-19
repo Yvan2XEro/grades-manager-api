@@ -21,6 +21,8 @@ interface DeliberationDetailActionsProps {
 	pendingCount: number;
 	/** Whether the admitted students were already promoted. */
 	promoted: boolean;
+	/** Whether a jury president is named (warned about before signing). */
+	hasPresident: boolean;
 	onPromoteAdmitted: () => void;
 }
 
@@ -30,6 +32,7 @@ export function DeliberationDetailActions({
 	status,
 	pendingCount,
 	promoted,
+	hasPresident,
 	onPromoteAdmitted,
 }: DeliberationDetailActionsProps) {
 	const { t } = useTranslation();
@@ -143,7 +146,9 @@ export function DeliberationDetailActions({
 						onClick={() =>
 							confirmTransition("sign", {
 								title: t("admin.deliberations.confirm.signTitle"),
-								message: t("admin.deliberations.confirm.sign"),
+								message: hasPresident
+									? t("admin.deliberations.confirm.sign")
+									: `${t("admin.deliberations.confirm.signNoPresident")} ${t("admin.deliberations.confirm.sign")}`,
 								confirmText: t("admin.deliberations.actions.sign"),
 							})
 						}

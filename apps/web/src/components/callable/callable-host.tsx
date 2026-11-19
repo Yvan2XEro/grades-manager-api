@@ -18,9 +18,11 @@ import { CourseCatalogExportDialog } from "@/modules/classes/components/course-c
 import { EnrollStudentDialog } from "@/modules/classes/components/enroll-student-dialog";
 import { CreateDeliberationDialog } from "@/modules/deliberations/components/create-deliberation-dialog";
 import { DeliberationRuleFormDialog } from "@/modules/deliberations/components/deliberation-rule-form-dialog";
+import { JuryCompositionDialog } from "@/modules/deliberations/components/jury-composition-dialog";
 import { OverrideDecisionDialog } from "@/modules/deliberations/components/override-decision-dialog";
 import { PromoteAdmittedDialog } from "@/modules/deliberations/components/promote-admitted-dialog";
 import { ResolveItemSheet } from "@/modules/deliberations/components/resolve-item-sheet";
+import { StudentResultSheet } from "@/modules/deliberations/components/student-result-sheet";
 import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class-export-dialog";
 import { ExportStudentListDialog } from "@/modules/documents/components/export-student-list-dialog";
 import { GenerateDocumentDialog } from "@/modules/documents/components/generate-document-dialog";
@@ -99,7 +101,9 @@ export function CallableHost() {
 			<CourseCatalogExportDialog />
 			<TeachingUnitFormDialog />
 			<CreateDeliberationDialog />
+			<JuryCompositionDialog />
 			<OverrideDecisionDialog />
+			<StudentResultSheet />
 			<PromoteAdmittedDialog />
 			<TimetableImportDialog />
 			<CopyTimetableDialog />

@@ -86,8 +86,7 @@ export default function ExamsPage() {
 				label: t("admin.exams.actions.reviewGrades"),
 				icon: ClipboardList,
 				external: true,
-				onSelect: () =>
-					navigate(`/grades/${exam.classCourse}?examId=${exam.id}`),
+				onSelect: () => navigate(`/grades/${exam.classCourse}?exam=${exam.id}`),
 			},
 			{
 				label: t("common.actions.edit"),

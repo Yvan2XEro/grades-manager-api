@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/date-format";
 import type { ApiKeySeries, ApiKeyStats } from "../types";
 
 export const ACTIVITY_DAYS = 30;
@@ -31,10 +32,7 @@ export function buildActivitySeries(
 		const d = new Date();
 		d.setDate(d.getDate() - i);
 		const iso = d.toISOString().slice(0, 10);
-		const display = d.toLocaleDateString("fr-FR", {
-			month: "2-digit",
-			day: "2-digit",
-		});
+		const display = formatDate(d, "dd/MM");
 		chartData.push({ date: display, ...(byDate.get(iso) ?? {}) });
 	}
 

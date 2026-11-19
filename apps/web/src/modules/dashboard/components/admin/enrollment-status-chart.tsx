@@ -2,6 +2,7 @@ import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatNumber } from "@/lib/number-format";
 import type { StatusSlice } from "../../types";
 
 const RADIAN = Math.PI / 180;
@@ -114,7 +115,7 @@ export function EnrollmentStatusChart({
 										</span>
 									</div>
 									<span className="font-semibold text-foreground text-sm tabular-nums">
-										{entry.value.toLocaleString()}
+										{formatNumber(entry.value)}
 									</span>
 								</div>
 							))}

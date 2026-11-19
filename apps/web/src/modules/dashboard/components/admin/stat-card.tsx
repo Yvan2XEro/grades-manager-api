@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
 import { staggerItem } from "@/lib/animations";
+import { formatNumber } from "@/lib/number-format";
 import { cn } from "@/lib/utils";
 import { useDashboardPages } from "../../hooks/use-dashboard-pages";
 import type { KpiCard } from "../../types";
@@ -38,7 +39,7 @@ export function StatCard({ card, label }: { card: KpiCard; label: string }) {
 								{label}
 							</p>
 							<p className="animate-counter-in font-bold font-heading text-2xl text-foreground tabular-nums leading-tight">
-								{count.toLocaleString()}
+								{formatNumber(count)}
 								{card.suffix && (
 									<span className="font-semibold text-base">{card.suffix}</span>
 								)}

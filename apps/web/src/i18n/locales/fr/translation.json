@@ -210,7 +210,7 @@
       "accounts": "Comptes",
       "apiKeys": "Clés API",
       "deliberations": "Délibérations",
-      "promotion": "Transition d'année",
+      "promotion": "Passage d'année",
       "results": "Résultats",
       "jury": "Jury",
       "activity": "Activité",
@@ -1390,6 +1390,11 @@
       "studentsEmpty": {
         "description": "Inscrivez des étudiants depuis l'onglet Inscriptions.",
         "title": "Aucun étudiant inscrit"
+      },
+      "noCoursesHint": {
+        "title": "Cette classe n'a encore aucun cours",
+        "description": "Sans cours, pas d'évaluations, de notes ni de jury. Ajoutez les cours d'une unité d'enseignement (UE) à cette classe.",
+        "action": "Ajouter les cours d'une UE"
       }
     },
     "institution": {
@@ -1970,6 +1975,11 @@
       "scoringPolicy": {
         "replace": "Remplacer la note originale",
         "best_of": "Conserver la meilleure note"
+      },
+      "weights": {
+        "offTotal": "Les évaluations de ce cours totalisent {{total}} au lieu de 100 % : la moyenne du cours sera faussée.",
+        "formOff": "Avec cette évaluation, les évaluations du cours totalisent {{total}}. Il faut 100 % pour une moyenne de cours correcte.",
+        "formOk": "Les évaluations du cours totalisent 100 %."
       }
     },
     "retake": {
@@ -3219,7 +3229,7 @@
         "create": "Nouvelle délibération",
         "open": "Ouvrir",
         "close": "Clôturer",
-        "sign": "Signer",
+        "sign": "Signer le PV",
         "reopen": "Rouvrir",
         "compute": "Calculer les résultats",
         "computing": "Calcul en cours...",
@@ -3338,7 +3348,12 @@
         "fallbackTitle": "Délibération",
         "ues": "UE",
         "missingUes_one": "{{count}} UE sans note",
-        "missingUes_other": "{{count}} UE sans notes"
+        "missingUes_other": "{{count}} UE sans notes",
+        "member": "Membre",
+        "noMembers": "Aucun membre désigné",
+        "successRateHint": "Admis + compensés : {{passed}} / {{total}}",
+        "admittedCount": "Admis",
+        "compensatedCount": "Compensés"
       },
       "override": {
         "title": "Modifier la décision",
@@ -3356,7 +3371,8 @@
           "deferred": "Ajourné : pas encore admis ; l'étudiant peut repasser les UE non acquises (rattrapage) avant une décision définitive.",
           "repeat": "Redoublant : l'étudiant reprend le même niveau l'année suivante.",
           "excluded": "Exclu : l'étudiant ne peut pas poursuivre dans la filière."
-        }
+        },
+        "reasonRequired": "Obligatoire : le motif est conservé dans l'historique du jury."
       },
       "logs": {
         "title": "Journal d'activité",
@@ -3455,19 +3471,26 @@
         "batchCreatedCount_one": "{{count}} délibération créée",
         "batchCreatedCount_other": "{{count}} délibérations créées",
         "batchCreatedPartial_one": "{{created}} créée(s), {{count}} erreur",
-        "batchCreatedPartial_other": "{{created}} créée(s), {{count}} erreurs"
+        "batchCreatedPartial_other": "{{created}} créée(s), {{count}} erreurs",
+        "transition": {
+          "open": "Jury ouvert : vous pouvez calculer les résultats",
+          "close": "Jury clôturé : résultats publiés aux étudiants",
+          "sign": "PV signé : le jury est définitif",
+          "reopen": "Jury rouvert : résultats masqués aux étudiants"
+        }
       },
       "confirm": {
         "delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
         "close": "Clôturer et publier les résultats aux étudiants ? Ils verront immédiatement leur décision de délibération. Les notes seront verrouillées.",
-        "sign": "Signer cette délibération ? Cela la valide officiellement.",
+        "sign": "La signature est définitive : le jury ne pourra plus être rouvert ni modifié. Le PV devient officiel, chaque étudiant est notifié de sa décision et les attestations peuvent être délivrées.",
         "reopen": "Réouvrir cette délibération ? Les résultats seront masqués aux étudiants et les notes redeviendront modifiables.",
         "closeTitle": "Clôturer et publier aux étudiants ?",
-        "signTitle": "Signer la délibération ?",
+        "signTitle": "Signer le PV (définitif) ?",
         "deleteTitle": "Supprimer la délibération ?",
         "reopenTitle": "Réouvrir la délibération ?",
         "closeIncomplete_one": "{{count}} étudiant a encore des résultats incomplets et figurera comme « Incomplet ».",
-        "closeIncomplete_other": "{{count}} étudiants ont encore des résultats incomplets et figureront comme « Incomplet »."
+        "closeIncomplete_other": "{{count}} étudiants ont encore des résultats incomplets et figureront comme « Incomplet ».",
+        "signNoPresident": "Aucun président de jury n'est désigné : ajoutez-le d'abord dans l'onglet Jury si le PV doit le mentionner."
       },
       "rules": {
         "title": "Règles de délibération",
@@ -3554,7 +3577,40 @@
         "title_other": "{{count}} étudiants ont des résultats incomplets",
         "hintOpen": "Des notes manquent : aucune moyenne, aucun rang, aucune mention ni décision n'est attribué. Saisissez les notes manquantes puis recalculez, ou faites trancher le jury avec « Modifier la décision » avant de clôturer.",
         "hintClosed": "Ces étudiants figurent comme « Incomplet » au procès-verbal, sans moyenne, rang ni mention."
-      }
+      },
+      "errors": {
+        "duplicate": "Un jury existe déjà pour cette classe, cette année et ce type (et ce semestre). Ouvrez-le depuis la liste au lieu d'en créer un nouveau.",
+        "notFound": "Ce jury ou ce résultat n'existe plus. Rechargez la page.",
+        "forbidden": "Vous n'êtes pas autorisé à effectuer cette action sur ce jury.",
+        "wrongStatus": "Cette action n'est pas possible dans l'état actuel du jury. Rechargez la page pour voir son dernier état."
+      },
+      "juryEdit": {
+        "title": "Composition du jury",
+        "description": "Qui siège à ce jury. Les noms figurent sur le PV. Vous pouvez les modifier jusqu'à la signature du PV.",
+        "numberPlaceholder": "ex. JURY-2026-01",
+        "presidentPlaceholder": "Nom complet du président du jury",
+        "members": "Membres",
+        "noMembers": "Aucun membre pour l'instant.",
+        "memberName": "Nom du membre",
+        "memberNamePlaceholder": "Nom complet",
+        "memberRole": "Qualité (facultatif)",
+        "removeMember": "Retirer ce membre",
+        "addMember": "Ajouter un membre",
+        "saved": "Composition du jury enregistrée",
+        "edit": "Modifier le jury"
+      },
+      "studentSheet": {
+        "course": "UE / cours",
+        "cc": "CC",
+        "exam": "Examen",
+        "average": "Moyenne",
+        "ueCredits_one": "{{count}} crédit",
+        "ueCredits_other": "{{count}} crédits",
+        "overrideReason": "Décision modifiée par le jury : {{reason}}",
+        "openFile": "Ouvrir la fiche étudiant",
+        "show": "Voir les notes de {{name}}"
+      },
+      "statusProgress": "Étape {{step}} sur {{total}} : {{status}}"
     },
     "centers": {
       "tabs": {
@@ -5090,7 +5146,8 @@
       "selectCourse": {
         "label": "Sélectionner un cours",
         "empty": "Choisir un cours",
-        "emptyState": "Aucun cours ne vous est attribué. Contactez un administrateur."
+        "emptyState": "Aucun cours ne vous est attribué. Contactez un administrateur.",
+        "emptyStateAdmin": "Aucun cours n'a encore été ajouté à cette classe. Ajoutez-en depuis la fiche de la classe (Classes → onglet Cours)."
       },
       "selectExam": {
         "label": "Sélectionner une évaluation",

@@ -29,3 +29,11 @@ export function formatDecimal(
 		maximumFractionDigits: fractionDigits,
 	}).format(value);
 }
+
+/** A count or plain number in the UI language: "1 234" / "1,234". */
+export function formatNumber(value: number | null | undefined): string {
+	if (value === null || value === undefined || Number.isNaN(value)) return "—";
+	return new Intl.NumberFormat(locale(), { maximumFractionDigits: 2 }).format(
+		value,
+	);
+}

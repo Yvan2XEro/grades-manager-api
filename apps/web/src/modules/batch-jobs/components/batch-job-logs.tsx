@@ -7,6 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { formatDate } from "@/lib/date-format";
 import type { BatchJob, LogLevel } from "../types";
 
 const logLevelColors: Record<string, string> = {
@@ -67,7 +68,7 @@ export function BatchJobLogs({ job }: { job: BatchJob }) {
 						return (
 							<div key={log.id} className="flex gap-2 py-1">
 								<span className="text-muted-foreground/60">
-									{new Date(log.timestamp).toLocaleTimeString()}
+									{formatDate(log.timestamp, "pp")}
 								</span>
 								<span
 									className={`font-medium uppercase ${logLevelColors[log.level] ?? "text-muted-foreground"}`}

@@ -12,7 +12,10 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
+import {
+	useBreadcrumbEntity,
+	useBreadcrumbParent,
+} from "@/hooks/useBreadcrumbs";
 import {
 	GenerateDocumentDialog,
 	STUDENT_DOCUMENT_KINDS,
@@ -42,6 +45,8 @@ export default function ProfileHub() {
 		profileId,
 		profile ? `${profile.firstName} ${profile.lastName}` : null,
 	);
+	// A student's file belongs to the Students list, not to Users
+	useBreadcrumbParent(profileId, profile?.student ? "students" : null);
 
 	if (isLoading) {
 		return (

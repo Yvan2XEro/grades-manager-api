@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { upsertInList } from "@/lib/query-cache";
@@ -68,6 +68,36 @@ export function useExamForm(exam?: ExamFormValuesIn) {
 			: undefined,
 	});
 
+	// Weight check: the course's other regular exams + this one should make 100%
+	const watchedClassCourseId = useWatch({
+		control: form.control,
+		name: "classCourseId",
+	});
+	const watchedPercentage = useWatch({
+		control: form.control,
+		name: "percentage",
+	});
+	const { data: courseExams } = useQuery({
+		queryKey: ["exam-form-course-exams", watchedClassCourseId],
+		enabled: Boolean(watchedClassCourseId),
+		queryFn: async () =>
+			(
+				await trpcClient.exams.list.query({
+					classCourseId: watchedClassCourseId,
+				})
+			).items,
+	});
+	const weightTotal =
+		courseExams && watchedClassCourseId
+			? courseExams
+					.filter(
+						(e) =>
+							e.id !== exam?.id && (e.sessionType ?? "normal") === "normal",
+					)
+					.reduce((sum, e) => sum + Number(e.percentage), 0) +
+				(Number(watchedPercentage) || 0)
+			: null;
+
 	const { data: classCourses = [] } = useQuery({
 		queryKey: examFormKeys.classCourses,
 		queryFn: fetchExamClassCourses,
@@ -109,5 +139,5 @@ export function useExamForm(exam?: ExamFormValuesIn) {
 		form.setValue("classCourseId", created.id, { shouldValidate: true });
 	};
 
-	return { form, classCourseOptions, createClassCourse };
+	return { form, classCourseOptions, createClassCourse, weightTotal };
 }

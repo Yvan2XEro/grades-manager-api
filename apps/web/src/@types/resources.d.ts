@@ -455,6 +455,7 @@ interface Resources {
 					"label": "Select class course";
 					"empty": "Choose a class course";
 					"emptyState": "No class courses assigned. Contact an administrator.";
+					"emptyStateAdmin": "No course has been added to this class yet. Add courses from the class page (Classes → Courses tab).";
 				};
 				"selectExam": {
 					"label": "Select exam";
@@ -2528,6 +2529,11 @@ interface Resources {
 					"description": "Enroll students via the Enrollments tab.";
 					"title": "No students enrolled";
 				};
+				"noCoursesHint": {
+					"title": "This class has no course yet";
+					"description": "Without courses there are no exams, grades or jury. Add the courses of a teaching unit (UE) to this class.";
+					"action": "Add the courses of a UE";
+				};
 			};
 			"institution": {
 				"title": "Institution settings";
@@ -3075,6 +3081,11 @@ interface Resources {
 				};
 				"rejection": {
 					"label": "Rejection reason:";
+				};
+				"weights": {
+					"offTotal": "The exams of this course add up to {{total}} instead of 100%: the course average will be wrong.";
+					"formOff": "With this exam, the course's exams add up to {{total}}. They should make 100% for a correct course average.";
+					"formOk": "The course's exams add up to 100%.";
 				};
 			};
 			"examTypes": {
@@ -4240,7 +4251,7 @@ interface Resources {
 					"create": "New deliberation";
 					"open": "Open";
 					"close": "Close";
-					"sign": "Sign";
+					"sign": "Sign the report";
 					"reopen": "Reopen";
 					"compute": "Compute results";
 					"computing": "Computing...";
@@ -4360,6 +4371,11 @@ interface Resources {
 					"ues": "UEs";
 					"missingUes_one": "{{count}} UE without marks";
 					"missingUes_other": "{{count}} UEs without marks";
+					"member": "Member";
+					"noMembers": "No member named";
+					"successRateHint": "Admitted + compensated: {{passed}} / {{total}}";
+					"admittedCount": "Admitted";
+					"compensatedCount": "Compensated";
 				};
 				"override": {
 					"title": "Override decision";
@@ -4378,6 +4394,7 @@ interface Resources {
 						"repeat": "Repeat: the student repeats the same level next year.";
 						"excluded": "Excluded: the student may not continue in the program.";
 					};
+					"reasonRequired": "Required: the reason is kept in the jury's activity log.";
 				};
 				"logs": {
 					"title": "Activity log";
@@ -4477,18 +4494,25 @@ interface Resources {
 					"batchCreatedCount_other": "{{count}} deliberations created";
 					"batchCreatedPartial_one": "{{created}} created, {{count}} error";
 					"batchCreatedPartial_other": "{{created}} created, {{count}} errors";
+					"transition": {
+						"open": "Jury opened: you can now compute the results";
+						"close": "Jury closed: results published to students";
+						"sign": "Report signed: the jury is final";
+						"reopen": "Jury reopened: results hidden from students";
+					};
 				};
 				"confirm": {
 					"delete": "Are you sure you want to delete this deliberation?";
 					"close": "Close this deliberation and publish results to students? Students will immediately see their deliberation decision. Grades will be locked.";
-					"sign": "Sign this deliberation? This marks it as officially validated.";
+					"sign": "Signing is final: the jury can no longer be reopened or changed. The report (PV) becomes official, each student is notified of their decision and certificates can be issued.";
 					"reopen": "Reopen this deliberation? Results will be hidden from students and grades will become editable again.";
 					"closeTitle": "Close & publish to students?";
-					"signTitle": "Sign deliberation?";
+					"signTitle": "Sign the report (final)?";
 					"deleteTitle": "Delete deliberation?";
 					"reopenTitle": "Reopen deliberation?";
 					"closeIncomplete_one": "{{count}} student still has incomplete results and will appear as “Incomplete”.";
 					"closeIncomplete_other": "{{count}} students still have incomplete results and will appear as “Incomplete”.";
+					"signNoPresident": "No jury president is named: add one in the Jury tab first if the report must show it.";
 				};
 				"rules": {
 					"title": "Deliberation rules";
@@ -4576,6 +4600,39 @@ interface Resources {
 					"hintOpen": "Marks are missing: no average, rank, mention or decision is given. Enter the missing marks and compute again, or let the jury decide with “Override decision” before closing.";
 					"hintClosed": "These students appear as “Incomplete” on the minutes, without average, rank or mention.";
 				};
+				"errors": {
+					"duplicate": "A jury already exists for this class, academic year and type (and semester). Open it from the list instead of creating a new one.";
+					"notFound": "This jury or student result no longer exists. Reload the page.";
+					"forbidden": "You are not allowed to do this on this jury.";
+					"wrongStatus": "This action is not possible in the jury's current status. Reload the page to see its latest state.";
+				};
+				"juryEdit": {
+					"title": "Jury composition";
+					"description": "Who sits on this jury. The names appear on the report (PV). You can change them until the report is signed.";
+					"numberPlaceholder": "e.g. JURY-2026-01";
+					"presidentPlaceholder": "Full name of the jury president";
+					"members": "Members";
+					"noMembers": "No member yet.";
+					"memberName": "Member name";
+					"memberNamePlaceholder": "Full name";
+					"memberRole": "Title (optional)";
+					"removeMember": "Remove this member";
+					"addMember": "Add a member";
+					"saved": "Jury composition saved";
+					"edit": "Edit the jury";
+				};
+				"studentSheet": {
+					"course": "UE / course";
+					"cc": "Cont. assess.";
+					"exam": "Exam";
+					"average": "Average";
+					"ueCredits_one": "{{count}} credit";
+					"ueCredits_other": "{{count}} credits";
+					"overrideReason": "Decision changed by the jury: {{reason}}";
+					"openFile": "Open the student file";
+					"show": "Show the marks of {{name}}";
+				};
+				"statusProgress": "Step {{step}} of {{total}}: {{status}}";
 			};
 			"gradeAccessGrants": {
 				"actions": {
@@ -4763,7 +4820,7 @@ interface Resources {
 				"emptyHint": "Students appear here once a deliberation graduates them.";
 			};
 			"academicYearTransitions": {
-				"title": "Academic Year Transition";
+				"title": "Year transition";
 				"subtitle": "Prepare, review, approve, and execute the yearly destination of every student.";
 				"generatedAt": "Generated {{date}}";
 				"actions": {
@@ -7463,7 +7520,7 @@ interface Resources {
 			"description": "Manage deliberations and year-end promotions";
 			"tabs": {
 				"deliberations": "Deliberations";
-				"promotion": "Year Promotion";
+				"promotion": "Year transition";
 			};
 		};
 		"programs": {

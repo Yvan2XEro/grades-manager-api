@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/date-format";
 import type { GraduatedStudentRow } from "../types";
 
 function creditsProgress(earned: number, required: number) {
@@ -8,13 +9,8 @@ function creditsProgress(earned: number, required: number) {
 	return { pct, isFull: pct >= 100 };
 }
 
-function formatDate(date: Date | string | null | undefined) {
-	if (!date) return "—";
-	return new Intl.DateTimeFormat("fr", {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	}).format(new Date(date));
+function formatDay(date: Date | string | null | undefined) {
+	return formatDate(date, "PP") || "—";
 }
 
 function CreditsCell({ row }: { row: GraduatedStudentRow }) {
@@ -101,7 +97,7 @@ export function getGraduatedStudentsColumns(
 			header: t("admin.graduation.table.graduatedAt"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
-					{formatDate(row.original.enrollment.exitedAt)}
+					{formatDay(row.original.enrollment.exitedAt)}
 				</span>
 			),
 		},

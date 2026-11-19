@@ -4,6 +4,7 @@ import { documentErrorMessage } from "@/lib/document-errors";
 import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
+import { deliberationErrorMessage } from "../services/deliberation-errors";
 import { exportDeliberationExcel } from "../services/deliberation-excel-export";
 import type { DeliberationAction } from "../types";
 
@@ -50,11 +51,11 @@ export function useDeliberationActions(deliberationId: string) {
 				id: deliberationId,
 				action,
 			}),
-		onSuccess: () => {
-			toast.success(t("admin.deliberations.toast.transitionSuccess"));
+		onSuccess: (_data, action) => {
+			toast.success(t(`admin.deliberations.toast.transition.${action}`));
 			invalidateAll();
 		},
-		onError: (err) => toast.error((err as Error).message),
+		onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 	});
 
 	const compute = useMutation({
@@ -64,7 +65,7 @@ export function useDeliberationActions(deliberationId: string) {
 			toast.success(t("admin.deliberations.toast.computeSuccess"));
 			invalidateAll();
 		},
-		onError: (err) => toast.error((err as Error).message),
+		onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 	});
 
 	const pdfExport = useMutation({

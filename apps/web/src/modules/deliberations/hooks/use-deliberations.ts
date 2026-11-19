@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
+import { deliberationErrorMessage } from "../services/deliberation-errors";
 import type { DeliberationType } from "../services/deliberation-status";
 
 interface DeliberationsFilters {
@@ -43,6 +44,6 @@ export function useDeleteDeliberation() {
 				queryKey: trpc.deliberations.listPaged.queryKey(),
 			});
 		},
-		onError: (err) => toast.error((err as Error).message),
+		onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 	});
 }

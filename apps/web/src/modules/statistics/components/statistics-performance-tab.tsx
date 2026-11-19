@@ -1,7 +1,7 @@
 import { GraduationCap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatPercent } from "@/lib/number-format";
+import { formatNumber, formatPercent } from "@/lib/number-format";
 import { usePerformanceStats } from "../hooks/use-statistics";
 import { exportPerformanceStats } from "../services/statistics-export";
 import { ChartCard } from "./chart-card";
@@ -60,7 +60,7 @@ export function StatisticsPerformanceTab({
 				<div className="flex items-center gap-6">
 					<StatFigure
 						icon={GraduationCap}
-						value={total.toLocaleString()}
+						value={formatNumber(total)}
 						label={t("admin.statistics.performance.studentsDeliberated")}
 					/>
 					{total > 0 && (

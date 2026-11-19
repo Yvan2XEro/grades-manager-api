@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/date-format";
 import type { AttendanceSessionsState } from "../hooks/use-attendance-session";
 import type { AttendanceStatusConfig } from "../hooks/use-attendance-status";
 import type { AttendanceStatus } from "../types";
@@ -20,15 +21,7 @@ export function AttendanceSessionSummary({
 			<div className="mb-4 flex items-center justify-between">
 				<div>
 					<h2 className="font-semibold text-lg">
-						{new Date(selectedSession.sessionDate).toLocaleDateString(
-							undefined,
-							{
-								weekday: "long",
-								day: "2-digit",
-								month: "long",
-								year: "numeric",
-							},
-						)}
+						{formatDate(selectedSession.sessionDate, "PPPP")}
 					</h2>
 					<p className="text-muted-foreground text-sm">
 						{sessionDetail?.classCourse?.courseRef?.name} —{" "}

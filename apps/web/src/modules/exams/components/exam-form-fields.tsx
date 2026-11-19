@@ -17,12 +17,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { formatPercent } from "@/lib/number-format";
+import { cn } from "@/lib/utils";
 import type { ExamFormData } from "../hooks/use-exam-form";
 
 interface ExamFormFieldsProps {
 	form: UseFormReturn<ExamFormData>;
 	classCourseOptions: { id: string; label: string }[];
 	onCreateClassCourse: () => Promise<void>;
+	/** Course total with this exam's weight, or null before a course is chosen. */
+	weightTotal: number | null;
 }
 
 /** Fields of the exam form: class-course, name, type, date, weight. */
@@ -30,6 +34,7 @@ export function ExamFormFields({
 	form,
 	classCourseOptions,
 	onCreateClassCourse,
+	weightTotal,
 }: ExamFormFieldsProps) {
 	const { t } = useTranslation();
 	return (
@@ -140,6 +145,22 @@ export function ExamFormFields({
 							/>
 						</FormControl>
 						<FormMessage />
+						{weightTotal !== null && (
+							<p
+								className={cn(
+									"text-xs",
+									Math.abs(weightTotal - 100) > 0.01
+										? "text-amber-600 dark:text-amber-400"
+										: "text-muted-foreground",
+								)}
+							>
+								{Math.abs(weightTotal - 100) > 0.01
+									? t("admin.exams.weights.formOff", {
+											total: formatPercent(weightTotal / 100, 0),
+										})
+									: t("admin.exams.weights.formOk")}
+							</p>
+						)}
 					</FormItem>
 				)}
 			/>
