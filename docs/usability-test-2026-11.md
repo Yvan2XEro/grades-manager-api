@@ -101,3 +101,29 @@ Four fix agents then worked on separate git worktrees, one per area: documents, 
 - The Cypress end-to-end suite was not run.
 - No rendered image of a real PDF was reviewed. The documents were checked as the same HTML at A4 print size, plus the page count of the real PDFs.
 - Students without a fee scale make the collection rate partial. The dashboard now states the coverage ("3/238 students with fees").
+
+## Second round: closing the year and moving students up
+
+A non-technical tester playing the head of the registrar's office closed 2025-2026 for one class (SIN-BTS1, 41 students): the jury, the promotion to 2026-2027, the year transition plan, the switch of the active year, then the student's view. A server test now follows one cohort across two years through the public procedures (`academic-year-transitions/__tests__/year-journey.test.ts`): the jury, the next year, promotion, repeaters, the active-year switch, and the final-level jury with graduation.
+
+**What the tester confirmed was right:** the jury's averages (checked by hand), every duplicate path, the promote dialog creating the missing class, and the filters following the active year.
+
+**Fixed:**
+
+| Problem found | Fix |
+|---|---|
+| The transcript printed only the final-exam mark as NOTE/20, so UE averages looked impossible. "/30" credits, "MOYENNE SEMESTRIELLE" on an annual transcript. | Transcript and jury share one computation (`deliberations/ue-results.ts`). A closed or signed jury's figures are used when one exists. The labels follow the real credit total and scope. Stored templates are upgraded at render time. |
+| After the new year was activated, the transcript from the student file printed 2026-2027 over 2025-2026 marks. | The transcript is for a chosen year (default: the latest year with a jury). Its header uses that year's class and level. |
+| The student file's Results tab showed "0 / x – In progress" despite a signed jury. | It reads the same year results as the transcript, with a year selector and the jury status. |
+| "Promote admitted" left 31 of 41 students with no class in the new year. | The jury page applies every decision in one step. Admitted students are promoted, or graduate on the final level. Repeaters (and deferred students) are re-enrolled at the same level, and their class can be created on the spot. Excluded students are withdrawn. Undecided students are listed and left for the year transition plan. |
+| The year transition plan could not be executed once the jury page had promoted some of its students (HTTP 500). | Students already placed in the target year keep their place; the plan runs for the others. |
+| Activating a year was one click with no warning. | A confirmation lists classes without a closed jury and students with no class in the new year. The dashboard banner gives the order of the steps. |
+| Creating the next year twice gave HTTP 500. | A duplicate year name is a translated conflict message. |
+| Cancelling or resolving items in a transition plan did not refresh the screen. | The plan hooks used a second React Query client the pages never read. Cancelling now asks for confirmation. Bulk resolution was added, the reason "Submit" is disabled is shown, and the target-class picker is limited to the program. |
+| Promoted students disappeared from the Students list. | A name or registration-number search ignores the year and status filters, and the list shows the student's latest class. |
+| Other items. | "Enroll a student" from a class uses that class's year. Jury errors and toasts are translated and specific. The jury president and members can be entered. Jury tiles are consistent. Clicking a student in the jury opens their marks. "View grades" opens the chosen exam. Admins see courses in grade entry. Exam weights that do not add up to 100% are flagged, and retakes no longer count towards 100%. Remaining US date formats were removed. The PV Excel has an "Observations" column with override reasons. |
+
+**Still open:**
+- PDF generation needs Chromium's system libraries on the server; in the test sandbox it fails, now with a translated message.
+- INSES first and last names are swapped in existing data, including the PV Excel.
+- Level names in the data are inconsistent ("BTS Santé 2ème année" vs "BTS 2ème année").
