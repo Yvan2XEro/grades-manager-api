@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { generateClassCode } from "@/lib/code-generator";
 import { upsertInList } from "@/lib/query-cache";
 import { AcademicYearFormDialog } from "@/modules/academic-years/components/academic-year-form-dialog";
 import { CycleLevelFormDialog } from "@/modules/institution/components/cycle-level-form-dialog";
@@ -52,6 +51,29 @@ async function fetchCycleLevels(cycleId: string, search?: string) {
 		...level,
 		cycle: { id: cycle.id, name: cycle.name, code: cycle.code },
 	}));
+}
+
+/**
+ * "SIN-BTS1-2627": program code, level code and the two short years of the
+ * academic year (from its name, else its dates).
+ */
+function classCodeSuggestion(
+	programCode: string | null | undefined,
+	levelCode: string | null | undefined,
+	year: { name: string; startDate: string | Date; endDate: string | Date },
+) {
+	const fromName = (year.name.match(/\d{4}/g) ?? []).map((y) => y.slice(-2));
+	const digits =
+		fromName.length >= 2
+			? fromName.join("")
+			: [year.startDate, year.endDate]
+					.map((d) => String(new Date(d).getFullYear()).slice(-2))
+					.join("");
+	return [programCode, levelCode, digits]
+		.filter(Boolean)
+		.join("-")
+		.replace(/\s+/g, "")
+		.toUpperCase();
 }
 
 const classSchema = (t: TFunction) =>
@@ -173,7 +195,6 @@ export function useClassForm({
 		queryFn: () => trpcClient.semesters.list.query(),
 	});
 	const semesters = semestersData?.items ?? [];
-	const semester = semesters.find((s) => s.id === watch("semesterId"));
 
 	// Program options
 	const { data: defaultProgramOptions = [] } = useQuery({
@@ -223,38 +244,61 @@ export function useClassForm({
 			setValue("programOptionId", programOptions[0].id);
 	}, [deriving, programOptions, programOptionId, setValue]);
 
-	useEffect(() => {
-		if (!deriving) return;
-		const year = yearsData?.items.find((y) => y.id === academicYearId);
-		if (!programOption || !year) return;
-		const start = new Date(year.startDate).getFullYear();
-		const end = new Date(year.endDate).getFullYear();
-		setValue("name", `${programOption.name} (${start}-${end})`);
-	}, [deriving, programOption, academicYearId, yearsData, setValue]);
+	// Classes of the chosen year: the suggested code and name must not collide
+	const { data: yearClasses } = useQuery({
+		...trpc.classes.list.queryOptions({
+			academicYearId: academicYearId || undefined,
+			limit: 500,
+		}),
+		enabled: deriving && Boolean(academicYearId),
+	});
+
+	// Suggested name and code, same convention as the classes created by the
+	// promotion: "Sciences Infirmières – BTS 1ère année" / "SIN-BTS1-2627".
+	// The option is added to the name only when the program has several.
+	const year = yearsData?.items.find((y) => y.id === academicYearId);
+	const suggestion = useMemo(() => {
+		if (!program || !cycleLevel || !year) return null;
+		const taken = yearClasses?.items ?? [];
+		const baseName = [
+			`${program.name} – ${cycleLevel.name}`,
+			programOption && programOptions.length > 1
+				? ` (${programOption.name})`
+				: "",
+		].join("");
+		const baseCode = classCodeSuggestion(program.code, cycleLevel.code, year);
+		const codes = new Set([...taken.map((c) => c.code), ...existingCodes]);
+		const names = new Set(
+			taken.filter((c) => c.program === program.id).map((c) => c.name),
+		);
+		let name = baseName;
+		let code = baseCode;
+		for (let i = 2; codes.has(code) || names.has(name); i++) {
+			name = `${baseName} (${i})`;
+			code = `${baseCode}-${i}`;
+		}
+		return { name, code };
+	}, [
+		program,
+		cycleLevel,
+		programOption,
+		programOptions.length,
+		year,
+		yearClasses,
+		existingCodes,
+	]);
 
 	const code = watch("code");
+	const name = watch("name");
 	const codeDirty = Boolean(form.formState.dirtyFields.code);
+	const nameDirty = Boolean(form.formState.dirtyFields.name);
 	useEffect(() => {
-		if (!deriving || codeDirty) return;
-		if (!program?.code || !semester?.code) return;
-		const suggestion = generateClassCode({
-			programCode: program.code,
-			levelCode: cycleLevel?.code,
-			semesterCode: semester.code,
-			existingCodes,
-		});
-		if (suggestion && code !== suggestion)
-			setValue("code", suggestion, { shouldDirty: false });
-	}, [
-		deriving,
-		existingCodes,
-		codeDirty,
-		code,
-		program?.code,
-		cycleLevel?.code,
-		semester?.code,
-		setValue,
-	]);
+		if (!deriving || !suggestion) return;
+		if (!nameDirty && name !== suggestion.name)
+			setValue("name", suggestion.name, { shouldDirty: false });
+		if (!codeDirty && code !== suggestion.code)
+			setValue("code", suggestion.code, { shouldDirty: false });
+	}, [deriving, suggestion, name, code, nameDirty, codeDirty, setValue]);
 
 	// Quick create (nested Callables)
 	const select = (field: keyof ClassFormInput, id: string) =>

@@ -1358,6 +1358,11 @@
       "studentsEmpty": {
         "description": "Inscrivez des étudiants depuis l'onglet Inscriptions.",
         "title": "Aucun étudiant inscrit"
+      },
+      "noCoursesHint": {
+        "title": "Cette classe n'a encore aucun cours",
+        "description": "Sans cours, pas d'évaluations, de notes ni de jury. Ajoutez les cours d'une unité d'enseignement (UE) à cette classe.",
+        "action": "Ajouter les cours d'une UE"
       }
     },
     "institution": {

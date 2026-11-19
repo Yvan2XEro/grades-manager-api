@@ -34,13 +34,19 @@ import {
  * teacher and coefficient. A missing class can be created in place.
  */
 export const AssignTeachingUnitDialog = createCallable<
-	{ existingCodes: string[]; academicYearId?: string | null },
+	{
+		existingCodes: string[];
+		academicYearId?: string | null;
+		/** Class preselected, e.g. when opened from that class's page. */
+		defaultClass?: { id: string; code: string };
+	},
 	boolean
->(({ call, existingCodes, academicYearId }) => {
+>(({ call, existingCodes, academicYearId, defaultClass }) => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const [classSearch, setClassSearch] = useState("");
-	const [classId, setClassId] = useState("");
+	// Searching the preselected class by code makes sure it is in the options
+	const [classSearch, setClassSearch] = useState(defaultClass?.code ?? "");
+	const [classId, setClassId] = useState(defaultClass?.id ?? "");
 	const [teachingUnitId, setTeachingUnitId] = useState("");
 	const [skippedCourses, setSkippedCourses] = useState<string[]>([]);
 

@@ -2497,6 +2497,11 @@ interface Resources {
 					"description": "Enroll students via the Enrollments tab.";
 					"title": "No students enrolled";
 				};
+				"noCoursesHint": {
+					"title": "This class has no course yet";
+					"description": "Without courses there are no exams, grades or jury. Add the courses of a teaching unit (UE) to this class.";
+					"action": "Add the courses of a UE";
+				};
 			};
 			"institution": {
 				"title": "Institution settings";

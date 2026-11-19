@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { BookOpen, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { confirmAction } from "@/components/callable/confirm";
@@ -10,6 +10,7 @@ import {
 	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
+	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
 import {
@@ -23,7 +24,9 @@ import {
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
+import { useAddTeachingUnitCourses } from "../../components/class-no-courses-hint";
 import { useClassContext } from "../../hooks/use-class-context";
+import { useCoursesOfClass } from "../../hooks/use-class-courses";
 
 type ClassCourse = RouterOutputs["classCourses"]["list"]["items"][number];
 
@@ -37,18 +40,9 @@ function teacherName(cc: ClassCourse): string {
 export default function ClassDetailCourses() {
 	const { t } = useTranslation();
 	const { cls } = useClassContext();
-	const queryClient = useQueryClient();
 
-	const queryKey = ["classCourses", "byClass", cls.id];
-
-	const { data, isLoading } = useQuery({
-		queryKey,
-		queryFn: () =>
-			trpcClient.classCourses.list.query({ classId: cls.id, limit: 200 }),
-	});
-	const courses = data?.items ?? [];
-
-	const invalidate = () => queryClient.invalidateQueries({ queryKey });
+	const { courses, isLoading, invalidate } = useCoursesOfClass(cls.id);
+	const addTeachingUnitCourses = useAddTeachingUnitCourses(cls);
 
 	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.classCourses.delete.mutate({ id }),
@@ -81,13 +75,20 @@ export default function ClassDetailCourses() {
 				{isLoading ? null : courses.length === 0 ? (
 					<Empty>
 						<EmptyHeader>
-							<EmptyContent>
-								<EmptyTitle>{t("admin.classCourses.empty.title")}</EmptyTitle>
-								<EmptyDescription>
-									{t("admin.classCourses.empty.description")}
-								</EmptyDescription>
-							</EmptyContent>
+							<EmptyMedia variant="icon">
+								<BookOpen className="text-muted-foreground" />
+							</EmptyMedia>
+							<EmptyTitle>{t("admin.classes.noCoursesHint.title")}</EmptyTitle>
+							<EmptyDescription>
+								{t("admin.classes.noCoursesHint.description")}
+							</EmptyDescription>
 						</EmptyHeader>
+						<EmptyContent>
+							<Button onClick={addTeachingUnitCourses}>
+								<Plus className="mr-2 h-4 w-4" />
+								{t("admin.classes.noCoursesHint.action")}
+							</Button>
+						</EmptyContent>
 					</Empty>
 				) : (
 					<Table>
