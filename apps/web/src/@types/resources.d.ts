@@ -4755,7 +4755,7 @@ interface Resources {
 				"emptyHint": "Students appear here once a deliberation graduates them.";
 			};
 			"academicYearTransitions": {
-				"title": "Academic Year Transition";
+				"title": "Year transition";
 				"subtitle": "Prepare, review, approve, and execute the yearly destination of every student.";
 				"generatedAt": "Generated {{date}}";
 				"actions": {
@@ -7412,7 +7412,7 @@ interface Resources {
 			"description": "Manage deliberations and year-end promotions";
 			"tabs": {
 				"deliberations": "Deliberations";
-				"promotion": "Year Promotion";
+				"promotion": "Year transition";
 			};
 		};
 		"programs": {

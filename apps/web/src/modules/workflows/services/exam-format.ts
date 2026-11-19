@@ -1,22 +1,13 @@
+import { formatDate } from "@/lib/date-format";
+
 /** "12 janv. 2026" — the date format of the approval screens. */
 export function formatShortDate(date: Date | string | null | undefined) {
-	return date
-		? new Date(date).toLocaleDateString("fr-FR", {
-				day: "2-digit",
-				month: "short",
-				year: "numeric",
-			})
-		: null;
+	return date ? formatDate(date, "dd MMM yyyy") : null;
 }
 
+/** "12 janv. 2026, 14:30" / "Jan 12, 2026, 2:30 PM" in the UI language. */
 export function formatDateTime(date: Date | string) {
-	return new Date(date).toLocaleString("fr-FR", {
-		day: "2-digit",
-		month: "short",
-		year: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	});
+	return formatDate(date, "PPp");
 }
 
 /** Average / min / max (2 decimals) and number of failing scores. */

@@ -1,5 +1,6 @@
 import { Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Select,
 	SelectContent,
@@ -58,20 +59,18 @@ export function ApprovalHistoryFilters({ history }: { history: History }) {
 			{/* Date range filter */}
 			<div className="flex items-center gap-1.5">
 				<Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
-				<input
-					type="date"
+				<DatePicker
 					value={history.dateFrom}
-					onChange={(e) => history.setDateFrom(e.target.value)}
-					className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-					title={t("dean.history.dateFrom")}
+					onChange={history.setDateFrom}
+					placeholder={t("dean.history.dateFrom")}
+					className="w-44"
 				/>
 				<span className="text-muted-foreground text-xs">—</span>
-				<input
-					type="date"
+				<DatePicker
 					value={history.dateTo}
-					onChange={(e) => history.setDateTo(e.target.value)}
-					className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-					title={t("dean.history.dateTo")}
+					onChange={history.setDateTo}
+					placeholder={t("dean.history.dateTo")}
+					className="w-44"
 				/>
 			</div>
 		</ExamFilters>

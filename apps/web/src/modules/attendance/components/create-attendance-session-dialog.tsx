@@ -10,7 +10,7 @@ import {
 import { QuickCreate } from "@/components/callable/quick-create";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -93,11 +93,10 @@ export const CreateAttendanceSessionDialog = createCallable<
 			<div className="space-y-4">
 				<div>
 					<Label>{t("teacher.attendanceManagement.createSession")}</Label>
-					<Input
-						type="date"
+					<DatePicker
 						className="mt-1"
 						value={sessionDate}
-						onChange={(e) => setSessionDate(e.target.value)}
+						onChange={setSessionDate}
 					/>
 				</div>
 				{!isExceptional && (

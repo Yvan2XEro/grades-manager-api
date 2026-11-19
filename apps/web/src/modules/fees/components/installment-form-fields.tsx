@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -43,10 +44,9 @@ export function InstallmentFormFields({
 			</div>
 			<div>
 				<Label>{t("feeClearance.structures.installments.dueDate")}</Label>
-				<Input
-					type="date"
+				<DatePicker
 					value={value.dueDate}
-					onChange={(e) => onChange({ dueDate: e.target.value })}
+					onChange={(dueDate) => onChange({ dueDate })}
 				/>
 			</div>
 		</>

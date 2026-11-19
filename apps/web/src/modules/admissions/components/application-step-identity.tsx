@@ -1,4 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
 	FormControl,
 	FormField,
@@ -125,7 +126,10 @@ export function ApplicationStepIdentity({
 								{t("admissions.fields.dateOfBirth")}
 							</FormLabel>
 							<FormControl>
-								<Input type="date" {...field} />
+								<DatePicker
+									value={field.value ?? ""}
+									onChange={field.onChange}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>

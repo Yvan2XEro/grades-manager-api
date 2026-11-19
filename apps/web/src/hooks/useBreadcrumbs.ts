@@ -19,16 +19,47 @@ const UUID_REGEX =
 /** Names of the entities shown in the URL (id → name), set by detail pages. */
 const useEntityNames = create<{
 	names: Record<string, string>;
+	/** Entity id → list it belongs to, replacing the default parent trail. */
+	parents: Record<string, ParentKind>;
 	set: (id: string, name: string) => void;
+	setParent: (id: string, parent: ParentKind) => void;
 }>((set) => ({
 	names: {},
+	parents: {},
 	set: (id, name) =>
 		set((state) =>
 			state.names[id] === name
 				? state
 				: { names: { ...state.names, [id]: name } },
 		),
+	setParent: (id, parent) =>
+		set((state) =>
+			state.parents[id] === parent
+				? state
+				: { parents: { ...state.parents, [id]: parent } },
+		),
 }));
+
+/** Lists a detail page can belong to, other than its route's default one. */
+type ParentKind = "students";
+
+const PARENT_TRAILS: Record<ParentKind, { key: CrumbKey; href: string }[]> = {
+	students: [{ key: "students", href: "/students" }],
+};
+
+/**
+ * Called by a detail page whose list depends on the entity, e.g. a student's
+ * profile is under "Étudiants", not "Utilisateurs".
+ */
+export function useBreadcrumbParent(
+	id?: string | null,
+	parent?: ParentKind | null,
+) {
+	const setParent = useEntityNames((s) => s.setParent);
+	useEffect(() => {
+		if (id && parent) setParent(id, parent);
+	}, [id, parent, setParent]);
+}
 
 /**
  * Called by a detail page: the breadcrumb shows `name` instead of the id of
@@ -162,6 +193,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 	const { pathname } = useLocation();
 	const roleGroup = useRoleGroup();
 	const names = useEntityNames((s) => s.names);
+	const parents = useEntityNames((s) => s.parents);
 
 	const segments = pathname.split("/").filter(Boolean);
 	if (segments.length === 0) return [];
@@ -179,9 +211,11 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 		else crumbs.push(item);
 	};
 
-	const [first] = segments;
+	const [first, second] = segments;
+	const entityParent = second ? parents[second] : undefined;
 	if (PARENTS[first]) {
-		for (const parent of PARENTS[first])
+		const trail = entityParent ? PARENT_TRAILS[entityParent] : PARENTS[first];
+		for (const parent of trail)
 			push({ label: crumb(parent.key), href: parent.href });
 	} else if (first === "grades") {
 		// Grade entry belongs to the teacher's courses, or to the exams for staff

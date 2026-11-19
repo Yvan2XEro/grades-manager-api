@@ -1,6 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatNumber } from "@/lib/number-format";
 import { useAdmissionsStats } from "../hooks/use-statistics";
 import { exportAdmissionsStats } from "../services/statistics-export";
 import { ChartCard } from "./chart-card";
@@ -48,7 +49,7 @@ export function StatisticsAdmissionsTab({ yearId }: { yearId: string | null }) {
 				<div className="flex flex-wrap items-center gap-6">
 					<StatFigure
 						icon={ClipboardList}
-						value={total.toLocaleString()}
+						value={formatNumber(total)}
 						label={t("admin.statistics.admissions.total")}
 					/>
 					<StatFigure
@@ -56,7 +57,7 @@ export function StatisticsAdmissionsTab({ yearId }: { yearId: string | null }) {
 						label={t("admin.statistics.admissions.conversionRate")}
 					/>
 					<StatFigure
-						value={converted.toLocaleString()}
+						value={formatNumber(converted)}
 						label={t("admin.statistics.admissions.converted")}
 					/>
 				</div>

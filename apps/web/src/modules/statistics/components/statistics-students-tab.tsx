@@ -2,6 +2,7 @@ import { Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import { genderLabel } from "@/lib/enum-labels";
+import { formatNumber } from "@/lib/number-format";
 import { useEnrollmentStats } from "../hooks/use-statistics";
 import { exportEnrollmentStats } from "../services/statistics-export";
 import { ChartCard } from "./chart-card";
@@ -56,7 +57,7 @@ export function StatisticsStudentsTab({ yearId }: { yearId: string | null }) {
 			<StatTabHeader onExport={() => data && exportEnrollmentStats(data)}>
 				<StatFigure
 					icon={Users}
-					value={total.toLocaleString()}
+					value={formatNumber(total)}
 					label={t("admin.statistics.enrollment.totalLabel")}
 				/>
 			</StatTabHeader>

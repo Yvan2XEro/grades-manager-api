@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
+import { formatDate } from "@/lib/date-format";
 import { ApplicationStatusBadge } from "../components/application-status-badge";
 import type { ApplicationListRow } from "../types";
 
@@ -70,7 +71,7 @@ export function getApplicationsColumns(
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-xs">
 					{row.original.submittedAt
-						? new Date(row.original.submittedAt).toLocaleDateString("fr-FR")
+						? formatDate(row.original.submittedAt, "P")
 						: "—"}
 				</span>
 			),

@@ -5,6 +5,7 @@ import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
 import { TablePagination } from "@/components/ui/table-pagination";
 import type { useWorkflowApprovals } from "../hooks/use-workflow-approvals";
 import { WorkflowExamRow } from "./workflow-exam-row";
@@ -35,12 +36,11 @@ export function WorkflowExamQueue({ workflow }: { workflow: Workflow }) {
 					value={filters.classFilter}
 					onChange={filters.onClassChange}
 				/>
-				<input
-					type="date"
+				<DatePicker
 					value={filters.dateFrom}
-					onChange={(e) => filters.onDateFromChange(e.target.value)}
-					className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-					title={t("dean.workflows.dateFrom")}
+					onChange={filters.onDateFromChange}
+					placeholder={t("dean.workflows.dateFrom")}
+					className="w-44"
 				/>
 			</div>
 
