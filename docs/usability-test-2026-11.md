@@ -90,7 +90,7 @@ Four fix agents then worked on separate git worktrees, one per area: documents, 
 
 ## For production
 
-1. **New migration** `apps/server/src/db/migrations/0001_issued_documents.sql` creates the register of issued documents. Apply it as usual.
+1. **Migrations** are a single drizzle-kit file, `apps/server/src/db/migrations/0000_init.sql`, which includes the register of issued documents (`issued_documents`). An existing database needs that table added before it matches the schema.
 2. **INSES student names.** For part of the INSES students, the first and last names are swapped in the source data, so lists sort them on the first name. The seed file is fixed, but existing databases keep the swap. This needs a decision, most likely a re-import of the identities.
 3. **PDF engine.** The server's Chromium needs its system libraries (`libatk`, `libcups`, …). In the test sandbox they were missing; the documents agent checked the certificates with Playwright's `chrome-headless-shell` (`PUPPETEER_EXECUTABLE_PATH`).
 4. **Test accounts.** The test agents created records tagged `UXA`, `UXB`, `UXC` and `UXZ`, but only in the local database.
