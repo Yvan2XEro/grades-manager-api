@@ -58,6 +58,11 @@ export const router = createRouter({
 		.query(({ ctx, input }) =>
 			service.getAcademicYearById(input.id, ctx.institution.id),
 		),
+	activationChecklist: adminProcedure
+		.input(idSchema)
+		.query(({ ctx, input }) =>
+			service.activationChecklist(input.id, ctx.institution.id),
+		),
 	createNextYear: adminProcedure
 		.input(createNextYearSchema)
 		.mutation(({ ctx, input }) =>

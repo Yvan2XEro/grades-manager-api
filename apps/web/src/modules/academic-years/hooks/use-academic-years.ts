@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createElement } from "react";
 import { useTranslation } from "react-i18next";
+import { Confirm } from "@/components/callable/confirm";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
+import { ActivationChecklist } from "../components/activation-checklist";
 
 const errorMessage = (error: unknown, fallback: string) =>
 	error instanceof Error && error.message ? error.message : fallback;
@@ -71,20 +74,55 @@ export function useDeleteAcademicYears() {
 /** Activates or deactivates an academic year. */
 export function useToggleAcademicYearActive() {
 	const { t } = useTranslation();
-	const invalidate = useInvalidateAcademicYears();
+	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
 			await trpcClient.academicYears.setActive.mutate({ id, isActive });
 		},
 		onSuccess: () => {
-			invalidate();
+			// The active year drives filters and dashboards everywhere
+			queryClient.invalidateQueries();
 			toast.success(t("admin.academicYears.toast.statusSuccess"));
 		},
 		onError: (error) =>
 			toast.error(
-				errorMessage(error, t("admin.academicYears.toast.statusError")),
+				(error as { data?: { code?: string } }).data?.code === "FORBIDDEN"
+					? t("admin.academicYears.toast.statusForbidden")
+					: t("admin.academicYears.toast.statusError"),
 			),
 	});
+}
+
+/**
+ * Activation of a year, after a confirmation that lists what is still open in
+ * the year being left (juries, students without a class). Deactivation needs
+ * no checklist. Resolves `true` once the year was switched.
+ */
+export function useActivateAcademicYear() {
+	const { t } = useTranslation();
+	const toggle = useToggleAcademicYearActive();
+	return (year: { id: string; name: string; isActive: boolean }) => {
+		if (year.isActive) {
+			return toggle
+				.mutateAsync({ id: year.id, isActive: false })
+				.then(() => true)
+				.catch(() => false);
+		}
+		return Confirm.call({
+			title: t("admin.academicYears.activate.title", { year: year.name }),
+			description: createElement(ActivationChecklist, { year }),
+			confirmLabel: t("admin.academicYears.activate.confirm"),
+			destructive: false,
+			mutationFn: async (call) => {
+				try {
+					await toggle.mutateAsync({ id: year.id, isActive: true });
+					call.end(true);
+				} catch {
+					// error toast shown by the mutation; the dialog stays open
+				}
+			},
+		});
+	};
 }
 
 /** Creates the year following a source year; `onCreated` receives the new year. */

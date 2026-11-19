@@ -24,11 +24,14 @@ export function TransitionHeader({
 	transition,
 	summary,
 	onAction,
+	onShowBlocked,
 	isPending,
 }: {
 	transition: NonNullable<Transition>;
 	summary: Summary;
 	onAction: (action: TransitionAction) => void;
+	/** Filters the student list on the blocked items. */
+	onShowBlocked: () => void;
 	isPending: boolean;
 }) {
 	const { t } = useTranslation();
@@ -45,13 +48,6 @@ export function TransitionHeader({
 					size="sm"
 					onClick={() => onAction("submit")}
 					disabled={isPending || !canSubmit}
-					title={
-						!canSubmit
-							? t("admin.academicYearTransitions.actions.submitBlocked", {
-									count: blocked,
-								})
-							: undefined
-					}
 				>
 					<ShieldCheck className="size-4" />
 					{t("admin.academicYearTransitions.actions.submit")}
@@ -138,6 +134,23 @@ export function TransitionHeader({
 					{primaryAction}
 				</div>
 			</div>
+			{["draft", "ready"].includes(transition.status) && blocked > 0 && (
+				<div className="flex flex-col gap-2 rounded-md bg-amber-500/10 p-3 text-amber-800 text-sm sm:flex-row sm:items-center sm:justify-between dark:text-amber-300">
+					<p>
+						{t("admin.academicYearTransitions.submitBlockedReason", {
+							count: blocked,
+						})}
+					</p>
+					<Button
+						size="sm"
+						variant="outline"
+						className="shrink-0"
+						onClick={onShowBlocked}
+					>
+						{t("admin.academicYearTransitions.actions.showBlocked")}
+					</Button>
+				</div>
+			)}
 			<StatusStepper
 				steps={steps}
 				currentStatus={stepStatusFor(transition.status)}

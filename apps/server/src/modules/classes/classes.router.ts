@@ -88,6 +88,7 @@ export const router = createRouter({
 			z.object({
 				sourceClassId: z.string(),
 				targetAcademicYearId: z.string(),
+				level: z.enum(["next", "same"]).default("next"),
 			}),
 		)
 		.mutation(({ ctx, input }) =>
@@ -95,6 +96,7 @@ export const router = createRouter({
 				input.sourceClassId,
 				input.targetAcademicYearId,
 				ctx.institution.id,
+				input.level,
 			),
 		),
 	promotionPreview: tenantProtectedProcedure

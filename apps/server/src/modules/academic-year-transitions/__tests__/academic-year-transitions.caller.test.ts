@@ -614,6 +614,122 @@ describe("academicYearTransitions", () => {
 		expect(items.items[0]?.targetClass?.id).toBe(replacementRepeatClass.id);
 	});
 
+	it("resolves several pending items at once with one outcome and reason", async () => {
+		const fixture = await setupTwoLevelTransition();
+		const students = await Promise.all(
+			[0, 1, 2].map(() => createStudent({ class: fixture.sourceClass.id })),
+		);
+		await createSignedDeliberation(
+			fixture.sourceClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			students.map((st) => ({ studentId: st.id, decision: "pending" })),
+		);
+		const api = caller(fixture.admin).academicYearTransitions;
+		const draft = await api.createDraft({
+			sourceAcademicYearId: fixture.sourceYear.id,
+			targetAcademicYearId: fixture.targetYear.id,
+			classIds: [fixture.sourceClass.id],
+			deferredOutcome: "review",
+		});
+		const blocked = await api.listItems({
+			transitionId: draft.id,
+			status: "blocked",
+			limit: 10,
+		});
+		expect(blocked.items).toHaveLength(3);
+		const [first, second] = blocked.items;
+
+		// Every item must belong to the plan
+		await expect(
+			api.resolveItems({
+				transitionId: draft.id,
+				itemIds: [first!.id, "missing-item"],
+				outcome: "repeat",
+				targetClassId: fixture.repeatClass.id,
+				reason: "Jury decided to repeat",
+			}),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
+
+		const resolved = await api.resolveItems({
+			transitionId: draft.id,
+			itemIds: [first!.id, second!.id],
+			outcome: "repeat",
+			targetClassId: fixture.repeatClass.id,
+			reason: "Jury decided to repeat",
+		});
+		expect(resolved.summary).toMatchObject({
+			blocked: 1,
+			repeat: 2,
+			overridden: 2,
+		});
+		const ready = await api.listItems({
+			transitionId: draft.id,
+			status: "ready",
+			limit: 10,
+		});
+		expect(ready.items.map((i) => i.id).sort()).toEqual(
+			[first!.id, second!.id].sort(),
+		);
+		expect(
+			ready.items.every((i) => i.overrideReason === "Jury decided to repeat"),
+		).toBe(true);
+	});
+
+	it("lists what is still open in the active year before activating the next one", async () => {
+		const fixture = await setupTwoLevelTransition();
+		const years = caller(fixture.admin).academicYears;
+		await db
+			.update(schema.academicYears)
+			.set({ isActive: false })
+			.where(
+				eq(schema.academicYears.institutionId, fixture.admin.institution.id),
+			);
+		await db
+			.update(schema.academicYears)
+			.set({ isActive: true })
+			.where(eq(schema.academicYears.id, fixture.sourceYear.id));
+		const otherClass = await createClass({
+			program: fixture.program.id,
+			academicYear: fixture.sourceYear.id,
+			cycleLevelId: fixture.l2.id,
+		});
+		const placed = await createStudent({ class: fixture.sourceClass.id });
+		const unplaced = await createStudent({ class: fixture.sourceClass.id });
+		await createStudent({ class: otherClass.id });
+		await createSignedDeliberation(
+			fixture.sourceClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			[
+				{ studentId: placed.id, decision: "admitted" },
+				{ studentId: unplaced.id, decision: "pending" },
+			],
+		);
+		await db.insert(schema.enrollments).values({
+			institutionId: fixture.admin.institution.id,
+			studentId: placed.id,
+			classId: fixture.promotionClass.id,
+			academicYearId: fixture.targetYear.id,
+			status: "active",
+		});
+
+		const checklist = await years.activationChecklist({
+			id: fixture.targetYear.id,
+		});
+		expect(checklist.fromYear?.id).toBe(fixture.sourceYear.id);
+		expect(checklist.classCount).toBe(2);
+		expect(checklist.classesWithoutJury.map((c) => c.id)).toEqual([
+			otherClass.id,
+		]);
+		// `unplaced` and the student of the class without a jury
+		expect(checklist.unplacedStudentCount).toBe(2);
+
+		// Nothing to check for the active year itself
+		const self = await years.activationChecklist({ id: fixture.sourceYear.id });
+		expect(self.fromYear).toBeNull();
+	});
+
 	it("validates manual resolution target class rules", async () => {
 		const fixture = await setupTwoLevelTransition();
 		await db

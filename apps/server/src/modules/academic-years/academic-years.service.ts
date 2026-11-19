@@ -1,4 +1,5 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, notExists } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -148,4 +149,101 @@ export async function setActive(
 			);
 	});
 	return repo.findById(id, institutionId);
+}
+
+/**
+ * What is still open in the active year before `id` becomes the active one:
+ * classes of the active year without a closed or signed annual jury, and
+ * students still active in it with no enrollment in `id`. Empty when `id` is
+ * the active year or does not come after it. A warning, never a block.
+ */
+export async function activationChecklist(id: string, institutionId: string) {
+	const target = await repo.findById(id, institutionId);
+	if (!target) throw notFound();
+	const current = await db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.institutionId, institutionId),
+			eq(schema.academicYears.isActive, true),
+		),
+	});
+	const empty = {
+		fromYear: null as { id: string; name: string } | null,
+		classCount: 0,
+		classesWithoutJury: [] as Array<{ id: string; code: string; name: string }>,
+		unplacedStudentCount: 0,
+	};
+	if (
+		!current ||
+		current.id === target.id ||
+		new Date(target.startDate) <= new Date(current.startDate)
+	) {
+		return empty;
+	}
+
+	const classes = await db
+		.selectDistinct({
+			id: schema.classes.id,
+			code: schema.classes.code,
+			name: schema.classes.name,
+		})
+		.from(schema.classes)
+		.innerJoin(
+			schema.enrollments,
+			eq(schema.enrollments.classId, schema.classes.id),
+		)
+		.where(
+			and(
+				eq(schema.classes.institutionId, institutionId),
+				eq(schema.classes.academicYear, current.id),
+			),
+		);
+	const juries =
+		classes.length === 0
+			? []
+			: await db.query.deliberations.findMany({
+					where: and(
+						eq(schema.deliberations.institutionId, institutionId),
+						eq(schema.deliberations.academicYearId, current.id),
+						eq(schema.deliberations.type, "annual"),
+						inArray(schema.deliberations.status, ["closed", "signed"]),
+						inArray(
+							schema.deliberations.classId,
+							classes.map((c) => c.id),
+						),
+					),
+					columns: { classId: true },
+				});
+	const withJury = new Set(juries.map((d) => d.classId));
+
+	const nextEnrollment = alias(schema.enrollments, "next_enrollment");
+	const unplaced = await db
+		.selectDistinct({ studentId: schema.enrollments.studentId })
+		.from(schema.enrollments)
+		.where(
+			and(
+				eq(schema.enrollments.institutionId, institutionId),
+				eq(schema.enrollments.academicYearId, current.id),
+				eq(schema.enrollments.status, "active"),
+				notExists(
+					db
+						.select({ id: nextEnrollment.id })
+						.from(nextEnrollment)
+						.where(
+							and(
+								eq(nextEnrollment.academicYearId, target.id),
+								eq(nextEnrollment.studentId, schema.enrollments.studentId),
+							),
+						),
+				),
+			),
+		);
+
+	return {
+		fromYear: { id: current.id, name: current.name },
+		classCount: classes.length,
+		classesWithoutJury: classes
+			.filter((c) => !withJury.has(c.id))
+			.sort((a, b) => a.name.localeCompare(b.name)),
+		unplacedStudentCount: unplaced.length,
+	};
 }

@@ -51,7 +51,12 @@ export default function ClassDetailStudents() {
 				</CardTitle>
 				<Button
 					size="sm"
-					onClick={() => EnrollStudentDialog.call({ classId: cls.id })}
+					onClick={() =>
+						EnrollStudentDialog.call({
+							classId: cls.id,
+							academicYearId: cls.academicYear,
+						})
+					}
 				>
 					<UserPlus className="mr-2 h-4 w-4" />
 					{t("admin.students.enroll.title")}

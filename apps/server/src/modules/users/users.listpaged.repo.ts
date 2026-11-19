@@ -97,6 +97,18 @@ export async function listPaged(opts: ListPagedOpts) {
 				ilike(domainUsers.firstName, term),
 				ilike(domainUsers.lastName, term),
 				ilike(domainUsers.primaryEmail, term),
+				// A student is also found by registration number
+				exists(
+					db
+						.select({ id: students.id })
+						.from(students)
+						.where(
+							and(
+								eq(students.domainUserId, domainUsers.id),
+								ilike(students.registrationNumber, term),
+							),
+						),
+				),
 			) as SQL,
 		);
 	}
@@ -130,10 +142,14 @@ export async function listPaged(opts: ListPagedOpts) {
 				.select({
 					...baseSelect,
 					registrationNumber: students.registrationNumber,
-					currentClassName: sql<string | null>`MAX(${classes.name})`,
+					// The latest enrollment among the matching ones: a promoted
+					// student shows the new class, not the completed one.
+					currentClassName: sql<
+						string | null
+					>`(ARRAY_AGG(${classes.name} ORDER BY ${enrollments.enrolledAt} DESC NULLS LAST))[1]`,
 					currentEnrollmentStatus: sql<
 						string | null
-					>`MAX(${enrollments.status})`,
+					>`(ARRAY_AGG(${enrollments.status} ORDER BY ${enrollments.enrolledAt} DESC NULLS LAST))[1]`,
 				})
 				.from(domainUsers)
 				.leftJoin(member, eq(member.id, domainUsers.memberId))

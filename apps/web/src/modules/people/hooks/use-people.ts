@@ -19,6 +19,10 @@ export function usePeople({
 }) {
 	const debouncedSearch = useDebounce(filters.search, 300);
 	const isStudent = audience === "students";
+	// A name or registration-number search looks at every student, whatever
+	// the year, class and status: a promoted (completed) or former student is
+	// found instead of looking lost.
+	const scoped = isStudent && !debouncedSearch.trim();
 
 	const queryParams = {
 		page,
@@ -27,12 +31,10 @@ export function usePeople({
 		role: isStudent || filters.role === "all" ? undefined : filters.role,
 		status: filters.status === "all" ? undefined : filters.status,
 		search: debouncedSearch || undefined,
-		classId: isStudent ? (filters.classId ?? undefined) : undefined,
-		academicYearId: isStudent
-			? (filters.academicYearId ?? undefined)
-			: undefined,
+		classId: scoped ? (filters.classId ?? undefined) : undefined,
+		academicYearId: scoped ? (filters.academicYearId ?? undefined) : undefined,
 		enrollmentStatus:
-			isStudent && filters.enrollmentStatus !== "all"
+			scoped && filters.enrollmentStatus !== "all"
 				? filters.enrollmentStatus
 				: undefined,
 	};

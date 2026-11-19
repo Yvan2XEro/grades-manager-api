@@ -781,10 +781,25 @@
       },
       "yearEnded": {
         "title": "L'année académique active {{year}} est terminée depuis le {{date}}",
-        "createNext": "Les nouvelles inscriptions, les frais et les imports vont encore dans cette année terminée. Créez l'année suivante, puis activez-la.",
-        "activateNext": "L'année {{year}} existe déjà : activez-la pour que les nouvelles inscriptions, les frais et les imports y soient rattachés.",
         "createButton": "Créer l'année suivante",
-        "openYears": "Ouvrir les années académiques"
+        "stepsIntro": "Clôturez-la dans cet ordre : l'année précédente reste accessible ensuite.",
+        "steps": {
+          "juries": "Clôturer les jurys annuels",
+          "juriesDone": "Chaque classe a un jury annuel clôturé.",
+          "juriesMissing_one": "{{count}} classe sur {{total}} n'a pas encore de jury clôturé.",
+          "juriesMissing_other": "{{count}} classes sur {{total}} n'ont pas encore de jury clôturé.",
+          "juriesAction": "Ouvrir les jurys",
+          "promote": "Promouvoir et placer les étudiants",
+          "promoteNeedsYear": "L'année suivante doit d'abord exister.",
+          "promoteDone": "Chaque étudiant a une classe en {{year}}.",
+          "promoteMissing_one": "{{count}} étudiant n'a pas encore de classe en {{year}}.",
+          "promoteMissing_other": "{{count}} étudiants n'ont pas encore de classe en {{year}}.",
+          "promoteAction": "Passage d'année",
+          "activate": "Activer {{year}}",
+          "activateNext": "Activer l'année suivante",
+          "activateHint": "Les nouvelles inscriptions, les frais et les imports vont alors dans la nouvelle année.",
+          "activateAction": "Activer…"
+        }
       }
     },
     "statistics": {
@@ -1107,7 +1122,8 @@
         "statusError": "Impossible de mettre à jour le statut de l'année académique",
         "createNextYearSuccess": "Année suivante créée : {{name}}",
         "createNextYearError": "Erreur lors de la création de l'année suivante",
-        "yearExists": "Cette année académique existe déjà. Ouvrez-la depuis la liste des années."
+        "yearExists": "Cette année académique existe déjà. Ouvrez-la depuis la liste des années.",
+        "statusForbidden": "Seul un super administrateur peut changer l'année active."
       },
       "validation": {
         "startDate": "La date de début est obligatoire",
@@ -1128,6 +1144,22 @@
         "includeTimetable": "Inclure l'emploi du temps",
         "timetableSummary_one": "{{count}} séance à copier depuis l'année source",
         "timetableSummary_other": "{{count}} séances à copier depuis l'année source"
+      },
+      "activate": {
+        "title": "Activer {{year}} ?",
+        "confirm": "Activer",
+        "intro": "{{year}} devient l'année de travail : les filtres, les tableaux de bord, les nouvelles inscriptions, les frais et les imports passent sur cette année.",
+        "juriesDone_one": "La classe de {{year}} a un jury annuel clôturé.",
+        "juriesDone_other": "Les {{count}} classes de {{year}} ont un jury annuel clôturé.",
+        "juriesMissing_one": "{{count}} classe sur {{total}} en {{year}} n'a pas de jury annuel clôturé :",
+        "juriesMissing_other": "{{count}} classes sur {{total}} en {{year}} n'ont pas de jury annuel clôturé :",
+        "andMore_one": "et {{count}} autre",
+        "andMore_other": "et {{count}} autres",
+        "studentsDone": "Chaque étudiant encore actif en {{from}} a une classe en {{year}}.",
+        "studentsMissing_one": "{{count}} étudiant actif en {{from}} n'a pas de classe en {{year}}.",
+        "studentsMissing_other": "{{count}} étudiants actifs en {{from}} n'ont pas de classe en {{year}}.",
+        "studentsHint": "Placez-les depuis la page du jury (Promouvoir et réinscrire) ou avec le passage d'année.",
+        "warning": "Vous pouvez activer maintenant et terminer ces étapes ensuite : l'année précédente reste accessible depuis les filtres d'année."
       }
     },
     "classCourses": {
@@ -3341,15 +3373,13 @@
         "promotedDetails": "{{count}} → {{className}}"
       },
       "promote": {
-        "button": "Promouvoir les admis",
-        "title": "Promouvoir les admis",
-        "description": "{{count}} étudiants admis ou compensés seront inscrits dans la classe cible.",
+        "button": "Promouvoir et réinscrire",
+        "title": "Appliquer les décisions du jury",
         "targetAcademicYear": "Année académique cible",
         "targetAcademicYearPlaceholder": "Sélectionner l'année suivante",
         "targetClass": "Classe cible",
         "targetClassPlaceholder": "Sélectionner la classe de destination",
-        "confirm": "Promouvoir",
-        "noAdmitted": "Aucun étudiant admis à promouvoir",
+        "confirm": "Appliquer",
         "lastLevelTitle": "Dernier niveau du cycle",
         "lastLevelHint": "Il n'y a pas de classe suivante : les étudiants admis terminent le cycle et sont marqués diplômés.",
         "noTargetFound": {
@@ -3357,21 +3387,54 @@
           "description": "Il n'existe pas de classe {{program}} de niveau « {{level}} » en {{year}}. Elle peut être créée maintenant, avec un code généré.",
           "create": "Créer « {{name}} »"
         },
-        "ctaDesc": "Les étudiants dont la décision est « Admis » ou « Compensé » passent au niveau suivant du cycle (ou sont diplômés au dernier niveau).",
-        "ctaTitle": "Promouvoir les étudiants admis",
+        "ctaDesc": "Les admis passent au niveau suivant (ou sont diplômés au dernier niveau), les redoublants et ajournés sont réinscrits au même niveau, les exclus quittent l'établissement. Les étudiants sans décision restent pour le passage d'année.",
+        "ctaTitle": "Promouvoir et réinscrire la classe",
         "targetClassHint_one": "{{count}} étudiant admis sera inscrit dans cette classe.",
         "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe.",
-        "othersStay": "Les étudiants ajournés, redoublants ou exclus restent dans cette classe. Pour réinscrire les redoublants au même niveau l'année suivante, utilisez le passage d'année.",
         "yearTransitionLink": "Passage d'année",
-        "done_one": "Promotion effectuée le {{date}} : {{count}} étudiant inscrit en {{className}}",
-        "done_other": "Promotion effectuée le {{date}} : {{count}} étudiants inscrits en {{className}}",
-        "doneGraduated_one": "Effectué le {{date}} : {{count}} étudiant diplômé",
-        "doneGraduated_other": "Effectué le {{date}} : {{count}} étudiants diplômés",
         "alreadyPromoted_one": "{{count}} étudiant était déjà inscrit pour cette année : pas de double inscription.",
         "alreadyPromoted_other": "{{count}} étudiants étaient déjà inscrits pour cette année : pas de double inscription.",
-        "success_one": "{{count}} étudiant promu",
-        "success_other": "{{count}} étudiants promus",
-        "classCreated": "Classe « {{name}} » créée"
+        "classCreated": "Classe « {{name}} » créée",
+        "dialogDescription": "Chaque étudiant est placé pour l'année suivante selon la décision finale du jury. Les étudiants déjà inscrits dans cette année sont ignorés.",
+        "groups": {
+          "admitted": "Admis ou compensés",
+          "admittedEffect": "Inscrits au niveau suivant ({{level}}).",
+          "admittedGraduate": "Terminent le cycle et sont marqués diplômés.",
+          "repeat": "Redoublants",
+          "repeatEffect": "Réinscrits au même niveau ({{level}}).",
+          "deferredNote_one": "Inclut {{count}} étudiant ajourné : ici, ajourné vaut redoublant.",
+          "deferredNote_other": "Inclut {{count}} étudiants ajournés : ici, ajourné vaut redoublant.",
+          "excluded": "Exclus",
+          "excludedEffect": "Leur inscription de cette année est clôturée (retiré) ; pas d'inscription l'année suivante.",
+          "undecided": "Encore à décider",
+          "undecidedEffect": "Sans décision finale (en attente ou résultats incomplets) : laissés tels quels. À décider ensuite dans le passage d'année."
+        },
+        "repeatClass": "Classe des redoublants",
+        "repeatClassHint_one": "{{count}} redoublant sera inscrit dans cette classe.",
+        "repeatClassHint_other": "{{count}} redoublants seront inscrits dans cette classe.",
+        "noRepeatTargetFound": {
+          "title": "La classe du même niveau n'existe pas encore",
+          "description": "Il n'existe pas de classe {{program}} de niveau « {{level}} » en {{year}} pour les redoublants. Elle peut être créée maintenant, avec un code généré."
+        },
+        "doneAt": "Décisions appliquées le {{date}}",
+        "result": {
+          "promoted_one": "{{count}} étudiant promu",
+          "promoted_other": "{{count}} étudiants promus",
+          "promotedTo_one": "{{count}} étudiant promu en {{className}}",
+          "promotedTo_other": "{{count}} étudiants promus en {{className}}",
+          "graduated_one": "{{count}} étudiant diplômé",
+          "graduated_other": "{{count}} étudiants diplômés",
+          "repeating_one": "{{count}} redoublant réinscrit",
+          "repeating_other": "{{count}} redoublants réinscrits",
+          "repeatingIn_one": "{{count}} redoublant réinscrit en {{className}}",
+          "repeatingIn_other": "{{count}} redoublants réinscrits en {{className}}",
+          "excluded_one": "{{count}} exclu retiré",
+          "excluded_other": "{{count}} exclus retirés",
+          "undecided_one": "{{count}} étudiant encore à décider",
+          "undecided_other": "{{count}} étudiants encore à décider",
+          "stillToPlace_one": "{{count}} étudiant n'a pas encore de classe pour l'année suivante :",
+          "stillToPlace_other": "{{count}} étudiants n'ont pas encore de classe pour l'année suivante :"
+        }
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -3622,8 +3685,11 @@
         "execute": "Exécuter",
         "cancel": "Annuler",
         "resolve": "Résoudre le cas",
-        "submitBlocked": "{{count}} étudiant(s) bloqué(s) à résoudre d'abord.",
-        "running": "En cours…"
+        "running": "En cours…",
+        "showBlocked": "Afficher les bloqués",
+        "resolveSelected": "Résoudre ensemble",
+        "resolveCount_one": "Résoudre {{count}} étudiant",
+        "resolveCount_other": "Résoudre {{count}} étudiants"
       },
       "create": {
         "title": "Nouvelle transition",
@@ -3683,7 +3749,13 @@
         "title": "Résoudre l'exception",
         "outcome": "Action finale",
         "targetClass": "Classe cible",
-        "reason": "Motif"
+        "reason": "Motif",
+        "bulkTitle_one": "{{count}} étudiant",
+        "bulkTitle_other": "{{count}} étudiants",
+        "mixedSources": "Ces étudiants viennent de classes différentes : sélectionnez les étudiants d'une seule classe pour choisir une classe de destination.",
+        "suggested": "Suggérées",
+        "otherClasses": "Autres classes de la filière",
+        "targetHint": "Classes de l'année cible, même filière et même option : le niveau suivant pour promouvoir, le même niveau pour redoubler."
       },
       "status": {
         "draft": "Brouillon",
@@ -3787,11 +3859,17 @@
       "toast": {
         "created": "Plan de passage créé",
         "updated": "Passage mis à jour",
-        "resolved": "Cas résolu",
         "submitted": "Plan soumis pour approbation.",
         "approved": "Plan approuvé — prêt à être exécuté.",
         "executed": "Exécution démarrée.",
-        "cancelled": "Plan annulé."
+        "cancelled": "Plan annulé.",
+        "resolvedCount_one": "{{count}} étudiant résolu",
+        "resolvedCount_other": "{{count}} étudiants résolus",
+        "resolveError": "La décision n'a pas pu être enregistrée. Rechargez le plan et réessayez.",
+        "createClassError": "La classe n'a pas pu être créée.",
+        "actionError": "L'action a échoué. Rechargez le plan et réessayez.",
+        "submitBlocked": "Certains étudiants attendent encore une décision avant la soumission.",
+        "planExists": "Un plan existe déjà pour ces deux années. Ouvrez-le depuis la liste, ou annulez-le pour recommencer."
       },
       "duplicateWarning": "Un plan actif existe déjà pour cette paire d'années.",
       "duplicateWarningLink": "Voir le plan existant",
@@ -3806,6 +3884,13 @@
         "title": "Lequel utiliser ?",
         "transition": "Le passage d'année (cette page) est la voie normale : un plan pour toutes les classes de l'année, qui traite admis, redoublants, diplômés et exclus, avec revue et approbation avant exécution.",
         "shortcut": "« Promouvoir les admis » sur une délibération clôturée est un raccourci pour une seule classe : il n'inscrit que ses étudiants admis et compensés au niveau suivant. Un étudiant déjà inscrit dans l'année cible n'est jamais inscrit deux fois."
+      },
+      "submitBlockedReason_one": "Soumission impossible pour l'instant : {{count}} étudiant attend encore une décision. Affichez les étudiants bloqués et résolvez-les ; plusieurs peuvent être résolus en une fois.",
+      "submitBlockedReason_other": "Soumission impossible pour l'instant : {{count}} étudiants attendent encore une décision. Affichez les étudiants bloqués et résolvez-les ; plusieurs peuvent être résolus en une fois.",
+      "cancelConfirm": {
+        "title": "Annuler ce plan ?",
+        "message": "Le plan et les décisions prises dedans sont abandonnés ; aucun étudiant n'est déplacé. Un nouveau plan pourra ensuite être préparé pour ces années.",
+        "confirm": "Annuler le plan"
       }
     },
     "gradeScale": {
@@ -7272,7 +7357,9 @@
       "title": "Étudiants",
       "subtitle": "Les étudiants de l'établissement, par année académique, classe et statut d'inscription.",
       "empty": "Aucun étudiant ne correspond à ces filtres.",
-      "allEnrollmentStatuses": "Tous les statuts d'inscription"
+      "allEnrollmentStatuses": "Tous les statuts d'inscription",
+      "searchEverywhere": "La recherche porte sur toutes les années, classes et statuts d'inscription.",
+      "searchPlaceholder": "Rechercher par nom, email ou matricule…"
     }
   },
   "profileHub": {

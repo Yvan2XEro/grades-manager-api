@@ -12,6 +12,7 @@ import { OverrideDecisionDialog } from "../../components/override-decision-dialo
 import { PromoteAdmittedDialog } from "../../components/promote-admitted-dialog";
 import { useDeliberation } from "../../hooks/use-deliberation";
 import { DeliberationContext } from "../../hooks/use-deliberation-context";
+import { decisionGroups } from "../../services/decision-groups";
 import { statusVariants } from "../../services/deliberation-status";
 import type { StudentResult } from "../../types";
 
@@ -65,10 +66,7 @@ export default function DeliberationDetail() {
 		PromoteAdmittedDialog.call({
 			deliberationId: deliberationId!,
 			sourceClassId: delib.classId,
-			admittedCount: results.filter(
-				(r) =>
-					r.finalDecision === "admitted" || r.finalDecision === "compensated",
-			).length,
+			groups: decisionGroups(results),
 		});
 	};
 

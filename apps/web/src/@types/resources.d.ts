@@ -1736,10 +1736,25 @@ interface Resources {
 				};
 				"yearEnded": {
 					"title": "The active academic year {{year}} ended on {{date}}";
-					"createNext": "New enrollments, fees and imports still go to this finished year. Create the next year, then activate it.";
-					"activateNext": "The year {{year}} already exists: activate it so new enrollments, fees and imports go to it.";
 					"createButton": "Create the next year";
-					"openYears": "Open academic years";
+					"stepsIntro": "Close it in this order: the previous year stays reachable afterwards.";
+					"steps": {
+						"juries": "Close the annual juries";
+						"juriesDone": "Every class has a closed annual jury.";
+						"juriesMissing_one": "{{count}} of {{total}} classes has no closed jury yet.";
+						"juriesMissing_other": "{{count}} of {{total}} classes have no closed jury yet.";
+						"juriesAction": "Open the juries";
+						"promote": "Promote and place the students";
+						"promoteNeedsYear": "The next year must exist first.";
+						"promoteDone": "Every student has a class in {{year}}.";
+						"promoteMissing_one": "{{count}} student has no class in {{year}} yet.";
+						"promoteMissing_other": "{{count}} students have no class in {{year}} yet.";
+						"promoteAction": "Year transition";
+						"activate": "Activate {{year}}";
+						"activateNext": "Activate the next year";
+						"activateHint": "New enrollments, fees and imports then go to the new year.";
+						"activateAction": "Activate…";
+					};
 				};
 			};
 			"statistics": {
@@ -2245,6 +2260,7 @@ interface Resources {
 					"createNextYearSuccess": "Next year created: {{name}}";
 					"createNextYearError": "Failed to create next year";
 					"yearExists": "This academic year already exists. Open it from the list of years.";
+					"statusForbidden": "Only a super administrator can change the active year.";
 				};
 				"validation": {
 					"startDate": "Start date is required";
@@ -2265,6 +2281,22 @@ interface Resources {
 					"includeTimetable": "Include timetable";
 					"timetableSummary_one": "{{count}} session to copy from source year";
 					"timetableSummary_other": "{{count}} sessions to copy from source year";
+				};
+				"activate": {
+					"title": "Activate {{year}}?";
+					"confirm": "Activate";
+					"intro": "{{year}} becomes the working year: filters, dashboards, new enrollments, fees and imports switch to it.";
+					"juriesDone_one": "The {{count}} class of {{year}} has a closed annual jury.";
+					"juriesDone_other": "All {{count}} classes of {{year}} have a closed annual jury.";
+					"juriesMissing_one": "{{count}} of {{total}} classes of {{year}} has no closed annual jury:";
+					"juriesMissing_other": "{{count}} of {{total}} classes of {{year}} have no closed annual jury:";
+					"andMore_one": "and {{count}} more";
+					"andMore_other": "and {{count}} more";
+					"studentsDone": "Every student still active in {{from}} has a class in {{year}}.";
+					"studentsMissing_one": "{{count}} student active in {{from}} has no class in {{year}}.";
+					"studentsMissing_other": "{{count}} students active in {{from}} have no class in {{year}}.";
+					"studentsHint": "Place them from the jury page (Promote and re-enrol) or with the year transition.";
+					"warning": "You can still activate now and finish these steps afterwards: the previous year stays reachable from the year filters.";
 				};
 			};
 			"classCourses": {
@@ -4362,15 +4394,13 @@ interface Resources {
 					"promotedDetails": "{{count}} → {{className}}";
 				};
 				"promote": {
-					"button": "Promote admitted";
-					"title": "Promote admitted students";
-					"description": "{{count}} admitted or compensated students will be enrolled in the target class.";
+					"button": "Promote and re-enrol";
+					"title": "Apply the jury's decisions";
 					"targetAcademicYear": "Target academic year";
 					"targetAcademicYearPlaceholder": "Select the next academic year";
 					"targetClass": "Target class";
 					"targetClassPlaceholder": "Select destination class";
-					"confirm": "Promote";
-					"noAdmitted": "No admitted students to promote";
+					"confirm": "Apply";
 					"lastLevelTitle": "Last level of the cycle";
 					"lastLevelHint": "There is no next class: admitted students complete the cycle and are marked as graduated.";
 					"noTargetFound": {
@@ -4378,21 +4408,54 @@ interface Resources {
 						"description": "There is no {{program}} class of level “{{level}}” in {{year}}. It can be created now, with a generated code.";
 						"create": "Create “{{name}}”";
 					};
-					"ctaDesc": "Students whose decision is “Admitted” or “Compensated” move up to the next level of the cycle (or graduate on the last level).";
-					"ctaTitle": "Promote admitted students";
+					"ctaDesc": "Admitted students move up (or graduate on the last level), repeating and deferred students are re-enrolled in the same level, excluded students leave. Students without a decision are left for the year transition.";
+					"ctaTitle": "Promote and re-enrol the class";
 					"targetClassHint_one": "{{count}} admitted student will be enrolled in this class.";
 					"targetClassHint_other": "{{count}} admitted students will be enrolled in this class.";
-					"othersStay": "Deferred, repeating and excluded students stay in this class. To re-enrol repeating students in the same level next year, use the year transition.";
 					"yearTransitionLink": "Year transition";
-					"done_one": "Promotion done on {{date}}: {{count}} student enrolled in {{className}}";
-					"done_other": "Promotion done on {{date}}: {{count}} students enrolled in {{className}}";
-					"doneGraduated_one": "Done on {{date}}: {{count}} student graduated";
-					"doneGraduated_other": "Done on {{date}}: {{count}} students graduated";
 					"alreadyPromoted_one": "{{count}} student was already enrolled for that year and was not enrolled twice.";
 					"alreadyPromoted_other": "{{count}} students were already enrolled for that year and were not enrolled twice.";
-					"success_one": "{{count}} student promoted";
-					"success_other": "{{count}} students promoted";
 					"classCreated": "Class “{{name}}” created";
+					"dialogDescription": "Each student is placed for the next year according to the jury's final decision. Students already enrolled in that year are skipped.";
+					"groups": {
+						"admitted": "Admitted or compensated";
+						"admittedEffect": "Enrolled in the next level ({{level}}).";
+						"admittedGraduate": "Complete the cycle and are marked as graduated.";
+						"repeat": "Repeating";
+						"repeatEffect": "Re-enrolled in the same level ({{level}}).";
+						"deferredNote_one": "Includes {{count}} deferred student: here, deferred means repeating.";
+						"deferredNote_other": "Includes {{count}} deferred students: here, deferred means repeating.";
+						"excluded": "Excluded";
+						"excludedEffect": "Their enrollment for this year is closed (withdrawn); no enrollment next year.";
+						"undecided": "Still to decide";
+						"undecidedEffect": "No final decision (pending or incomplete results): left as they are. Decide them later in the year transition.";
+					};
+					"repeatClass": "Class for repeating students";
+					"repeatClassHint_one": "{{count}} repeating student will be enrolled in this class.";
+					"repeatClassHint_other": "{{count}} repeating students will be enrolled in this class.";
+					"noRepeatTargetFound": {
+						"title": "The same-level class does not exist yet";
+						"description": "There is no {{program}} class of level “{{level}}” in {{year}} for repeating students. It can be created now, with a generated code.";
+					};
+					"doneAt": "Decisions applied on {{date}}";
+					"result": {
+						"promoted_one": "{{count}} student promoted";
+						"promoted_other": "{{count}} students promoted";
+						"promotedTo_one": "{{count}} student promoted to {{className}}";
+						"promotedTo_other": "{{count}} students promoted to {{className}}";
+						"graduated_one": "{{count}} student graduated";
+						"graduated_other": "{{count}} students graduated";
+						"repeating_one": "{{count}} repeating student re-enrolled";
+						"repeating_other": "{{count}} repeating students re-enrolled";
+						"repeatingIn_one": "{{count}} repeating student re-enrolled in {{className}}";
+						"repeatingIn_other": "{{count}} repeating students re-enrolled in {{className}}";
+						"excluded_one": "{{count}} excluded student withdrawn";
+						"excluded_other": "{{count}} excluded students withdrawn";
+						"undecided_one": "{{count}} student still to decide";
+						"undecided_other": "{{count}} students still to decide";
+						"stillToPlace_one": "{{count}} student still has no class for next year:";
+						"stillToPlace_other": "{{count}} students still have no class for next year:";
+					};
 				};
 				"ueDecision": {
 					"ADM": "Acquired";
@@ -4712,8 +4775,11 @@ interface Resources {
 					"execute": "Execute";
 					"cancel": "Cancel";
 					"resolve": "Resolve item";
-					"submitBlocked": "{{count}} blocked student(s) must be resolved first.";
 					"running": "Running…";
+					"showBlocked": "Show blocked students";
+					"resolveSelected": "Resolve together";
+					"resolveCount_one": "Resolve {{count}} student";
+					"resolveCount_other": "Resolve {{count}} students";
 				};
 				"create": {
 					"title": "New transition";
@@ -4774,6 +4840,12 @@ interface Resources {
 					"outcome": "Final outcome";
 					"targetClass": "Target class";
 					"reason": "Reason";
+					"bulkTitle_one": "{{count}} student";
+					"bulkTitle_other": "{{count}} students";
+					"mixedSources": "These students come from different classes: select students of one class to choose a destination class.";
+					"suggested": "Suggested";
+					"otherClasses": "Other classes of the program";
+					"targetHint": "Classes of the target year, same program and option: the next level to promote, the same level to repeat.";
 				};
 				"status": {
 					"draft": "Draft";
@@ -4877,11 +4949,17 @@ interface Resources {
 				"toast": {
 					"created": "Transition plan created";
 					"updated": "Transition updated";
-					"resolved": "Transition item resolved";
 					"submitted": "Plan submitted for approval.";
 					"approved": "Plan approved — ready to execute.";
 					"executed": "Execution started.";
 					"cancelled": "Plan cancelled.";
+					"resolvedCount_one": "{{count}} student resolved";
+					"resolvedCount_other": "{{count}} students resolved";
+					"resolveError": "The decision could not be saved. Reload the plan and try again.";
+					"createClassError": "The class could not be created.";
+					"actionError": "The action failed. Reload the plan and try again.";
+					"submitBlocked": "Some students still need a decision before submission.";
+					"planExists": "A plan already exists for these two years. Open it from the list, or cancel it to start again.";
 				};
 				"duplicateWarning": "An active plan already exists for this year pair.";
 				"duplicateWarningLink": "View existing plan";
@@ -4896,6 +4974,13 @@ interface Resources {
 					"title": "Which one to use?";
 					"transition": "Year transition (this page) is the standard way: one plan for every class of the year, covering admitted, repeating, graduating and excluded students, with review and approval before execution.";
 					"shortcut": "“Promote admitted” on a closed deliberation is a shortcut for one class: it only enrolls its admitted and compensated students in the next level. Students already enrolled in the target year are never enrolled twice.";
+				};
+				"submitBlockedReason_one": "Submission is not possible yet: {{count}} student still needs a decision. Check the blocked students and resolve them; several can be resolved at once.";
+				"submitBlockedReason_other": "Submission is not possible yet: {{count}} students still need a decision. Check the blocked students and resolve them; several can be resolved at once.";
+				"cancelConfirm": {
+					"title": "Cancel this plan?";
+					"message": "The plan and the decisions made in it are dropped; no student is moved. A new plan can then be prepared for these years.";
+					"confirm": "Cancel the plan";
 				};
 			};
 			"gradeScale": {
@@ -7269,6 +7354,8 @@ interface Resources {
 				"subtitle": "Students of the institution, by academic year, class and enrollment status.";
 				"empty": "No student matches these filters.";
 				"allEnrollmentStatuses": "All enrollment statuses";
+				"searchEverywhere": "The search covers every year, class and enrollment status.";
+				"searchPlaceholder": "Search by name, email or registration number…";
 			};
 		};
 		"profileHub": {

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Select,
@@ -49,11 +49,16 @@ export function AcademicYearSelect({
 		[years],
 	);
 
+	// Selects the active year once; with `allowAll`, choosing "all" afterwards
+	// (value null) must not bounce back to the active year.
+	const autoSelected = useRef(false);
 	useEffect(() => {
+		if (autoSelected.current && allowAll) return;
 		if (autoSelectActive && !value && activeYearId) {
+			autoSelected.current = true;
 			onChange(activeYearId);
 		}
-	}, [activeYearId, autoSelectActive, onChange, value]);
+	}, [activeYearId, autoSelectActive, allowAll, onChange, value]);
 
 	return (
 		<div className={className}>

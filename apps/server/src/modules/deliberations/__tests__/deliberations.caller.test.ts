@@ -1002,6 +1002,184 @@ describe("deliberations router", () => {
 		});
 	});
 
+	describe("promoteAdmitted — every decision group", () => {
+		it("places repeaters, withdraws excluded students and leaves undecided ones untouched", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const {
+				academicYear,
+				klass,
+				targetClass,
+				l1,
+				classCourses: { cc1a, cc1b, cc2a, cc2b },
+				student: admitted,
+			} = await setupDeliberationFixture();
+			const instId = klass.institutionId;
+			await createExamsWithGrade(cc1a.id, admitted.id, instId, 14, 16);
+			await createExamsWithGrade(cc1b.id, admitted.id, instId, 10, 12);
+			await createExamsWithGrade(cc2a.id, admitted.id, instId, 10, 12);
+			await createExamsWithGrade(cc2b.id, admitted.id, instId, 12, 14);
+			const repeater = await createStudent({ class: klass.id });
+			const deferred = await createStudent({ class: klass.id });
+			const excluded = await createStudent({ class: klass.id });
+			const undecided = await createStudent({ class: klass.id });
+
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			await admin.deliberations.transition({ id: delib.id, action: "open" });
+			await admin.deliberations.compute({ id: delib.id });
+			await admin.deliberations.transition({ id: delib.id, action: "close" });
+			const decide = (studentId: string, decision: string | null) =>
+				db
+					.update(schema.deliberationStudentResults)
+					.set({ finalDecision: decision as any })
+					.where(eq(schema.deliberationStudentResults.studentId, studentId));
+			await decide(repeater.id, "repeat");
+			await decide(deferred.id, "deferred");
+			await decide(excluded.id, "excluded");
+			await decide(undecided.id, "pending");
+
+			// The same-level class of the target year is created in place
+			const repeatTarget = await admin.classes.createPromotionTarget({
+				sourceClassId: klass.id,
+				targetAcademicYearId: targetClass.academicYear,
+				level: "same",
+			});
+			expect(repeatTarget.created).toBe(true);
+			expect(repeatTarget.klass.cycleLevelId).toBe(l1.id);
+			const targets = await admin.classes.promoTargets({
+				sourceClassId: klass.id,
+				targetAcademicYearId: targetClass.academicYear,
+			});
+			expect(targets.sameLevelClasses.map((c) => c.id)).toEqual([
+				repeatTarget.klass.id,
+			]);
+
+			// A class of the wrong level is refused for repeaters
+			await expect(
+				admin.deliberations.promoteAdmitted({
+					deliberationId: delib.id,
+					targetClassId: targetClass.id,
+					repeatClassId: targetClass.id,
+				}),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+
+			const result = await admin.deliberations.promoteAdmitted({
+				deliberationId: delib.id,
+				targetClassId: targetClass.id,
+				repeatClassId: repeatTarget.klass.id,
+			});
+			expect(result).toMatchObject({
+				promotedCount: 1,
+				repeatCount: 2,
+				excludedCount: 1,
+				undecidedCount: 1,
+				repeatUnplacedCount: 0,
+			});
+
+			const enrollmentsOf = (studentId: string) =>
+				db.query.enrollments.findMany({
+					where: eq(schema.enrollments.studentId, studentId),
+				});
+			for (const sid of [repeater.id, deferred.id]) {
+				const rows = await enrollmentsOf(sid);
+				expect(
+					rows.find((e) => e.academicYearId === academicYear.id)?.status,
+				).toBe("completed");
+				const next = rows.find(
+					(e) => e.academicYearId === targetClass.academicYear,
+				);
+				expect(next?.classId).toBe(repeatTarget.klass.id);
+				expect(next?.status).toBe("active");
+			}
+			const excludedRows = await enrollmentsOf(excluded.id);
+			expect(excludedRows).toHaveLength(1);
+			expect(excludedRows[0].status).toBe("withdrawn");
+			const undecidedRows = await enrollmentsOf(undecided.id);
+			expect(undecidedRows).toHaveLength(1);
+			expect(undecidedRows[0].status).toBe("active");
+
+			const detail = await admin.deliberations.getById({ id: delib.id });
+			expect(detail.promotion).toMatchObject({
+				promotedCount: 1,
+				repeatCount: 2,
+				excludedCount: 1,
+				undecidedCount: 1,
+			});
+
+			// Running it again changes nothing
+			const again = await admin.deliberations.promoteAdmitted({
+				deliberationId: delib.id,
+				targetClassId: targetClass.id,
+				repeatClassId: repeatTarget.klass.id,
+			});
+			expect(again).toMatchObject({
+				promotedCount: 0,
+				alreadyPromotedCount: 1,
+				repeatCount: 0,
+				alreadyRepeatingCount: 2,
+				excludedCount: 0,
+			});
+			expect(await enrollmentsOf(repeater.id)).toHaveLength(2);
+
+			// A transition plan generated afterwards only holds the undecided student
+			const plan = await admin.academicYearTransitions.createDraft({
+				sourceAcademicYearId: academicYear.id,
+				targetAcademicYearId: targetClass.academicYear,
+				classIds: [klass.id],
+			});
+			const items = await admin.academicYearTransitions.listItems({
+				transitionId: plan.id,
+			});
+			expect(items.items.map((i) => i.studentId)).toEqual([undecided.id]);
+		});
+
+		it("leaves repeaters in place when no repeat class is given", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const {
+				academicYear,
+				klass,
+				targetClass,
+				classCourses: { cc1a, cc1b, cc2a, cc2b },
+				student: admitted,
+			} = await setupDeliberationFixture();
+			const instId = klass.institutionId;
+			await createExamsWithGrade(cc1a.id, admitted.id, instId, 14, 16);
+			await createExamsWithGrade(cc1b.id, admitted.id, instId, 10, 12);
+			await createExamsWithGrade(cc2a.id, admitted.id, instId, 10, 12);
+			await createExamsWithGrade(cc2b.id, admitted.id, instId, 12, 14);
+			const repeater = await createStudent({ class: klass.id });
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			await admin.deliberations.transition({ id: delib.id, action: "open" });
+			await admin.deliberations.compute({ id: delib.id });
+			await admin.deliberations.transition({ id: delib.id, action: "close" });
+			await db
+				.update(schema.deliberationStudentResults)
+				.set({ finalDecision: "repeat" })
+				.where(eq(schema.deliberationStudentResults.studentId, repeater.id));
+
+			const result = await admin.deliberations.promoteAdmitted({
+				deliberationId: delib.id,
+				targetClassId: targetClass.id,
+			});
+			expect(result.promotedCount).toBe(1);
+			expect(result.repeatUnplacedCount).toBe(1);
+			const rows = await db.query.enrollments.findMany({
+				where: eq(schema.enrollments.studentId, repeater.id),
+			});
+			expect(rows).toHaveLength(1);
+			expect(rows[0].status).toBe("active");
+		});
+	});
+
 	describe("workflows.cohortAnalytics", () => {
 		it("uses the class's deliberation of its year and has no figures without one", async () => {
 			const ctx = await adminWithRealProfile();

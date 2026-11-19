@@ -101,10 +101,13 @@ export const getLogsSchema = z.object({
 });
 
 // Promote admitted students
-// targetClassId is optional: omit it for last-cycle-level (graduation) promotions
+// targetClassId is optional: omit it for last-cycle-level (graduation) promotions.
+// repeatClassId: same-level class of the target year for repeating (and
+// deferred) students; omit it to leave them for the year transition plan.
 export const promoteAdmittedSchema = z.object({
 	deliberationId: z.string(),
 	targetClassId: z.string().optional(),
+	repeatClassId: z.string().optional(),
 });
 
 export type PromoteAdmittedInput = z.infer<typeof promoteAdmittedSchema>;

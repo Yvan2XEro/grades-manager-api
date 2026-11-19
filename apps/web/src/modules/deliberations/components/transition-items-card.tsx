@@ -1,7 +1,9 @@
-import { Filter, Search } from "lucide-react";
+import { Filter, ListChecks, Search } from "lucide-react";
 import { startTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -9,6 +11,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -44,9 +47,17 @@ interface TransitionItemsCardProps {
 	outcome: TransitionOutcome | "all";
 	onOutcomeChange: (value: TransitionOutcome | "all") => void;
 	onSelectItem: (item: TransitionItem) => void;
+	/** Items can be checked and resolved together (draft plan only). */
+	selectable: boolean;
+	selectedIds: ReadonlySet<string>;
+	onSelectionChange: (ids: Set<string>) => void;
+	onResolveSelected: () => void;
 }
 
-/** Students of a transition plan, filtered by outcome/status/search. */
+/**
+ * Students of a transition plan, filtered by outcome/status/search. In a
+ * draft plan, several students can be checked and resolved at once.
+ */
 export function TransitionItemsCard({
 	items,
 	search,
@@ -56,8 +67,25 @@ export function TransitionItemsCard({
 	outcome,
 	onOutcomeChange,
 	onSelectItem,
+	selectable,
+	selectedIds,
+	onSelectionChange,
+	onResolveSelected,
 }: TransitionItemsCardProps) {
 	const { t } = useTranslation();
+	const pageIds = (items ?? [])
+		.filter((item) => item.status !== "succeeded")
+		.map((item) => item.id);
+	const allChecked =
+		pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+	const toggle = (id: string, checked: boolean) => {
+		const next = new Set(selectedIds);
+		if (checked) next.add(id);
+		else next.delete(id);
+		onSelectionChange(next);
+	};
+	const toggleAll = (checked: boolean) =>
+		onSelectionChange(checked ? new Set(pageIds) : new Set());
 	return (
 		<Card className="rounded-lg">
 			<CardHeader className="gap-4 border-b pb-4">
@@ -118,12 +146,32 @@ export function TransitionItemsCard({
 						))}
 					</TabsList>
 				</Tabs>
+				{selectable && (
+					<BulkActionBar
+						selectedCount={selectedIds.size}
+						onClear={() => onSelectionChange(new Set())}
+					>
+						<Button size="sm" onClick={onResolveSelected}>
+							<ListChecks className="mr-1.5 h-3.5 w-3.5" />
+							{t("admin.academicYearTransitions.actions.resolveSelected")}
+						</Button>
+					</BulkActionBar>
+				)}
 			</CardHeader>
 			<CardContent className="px-0">
 				<div className="max-h-[620px] overflow-auto">
 					<Table>
 						<TableHeader className="sticky top-0 z-10 bg-card">
 							<TableRow>
+								{selectable && (
+									<TableHead className="w-10">
+										<Checkbox
+											checked={allChecked}
+											onCheckedChange={(checked) => toggleAll(checked === true)}
+											aria-label={t("common.bulkActions.selectAll")}
+										/>
+									</TableHead>
+								)}
 								<TableHead>
 									{t("admin.academicYearTransitions.table.student")}
 								</TableHead>
@@ -151,6 +199,19 @@ export function TransitionItemsCard({
 									className="cursor-pointer"
 									onClick={() => onSelectItem(item)}
 								>
+									{selectable && (
+										<TableCell onClick={(event) => event.stopPropagation()}>
+											{item.status !== "succeeded" && (
+												<Checkbox
+													checked={selectedIds.has(item.id)}
+													onCheckedChange={(checked) =>
+														toggle(item.id, checked === true)
+													}
+													aria-label={`${item.student.lastName} ${item.student.firstName}`}
+												/>
+											)}
+										</TableCell>
+									)}
 									<TableCell>
 										<div className="font-medium">
 											{item.student.lastName} {item.student.firstName}
@@ -204,7 +265,7 @@ export function TransitionItemsCard({
 							{items?.length === 0 && (
 								<TableRow>
 									<TableCell
-										colSpan={6}
+										colSpan={selectable ? 7 : 6}
 										className="h-32 text-center text-muted-foreground"
 									>
 										{t("admin.academicYearTransitions.empty.noItems")}
