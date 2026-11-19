@@ -36,6 +36,7 @@ export function PeopleFilters({
 }: PeopleFiltersProps) {
 	const { t } = useTranslation();
 	const isStudent = audience === "students";
+	const searching = isStudent && filters.search.trim().length > 0;
 
 	return (
 		<div className="space-y-3">
@@ -44,7 +45,11 @@ export function PeopleFilters({
 					<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 					<Input
 						className="pl-9"
-						placeholder={t("usersHub.people.searchPlaceholder")}
+						placeholder={
+							isStudent
+								? t("usersHub.students.searchPlaceholder")
+								: t("usersHub.people.searchPlaceholder")
+						}
 						value={filters.search}
 						onChange={(e) => onChange({ search: e.target.value })}
 					/>
@@ -70,42 +75,55 @@ export function PeopleFilters({
 			</div>
 
 			{isStudent ? (
-				<div className="flex flex-wrap gap-2">
-					<AcademicYearSelect
-						value={filters.academicYearId}
-						onChange={(academicYearId) =>
-							onChange({ academicYearId, classId: null })
-						}
-						allowAll
-						className="w-full sm:w-48"
-					/>
-					<div className="w-full sm:w-56">
-						<ClassSelect
-							academicYearId={filters.academicYearId ?? undefined}
-							value={filters.classId}
-							onChange={(classId) => onChange({ classId })}
-						/>
-					</div>
-					<Select
-						value={filters.enrollmentStatus}
-						onValueChange={(enrollmentStatus: Filters["enrollmentStatus"]) =>
-							onChange({ enrollmentStatus })
-						}
+				<div className="space-y-1.5">
+					<div
+						className={cn(
+							"flex flex-wrap gap-2",
+							searching && "pointer-events-none opacity-50",
+						)}
+						aria-disabled={searching}
 					>
-						<SelectTrigger className="w-full sm:w-56">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">
-								{t("usersHub.students.allEnrollmentStatuses")}
-							</SelectItem>
-							{ENROLLMENT_STATUSES.map((status) => (
-								<SelectItem key={status} value={status}>
-									{enrollmentStatusLabel(status)}
+						<AcademicYearSelect
+							value={filters.academicYearId}
+							onChange={(academicYearId) =>
+								onChange({ academicYearId, classId: null })
+							}
+							allowAll
+							className="w-full sm:w-48"
+						/>
+						<div className="w-full sm:w-56">
+							<ClassSelect
+								academicYearId={filters.academicYearId ?? undefined}
+								value={filters.classId}
+								onChange={(classId) => onChange({ classId })}
+							/>
+						</div>
+						<Select
+							value={filters.enrollmentStatus}
+							onValueChange={(enrollmentStatus: Filters["enrollmentStatus"]) =>
+								onChange({ enrollmentStatus })
+							}
+						>
+							<SelectTrigger className="w-full sm:w-56">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">
+									{t("usersHub.students.allEnrollmentStatuses")}
 								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+								{ENROLLMENT_STATUSES.map((status) => (
+									<SelectItem key={status} value={status}>
+										{enrollmentStatusLabel(status)}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					{searching && (
+						<p className="text-muted-foreground text-xs">
+							{t("usersHub.students.searchEverywhere")}
+						</p>
+					)}
 				</div>
 			) : (
 				<div className="flex flex-wrap gap-2">

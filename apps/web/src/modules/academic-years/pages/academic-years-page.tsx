@@ -14,9 +14,9 @@ import { AcademicYearFormDialog } from "../components/academic-year-form-dialog"
 import { AcademicYearSetupDialog } from "../components/academic-year-setup-dialog";
 import {
 	useAcademicYears,
+	useActivateAcademicYear,
 	useCreateNextAcademicYear,
 	useDeleteAcademicYears,
-	useToggleAcademicYearActive,
 } from "../hooks/use-academic-years";
 import { getAcademicYearsColumns } from "../table/academic-years-columns";
 import type { AcademicYearRow } from "../types";
@@ -32,7 +32,7 @@ export default function AcademicYearsPage() {
 	});
 	const selection = useRowSelection(academicYears);
 	const deleteYears = useDeleteAcademicYears();
-	const toggleActive = useToggleAcademicYearActive();
+	const activateYear = useActivateAcademicYear();
 
 	const openYearForm = (year?: AcademicYearRow) =>
 		AcademicYearFormDialog.call({ year });
@@ -46,11 +46,8 @@ export default function AcademicYearsPage() {
 	const createNextYear = useCreateNextAcademicYear(openSetup);
 
 	const columns = useMemo(
-		() =>
-			getAcademicYearsColumns(t, (year) =>
-				toggleActive.mutate({ id: year.id, isActive: !year.isActive }),
-			),
-		[t, toggleActive.mutate],
+		() => getAcademicYearsColumns(t, (year) => void activateYear(year)),
+		[t, activateYear],
 	);
 
 	const confirmDelete = (year: AcademicYearRow) =>

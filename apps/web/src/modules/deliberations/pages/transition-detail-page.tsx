@@ -1,6 +1,8 @@
 import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { Confirm } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import { TransitionReadinessCard } from "../components/transition-readiness-card
 import { TransitionSummaryMetrics } from "../components/transition-summary-metrics";
 import { useTransitionDetail } from "../hooks/use-transition-detail";
 import { summaryOf } from "../services/transition-status";
-import type { TransitionItem } from "../types";
+import type { TransitionAction, TransitionItem } from "../types";
 
 export default function TransitionDetail() {
 	const { t } = useTranslation();
@@ -28,6 +30,7 @@ export default function TransitionDetail() {
 		invalidate,
 		actionMutation,
 	} = useTransitionDetail(id);
+	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const transition = transitionQuery.data ?? null;
 	useBreadcrumbEntity(
 		id,
@@ -56,12 +59,48 @@ export default function TransitionDetail() {
 
 	const summary = summaryOf(transition);
 
-	const resolveItem = async (item: TransitionItem) => {
+	const editable = ["draft", "ready"].includes(transition.status);
+
+	const resolveItems = async (items: TransitionItem[]) => {
+		if (items.length === 0) return;
 		const resolved = await ResolveItemSheet.call({
-			item,
-			targetAcademicYearId: transition?.targetAcademicYearId,
+			items,
+			targetAcademicYearId: transition.targetAcademicYearId,
 		});
-		if (resolved) await invalidate();
+		if (resolved) {
+			setSelectedIds(new Set());
+			await invalidate();
+		}
+	};
+	const resolveSelected = () =>
+		resolveItems(
+			(itemsQuery.data?.items ?? []).filter((item) => selectedIds.has(item.id)),
+		);
+
+	const runAction = async (action: TransitionAction) => {
+		if (action === "cancel") {
+			await Confirm.call({
+				title: t("admin.academicYearTransitions.cancelConfirm.title"),
+				description: t("admin.academicYearTransitions.cancelConfirm.message"),
+				confirmLabel: t("admin.academicYearTransitions.cancelConfirm.confirm"),
+				mutationFn: async (call) => {
+					try {
+						await actionMutation.mutateAsync({ action });
+						call.end(true);
+					} catch {
+						// error toast shown by the mutation
+						call.end(false);
+					}
+				},
+			});
+			return;
+		}
+		actionMutation.mutate({ action });
+	};
+
+	const showBlocked = () => {
+		filters.setOutcome("all");
+		filters.setItemStatus("blocked");
 	};
 
 	return (
@@ -81,7 +120,8 @@ export default function TransitionDetail() {
 			<TransitionHeader
 				transition={transition}
 				summary={summary}
-				onAction={(action) => actionMutation.mutate({ action })}
+				onAction={runAction}
+				onShowBlocked={showBlocked}
 				isPending={actionMutation.isPending}
 			/>
 
@@ -109,7 +149,11 @@ export default function TransitionDetail() {
 						onItemStatusChange={filters.setItemStatus}
 						outcome={filters.outcome}
 						onOutcomeChange={filters.setOutcome}
-						onSelectItem={resolveItem}
+						onSelectItem={(item) => editable && resolveItems([item])}
+						selectable={editable}
+						selectedIds={selectedIds}
+						onSelectionChange={setSelectedIds}
+						onResolveSelected={resolveSelected}
 					/>
 				</TabsContent>
 

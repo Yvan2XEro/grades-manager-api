@@ -39,15 +39,16 @@ const EMPTY_PERSON = {
 };
 
 /**
- * Enrolls a student in a class of the active year: a new student (profile,
+ * Enrolls a student in a class of the active year — or of `academicYearId`
+ * when opened from a class of another year: a new student (profile,
  * registration number, enrollment in one step) or a person already known
  * (added from People, or a student who changes class). Resolves with the
  * student, or `undefined` when dismissed.
  */
 export const EnrollStudentDialog = createCallable<
-	{ classId?: string },
+	{ classId?: string; academicYearId?: string },
 	Student | undefined
->(({ call, classId: initialClassId }) => {
+>(({ call, classId: initialClassId, academicYearId }) => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [classId, setClassId] = useState(initialClassId ?? "");
@@ -58,13 +59,15 @@ export const EnrollStudentDialog = createCallable<
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 
 	const yearsQuery = useQuery(trpc.academicYears.list.queryOptions({}));
-	const activeYear = yearsQuery.data?.items.find((y) => y.isActive);
+	const year = yearsQuery.data?.items.find((y) =>
+		academicYearId ? y.id === academicYearId : y.isActive,
+	);
 	const classesQuery = useQuery({
 		...trpc.classes.list.queryOptions({
-			academicYearId: activeYear?.id,
+			academicYearId: year?.id,
 			limit: 500,
 		}),
-		enabled: Boolean(activeYear?.id),
+		enabled: Boolean(year?.id),
 	});
 	const classes = useMemo(
 		() =>
@@ -172,8 +175,8 @@ export const EnrollStudentDialog = createCallable<
 			className="sm:max-w-xl"
 			title={t("admin.students.enroll.title")}
 			description={
-				activeYear
-					? t("admin.students.enroll.description", { year: activeYear.name })
+				year
+					? t("admin.students.enroll.description", { year: year.name })
 					: t("admin.students.enroll.noActiveYear")
 			}
 		>

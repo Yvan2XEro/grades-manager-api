@@ -1,8 +1,8 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
-import { queryClient, trpcClient } from "@/utils/trpc";
+import { trpcClient } from "@/utils/trpc";
 import type { ItemStatus, TransitionAction, TransitionOutcome } from "../types";
 
 /**
@@ -11,6 +11,8 @@ import type { ItemStatus, TransitionAction, TransitionOutcome } from "../types";
  */
 export function useTransitionDetail(id: string | undefined) {
 	const { t } = useTranslation();
+	// The app's QueryClient (the one the queries below live in)
+	const queryClient = useQueryClient();
 	const [outcome, setOutcome] = useState<TransitionOutcome | "all">("all");
 	const [itemStatus, setItemStatus] = useState<ItemStatus | "all">("all");
 	const [search, setSearch] = useState("");
@@ -90,7 +92,16 @@ export function useTransitionDetail(id: string | undefined) {
 			toast.success(msg);
 			await invalidate();
 		},
-		onError: (error) => toast.error(error.message),
+		onError: (error, { action }) => {
+			const code = (error as { data?: { code?: string } }).data?.code;
+			toast.error(
+				action === "submit" && code === "BAD_REQUEST"
+					? t("admin.academicYearTransitions.toast.submitBlocked")
+					: t("admin.academicYearTransitions.toast.actionError"),
+			);
+			// The plan may have changed meanwhile (another tab, a stale page)
+			void invalidate();
+		},
 	});
 
 	return {

@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "@/lib/toast";
-import { queryClient, trpcClient } from "@/utils/trpc";
+import { trpcClient } from "@/utils/trpc";
 import { TERMINAL_STATUSES } from "../services/transition-status";
 
 export type DeferredOutcome = "review" | "repeat";
@@ -25,6 +25,7 @@ export function useCreateTransitionPlan(
 ) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const [sourceAcademicYearId, setSourceAcademicYearId] = useState("");
 	const [targetAcademicYearId, setTargetAcademicYearId] = useState("");
 	const [sourceClassId, setSourceClassId] = useState("all");
@@ -83,7 +84,12 @@ export function useCreateTransitionPlan(
 			});
 			void navigate(`/promotion/${transition.id}`);
 		},
-		onError: (error) => toast.error(error.message),
+		onError: (error) =>
+			toast.error(
+				(error as { data?: { code?: string } }).data?.code === "CONFLICT"
+					? t("admin.academicYearTransitions.toast.planExists")
+					: t("admin.academicYearTransitions.toast.actionError"),
+			),
 	});
 
 	const duplicatePlan = (plans.data?.items ?? []).find(

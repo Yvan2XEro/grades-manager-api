@@ -66,31 +66,63 @@ export default function DeliberationResultsTab() {
 						<div>
 							<p className="font-semibold text-emerald-900 text-sm dark:text-emerald-200">
 								{promotion
-									? promotion.graduated
-										? t("admin.deliberations.promote.doneGraduated", {
-												count: promotion.promotedCount,
-												date: formatDate(promotion.at, "PPp"),
-											})
-										: t("admin.deliberations.promote.done", {
-												count: promotion.promotedCount,
-												className: promotion.targetClassName ?? "—",
-												date: formatDate(promotion.at, "PPp"),
-											})
+									? t("admin.deliberations.promote.doneAt", {
+											date: formatDate(promotion.at, "PPp"),
+										})
 									: t("admin.deliberations.promote.ctaTitle")}
 							</p>
-							<p className="mt-0.5 text-emerald-700 text-xs dark:text-emerald-300">
-								{t("admin.deliberations.promote.ctaDesc")}
-							</p>
-							<p className="mt-0.5 text-emerald-700 text-xs dark:text-emerald-300">
-								{t("admin.deliberations.promote.othersStay")}{" "}
-								<Link
-									to="/academic-results/promotion"
-									className="inline-flex items-center gap-1 font-medium underline underline-offset-2"
-								>
-									{t("admin.deliberations.promote.yearTransitionLink")}
-									<ExternalLink className="h-3 w-3" />
-								</Link>
-							</p>
+							{promotion ? (
+								<ul className="mt-1 space-y-0.5 text-emerald-800 text-xs dark:text-emerald-300">
+									{promotion.promotedCount > 0 && (
+										<li>
+											{promotion.graduated
+												? t("admin.deliberations.promote.result.graduated", {
+														count: promotion.promotedCount,
+													})
+												: t("admin.deliberations.promote.result.promotedTo", {
+														count: promotion.promotedCount,
+														className: promotion.targetClassName ?? "—",
+													})}
+										</li>
+									)}
+									{promotion.repeatCount > 0 && (
+										<li>
+											{t("admin.deliberations.promote.result.repeatingIn", {
+												count: promotion.repeatCount,
+												className: promotion.repeatClassName ?? "—",
+											})}
+										</li>
+									)}
+									{promotion.excludedCount > 0 && (
+										<li>
+											{t("admin.deliberations.promote.result.excluded", {
+												count: promotion.excludedCount,
+											})}
+										</li>
+									)}
+									{promotion.repeatUnplacedCount + promotion.undecidedCount >
+										0 && (
+										<li>
+											{t("admin.deliberations.promote.result.stillToPlace", {
+												count:
+													promotion.repeatUnplacedCount +
+													promotion.undecidedCount,
+											})}{" "}
+											<Link
+												to="/academic-results/promotion"
+												className="inline-flex items-center gap-1 font-medium underline underline-offset-2"
+											>
+												{t("admin.deliberations.promote.yearTransitionLink")}
+												<ExternalLink className="h-3 w-3" />
+											</Link>
+										</li>
+									)}
+								</ul>
+							) : (
+								<p className="mt-0.5 text-emerald-700 text-xs dark:text-emerald-300">
+									{t("admin.deliberations.promote.ctaDesc")}
+								</p>
+							)}
 						</div>
 					</div>
 					{!promotion && (
