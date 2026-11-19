@@ -3482,7 +3482,9 @@
         "signatures": "Le jury",
         "president": "Président du jury",
         "member": "Membre du jury",
-        "signatureLine": "Signature : ____________________"
+        "signatureLine": "Signature : ____________________",
+        "observations": "Observations",
+        "overrideObservation": "Décision modifiée par le jury : {{reason}}"
       },
       "incomplete": {
         "title_one": "{{count}} étudiant a des résultats incomplets",
@@ -4492,7 +4494,10 @@
         "submit": "Télécharger le PDF",
         "enrollment": "Inscription",
         "cannotIssue": "Ce document ne peut pas être délivré : {{reason}}.",
-        "preview": "Aperçu"
+        "preview": "Aperçu",
+        "academicYear": "Année académique",
+        "yearWithJury": "décision du jury",
+        "yearWithoutGrades": "aucune note"
       },
       "theme": {
         "groups": {
@@ -6084,7 +6089,8 @@
       "history": {
         "title": "Historique des téléchargements",
         "empty": "Aucun document téléchargé pour l'instant."
-      }
+      },
+      "downloaded": "Document téléchargé"
     },
     "timeline": {
       "title": "Historique académique",
@@ -7306,7 +7312,22 @@
       "academicYear": "Année",
       "credits": "Crédits",
       "status": "Statut",
-      "empty": "Aucun résultat de cours trouvé."
+      "empty": "Aucune inscription avec des résultats pour cet étudiant.",
+      "noCourses": "Aucun cours dans cette classe pour cette année.",
+      "cc": "CC",
+      "exam": "Examen",
+      "average": "Moyenne /20",
+      "source": {
+        "jurySigned": "Résultats du jury signé",
+        "juryClosed": "Résultats du jury clôturé",
+        "provisional": "Provisoire — pas encore délibéré"
+      },
+      "generalAverage": "Moyenne générale",
+      "partialAverage": "Moyenne partielle (notes manquantes)",
+      "creditsEarned": "Crédits acquis",
+      "decision": "Décision du jury",
+      "notDeliberated": "Pas encore délibéré",
+      "mention": "Mention"
     },
     "finances": {
       "academicYear": "Année académique",

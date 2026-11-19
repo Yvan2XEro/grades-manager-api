@@ -236,8 +236,8 @@ body > .container { width: 100%; height: 100%; position: relative; }
 							<td colspan="3" class="table-ue table-ue-title"><strong>{{../name}}</strong></td>
 							<td colspan="2" class="table-ec">{{this.name}}</td>
 							<td class="table-session">{{../../name}}</td>
-							<td class="table-note">{{formatNumber this.exam}}</td>
-							<td class="table-average"><strong>{{formatNumber this.average}}</strong></td>
+							<td class="table-note">{{formatNumber this.average}}</td>
+							<td class="table-average"><strong>{{formatNumber ../average}}</strong></td>
 							<td class="table-credit">{{this.credits}}</td>
 						</tr>
 						{{/each}}
@@ -250,19 +250,19 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				<tr class="table-footer">
 					<td class="summary-label">RELEVE NIVEAU</td>
 					<td class="summary-label">SEMESTRE</td>
-					<td class="summary-label">TOTAL CREDIT</td>
-					<td colspan="2" class="summary-label">MOYENNE / 20</td>
+					<td class="summary-label">TOTAL CREDITS /{{summary.creditsTotal}}</td>
+					<td colspan="2" class="summary-label">{{summary.averageLabel}}/20</td>
 					<td class="summary-label">MGP</td>
 					<td class="summary-label">GRADE</td>
 					<td colspan="4" class="summary-label">DECISION DU JURY</td>
 				</tr>
 				<tr class="table-footer-values">
 					<td class="summary-value"><strong>{{class.name}}</strong></td>
-					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{summary.semesterLabel}}</strong></td>
 					<td class="summary-value"><strong>{{summary.creditsEarned}}</strong></td>
 					<td colspan="2" class="summary-value"><strong>{{formatNumber summary.generalAverage}}</strong></td>
 					<td class="summary-value"><strong>—</strong></td>
-					<td class="summary-value"><strong>{{getAppreciation summary.generalAverage}}</strong></td>
+					<td class="summary-value"><strong>{{summary.gradeLetter}}</strong></td>
 					<td colspan="4" class="summary-value validated"><strong>{{summary.decision}}</strong></td>
 				</tr>
 			</tbody>
@@ -524,7 +524,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 			<em>Level:</em></p>
 		</div>
 		<div>
-			<p><strong>SEMESTRE: —</strong><br>
+			<p><strong>SEMESTRE: {{summary.semesterLabel}}</strong><br>
 			<em>Semester:</em></p>
 		</div>
 		<div></div>
@@ -552,7 +552,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 							<td colspan="3" class="table-ue table-ue-title" rowspan="{{../courses.length}}"><strong>{{../name}}</strong></td>
 							{{/if}}
 							<td colspan="2" class="table-ec">{{this.name}}</td>
-							<td class="table-note">{{formatNumber this.exam}}</td>
+							<td class="table-note">{{formatNumber this.average}}</td>
 							{{#if @first}}
 							<td class="table-average" rowspan="{{../courses.length}}"><strong>{{formatNumber ../average}}</strong></td>
 							<td class="table-credit" rowspan="{{../courses.length}}">{{../credits}}</td>
@@ -566,19 +566,19 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				<tr class="table-footer">
 					<td class="summary-label">RELEVE NIVEAU</td>
 					<td class="summary-label">SEMESTRE</td>
-					<td class="summary-label">TOTAL CREDITS /30</td>
-					<td colspan="3" class="summary-label">MOYENNE SEMESTRIELLE/20</td>
+					<td class="summary-label">TOTAL CREDITS /{{summary.creditsTotal}}</td>
+					<td colspan="3" class="summary-label">{{summary.averageLabel}}/20</td>
 					<td class="summary-label">MGP</td>
 					<td class="summary-label">GRADE</td>
 					<td class="summary-label">DECISION DU JURY</td>
 				</tr>
 				<tr class="table-footer-values">
 					<td class="summary-value"><strong>{{class.name}}</strong></td>
-					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{summary.semesterLabel}}</strong></td>
 					<td class="summary-value"><strong>{{summary.creditsEarned}}</strong></td>
 					<td colspan="3" class="summary-value"><strong>{{formatNumber summary.generalAverage}}</strong></td>
 					<td class="summary-value"><strong>—</strong></td>
-					<td class="summary-value"><strong>{{getAppreciation summary.generalAverage}}</strong></td>
+					<td class="summary-value"><strong>{{summary.gradeLetter}}</strong></td>
 					<td class="summary-value validated"><strong>{{summary.decision}}</strong></td>
 				</tr>
 			</tbody>
@@ -834,7 +834,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 			<em>Level:</em></p>
 		</div>
 		<div>
-			<p><strong>SEMESTRE: —</strong><br>
+			<p><strong>SEMESTRE: {{summary.semesterLabel}}</strong><br>
 			<em>Semester:</em></p>
 		</div>
 		<div></div>
@@ -862,7 +862,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 							<td colspan="3" class="table-ue table-ue-title" rowspan="{{../courses.length}}"><strong>{{../name}}</strong></td>
 							{{/if}}
 							<td colspan="2" class="table-ec">{{this.name}}</td>
-							<td class="table-note">{{formatNumber this.exam}}</td>
+							<td class="table-note">{{formatNumber this.average}}</td>
 							{{#if @first}}
 							<td class="table-average" rowspan="{{../courses.length}}"><strong>{{formatNumber ../average}}</strong></td>
 							<td class="table-credit" rowspan="{{../courses.length}}">{{../credits}}</td>
@@ -876,19 +876,19 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				<tr class="table-footer">
 					<td class="summary-label">RELEVE NIVEAU</td>
 					<td class="summary-label">SEMESTRE</td>
-					<td class="summary-label">TOTAL CREDITS /30</td>
-					<td colspan="3" class="summary-label">MOYENNE SEMESTRIELLE/20</td>
+					<td class="summary-label">TOTAL CREDITS /{{summary.creditsTotal}}</td>
+					<td colspan="3" class="summary-label">{{summary.averageLabel}}/20</td>
 					<td class="summary-label">MGP</td>
 					<td class="summary-label">GRADE</td>
 					<td class="summary-label">DECISION DU JURY</td>
 				</tr>
 				<tr class="table-footer-values">
 					<td class="summary-value"><strong>{{class.name}}</strong></td>
-					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{summary.semesterLabel}}</strong></td>
 					<td class="summary-value"><strong>{{summary.creditsEarned}}</strong></td>
 					<td colspan="3" class="summary-value"><strong>{{formatNumber summary.generalAverage}}</strong></td>
 					<td class="summary-value"><strong>—</strong></td>
-					<td class="summary-value"><strong>{{getAppreciation summary.generalAverage}}</strong></td>
+					<td class="summary-value"><strong>{{summary.gradeLetter}}</strong></td>
 					<td class="summary-value validated"><strong>{{summary.decision}}</strong></td>
 				</tr>
 			</tbody>
@@ -1171,7 +1171,7 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 		<div>
 			<p>
 				<strong>SEMESTRE :</strong>
-				<strong>{{document.semester}}</strong><br>
+				<strong>{{summary.semesterLabel}}</strong><br>
 				<em>Semester</em>
 			</p>
 		</div>
@@ -1448,7 +1448,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 			<em>Level:</em></p>
 		</div>
 		<div>
-			<p><strong>SEMESTRE: —</strong><br>
+			<p><strong>SEMESTRE: {{summary.semesterLabel}}</strong><br>
 			<em>Semester:</em></p>
 		</div>
 		<div></div>
@@ -1476,7 +1476,7 @@ body > .container { width: 100%; height: 100%; position: relative; }
 							<td colspan="3" class="table-ue table-ue-title" rowspan="{{../courses.length}}"><strong>{{../name}}</strong></td>
 							{{/if}}
 							<td colspan="2" class="table-ec">{{this.name}}</td>
-							<td class="table-note">{{formatNumber this.exam}}</td>
+							<td class="table-note">{{formatNumber this.average}}</td>
 							{{#if @first}}
 							<td class="table-average" rowspan="{{../courses.length}}"><strong>{{formatNumber ../average}}</strong></td>
 							<td class="table-credit" rowspan="{{../courses.length}}">{{../credits}}</td>
@@ -1490,19 +1490,19 @@ body > .container { width: 100%; height: 100%; position: relative; }
 				<tr class="table-footer">
 					<td class="summary-label">RELEVE NIVEAU</td>
 					<td class="summary-label">SEMESTRE</td>
-					<td class="summary-label">TOTAL CREDITS /30</td>
-					<td colspan="3" class="summary-label">MOYENNE SEMESTRIELLE/20</td>
+					<td class="summary-label">TOTAL CREDITS /{{summary.creditsTotal}}</td>
+					<td colspan="3" class="summary-label">{{summary.averageLabel}}/20</td>
 					<td class="summary-label">MGP</td>
 					<td class="summary-label">GRADE</td>
 					<td class="summary-label">DECISION DU JURY</td>
 				</tr>
 				<tr class="table-footer-values">
 					<td class="summary-value"><strong>{{class.name}}</strong></td>
-					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{summary.semesterLabel}}</strong></td>
 					<td class="summary-value"><strong>{{summary.creditsEarned}}</strong></td>
 					<td colspan="3" class="summary-value"><strong>{{formatNumber summary.generalAverage}}</strong></td>
 					<td class="summary-value"><strong>—</strong></td>
-					<td class="summary-value"><strong>{{getAppreciation summary.generalAverage}}</strong></td>
+					<td class="summary-value"><strong>{{summary.gradeLetter}}</strong></td>
 					<td class="summary-value validated"><strong>{{summary.decision}}</strong></td>
 				</tr>
 			</tbody>

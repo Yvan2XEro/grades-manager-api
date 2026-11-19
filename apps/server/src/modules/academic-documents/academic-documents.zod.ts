@@ -35,6 +35,12 @@ export const generateDocumentSchema = z.object({
 	 * certificates and diplomas — the class of their latest favourable jury.
 	 */
 	classId: z.string().optional(),
+	/**
+	 * Academic year a transcript is about: the student's enrollment of that
+	 * year gives the class (and level) of the header. Defaults to the most
+	 * recent year with a closed jury, else with marks.
+	 */
+	academicYearId: z.string().optional(),
 	/** Optional — if provided, results are pulled from the deliberation's snapshot. */
 	deliberationId: z.string().optional(),
 	/**

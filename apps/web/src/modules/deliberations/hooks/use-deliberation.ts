@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { documentErrorMessage } from "@/lib/document-errors";
 import { downloadBase64 } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
@@ -76,7 +77,8 @@ export function useDeliberationActions(deliberationId: string) {
 			downloadBase64(result.data, result.filename, result.mimeType);
 			toast.success(t("admin.deliberations.toast.exportSuccess"));
 		},
-		onError: (err) => toast.error((err as Error).message),
+		// The PDF engine can fail (server-side): say so in words, never a code
+		onError: (err) => toast.error(documentErrorMessage(t, err)),
 	});
 
 	const excelExport = useMutation({

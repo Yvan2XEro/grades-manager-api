@@ -9,23 +9,16 @@ import type {
 import * as schema from "@/db/schema/app-schema";
 import { dispatchWebhook } from "@/lib/webhook-dispatch";
 import { conflict } from "@/modules/_shared/errors";
-import {
-	type ExamWithRetake,
-	normalizeExamType,
-	resolveStudentGradesWithRetakes,
-} from "../exports/template-helper";
 import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.types";
 import { getStudentPromotionFacts } from "../promotion-rules/student-facts.service";
 import { evaluateStudent } from "./deliberation-rules-engine";
 import * as repo from "./deliberations.repo";
 import type {
-	DeliberationCourseResult,
 	DeliberationFacts,
 	DeliberationStats,
 	DeliberationUeResult,
 	DiplomationExportData,
-	UeDecision,
 } from "./deliberations.types";
 import type {
 	CreateDeliberationInput,
@@ -41,6 +34,7 @@ import type {
 	UpdateDeliberationInput,
 	UpdateDeliberationRuleInput,
 } from "./deliberations.zod";
+import { buildUeInputs, computeStudentUeResults } from "./ue-results";
 
 // ---------------------------------------------------------------------------
 // State machine transitions
@@ -365,13 +359,7 @@ export async function compute(
 						with: { teachingUnit: true },
 					},
 					exams: {
-						with: {
-							grades: {
-								with: {
-									studentRef: { with: { profile: true } },
-								},
-							},
-						},
+						with: { grades: true },
 					},
 				},
 			},
@@ -430,57 +418,8 @@ export async function compute(
 
 	const gradeScale = await gradeScalesService.getForInstitution(institutionId);
 
-	// Build UE map from class courses
-	const ueMap = new Map<
-		string,
-		{
-			id: string;
-			code: string;
-			name: string;
-			credits: number;
-			courses: Array<{
-				id: string;
-				code: string;
-				name: string;
-				coefficient: number;
-				exams: ExamWithRetake[];
-			}>;
-		}
-	>();
-
-	for (const cc of classCourses) {
-		const ue = cc.courseRef.teachingUnit;
-		if (!ueMap.has(ue.id)) {
-			ueMap.set(ue.id, {
-				id: ue.id,
-				code: ue.code,
-				name: ue.name,
-				credits: ue.credits,
-				courses: [],
-			});
-		}
-
-		const exams = (cc.exams || []).map((exam) => ({
-			id: exam.id,
-			type: exam.type,
-			percentage: Number(exam.percentage),
-			sessionType: exam.sessionType || "normal",
-			parentExamId: exam.parentExamId || null,
-			scoringPolicy: exam.scoringPolicy || "replace",
-			grades: (exam.grades || []).map((grade) => ({
-				studentRef: { id: grade.studentRef.id },
-				score: grade.score,
-			})),
-		})) as ExamWithRetake[];
-
-		ueMap.get(ue.id)?.courses.push({
-			id: cc.courseRef.id,
-			code: cc.courseRef.code,
-			name: cc.courseRef.name,
-			coefficient: Number(cc.coefficient) || 1,
-			exams,
-		});
-	}
+	// Teaching units of the class with their courses, exams and marks
+	const ues = buildUeInputs(classCourses);
 
 	// Process each student
 	const studentResults: Array<{
@@ -502,170 +441,18 @@ export async function compute(
 	const includeRetakes = delib.type === "retake";
 
 	for (const student of population) {
-		// Compute UE results for this student
-		const ueResults: DeliberationUeResult[] = [];
-		let totalCreditsEarned = 0;
-		let totalCreditsPossible = 0;
-
-		for (const ue of ueMap.values()) {
-			const courseResults: DeliberationCourseResult[] = [];
-			const coursesWithGrades: Array<{
-				average: number;
-				coefficient: number;
-			}> = [];
-
-			for (const course of ue.courses) {
-				const resolved = resolveStudentGradesWithRetakes(
-					course.exams,
-					student.id,
-					includeRetakes,
-				);
-
-				const cc = resolved.find((r) => normalizeExamType(r.type) === "CC");
-				const ex = resolved.find((r) => normalizeExamType(r.type) === "EXAMEN");
-
-				let average: number | null = null;
-				if (cc && ex && cc.score !== null && ex.score !== null) {
-					average = (cc.score * cc.percentage + ex.score * ex.percentage) / 100;
-				} else if (resolved.length > 0) {
-					// If there's only one exam type, compute from available grades
-					const withScores = resolved.filter((r) => r.score !== null);
-					if (withScores.length > 0) {
-						const totalPerc = withScores.reduce(
-							(sum, r) => sum + r.percentage,
-							0,
-						);
-						if (totalPerc > 0) {
-							average =
-								withScores.reduce(
-									(sum, r) => sum + (r.score ?? 0) * r.percentage,
-									0,
-								) / totalPerc;
-						}
-					}
-				}
-
-				courseResults.push({
-					courseId: course.id,
-					courseCode: course.code,
-					courseName: course.name,
-					coefficient: course.coefficient,
-					average,
-					cc: cc?.score ?? null,
-					ex: ex?.score ?? null,
-					ccIsRetake: cc?.isRetake ?? false,
-					exIsRetake: ex?.isRetake ?? false,
-				});
-
-				if (average !== null) {
-					coursesWithGrades.push({
-						average,
-						coefficient: course.coefficient,
-					});
-				}
-			}
-
-			// UE average: weighted by coefficient
-			const allCoursesHaveGrades =
-				coursesWithGrades.length === ue.courses.length;
-			let ueAverage: number | null = null;
-
-			if (allCoursesHaveGrades && coursesWithGrades.length > 0) {
-				const sumWeighted = coursesWithGrades.reduce(
-					(sum, c) => sum + c.average * c.coefficient,
-					0,
-				);
-				const sumCoeffs = coursesWithGrades.reduce(
-					(sum, c) => sum + c.coefficient,
-					0,
-				);
-				ueAverage = sumCoeffs > 0 ? sumWeighted / sumCoeffs : null;
-			}
-
-			const isValidated =
-				allCoursesHaveGrades &&
-				ueAverage !== null &&
-				ueAverage >= gradeScale.passThreshold;
-
-			let ueDecision: UeDecision;
-			if (!allCoursesHaveGrades) {
-				ueDecision = "INC";
-			} else if (isValidated) {
-				ueDecision = "ADM";
-			} else {
-				ueDecision = "AJ";
-			}
-
-			const creditsEarned = isValidated ? ue.credits : 0;
-			totalCreditsEarned += creditsEarned;
-			totalCreditsPossible += ue.credits;
-
-			ueResults.push({
-				ueId: ue.id,
-				ueCode: ue.code,
-				ueName: ue.name,
-				ueCredits: ue.credits,
-				ueAverage,
-				isValidated,
-				isComplete: allCoursesHaveGrades,
-				decision: ueDecision,
-				creditsEarned,
-				courseResults,
-			});
-		}
-
-		// A student is only deliberated on complete results: every UE of the
-		// class must have a mark. Otherwise the average is partial and must not
-		// produce a rank, a mention or an automatic decision.
-		const allComplete =
-			ueResults.length > 0 && ueResults.every((ue) => ue.isComplete);
-		const incompleteUECount = ueResults.filter((ue) => !ue.isComplete).length;
-
-		// General average: credit-weighted UE averages
-		const uesWithAverages = ueResults.filter((ue) => ue.ueAverage !== null);
-		let generalAverage: number | null = null;
-
-		if (uesWithAverages.length > 0) {
-			const totalUeCredits = uesWithAverages.reduce(
-				(sum, ue) => sum + ue.ueCredits,
-				0,
-			);
-			if (totalUeCredits > 0) {
-				generalAverage =
-					uesWithAverages.reduce(
-						(sum, ue) => sum + ue.ueAverage! * ue.ueCredits,
-						0,
-					) / totalUeCredits;
-			} else {
-				generalAverage =
-					uesWithAverages.reduce((sum, ue) => sum + ue.ueAverage!, 0) /
-					uesWithAverages.length;
-			}
-		}
-
-		// -------------------------------------------------------------------
-		// LMD inter-UE compensation
-		// -------------------------------------------------------------------
-		// If generalAverage >= threshold, UEs that failed but are above the
-		// compensation bar are marked CMP (compensated) and their credits awarded.
-		if (
-			allComplete &&
-			generalAverage !== null &&
-			generalAverage >= gradeScale.passThreshold
-		) {
-			for (const ue of ueResults) {
-				if (
-					ue.decision === "AJ" &&
-					ue.ueAverage !== null &&
-					ue.ueAverage >= gradeScale.compensationThreshold
-				) {
-					ue.decision = "CMP";
-					ue.isValidated = true;
-					ue.creditsEarned = ue.ueCredits;
-					totalCreditsEarned += ue.ueCredits;
-				}
-			}
-		}
+		const {
+			ueResults,
+			average: generalAverage,
+			allComplete,
+			incompleteUECount,
+			totalCreditsEarned,
+			totalCreditsPossible,
+		} = computeStudentUeResults(ues, student.id, {
+			includeRetakes,
+			passThreshold: gradeScale.passThreshold,
+			compensationThreshold: gradeScale.compensationThreshold,
+		});
 
 		// Get promotion facts for rule evaluation
 		let promotionFacts: StudentPromotionFacts;
@@ -1113,6 +900,8 @@ export async function exportDiplomation(
 			totalCreditsEarned: r.totalCreditsEarned,
 			totalCreditsPossible: r.totalCreditsPossible,
 			finalDecision: r.finalDecision,
+			isOverridden: r.isOverridden,
+			overrideReason: r.isOverridden ? (r.overrideReason ?? null) : null,
 			mention: r.mention,
 			gradeLetter: r.mention
 				? (exportGradeScale.mentionRanges.find((mr) => mr.key === r.mention)

@@ -6,6 +6,10 @@ import { auth } from "@/lib/auth";
 import type { Context } from "@/lib/context";
 import { conflict, notFound } from "@/modules/_shared/errors";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
+import {
+	getStudentYearResults,
+	listStudentResultYears,
+} from "@/modules/deliberations/student-year-results";
 import * as usersService from "@/modules/users/users.service";
 import * as repo from "./profiles.repo";
 
@@ -67,8 +71,24 @@ export async function getResults(
 		profileId,
 		ctx.institution.id,
 	);
-	if (!student) return [];
-	return repo.listCourseResults(student.id, ctx.institution.id, academicYearId);
+	if (!student) return { years: [], results: null };
+	// The figures of the year's closed jury, else the live marks computed with
+	// the jury's formula — never the course-attempt ledger, which a jury does
+	// not update (it would show "0 / x – in progress" after a signed jury).
+	const { years, defaultAcademicYearId } = await listStudentResultYears(
+		ctx.institution.id,
+		student.id,
+	);
+	const yearId =
+		academicYearId && years.some((y) => y.academicYearId === academicYearId)
+			? academicYearId
+			: defaultAcademicYearId;
+	const results = yearId
+		? await getStudentYearResults(ctx.institution.id, student.id, {
+				academicYearId: yearId,
+			})
+		: null;
+	return { years, results };
 }
 
 export async function getFinances(profileId: string, ctx: Context) {
