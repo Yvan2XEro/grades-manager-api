@@ -66,6 +66,7 @@ export default function GradeEntry() {
 				courseId={courseId}
 				classCourses={entry.availableClassCourses}
 				isLoading={entry.classCoursesLoading}
+				canSeeAllCourses={entry.canSeeAllCourses}
 				onChange={entry.handleCourseChange}
 			/>
 

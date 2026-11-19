@@ -1938,6 +1938,11 @@
       "scoringPolicy": {
         "replace": "Remplacer la note originale",
         "best_of": "Conserver la meilleure note"
+      },
+      "weights": {
+        "offTotal": "Les évaluations de ce cours totalisent {{total}} au lieu de 100 % : la moyenne du cours sera faussée.",
+        "formOff": "Avec cette évaluation, les évaluations du cours totalisent {{total}}. Il faut 100 % pour une moyenne de cours correcte.",
+        "formOk": "Les évaluations du cours totalisent 100 %."
       }
     },
     "retake": {
@@ -5046,7 +5051,8 @@
       "selectCourse": {
         "label": "Sélectionner un cours",
         "empty": "Choisir un cours",
-        "emptyState": "Aucun cours ne vous est attribué. Contactez un administrateur."
+        "emptyState": "Aucun cours ne vous est attribué. Contactez un administrateur.",
+        "emptyStateAdmin": "Aucun cours n'a encore été ajouté à cette classe. Ajoutez-en depuis la fiche de la classe (Classes → onglet Cours)."
       },
       "selectExam": {
         "label": "Sélectionner une évaluation",

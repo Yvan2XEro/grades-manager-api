@@ -31,7 +31,9 @@ const STATUS_ORDER = ["draft", "open", "closed", "signed"] as const;
 export function DeliberationStatusProgress({ status }: { status: string }) {
 	const { t } = useTranslation();
 	const index = STATUS_ORDER.indexOf(status as (typeof STATUS_ORDER)[number]);
-	const label = t(`admin.deliberations.status.${status}`);
+	const label = t(
+		`admin.deliberations.status.${status as (typeof STATUS_ORDER)[number]}`,
+	);
 	return (
 		<div
 			className="flex items-center gap-2"

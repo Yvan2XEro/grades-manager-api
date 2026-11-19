@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useQueryErrorToast } from "@/hooks/useQueryErrorToast";
-import { useStore } from "@/store";
+import { type BusinessRole, roleGuards, useStore } from "@/store";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 import type {
 	CourseInfo,
@@ -35,14 +35,6 @@ export function useGradeEntry() {
 	const [searchParams] = useSearchParams();
 	const requestedExam = searchParams.get("exam") ?? "";
 	const [selectedExam, setSelectedExam] = useState<string>(requestedExam);
-
-	const classCoursesQuery = useQuery({
-		...trpc.classCourses.list.queryOptions({
-			teacherId: teacherProfileId ?? undefined,
-			limit: 200,
-		}),
-	});
-	const availableClassCourses = classCoursesQuery.data?.items ?? [];
 
 	useEffect(() => {
 		if (routeCourseId && !manualCourseSelectionRef.current) {
@@ -99,13 +91,29 @@ export function useGradeEntry() {
 					program_name: program.name,
 				} as CourseInfo,
 				teacherId: classCourse.teacher ?? null,
+				classId: klass.id,
 			};
 		},
 	});
 
 	const courseContext = courseContextQuery.data as
-		| { courseInfo: CourseInfo; teacherId: string | null }
+		| { courseInfo: CourseInfo; teacherId: string | null; classId: string }
 		| undefined;
+
+	// The server already limits teachers to their own (and delegated) courses.
+	// Admins see every course, so their picker lists the courses of the class
+	// being graded instead of the whole institution.
+	const canSeeAllCourses = roleGuards.manageCatalog.includes(
+		user?.role as BusinessRole,
+	);
+	const classCoursesQuery = useQuery({
+		...trpc.classCourses.list.queryOptions({
+			classId: canSeeAllCourses ? courseContext?.classId : undefined,
+			limit: 200,
+		}),
+		enabled: !canSeeAllCourses || !courseId || Boolean(courseContext),
+	});
+	const availableClassCourses = classCoursesQuery.data?.items ?? [];
 	const courseInfo = courseContext?.courseInfo ?? null;
 	const courseOwnerId = courseContext?.teacherId ?? null;
 
@@ -260,6 +268,7 @@ export function useGradeEntry() {
 		viewerProfileId,
 		availableClassCourses,
 		classCoursesLoading: classCoursesQuery.isLoading,
+		canSeeAllCourses,
 		handleCourseChange,
 		courseInfo,
 		canManageDelegates,

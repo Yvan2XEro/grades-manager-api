@@ -455,6 +455,7 @@ interface Resources {
 					"label": "Select class course";
 					"empty": "Choose a class course";
 					"emptyState": "No class courses assigned. Contact an administrator.";
+					"emptyStateAdmin": "No course has been added to this class yet. Add courses from the class page (Classes → Courses tab).";
 				};
 				"selectExam": {
 					"label": "Select exam";
@@ -3043,6 +3044,11 @@ interface Resources {
 				};
 				"rejection": {
 					"label": "Rejection reason:";
+				};
+				"weights": {
+					"offTotal": "The exams of this course add up to {{total}} instead of 100%: the course average will be wrong.";
+					"formOff": "With this exam, the course's exams add up to {{total}}. They should make 100% for a correct course average.";
+					"formOk": "The course's exams add up to 100%.";
 				};
 			};
 			"examTypes": {

@@ -42,11 +42,10 @@ interface Props {
 }
 
 /** Decisions whose effect deserves a one-line explanation. */
-const HELP_DECISIONS: readonly DeliberationDecision[] = [
-	"deferred",
-	"repeat",
-	"excluded",
-];
+const HELP_DECISIONS = ["deferred", "repeat", "excluded"] as const;
+type HelpDecision = (typeof HELP_DECISIONS)[number];
+const hasHelp = (d: string): d is HelpDecision =>
+	(HELP_DECISIONS as readonly string[]).includes(d);
 
 const formatAverage = (value: number | null | undefined) =>
 	value != null ? Number(value).toFixed(2) : "—";
@@ -75,9 +74,7 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 			(d) => d !== currentDecision,
 		);
 		// Help lines only for the decisions the jury can actually pick here
-		const helpDecisions = selectableDecisions.filter((d) =>
-			HELP_DECISIONS.includes(d),
-		);
+		const helpDecisions = selectableDecisions.filter(hasHelp);
 		const canRestore =
 			result.isOverridden &&
 			computedDecision !== "pending" &&

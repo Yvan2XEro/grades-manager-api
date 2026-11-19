@@ -15,6 +15,8 @@ export interface ExamRow {
 	sessionType?: "normal" | "retake";
 	parentExamId?: string | null;
 	status?: string;
+	/** Sum of the weights of the course's regular exams (100 when complete). */
+	courseWeightTotal?: number;
 }
 
 /** Class-course assignment as listed for the exam form and the exams list. */

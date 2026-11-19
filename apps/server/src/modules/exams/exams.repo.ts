@@ -10,6 +10,7 @@ import {
 	inArray,
 	lt,
 	or,
+	sql,
 } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
@@ -156,8 +157,14 @@ export async function list(opts: {
 		.where(condition)
 		.orderBy(asc(schema.exams.id))
 		.limit(limit);
+	const weightTotals = await courseWeightTotals([
+		...new Set(rows.map((row) => row.exam.classCourse)),
+	]);
+
 	const items = rows.map((row) => ({
 		...row.exam,
+		/** Sum of the weights of the course's regular (non-retake) exams. */
+		courseWeightTotal: weightTotals.get(row.exam.classCourse) ?? 0,
 		classCourse: row.exam.classCourse,
 		classCourseId: row.classCourseId,
 		classCourseCode: row.classCourseCode,
@@ -301,8 +308,14 @@ export async function listPaged(opts: {
 			.where(where),
 	]);
 
+	const weightTotals = await courseWeightTotals([
+		...new Set(rows.map((row) => row.exam.classCourse)),
+	]);
+
 	const items = rows.map((row) => ({
 		...row.exam,
+		/** Sum of the weights of the course's regular (non-retake) exams. */
+		courseWeightTotal: weightTotals.get(row.exam.classCourse) ?? 0,
 		classCourse: row.exam.classCourse,
 		classCourseId: row.classCourseId,
 		classCourseCode: row.classCourseCode,
@@ -315,6 +328,30 @@ export async function listPaged(opts: {
 
 	const totalCount = Number(total ?? 0);
 	return { items, total: totalCount, pageCount: Math.ceil(totalCount / size) };
+}
+
+/**
+ * Sum of the exam weights of each class course, regular sessions only: a
+ * retake replaces its parent exam, it does not add to the course total.
+ */
+export async function courseWeightTotals(classCourseIds: string[]) {
+	const totals = new Map<string, number>();
+	if (classCourseIds.length === 0) return totals;
+	const rows = await db
+		.select({
+			classCourse: schema.exams.classCourse,
+			total: sql<string>`coalesce(sum(${schema.exams.percentage}),0)`,
+		})
+		.from(schema.exams)
+		.where(
+			and(
+				inArray(schema.exams.classCourse, classCourseIds),
+				eq(schema.exams.sessionType, "normal"),
+			),
+		)
+		.groupBy(schema.exams.classCourse);
+	for (const row of rows) totals.set(row.classCourse, Number(row.total));
+	return totals;
 }
 
 export async function setLock(

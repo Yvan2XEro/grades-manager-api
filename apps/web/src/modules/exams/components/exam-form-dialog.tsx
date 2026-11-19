@@ -27,7 +27,8 @@ export const ExamFormDialog = createCallable<
 >(({ call, exam }) => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const { form, classCourseOptions, createClassCourse } = useExamForm(exam);
+	const { form, classCourseOptions, createClassCourse, weightTotal } =
+		useExamForm(exam);
 
 	const submit = useMutationFlow(call, async (call, data: ExamFormData) => {
 		try {
@@ -77,6 +78,7 @@ export const ExamFormDialog = createCallable<
 						form={form}
 						classCourseOptions={classCourseOptions}
 						onCreateClassCourse={createClassCourse}
+						weightTotal={weightTotal}
 					/>
 
 					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

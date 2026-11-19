@@ -74,7 +74,13 @@ async function assertPercentageLimit(
 			total: sql<number>`coalesce(sum(${schema.exams.percentage}),0)`,
 		})
 		.from(schema.exams)
-		.where(eq(schema.exams.classCourse, classCourseId));
+		// A retake replaces its parent exam: it does not add to the course total
+		.where(
+			and(
+				eq(schema.exams.classCourse, classCourseId),
+				eq(schema.exams.sessionType, "normal"),
+			),
+		);
 	let aggregated = Number(total);
 	if (excludeExam) {
 		aggregated -= Number(excludeExam.percentage);
@@ -132,7 +138,12 @@ export async function createExam(
 				total: sql<number>`coalesce(sum(${schema.exams.percentage}),0)`,
 			})
 			.from(schema.exams)
-			.where(eq(schema.exams.classCourse, data.classCourse));
+			.where(
+				and(
+					eq(schema.exams.classCourse, data.classCourse),
+					eq(schema.exams.sessionType, "normal"),
+				),
+			);
 		if (Number(total) + Number(data.percentage) > 100) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
@@ -180,7 +191,8 @@ export async function updateExam(
 		await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 		payload.institutionId = institutionId;
 	}
-	if (data.percentage !== undefined) {
+	// Retakes replace their parent exam and do not count in the course total
+	if (data.percentage !== undefined && existing.sessionType === "normal") {
 		await assertPercentageLimit(existing.classCourse, Number(data.percentage), {
 			id,
 			percentage: Number(existing.percentage),

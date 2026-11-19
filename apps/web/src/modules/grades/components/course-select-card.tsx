@@ -14,6 +14,7 @@ export function CourseSelectCard({
 	courseId,
 	classCourses,
 	isLoading,
+	canSeeAllCourses,
 	onChange,
 }: {
 	courseId: string;
@@ -25,6 +26,8 @@ export function CourseSelectCard({
 		className?: string | null;
 	}>;
 	isLoading: boolean;
+	/** Admins see every course: their empty state is not "none assigned". */
+	canSeeAllCourses: boolean;
 	onChange: (value: string) => void;
 }) {
 	const { t } = useTranslation();
@@ -56,7 +59,9 @@ export function CourseSelectCard({
 					</Select>
 					{classCourses.length === 0 && !isLoading ? (
 						<p className="text-muted-foreground text-xs">
-							{t("teacher.gradeEntry.selectCourse.emptyState")}
+							{canSeeAllCourses
+								? t("teacher.gradeEntry.selectCourse.emptyStateAdmin")
+								: t("teacher.gradeEntry.selectCourse.emptyState")}
 						</p>
 					) : null}
 				</div>
