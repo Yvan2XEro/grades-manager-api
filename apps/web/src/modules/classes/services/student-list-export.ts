@@ -2,6 +2,7 @@ import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { formatDate } from "@/lib/date-format";
 import { downloadBase64, fileDateStamp } from "@/lib/download";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
@@ -44,7 +45,7 @@ async function loadStudentList(cls: ClassRow, t: TFunction) {
 			student.profile.lastName,
 			student.profile.firstName,
 			student.profile.dateOfBirth
-				? new Date(student.profile.dateOfBirth).toLocaleDateString()
+				? formatDate(student.profile.dateOfBirth, "P")
 				: "-",
 			gender(student.profile.gender),
 		]),
@@ -92,7 +93,7 @@ async function exportBasicPdf(cls: ClassRow, t: TFunction) {
 			align: "center",
 		});
 		doc.text(
-			`${t("admin.classes.export.generatedOn")}: ${new Date().toLocaleString()}`,
+			`${t("admin.classes.export.generatedOn")}: ${formatDate(new Date(), "Pp")}`,
 			14,
 			290,
 		);

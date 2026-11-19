@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { Download, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +9,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { formatDate } from "@/lib/date-format";
 import type { ExamItem } from "../types";
 import { BusyIcon } from "./export-ui";
 
@@ -99,7 +99,7 @@ export function ExamExportsCard({
 										{exam.type}
 									</td>
 									<td className="px-4 py-2 text-muted-foreground">
-										{format(new Date(exam.date), "dd MMM yyyy")}
+										{formatDate(exam.date)}
 									</td>
 									<td className="px-4 py-2 text-right">
 										<Button

@@ -231,6 +231,54 @@ describe("guided import — academic year steps", () => {
 	});
 });
 
+describe("guided import — known people", () => {
+	it("attaches a new student to the person already registered with that e-mail", async () => {
+		const { ctx, caller } = await admin();
+		const institutionId = ctx.institution!.id;
+		const { s, program, past } = await fixture(institutionId);
+		const [person] = await db
+			.insert(schema.domainUsers)
+			.values({
+				firstName: "Christelle",
+				lastName: "Mballa",
+				primaryEmail: `christelle${s}@x.cm`,
+				institutionId,
+			})
+			.returning();
+		await importStep(caller, "year.classes", past.id, {
+			Classes: [CLASS_HEADERS, [`P${s}`, `P ${s}`, program.code, "L1"]],
+		});
+		const summary = await importStep(caller, "year.students", past.id, {
+			Étudiants: [
+				STUDENT_HEADERS,
+				[
+					`P${s}1`,
+					"Mballa",
+					"Christelle",
+					"12/03/2006",
+					"F",
+					`Christelle${s}@x.cm`,
+					`P${s}`,
+				],
+			],
+		});
+		expect(summary.sheets[0]).toMatchObject({ create: 1 });
+		const student = await db.query.students.findFirst({
+			where: eq(schema.students.registrationNumber, `P${s}1`),
+		});
+		expect(student?.domainUserId).toBe(person.id);
+		// No second profile: the existing one got the file's details
+		const sameName = await db.query.domainUsers.findMany({
+			where: and(
+				eq(schema.domainUsers.institutionId, institutionId),
+				eq(schema.domainUsers.lastName, "Mballa"),
+			),
+		});
+		expect(sameName).toHaveLength(1);
+		expect(sameName[0]?.gender).toBe("female");
+	});
+});
+
 describe("guided import — sending a fixed file again", () => {
 	it("supersedes the previous analysis that was never imported", async () => {
 		const { ctx, caller } = await admin();
@@ -608,6 +656,41 @@ describe("guided import — undo", () => {
 				where: eq(schema.classes.code, `U${s}`),
 			}),
 		).toBeUndefined();
+	});
+});
+
+describe("guided import — undo after closing", () => {
+	it("refuses to undo a class import while a deliberation uses the class", async () => {
+		const { ctx, caller } = await admin();
+		const institutionId = ctx.institution!.id;
+		const { s, program, past } = await fixture(institutionId);
+		const fileId = await upload(caller, {
+			Classes: [CLASS_HEADERS, [`D${s}`, `D ${s}`, program.code, "L1"]],
+		});
+		const job = await caller.batchJobs.preview({
+			type: "import.step",
+			params: { step: "year.classes", fileId, academicYearId: past.id },
+		});
+		await caller.batchJobs.run({ jobId: job.id });
+		const klass = await db.query.classes.findFirst({
+			where: eq(schema.classes.code, `D${s}`),
+		});
+		await db.insert(schema.deliberations).values({
+			institutionId,
+			classId: klass!.id,
+			academicYearId: past.id,
+			type: "annual",
+			createdBy: ctx.profile!.id,
+		});
+
+		const refused = await caller.batchJobs.rollback({ jobId: job.id });
+		expect(refused?.status).toBe("failed");
+		expect(refused?.error).toStartWith("Cannot undo");
+		expect(
+			await db.query.classes.findFirst({
+				where: eq(schema.classes.id, klass!.id),
+			}),
+		).toBeDefined();
 	});
 });
 

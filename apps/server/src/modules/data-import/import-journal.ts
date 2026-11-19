@@ -160,7 +160,7 @@ export async function undoImport(jobId: string, academicYearId?: string) {
 	// Dependencies created outside this import block the undo
 	const blocking: {
 		table: JournalTable;
-		dependent: JournalTable;
+		dependent: JournalTable | "deliberations";
 		count: number;
 	}[] = [];
 	for (const [table, ids] of createdBy) {
@@ -174,6 +174,20 @@ export async function undoImport(jobId: string, academicYearId?: string) {
 			if (foreign.length)
 				blocking.push({ table, dependent, count: foreign.length });
 		}
+	}
+	// Deliberations (computed when the year is closed) keep their class
+	const createdClasses = createdBy.get("classes");
+	if (createdClasses?.size) {
+		const delibs = await db
+			.select({ id: schema.deliberations.id })
+			.from(schema.deliberations)
+			.where(inArray(schema.deliberations.classId, [...createdClasses]));
+		if (delibs.length)
+			blocking.push({
+				table: "classes",
+				dependent: "deliberations",
+				count: delibs.length,
+			});
 	}
 	if (blocking.length)
 		throw new TRPCError({

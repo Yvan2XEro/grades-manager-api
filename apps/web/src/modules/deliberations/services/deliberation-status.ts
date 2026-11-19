@@ -38,7 +38,7 @@ export const decisionVariants: Record<string, BadgeVariant> = {
 	deferred: "outline",
 	repeat: "destructive",
 	excluded: "destructive",
-	pending: "outline",
+	pending: "warning",
 };
 
 export const ueDecisionVariants: Record<string, BadgeVariant> = {
@@ -47,3 +47,23 @@ export const ueDecisionVariants: Record<string, BadgeVariant> = {
 	AJ: "destructive",
 	INC: "outline",
 };
+
+type ResultLike = {
+	finalDecision?: string | null;
+	ueResults?: Array<{ isComplete?: boolean }> | null;
+};
+
+/** Number of UEs of a student result that still miss marks. */
+export function incompleteUeCount(result: ResultLike): number {
+	return (result.ueResults ?? []).filter((ue) => ue.isComplete === false)
+		.length;
+}
+
+/**
+ * Whether a student's results are incomplete (missing marks): such a student
+ * has no general average, rank, mention or automatic decision.
+ */
+export function isIncompleteResult(result: ResultLike): boolean {
+	const ues = result.ueResults ?? [];
+	return ues.length === 0 || incompleteUeCount(result) > 0;
+}

@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 import * as XLSX from "xlsx";
 import i18n from "@/i18n";
+import { formatMoney } from "@/lib/money";
 import type {
 	AdmissionsStats,
 	EnrollmentStats,
@@ -45,7 +46,9 @@ export const exportEnrollmentStats = (data: EnrollmentStats) =>
 		[
 			x("sheets.byGender"),
 			data.byGender.map((g) => ({
-				[x("columns.gender")]: g.gender ?? NA(),
+				[x("columns.gender")]: i18n.t(
+					`admin.statistics.gender.${g.gender ?? "unknown"}` as never,
+				),
 				[x("columns.count")]: g.count,
 			})),
 		],
@@ -56,14 +59,18 @@ export const exportPerformanceStats = (data: PerformanceStats) =>
 		[
 			x("sheets.byDecision"),
 			data.byDecision.map((d) => ({
-				[x("columns.decision")]: d.decision ?? NA(),
+				[x("columns.decision")]: i18n.t(
+					`admin.deliberations.decision.${d.decision ?? "pending"}` as never,
+				),
 				[x("columns.students")]: d.count,
 			})),
 		],
 		[
 			x("sheets.byMention"),
 			data.byMention.map((m) => ({
-				[x("columns.mention")]: m.mention ?? NA(),
+				[x("columns.mention")]: m.mention
+					? i18n.t(`admin.deliberations.mention.${m.mention}` as never)
+					: NA(),
 				[x("columns.students")]: m.count,
 			})),
 		],
@@ -129,9 +136,5 @@ export const exportAdmissionsStats = (data: AdmissionsStats) =>
 		],
 	]);
 
-export function formatAmount(n: number) {
-	return `${new Intl.NumberFormat("fr-FR", {
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(n)} XAF`;
-}
+/** Amount in FCFA, in the UI language. */
+export const formatAmount = (n: number) => formatMoney(n);

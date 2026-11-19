@@ -4,6 +4,10 @@ import { Download, FileText, GraduationCap, IdCard, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+	documentErrorMessage,
+	ineligibilityLabel,
+} from "@/lib/document-errors";
 import { downloadBase64 } from "@/lib/download";
 import { trpcClient } from "@/utils/trpc";
 
@@ -44,11 +48,16 @@ export function DocumentCard({
 	isGated,
 	isCleared,
 	canDownload,
+	reason,
+	decision,
 }: {
 	kind: DocKind;
 	isGated: boolean;
 	isCleared: boolean;
 	canDownload: boolean;
+	/** Why the document cannot be issued yet (no favourable jury decision…). */
+	reason?: string | null;
+	decision?: string | null;
 }) {
 	const { t } = useTranslation();
 	const cfg = DOC_CONFIG[kind];
@@ -80,10 +89,17 @@ export function DocumentCard({
 						</div>
 					)}
 
+					{reason && (
+						<div className="mt-3 flex items-center gap-1.5 text-amber-700 text-xs dark:text-amber-400">
+							<Lock className="h-3.5 w-3.5" />
+							<span>{ineligibilityLabel(t, reason, decision)}</span>
+						</div>
+					)}
+
 					{generateMut.isError && (
 						<Alert variant="destructive" className="mt-3 py-2">
 							<AlertDescription className="text-xs">
-								{t("student.documents.generateError")}
+								{documentErrorMessage(t, generateMut.error)}
 							</AlertDescription>
 						</Alert>
 					)}

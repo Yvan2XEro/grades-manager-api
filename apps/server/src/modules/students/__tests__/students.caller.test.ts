@@ -55,6 +55,42 @@ describe("students router", () => {
 		expect(events[0]?.academicYear).toBe(year1.name);
 	});
 
+	it("enrolls an existing person in a class without a second profile", async () => {
+		const admin = createCaller(asAdmin());
+		const klass = await createClass();
+		const [person] = await db
+			.insert(schema.domainUsers)
+			.values({
+				firstName: "Christelle",
+				lastName: "Mballa",
+				primaryEmail: `person-${randomUUID()}@example.com`,
+				institutionId: klass.institutionId,
+			})
+			.returning();
+
+		const student = await admin.students.enrollPerson({
+			domainUserId: person.id,
+			classId: klass.id,
+			registrationNumber: `REG-${randomUUID().slice(0, 8)}`,
+		});
+
+		expect(student.domainUserId).toBe(person.id);
+		const enrollments = await db.query.enrollments.findMany({
+			where: eq(schema.enrollments.studentId, student.id),
+		});
+		expect(enrollments).toHaveLength(1);
+		expect(enrollments[0]?.status).toBe("active");
+		expect(enrollments[0]?.academicYearId).toBe(klass.academicYear);
+
+		// Second time: already a student
+		await expect(
+			admin.students.enrollPerson({
+				domainUserId: person.id,
+				classId: klass.id,
+			}),
+		).rejects.toHaveProperty("code", "CONFLICT");
+	});
+
 	it("requires auth", async () => {
 		const caller = createCaller(makeTestContext());
 		await expect(caller.students.list({})).rejects.toHaveProperty(

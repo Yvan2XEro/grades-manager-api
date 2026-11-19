@@ -1,7 +1,7 @@
-import { format } from "date-fns";
 import { Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "../services/fee-format";
 import type { FeeAssignment } from "../types";
@@ -27,7 +27,7 @@ export function AssignmentBalanceSummary({
 
 	return (
 		<>
-			<div className="grid grid-cols-4 gap-4 rounded-lg border p-4">
+			<div className="grid grid-cols-2 gap-4 rounded-lg border p-4 md:grid-cols-4">
 				<div>
 					<p className="text-muted-foreground text-xs">
 						{t("feeClearance.assignments.fields.status")}
@@ -64,7 +64,7 @@ export function AssignmentBalanceSummary({
 			{assignment.status === "paid" && assignment.clearedAt && (
 				<div className="rounded-lg border border-green-200 bg-green-50 p-3 text-green-800 text-sm">
 					{t("feeClearance.quitus.clearedOn", {
-						date: format(new Date(assignment.clearedAt), "dd/MM/yyyy HH:mm"),
+						date: formatDate(assignment.clearedAt, "PPp"),
 					})}
 				</div>
 			)}

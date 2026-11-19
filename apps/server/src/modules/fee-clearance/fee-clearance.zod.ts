@@ -174,6 +174,20 @@ export const recordPaymentSchema = z.object({
 	notes: z.string().optional(),
 });
 
+export const studentPaymentContextSchema = z.object({
+	studentId: z.string(),
+	academicYearId: z.string().optional(),
+});
+
+export const recordStudentPaymentSchema = recordPaymentSchema
+	.omit({ feeAssignmentId: true })
+	.extend({
+		studentId: z.string(),
+		academicYearId: z.string(),
+		/** Assigned first when the student has no fees for the year. */
+		feeStructureId: z.string().optional(),
+	});
+
 export const deletePaymentSchema = z.object({
 	paymentId: z.string(),
 });

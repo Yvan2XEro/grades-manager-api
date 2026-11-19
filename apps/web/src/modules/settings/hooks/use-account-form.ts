@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
-import { useStore } from "@/store";
 
 const buildAccountSchema = (t: TFunction) =>
 	z.object({
@@ -19,7 +18,6 @@ type AccountFormValues = z.infer<ReturnType<typeof buildAccountSchema>>;
 /** Display name of the auth account, synced from the session. */
 export function useAccountForm() {
 	const { t } = useTranslation();
-	const { user, setUser } = useStore();
 	const { data: session, refetch: refetchSession } = authClient.useSession();
 	const accountSchema = useMemo(() => buildAccountSchema(t), [t]);
 
@@ -37,16 +35,7 @@ export function useAccountForm() {
 		mutationFn: async (values: AccountFormValues) =>
 			authClient.updateUser({ name: values.name.trim() }),
 		onSuccess: async () => {
-			// updateUser resolves with `{ data: { status } }`, never the user: use the submitted name.
-			const name = form.getValues("name");
-			if (user && name) {
-				const [firstName, ...rest] = name.split(" ");
-				setUser({
-					...user,
-					firstName: firstName || user.firstName,
-					lastName: rest.join(" ") || user.lastName,
-				});
-			}
+			// The header shows the institutional profile's name: nothing to sync here.
 			await refetchSession();
 			toast.success(t("settings.account.toast.success"));
 		},

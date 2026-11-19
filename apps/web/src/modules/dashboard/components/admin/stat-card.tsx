@@ -22,10 +22,11 @@ export function StatCard({ card, label }: { card: KpiCard; label: string }) {
 				onClick={() => openPage(card.page)}
 			>
 				<Card className="group cursor-pointer border-0 shadow-sm transition-all duration-200 hover:shadow-lg">
-					<CardContent className="flex items-center gap-4 p-5">
+					{/* Phones: icon above the text so the label gets the full width */}
+					<CardContent className="relative flex flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
 						<div
 							className={cn(
-								"flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-110",
+								"flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-110 sm:h-12 sm:w-12",
 								card.gradient,
 								card.iconColor,
 							)}
@@ -33,7 +34,7 @@ export function StatCard({ card, label }: { card: KpiCard; label: string }) {
 							{card.icon}
 						</div>
 						<div className="min-w-0 flex-1">
-							<p className="truncate font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							<p className="line-clamp-2 break-words font-medium text-muted-foreground text-xs uppercase tracking-wide">
 								{label}
 							</p>
 							<p className="animate-counter-in font-bold font-heading text-2xl text-foreground tabular-nums leading-tight">
@@ -42,8 +43,13 @@ export function StatCard({ card, label }: { card: KpiCard; label: string }) {
 									<span className="font-semibold text-base">{card.suffix}</span>
 								)}
 							</p>
+							{card.hint && (
+								<p className="mt-0.5 text-muted-foreground text-xs">
+									{card.hint}
+								</p>
+							)}
 						</div>
-						<ArrowUpRight className="group-hover:-translate-y-0.5 h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
+						<ArrowUpRight className="group-hover:-translate-y-0.5 absolute top-4 right-4 h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary sm:static" />
 					</CardContent>
 				</Card>
 			</button>

@@ -1647,6 +1647,16 @@ function resolveSeedOrganization(
 	return firstOrg;
 }
 
+/** Seed files may spell genders "FEMALE", "F", "Masculin"...: store the enum value or null. */
+function normalizeGender(value: string | null | undefined): Gender | null {
+	const v = (value ?? "").trim().toLowerCase();
+	if (["male", "m", "masculin", "homme"].includes(v)) return "male";
+	if (["female", "f", "feminin", "féminin", "femme"].includes(v))
+		return "female";
+	if (v === "other") return "other";
+	return null;
+}
+
 function determineMemberRole(
 	seed: DomainUserSeed,
 ): OrganizationRoleName | null {
@@ -1680,8 +1690,9 @@ async function seedUsers(
 			null;
 
 		// Persist family names in UPPERCASE for storage consistency.
-		const normalizedFirstName = (entry.firstName ?? "").toUpperCase();
-		const normalizedLastName = entry.lastName ?? "";
+		const normalizedFirstName = entry.firstName ?? "";
+		const normalizedLastName = (entry.lastName ?? "").toUpperCase();
+		const normalizedGender = normalizeGender(entry.gender);
 
 		// Resolve (or create) the org membership first so we can use memberId as
 		// the canonical identity link — authUserId is no longer stored on domainUsers.
@@ -1749,7 +1760,7 @@ async function seedUsers(
 					phone: entry.phone ?? null,
 					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
 					placeOfBirth: entry.placeOfBirth ?? null,
-					gender: entry.gender ?? null,
+					gender: normalizedGender,
 					nationality: entry.nationality ?? null,
 					status: entry.status ?? "active",
 					updatedAt: now,
@@ -1768,7 +1779,7 @@ async function seedUsers(
 					phone: entry.phone ?? null,
 					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
 					placeOfBirth: entry.placeOfBirth ?? null,
-					gender: entry.gender ?? null,
+					gender: normalizedGender,
 					nationality: entry.nationality ?? null,
 					status: entry.status ?? "active",
 					updatedAt: now,

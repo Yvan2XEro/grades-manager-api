@@ -13,7 +13,7 @@ export function AssignmentStatusSummary({
 	onToggle: (status: string) => void;
 }) {
 	return (
-		<div className="grid grid-cols-4 gap-3">
+		<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 			{ASSIGNMENT_STATUSES.map((s) => (
 				<button
 					key={s}

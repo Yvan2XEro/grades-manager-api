@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { Download, FileSpreadsheet } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { formatDate } from "@/lib/date-format";
 import { useTeacherGradeExport } from "../hooks/use-teacher-grade-export";
 import { exportTeacherTranscript } from "../services/teacher-transcript-excel";
 
@@ -156,8 +156,7 @@ export default function TeacherGradeExport() {
 												{exam.courseName} - {exam.name}
 											</div>
 											<div className="text-muted-foreground text-xs">
-												{format(new Date(exam.date), "MMM d, yyyy")} (
-												{exam.percentage}%)
+												{formatDate(exam.date)} ({exam.percentage}%)
 											</div>
 										</label>
 									</div>

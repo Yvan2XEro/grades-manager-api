@@ -10,6 +10,7 @@ import ProfileGuardiansTab from "./pages/profile-detail/profile-detail-guardians
 import ProfileIdentityTab from "./pages/profile-detail/profile-detail-identity";
 import ProfileHub from "./pages/profile-detail/profile-detail-layout";
 import ProfileResultsTab from "./pages/profile-detail/profile-detail-results";
+import StudentsPage from "./pages/students-page";
 import UsersHub from "./pages/users-layout";
 
 export const peopleRoutes = (
@@ -23,11 +24,9 @@ export const peopleRoutes = (
 				path="accounts"
 				element={<Navigate to="/users/people" replace />}
 			/>
-			<Route
-				path="students"
-				element={<Navigate to="/users/people" replace />}
-			/>
+			<Route path="students" element={<Navigate to="/students" replace />} />
 		</Route>
+		<Route path="students" element={<StudentsPage />} />
 		<Route path="profiles/:profileId" element={<ProfileHub />}>
 			<Route index element={<Navigate to="identity" replace />} />
 			<Route path="identity" element={<ProfileIdentityTab />} />

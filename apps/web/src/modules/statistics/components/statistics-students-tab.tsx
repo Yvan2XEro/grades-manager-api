@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { genderLabel } from "@/lib/enum-labels";
 import { useEnrollmentStats } from "../hooks/use-statistics";
 import { exportEnrollmentStats } from "../services/statistics-export";
 import { ChartCard } from "./chart-card";
@@ -42,11 +43,12 @@ export function StatisticsStudentsTab({ yearId }: { yearId: string | null }) {
 			color: STATUS_COLORS[s.status] ?? "var(--chart-5)",
 		}));
 	const byGender = (data?.byGender ?? []).map((g) => ({
-		name: t(`admin.statistics.gender.${g.gender ?? "unknown"}`, {
-			defaultValue: g.gender ?? "N/A",
-		}),
+		name: g.gender
+			? genderLabel(g.gender)
+			: t("admin.statistics.gender.unknown"),
 		value: g.count,
-		color: GENDER_COLORS[g.gender ?? "other"] ?? "var(--chart-5)",
+		color:
+			GENDER_COLORS[g.gender?.toLowerCase() ?? "other"] ?? "var(--chart-5)",
 	}));
 
 	return (

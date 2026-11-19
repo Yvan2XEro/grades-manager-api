@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 import { z } from "zod";
 import i18n from "@/i18n";
+import { roleLabel as sharedRoleLabel } from "@/lib/enum-labels";
 
 export const ASSIGNABLE_ROLES = [
 	"administrator",
@@ -17,7 +18,9 @@ const isAssignableRole = (role: string): role is AssignableRole =>
 	(ASSIGNABLE_ROLES as readonly string[]).includes(role);
 
 export const roleLabel = (t: TFunction, role?: string | null) =>
-	role && isAssignableRole(role) ? t(`admin.users.roles.${role}`) : role;
+	role && isAssignableRole(role)
+		? t(`admin.users.roles.${role}`)
+		: sharedRoleLabel(role);
 
 export const createAccountSchema = z.object({
 	email: z.string().email({

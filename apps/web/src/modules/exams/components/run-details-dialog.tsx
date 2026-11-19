@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useMemo } from "react";
 import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
+import { formatDate } from "@/lib/date-format";
 import { useSchedulerRunDetails } from "../hooks/use-exam-scheduler";
 import { getSchedulerRunExamsColumns } from "../table/scheduler-run-exams-columns";
 
@@ -48,7 +48,7 @@ export const RunDetailsDialog = createCallable<{ runId: string }>(
 							<div className="space-y-4">
 								<div className="text-muted-foreground text-xs">
 									{t("admin.examScheduler.history.details.subtitle", {
-										date: format(new Date(details.run.createdAt), "PPp"),
+										date: formatDate(details.run.createdAt, "PPp"),
 									})}
 								</div>
 								<DataTable columns={columns} data={details.exams} />

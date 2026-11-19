@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -11,6 +10,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/date-format";
+import { formatMoney } from "@/lib/money";
 import type { FinancialHistoryEntry } from "../types";
 import { AssignmentStatusBadge, OrderStatusBadge } from "./status-badges";
 
@@ -69,13 +70,13 @@ export function FinancialHistoryCard({
 										{o.reference ?? "—"}
 									</TableCell>
 									<TableCell className="font-medium">
-										{Number(o.amount).toLocaleString()} {a.currency}
+										{formatMoney(o.amount, a.currency)}
 									</TableCell>
 									<TableCell>
 										<OrderStatusBadge status={o.status} />
 									</TableCell>
 									<TableCell className="text-sm">
-										{format(new Date(o.createdAt), "dd/MM/yyyy")}
+										{formatDate(o.createdAt, "P")}
 									</TableCell>
 								</TableRow>
 							))}
@@ -114,13 +115,13 @@ export function FinancialHistoryCard({
 										{p.reference ?? "—"}
 									</TableCell>
 									<TableCell className="font-medium text-green-600">
-										{Number(p.amount).toLocaleString()} {a.currency}
+										{formatMoney(p.amount, a.currency)}
 									</TableCell>
 									<TableCell>
 										{t(`feeClearance.payments.methods.${p.paymentMethod}`)}
 									</TableCell>
 									<TableCell className="text-sm">
-										{format(new Date(p.paymentDate), "dd/MM/yyyy")}
+										{formatDate(p.paymentDate, "P")}
 									</TableCell>
 								</TableRow>
 							))}
@@ -140,7 +141,7 @@ export function FinancialHistoryCard({
 				<div className="flex items-center gap-1 border-t px-4 py-2 text-green-600 text-xs">
 					<CheckCircle className="h-3 w-3" />
 					{t("feeClearance.quitus.clearedOn", {
-						date: format(new Date(a.clearedAt), "dd/MM/yyyy HH:mm"),
+						date: formatDate(a.clearedAt, "PPp"),
 					})}
 				</div>
 			)}

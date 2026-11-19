@@ -32,8 +32,9 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 		register,
 		handleSubmit,
 		reset,
-		formState: { errors },
-	} = useForm({ shouldUnregister: true });
+		getValues,
+		formState: { errors, isDirty },
+	} = useForm({ shouldUnregister: true, mode: "onTouched" });
 
 	const saveGrades = useSaveGrades(selectedExam);
 
@@ -48,6 +49,16 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 		});
 		reset(defaults);
 	}, [selectedExam, gradeEntries, gradesFetching, reset]);
+
+	// Closing or reloading the tab with unsaved grades asks for confirmation
+	useEffect(() => {
+		if (!isDirty) return;
+		const warn = (event: BeforeUnloadEvent) => {
+			event.preventDefault();
+		};
+		window.addEventListener("beforeunload", warn);
+		return () => window.removeEventListener("beforeunload", warn);
+	}, [isDirty]);
 
 	const readOnlyToast = () =>
 		toast.error(t("teacher.gradeEntry.delegates.readOnlyToast"));
@@ -67,7 +78,10 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 			gradesByStudent,
 			selectedExam,
 		);
-		if (!inserts.length && !deletes.length) return;
+		if (!inserts.length && !deletes.length) {
+			toast.info(t("teacher.gradeEntry.toast.noChanges"));
+			return;
+		}
 		saveGrades.mutate({ inserts, deletes });
 	});
 
@@ -94,14 +108,50 @@ export function useGradeEntryForm(entry: GradeEntryState) {
 			return;
 		}
 
+		// The imported grades are saved right away: "imported" means stored,
+		// a teacher who leaves the page afterwards must not lose them.
 		readGradeImport(file, rosterStudents)
-			.then(({ updates, importedCount }) => {
-				reset(updates);
-				toast.success(
-					t("teacher.gradeEntry.toast.importSuccess", {
-						count: importedCount,
-					}),
+			.then(({ updates, skipped }) => {
+				const values = { ...getValues(), ...updates };
+				reset(values);
+				const { inserts } = buildGradeChanges(
+					updates,
+					gradesByStudent,
+					selectedExam,
 				);
+				if (inserts.length) saveGrades.mutate({ inserts, deletes: [] });
+				const imported = Object.keys(updates).length;
+				if (!imported && !skipped.length) {
+					toast.error(t("teacher.gradeEntry.toast.importEmpty"));
+					return;
+				}
+				if (skipped.length) {
+					const shown = skipped.slice(0, 5).map((r) =>
+						t(`teacher.gradeEntry.toast.importSkip.${r.reason}`, {
+							row: r.row,
+							label: r.label,
+							value: r.value ?? "",
+						}),
+					);
+					toast.warning(
+						t("teacher.gradeEntry.toast.importPartial", {
+							count: imported,
+							skipped: skipped.length,
+						}),
+						{
+							description:
+								shown.join("\n") +
+								(skipped.length > shown.length
+									? `\n${t("teacher.gradeEntry.toast.importMore", { count: skipped.length - shown.length })}`
+									: ""),
+							duration: 15000,
+						},
+					);
+				} else {
+					toast.success(
+						t("teacher.gradeEntry.toast.importSuccess", { count: imported }),
+					);
+				}
 			})
 			.catch(() => {
 				toast.error(t("teacher.gradeEntry.toast.importError"));

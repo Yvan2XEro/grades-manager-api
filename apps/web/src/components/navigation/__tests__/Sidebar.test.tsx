@@ -136,7 +136,7 @@ describe("Sidebar navigation", () => {
 		);
 
 		// Inscriptions & Admissions group
-		expect(screen.getByTestId("nav-/users/people")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/students")).toBeInTheDocument();
 		expect(screen.getByTestId("nav-/admissions")).toBeInTheDocument();
 		expect(screen.getByTestId("nav-/users/guardians")).toBeInTheDocument();
 

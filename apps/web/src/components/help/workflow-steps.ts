@@ -43,7 +43,7 @@ export const ADMIN_WORKFLOW: WorkflowStep[] = [
 	},
 	{
 		key: "students",
-		route: "/users/people",
+		route: "/students",
 		label: { en: "Students", fr: "Étudiants" },
 	},
 	{

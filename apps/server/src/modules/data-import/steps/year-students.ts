@@ -224,6 +224,18 @@ export const studentsStep: ImportStepDef = {
 			}),
 			registrationRepo.findActive(ctx.institutionId),
 		]);
+		// People of the institution registered without a student record (e.g.
+		// added from "People"): an e-mail match reuses them, no second profile
+		const studentProfileIds = new Set(students.map((s) => s.domainUserId));
+		const persons = await db.query.domainUsers.findMany({
+			where: eq(schema.domainUsers.institutionId, ctx.institutionId),
+		});
+		const personByEmail = new Map<string, schema.DomainUser>();
+		for (const p of persons) {
+			const email = p.primaryEmail?.trim().toLowerCase();
+			if (email && !studentProfileIds.has(p.id) && !personByEmail.has(email))
+				personByEmail.set(email, p);
+		}
 		const classByCode = new Map(classes.map((c) => [c.code, c]));
 		const byReg = new Map(
 			students.map((s) => [regKey(s.registrationNumber), s]),
@@ -288,6 +300,8 @@ export const studentsStep: ImportStepDef = {
 		type Change = {
 			row: number;
 			student?: StudentRecord;
+			/** Existing person (no student record yet) the new student is attached to. */
+			person?: schema.DomainUser;
 			registrationNumber?: string;
 			profile: ProfileFields;
 			profileChanged: boolean;
@@ -402,6 +416,7 @@ export const studentsStep: ImportStepDef = {
 			resolved.set(r.row, {
 				row: r.row,
 				student,
+				person: !student && email ? personByEmail.get(email) : undefined,
 				registrationNumber: reg ? v.registrationNumber.trim() : undefined,
 				profile,
 				profileChanged,
@@ -525,20 +540,42 @@ export const studentsStep: ImportStepDef = {
 									},
 									tx,
 								}));
-							const [profile] = await tx
-								.insert(schema.domainUsers)
-								.values({
-									...change.profile,
-									primaryEmail: change.profile.primaryEmail ?? "",
-									institutionId: ctx.institutionId,
-								})
-								.returning();
-							journal.created("domainUsers", [profile.id]);
+							let profileId: string;
+							if (change.person) {
+								// Attach to the known person; empty cells keep its values
+								const set = Object.fromEntries(
+									Object.entries(change.profile).filter(
+										([, value]) => value !== undefined,
+									),
+								);
+								journal.updated(
+									"domainUsers",
+									change.person.id,
+									change.person,
+									set,
+								);
+								await tx
+									.update(schema.domainUsers)
+									.set({ ...set, updatedAt: new Date() })
+									.where(eq(schema.domainUsers.id, change.person.id));
+								profileId = change.person.id;
+							} else {
+								const [profile] = await tx
+									.insert(schema.domainUsers)
+									.values({
+										...change.profile,
+										primaryEmail: change.profile.primaryEmail ?? "",
+										institutionId: ctx.institutionId,
+									})
+									.returning();
+								journal.created("domainUsers", [profile.id]);
+								profileId = profile.id;
+							}
 							const [created] = await tx
 								.insert(schema.students)
 								.values({
 									registrationNumber,
-									domainUserId: profile.id,
+									domainUserId: profileId,
 									class: change.classId,
 									institutionId: ctx.institutionId,
 								})

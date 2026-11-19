@@ -10,6 +10,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { formatDate } from "@/lib/date-format";
+import { enrollmentStatusLabel } from "@/lib/enum-labels";
 import { trpcClient } from "@/utils/trpc";
 import { useProfileContext } from "../../hooks/use-profile-context";
 
@@ -65,16 +67,14 @@ export default function ProfileEnrollmentsTab() {
 							<TableCell>{enrollment.className}</TableCell>
 							<TableCell>
 								{enrollment.enrolledAt
-									? new Date(enrollment.enrolledAt).toLocaleDateString()
+									? formatDate(enrollment.enrolledAt, "P")
 									: "—"}
 							</TableCell>
 							<TableCell>
 								<Badge
 									variant={statusVariants[enrollment.status] ?? "secondary"}
 								>
-									{t(`admin.enrollment.status.${enrollment.status}`, {
-										defaultValue: enrollment.status,
-									})}
+									{enrollmentStatusLabel(enrollment.status)}
 								</Badge>
 							</TableCell>
 						</TableRow>

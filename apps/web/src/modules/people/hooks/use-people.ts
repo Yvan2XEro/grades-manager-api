@@ -3,31 +3,38 @@ import { useTranslation } from "react-i18next";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
-import type { PeopleFilters } from "../types";
+import type { PeopleAudience, PeopleFilters } from "../types";
 
-/** Paged people list; class/year filters only apply to students. */
+/** Paged people list; class/year/enrollment filters only apply to students. */
 export function usePeople({
 	page,
 	pageSize,
+	audience,
 	filters,
 }: {
 	page: number;
 	pageSize: number;
+	audience: PeopleAudience;
 	filters: PeopleFilters;
 }) {
 	const debouncedSearch = useDebounce(filters.search, 300);
-	const isStudent = filters.role === "student";
+	const isStudent = audience === "students";
 
 	const queryParams = {
 		page,
 		pageSize,
-		role: filters.role === "all" ? undefined : filters.role,
+		audience,
+		role: isStudent || filters.role === "all" ? undefined : filters.role,
 		status: filters.status === "all" ? undefined : filters.status,
 		search: debouncedSearch || undefined,
 		classId: isStudent ? (filters.classId ?? undefined) : undefined,
 		academicYearId: isStudent
 			? (filters.academicYearId ?? undefined)
 			: undefined,
+		enrollmentStatus:
+			isStudent && filters.enrollmentStatus !== "all"
+				? filters.enrollmentStatus
+				: undefined,
 	};
 
 	const { data, isLoading } = useQuery(

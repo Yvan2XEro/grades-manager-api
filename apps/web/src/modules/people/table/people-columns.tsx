@@ -2,9 +2,15 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 import { UserCheck, UserX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+	enrollmentStatusLabel,
+	profileStatusLabel,
+	roleLabel,
+} from "@/lib/enum-labels";
 import type { PersonRow } from "../types";
 
 const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = {
+	owner: "default",
 	administrator: "default",
 	dean: "default",
 	teacher: "secondary",
@@ -13,22 +19,12 @@ const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = {
 	student: "outline",
 };
 
-const enrollmentStatusKeys = {
-	active: "admin.enrollments.status.active",
-	pending: "admin.enrollments.status.pending",
-	completed: "admin.enrollments.status.completed",
-	withdrawn: "admin.enrollments.status.withdrawn",
-	graduated: "admin.enrollments.status.graduated",
-} as const;
-
-function enrollmentStatusLabel(t: TFunction, status: string) {
-	const key = enrollmentStatusKeys[status as keyof typeof enrollmentStatusKeys];
-	return key ? t(key) : status;
-}
-
 const dash = <span className="text-muted-foreground text-sm">—</span>;
 
-/** Columns of the people table; students get class / reg. number / enrollment instead of email. */
+/**
+ * Columns of the people table. Students get class / reg. number / enrollment
+ * instead of role, email and profile status (all of them are students).
+ */
 export function getPeopleColumns(
 	t: TFunction,
 	isStudent: boolean,
@@ -55,7 +51,7 @@ export function getPeopleColumns(
 				"currentEnrollmentStatus" in person &&
 				person.currentEnrollmentStatus ? (
 					<Badge variant="outline">
-						{enrollmentStatusLabel(t, String(person.currentEnrollmentStatus))}
+						{enrollmentStatusLabel(String(person.currentEnrollmentStatus))}
 					</Badge>
 				) : (
 					dash
@@ -73,53 +69,57 @@ export function getPeopleColumns(
 		),
 	};
 
-	return [
-		{
-			id: "name",
-			header: t("common.fields.name"),
-			cell: ({ row }) => (
-				<span className="font-medium">
-					{row.original.firstName} {row.original.lastName}
+	const nameColumn: ColumnDef<PersonRow> = {
+		id: "name",
+		header: t("common.fields.name"),
+		cell: ({ row }) => (
+			<span className="font-medium">
+				{row.original.firstName} {row.original.lastName}
+			</span>
+		),
+	};
+
+	const roleColumn: ColumnDef<PersonRow> = {
+		id: "role",
+		header: t("common.fields.role"),
+		cell: ({ row: { original: person } }) =>
+			person.role ? (
+				<Badge variant={roleBadgeVariant[person.role] ?? "outline"}>
+					{roleLabel(person.role)}
+				</Badge>
+			) : (
+				dash
+			),
+	};
+
+	const statusColumn: ColumnDef<PersonRow> = {
+		id: "status",
+		header: t("common.fields.status"),
+		cell: ({ row: { original: person } }) => (
+			<Badge variant={person.status === "active" ? "default" : "secondary"}>
+				{profileStatusLabel(person.status)}
+			</Badge>
+		),
+	};
+
+	const accountColumn: ColumnDef<PersonRow> = {
+		id: "account",
+		header: t("usersHub.people.account"),
+		cell: ({ row }) =>
+			row.original.memberId ? (
+				<span className="inline-flex items-center gap-1 text-emerald-600 text-xs dark:text-emerald-400">
+					<UserCheck className="h-3.5 w-3.5" />
+					{t("usersHub.people.hasAccount")}
+				</span>
+			) : (
+				<span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
+					<UserX className="h-3.5 w-3.5" />
+					{t("usersHub.people.noAccount")}
 				</span>
 			),
-		},
-		{
-			id: "role",
-			header: t("common.fields.role"),
-			cell: ({ row: { original: person } }) =>
-				person.role ? (
-					<Badge variant={roleBadgeVariant[person.role] ?? "outline"}>
-						{t(`roles.${person.role}`, { defaultValue: person.role })}
-					</Badge>
-				) : (
-					dash
-				),
-		},
-		...(isStudent ? studentColumns : [emailColumn]),
-		{
-			id: "status",
-			header: t("common.fields.status"),
-			cell: ({ row: { original: person } }) => (
-				<Badge variant={person.status === "active" ? "default" : "secondary"}>
-					{t(`common.${person.status}`, { defaultValue: person.status ?? "" })}
-				</Badge>
-			),
-		},
-		{
-			id: "account",
-			header: t("usersHub.people.account"),
-			cell: ({ row }) =>
-				row.original.memberId ? (
-					<span className="inline-flex items-center gap-1 text-emerald-600 text-xs dark:text-emerald-400">
-						<UserCheck className="h-3.5 w-3.5" />
-						{t("usersHub.people.hasAccount")}
-					</span>
-				) : (
-					<span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
-						<UserX className="h-3.5 w-3.5" />
-						{t("usersHub.people.noAccount")}
-					</span>
-				),
-		},
-	];
+	};
+
+	return isStudent
+		? [nameColumn, ...studentColumns, accountColumn]
+		: [nameColumn, roleColumn, emailColumn, statusColumn, accountColumn];
 }

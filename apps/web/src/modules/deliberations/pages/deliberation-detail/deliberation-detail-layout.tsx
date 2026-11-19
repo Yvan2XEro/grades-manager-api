@@ -1,10 +1,11 @@
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumbEntity } from "@/hooks/useBreadcrumbs";
 import { DeliberationDetailActions } from "../../components/deliberation-detail-actions";
 import { OverrideDecisionDialog } from "../../components/override-decision-dialog";
@@ -12,7 +13,7 @@ import { PromoteAdmittedDialog } from "../../components/promote-admitted-dialog"
 import { useDeliberation } from "../../hooks/use-deliberation";
 import { DeliberationContext } from "../../hooks/use-deliberation-context";
 import { statusVariants } from "../../services/deliberation-status";
-import type { OverrideState } from "../../types";
+import type { StudentResult } from "../../types";
 
 const TABS = [
 	{
@@ -37,11 +38,7 @@ export default function DeliberationDetail() {
 	useBreadcrumbEntity(deliberationId, deliberationQuery.data?.classRef?.name);
 
 	if (deliberationQuery.isLoading) {
-		return (
-			<div className="flex items-center justify-center py-12">
-				<Loader2 className="h-6 w-6 animate-spin text-muted-foreground/60" />
-			</div>
-		);
+		return <DeliberationDetailSkeleton />;
 	}
 
 	const delib = deliberationQuery.data;
@@ -57,10 +54,10 @@ export default function DeliberationDetail() {
 	const status = delib.status;
 	const basePath = `/academic-results/deliberations/${deliberationId}`;
 
-	const overrideDecision = (student: OverrideState) =>
+	const overrideDecision = (result: StudentResult) =>
 		OverrideDecisionDialog.call({
 			deliberationId: deliberationId!,
-			...student,
+			result,
 		});
 
 	const promoteAdmitted = () => {
@@ -123,6 +120,12 @@ export default function DeliberationDetail() {
 					<DeliberationDetailActions
 						deliberationId={deliberationId!}
 						status={status}
+						pendingCount={
+							results.filter(
+								(r) => (r.finalDecision ?? "pending") === "pending",
+							).length
+						}
+						promoted={!!delib.promotion}
 						onPromoteAdmitted={promoteAdmitted}
 					/>
 				</div>
@@ -130,5 +133,34 @@ export default function DeliberationDetail() {
 				<HubNav tabs={TABS} basePath={basePath} />
 			</HubLayout>
 		</DeliberationContext.Provider>
+	);
+}
+
+/** Placeholder of the detail page while the deliberation loads. */
+function DeliberationDetailSkeleton() {
+	return (
+		<HubLayout>
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-3">
+					<Skeleton className="h-9 w-9 rounded-md" />
+					<div className="space-y-2">
+						<Skeleton className="h-6 w-64" />
+						<Skeleton className="h-3 w-24" />
+					</div>
+				</div>
+				<Skeleton className="h-9 w-40" />
+			</div>
+			<Skeleton className="h-9 w-80" />
+			<div className="grid gap-4 md:grid-cols-4">
+				{[0, 1, 2, 3].map((i) => (
+					<Skeleton key={i} className="h-24 rounded-xl" />
+				))}
+			</div>
+			<div className="space-y-2">
+				{[0, 1, 2, 3, 4, 5].map((i) => (
+					<Skeleton key={i} className="h-12 w-full" />
+				))}
+			</div>
+		</HubLayout>
 	);
 }

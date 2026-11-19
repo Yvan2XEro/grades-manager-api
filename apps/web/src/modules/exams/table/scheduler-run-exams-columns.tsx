@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/date-format";
 import type { SchedulerRunExam } from "../types";
 
 export function getSchedulerRunExamsColumns(
@@ -31,7 +31,7 @@ export function getSchedulerRunExamsColumns(
 		{
 			id: "date",
 			header: t("admin.examScheduler.history.details.table.date"),
-			cell: ({ row }) => format(new Date(row.original.date), "PP"),
+			cell: ({ row }) => formatDate(row.original.date),
 		},
 		{
 			id: "status",

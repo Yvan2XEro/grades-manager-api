@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Deliberation, LogEntry, OverrideState } from "../types";
+import type { Deliberation, LogEntry, StudentResult } from "../types";
 
 export interface DeliberationContextValue {
 	deliberationId: string;
@@ -11,7 +11,7 @@ export interface DeliberationContextValue {
 	logsLoading: boolean;
 	logs: LogEntry[];
 	/** Opens the decision-override dialog for one student result. */
-	overrideDecision: (s: OverrideState) => void;
+	overrideDecision: (result: StudentResult) => void;
 	/** Opens the dialog promoting admitted students to their next class. */
 	promoteAdmitted: () => void;
 }

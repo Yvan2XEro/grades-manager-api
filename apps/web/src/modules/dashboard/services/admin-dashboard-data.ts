@@ -1,4 +1,5 @@
 import i18n from "@/i18n";
+import { formatMoney } from "@/lib/money";
 import type { ProgramBar, StatusSlice } from "../types";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -36,9 +37,5 @@ export function toStatusSlices(
 		}));
 }
 
-export function formatAmount(n: number) {
-	return `${new Intl.NumberFormat("fr-FR", {
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(n)} XAF`;
-}
+/** Amount in FCFA, in the UI language. */
+export const formatAmount = (n: number) => formatMoney(n);

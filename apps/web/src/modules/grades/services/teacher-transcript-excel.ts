@@ -3,7 +3,11 @@ import type { TFunction } from "i18next";
 import * as XLSX from "xlsx";
 import { trpcClient } from "@/utils/trpc";
 import type { TeacherExportExam } from "../types";
-import { sortStudentsByName } from "./student-grades";
+import {
+	genderLabel,
+	sortStudentsByName,
+	weightedCourseAverage,
+} from "./student-grades";
 
 interface TeacherStudentExport {
 	id: string;
@@ -114,22 +118,25 @@ export async function exportTeacherTranscript({
 	);
 
 	const exportData = sortStudentsByName(students).map((student) => {
-		const courseGrades = new Map<string, number[]>();
+		const courseGrades = new Map<
+			string,
+			{ score: number; percentage: number | string | null | undefined }[]
+		>();
 		student.grades.forEach((grade) => {
 			const courseName = grade.exam.class_course.course.name;
 			if (!courseGrades.has(courseName)) {
 				courseGrades.set(courseName, []);
 			}
 			if (selectedExams.includes(grade.exam.id)) {
-				courseGrades.get(courseName)?.push(grade.score);
+				courseGrades
+					.get(courseName)
+					?.push({ score: grade.score, percentage: grade.exam.percentage });
 			}
 		});
 		const courseAverages = new Map<string, number>();
 		courseGrades.forEach((grades, course) => {
-			if (grades.length > 0) {
-				const average = grades.reduce((a, b) => a + b, 0) / grades.length;
-				courseAverages.set(course, Number(average.toFixed(2)));
-			}
+			const average = weightedCourseAverage(grades);
+			if (average !== null) courseAverages.set(course, average);
 		});
 		return {
 			[t("teacher.gradeExport.columns.lastName")]: student.last_name,
@@ -140,7 +147,7 @@ export async function exportTeacherTranscript({
 				? format(new Date(student.birth_date), "dd/MM/yyyy")
 				: "",
 			[t("teacher.gradeExport.columns.birthPlace")]: student.birth_place || "",
-			[t("teacher.gradeExport.columns.gender")]: student.gender || "",
+			[t("teacher.gradeExport.columns.gender")]: genderLabel(t, student.gender),
 			...Object.fromEntries(courseAverages),
 		};
 	});

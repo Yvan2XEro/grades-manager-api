@@ -80,8 +80,10 @@ export const AcademicYearFormDialog = createCallable<
 	useEffect(() => {
 		if (!startDate) return;
 		if (!year || startDate !== year.startDate.slice(0, 10)) {
-			const end = new Date(startDate);
-			end.setFullYear(end.getFullYear() + 1);
+			// One year minus a day: 1 Sept 2026 → 31 Aug 2027, so it does not
+			// overlap the next year (computed in UTC, no time-zone shift)
+			const [y, m, d] = startDate.split("-").map(Number);
+			const end = new Date(Date.UTC(y + 1, m - 1, d - 1));
 			setValue("endDate", end.toISOString().slice(0, 10));
 		}
 	}, [startDate, year, setValue]);

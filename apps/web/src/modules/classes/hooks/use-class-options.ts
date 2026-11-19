@@ -47,15 +47,21 @@ export const fetchClassOptions = async () => {
 	return items.map((cls) => toClassOption(cls as RawClass));
 };
 
-export const fetchCourseOptions = async () => {
-	const { items } = await trpcClient.courses.list.query({ limit: 100 });
-	return items.map(
-		(course): CourseOption => ({
-			id: course.id,
-			name: course.name,
-			code: course.code,
-		}),
-	);
+/** Courses offered to a class: those of its program, sorted by name. */
+export const fetchCourseOptions = async (programId?: string) => {
+	const { items } = await trpcClient.courses.list.query({
+		programId,
+		limit: 500,
+	});
+	return items
+		.map(
+			(course): CourseOption => ({
+				id: course.id,
+				name: course.name,
+				code: course.code,
+			}),
+		)
+		.sort((a, b) => a.name.localeCompare(b.name));
 };
 
 /** Classes list with server search past 2 characters. */

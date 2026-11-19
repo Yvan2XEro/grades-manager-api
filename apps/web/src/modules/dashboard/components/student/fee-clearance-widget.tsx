@@ -7,6 +7,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { PageLink } from "@/components/navigation/page-link";
 import { Button } from "@/components/ui/button";
+import { formatMoney } from "@/lib/money";
 import type { FeeAssignment } from "../../types";
 
 export function FeeClearanceWidget({
@@ -47,8 +48,8 @@ export function FeeClearanceWidget({
 						<>
 							{" · "}
 							<span className="font-medium text-amber-700">
-								{t("feeClearance.student.balance")} : {balance.toLocaleString()}{" "}
-								{currency}
+								{t("feeClearance.student.balance")} :{" "}
+								{formatMoney(balance, currency)}
 							</span>
 						</>
 					)}

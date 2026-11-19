@@ -1,4 +1,5 @@
 import type { GradeInput, GradesByStudent } from "../types";
+import { isValidScore } from "./score-cells";
 
 /**
  * Turns the grade form values (`student_<id>` → score) into the grades to
@@ -22,9 +23,11 @@ export function buildGradeChanges(
 			}
 			return;
 		}
-		const score = Number(rawValue);
-		if (!Number.isNaN(score) && score >= 0 && score <= 20) {
-			inserts.push({ studentId, examId, score });
+		// "12,5" and "12.5" are both accepted (French decimal comma)
+		const { ok, n } = isValidScore(String(rawValue));
+		if (ok && n !== undefined) {
+			const existing = gradesByStudent[studentId];
+			if (existing?.score !== n) inserts.push({ studentId, examId, score: n });
 		}
 	});
 

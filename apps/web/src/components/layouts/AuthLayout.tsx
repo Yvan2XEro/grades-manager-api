@@ -7,7 +7,6 @@ import logo from "/logo.png";
 import logoBg from "/logo-bg.png";
 import { useBranding } from "../../hooks/use-branding";
 import { useStore } from "../../store";
-import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const AuthLayout: React.FC = () => {
 	const { user } = useStore();
@@ -129,7 +128,6 @@ const AuthLayout: React.FC = () => {
 
 			{/* Right panel - Form */}
 			<div className="relative isolate flex flex-1 items-center justify-center bg-background p-6 lg:p-10">
-				<GridWaveFilter />
 				<div className="-z-10 pointer-events-none absolute inset-0 bg-dot-pattern" />
 				<motion.div
 					initial={{ opacity: 0, y: 16, scale: 0.98 }}

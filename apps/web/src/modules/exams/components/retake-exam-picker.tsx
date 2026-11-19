@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { AcademicYearSelect } from "@/components/inputs";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
@@ -17,6 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { formatDate } from "@/lib/date-format";
 import type { RetakeExamSelection } from "../hooks/use-retake-eligibility";
 
 /** Picks the approved exam whose retake eligibility is shown. */
@@ -66,7 +66,7 @@ export function RetakeExamPicker({
 								{selection.exams.map((exam) => (
 									<SelectItem key={exam.id} value={exam.id}>
 										{exam.name} - {exam.className ?? ""} (
-										{format(new Date(exam.date), "MMM d, yyyy")})
+										{formatDate(exam.date)})
 									</SelectItem>
 								))}
 							</SelectContent>

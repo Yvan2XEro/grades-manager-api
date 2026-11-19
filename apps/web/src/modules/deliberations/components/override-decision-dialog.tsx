@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import {
 	Dialog,
 	DialogBody,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -29,30 +30,51 @@ import { useInvalidateDeliberation } from "../hooks/use-deliberation";
 import {
 	DELIBERATION_DECISIONS,
 	type DeliberationDecision,
+	decisionVariants,
+	ueDecisionVariants,
 } from "../services/deliberation-status";
+import type { StudentResult, UeResult } from "../types";
 
 interface Props {
 	deliberationId: string;
-	studentResultId: string;
-	studentName: string;
-	currentDecision: string;
+	result: StudentResult;
 }
 
-/** Overrides the final decision of one student result, with a reason. */
+const formatAverage = (value: number | null | undefined) =>
+	value != null ? Number(value).toFixed(2) : "—";
+
+/**
+ * Overrides the final decision of one student result, with a reason. Shows
+ * what the jury needs to decide (average, credits, UE results) and lets it
+ * restore the computed decision.
+ */
 export const OverrideDecisionDialog = createCallable<Props, void>(
-	({ call, deliberationId, studentResultId, studentName, currentDecision }) => {
+	({ call, deliberationId, result }) => {
 		const { t } = useTranslation();
 		const invalidateDeliberation = useInvalidateDeliberation(deliberationId);
 		const [newDecision, setNewDecision] = useState("");
 		const [reason, setReason] = useState("");
 
+		const currentDecision = result.finalDecision ?? "pending";
+		const computedDecision = result.autoDecision ?? "pending";
+		const studentName =
+			`${result.student?.profile?.lastName ?? ""} ${result.student?.profile?.firstName ?? ""}`.trim();
+		const ueResults = (result.ueResults ?? []) as UeResult[];
+		const facts = (result.factsSnapshot ?? {}) as {
+			partialAverage?: number | null;
+		};
+		const canRestore =
+			result.isOverridden &&
+			computedDecision !== "pending" &&
+			computedDecision !== currentDecision;
+
 		const overrideMutation = useMutation({
-			mutationFn: () =>
+			mutationFn: (input: { decision: string; reason: string }) =>
 				trpcClient.deliberations.overrideDecision.mutate({
 					deliberationId,
-					studentResultId,
-					finalDecision: newDecision as DeliberationDecision,
-					reason,
+					studentResultId: result.id,
+					finalDecision: input.decision as DeliberationDecision,
+					reason: input.reason,
 				}),
 			onSuccess: () => {
 				toast.success(t("admin.deliberations.toast.overrideSuccess"));
@@ -64,30 +86,135 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 
 		return (
 			<Dialog open={!call.ended} onOpenChange={(o) => !o && call.end()}>
-				<DialogContent className="max-w-md">
+				<DialogContent className="sm:max-w-xl">
 					<DialogHeader>
 						<DialogTitle>{t("admin.deliberations.override.title")}</DialogTitle>
+						<DialogDescription>
+							{studentName}
+							{result.student?.registrationNumber
+								? ` · ${result.student.registrationNumber}`
+								: ""}
+						</DialogDescription>
 					</DialogHeader>
 
 					<DialogBody className="space-y-4">
-						<p className="font-medium text-sm">{studentName}</p>
-
-						<div className="space-y-1">
-							<Label>{t("admin.deliberations.override.currentDecision")}</Label>
+						<dl className="grid grid-cols-3 gap-3 rounded-lg border bg-muted/30 p-3 text-sm">
 							<div>
-								<Badge variant="outline">
-									{t(`admin.deliberations.decision.${currentDecision}`, {
-										defaultValue: currentDecision,
-									})}
-								</Badge>
+								<dt className="text-muted-foreground text-xs">
+									{t("admin.deliberations.detail.average")}
+								</dt>
+								<dd className="font-mono font-semibold">
+									{result.generalAverage != null
+										? formatAverage(result.generalAverage)
+										: facts.partialAverage != null
+											? t("admin.deliberations.override.partialAverage", {
+													value: formatAverage(facts.partialAverage),
+												})
+											: "—"}
+								</dd>
 							</div>
+							<div>
+								<dt className="text-muted-foreground text-xs">
+									{t("admin.deliberations.detail.credits")}
+								</dt>
+								<dd className="font-semibold">
+									{t("admin.deliberations.detail.creditsFormat", {
+										earned: result.totalCreditsEarned ?? 0,
+										total: result.totalCreditsPossible ?? 0,
+									})}
+								</dd>
+							</div>
+							<div>
+								<dt className="text-muted-foreground text-xs">
+									{t("admin.deliberations.override.computedDecision")}
+								</dt>
+								<dd>
+									<Badge variant={decisionVariants[computedDecision]}>
+										{t(`admin.deliberations.decision.${computedDecision}`)}
+									</Badge>
+								</dd>
+							</div>
+						</dl>
+
+						{ueResults.length > 0 && (
+							<div className="max-h-40 overflow-y-auto rounded-lg border">
+								<table className="w-full text-xs">
+									<tbody>
+										{ueResults.map((ue) => (
+											<tr key={ue.ueId} className="border-b last:border-0">
+												<td className="px-2 py-1.5">
+													<span className="font-mono text-muted-foreground">
+														{ue.ueCode}
+													</span>{" "}
+													{ue.ueName}
+												</td>
+												<td className="px-2 py-1.5 text-right font-mono">
+													{formatAverage(ue.ueAverage)}
+												</td>
+												<td className="px-2 py-1.5 text-right">
+													<Badge
+														variant={
+															ueDecisionVariants[ue.decision] ?? "outline"
+														}
+														className="px-1.5 py-0 text-[10px]"
+													>
+														{t(`admin.deliberations.ueDecision.${ue.decision}`)}
+													</Badge>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						)}
+
+						<div className="flex items-center justify-between gap-2">
+							<div className="space-y-1">
+								<Label>
+									{t("admin.deliberations.override.currentDecision")}
+								</Label>
+								<div className="flex items-center gap-2">
+									<Badge variant={decisionVariants[currentDecision]}>
+										{t(`admin.deliberations.decision.${currentDecision}`)}
+									</Badge>
+									{result.isOverridden && (
+										<span className="text-muted-foreground text-xs">
+											{t("admin.deliberations.detail.overridden")}
+										</span>
+									)}
+								</div>
+							</div>
+							{canRestore && (
+								<Button
+									variant="outline"
+									size="sm"
+									disabled={overrideMutation.isPending}
+									onClick={() =>
+										overrideMutation.mutate({
+											decision: computedDecision,
+											reason: t("admin.deliberations.override.restoreReason"),
+										})
+									}
+								>
+									<RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+									{t("admin.deliberations.override.restore", {
+										decision: t(
+											`admin.deliberations.decision.${computedDecision}`,
+										),
+									})}
+								</Button>
+							)}
 						</div>
 
 						<div className="space-y-2">
 							<Label>{t("admin.deliberations.override.newDecision")}</Label>
 							<Select value={newDecision} onValueChange={setNewDecision}>
 								<SelectTrigger>
-									<SelectValue />
+									<SelectValue
+										placeholder={t(
+											"admin.deliberations.override.newDecisionPlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{DELIBERATION_DECISIONS.filter(
@@ -95,10 +222,17 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 									).map((d) => (
 										<SelectItem key={d} value={d}>
 											{t(`admin.deliberations.decision.${d}`)}
+											{d === computedDecision &&
+												` (${t("admin.deliberations.override.computed")})`}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
+							<ul className="space-y-0.5 text-muted-foreground text-xs">
+								<li>{t("admin.deliberations.override.help.deferred")}</li>
+								<li>{t("admin.deliberations.override.help.repeat")}</li>
+								<li>{t("admin.deliberations.override.help.excluded")}</li>
+							</ul>
 						</div>
 
 						<div className="space-y-2">
@@ -119,7 +253,9 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 							{t("common.actions.cancel")}
 						</Button>
 						<Button
-							onClick={() => overrideMutation.mutate()}
+							onClick={() =>
+								overrideMutation.mutate({ decision: newDecision, reason })
+							}
 							disabled={
 								!newDecision || !reason.trim() || overrideMutation.isPending
 							}

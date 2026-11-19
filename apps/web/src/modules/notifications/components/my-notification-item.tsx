@@ -77,7 +77,7 @@ export function MyNotificationItem({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="h-7 shrink-0 self-center px-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+					className="h-7 shrink-0 self-center px-2 text-xs transition-opacity md:opacity-0 md:group-hover:opacity-100"
 					onClick={() => onMarkRead(item.id)}
 					disabled={isMarkingRead}
 				>

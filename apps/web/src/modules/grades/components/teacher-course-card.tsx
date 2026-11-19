@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { courseNeedsAction } from "../services/teacher-courses";
 import type { CourseData } from "../types";
 import { CompactExamRow } from "./compact-exam-row";
+import { CourseRosterDialog } from "./course-roster-dialog";
 
 /** Card of a teacher course with its exams and the fast entry link. */
 export function TeacherCourseCard({ course }: { course: CourseData }) {
@@ -21,9 +22,13 @@ export function TeacherCourseCard({ course }: { course: CourseData }) {
 					</div>
 					<div>
 						<div className="flex items-center gap-2">
-							<span className="font-semibold text-foreground text-sm">
+							<Link
+								to={`/grades/${course.classCourseId}`}
+								className="font-semibold text-foreground text-sm hover:text-primary hover:underline"
+								title={t("teacher.courses.openCourse")}
+							>
 								{course.courseName}
-							</span>
+							</Link>
 							{course.isDelegated && (
 								<Badge variant="secondary" className="text-xs">
 									{t("teacher.courses.delegatedBadge")}
@@ -32,6 +37,7 @@ export function TeacherCourseCard({ course }: { course: CourseData }) {
 						</div>
 						<span className="text-muted-foreground text-xs">
 							{course.className} · {course.programName}
+							{course.semesterName && ` · ${course.semesterName}`}
 						</span>
 					</div>
 				</div>
@@ -49,8 +55,28 @@ export function TeacherCourseCard({ course }: { course: CourseData }) {
 							</Link>
 						</Button>
 					)}
-					<Users className="h-3.5 w-3.5" />
-					<span>{course.studentCount}</span>
+					<button
+						type="button"
+						className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-muted hover:text-foreground"
+						onClick={() =>
+							CourseRosterDialog.call({
+								classCourseId: course.classCourseId,
+								courseName: course.courseName,
+								className: course.className,
+							})
+						}
+						aria-label={t("teacher.courses.roster.open", {
+							count: course.studentCount,
+						})}
+						title={t("teacher.courses.roster.open", {
+							count: course.studentCount,
+						})}
+					>
+						<Users className="h-3.5 w-3.5" />
+						<span className="underline decoration-dotted underline-offset-2">
+							{course.studentCount}
+						</span>
+					</button>
 					{hasPendingAction && (
 						<span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
 							<AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
@@ -65,14 +91,18 @@ export function TeacherCourseCard({ course }: { course: CourseData }) {
 				</p>
 			) : (
 				<div className="divide-y">
-					{course.exams.map((exam) => (
-						<CompactExamRow
-							key={exam.id}
-							exam={exam}
-							studentCount={course.studentCount}
-							classCourseId={course.classCourseId}
-						/>
-					))}
+					{[...course.exams]
+						.sort(
+							(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+						)
+						.map((exam) => (
+							<CompactExamRow
+								key={exam.id}
+								exam={exam}
+								studentCount={course.studentCount}
+								classCourseId={course.classCourseId}
+							/>
+						))}
 				</div>
 			)}
 		</div>

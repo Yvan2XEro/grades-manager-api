@@ -59,6 +59,9 @@ export function BulkDocumentFilters({ state }: { state: State }) {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
+							<SelectItem value="enrollment_certificate">
+								{t("admin.documents.kinds.enrollment_certificate.label")}
+							</SelectItem>
 							<SelectItem value="transcript">
 								{t("admin.documents.kinds.transcript.label")}
 							</SelectItem>

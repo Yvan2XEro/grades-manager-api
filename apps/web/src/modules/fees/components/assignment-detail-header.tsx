@@ -25,17 +25,22 @@ export function AssignmentDetailHeader({
 	const studentId = assignment.student?.id;
 
 	return (
-		<div className="flex items-center gap-3">
-			<Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-				<ArrowLeft className="h-4 w-4" />
-			</Button>
-			<div>
-				<h2 className="font-semibold text-xl">{getStudentName(assignment)}</h2>
-				<p className="text-muted-foreground text-sm">
-					{assignment.feeStructure?.name} — {assignment.academicYear?.name}
-				</p>
+		<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+			<div className="flex min-w-0 items-center gap-3">
+				<Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+					<ArrowLeft className="h-4 w-4" />
+				</Button>
+				<div className="min-w-0">
+					<h2 className="font-semibold text-xl">
+						{getStudentName(assignment)}
+					</h2>
+					<p className="text-muted-foreground text-sm">
+						{assignment.feeStructure?.name} — {assignment.academicYear?.name}
+					</p>
+				</div>
 			</div>
-			<div className="ml-auto flex gap-2">
+			{/* Wraps on small screens; the payment, the main action, comes first there */}
+			<div className="flex flex-wrap gap-2 lg:ml-auto">
 				{studentId && (
 					<Button
 						variant="ghost"
@@ -76,10 +81,17 @@ export function AssignmentDetailHeader({
 							{t("feeClearance.orders.create")}
 						</Button>
 						<Button
+							className="order-first lg:order-last"
 							onClick={() =>
 								RecordPaymentDialog.call({
-									feeAssignmentId: assignment.id,
-									installments,
+									target: {
+										kind: "assignment",
+										feeAssignmentId: assignment.id,
+										studentName: getStudentName(assignment),
+										installments,
+										balance,
+										currency: assignment.currency,
+									},
 									onRecorded: onChanged,
 								})
 							}

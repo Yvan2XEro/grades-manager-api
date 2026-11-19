@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Mail } from "lucide-react";
+import { Mail, MailCheck } from "lucide-react";
 import { useQueryState } from "nuqs";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { staggerContainer, staggerItem } from "@/lib/animations";
@@ -18,6 +19,7 @@ import {
 	buildForgotPasswordSchema,
 	type ForgotPasswordFormData,
 } from "../services/auth-schemas";
+import { withReturn } from "../services/return-url";
 
 const ForgotPassword: React.FC = () => {
 	const { t } = useTranslation();
@@ -28,19 +30,59 @@ const ForgotPassword: React.FC = () => {
 		handleSubmit,
 		formState: { errors, isSubmitting },
 	} = useForm<ForgotPasswordFormData>({ resolver: zodResolver(schema) });
+	// Address the link was sent to: the page then shows a lasting confirmation
+	const [sentTo, setSentTo] = React.useState<string | null>(null);
 
 	const onSubmit = async (data: ForgotPasswordFormData) => {
 		const result = await authClient.requestPasswordReset({
 			email: data.email,
-			redirectTo: `${window.location.origin}/auth/reset?return=${callbackURL}`,
+			redirectTo: `${window.location.origin}${withReturn("/auth/reset", callbackURL)}`,
 		});
 
 		if (result.error) {
 			toast.error(result.error.message || t("auth.forgot.error"));
 		} else {
-			toast.success(t("auth.forgot.success"));
+			setSentTo(data.email);
 		}
 	};
+
+	if (sentTo) {
+		return (
+			<motion.div
+				variants={staggerContainer}
+				initial="hidden"
+				animate="visible"
+				className="space-y-5"
+			>
+				<AuthIconHeader
+					icon={MailCheck}
+					title={t("auth.forgot.sentTitle")}
+					subtitle={t("auth.forgot.sentBody", { email: sentTo })}
+				/>
+				<motion.p
+					variants={staggerItem}
+					className="text-muted-foreground text-sm"
+					role="status"
+				>
+					{t("auth.forgot.sentHint")}
+				</motion.p>
+				<motion.div variants={staggerItem}>
+					<Button
+						type="button"
+						variant="outline"
+						className="h-11 w-full"
+						onClick={() => setSentTo(null)}
+					>
+						{t("auth.forgot.resend")}
+					</Button>
+				</motion.div>
+				<BackToLoginLink
+					callbackURL={callbackURL}
+					label={t("auth.forgot.backToLogin")}
+				/>
+			</motion.div>
+		);
+	}
 
 	return (
 		<motion.div variants={staggerContainer} initial="hidden" animate="visible">

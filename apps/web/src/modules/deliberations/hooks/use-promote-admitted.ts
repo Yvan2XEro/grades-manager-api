@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
-import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 import { useInvalidateDeliberation } from "./use-deliberation";
 
 interface PromoteAdmittedOptions {
@@ -49,6 +48,7 @@ export function usePromoteAdmitted({
 	const availableYears = baseData?.availableYears ?? [];
 	const isLastLevel = baseData?.isLastLevel ?? false;
 	const sourceClass = baseData?.sourceClass;
+	const nextLevel = baseData?.nextLevel ?? null;
 	const targetClasses = targetData?.targetClasses ?? [];
 
 	// Auto-select when exactly one class matches
@@ -59,6 +59,13 @@ export function usePromoteAdmitted({
 			setTargetClassId("");
 		}
 	}, [targetClasses]);
+
+	// Propose the year right after the deliberated one
+	useEffect(() => {
+		if (!targetYearId && availableYears.length > 0) {
+			setTargetYearId(availableYears[0].id);
+		}
+	}, [availableYears, targetYearId]);
 
 	// Reset class when year changes
 	useEffect(() => {
@@ -79,34 +86,53 @@ export function usePromoteAdmitted({
 				...(isLastLevel ? {} : { targetClassId }),
 			}),
 		onSuccess: (data) => {
-			toast.success(
-				t("admin.deliberations.promote.success", {
-					count: data.promotedCount,
-				}),
-			);
+			if (data.promotedCount > 0) {
+				toast.success(
+					t("admin.deliberations.promote.success", {
+						count: data.promotedCount,
+					}),
+				);
+			}
+			if (data.alreadyPromotedCount > 0) {
+				toast.info(
+					t("admin.deliberations.promote.alreadyPromoted", {
+						count: data.alreadyPromotedCount,
+					}),
+				);
+			}
 			invalidateDeliberation();
+			queryClient.invalidateQueries({
+				queryKey: trpc.students.list.queryKey(),
+			});
 			close();
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
 
-	// Creates the missing target class in place. Matching target classes are
-	// computed server-side (program + next level), so the list is refetched
-	// rather than patched, then the new class is selected.
-	const createTargetClass = async () => {
-		if (!targetYearId) return;
-		const created = await ClassFormDialog.call({
-			defaults: {
-				programId: sourceClass?.program,
-				academicYearId: targetYearId,
-			},
-			lockAcademicYear: true,
-		});
-		if (!created) return;
-		await queryClient.invalidateQueries({
-			queryKey: ["promo-targets", sourceClassId, targetYearId],
-		});
-		setTargetClassId(created.id);
+	// Creates the missing target class in place: next level of the cycle, same
+	// program and option, generated code and name. The list of matching classes
+	// is refetched, then the class is selected.
+	const createTargetMutation = useMutation({
+		mutationFn: () =>
+			trpcClient.classes.createPromotionTarget.mutate({
+				sourceClassId,
+				targetAcademicYearId: targetYearId,
+			}),
+		onSuccess: async ({ klass, created }) => {
+			if (created) {
+				toast.success(
+					t("admin.deliberations.promote.classCreated", { name: klass.name }),
+				);
+			}
+			await queryClient.invalidateQueries({
+				queryKey: ["promo-targets", sourceClassId, targetYearId],
+			});
+			setTargetClassId(klass.id);
+		},
+		onError: (err) => toast.error((err as Error).message),
+	});
+	const createTargetClass = () => {
+		if (targetYearId) createTargetMutation.mutate();
 	};
 
 	const showNoClassFound =
@@ -125,9 +151,11 @@ export function usePromoteAdmitted({
 		availableYears,
 		isLastLevel,
 		sourceClass,
+		nextLevel,
 		targetClasses,
 		showNoClassFound,
 		createTargetClass,
+		creatingTarget: createTargetMutation.isPending,
 		promoteMutation,
 		close,
 	};

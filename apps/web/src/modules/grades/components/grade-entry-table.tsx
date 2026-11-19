@@ -14,6 +14,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { isValidScore } from "../services/score-cells";
 import type { GradesByStudent, RosterStudent } from "../types";
 
 /** One score input per student of the selected exam, with the save button. */
@@ -46,12 +47,14 @@ export function GradeEntryTable({
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>
+								<TableHead className="hidden sm:table-cell">
 									{t("teacher.gradeEntry.table.registration")}
 								</TableHead>
 								<TableHead>{t("teacher.gradeEntry.table.student")}</TableHead>
 								<TableHead>{t("teacher.gradeEntry.table.score")}</TableHead>
-								<TableHead>{t("teacher.gradeEntry.table.status")}</TableHead>
+								<TableHead className="hidden sm:table-cell">
+									{t("teacher.gradeEntry.table.status")}
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -60,34 +63,44 @@ export function GradeEntryTable({
 								const message = errors[fieldName]?.message;
 								const fieldError =
 									typeof message === "string" ? message : undefined;
+								const graded = gradesByStudent[student.id] !== undefined;
 								return (
 									<TableRow key={student.id}>
-										<TableCell>{student.registrationNumber}</TableCell>
-										<TableCell>
+										<TableCell className="hidden sm:table-cell">
+											{student.registrationNumber}
+										</TableCell>
+										<TableCell className="whitespace-normal">
 											{student.lastName}, {student.firstName}
+											{/* Phones: registration and status columns are hidden */}
+											<span className="block text-muted-foreground text-xs sm:hidden">
+												{student.registrationNumber}
+											</span>
 										</TableCell>
 										<TableCell>
 											<div className="flex flex-col gap-1">
-												<Input
-													key={`${selectedExam}-${student.id}`}
-													type="number"
-													inputMode="decimal"
-													min="0"
-													max="20"
-													step="0.25"
-													className="w-28"
-													disabled={inputsDisabled}
-													{...register(`student_${student.id}`, {
-														min: {
-															value: 0,
-															message: t("teacher.gradeEntry.validation.min"),
-														},
-														max: {
-															value: 20,
-															message: t("teacher.gradeEntry.validation.max"),
-														},
-													})}
-												/>
+												<div className="flex items-center gap-1.5">
+													<Input
+														key={`${selectedExam}-${student.id}`}
+														type="text"
+														inputMode="decimal"
+														autoComplete="off"
+														placeholder="/20"
+														className="w-20 sm:w-28"
+														aria-invalid={Boolean(fieldError)}
+														disabled={inputsDisabled}
+														{...register(`student_${student.id}`, {
+															validate: (value) =>
+																isValidScore(String(value ?? "")).ok ||
+																t("teacher.gradeEntry.validation.range"),
+														})}
+													/>
+													{graded && (
+														<Check
+															className="h-4 w-4 shrink-0 text-emerald-600 sm:hidden"
+															aria-label={t("teacher.gradeEntry.status.graded")}
+														/>
+													)}
+												</div>
 												{fieldError ? (
 													<p className="text-destructive text-xs">
 														{fieldError}
@@ -95,8 +108,8 @@ export function GradeEntryTable({
 												) : null}
 											</div>
 										</TableCell>
-										<TableCell>
-											{gradesByStudent[student.id] !== undefined ? (
+										<TableCell className="hidden sm:table-cell">
+											{graded ? (
 												<Badge variant="secondary" className="gap-1">
 													<Check className="h-3 w-3" />
 													{t("teacher.gradeEntry.status.graded")}
@@ -114,7 +127,7 @@ export function GradeEntryTable({
 					</Table>
 				</CardContent>
 				{!inputsDisabled && (
-					<CardFooter className="justify-end gap-2 border-t">
+					<CardFooter className="sticky bottom-0 z-10 justify-end gap-2 border-t bg-card/95 backdrop-blur">
 						<Button type="submit" disabled={isSaving || isLocking}>
 							{isSaving ? (
 								<>

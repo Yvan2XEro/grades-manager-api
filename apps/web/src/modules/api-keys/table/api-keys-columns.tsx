@@ -2,11 +2,12 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 import { Key } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/date-format";
 import type { ApiKey } from "../types";
 
-const formatDate = (d: string | Date | null) => {
+const formatKeyDate = (d: string | Date | null) => {
 	if (!d) return "—";
-	return new Date(d).toLocaleDateString();
+	return formatDate(d);
 };
 
 export function getApiKeysColumns(t: TFunction): ColumnDef<ApiKey>[] {
@@ -49,7 +50,7 @@ export function getApiKeysColumns(t: TFunction): ColumnDef<ApiKey>[] {
 			header: t("admin.apiKeys.table.lastUsed"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
-					{formatDate(row.original.lastUsedAt)}
+					{formatKeyDate(row.original.lastUsedAt)}
 				</span>
 			),
 		},
@@ -58,7 +59,7 @@ export function getApiKeysColumns(t: TFunction): ColumnDef<ApiKey>[] {
 			header: t("admin.apiKeys.table.created"),
 			cell: ({ row }) => (
 				<span className="text-muted-foreground text-sm">
-					{formatDate(row.original.createdAt)}
+					{formatKeyDate(row.original.createdAt)}
 				</span>
 			),
 		},

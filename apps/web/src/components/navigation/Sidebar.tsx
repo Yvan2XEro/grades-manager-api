@@ -1,61 +1,17 @@
 import { AnimatePresence, motion } from "framer-motion";
-import type { ParseKeys } from "i18next";
-import {
-	BarChart3,
-	Bell,
-	BookOpen,
-	Building2,
-	Calendar,
-	CalendarClock,
-	ClipboardList,
-	CreditCard,
-	FileCog,
-	FileSpreadsheet,
-	FileText,
-	Gavel,
-	GraduationCap,
-	Heart,
-	History,
-	LayoutDashboard,
-	ListChecks,
-	PlayCircle,
-	Rocket,
-	School,
-	Search,
-	Settings2,
-	TrendingUp,
-	UserCog,
-	Users,
-	X,
-} from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import type React from "react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
 import { useStore } from "../../store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { type NavBadgeType, type NavItem, useNavMenu } from "./nav-menu";
 
 // Home links match exactly, not as a prefix of every path
 const ROOT_PATHS = new Set(["/"]);
-
-type NavBadgeType = "new" | "updated";
-
-type NavItem = {
-	to: string;
-	icon: React.ReactNode;
-	labelKey: ParseKeys;
-	badge?: NavBadgeType;
-	/** The link is not active when the path starts with this prefix. */
-	excludePrefix?: string;
-};
-
-type NavGroup = {
-	key: string;
-	titleKey: ParseKeys;
-	items: NavItem[];
-};
 
 function NavBadge({ type }: { type: NavBadgeType }) {
 	const { t } = useTranslation();
@@ -81,303 +37,26 @@ const Sidebar: React.FC = () => {
 	const location = useLocation();
 	const [search, setSearch] = useState("");
 
-	const IC = "size-[15px] shrink-0";
+	const menuContent = useNavMenu();
 
-	const adminGroups = useMemo<NavGroup[]>(
-		() => [
-			{
-				key: "overview",
-				titleKey: "navigation.sidebar.groups.overview",
-				items: [
-					{
-						to: "/",
-						icon: <LayoutDashboard className={IC} />,
-						labelKey: "navigation.sidebar.admin.dashboard",
-					},
-					{
-						to: "/import",
-						icon: <Rocket className={IC} />,
-						labelKey: "navigation.sidebar.admin.setup",
-						badge: "new",
-					},
-					{
-						to: "/academic-years",
-						icon: <Calendar className={IC} />,
-						labelKey: "navigation.sidebar.admin.academicYears",
-					},
-				],
-			},
-			{
-				key: "structure",
-				titleKey: "navigation.sidebar.groups.structure",
-				items: [
-					{
-						to: "/institution",
-						icon: <Building2 className={IC} />,
-						labelKey: "navigation.sidebar.admin.institution",
-					},
-					{
-						to: "/programs",
-						icon: <School className={IC} />,
-						labelKey: "navigation.sidebar.admin.programs",
-					},
-					{
-						to: "/classes",
-						icon: <Users className={IC} />,
-						labelKey: "navigation.sidebar.admin.classes",
-					},
-					{
-						to: "/timetable",
-						icon: <CalendarClock className={IC} />,
-						labelKey: "navigation.sidebar.admin.timetable",
-						badge: "new",
-					},
-				],
-			},
-			{
-				key: "inscriptions",
-				titleKey: "navigation.sidebar.groups.inscriptions",
-				items: [
-					{
-						to: "/users/people",
-						icon: <GraduationCap className={IC} />,
-						labelKey: "navigation.sidebar.admin.students",
-					},
-					{
-						to: "/admissions",
-						icon: <ClipboardList className={IC} />,
-						labelKey: "navigation.sidebar.admin.admissions",
-						badge: "new",
-					},
-					{
-						to: "/users/guardians",
-						icon: <Heart className={IC} />,
-						labelKey: "navigation.sidebar.admin.guardians",
-					},
-				],
-			},
-			{
-				key: "people",
-				titleKey: "navigation.sidebar.groups.people",
-				items: [
-					{
-						to: "/users",
-						icon: <UserCog className={IC} />,
-						labelKey: "navigation.sidebar.admin.users",
-					},
-				],
-			},
-			{
-				key: "assessment",
-				titleKey: "navigation.sidebar.groups.assessment",
-				items: [
-					{
-						to: "/exams",
-						icon: <ClipboardList className={IC} />,
-						labelKey: "navigation.sidebar.admin.exams",
-					},
-					{
-						to: "/document-batch",
-						icon: <FileText className={IC} />,
-						labelKey: "navigation.sidebar.admin.documentBatch",
-					},
-				],
-			},
-			{
-				key: "results",
-				titleKey: "navigation.sidebar.groups.results",
-				items: [
-					{
-						to: "/academic-results",
-						icon: <Gavel className={IC} />,
-						labelKey: "navigation.sidebar.admin.academicResults",
-					},
-				],
-			},
-			{
-				key: "analytics",
-				titleKey: "navigation.sidebar.groups.analytics",
-				items: [
-					{
-						to: "/statistics",
-						icon: <BarChart3 className={IC} />,
-						labelKey: "navigation.sidebar.admin.statistics",
-						badge: "new",
-					},
-				],
-			},
-			{
-				key: "system",
-				titleKey: "navigation.sidebar.groups.system",
-				items: [
-					{
-						to: "/configuration",
-						icon: <Settings2 className={IC} />,
-						labelKey: "navigation.sidebar.admin.configuration",
-					},
-					{
-						to: "/monitoring",
-						icon: <LayoutDashboard className={IC} />,
-						labelKey: "navigation.sidebar.admin.monitoring",
-					},
-					{
-						to: "/batch-jobs",
-						icon: <PlayCircle className={IC} />,
-						labelKey: "navigation.sidebar.admin.batchJobs",
-						badge: "new",
-					},
-					{
-						to: "/fee-clearance",
-						icon: <CreditCard className={IC} />,
-						labelKey: "navigation.sidebar.admin.feeClearance",
-						badge: "new",
-					},
-					{
-						to: "/notifications/center",
-						icon: <Bell className={IC} />,
-						labelKey: "navigation.sidebar.admin.notifications",
-					},
-				],
-			},
-		],
-		[],
-	);
-
-	const teacherLinks = useMemo<NavItem[]>(
-		() => [
-			{
-				to: "/",
-				icon: <BookOpen className={IC} />,
-				labelKey: "navigation.sidebar.teacher.myCourses",
-			},
-			{
-				to: "/timetable",
-				icon: <CalendarClock className={IC} />,
-				labelKey: "navigation.sidebar.teacher.timetable",
-			},
-			{
-				to: "/attendance",
-				icon: <ClipboardList className={IC} />,
-				labelKey: "navigation.sidebar.teacher.attendance",
-			},
-			{
-				to: "/attendance/rates",
-				icon: <BarChart3 className={IC} />,
-				labelKey: "navigation.sidebar.teacher.attendanceRates",
-			},
-			{
-				to: "/exports",
-				icon: <FileSpreadsheet className={IC} />,
-				labelKey: "navigation.sidebar.teacher.exports",
-			},
-		],
-		[],
-	);
-
-	const deanLinks = useMemo<NavItem[]>(
-		() => [
-			{
-				to: "/",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.dean.dashboard",
-			},
-			{
-				to: "/approvals",
-				icon: <ClipboardList className={IC} />,
-				labelKey: "navigation.sidebar.dean.pendingApprovals",
-			},
-			{
-				to: "/history",
-				icon: <FileCog className={IC} />,
-				labelKey: "navigation.sidebar.dean.history",
-			},
-			{
-				to: "/monitoring",
-				icon: <TrendingUp className={IC} />,
-				labelKey: "navigation.sidebar.dean.monitoring",
-			},
-		],
-		[],
-	);
-
-	const gradeEditorLinks = useMemo<NavItem[]>(
-		() => [
-			{
-				to: "/",
-				icon: <BookOpen className={IC} />,
-				labelKey: "navigation.sidebar.teacher.myCourses",
-			},
-			{
-				to: "/exports",
-				icon: <FileSpreadsheet className={IC} />,
-				labelKey: "navigation.sidebar.teacher.exports",
-			},
-		],
-		[],
-	);
-
-	const studentLinks = useMemo<NavItem[]>(
-		() => [
-			{
-				to: "/",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.student.dashboard",
-			},
-			{
-				to: "/exams",
-				icon: <Calendar className={IC} />,
-				labelKey: "navigation.sidebar.student.exams",
-			},
-			{
-				to: "/timetable",
-				icon: <CalendarClock className={IC} />,
-				labelKey: "navigation.sidebar.student.timetable",
-			},
-			{
-				to: "/enrollments",
-				icon: <ListChecks className={IC} />,
-				labelKey: "navigation.sidebar.student.enrollments",
-			},
-			{
-				to: "/documents",
-				icon: <FileText className={IC} />,
-				labelKey: "navigation.sidebar.student.documents",
-			},
-			{
-				to: "/timeline",
-				icon: <History className={IC} />,
-				labelKey: "navigation.sidebar.student.timeline",
-			},
-		],
-		[],
-	);
-
-	const menuContent = useMemo(() => {
-		if (!user) return { type: "flat" as const, items: teacherLinks };
-		switch (user.role) {
-			case "administrator":
-			case "super_admin":
-			case "owner":
-				return { type: "grouped" as const, groups: adminGroups };
-			case "dean":
-				return { type: "flat" as const, items: deanLinks };
-			case "teacher":
-				return { type: "flat" as const, items: teacherLinks };
-			case "grade_editor":
-				return { type: "flat" as const, items: gradeEditorLinks };
-			case "student":
-				return { type: "flat" as const, items: studentLinks };
-			default:
-				return { type: "flat" as const, items: teacherLinks };
-		}
-	}, [
-		user,
-		adminGroups,
-		teacherLinks,
-		gradeEditorLinks,
-		deanLinks,
-		studentLinks,
-	]);
+	// Phone drawer: close it once a link is followed, and on Escape
+	// biome-ignore lint/correctness/useExhaustiveDependencies: runs on navigation
+	useEffect(() => {
+		if (window.innerWidth < 768) useStore.getState().setSidebarOpen(false);
+	}, [location.pathname]);
+	const closeOnPhone = () => {
+		if (window.innerWidth < 768) useStore.getState().setSidebarOpen(false);
+	};
+	useEffect(() => {
+		if (!sidebarOpen) return;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && window.innerWidth < 768) {
+				useStore.getState().setSidebarOpen(false);
+			}
+		};
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
+	}, [sidebarOpen]);
 
 	const allLinks = useMemo<NavItem[]>(
 		() =>
@@ -557,7 +236,9 @@ const Sidebar: React.FC = () => {
 								...g,
 								items: q
 									? g.items.filter((l) =>
-											t(l.labelKey).toLowerCase().includes(q),
+											`${t(l.labelKey)} ${l.keywordsKey ? t(l.keywordsKey) : ""}`
+												.toLowerCase()
+												.includes(q),
 										)
 									: g.items,
 							}))
@@ -589,6 +270,7 @@ const Sidebar: React.FC = () => {
 														to={link.to}
 														end={ROOT_PATHS.has(link.to)}
 														className={makeLinkClass(link)}
+														onClick={closeOnPhone}
 														data-testid={`nav-${link.to}`}
 													>
 														{link.icon}
@@ -612,6 +294,7 @@ const Sidebar: React.FC = () => {
 								to={link.to}
 								end={ROOT_PATHS.has(link.to)}
 								className={makeLinkClass(link)}
+								onClick={closeOnPhone}
 								data-testid={`nav-${link.to}`}
 							>
 								{link.icon}

@@ -66,22 +66,27 @@ export function GradeSpreadsheetGrid({
 		<table className="w-full border-collapse text-sm">
 			<thead className="sticky top-0 z-10 bg-muted/50">
 				<tr>
-					<th className="sticky left-0 z-20 min-w-[220px] border-b bg-muted/50 px-3 py-2 text-left font-medium">
+					<th className="sticky left-0 z-20 w-36 min-w-36 border-b bg-muted px-3 py-2 text-left font-medium sm:w-auto sm:min-w-[220px]">
 						{t("teacher.spreadsheet.studentCol")}
 					</th>
-					<th className="border-b px-2 py-2 text-left font-normal text-muted-foreground text-xs">
+					<th className="hidden border-b px-2 py-2 text-left font-normal text-muted-foreground text-xs sm:table-cell">
 						{t("teacher.spreadsheet.matricule")}
 					</th>
 					{exams.map((exam) => (
 						<th
 							key={exam.id}
-							className="min-w-[100px] border-b px-2 py-2 text-center font-medium"
+							className="min-w-[88px] border-b px-2 py-2 text-center font-medium sm:min-w-[100px]"
 						>
 							<div className="flex flex-col items-center gap-0.5">
 								<span className="flex items-center gap-1">
 									{exam.name}
 									{exam.isLocked && (
-										<Lock className="h-3 w-3 text-muted-foreground" />
+										<Lock
+											className="h-3 w-3 text-muted-foreground"
+											aria-label={t("teacher.spreadsheet.lockedExam")}
+										>
+											<title>{t("teacher.spreadsheet.lockedExam")}</title>
+										</Lock>
 									)}
 								</span>
 								<span className="font-normal text-[10px] text-muted-foreground">
@@ -95,10 +100,16 @@ export function GradeSpreadsheetGrid({
 			<tbody>
 				{filteredStudents.map((student, sIdx) => (
 					<tr key={student.id} className="even:bg-muted/10 hover:bg-muted/20">
-						<td className="sticky left-0 border-b bg-background px-3 py-1.5 font-medium">
-							{student.lastName} {student.firstName}
+						<td className="sticky left-0 z-10 w-36 min-w-36 max-w-36 border-b bg-background px-3 py-1.5 font-medium sm:w-auto sm:max-w-none">
+							<span className="block break-words leading-tight">
+								{student.lastName} {student.firstName}
+							</span>
+							{/* Phones: the registration column is hidden, shown here */}
+							<span className="block truncate font-normal text-[10px] text-muted-foreground sm:hidden">
+								{student.registrationNumber}
+							</span>
 						</td>
-						<td className="border-b px-2 py-1.5 text-muted-foreground text-xs">
+						<td className="hidden border-b px-2 py-1.5 text-muted-foreground text-xs sm:table-cell">
 							{student.registrationNumber}
 						</td>
 						{exams.map((exam, eIdx) => {

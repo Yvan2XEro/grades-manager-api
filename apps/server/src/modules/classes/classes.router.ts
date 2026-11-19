@@ -83,6 +83,20 @@ export const router = createRouter({
 				input.targetAcademicYearId,
 			),
 		),
+	createPromotionTarget: tenantAdminProcedure
+		.input(
+			z.object({
+				sourceClassId: z.string(),
+				targetAcademicYearId: z.string(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			service.createPromotionTarget(
+				input.sourceClassId,
+				input.targetAcademicYearId,
+				ctx.institution.id,
+			),
+		),
 	promotionPreview: tenantProtectedProcedure
 		.input(promotionPreviewSchema)
 		.query(({ ctx, input }) =>

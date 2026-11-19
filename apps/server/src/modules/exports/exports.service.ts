@@ -1,7 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import Handlebars from "handlebars";
 import JSZip from "jszip";
-import puppeteer from "puppeteer";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { loadTutelleChain } from "../academic-documents/academic-documents.repo";
@@ -18,6 +17,7 @@ import type {
 	GeneratePVInput,
 	GenerateUEInput,
 } from "./exports.zod";
+import { launchPdfBrowser } from "./pdf-browser";
 import {
 	calculateStats,
 	calculateSuccessRate,
@@ -114,6 +114,10 @@ type HeaderContext = {
 		nameEn: string;
 		abbreviation: string;
 		contactEmail: string;
+		contactPhone: string;
+		website: string;
+		sloganFr: string;
+		sloganEn: string;
 		postalBox: string;
 		addressFr: string;
 		addressEn: string;
@@ -587,10 +591,7 @@ export class ExportsService {
 			) => Promise<Buffer>,
 		) => Promise<T>,
 	): Promise<T> {
-		const browser = await puppeteer.launch({
-			headless: true,
-			args: ["--no-sandbox", "--disable-setuid-sandbox"],
-			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+		const browser = await launchPdfBrowser({
 			// Bump Puppeteer's CDP protocolTimeout — large data-URI logos can
 			// take >30s to decode in headless Chrome under load (the default
 			// 30s timeout fires "Runtime.callFunctionOn timed out" mid-batch).
@@ -1145,7 +1146,7 @@ export class ExportsService {
 			deferred: "Ajourné",
 			repeat: "Redoublant",
 			excluded: "Exclu",
-			pending: "En attente",
+			pending: "Incomplet",
 		};
 
 		// Collect unique UEs across all students
@@ -1167,12 +1168,14 @@ export class ExportsService {
 		}
 		const ues = Array.from(ueMap.values());
 
-		// Sort students alphabetically by family name (NOM), then given names.
-		// Seed/UI convention: firstName carries the family name (NOM).
+		// Minutes order: by rank, then the unranked (incomplete) students by
+		// family name and given names.
 		const sortedStudents = [...data.students].sort(
 			(a, b) =>
-				(a.firstName ?? "").localeCompare(b.firstName ?? "") ||
-				(a.lastName ?? "").localeCompare(b.lastName ?? ""),
+				(a.rank ?? Number.POSITIVE_INFINITY) -
+					(b.rank ?? Number.POSITIVE_INFINITY) ||
+				(a.lastName ?? "").localeCompare(b.lastName ?? "") ||
+				(a.firstName ?? "").localeCompare(b.firstName ?? ""),
 		);
 
 		// Enrich students with labels and ensure UE order matches
@@ -1887,6 +1890,10 @@ export class ExportsService {
 				nameEn: institution?.nameEn ?? "",
 				abbreviation: institution?.abbreviation ?? "",
 				contactEmail: institution?.contactEmail ?? "",
+				contactPhone: institution?.contactPhone ?? "",
+				website: institution?.website ?? "",
+				sloganFr: institution?.sloganFr ?? "",
+				sloganEn: institution?.sloganEn ?? "",
 				postalBox: institution?.postalBox ?? "",
 				addressFr: institution?.addressFr ?? "",
 				addressEn: institution?.addressEn ?? "",
@@ -1941,10 +1948,7 @@ export class ExportsService {
 		html: string,
 		styleConfig: TemplateConfiguration["styleConfig"],
 	): Promise<Buffer> {
-		const browser = await puppeteer.launch({
-			headless: true,
-			args: ["--no-sandbox", "--disable-setuid-sandbox"],
-			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+		const browser = await launchPdfBrowser({
 			protocolTimeout: 180_000,
 		});
 

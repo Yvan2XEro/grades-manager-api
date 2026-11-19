@@ -17,6 +17,18 @@ const normalizeDate = (value?: string | null) => {
 	return date.toISOString().split("T")[0];
 };
 
+const GENDERS = ["male", "female", "other"] as const;
+type Gender = (typeof GENDERS)[number];
+
+/** Stored genders may come from imports ("FEMALE", "F", "Masculin"...): map them, or leave the field empty. */
+const normalizeGender = (value?: string | null): Gender | "" => {
+	const v = (value ?? "").trim().toLowerCase();
+	if (["male", "m", "masculin", "homme"].includes(v)) return "male";
+	if (["female", "f", "feminin", "féminin", "femme"].includes(v))
+		return "female";
+	return v === "other" ? "other" : "";
+};
+
 const buildProfileSchema = (t: TFunction) =>
 	z.object({
 		firstName: z.string().min(1, t("settings.profile.validation.firstName")),
@@ -24,7 +36,11 @@ const buildProfileSchema = (t: TFunction) =>
 		phone: z.string().optional(),
 		dateOfBirth: z.string().optional(),
 		placeOfBirth: z.string().optional(),
-		gender: z.enum(["male", "female", "other", ""]).optional(),
+		gender: z
+			.enum([...GENDERS, ""], {
+				message: t("settings.profile.validation.gender"),
+			})
+			.optional(),
 		nationality: z.string().optional(),
 	});
 
@@ -63,7 +79,7 @@ export function useProfileForm() {
 			phone: profile.phone ?? "",
 			dateOfBirth: normalizeDate(profile.dateOfBirth),
 			placeOfBirth: profile.placeOfBirth ?? "",
-			gender: profile.gender || "",
+			gender: normalizeGender(profile.gender),
 			nationality: profile.nationality ?? "",
 		});
 	}, [profile, reset, form]);

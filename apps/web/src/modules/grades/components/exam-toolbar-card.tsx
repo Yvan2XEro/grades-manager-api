@@ -1,4 +1,12 @@
-import { AlertTriangle, Download, Info, Lock, Upload } from "lucide-react";
+import {
+	AlertTriangle,
+	Clock,
+	Download,
+	Info,
+	Lock,
+	Send,
+	Upload,
+} from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,6 +41,8 @@ export function ExamToolbarCard({
 	onImportGrades,
 	onLock,
 	isLocking,
+	onSubmitForReview,
+	isSubmitting,
 }: {
 	courseId: string;
 	exams: EntryExam[];
@@ -47,6 +57,8 @@ export function ExamToolbarCard({
 	onImportGrades: (event: React.ChangeEvent<HTMLInputElement>) => void;
 	onLock: () => void;
 	isLocking: boolean;
+	onSubmitForReview: () => void;
+	isSubmitting: boolean;
 }) {
 	const { t } = useTranslation();
 	return (
@@ -89,26 +101,33 @@ export function ExamToolbarCard({
 									<Lock className="h-4 w-4" />
 									{t("teacher.gradeEntry.lockedChip")}
 								</Badge>
-							) : (
+							) : selectedExamInfo?.status === "approved" ? (
 								<Button
 									type="button"
 									variant="outline"
 									onClick={onLock}
-									disabled={
-										!selectedExam ||
-										isLocking ||
-										selectedExamInfo?.status !== "approved"
-									}
-									title={
-										selectedExamInfo?.status !== "approved"
-											? t("teacher.gradeEntry.actions.lockRequiresApproval")
-											: undefined
-									}
+									disabled={isLocking}
 								>
 									<Lock className="mr-2 h-4 w-4" />
 									{t("teacher.gradeEntry.actions.lock")}
 								</Button>
-							)}
+							) : selectedExamInfo?.status === "submitted" ? (
+								<Badge variant="secondary" className="flex items-center gap-2">
+									<Clock className="h-4 w-4" />
+									{t("teacher.gradeEntry.awaitingApproval")}
+								</Badge>
+							) : canEditExam ? (
+								<Button
+									type="button"
+									onClick={onSubmitForReview}
+									disabled={isSubmitting || !hasStudents}
+								>
+									<Send className="mr-2 h-4 w-4" />
+									{selectedExamInfo?.status === "rejected"
+										? t("teacher.gradeEntry.actions.resubmit")
+										: t("teacher.gradeEntry.actions.submit")}
+								</Button>
+							) : null}
 						</div>
 					)}
 				</div>

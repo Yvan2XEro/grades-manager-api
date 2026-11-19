@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -8,8 +8,9 @@ function yearEq(col: Parameters<typeof eq>[0], id: string | undefined) {
 
 export const statsRepo = {
 	async overview(institutionId: string, academicYearId?: string) {
+		// Distinct students: one student enrolled twice still counts once
 		const [studentsRow] = await db
-			.select({ count: count() })
+			.select({ count: countDistinct(schema.enrollments.studentId) })
 			.from(schema.enrollments)
 			.where(
 				and(
@@ -32,6 +33,23 @@ export const statsRepo = {
 		const [feeExpectedRow] = await db
 			.select({
 				total: sql<string>`COALESCE(SUM(${schema.studentFeeAssignments.effectiveAmount}), '0')`,
+			})
+			.from(schema.studentFeeAssignments)
+			.where(
+				and(
+					eq(schema.studentFeeAssignments.institutionId, institutionId),
+					...yearEq(
+						schema.studentFeeAssignments.academicYearId,
+						academicYearId,
+					),
+				),
+			);
+
+		// How many students have fees assigned: the collection rate only
+		// covers them, so the dashboard shows it next to the rate.
+		const [feeAssignedRow] = await db
+			.select({
+				count: countDistinct(schema.studentFeeAssignments.studentId),
 			})
 			.from(schema.studentFeeAssignments)
 			.where(
@@ -96,6 +114,7 @@ export const statsRepo = {
 			feeExpected,
 			feeCollected,
 			feeOutstanding: feeExpected - feeCollected,
+			feeAssignedStudents: feeAssignedRow?.count ?? 0,
 			feeCollectionRate:
 				feeExpected > 0 ? Math.round((feeCollected / feeExpected) * 100) : 0,
 			admissionsTotal: admissionsRow?.count ?? 0,
@@ -139,9 +158,17 @@ export const statsRepo = {
 			.groupBy(schema.classes.program, schema.programs.name)
 			.orderBy(desc(count()));
 
+		// Gender is stored with mixed spellings ("FEMALE", "female", "F"):
+		// normalise it so each gender is counted once.
+		const genderKey = sql<string | null>`CASE
+			WHEN LOWER(${schema.domainUsers.gender}) IN ('m', 'male', 'homme', 'masculin') THEN 'male'
+			WHEN LOWER(${schema.domainUsers.gender}) IN ('f', 'female', 'femme', 'feminin', 'féminin') THEN 'female'
+			WHEN ${schema.domainUsers.gender} IS NULL OR ${schema.domainUsers.gender} = '' THEN NULL
+			ELSE 'other'
+		END`;
 		const byGender = await db
 			.select({
-				gender: schema.domainUsers.gender,
+				gender: genderKey,
 				count: count(),
 			})
 			.from(schema.enrollments)
@@ -154,7 +181,7 @@ export const statsRepo = {
 				eq(schema.students.domainUserId, schema.domainUsers.id),
 			)
 			.where(baseWhere)
-			.groupBy(schema.domainUsers.gender);
+			.groupBy(genderKey);
 
 		return {
 			total: totalRow?.count ?? 0,

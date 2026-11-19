@@ -181,7 +181,16 @@
     "itemCount_other": "{{count}} éléments",
     "validation": {
       "required": "Obligatoire"
-    }
+    },
+    "courseStatus": {
+      "planned": "Prévu",
+      "active": "En cours",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "withdrawn": "Abandonné"
+    },
+    "close": "Fermer",
+    "clear": "Effacer"
   },
   "navigation": {
     "breadcrumbs": {
@@ -241,14 +250,12 @@
         "close": "fermer"
       },
       "groups": {
-        "main": "Principal",
-        "academic": "Académique",
-        "tools": "Outils"
+        "main": "Principal"
       }
     },
     "header": {
       "adminDashboard": "Tableau de bord administrateur",
-      "teacherDashboard": "Tableau de bord enseignant",
+      "teacherDashboard": "Mes cours",
       "notificationsAria": "Ouvrir les notifications",
       "toggleSidebarAria": "Afficher ou masquer le menu latéral",
       "languageSelectAria": "Changer de langue",
@@ -287,12 +294,12 @@
         "gradeEntry": "Saisie des notes",
         "exportTemplates": "Modèles d'exportation",
         "classDocumentTemplates": "Documents par classe",
-        "documentBatch": "Génération en lot",
+        "documentBatch": "Documents officiels",
         "monitoring": "Supervision",
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
         "dataImport": "Import de données",
-        "feeClearance": "Quitus / Frais",
+        "feeClearance": "Frais de scolarité",
         "statistics": "Statistiques",
         "students": "Étudiants",
         "studentPromotion": "Promotion des étudiants",
@@ -364,7 +371,9 @@
         "timetable": "Emploi du temps",
         "enrollments": "Mes inscriptions",
         "documents": "Mes documents",
-        "timeline": "Historique"
+        "timeline": "Historique",
+        "fees": "Mes frais",
+        "feesKeywords": "frais scolarité paiement paiements reçu solde échéance tranche"
       }
     },
     "roles": {
@@ -376,22 +385,24 @@
       "teacher": "Enseignant",
       "administrator": "Administrateur",
       "super_admin": "Super administrateur",
-      "owner": "Propriétaire"
+      "owner": "Propriétaire",
+      "member": "Membre"
     },
     "pages": {
-      "people": "Personnes",
+      "people": "Utilisateurs",
       "enrollments": "Inscriptions",
       "admissions": "Admissions",
       "exams": "Examens",
       "deliberations": "Délibérations",
-      "feeAssignments": "Affectations de frais",
+      "feeAssignments": "Paiements étudiants",
       "academicYears": "Années académiques",
       "myFees": "Mes frais",
-      "courseEnrollment": "Inscription aux cours",
+      "courseEnrollment": "Inscriptions aux cours",
       "examCalendar": "Calendrier des examens",
       "documents": "Documents",
       "notifications": "Notifications",
-      "openProfile": "Ouvrir la fiche"
+      "openProfile": "Ouvrir la fiche",
+      "students": "Étudiants"
     },
     "crumbs": {
       "academicYears": "Années académiques",
@@ -415,7 +426,7 @@
       "enrollments": "Inscriptions",
       "students": "Étudiants",
       "users": "Utilisateurs",
-      "people": "Personnes",
+      "people": "Utilisateurs",
       "guardians": "Parents",
       "apiKeys": "Clés API",
       "identity": "Identité",
@@ -440,11 +451,11 @@
       "graduation": "Diplômés",
       "feeClearance": "Frais de scolarité",
       "feeStructures": "Barèmes de frais",
-      "feeAssignments": "Affectations de frais",
+      "feeAssignments": "Paiements étudiants",
       "installments": "Échéances",
       "impact": "Impact",
       "history": "Historique",
-      "feeGating": "Restriction d'accès",
+      "feeGating": "Restrictions d'accès",
       "timetable": "Emploi du temps",
       "schedule": "Planning",
       "rooms": "Salles",
@@ -472,7 +483,7 @@
       "preferences": "Préférences",
       "statistics": "Statistiques",
       "documents": "Documents",
-      "documentBatch": "Génération en lot",
+      "documentBatch": "Documents officiels",
       "exports": "Exports",
       "myFees": "Mes frais",
       "approvals": "Approbations",
@@ -485,6 +496,9 @@
     "badges": {
       "new": "Nouveau",
       "updated": "Mis à jour"
+    },
+    "keywords": {
+      "documents": "attestation certificat scolarité inscription réussite relevé de notes diplôme génération en lot"
     }
   },
   "auth": {
@@ -532,7 +546,11 @@
       "success": "E-mail de réinitialisation envoyé",
       "error": "Impossible d'envoyer l'e-mail de réinitialisation",
       "backToLogin": "Retour à la connexion",
-      "subtitle": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation de mot de passe."
+      "subtitle": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation de mot de passe.",
+      "sentTitle": "Consultez votre boîte e-mail",
+      "sentBody": "Si un compte existe pour {{email}}, nous lui avons envoyé un lien pour choisir un nouveau mot de passe.",
+      "sentHint": "Rien reçu après quelques minutes ? Vérifiez vos courriers indésirables, ou renvoyez le lien.",
+      "resend": "Renvoyer le lien"
     },
     "reset": {
       "title": "Définir un nouveau mot de passe",
@@ -751,12 +769,22 @@
         "expected": "Attendu",
         "collected": "Collecté",
         "remaining": "Restant",
-        "rate": "Taux de collecte"
+        "rate": "Taux de collecte",
+        "coverage": "{{assigned}} étudiants sur {{total}} ont des frais affectés.",
+        "coverageShort": "{{assigned}}/{{total}} étudiants avec frais",
+        "rateHint": "Le taux ne porte que sur leurs frais."
       },
       "statusStats": {
         "title": "Statut des inscriptions",
         "subtitle": "Répartition par état",
         "empty": "Aucune inscription"
+      },
+      "yearEnded": {
+        "title": "L'année académique active {{year}} est terminée depuis le {{date}}",
+        "createNext": "Les nouvelles inscriptions, les frais et les imports vont encore dans cette année terminée. Créez l'année suivante, puis activez-la.",
+        "activateNext": "L'année {{year}} existe déjà : activez-la pour que les nouvelles inscriptions, les frais et les imports y soient rattachés.",
+        "createButton": "Créer l'année suivante",
+        "openYears": "Ouvrir les années académiques"
       }
     },
     "statistics": {
@@ -779,7 +807,7 @@
         "unknown": "Non renseigné"
       },
       "enrollment": {
-        "totalLabel": "Inscriptions actives",
+        "totalLabel": "Inscriptions de l'année (tous statuts)",
         "byProgram": "Inscrits par programme",
         "byStatus": "Répartition par statut",
         "byGender": "Répartition par genre",
@@ -787,7 +815,8 @@
           "active": "Actif",
           "pending": "En attente",
           "completed": "Terminé",
-          "withdrawn": "Retiré"
+          "withdrawn": "Retiré",
+          "graduated": "Diplômé"
         }
       },
       "performance": {
@@ -795,14 +824,6 @@
         "avgGeneral": "Moyenne générale",
         "byDecision": "Résultats par décision",
         "byMention": "Résultats par mention",
-        "decision": {
-          "passed": "Admis",
-          "failed": "Échoué",
-          "repeating": "Redoublant",
-          "excluded": "Exclu",
-          "deferred": "Reporté",
-          "unknown": "Inconnu"
-        },
         "mention": {
           "passable": "Passable",
           "assez_bien": "Assez bien",
@@ -810,7 +831,9 @@
           "tres_bien": "Très bien",
           "excellent": "Excellent",
           "unknown": "Non attribuée"
-        }
+        },
+        "passRate": "Taux de réussite",
+        "passRateHint": "Étudiants admis et compensés parmi les étudiants délibérés dans les délibérations de l'année."
       },
       "finances": {
         "title": "Vue financière",
@@ -1408,13 +1431,13 @@
         "noDefaultYear": "Aucune année par défaut",
         "noRegistrationFormat": "Aucun format de matricule (utiliser le format actif)",
         "abbreviation": "Abréviation",
-        "typePlaceholder": "Select type",
+        "typePlaceholder": "Choisir le type",
         "parentInstitutionPlaceholder": "Sélectionner l'établissement parent",
         "supervisingFacultyPlaceholder": "Sélectionner la faculté de tutelle",
         "defaultAcademicYearManagedHint": "L'année académique active se gère depuis Années académiques.",
         "registrationFormatManagedHint": "Le format de matricule actif se gère depuis Formats de matricule.",
-        "signatoryName": "Signatory name",
-        "signatoryTitle": "Signatory title",
+        "signatoryName": "Nom du signataire",
+        "signatoryTitle": "Titre du signataire",
         "city": "Ville (pour la ligne de date des documents)",
         "logoSvg": "Logo SVG (code source)",
         "logoSvgHint": "Si renseigné, le SVG est utilisé en priorité sur les exports (à la place du logo PNG/URL).",
@@ -1431,8 +1454,8 @@
         "namesHint": "Noms officiels en français et en anglais, abréviation et slogan.",
         "system": "Système",
         "systemHint": "Année académique par défaut et format de matricule.",
-        "documentParams": "Document Generation",
-        "documentParamsHint": "Signataire et ville utilisés sur les diplômes, attestations et relevés générés. Synchronisés automatiquement avec Diplomation."
+        "documentParams": "Documents officiels",
+        "documentParamsHint": "Signataire (nom et titre) et ville imprimés sur les certificats de scolarité, attestations de réussite, relevés et diplômes. Synchronisés aussi avec Diplomation."
       }
     },
     "studyCycles": {
@@ -2728,6 +2751,32 @@
           "admissionDate": "La date d'admission est obligatoire",
           "admissionJustification": "La justification doit contenir au moins 10 caractères"
         }
+      },
+      "enroll": {
+        "title": "Inscrire un étudiant",
+        "description": "Inscription dans une classe de {{year}} : matricule, dossier étudiant et liste de classe en une seule étape.",
+        "noActiveYear": "Aucune année académique active : activez d'abord l'année en cours (Années académiques).",
+        "class": "Classe",
+        "classPlaceholder": "Choisissez la classe",
+        "modeNew": "Nouvel étudiant",
+        "modeExisting": "Personne déjà enregistrée",
+        "gender": "Sexe",
+        "genderPlaceholder": "Choisir",
+        "female": "Féminin",
+        "male": "Masculin",
+        "dateOfBirth": "Date de naissance",
+        "placeOfBirth": "Lieu de naissance",
+        "phone": "Téléphone",
+        "emailHint": "Sert au compte de l'étudiant et aux notifications.",
+        "searchPlaceholder": "Nom, e-mail ou matricule",
+        "searchHint": "Tapez au moins 2 lettres du nom ou de l'e-mail.",
+        "noMatch": "Aucune personne trouvée. Utilisez « Nouvel étudiant ».",
+        "willEnroll": "Cette personne deviendra étudiante de {{className}} et recevra un matricule.",
+        "willMove": "Déjà étudiant(e) : il/elle sera transféré(e) en {{className}} (l'inscription précédente est clôturée).",
+        "alreadyInClass": "Déjà inscrit(e) dans cette classe.",
+        "submit": "Inscrire",
+        "success": "{{name}} inscrit(e) en {{className}} — matricule {{registrationNumber}}",
+        "conflict": "Cet e-mail ou ce matricule est déjà utilisé par une autre personne."
       }
     },
     "users": {
@@ -2921,7 +2970,7 @@
         "emptyStudents": "Sélectionnez une classe pour afficher les étudiants.",
         "courses": "Cours de la classe",
         "selectStudent": "Choisissez un étudiant pour gérer ses inscriptions.",
-        "openModalBtn": "Voir le roster",
+        "openModalBtn": "Voir les cours par étudiant",
         "teacher": "Enseignant : {{value}}",
         "notEnrolled": "Non inscrit",
         "enrollBtn": "Inscrire",
@@ -3173,7 +3222,7 @@
         "deferred": "Ajourné",
         "repeat": "Redoublant",
         "excluded": "Exclu",
-        "pending": "En attente"
+        "pending": "Incomplet"
       },
       "mention": {
         "passable": "Passable",
@@ -3253,14 +3302,28 @@
         "signedBy": "Signé par",
         "notYet": "Pas encore",
         "juryNumber": "N° jury",
-        "fallbackTitle": "Délibération"
+        "fallbackTitle": "Délibération",
+        "ues": "UE",
+        "missingUes_one": "{{count}} UE sans note",
+        "missingUes_other": "{{count}} UE sans notes"
       },
       "override": {
         "title": "Modifier la décision",
         "currentDecision": "Décision actuelle",
         "newDecision": "Nouvelle décision",
         "reason": "Motif",
-        "reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision..."
+        "reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision...",
+        "partialAverage": "{{value}} (partielle)",
+        "computedDecision": "Décision calculée",
+        "restore": "Rétablir « {{decision}} »",
+        "restoreReason": "Décision calculée rétablie",
+        "newDecisionPlaceholder": "Choisir la décision du jury",
+        "computed": "calculée",
+        "help": {
+          "deferred": "Ajourné : pas encore admis ; l'étudiant peut repasser les UE non acquises (rattrapage) avant une décision définitive.",
+          "repeat": "Redoublant : l'étudiant reprend le même niveau l'année suivante.",
+          "excluded": "Exclu : l'étudiant ne peut pas poursuivre dans la filière."
+        }
       },
       "logs": {
         "title": "Journal d'activité",
@@ -3273,34 +3336,41 @@
         "signed": "Délibération signée",
         "reopened": "Délibération rouverte (résultats masqués)",
         "exported": "Diplomation exportée",
-        "promoted": "Étudiants promus"
+        "promoted": "Étudiants promus",
+        "promotedDetails": "{{count}} → {{className}}"
       },
       "promote": {
         "button": "Promouvoir les admis",
         "title": "Promouvoir les admis",
-        "description": "{{count}} étudiants admis/compensés seront inscrits dans la classe cible",
+        "description": "{{count}} étudiants admis ou compensés seront inscrits dans la classe cible.",
         "targetAcademicYear": "Année académique cible",
         "targetAcademicYearPlaceholder": "Sélectionner l'année suivante",
         "targetClass": "Classe cible",
         "targetClassPlaceholder": "Sélectionner la classe de destination",
         "confirm": "Promouvoir",
-        "success": "{{count}} étudiants promus avec succès",
         "noAdmitted": "Aucun étudiant admis à promouvoir",
         "lastLevelTitle": "Dernier niveau du cycle",
         "lastLevelHint": "Il n'y a pas de classe suivante : les étudiants admis terminent le cycle et sont marqués diplômés.",
         "noTargetFound": {
-          "title": "title",
-          "searched": "searched",
-          "criteriaProgram": "Même programme : {{program}}",
-          "criteriaLevel": "Niveau suivant {{level}} (rang {{nextIndex}})",
-          "criteriaYear": "criteriaYear",
-          "fix": "fix",
-          "goToClasses": "goToClasses"
+          "title": "La classe du niveau suivant n'existe pas encore",
+          "description": "Il n'existe pas de classe {{program}} de niveau « {{level}} » en {{year}}. Elle peut être créée maintenant, avec un code généré.",
+          "create": "Créer « {{name}} »"
         },
-        "ctaDesc": "Les étudiants avec la décision « Admis » peuvent être promus au niveau suivant.",
+        "ctaDesc": "Les étudiants dont la décision est « Admis » ou « Compensé » passent au niveau suivant du cycle (ou sont diplômés au dernier niveau).",
         "ctaTitle": "Promouvoir les étudiants admis",
         "targetClassHint_one": "{{count}} étudiant admis sera inscrit dans cette classe.",
-        "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe."
+        "targetClassHint_other": "{{count}} étudiants admis seront inscrits dans cette classe.",
+        "othersStay": "Les étudiants ajournés, redoublants ou exclus restent dans cette classe. Pour réinscrire les redoublants au même niveau l'année suivante, utilisez le passage d'année.",
+        "yearTransitionLink": "Passage d'année",
+        "done_one": "Promotion effectuée le {{date}} : {{count}} étudiant inscrit en {{className}}",
+        "done_other": "Promotion effectuée le {{date}} : {{count}} étudiants inscrits en {{className}}",
+        "doneGraduated_one": "Effectué le {{date}} : {{count}} étudiant diplômé",
+        "doneGraduated_other": "Effectué le {{date}} : {{count}} étudiants diplômés",
+        "alreadyPromoted_one": "{{count}} étudiant était déjà inscrit pour cette année : pas de double inscription.",
+        "alreadyPromoted_other": "{{count}} étudiants étaient déjà inscrits pour cette année : pas de double inscription.",
+        "success_one": "{{count}} étudiant promu",
+        "success_other": "{{count}} étudiants promus",
+        "classCreated": "Classe « {{name}} » créée"
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -3331,7 +3401,9 @@
         "closeTitle": "Clôturer et publier aux étudiants ?",
         "signTitle": "Signer la délibération ?",
         "deleteTitle": "Supprimer la délibération ?",
-        "reopenTitle": "Réouvrir la délibération ?"
+        "reopenTitle": "Réouvrir la délibération ?",
+        "closeIncomplete_one": "{{count}} étudiant a encore des résultats incomplets et figurera comme « Incomplet ».",
+        "closeIncomplete_other": "{{count}} étudiants ont encore des résultats incomplets et figureront comme « Incomplet »."
       },
       "rules": {
         "title": "Règles de délibération",
@@ -3400,9 +3472,22 @@
         "credits": "Crédits",
         "decision": "Décision",
         "mention": "Mention",
-        "stats": "Taux de réussite : {{rate}}% | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}}",
+        "stats": "Taux de réussite : {{rate}} | Admis : {{admitted}} | Compensés : {{compensated}} | Ajournés : {{deferred}} | Redoublants : {{repeat}} | Exclus : {{excluded}} | Incomplets : {{incomplete}}",
         "sheetName": "Délibération",
-        "filePrefix": "Deliberation"
+        "filePrefix": "Deliberation",
+        "title": "PROCÈS-VERBAL DE DÉLIBÉRATION",
+        "session": "Session : {{value}}",
+        "classAverage": "Moyenne de la classe : {{value}}",
+        "signatures": "Le jury",
+        "president": "Président du jury",
+        "member": "Membre du jury",
+        "signatureLine": "Signature : ____________________"
+      },
+      "incomplete": {
+        "title_one": "{{count}} étudiant a des résultats incomplets",
+        "title_other": "{{count}} étudiants ont des résultats incomplets",
+        "hintOpen": "Des notes manquent : aucune moyenne, aucun rang, aucune mention ni décision n'est attribué. Saisissez les notes manquantes puis recalculez, ou faites trancher le jury avec « Modifier la décision » avant de clôturer.",
+        "hintClosed": "Ces étudiants figurent comme « Incomplet » au procès-verbal, sans moyenne, rang ni mention."
       }
     },
     "centers": {
@@ -3522,134 +3607,134 @@
       "emptyHint": "Les étudiants apparaissent ici une fois diplômés lors d'une délibération."
     },
     "academicYearTransitions": {
-      "title": "Passage d'annee",
-      "subtitle": "Preparez, revisez, approuvez et executez la destination annuelle de chaque etudiant.",
-      "generatedAt": "Genere {{date}}",
+      "title": "Passage d'année",
+      "subtitle": "Préparez, révisez, approuvez et exécutez le devenir de chaque étudiant pour l'année suivante.",
+      "generatedAt": "Généré {{date}}",
       "actions": {
         "refresh": "Actualiser",
-        "prepare": "Preparer le plan",
-        "preparing": "Preparation...",
+        "prepare": "Préparer le plan",
+        "preparing": "Préparation…",
         "submit": "Soumettre",
         "approve": "Approuver",
-        "execute": "Executer",
+        "execute": "Exécuter",
         "cancel": "Annuler",
-        "resolve": "Resoudre le cas",
+        "resolve": "Résoudre le cas",
         "submitBlocked": "{{count}} étudiant(s) bloqué(s) à résoudre d'abord.",
         "running": "En cours…"
       },
       "create": {
         "title": "Nouvelle transition",
-        "description": "Selectionnez l'annee source, l'annee cible et le perimetre. TKAMS prepare le devenir de chaque etudiant."
+        "description": "Sélectionnez l'année source, l'année cible et le périmètre. TKAMS prépare le devenir de chaque étudiant."
       },
       "plans": {
         "title": "Plans"
       },
       "fields": {
-        "sourceYear": "Annee academique source",
-        "targetYear": "Annee academique cible",
-        "scope": "Perimetre",
-        "deferredPolicy": "Politique des ajournes"
+        "sourceYear": "Année académique source",
+        "targetYear": "Année académique cible",
+        "scope": "Périmètre",
+        "deferredPolicy": "Politique des ajournés"
       },
       "placeholders": {
-        "sourceYear": "Selectionner l'annee source",
-        "targetYear": "Selectionner l'annee cible",
-        "scope": "Selectionner le perimetre",
-        "search": "Rechercher un etudiant ou matricule...",
-        "targetClass": "Selectionner la classe cible",
+        "sourceYear": "Sélectionner l'année source",
+        "targetYear": "Sélectionner l'année cible",
+        "scope": "Sélectionner le périmètre",
+        "search": "Rechercher un étudiant ou un matricule…",
+        "targetClass": "Sélectionner la classe cible",
         "reason": "Expliquez pourquoi cette correction est valide"
       },
       "scope": {
-        "allClasses": "Toutes les classes de l'annee source"
+        "allClasses": "Toutes les classes de l'année source"
       },
       "deferred": {
-        "review": "Envoyer les ajournes en revue",
-        "repeat": "Traiter les ajournes comme redoublants"
+        "review": "Envoyer les ajournés en revue",
+        "repeat": "Traiter les ajournés comme redoublants"
       },
       "metrics": {
-        "students": "etudiants"
+        "students": "étudiants"
       },
       "summary": {
         "total": "Total",
         "promote": "Promus",
         "repeat": "Redoublants",
-        "graduate": "Diplomes",
-        "blocked": "A traiter",
+        "graduate": "Diplômés",
+        "blocked": "À traiter",
         "overridden": "Corrections"
       },
       "review": {
         "title": "Espace de revue",
-        "description": "Traitez d'abord les cas bloques. Ouvrez une ligne pour inspecter et corriger."
+        "description": "Traitez d'abord les cas bloqués. Ouvrez une ligne pour l'examiner et la corriger."
       },
       "table": {
-        "student": "Etudiant",
+        "student": "Étudiant",
         "decision": "Décision",
         "source": "Classe d'origine",
         "outcome": "Action",
         "destination": "Destination",
-        "status": "Etat"
+        "status": "État"
       },
       "item": {
         "title": "Cas de transition"
       },
       "resolve": {
-        "title": "Resoudre l'exception",
+        "title": "Résoudre l'exception",
         "outcome": "Action finale",
         "targetClass": "Classe cible",
         "reason": "Motif"
       },
       "status": {
         "draft": "Brouillon",
-        "ready": "Pret",
+        "ready": "Prêt",
         "pending_approval": "En attente",
-        "approved": "Approuve",
+        "approved": "Approuvé",
         "running": "En cours",
-        "completed": "Termine",
-        "completed_with_errors": "Termine avec erreurs",
-        "stale": "Obsolete",
-        "cancelled": "Annule"
+        "completed": "Terminé",
+        "completed_with_errors": "Terminé avec erreurs",
+        "stale": "Obsolète",
+        "cancelled": "Annulé"
       },
       "itemStatus": {
-        "all": "Tous les etats",
-        "ready": "Pret",
-        "blocked": "Bloque",
+        "all": "Tous les états",
+        "ready": "Prêt",
+        "blocked": "Bloqué",
         "processing": "Traitement",
-        "succeeded": "Reussi",
-        "failed": "Echoue",
+        "succeeded": "Réussi",
+        "failed": "Échoué",
         "excluded": "Exclu"
       },
       "outcome": {
         "all": "Toutes les actions",
         "promote": "Promouvoir",
         "repeat": "Redoubler",
-        "graduate": "Diplomer",
+        "graduate": "Diplômer",
         "exclude": "Exclure",
-        "transfer": "Transferer",
+        "transfer": "Transférer",
         "suspend": "Suspendre",
-        "review": "A traiter"
+        "review": "À traiter"
       },
       "decision": {
         "admitted": "Admis",
         "compensated": "Admis par compensation",
-        "deferred": "Ajourne",
+        "deferred": "Ajourné",
         "repeat": "Redoublant",
         "excluded": "Exclu",
-        "pending": "En attente"
+        "pending": "Incomplet"
       },
       "blocker": {
-        "missing_signed_deliberation": "Deliberation annuelle signee manquante",
-        "missing_student_decision": "Decision etudiant manquante",
-        "existing_target_enrollment": "Inscription deja presente dans l'annee cible",
+        "missing_signed_deliberation": "Délibération annuelle signée manquante",
+        "missing_student_decision": "Décision de l'étudiant manquante",
+        "existing_target_enrollment": "Inscription déjà présente dans l'année cible",
         "missing_promotion_target": "Classe de promotion manquante",
-        "ambiguous_promotion_target": "Destination de promotion ambigue",
+        "ambiguous_promotion_target": "Destination de promotion ambiguë",
         "missing_repeat_target": "Classe de redoublement manquante",
-        "ambiguous_repeat_target": "Destination de redoublement ambigue",
-        "deferred_requires_review": "Decision ajournee a examiner",
-        "pending_decision": "Decision en attente"
+        "ambiguous_repeat_target": "Destination de redoublement ambiguë",
+        "deferred_requires_review": "Décision « Ajourné » à examiner",
+        "pending_decision": "Décision en attente (résultats incomplets)"
       },
       "empty": {
         "noPlans": "Aucun plan de transition.",
-        "selectPlan": "Creez ou selectionnez un plan pour commencer la revue.",
-        "noItems": "Aucun etudiant ne correspond aux filtres.",
+        "selectPlan": "Créez ou sélectionnez un plan pour commencer la revue.",
+        "noItems": "Aucun étudiant ne correspond aux filtres.",
         "notFound": "Plan de transition introuvable."
       },
       "tabs": {
@@ -3697,9 +3782,9 @@
         }
       },
       "toast": {
-        "created": "Plan de transition cree",
-        "updated": "Transition mise a jour",
-        "resolved": "Cas de transition resolu",
+        "created": "Plan de passage créé",
+        "updated": "Passage mis à jour",
+        "resolved": "Cas résolu",
         "submitted": "Plan soumis pour approbation.",
         "approved": "Plan approuvé — prêt à être exécuté.",
         "executed": "Exécution démarrée.",
@@ -3713,6 +3798,11 @@
         "approved": "Approuvé",
         "running": "En cours",
         "completed": "Terminé"
+      },
+      "howTo": {
+        "title": "Lequel utiliser ?",
+        "transition": "Le passage d'année (cette page) est la voie normale : un plan pour toutes les classes de l'année, qui traite admis, redoublants, diplômés et exclus, avec revue et approbation avant exécution.",
+        "shortcut": "« Promouvoir les admis » sur une délibération clôturée est un raccourci pour une seule classe : il n'inscrit que ses étudiants admis et compensés au niveau suivant. Un étudiant déjà inscrit dans l'année cible n'est jamais inscrit deux fois."
       }
     },
     "gradeScale": {
@@ -3897,13 +3987,15 @@
         },
         "years": {
           "title": "3. Années académiques",
-          "text": "Les données de chaque année, de la plus ancienne à la plus récente. L'import d'une année (classes, étudiants et inscriptions, cours, examens, notes) est en cours de conception ; pour l'instant, chaque année affiche ce qu'elle contient déjà.",
+          "text": "Les données de chaque année, de la plus ancienne à la plus récente. Importez une année étape par étape (classes, étudiants, cours, examens, notes, puis clôture) ; chaque import peut être annulé.",
           "add": "Gérer les années",
           "foundationsFirst": "Terminez d'abord les fondations : les classes d'une année s'appuient sur les programmes et les niveaux.",
           "empty": "Aucune année académique. Créez la première pour commencer.",
           "active": "Active",
           "import": "Importer",
-          "resume": "Reprendre"
+          "resume": "Reprendre",
+          "optionalSteps_one": "+ {{count}} étape facultative",
+          "optionalSteps_other": "+ {{count}} étapes facultatives (enseignants, parents, décisions, frais)"
         },
         "stepPage": {
           "back": "Mise en route & import",
@@ -3978,7 +4070,7 @@
             "noRegistrationFormat": "Aucun matricule fourni et aucun format de matricule actif pour en générer un.",
             "unknownCourse": "L'EC {{value}} n'est pas dans la maquette du programme de {{class}}.",
             "unknownTeacher": "Aucun enseignant avec l'e-mail {{value}} : le cours est gardé sans enseignant.",
-            "unitsWithoutLevel": "UE sans niveau, leurs EC ne sont pas proposés : {{units}}. Renseignez leur niveau dans les Fondations (UE & EC).",
+            "unitsWithoutLevel": "Certaines unités d'enseignement (UE) n'ont pas de niveau, leurs cours (EC) ne sont donc pas proposés : {{units}}. Indiquez leur niveau dans Fondations (UE & EC).",
             "coursesWithoutTeacher": "{{count}} cours sans enseignant : ils pourront être attribués plus tard.",
             "unknownRetakeTarget": "« {{value}} » n'est pas un type d'examen du modèle.",
             "weightsNot100": "Les pondérations du modèle totalisent {{total}} %, pas 100 %.",
@@ -4010,7 +4102,8 @@
             "unknownCycle": "Cycle « {{value}} » inconnu : importez-le d'abord à l'étape « Cycles & niveaux ».",
             "programNameTaken": "Ce nom est déjà utilisé par le programme « {{code}} ».",
             "programWithoutCycleWarning": "Sans cycle, les niveaux du programme ne seront pas proposés pour ses classes.",
-            "unknownProgramInFile": "Programme « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} »."
+            "unknownProgramInFile": "Programme « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} ».",
+            "courseWeightsOver100": "{{course}} : avec ses autres évaluations ({{exams}}), les pondérations totalisent {{total}} %. Supprimez ces évaluations ou ajustez le modèle."
           },
           "changes": "Modifications ({{count}})"
         },
@@ -4198,7 +4291,8 @@
           "done": "Année clôturée",
           "report": "{{locked}} examen(s) verrouillé(s), {{students}} étudiant(s) recalculé(s), délibérations : {{created}} créée(s), {{recomputed}} recalculée(s), {{skipped}} déjà close(s).",
           "review": "Vérifier les délibérations",
-          "next": "Comparer aux décisions officielles"
+          "next": "Comparer aux décisions officielles",
+          "undoNote": "Les imports restent annulables après la clôture, sauf celui des classes : pour l'annuler, il faudra d'abord supprimer les délibérations calculées ici."
         },
         "changes": {
           "none": "Rien à créer ni à mettre à jour.",
@@ -4218,7 +4312,7 @@
           "undoFailed": "L'import n'a pas pu être annulé.",
           "undone": "Import annulé",
           "undoneBadge": "Annulé",
-          "blocked": "Des données ajoutées depuis dépendent de cet import : annulez d'abord les imports plus récents.",
+          "blocked": "D'autres données dépendent de cet import (imports plus récents, ou délibérations calculées à la clôture de l'année) : annulez d'abord les imports plus récents ou supprimez ces délibérations.",
           "notUndoable": "Non annulable",
           "undoConfirm": "Annuler l'import",
           "keep": "Le conserver"
@@ -4250,8 +4344,12 @@
           "description": "Liste des étudiants de cette classe (colonnes configurables)"
         },
         "attestation": {
-          "label": "Attestation",
-          "description": "Attestation de réussite ou d'inscription"
+          "label": "Attestation de réussite",
+          "description": "Atteste la réussite de l'année (décision favorable du jury)"
+        },
+        "enrollment_certificate": {
+          "label": "Certificat de scolarité",
+          "description": "Atteste que l'étudiant est inscrit dans une classe pour une année académique"
         }
       },
       "classTemplates": {
@@ -4316,11 +4414,11 @@
           "ok": "OK",
           "error": "Échec"
         },
-        "title": "Génération en lot",
-        "subtitle": "Génération côté navigateur. <strong>Ne fermez pas l'onglet</strong> pendant l'opération.",
+        "title": "Documents officiels",
+        "subtitle": "Certificats de scolarité, attestations de réussite, relevés et diplômes pour toute une classe. Le serveur les génère un étudiant après l'autre : <strong>gardez cet onglet ouvert</strong> jusqu'au téléchargement.",
         "previewTitle": "Aperçu : {{kind}} ({{student}})",
         "templateUsed": "Modèle utilisé : <strong>{{name}}</strong>",
-        "previewDescription": "Rendu HTML avec données réelles, sans rastérisation PDF.",
+        "previewDescription": "Rendu HTML avec les données réelles ; le numéro de référence est attribué à la génération du PDF.",
         "toast": {
           "previewError": "Échec de l'aperçu",
           "noSelection": "Aucun étudiant sélectionné",
@@ -4345,17 +4443,21 @@
         },
         "students": {
           "title": "Étudiants",
-          "count_one": "{{count}} étudiant dans cette classe.",
-          "count_other": "{{count}} étudiants dans cette classe.",
+          "count_one": "{{count}} étudiant inscrit dans cette classe.",
+          "count_other": "{{count}} étudiants inscrits dans cette classe.",
           "selected_one": "{{count}} sélectionné.",
           "selected_other": "{{count}} sélectionnés.",
           "zip": "ZIP",
-          "demoMode": "Mode démo",
+          "demoMode": "Spécimen (test d'impression)",
           "previewHint": "Aperçu du document pour le premier étudiant sélectionné",
           "preview": "Aperçu",
           "generate": "Générer {{count}}",
           "generating": "Génération en cours…",
-          "empty": "Aucun étudiant dans cette classe."
+          "empty": "Aucun étudiant inscrit dans cette classe.",
+          "eligible_one": "{{count}} peut recevoir ce document.",
+          "eligible_other": "{{count}} peuvent recevoir ce document.",
+          "ineligibleHint": "Les autres sont listés avec la raison et ne peuvent pas être sélectionnés.",
+          "demoModeHint": "Ajoute la mention SPÉCIMEN — NON VALABLE sur chaque page et n'utilise aucun numéro de référence : pour vérifier la mise en page avant de délivrer les vrais documents."
         },
         "table": {
           "selectAll": "Tout sélectionner",
@@ -4365,7 +4467,9 @@
           "firstName": "Prénom(s)",
           "status": "Statut",
           "preview": "Aperçu",
-          "previewFor": "Aperçu pour {{name}}"
+          "previewFor": "Aperçu pour {{name}}",
+          "eligibility": "Éligibilité",
+          "eligible": "Éligible"
         }
       },
       "generate": {
@@ -4373,17 +4477,21 @@
         "htmlPreviewTitle": "Aperçu HTML : {{kind}}",
         "toast": {
           "success": "Document généré et téléchargé",
-          "error": "Échec de la génération"
+          "error": "Échec de la génération",
+          "issued": "Document N° {{reference}} délivré et téléchargé"
         },
-        "title": "Générer un document",
-        "description": "Pour <strong>{{name}}</strong>. Le modèle utilisé est celui assigné à la classe (sinon le défaut institution).",
+        "title": "Délivrer un document officiel",
+        "description": "Pour <strong>{{name}}</strong>. Chaque PDF reçoit son propre numéro de référence.",
         "kind": "Type de document",
         "format": "Format",
         "formatPdf": "PDF",
         "formatHtml": "HTML (aperçu)",
         "demoMode": "Mode démo",
         "demoModeHint": "Ajoute un filigrane « DÉMO »",
-        "submit": "Générer"
+        "submit": "Télécharger le PDF",
+        "enrollment": "Inscription",
+        "cannotIssue": "Ce document ne peut pas être délivré : {{reason}}.",
+        "preview": "Aperçu"
       },
       "theme": {
         "groups": {
@@ -4768,8 +4876,8 @@
       "noMatchHint": "Essayez une autre recherche ou effacez les filtres.",
       "searchPlaceholder": "Rechercher un cours ou une classe…",
       "summary": "Summary",
-      "noExams": "Aucun examen pour ce cours",
-      "hubTitle": "Mes cours & notes",
+      "noExams": "Aucune évaluation pour ce cours. Les évaluations (CC, examen) sont programmées par la scolarité : dès leur création, elles apparaissent ici pour la saisie des notes.",
+      "hubTitle": "Mes cours",
       "hubDescription": "Saisie des notes, verrouillage et soumission par cours",
       "noSearchMatch": "Aucun cours ne correspond à votre recherche.",
       "examRow": {
@@ -4784,8 +4892,26 @@
           "relevance": "Pertinence",
           "name": "Nom A→Z",
           "class": "Classe"
+        },
+        "period": {
+          "label": "Semestre",
+          "first": "1er semestre (S1, S3, S5)",
+          "second": "2e semestre (S2, S4, S6)",
+          "all": "Toute l'année",
+          "current": "en cours"
         }
-      }
+      },
+      "roster": {
+        "title": "Étudiants — {{course}}",
+        "description_one": "{{className}} · {{count}} étudiant",
+        "description_other": "{{className}} · {{count}} étudiants",
+        "search": "Rechercher par nom ou matricule",
+        "empty": "Aucun étudiant trouvé.",
+        "open_one": "{{count}} étudiant — voir la liste",
+        "open_other": "{{count}} étudiants — voir la liste"
+      },
+      "openCourse": "Ouvrir la saisie des notes de ce cours",
+      "noCourseInPeriod": "Vous n'enseignez aucun cours ce semestre. Choisissez un autre semestre ou toute l'année."
     },
     "courses.manage": {
       "title": "Gestion des cours",
@@ -4832,7 +4958,7 @@
       }
     },
     "dashboard": {
-      "title": "Tableau de bord enseignant",
+      "title": "Mes cours",
       "subtitle": "Bon retour, {{name}}",
       "stats": {
         "courses": "Mes cours",
@@ -4888,11 +5014,12 @@
         "saving": "Enregistrement...",
         "exportTemplate": "Exporter le modèle",
         "importGrades": "Importer les notes",
-        "lockRequiresApproval": "L'examen doit être approuvé avant verrouillage"
+        "submit": "Soumettre pour validation",
+        "resubmit": "Soumettre à nouveau"
       },
       "info": {
         "title": "Informations de notation",
-        "description": "Les notes doivent être saisies sur 20. Une fois verrouillées, elles ne peuvent plus être modifiées. Vérifiez-les avant de verrouiller."
+        "description": "Les notes sont sur 20 (12,5 ou 12.5). Enregistrez, puis soumettez-les pour validation : vous pouvez les corriger jusqu'à la validation du doyen."
       },
       "table": {
         "registration": "N° de matricule",
@@ -4906,7 +5033,8 @@
       },
       "validation": {
         "min": "La note minimale est 0",
-        "max": "La note maximale est 20"
+        "max": "La note maximale est 20",
+        "range": "Entrez une note entre 0 et 20 (ex. 12,5)"
       },
       "emptyStudents": {
         "title": "Aucun étudiant",
@@ -4946,8 +5074,18 @@
         "lockError": "Impossible de verrouiller l'évaluation",
         "exportError": "Veuillez sélectionner un examen avec des étudiants",
         "exportSuccess": "Modèle exporté avec succès",
-        "importSuccess": "{{count}} notes importées avec succès",
-        "importError": "Échec de l'importation des notes"
+        "importSuccess": "{{count}} notes importées et enregistrées",
+        "importError": "Échec de l'importation des notes",
+        "noChanges": "Aucune modification à enregistrer",
+        "importPartial": "{{count}} notes importées et enregistrées, {{skipped}} lignes ignorées",
+        "importEmpty": "Aucune note trouvée dans ce fichier. Utilisez le modèle exporté depuis cette page.",
+        "importMore": "… et {{count}} autres",
+        "importSkip": {
+          "unknownStudent": "Ligne {{row}} : {{label}} n'est pas dans cette classe",
+          "invalidScore": "Ligne {{row}} : {{label}}, « {{value}} » n'est pas une note entre 0 et 20"
+        },
+        "submitSuccess": "Notes envoyées au doyen pour validation",
+        "submitError": "Impossible de soumettre les notes"
       },
       "template": {
         "registrationNumber": "Matricule",
@@ -4956,6 +5094,13 @@
         "score": "Note",
         "sheetName": "Notes",
         "filePrefix": "notes"
+      },
+      "awaitingApproval": "En attente de validation du doyen",
+      "submitConfirm": {
+        "title": "Soumettre les notes pour validation ?",
+        "message": "Le doyen va les examiner. Tant qu'elles ne sont pas validées, vous pouvez encore corriger une note ; une fois validées, elles sont définitives.",
+        "missing_one": "{{count}} étudiant n'a pas encore de note.",
+        "missing_other": "{{count}} étudiants n'ont pas encore de note."
       }
     },
     "gradeExport": {
@@ -5244,9 +5389,9 @@
         "name": "Nom",
         "courseAverages": "Moyennes par cours",
         "overallAverage": "Moyenne générale",
-        "credits": "credits",
-        "decision": "decision",
-        "mention": "mention"
+        "credits": "Crédits",
+        "decision": "Décision",
+        "mention": "Mention"
       },
       "actions": {
         "promote": "Promouvoir",
@@ -5367,7 +5512,7 @@
       "myTitle": "Mon emploi du temps",
       "mySubtitle": "Vos sessions de cours hebdomadaires",
       "studentSubtitle": "Vos cours de la semaine",
-      "studentNoSessionsDesc": "Vos cours hebdomadaires apparaîtront ici une fois programmés.",
+      "studentNoSessionsDesc": "L'établissement n'a pas encore publié l'emploi du temps de votre classe pour cette période. Vos cours de la semaine apparaîtront ici dès qu'ils seront programmés.",
       "noSessions": "Aucune session",
       "noSessionsDesc": "Aucune session programmée pour cette période.",
       "selectCourse": "Sélectionnez un cours",
@@ -5403,7 +5548,9 @@
         "classCount_other": "{{count}} classes",
         "generatedOn": "Généré le {{date}}",
         "time": "Heure"
-      }
+      },
+      "myNoSessionsTitle": "Aucun cours programmé pour le moment",
+      "teacherNoSessionsDesc": "L'établissement n'a encore programmé aucune séance de vos cours pour cette période. Essayez un autre semestre, ou contactez la scolarité si vous attendiez des cours."
     },
     "rooms": {
       "title": "Salles",
@@ -5660,16 +5807,21 @@
       "invalidScore": "La note doit être comprise entre 0 et 20",
       "legend": {
         "hint": "Tab/Entrée/flèches pour naviguer. Videz une cellule pour supprimer la note. Enregistrement automatique en quittant la cellule.",
-        "title": "Saisie rapide — enregistrement automatique"
+        "title": "Saisie rapide — enregistrement automatique",
+        "readOnlyTitle": "Lecture seule — notes verrouillées",
+        "readOnlyHint": "Ces évaluations sont validées et verrouillées. Pour corriger une note, demandez à la scolarité ou au doyen de rouvrir l’évaluation."
       },
       "matricule": "Matricule",
       "noCourse": "Aucun cours sélectionné",
-      "noExams": "Aucun examen pour ce cours. Créez-en un d'abord.",
+      "noExams": "Aucune évaluation pour ce cours. La scolarité programme les évaluations ; elles apparaîtront ici dès leur création.",
       "noStudents": "Aucun étudiant ne correspond à la recherche.",
       "pending": "en cours",
       "perExamMode": "Mode examen unique",
       "searchStudent": "Rechercher un étudiant…",
-      "studentCol": "Étudiant"
+      "studentCol": "Étudiant",
+      "lockedExam": "Verrouillée : évaluation validée, les notes ne sont plus modifiables",
+      "phoneScrollHint_other": "{{count}} évaluations : faites glisser le tableau sur le côté pour les voir toutes, ou passez en mode examen unique.",
+      "phoneScrollHint_one": "{{count}} évaluation."
     }
   },
   "dean": {
@@ -5721,8 +5873,8 @@
       "subtitle": "Vue d'ensemble par cohorte — saisie, résultats, taux de réussite",
       "students": "Étudiants",
       "pending": "En attente",
-      "avgProgress": "Avancement moyen",
-      "avgSuccess": "Taux réussite moyen",
+      "avgProgress": "Avancement de la saisie",
+      "avgSuccess": "Taux de réussite",
       "gradingProgress": "Avancement saisie",
       "approved": "approuvés",
       "submitted": "en attente",
@@ -5734,7 +5886,13 @@
       "successRate": "Taux réussite",
       "totalExams": "{{count}} au total",
       "submittedExams_one": "{{count}} examen en attente",
-      "submittedExams_other": "{{count}} examens en attente"
+      "submittedExams_other": "{{count}} examens en attente",
+      "hint": {
+        "students": "Inscriptions de l'année dans ces classes (tous statuts), comme sur la page Statistiques.",
+        "pending": "Examens dont les notes ont été soumises et attendent l'approbation.",
+        "progress": "Examens soumis ou approuvés parmi tous les examens des classes. Les classes sans examen ne sont pas comptées.",
+        "success": "Étudiants admis et compensés parmi les étudiants délibérés, d'après la délibération de l'année de chaque classe. Les classes non encore délibérées ne sont pas comptées."
+      }
     },
     "approvals": {
       "title": "Approbations en attente",
@@ -5839,7 +5997,9 @@
       "courseCount_one": "{{count}} cours",
       "courseCount_other": "{{count}} cours",
       "coefficient": "Coeff. {{value}}",
-      "ueCreditsEarned": "{{earned}}/{{total}} crédits"
+      "ueCreditsEarned": "{{earned}}/{{total}} crédits",
+      "noMarksYet": "Aucune note pour l'instant",
+      "noMarks": "Sans note"
     },
     "exams": {
       "title": "Calendrier des examens",
@@ -5867,7 +6027,7 @@
     },
     "dashboard": {
       "title": "Mon espace",
-      "subtitle": "Vue d ensemble de votre parcours académique et administratif",
+      "subtitle": "Vue d'ensemble de votre parcours académique et administratif",
       "pendingFees": "Des frais de scolarité sont en attente de règlement. Régularisez votre situation pour éviter des restrictions.",
       "viewFees": "Mes frais",
       "upcomingExams": "Examens à venir",
@@ -5904,25 +6064,25 @@
       "description": "Téléchargez vos documents académiques",
       "download": "Télécharger PDF",
       "generating": "Génération...",
-      "generateError": "Échec de génération. Réessayez ou contactez l administration.",
+      "generateError": "Échec de génération. Réessayez ou contactez l'administration.",
       "transcript": {
         "title": "Relevé de notes",
         "description": "Relevé officiel de vos notes et résultats académiques.",
         "blocked": "Quitus financier requis pour télécharger ce document."
       },
       "attestation": {
-        "title": "Attestation d inscription",
-        "description": "Attestation confirmant votre inscription pour l année académique en cours.",
+        "title": "Attestation de réussite",
+        "description": "Atteste votre réussite de l'année académique (disponible après une décision favorable du jury).",
         "blocked": "Quitus financier requis pour télécharger ce document."
       },
       "enrollment_certificate": {
         "title": "Certificat de scolarité",
-        "description": "Certificat officiel d inscription pour l année académique en cours.",
+        "description": "Certificat officiel de votre inscription dans votre classe pour l'année académique.",
         "blocked": "Quitus financier requis pour télécharger ce document."
       },
       "history": {
         "title": "Historique des téléchargements",
-        "empty": "Aucun document téléchargé pour l instant."
+        "empty": "Aucun document téléchargé pour l'instant."
       }
     },
     "timeline": {
@@ -6093,7 +6253,8 @@
       },
       "validation": {
         "firstName": "Le prénom est requis",
-        "lastName": "Le nom est requis"
+        "lastName": "Le nom est requis",
+        "gender": "Choisissez un genre dans la liste, ou laissez le champ vide."
       },
       "toast": {
         "success": "Profil mis à jour",
@@ -6168,9 +6329,9 @@
       "deferred": "Ajourné — vous devrez repasser les matières insuffisantes.",
       "repeat": "Redoublant — vous redoublez l'année.",
       "excluded": "Exclu — contactez l'administration.",
-      "pending": "Décision en attente.",
+      "pending": "Résultats incomplets : la décision du jury est en attente.",
       "unknown": "Décision inconnue.",
-      "overridden": "Surclassé"
+      "overridden": "Décision du jury"
     },
     "publishedAt": "Publié le {{date}}"
   },
@@ -6185,8 +6346,8 @@
     "noDate": "Date non définie"
   },
   "feeClearance": {
-    "title": "Quitus / Frais",
-    "subtitle": "Gérez les barèmes, les paiements des étudiants et les quitus",
+    "title": "Frais de scolarité",
+    "subtitle": "Barèmes, paiements des étudiants et restrictions d'accès",
     "bulkAssign": {
       "mode": "Périmètre",
       "modeClass": "Par classe",
@@ -6276,7 +6437,7 @@
       "forceMatch": "Forcer",
       "forced": "Forcé",
       "xlsxLoaded": "{{count}} lignes chargées depuis le fichier Excel",
-      "notes": "Note de batch (optionnelle)",
+      "notes": "Remarque (facultative)",
       "notesPlaceholder": "Ex : virement du 15 juillet 2026",
       "status": {
         "matched": "Correspondance",
@@ -6349,10 +6510,40 @@
         "mobile_money": "Mobile money",
         "check": "Chèque",
         "other": "Autre"
-      }
+      },
+      "recordFor": "Enregistrer un paiement — {{name}}",
+      "noFees": {
+        "title": "Aucun frais affecté pour {{year}}",
+        "description": "Choisissez le barème qui s'applique à {{name}} : il lui sera affecté en même temps que ce paiement.",
+        "structure": "Barème de frais",
+        "none": "Aucun barème actif ne correspond à la classe de cet étudiant pour {{year}}. Créez-en un dans Frais de scolarité › Barèmes de frais."
+      },
+      "summary": {
+        "balance": "Reste à payer",
+        "paid": "Déjà payé"
+      },
+      "settled": "Plus rien à payer pour {{year}} : {{status}}.",
+      "amountMax": "Au plus {{amount}} (reste à payer).",
+      "referenceHint": "Laissez vide pour numéroter le reçu automatiquement.",
+      "success": {
+        "title": "Paiement enregistré",
+        "description": "{{amount}} reçus de {{name}} le {{date}}.",
+        "receiptNumber": "Reçu n° {{number}}",
+        "assigned": "Le barème « {{structure}} » a été affecté à l'étudiant.",
+        "remaining": "Reste à payer : {{amount}}"
+      },
+      "receiptFailed": "Le reçu n'a pas pu être généré. Le paiement est bien enregistré : réessayez plus tard depuis l'historique des paiements.",
+      "errors": {
+        "exceedsBalance": "Le montant dépasse le reste à payer.",
+        "fullyPaid": "Ces frais sont déjà entièrement payés.",
+        "exempt": "L'étudiant est exonéré de ces frais.",
+        "structureRequired": "Choisissez le barème à affecter.",
+        "failed": "Le paiement n'a pas pu être enregistré. Réessayez."
+      },
+      "searchStudent": "Rechercher un étudiant par nom ou matricule…"
     },
     "gating": {
-      "title": "Verrous académiques",
+      "title": "Restrictions d'accès",
       "subtitle": "Bloquez certaines actions académiques pour les étudiants n'ayant pas réglé leurs frais",
       "gates": {
         "exam_registration": "Inscription aux examens",
@@ -6387,7 +6578,8 @@
         "pending": "En attente",
         "confirmed": "Confirmé",
         "cancelled": "Annulé"
-      }
+      },
+      "downloadFailed": "Le bon de caisse n'a pas pu être généré. Réessayez plus tard."
     },
     "quitus": {
       "title": "Quitus / Attestation de paiement",
@@ -6409,7 +6601,13 @@
         "payable": "À payer",
         "pending": "Ordre en attente",
         "paid": "Payée"
-      }
+      },
+      "schedule": "Échéancier",
+      "scheduleHint": "Cochez les tranches à payer, puis générez un ordre de paiement à présenter à la banque.",
+      "dueOn": "À payer avant le {{date}}",
+      "receiptHint": "Le reçu est téléchargeable dès que le paiement est enregistré par le service financier.",
+      "noPayments": "Aucun paiement enregistré pour le moment.",
+      "overdueSince": "En retard depuis le {{date}}"
     },
     "history": {
       "title": "Historique financier",
@@ -6438,7 +6636,7 @@
     "markRead": "Lu",
     "markAllRead": "Tout marquer comme lu",
     "timeAgo": {
-      "justNow": "À l instant",
+      "justNow": "À l'instant",
       "minutes": "{{count}} min",
       "hours": "{{count}} h",
       "days": "{{count}} j"
@@ -6978,19 +7176,19 @@
     "title": "Utilisateurs & Étudiants",
     "description": "Gérez les comptes, les étudiants, les parents et les clés d'API",
     "tabs": {
-      "people": "Personnes",
+      "people": "Utilisateurs",
       "guardians": "Tuteurs",
       "apiKeys": "Clés API"
     },
     "people": {
-      "title": "Personnes",
-      "subtitle": "Tous les profils de cette institution.",
+      "title": "Utilisateurs",
+      "subtitle": "Le personnel de l'établissement et ses comptes de connexion. Les étudiants sont dans le menu Étudiants.",
       "add": "Ajouter une personne",
       "searchPlaceholder": "Rechercher par nom ou email…",
       "class": "Classe",
       "regNumber": "Matricule",
       "enrollmentStatus": "Inscription",
-      "empty": "Aucune personne trouvée.",
+      "empty": "Aucun utilisateur trouvé.",
       "deleteConfirm": "Cette action supprimera définitivement le profil et ne peut pas être annulée.",
       "account": "Compte",
       "created": "Personne créée.",
@@ -7012,7 +7210,7 @@
         "noAccountDescription": "Ce profil n'est pas lié à un compte de connexion. L'utilisateur ne peut pas se connecter à la plateforme."
       },
       "provisioning": {
-        "title": "Provisionnement",
+        "title": "Compte de connexion",
         "description": "Créez un nouveau compte ou liez un compte existant à ce profil.",
         "createTab": "Créer un compte",
         "linkTab": "Lier un compte existant"
@@ -7062,6 +7260,12 @@
         "reactivated": "Compte réactivé.",
         "statusFailed": "Erreur lors de la mise à jour du statut."
       }
+    },
+    "students": {
+      "title": "Étudiants",
+      "subtitle": "Les étudiants de l'établissement, par année académique, classe et statut d'inscription.",
+      "empty": "Aucun étudiant ne correspond à ces filtres.",
+      "allEnrollmentStatuses": "Tous les statuts d'inscription"
     }
   },
   "profileHub": {
@@ -7105,11 +7309,16 @@
     },
     "finances": {
       "academicYear": "Année académique",
-      "amount": "Montant",
+      "amount": "Montant dû",
       "discount": "Remise",
       "status": "Statut",
       "clearedAt": "Soldé le",
-      "empty": "Aucun enregistrement financier trouvé."
+      "empty": "Aucun frais affecté à cet étudiant. Enregistrer un paiement lui affecte le barème de sa classe.",
+      "structure": "Barème",
+      "paid": "Payé",
+      "balance": "Reste à payer",
+      "emptyReadOnly": "Aucun frais affecté pour le moment.",
+      "openFile": "Dossier de frais"
     },
     "guardians": {
       "name": "Nom",
@@ -7120,7 +7329,8 @@
       "primary": "Principal",
       "emergency": "Urgence",
       "empty": "Aucun tuteur lié."
-    }
+    },
+    "documents": "Documents"
   },
   "gradesHub": {
     "title": "Notes & Documents",
@@ -7168,5 +7378,30 @@
         "courses": "Cours"
       }
     }
+  },
+  "documents": {
+    "errors": {
+      "renderFailed": "Le document n'a pas pu être généré. Réessayez ou contactez l'administrateur.",
+      "generic": "Le document n'a pas pu être généré."
+    },
+    "ineligible": {
+      "not_enrolled": "Non inscrit(e) dans cette classe",
+      "enrollment_pending": "Inscription pas encore validée",
+      "enrollment_withdrawn": "A quitté cette classe (inscription retirée)",
+      "no_deliberation": "Pas encore de décision du jury de fin d'année",
+      "deliberation_not_closed": "Délibération du jury non clôturée",
+      "decision_pending": "Décision du jury en attente",
+      "decision_unfavourable": "Décision du jury : {{decision}}",
+      "decision_unfavourable_generic": "Décision du jury défavorable"
+    },
+    "decisions": {
+      "admitted": "admis(e)",
+      "compensated": "admis(e) par compensation",
+      "deferred": "ajourné(e)",
+      "repeat": "redouble",
+      "excluded": "exclu(e)",
+      "pending": "en attente"
+    },
+    "notEligibleError": "Ce document ne peut pas être délivré : {{reason}}."
   }
 }

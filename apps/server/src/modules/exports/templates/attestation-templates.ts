@@ -16,6 +16,8 @@ export const ATTESTATION_TEMPLATE_STANDARD = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -84,10 +86,10 @@ td { border: none; border-bottom: 1px solid #00000040; }
 .recteur-sign { margin-top: 65px; padding-bottom: 100px; }
 
 .qr-code { float: left; position: relative; }
-.qr-image { width: 100px; height: 100px; background-color: #eee; display: block; }
+.qr-image { width: 80px; height: 80px; background-color: #eee; display: block; }
 .qr-image img { width: 100%; height: 100%; object-fit: contain; }
 
-.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 20px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
+.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 30px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
 .disclaimer div { padding-right: 10px; }
 
 em { font-style: italic; color: {{theme.colors.secondary}}; }
@@ -136,10 +138,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				********************<br>
 				<strong>{{upper institution.nameFr}}</strong><br>
 				{{#if institution.postalBox}}********************<br>B.P. {{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				{{else}}
 				{{#if institution.postalBox}}********************<br>B.P. {{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				{{/if}}
 				</p>
 			</div>
@@ -161,10 +163,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				********************<br>
 				<strong>{{upper institution.nameEn}}</strong><br>
 				{{#if institution.postalBox}}********************<br>PO box {{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				{{else}}
 				{{#if institution.postalBox}}********************<br>PO box {{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				{{/if}}
 				</p>
 			</div>
@@ -201,8 +203,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				<em>{{authority.role}} of {{upper institution.nameEn}}</em></p>
 			{{/if}}
 
-			<p><strong>Vu le procès-verbal du jury N° {{jury.number}} en date du {{jury.deliberationDate}} {{#if institution.isIPES}}attestons{{else}}atteste{{/if}} que,</strong><br>
-			<em>Considering the jury's decision N° {{jury.number}} dated {{jury.deliberationDate}}, certify that,</em></p>
+			<p><strong>Vu le procès-verbal du jury{{#if jury.number}} N° {{jury.number}}{{/if}} en date du {{jury.deliberationDate}} {{#if institution.isIPES}}attestons{{else}}atteste{{/if}} que,</strong><br>
+			<em>Considering the jury's decision{{#if jury.number}} N° {{jury.number}}{{/if}} dated {{jury.deliberationDate}}, certify that,</em></p>
 		</div>
 
 		<div class="student-info">
@@ -269,8 +271,9 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 			</div>
 			{{#if institution.isIPES}}
 			<div class="sign-{{institution.type}}">
-				<p><strong>Le Directeur de l'{{institution.abbreviation}}</strong><br>
-				<em>The Director of the {{institution.abbreviation}}</em></p>
+				<p>{{#if signatory.title}}<strong>{{signatory.title}}</strong>{{else}}<strong>Le Directeur de l'{{institution.abbreviation}}</strong><br>
+				<em>The Director of the {{institution.abbreviation}}</em>{{/if}}</p>
+				{{#if signatory.name}}<p style="margin-top: 34px;"><strong><u>{{signatory.name}}</u></strong></p>{{/if}}
 			</div>
 			{{/if}}
 		</div>
@@ -293,6 +296,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 	</div>
 
+	<div class="contact-footer" style="position:absolute;left:20px;right:20px;bottom:4px;text-align:center;font-size:7px;line-height:1.3;">
+		{{#if institution.addressFr}}{{institution.addressFr}}{{/if}}{{#if institution.contactPhone}} — Tél. : {{institution.contactPhone}}{{/if}}{{#if institution.contactEmail}} — {{institution.contactEmail}}{{/if}}{{#if institution.website}} — {{institution.website}}{{/if}}
+		{{#if institution.sloganFr}}<br><em>« {{institution.sloganFr}} »</em>{{/if}}
+	</div>
 	<div class="disclaimer">
 		<div>Il n'est délivré qu'un seul exemplaire d'attestation, le titulaire peut en faire des copies certifiées conformes.</div>
 		<div><em>This certificate is delivered only once, the owner can make certified copies as necessary.</em></div>
@@ -319,6 +326,8 @@ export const ATTESTATION_TEMPLATE_IPES = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -381,10 +390,10 @@ td { border-bottom: 1px solid #00000040; }
 .recteur-sign { margin-top: 65px; padding-bottom: 100px; }
 
 .qr-code { float: left; position: relative; }
-.qr-image { width: 100px; height: 100px; background-color: #eee; display: block; }
+.qr-image { width: 80px; height: 80px; background-color: #eee; display: block; }
 .qr-image img { width: 100%; height: 100%; object-fit: contain; }
 
-.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 20px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
+.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 30px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
 .disclaimer div { padding-right: 10px; }
 
 em { font-style: italic; color: {{theme.colors.secondary}}; }
@@ -433,7 +442,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				********************<br>
 				<strong>{{upper institution.nameFr}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 			<div class="header-logo-content">
@@ -456,14 +465,14 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				********************<br>
 				<strong>{{upper institution.nameEn}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 		</div>
 		<div class="header-row2">
 			<h1 class="main-title">ATTESTATION DE REUSSITE — {{program.level}}</h1>
 			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.level}}</h2>
-			<p style="margin-top: 6px;"><strong>Ref N°&nbsp;&nbsp;_____________&nbsp;/{{document.referenceNumber}}</strong></p>
+			<p style="margin-top: 6px;"><strong>Ref N° {{document.referenceNumber}}</strong></p>
 		</div>
 	</div>
 
@@ -484,8 +493,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				{{/if}}
 			</div>
 
-			<p><strong>Vu le procès-verbal du jury N° {{jury.number}} en date du {{jury.deliberationDate}} attestons que,</strong><br>
-			<em>Considering the jury's decision N° {{jury.number}} dated {{jury.deliberationDate}}, certify that,</em></p>
+			<p><strong>Vu le procès-verbal du jury{{#if jury.number}} N° {{jury.number}}{{/if}} en date du {{jury.deliberationDate}} attestons que,</strong><br>
+			<em>Considering the jury's decision{{#if jury.number}} N° {{jury.number}}{{/if}} dated {{jury.deliberationDate}}, certify that,</em></p>
 		</div>
 
 		<div class="student-info">
@@ -546,14 +555,15 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				{{#if qrCodeImage}}<div class="qr-image"><img src="{{qrCodeImage}}" alt="QR Code"></div>{{/if}}
 			</div>
 			<div class="sign-ipes">
-				<p><strong>Le Directeur de l'{{institution.abbreviation}}</strong><br>
-				<em>The Director of the {{institution.abbreviation}}</em></p>
+				<p>{{#if signatory.title}}<strong>{{signatory.title}}</strong>{{else}}<strong>Le Directeur de l'{{institution.abbreviation}}</strong><br>
+				<em>The Director of the {{institution.abbreviation}}</em>{{/if}}</p>
+				{{#if signatory.name}}<p style="margin-top: 34px;"><strong><u>{{signatory.name}}</u></strong></p>{{/if}}
 			</div>
 		</div>
 
 		<div class="signature signature-area">
-			<p><strong>Douala, le {{document.issueDate}}</strong><br>
-			<em>Douala, the {{document.issueDate}}</em></p>
+			<p><strong>{{institution.city}}, le {{document.issueDate}}</strong><br>
+			<em>{{institution.city}}, the {{document.issueDate}}</em></p>
 
 			{{#if parentInstitution}}
 			<p class="recteur-sign">
@@ -563,6 +573,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 	</div>
 
+	<div class="contact-footer" style="position:absolute;left:20px;right:20px;bottom:4px;text-align:center;font-size:7px;line-height:1.3;">
+		{{#if institution.addressFr}}{{institution.addressFr}}{{/if}}{{#if institution.contactPhone}} — Tél. : {{institution.contactPhone}}{{/if}}{{#if institution.contactEmail}} — {{institution.contactEmail}}{{/if}}{{#if institution.website}} — {{institution.website}}{{/if}}
+		{{#if institution.sloganFr}}<br><em>« {{institution.sloganFr}} »</em>{{/if}}
+	</div>
 	<div class="disclaimer">
 		<div>Il n'est délivré qu'un seul exemplaire d'attestation, le titulaire peut en faire des copies certifiées conformes.</div>
 		<div><em>This certificate is delivered only once, the owner can make certified copies as necessary.</em></div>
@@ -589,6 +603,8 @@ export const ATTESTATION_TEMPLATE_FACULTY = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -648,7 +664,7 @@ td { border-bottom: 1px solid #00000040; }
 .qr-image { width: 100px; height: 100px; background-color: #eee; display: block; }
 .qr-image img { width: 100%; height: 100%; object-fit: contain; }
 
-.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 20px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
+.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 30px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
 .disclaimer div { padding-right: 10px; }
 
 em { font-style: italic; color: {{theme.colors.secondary}}; }
@@ -697,7 +713,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				********************<br>
 				<strong>{{upper institution.nameFr}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 			<div class="header-logo-content">
@@ -720,14 +736,14 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				********************<br>
 				<strong>{{upper institution.nameEn}}</strong><br>
 				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
-				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 		</div>
 		<div class="header-row2">
 			<h1 class="main-title">ATTESTATION DE REUSSITE — {{program.level}}</h1>
 			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.level}}</h2>
-			<p style="margin-top: 6px;"><strong>Ref N°&nbsp;&nbsp;_____________&nbsp;/{{document.referenceNumber}}</strong></p>
+			<p style="margin-top: 6px;"><strong>Ref N° {{document.referenceNumber}}</strong></p>
 		</div>
 	</div>
 
@@ -738,8 +754,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 			<p><strong>{{authority.role}} de {{upper institution.nameFr}}</strong><br>
 			<em>{{authority.role}} of {{upper institution.nameEn}}</em></p>
 
-			<p><strong>Vu le procès-verbal du jury N° {{jury.number}} en date du {{jury.deliberationDate}} atteste que,</strong><br>
-			<em>Considering the jury's decision N° {{jury.number}} dated {{jury.deliberationDate}}, certify that,</em></p>
+			<p><strong>Vu le procès-verbal du jury{{#if jury.number}} N° {{jury.number}}{{/if}} en date du {{jury.deliberationDate}} atteste que,</strong><br>
+			<em>Considering the jury's decision{{#if jury.number}} N° {{jury.number}}{{/if}} dated {{jury.deliberationDate}}, certify that,</em></p>
 		</div>
 
 		<div class="student-info">
@@ -806,8 +822,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 
 		<div class="signature signature-area">
-			<p><strong>Douala, le {{document.issueDate}}</strong><br>
-			<em>Douala, the {{document.issueDate}}</em></p>
+			<p><strong>{{institution.city}}, le {{document.issueDate}}</strong><br>
+			<em>{{institution.city}}, the {{document.issueDate}}</em></p>
 
 			{{#if university.fr}}
 			<p class="recteur-sign">
@@ -817,6 +833,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 	</div>
 
+	<div class="contact-footer" style="position:absolute;left:20px;right:20px;bottom:4px;text-align:center;font-size:7px;line-height:1.3;">
+		{{#if institution.addressFr}}{{institution.addressFr}}{{/if}}{{#if institution.contactPhone}} — Tél. : {{institution.contactPhone}}{{/if}}{{#if institution.contactEmail}} — {{institution.contactEmail}}{{/if}}{{#if institution.website}} — {{institution.website}}{{/if}}
+		{{#if institution.sloganFr}}<br><em>« {{institution.sloganFr}} »</em>{{/if}}
+	</div>
 	<div class="disclaimer">
 		<div>Il n'est délivré qu'un seul exemplaire d'attestation, le titulaire peut en faire des copies certifiées conformes.</div>
 		<div><em>This certificate is delivered only once, the owner can make certified copies as necessary.</em></div>
@@ -845,6 +865,8 @@ export const ATTESTATION_TEMPLATE = /* html */ `
 <title>Attestation — {{upper student.fullName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -963,7 +985,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 					********************<br>
 					<strong>{{upper institution.nameFr}}</strong><br>
 					{{#if institution.postalBox}}B.P. {{institution.postalBox}}<br>{{/if}}
-					{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+					{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 
@@ -984,7 +1006,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 					********************<br>
 					<strong>{{upper institution.nameEn}}</strong><br>
 					{{#if institution.postalBox}}P.O. Box {{institution.postalBox}}<br>{{/if}}
-					{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+					{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}{{#if institution.contactPhone}}<br>Tél. : {{institution.contactPhone}}{{/if}}
 				</p>
 			</div>
 		</div>
@@ -1004,8 +1026,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 			</p>
 
 			<p>
-				<strong>Vu le procès-verbal du jury N° {{jury.number}} en date du {{jury.deliberationDate}}, atteste que,</strong><br>
-				{{#if theme.display.bilingual}}<em>Considering the jury's decision N° {{jury.number}} dated {{jury.deliberationDate}}, certify that,</em>{{/if}}
+				<strong>Vu le procès-verbal du jury{{#if jury.number}} N° {{jury.number}}{{/if}} en date du {{jury.deliberationDate}}, atteste que,</strong><br>
+				{{#if theme.display.bilingual}}<em>Considering the jury's decision{{#if jury.number}} N° {{jury.number}}{{/if}} dated {{jury.deliberationDate}}, certify that,</em>{{/if}}
 			</p>
 		</div>
 
@@ -1125,6 +1147,8 @@ export const ATTESTATION_TEMPLATE_CENTER = /* html */ `
 <title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
+/* One-page document: rounding of the fixed A4 box must not spill a blank 2nd page. */
+html, body { overflow: hidden; }
 * { box-sizing: border-box; }
 html { width: 210mm; height: 297mm; }
 body {
@@ -1192,7 +1216,7 @@ td { border-bottom: 1px solid #00000040; }
 .qr-image { width: 100px; height: 100px; background-color: #eee; display: block; }
 .qr-image img { width: 100%; height: 100%; object-fit: contain; }
 
-.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 20px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
+.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 30px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
 .disclaimer div { padding-right: 10px; }
 
 em { font-style: italic; color: {{theme.colors.secondary}}; }
@@ -1269,8 +1293,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 				</div>
 			</div>
 
-			<p><strong>Vu le procès-verbal du jury N° {{jury.number}} en date du {{jury.deliberationDate}} atteste que,</strong><br>
-			<em>Considering the jury's decision N° {{jury.number}} dated {{jury.deliberationDate}}, certify that,</em></p>
+			<p><strong>Vu le procès-verbal du jury{{#if jury.number}} N° {{jury.number}}{{/if}} en date du {{jury.deliberationDate}} atteste que,</strong><br>
+			<em>Considering the jury's decision{{#if jury.number}} N° {{jury.number}}{{/if}} dated {{jury.deliberationDate}}, certify that,</em></p>
 		</div>
 
 		<div class="student-info">
@@ -1342,6 +1366,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 	</div>
 
+	<div class="contact-footer" style="position:absolute;left:20px;right:20px;bottom:4px;text-align:center;font-size:7px;line-height:1.3;">
+		{{#if institution.addressFr}}{{institution.addressFr}}{{/if}}{{#if institution.contactPhone}} — Tél. : {{institution.contactPhone}}{{/if}}{{#if institution.contactEmail}} — {{institution.contactEmail}}{{/if}}{{#if institution.website}} — {{institution.website}}{{/if}}
+		{{#if institution.sloganFr}}<br><em>« {{institution.sloganFr}} »</em>{{/if}}
+	</div>
 	<div class="disclaimer">
 		<div>Il n'est délivré qu'un seul exemplaire d'attestation, le titulaire peut en faire des copies certifiées conformes.</div>
 		<div><em>This certificate is delivered only once, the owner can make certified copies as necessary.</em></div>

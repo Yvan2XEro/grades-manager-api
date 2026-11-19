@@ -21,6 +21,7 @@ import {
 	DIPLOMA_TEMPLATE,
 	DIPLOMA_TEMPLATE_CENTER,
 } from "./templates/diploma-templates";
+import { ENROLLMENT_CERTIFICATE_TEMPLATE } from "./templates/enrollment-certificate-templates";
 import {
 	DELIBERATION_TEMPLATE,
 	DELIBERATION_TEMPLATE_CENTER,
@@ -284,7 +285,7 @@ export function loadTemplate(
 		// per establishment type below.
 		transcript: RELEVE_TEMPLATE_STANDARD,
 		attestation: ATTESTATION_TEMPLATE_STANDARD,
-		enrollment_certificate: ATTESTATION_TEMPLATE_STANDARD,
+		enrollment_certificate: ENROLLMENT_CERTIFICATE_TEMPLATE,
 		student_list: STUDENT_LIST_TEMPLATE,
 	};
 
@@ -292,12 +293,12 @@ export function loadTemplate(
 	const ipesMap: Record<string, string> = {
 		transcript: RELEVE_TEMPLATE_IPES,
 		attestation: ATTESTATION_TEMPLATE_IPES,
-		enrollment_certificate: ATTESTATION_TEMPLATE_IPES,
+		enrollment_certificate: ENROLLMENT_CERTIFICATE_TEMPLATE,
 	};
 	const facultyMap: Record<string, string> = {
 		transcript: RELEVE_TEMPLATE_FACULTY,
 		attestation: ATTESTATION_TEMPLATE_FACULTY,
-		enrollment_certificate: ATTESTATION_TEMPLATE_FACULTY,
+		enrollment_certificate: ENROLLMENT_CERTIFICATE_TEMPLATE,
 	};
 
 	// Center variants: center-only header, no institutional tutelle chain.
@@ -305,7 +306,7 @@ export function loadTemplate(
 		diploma: DIPLOMA_TEMPLATE_CENTER,
 		transcript: TRANSCRIPT_TEMPLATE_CENTER,
 		attestation: ATTESTATION_TEMPLATE_CENTER,
-		enrollment_certificate: ATTESTATION_TEMPLATE_CENTER,
+		enrollment_certificate: ENROLLMENT_CERTIFICATE_TEMPLATE,
 		student_list: STUDENT_LIST_TEMPLATE_CENTER,
 		pv: PV_TEMPLATE_CENTER,
 		evaluation: EVALUATION_TEMPLATE_CENTER,

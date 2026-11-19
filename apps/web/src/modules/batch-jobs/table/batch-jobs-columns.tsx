@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import type { TFunction } from "i18next";
+import { dateLocale } from "@/lib/date-format";
 import { BatchJobStatusBadge } from "../components/batch-job-status-badge";
 import type { BatchJobRow } from "../types";
 
@@ -62,6 +63,7 @@ export function getBatchJobsColumns(t: TFunction): ColumnDef<BatchJobRow>[] {
 				<span className="text-muted-foreground text-xs">
 					{formatDistanceToNow(new Date(row.original.createdAt), {
 						addSuffix: true,
+						locale: dateLocale(),
 					})}
 				</span>
 			),

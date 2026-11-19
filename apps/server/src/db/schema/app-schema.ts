@@ -4348,6 +4348,55 @@ export const documentDownloadsRelations = relations(
 	}),
 );
 
+// ─── Issued documents register ───────────────────────────────────────────────
+
+/**
+ * Register of the official documents issued to students (enrollment
+ * certificates, pass certificates, diplomas, transcripts). Each issued PDF
+ * gets the next sequence of its (institution, kind, year) and a printed
+ * reference number built from it, so every document carries its own number
+ * and can be traced back. Previews are never registered.
+ */
+export const issuedDocuments = pgTable(
+	"issued_documents",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		kind: text("kind").notNull(),
+		/** Calendar year of issue — the sequence restarts every year. */
+		issueYear: integer("issue_year").notNull(),
+		sequence: integer("sequence").notNull(),
+		referenceNumber: text("reference_number").notNull(),
+		classId: text("class_id").references(() => classes.id, {
+			onDelete: "set null",
+		}),
+		academicYearId: text("academic_year_id").references(
+			() => academicYears.id,
+			{ onDelete: "set null" },
+		),
+		issuedBy: text("issued_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		issuedAt: timestamp("issued_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_issued_documents_sequence").on(
+			t.institutionId,
+			t.kind,
+			t.issueYear,
+			t.sequence,
+		),
+		index("idx_issued_documents_student").on(t.studentId),
+	],
+);
+
 // ─── Admissions ───────────────────────────────────────────────────────────────
 
 export const admissionApplicationStatuses = [

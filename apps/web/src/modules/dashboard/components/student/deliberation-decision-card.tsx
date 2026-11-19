@@ -1,11 +1,20 @@
-import { format } from "date-fns";
 import type { ParseKeys } from "i18next";
-import { Award, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import {
+	AlertTriangle,
+	Award,
+	ChevronDown,
+	ChevronUp,
+	Clock,
+	FileText,
+	type LucideIcon,
+	XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/date-format";
 import type { DecisionResult } from "../../types";
 
 const DECISION_CONFIG: Record<
@@ -43,7 +52,7 @@ const DECISION_CONFIG: Record<
 		isSuccess: false,
 	},
 	pending: {
-		code: "EN",
+		code: "INC",
 		labelKey: "deliberation.decision.pending",
 		isSuccess: false,
 		isPending: true,
@@ -67,21 +76,45 @@ export function DeliberationDecisionCard({
 		isSuccess: false,
 	};
 
-	const wrapCls = cfg.isPending
-		? "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30"
+	// Icon and colour follow the decision: success, warning (deferred,
+	// repeat), failure (excluded) or waiting (incomplete results).
+	const tone = cfg.isPending
+		? "pending"
 		: cfg.isSuccess
-			? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
-			: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30";
-	const badgeCls = cfg.isPending
-		? "bg-blue-500 text-white"
-		: cfg.isSuccess
-			? "bg-emerald-600 text-white"
-			: "bg-amber-500 text-white";
-	const iconCls = cfg.isPending
-		? "text-blue-500 dark:text-blue-400"
-		: cfg.isSuccess
-			? "text-emerald-600 dark:text-emerald-400"
-			: "text-amber-500";
+			? "success"
+			: decision.finalDecision === "excluded"
+				? "danger"
+				: "warning";
+	const TONES: Record<
+		string,
+		{ wrap: string; badge: string; icon: string; Icon: LucideIcon }
+	> = {
+		pending: {
+			wrap: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30",
+			badge: "bg-blue-500 text-white",
+			icon: "text-blue-500 dark:text-blue-400",
+			Icon: Clock,
+		},
+		success: {
+			wrap: "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30",
+			badge: "bg-emerald-600 text-white",
+			icon: "text-emerald-600 dark:text-emerald-400",
+			Icon: Award,
+		},
+		warning: {
+			wrap: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30",
+			badge: "bg-amber-500 text-white",
+			icon: "text-amber-500",
+			Icon: AlertTriangle,
+		},
+		danger: {
+			wrap: "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30",
+			badge: "bg-destructive text-white",
+			icon: "text-destructive",
+			Icon: XCircle,
+		},
+	};
+	const { wrap: wrapCls, badge: badgeCls, icon: iconCls, Icon } = TONES[tone];
 
 	return (
 		<div className={`rounded-xl border shadow-sm ${wrapCls}`}>
@@ -131,13 +164,13 @@ export function DeliberationDecisionCard({
 						{decision.closedAt && (
 							<span>
 								{t("deliberation.publishedAt", {
-									date: format(new Date(decision.closedAt), "dd/MM/yyyy"),
+									date: formatDate(decision.closedAt, "P"),
 								})}
 							</span>
 						)}
 					</div>
 				</div>
-				<Award className={`h-5 w-5 shrink-0 ${iconCls}`} />
+				<Icon className={`h-5 w-5 shrink-0 ${iconCls}`} />
 			</div>
 
 			{decision.ueResults.length > 0 && (
@@ -185,7 +218,11 @@ export function DeliberationDecisionCard({
 												{ue.ueAverage.toFixed(2)}
 											</span>
 										)}
-										{ue.isValidated ? (
+										{ue.isComplete === false || ue.ueAverage === null ? (
+											<Badge variant="outline" className="text-[10px]">
+												{t("student.performance.noMarks")}
+											</Badge>
+										) : ue.isValidated ? (
 											<Badge variant="success" className="text-[10px]">
 												{t("student.performance.validated")}
 											</Badge>

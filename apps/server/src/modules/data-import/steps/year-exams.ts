@@ -436,9 +436,69 @@ export const examsStep: ImportStepDef = {
 			}
 		}
 
+		// Exams of a course outside the model (another type) keep counting in
+		// its average: flag courses whose weights would exceed 100 %.
+		for (const cc of classCourses) {
+			const own = exceptions.get(cc.id);
+			let total = 0;
+			for (const component of model) {
+				if (component.retakeOf) continue;
+				const exception = own?.get(normalize(component.type));
+				if (exception?.remove) continue;
+				total += exception?.percentage ?? component.percentage;
+			}
+			const extra = exams.filter(
+				(e) =>
+					e.classCourse === cc.id &&
+					e.sessionType !== "retake" &&
+					!model.some((c) => normalize(c.type) === normalize(e.type)),
+			);
+			for (const e of extra) total += Number(e.percentage);
+			if (extra.length && total > 100.01)
+				push(
+					MODEL,
+					0,
+					undefined,
+					"warning",
+					"courseWeightsOver100",
+					{
+						course: cc.courseCode,
+						total: Number(total.toFixed(2)),
+						exams: extra.map((e) => e.type).join(", "),
+					},
+					`${cc.courseCode}: with its other exams (${extra.map((e) => e.type).join(", ")}) the weights add up to ${total.toFixed(2)} %. Remove them or adjust the model.`,
+				);
+		}
+
+		// Detail of the review: one line per exam created or changed
+		const ccById = new Map(classCourses.map((cc) => [cc.id, cc]));
+		const rowChanges = changes.map((c) => {
+			const cc = ccById.get(c.classCourseId);
+			const current = c.id ? exams.find((e) => e.id === c.id) : undefined;
+			return {
+				sheet: MODEL,
+				row: 0,
+				action: c.id ? ("update" as const) : ("create" as const),
+				label: `${cc?.classCode ?? ""} · ${cc?.courseCode ?? ""} — ${c.component.type}`,
+				...(current
+					? {
+							before: {
+								Pondération: `${Number(current.percentage)} %`,
+								Date: current.date.toISOString().slice(0, 10),
+							},
+						}
+					: {}),
+				after: {
+					Pondération: `${Number(c.percentage)} %`,
+					Date: c.date.toISOString().slice(0, 10),
+				},
+			};
+		});
+
 		return {
 			sheets: [summary],
 			issues,
+			changes: rowChanges,
 			async apply(log, journal) {
 				// Exam types of the model that the institution does not have yet
 				const types = await db.query.examTypes.findMany({

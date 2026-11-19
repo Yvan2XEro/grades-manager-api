@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -14,6 +14,11 @@ export type StudentDocumentContext = NonNullable<
 export async function loadStudentContext(
 	institutionId: string,
 	studentId: string,
+	/**
+	 * Class the document is about (e.g. the class of a past enrollment). When
+	 * omitted, the student's current class is used.
+	 */
+	classId?: string | null,
 ) {
 	const student = await db.query.students.findFirst({
 		where: and(
@@ -39,6 +44,13 @@ export async function loadStudentContext(
 	});
 
 	if (!student) return null;
+
+	if (classId && classId !== student.class) {
+		const classRef = await loadClassForDocument(institutionId, classId);
+		if (classRef) {
+			Object.assign(student, { class: classRef.id, classRef });
+		}
+	}
 
 	const institution = await db.query.institutions.findFirst({
 		where: eq(schema.institutions.id, institutionId),
@@ -106,7 +118,10 @@ export async function loadDeliberationResult(
 					eq(schema.deliberations.institutionId, institutionId),
 				),
 			)
-			.orderBy(schema.deliberations.deliberationDate)
+			.orderBy(
+				sql`${schema.deliberations.deliberationDate} desc nulls last`,
+				desc(schema.deliberations.createdAt),
+			)
 			.limit(1);
 		return result[0] ?? null;
 	}
@@ -327,4 +342,198 @@ export async function listRosterStudents(
 		}
 		return true;
 	});
+}
+
+/** A class with the relations the document templates need. */
+export async function loadClassForDocument(
+	institutionId: string,
+	classId: string,
+) {
+	return (
+		(await db.query.classes.findFirst({
+			where: and(
+				eq(schema.classes.id, classId),
+				eq(schema.classes.institutionId, institutionId),
+			),
+			with: {
+				program: { with: { center: true } },
+				academicYear: true,
+				cycleLevel: true,
+				semester: true,
+				programOption: true,
+			},
+		})) ?? null
+	);
+}
+
+/** Enrollments of one student, most recent first, with class + year names. */
+export async function listStudentEnrollments(
+	institutionId: string,
+	studentId: string,
+) {
+	return await db
+		.select({
+			id: schema.enrollments.id,
+			classId: schema.enrollments.classId,
+			academicYearId: schema.enrollments.academicYearId,
+			status: schema.enrollments.status,
+			enrolledAt: schema.enrollments.enrolledAt,
+			className: schema.classes.name,
+			academicYearName: schema.academicYears.name,
+		})
+		.from(schema.enrollments)
+		.innerJoin(
+			schema.classes,
+			eq(schema.classes.id, schema.enrollments.classId),
+		)
+		.innerJoin(
+			schema.academicYears,
+			eq(schema.academicYears.id, schema.enrollments.academicYearId),
+		)
+		.where(
+			and(
+				eq(schema.enrollments.institutionId, institutionId),
+				eq(schema.enrollments.studentId, studentId),
+			),
+		)
+		.orderBy(
+			desc(schema.academicYears.startDate),
+			desc(schema.enrollments.enrolledAt),
+		);
+}
+
+/** Every enrollment of a class with the student identity (batch roster). */
+export async function listClassEnrollments(
+	institutionId: string,
+	classId: string,
+) {
+	return await db
+		.select({
+			studentId: schema.students.id,
+			registrationNumber: schema.students.registrationNumber,
+			firstName: schema.domainUsers.firstName,
+			lastName: schema.domainUsers.lastName,
+			enrollmentStatus: schema.enrollments.status,
+			academicYearId: schema.enrollments.academicYearId,
+		})
+		.from(schema.enrollments)
+		.innerJoin(
+			schema.students,
+			eq(schema.students.id, schema.enrollments.studentId),
+		)
+		.innerJoin(
+			schema.domainUsers,
+			eq(schema.domainUsers.id, schema.students.domainUserId),
+		)
+		.where(
+			and(
+				eq(schema.enrollments.institutionId, institutionId),
+				eq(schema.enrollments.classId, classId),
+			),
+		)
+		.orderBy(schema.domainUsers.lastName, schema.domainUsers.firstName);
+}
+
+/**
+ * Year-end jury results (annual and retake deliberations) of the given
+ * students, most recent first. Used to decide whether a pass certificate or
+ * a diploma may be issued.
+ */
+export async function listFinalDeliberationResults(
+	institutionId: string,
+	studentIds: string[],
+	academicYearId?: string | null,
+) {
+	if (studentIds.length === 0) return [];
+	const conditions = [
+		eq(schema.deliberations.institutionId, institutionId),
+		inArray(schema.deliberations.type, ["annual", "retake"]),
+		inArray(schema.deliberationStudentResults.studentId, studentIds),
+	];
+	if (academicYearId) {
+		conditions.push(eq(schema.deliberations.academicYearId, academicYearId));
+	}
+	return await db
+		.select({
+			studentId: schema.deliberationStudentResults.studentId,
+			finalDecision: schema.deliberationStudentResults.finalDecision,
+			autoDecision: schema.deliberationStudentResults.autoDecision,
+			deliberationId: schema.deliberations.id,
+			deliberationStatus: schema.deliberations.status,
+			classId: schema.deliberations.classId,
+			academicYearId: schema.deliberations.academicYearId,
+		})
+		.from(schema.deliberationStudentResults)
+		.innerJoin(
+			schema.deliberations,
+			eq(
+				schema.deliberations.id,
+				schema.deliberationStudentResults.deliberationId,
+			),
+		)
+		.where(and(...conditions))
+		.orderBy(
+			sql`${schema.deliberations.deliberationDate} desc nulls last`,
+			desc(schema.deliberations.createdAt),
+		);
+}
+
+/**
+ * Registers an issued document and returns its sequence: the next number of
+ * its (institution, kind, issue year). Retries when a concurrent issue took
+ * the same number (unique constraint).
+ */
+export async function registerIssuedDocument(args: {
+	institutionId: string;
+	studentId: string;
+	kind: string;
+	classId?: string | null;
+	academicYearId?: string | null;
+	issuedBy?: string | null;
+	formatReference: (sequence: number, year: number) => string;
+}) {
+	const year = new Date().getFullYear();
+	for (let attempt = 0; attempt < 5; attempt++) {
+		const [row] = await db
+			.select({
+				max: sql<number>`coalesce(max(${schema.issuedDocuments.sequence}), 0)`,
+			})
+			.from(schema.issuedDocuments)
+			.where(
+				and(
+					eq(schema.issuedDocuments.institutionId, args.institutionId),
+					eq(schema.issuedDocuments.kind, args.kind),
+					eq(schema.issuedDocuments.issueYear, year),
+				),
+			);
+		const sequence = Number(row?.max ?? 0) + 1;
+		const referenceNumber = args.formatReference(sequence, year);
+		try {
+			const [issued] = await db
+				.insert(schema.issuedDocuments)
+				.values({
+					institutionId: args.institutionId,
+					studentId: args.studentId,
+					kind: args.kind,
+					issueYear: year,
+					sequence,
+					referenceNumber,
+					classId: args.classId ?? null,
+					academicYearId: args.academicYearId ?? null,
+					issuedBy: args.issuedBy ?? null,
+				})
+				.returning();
+			return issued;
+		} catch (err) {
+			if (attempt === 4) throw err;
+		}
+	}
+	throw new Error("Could not allocate a document reference number");
+}
+
+/** Removes a register entry whose document could not be produced. */
+export async function deleteIssuedDocument(id: string) {
+	await db
+		.delete(schema.issuedDocuments)
+		.where(eq(schema.issuedDocuments.id, id));
 }

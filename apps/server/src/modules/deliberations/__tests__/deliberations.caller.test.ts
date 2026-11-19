@@ -506,6 +506,12 @@ describe("deliberations router", () => {
 
 			const sr = result.results[0];
 			expect(sr.autoDecision).toBe("pending");
+			// Incomplete results are not deliberated: no average, rank or mention
+			expect(sr.generalAverage).toBeNull();
+			expect(sr.rank).toBeNull();
+			expect(sr.mention).toBeNull();
+			expect(sr.factsSnapshot.partialAverage).toBeGreaterThan(10);
+			expect(sr.factsSnapshot.incompleteUECount).toBe(1);
 
 			// UE1 should be ADM, UE2 should be INC
 			const ue1 = sr.ueResults.find((ue: any) => ue.decision === "ADM");
@@ -678,6 +684,71 @@ describe("deliberations router", () => {
 			expect(result.stats).toBeTruthy();
 			expect(result.stats.totalStudents).toBe(1);
 		});
+
+		it("does not rank, mention or decide for a student with incomplete results, even when rules match", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const {
+				program,
+				academicYear,
+				klass,
+				classCourses: { cc1a, cc1b, cc2a, cc2b },
+				student,
+			} = await setupDeliberationFixture();
+			const instId = klass.institutionId;
+
+			// Complete student
+			await createExamsWithGrade(cc1a.id, student.id, instId, 12, 12);
+			await createExamsWithGrade(cc1b.id, student.id, instId, 12, 12);
+			await createExamsWithGrade(cc2a.id, student.id, instId, 12, 12);
+			await createExamsWithGrade(cc2b.id, student.id, instId, 12, 12);
+
+			// Incomplete student with a very high partial average (UE1 only)
+			const other = await createStudent({ class: klass.id });
+			await createExamsWithGrade(cc1a.id, other.id, instId, 18, 18);
+			await createExamsWithGrade(cc1b.id, other.id, instId, 18, 18);
+
+			// A rule that would exclude everyone
+			await admin.deliberations.rules.create({
+				name: "Exclude all",
+				category: "exclusion",
+				programId: program.id,
+				decision: "excluded",
+				priority: 1,
+				ruleset: {
+					conditions: {
+						all: [
+							{
+								fact: "creditsEarned",
+								operator: "greaterThanInclusive",
+								value: 0,
+							},
+						],
+					},
+					event: { type: "excluded" },
+				},
+			});
+
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			await admin.deliberations.transition({ id: delib.id, action: "open" });
+			const result = await admin.deliberations.compute({ id: delib.id });
+
+			const complete = result.results.find((r) => r.studentId === student.id)!;
+			const incomplete = result.results.find((r) => r.studentId === other.id)!;
+			expect(complete.rank).toBe(1);
+			expect(complete.autoDecision).toBe("excluded");
+			expect(incomplete.rank).toBeNull();
+			expect(incomplete.mention).toBeNull();
+			expect(incomplete.generalAverage).toBeNull();
+			expect(incomplete.autoDecision).toBe("pending");
+			expect(incomplete.rulesEvaluated).toHaveLength(0);
+			expect(result.stats.pendingCount).toBe(1);
+			expect(result.stats.classAverage).toBeCloseTo(12, 5);
+		});
 	});
 
 	// -----------------------------------------------------------------------
@@ -726,6 +797,21 @@ describe("deliberations router", () => {
 
 			expect(overridden.finalDecision).toBe("excluded");
 			expect(overridden.isOverridden).toBe(true);
+
+			// Choosing the computed decision again restores it
+			const restored = await admin.deliberations.overrideDecision({
+				deliberationId: delib.id,
+				studentResultId: resultId,
+				finalDecision: dbResults[0].autoDecision ?? "admitted",
+				reason: "Back to computed",
+			});
+			expect(restored.finalDecision).toBe(dbResults[0].autoDecision);
+			expect(restored.isOverridden).toBe(false);
+			expect(restored.mention).toBe(dbResults[0].mention);
+
+			// Stored stats follow the final decisions
+			const after = await admin.deliberations.getById({ id: delib.id });
+			expect(after.stats?.admittedCount).toBe(1);
 		});
 	});
 
@@ -807,6 +893,28 @@ describe("deliberations router", () => {
 			);
 			expect(activeEnrollments).toHaveLength(1);
 			expect(activeEnrollments[0].classId).toBe(targetClass.id);
+			// The new enrollment belongs to the target class's year; the
+			// deliberated year keeps its (completed) enrollment.
+			expect(activeEnrollments[0].academicYearId).toBe(
+				targetClass.academicYear,
+			);
+			const previous = enrollments.find((e) => e.classId === klass.id);
+			expect(previous?.status).toBe("completed");
+
+			// Promoting twice does not duplicate enrollments
+			const again = await admin.deliberations.promoteAdmitted({
+				deliberationId: delib.id,
+				targetClassId: targetClass.id,
+			});
+			expect(again.promotedCount).toBe(0);
+			expect(again.alreadyPromotedCount).toBe(1);
+			const afterTwice = await db.query.enrollments.findMany({
+				where: eq(schema.enrollments.studentId, student.id),
+			});
+			expect(afterTwice).toHaveLength(enrollments.length);
+
+			const detail = await admin.deliberations.getById({ id: delib.id });
+			expect(detail.promotion?.promotedCount).toBe(1);
 		});
 
 		it("rejects promotion when no admitted students", async () => {
@@ -891,6 +999,92 @@ describe("deliberations router", () => {
 			});
 
 			expect(result.promotedCount).toBe(1);
+		});
+	});
+
+	describe("workflows.cohortAnalytics", () => {
+		it("uses the class's deliberation of its year and has no figures without one", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const {
+				academicYear,
+				klass,
+				targetClass,
+				classCourses: { cc1a, cc1b, cc2a, cc2b },
+				student,
+			} = await setupDeliberationFixture();
+			const instId = klass.institutionId;
+			await createExamsWithGrade(cc1a.id, student.id, instId, 14, 16);
+			await createExamsWithGrade(cc1b.id, student.id, instId, 10, 12);
+			await createExamsWithGrade(cc2a.id, student.id, instId, 10, 12);
+			await createExamsWithGrade(cc2b.id, student.id, instId, 12, 14);
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			await admin.deliberations.transition({ id: delib.id, action: "open" });
+			await admin.deliberations.compute({ id: delib.id });
+			await admin.deliberations.transition({ id: delib.id, action: "close" });
+			await admin.deliberations.promoteAdmitted({
+				deliberationId: delib.id,
+				targetClassId: targetClass.id,
+			});
+
+			const [source] = await admin.workflows.cohortAnalytics({
+				classId: klass.id,
+			});
+			expect(source.successRate).toBe(100);
+			expect(source.avgGeneral).toBeGreaterThan(10);
+			expect(source.gradingProgress).toBe(100);
+
+			// The new class has no deliberation and no exam yet: no figures,
+			// even though its student was deliberated in the previous class.
+			const [target] = await admin.workflows.cohortAnalytics({
+				classId: targetClass.id,
+			});
+			expect(target.successRate).toBeNull();
+			expect(target.avgGeneral).toBeNull();
+			expect(target.gradingProgress).toBeNull();
+			expect(target.totalStudents).toBe(1);
+		});
+	});
+
+	describe("classes.createPromotionTarget", () => {
+		it("creates the next-level class of the target year once, with a generated code and name", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { klass, l2, academicYear } = await setupDeliberationFixture();
+			const laterYear = await createAcademicYear({
+				name: "2031-2032",
+				startDate: "2031-09-01",
+				endDate: "2032-07-31",
+			});
+
+			const targets = await admin.classes.promoTargets({
+				sourceClassId: klass.id,
+			});
+			expect(targets.availableYears.map((y) => y.id)).not.toContain(
+				academicYear.id,
+			);
+			expect(targets.nextLevel?.id).toBe(l2.id);
+
+			const first = await admin.classes.createPromotionTarget({
+				sourceClassId: klass.id,
+				targetAcademicYearId: laterYear.id,
+			});
+			expect(first.created).toBe(true);
+			expect(first.klass.cycleLevelId).toBe(l2.id);
+			expect(first.klass.academicYear).toBe(laterYear.id);
+			expect(first.klass.code).toContain("L2");
+			expect(first.klass.name).toContain(l2.name);
+
+			const second = await admin.classes.createPromotionTarget({
+				sourceClassId: klass.id,
+				targetAcademicYearId: laterYear.id,
+			});
+			expect(second.created).toBe(false);
+			expect(second.klass.id).toBe(first.klass.id);
 		});
 	});
 

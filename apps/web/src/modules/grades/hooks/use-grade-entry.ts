@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useQueryErrorToast } from "@/hooks/useQueryErrorToast";
 import { useStore } from "@/store";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
@@ -31,7 +31,10 @@ export function useGradeEntry() {
 	const [selectedCourseId, setSelectedCourseId] = useState(routeCourseId ?? "");
 	const autoSelectExamRef = useRef<boolean>(Boolean(routeCourseId));
 	const manualCourseSelectionRef = useRef(false);
-	const [selectedExam, setSelectedExam] = useState<string>("");
+	// "?exam=<id>" opens that exam (the "Voir"/"Saisir" buttons of a course card)
+	const [searchParams] = useSearchParams();
+	const requestedExam = searchParams.get("exam") ?? "";
+	const [selectedExam, setSelectedExam] = useState<string>(requestedExam);
 
 	const classCoursesQuery = useQuery({
 		...trpc.classCourses.list.queryOptions({
@@ -143,7 +146,10 @@ export function useGradeEntry() {
 			const { items } = await trpcClient.exams.list.query({
 				classCourseId: courseId,
 			});
-			return items.map(
+			const sorted = [...items].sort(
+				(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+			);
+			return sorted.map(
 				(e): EntryExam => ({
 					id: e.id,
 					name: e.name,
@@ -173,7 +179,8 @@ export function useGradeEntry() {
 		}
 		if (!selectedExam) {
 			if (autoSelectExamRef.current) {
-				setSelectedExam(exams[0].id);
+				const requested = exams.find((exam) => exam.id === requestedExam);
+				setSelectedExam(requested?.id ?? exams[0].id);
 			}
 			return;
 		}
@@ -184,7 +191,7 @@ export function useGradeEntry() {
 				setSelectedExam("");
 			}
 		}
-	}, [exams, selectedExam]);
+	}, [exams, selectedExam, requestedExam]);
 
 	const selectedExamInfo = useMemo(
 		() => exams.find((exam) => exam.id === selectedExam),

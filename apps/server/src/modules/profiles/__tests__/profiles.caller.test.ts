@@ -43,6 +43,19 @@ describe("profiles router", () => {
 			expect(result.id).toBe(profile.id);
 		});
 
+		it("dean can view a student's profile and enrollments", async () => {
+			const student = await createStudent();
+			const ctx = makeTestContext({ role: "dean" });
+			const result = await caller(ctx).profiles.get({
+				profileId: student.domainUserId,
+			});
+			expect(result.id).toBe(student.domainUserId);
+			expect(result.availableTabs).not.toContain("access");
+			await caller(ctx).profiles.enrollments({
+				profileId: student.domainUserId,
+			});
+		});
+
 		it("user cannot view another user's profile", async () => {
 			const otherProfile = await createDomainUser();
 			const ctx = makeTestContext({ role: "student" });

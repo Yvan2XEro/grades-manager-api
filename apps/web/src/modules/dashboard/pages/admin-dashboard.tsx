@@ -9,6 +9,7 @@ import { EnrollmentStatusChart } from "../components/admin/enrollment-status-cha
 import { FeeSummaryCard } from "../components/admin/fee-summary-card";
 import { ProgramEnrollmentChart } from "../components/admin/program-enrollment-chart";
 import { QuickActionsCard } from "../components/admin/quick-actions-card";
+import { YearEndedAlert } from "../components/admin/year-ended-alert";
 import { useAdminDashboard } from "../hooks/use-admin-dashboard";
 
 /** Home page of administrators: institution KPIs, charts and shortcuts. */
@@ -26,6 +27,8 @@ const AdminDashboard: React.FC = () => {
 				yearId={d.yearId}
 				onYearChange={d.setYearId}
 			/>
+
+			<YearEndedAlert />
 
 			<SetupProgressCard />
 

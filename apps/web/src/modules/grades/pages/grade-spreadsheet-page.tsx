@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { MoveHorizontal, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -79,6 +79,8 @@ export default function GradeSpreadsheet() {
 		(s) => s === "dirty" || s === "saving",
 	).length;
 	const errorCount = Object.values(states).filter((s) => s === "error").length;
+	const readOnly =
+		exams.length > 0 && exams.every((ex) => ex.isLocked || !ex.canEdit);
 
 	return (
 		<div className="space-y-4">
@@ -123,11 +125,23 @@ export default function GradeSpreadsheet() {
 				<Card>
 					<CardHeader className="pb-3">
 						<CardTitle className="text-base">
-							{t("teacher.spreadsheet.legend.title")}
+							{readOnly
+								? t("teacher.spreadsheet.legend.readOnlyTitle")
+								: t("teacher.spreadsheet.legend.title")}
 						</CardTitle>
 						<CardDescription className="text-xs">
-							{t("teacher.spreadsheet.legend.hint")}
+							{readOnly
+								? t("teacher.spreadsheet.legend.readOnlyHint")
+								: t("teacher.spreadsheet.legend.hint")}
 						</CardDescription>
+						{exams.length > 1 && (
+							<p className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5 text-muted-foreground text-xs sm:hidden">
+								<MoveHorizontal className="h-3.5 w-3.5 shrink-0" />
+								{t("teacher.spreadsheet.phoneScrollHint", {
+									count: exams.length,
+								})}
+							</p>
+						)}
 					</CardHeader>
 					<CardContent className="overflow-x-auto p-0">
 						<GradeSpreadsheetGrid

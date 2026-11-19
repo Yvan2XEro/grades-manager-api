@@ -44,7 +44,9 @@ export function ChangesTable({
 						{changes.map((change) => (
 							<TableRow key={`${change.sheet}-${change.row}-${change.label}`}>
 								<TableCell>{change.sheet}</TableCell>
-								<TableCell className="tabular-nums">{change.row}</TableCell>
+								<TableCell className="tabular-nums">
+									{change.row > 0 ? change.row : "—"}
+								</TableCell>
 								<TableCell>
 									<Badge
 										variant={

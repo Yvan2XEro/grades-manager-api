@@ -18,6 +18,7 @@ import {
 	buildRegisterSchema,
 	type RegisterFormData,
 } from "../services/auth-schemas";
+import { withReturn } from "../services/return-url";
 
 const Register: React.FC = () => {
 	const navigate = useNavigate();
@@ -77,7 +78,7 @@ const Register: React.FC = () => {
 				<p className="mt-2 text-muted-foreground text-sm">
 					{t("auth.register.haveAccount")}{" "}
 					<Link
-						to={`/auth/login?return=${callbackURL}`}
+						to={withReturn("/auth/login", callbackURL)}
 						className="font-medium text-primary hover:text-primary/80"
 					>
 						{t("auth.register.loginLink")}

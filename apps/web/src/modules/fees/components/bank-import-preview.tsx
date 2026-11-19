@@ -16,6 +16,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { formatMoney } from "@/lib/money";
 import type { BankImportResult, BankImportStatus } from "../types";
 
 type ImportStatus = BankImportStatus;
@@ -126,11 +127,11 @@ export function BankImportPreview({
 												{r.reference}
 											</TableCell>
 											<TableCell className="text-right text-xs">
-												{r.amount.toLocaleString()}
+												{formatMoney(r.amount)}
 												{r.orderAmount && r.orderAmount !== r.amount && (
 													<span className="ml-1 text-muted-foreground">
 														{t("feeClearance.bankImport.expectedAmount", {
-															amount: r.orderAmount.toLocaleString(),
+															amount: formatMoney(r.orderAmount),
 														})}
 													</span>
 												)}

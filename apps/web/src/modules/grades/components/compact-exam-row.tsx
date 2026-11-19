@@ -6,10 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { examStatusVariant } from "@/lib/exam-status";
 import { cn } from "@/lib/utils";
-import {
-	useExamGradesSummary,
-	useSubmitExam,
-} from "../hooks/use-teacher-courses";
+import { useSubmitExam } from "../hooks/use-teacher-courses";
 import type { ExamData } from "../types";
 
 /** One exam of a teacher course card: progress, average, status and next action. */
@@ -24,24 +21,24 @@ export function CompactExamRow({
 }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const gradesQuery = useExamGradesSummary(exam.id);
 	const submitMutation = useSubmitExam(exam.id);
 
-	const grades = gradesQuery.data ?? [];
-	const graded = grades.length;
-	const avg =
-		graded > 0
-			? (grades.reduce((sum, g) => sum + Number(g.score), 0) / graded).toFixed(
-					1,
-				)
-			: null;
+	const graded = exam.gradedCount;
+	const avg = exam.average !== null ? exam.average.toFixed(1) : null;
 	const allGraded = graded >= studentCount && studentCount > 0;
-	const canEnter = !exam.isLocked && ["draft", "open"].includes(exam.status);
+	// Grades stay editable until the dean approves; submission needs every
+	// student graded (the grade page also allows a partial submission).
+	const editable =
+		!exam.isLocked &&
+		["draft", "scheduled", "rejected", "submitted"].includes(exam.status);
 	const canSubmit =
-		(exam.isLocked && ["draft", "open"].includes(exam.status)) ||
-		exam.status === "locked";
+		!exam.isLocked &&
+		["draft", "scheduled", "rejected"].includes(exam.status) &&
+		allGraded;
+	const canEnter = editable;
 
-	const goToGradeEntry = () => navigate(`/grades/${classCourseId}`);
+	const goToGradeEntry = () =>
+		navigate(`/grades/${classCourseId}?exam=${exam.id}`);
 
 	const actionButton = () => {
 		if (canSubmit)

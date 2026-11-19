@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Flag, Lock } from "lucide-react";
+import { CheckCircle2, Flag, Lock, Undo2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PageLink } from "@/components/navigation/page-link";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,10 @@ export function YearClosePanel({
 					<li className="flex gap-2">
 						<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
 						{t(`${G}close.deliberations`)}
+					</li>
+					<li className="flex gap-2 text-muted-foreground">
+						<Undo2 className="mt-0.5 h-4 w-4 shrink-0" />
+						{t(`${G}close.undoNote`)}
 					</li>
 				</ul>
 				{missing && (

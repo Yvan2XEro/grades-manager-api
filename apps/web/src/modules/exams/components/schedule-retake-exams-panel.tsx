@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,6 +11,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/date-format";
 import type { ScheduleExamsState } from "../hooks/use-exam-scheduler";
 import type { SchedulerRetakeExam } from "../types";
 
@@ -104,7 +104,7 @@ export function ScheduleRetakeExamsPanel({
 									<TableCell>
 										<Badge variant="outline">{exam.type}</Badge>
 									</TableCell>
-									<TableCell>{format(new Date(exam.date), "PP")}</TableCell>
+									<TableCell>{formatDate(exam.date)}</TableCell>
 								</TableRow>
 							))}
 						</TableBody>

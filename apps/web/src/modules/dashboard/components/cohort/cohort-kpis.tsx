@@ -1,7 +1,14 @@
 import { motion } from "framer-motion";
-import { AlertCircle, GraduationCap, TrendingUp, Users } from "lucide-react";
+import {
+	AlertCircle,
+	GraduationCap,
+	Info,
+	TrendingUp,
+	Users,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { staggerItem } from "@/lib/animations";
+import { formatPercent } from "@/lib/number-format";
 
 export function CohortKpis({
 	totalStudents,
@@ -11,7 +18,8 @@ export function CohortKpis({
 }: {
 	totalStudents: number;
 	totalPending: number;
-	avgProgress: number;
+	avgProgress: number | null;
+	/** Ratio (0–1) of admitted + compensated among deliberated students. */
 	avgSuccessRate: number | null;
 }) {
 	const { t } = useTranslation();
@@ -21,6 +29,7 @@ export function CohortKpis({
 			bg: "bg-primary/10",
 			label: t("dean.cohort.students"),
 			value: totalStudents,
+			hint: t("dean.cohort.hint.students"),
 		},
 		{
 			icon: (
@@ -29,12 +38,14 @@ export function CohortKpis({
 			bg: "bg-amber-100 dark:bg-amber-900/30",
 			label: t("dean.cohort.pending"),
 			value: totalPending,
+			hint: t("dean.cohort.hint.pending"),
 		},
 		{
 			icon: <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
 			bg: "bg-blue-100 dark:bg-blue-900/30",
 			label: t("dean.cohort.avgProgress"),
-			value: `${avgProgress}%`,
+			value: avgProgress !== null ? `${avgProgress}%` : "—",
+			hint: t("dean.cohort.hint.progress"),
 		},
 		{
 			icon: (
@@ -42,7 +53,8 @@ export function CohortKpis({
 			),
 			bg: "bg-emerald-100 dark:bg-emerald-900/30",
 			label: t("dean.cohort.avgSuccess"),
-			value: avgSuccessRate !== null ? `${avgSuccessRate}%` : "—",
+			value: formatPercent(avgSuccessRate),
+			hint: t("dean.cohort.hint.success"),
 		},
 	];
 
@@ -54,6 +66,7 @@ export function CohortKpis({
 			{kpis.map((kpi) => (
 				<div
 					key={kpi.label}
+					title={kpi.hint}
 					className="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm"
 				>
 					<div
@@ -62,7 +75,10 @@ export function CohortKpis({
 						{kpi.icon}
 					</div>
 					<div>
-						<p className="text-muted-foreground text-xs">{kpi.label}</p>
+						<p className="flex items-center gap-1 text-muted-foreground text-xs">
+							{kpi.label}
+							<Info className="h-3 w-3" aria-label={kpi.hint} />
+						</p>
 						<p className="font-bold text-foreground text-xl tabular-nums">
 							{kpi.value}
 						</p>

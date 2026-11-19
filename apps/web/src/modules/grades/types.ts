@@ -85,6 +85,9 @@ export interface ExamData {
 	status: string;
 	canEdit: boolean;
 	classCourseId: string;
+	/** Grades entered so far and their average (null when none). */
+	gradedCount: number;
+	average: number | null;
 }
 
 export interface CourseData {
@@ -95,9 +98,16 @@ export interface CourseData {
 	studentCount: number;
 	exams: ExamData[];
 	isDelegated: boolean;
+	semesterId: string | null;
+	semesterName: string | null;
+	/** Half of the academic year the course is taught in (null: annual). */
+	yearHalf: "first" | "second" | null;
 }
 
 export type TeacherCourseSort = "relevance" | "name" | "class";
+
+/** Semester filter of the teacher home: a half of the academic year, or all. */
+export type TeacherCoursePeriod = "first" | "second" | "all";
 
 // ─── Grade exports (admin) ───────────────────────────────────────────────────
 

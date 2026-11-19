@@ -567,6 +567,35 @@ describe("exams router", () => {
 			expect(payload.classCourseId).toBe(cc.id);
 		});
 
+		it("notifies the course teacher, not the approver, when grades are approved", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			expect(cc.teacher).toBeTruthy();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+
+			const exam = await admin.exams.create({
+				name: "Teacher Notif",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 100,
+				classCourseId: cc.id,
+			});
+			await admin.exams.submit({ examId: exam.id });
+			await admin.exams.validate({ examId: exam.id, status: "approved" });
+
+			const notifs = await db.query.notifications.findMany({
+				where: eq(schema.notifications.type, "grade.approved"),
+			});
+			const examNotifs = notifs.filter(
+				(n) => (n.payload as Record<string, unknown>).examId === exam.id,
+			);
+			expect(examNotifs.map((n) => n.recipientId)).toEqual([cc.teacher]);
+			expect(examNotifs[0].channel).toBe("in-app");
+			expect(examNotifs[0].readAt).toBeNull();
+		});
+
 		it("two different exams produce two independent notifications", async () => {
 			const ctx = await adminWithRealProfile();
 			const admin = createCaller(ctx);

@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
+import { and, eq, gt, ilike, inArray, ne, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -98,14 +98,38 @@ export async function findByDomainUserId(
 export async function list(opts: {
 	institutionId: string;
 	classId?: string;
+	/**
+	 * With `classId`: also return the students enrolled in the class who have
+	 * moved on since (a past year's class list). Off by default.
+	 */
+	includeFormer?: boolean;
 	q?: string;
 	cursor?: string;
 	limit?: number;
 }) {
 	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
 	const extraConditions: SQL<unknown>[] = [];
-	if (opts.classId) {
+	if (opts.classId && !opts.includeFormer) {
 		extraConditions.push(eq(schema.students.class, opts.classId));
+	} else if (opts.classId) {
+		// Members of a class are its current students plus everyone enrolled in
+		// it (a past year's class keeps the students promoted since then).
+		const classMembership = or(
+			eq(schema.students.class, opts.classId),
+			inArray(
+				schema.students.id,
+				db
+					.select({ studentId: schema.enrollments.studentId })
+					.from(schema.enrollments)
+					.where(
+						and(
+							eq(schema.enrollments.classId, opts.classId),
+							ne(schema.enrollments.status, "withdrawn"),
+						),
+					),
+			),
+		);
+		if (classMembership) extraConditions.push(classMembership);
 	}
 	if (opts.q) {
 		const likeValue = `%${opts.q}%`;

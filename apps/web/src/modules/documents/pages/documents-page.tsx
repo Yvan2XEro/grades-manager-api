@@ -38,6 +38,8 @@ export default function DocumentsPage() {
 							isGated={doc.isGated}
 							isCleared={doc.isCleared}
 							canDownload={doc.canDownload}
+							reason={doc.reason}
+							decision={doc.decision}
 						/>
 					))}
 				</div>

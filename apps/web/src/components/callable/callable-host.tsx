@@ -15,6 +15,7 @@ import { BulkGenerateClassesDialog } from "@/modules/classes/components/bulk-gen
 import { ClassCourseFormDialog } from "@/modules/classes/components/class-course-form-dialog";
 import { ClassFormDialog } from "@/modules/classes/components/class-form-dialog";
 import { CourseCatalogExportDialog } from "@/modules/classes/components/course-catalog-export-dialog";
+import { EnrollStudentDialog } from "@/modules/classes/components/enroll-student-dialog";
 import { CreateDeliberationDialog } from "@/modules/deliberations/components/create-deliberation-dialog";
 import { DeliberationRuleFormDialog } from "@/modules/deliberations/components/deliberation-rule-form-dialog";
 import { OverrideDecisionDialog } from "@/modules/deliberations/components/override-decision-dialog";
@@ -48,6 +49,7 @@ import { RecordPaymentDialog } from "@/modules/fees/components/record-payment-di
 import { UpdateDiscountDialog } from "@/modules/fees/components/update-discount-dialog";
 import { AssignDelegateDialog } from "@/modules/grades/components/assign-delegate-dialog";
 import { BulkExportReportDialog } from "@/modules/grades/components/bulk-export-report-dialog";
+import { CourseRosterDialog } from "@/modules/grades/components/course-roster-dialog";
 import { GrantGradeAccessDialog } from "@/modules/grades/components/grant-grade-access-dialog";
 import { AddGuardianDialog } from "@/modules/guardians/components/add-guardian-dialog";
 import { GuardianPreferencesSheet } from "@/modules/guardians/components/guardian-preferences-sheet";
@@ -87,6 +89,7 @@ export function CallableHost() {
 			<AcademicYearFormDialog />
 			<BulkClassExportDialog />
 			<ClassFormDialog />
+			<EnrollStudentDialog />
 			<BulkGenerateClassesDialog />
 			<CreatePersonDialog />
 			<CourseFormDialog />
@@ -144,6 +147,7 @@ export function CallableHost() {
 			<AvatarCropModal />
 			<DeanRejectExamDialog />
 			<AssignDelegateDialog />
+			<CourseRosterDialog />
 			<ResolveItemSheet />
 		</>
 	);

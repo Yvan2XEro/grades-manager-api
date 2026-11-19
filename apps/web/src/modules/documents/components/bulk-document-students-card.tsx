@@ -22,6 +22,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 	const { t } = useTranslation();
 	const {
 		studentItems,
+		eligibleCount,
 		studentsLoading,
 		selectedIds,
 		zipDownload,
@@ -38,19 +39,24 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between gap-4">
+				<div className="flex flex-wrap items-center justify-between gap-4">
 					<div>
 						<CardTitle>{t("admin.documents.bulk.students.title")}</CardTitle>
 						<CardDescription>
 							{t("admin.documents.bulk.students.count", {
 								count: studentItems.length,
 							})}{" "}
+							{t("admin.documents.bulk.students.eligible", {
+								count: eligibleCount,
+							})}{" "}
+							{eligibleCount < studentItems.length &&
+								`${t("admin.documents.bulk.students.ineligibleHint")} `}
 							{t("admin.documents.bulk.students.selected", {
 								count: selectedIds.size,
 							})}
 						</CardDescription>
 					</div>
-					<div className="flex items-center gap-3">
+					<div className="flex flex-wrap items-center gap-3">
 						<div className="flex items-center gap-2">
 							<Switch
 								id="zip"
@@ -74,6 +80,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 							<Label
 								htmlFor="demo"
 								className="cursor-pointer font-normal text-sm"
+								title={t("admin.documents.bulk.students.demoModeHint")}
 							>
 								{t("admin.documents.bulk.students.demoMode")}
 							</Label>
@@ -83,7 +90,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 							onClick={previewFirst}
 							disabled={
 								previewOne.isPending ||
-								(selectedIds.size === 0 && studentItems.length === 0)
+								(selectedIds.size === 0 && eligibleCount === 0)
 							}
 							title={t("admin.documents.bulk.students.previewHint")}
 						>

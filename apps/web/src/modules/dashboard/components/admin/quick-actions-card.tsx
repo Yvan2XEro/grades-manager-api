@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { ExternalLinkIcon } from "@/components/navigation/external-link-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreatePersonDialog } from "@/modules/people/components/create-person-dialog";
+import { EnrollStudentDialog } from "@/modules/classes/components/enroll-student-dialog";
 import { useDashboardPages } from "../../hooks/use-dashboard-pages";
 
 const ROW =
@@ -61,7 +61,7 @@ export function QuickActionsCard() {
 		{
 			key: "addStudent",
 			icon: <UserPlus className="h-4 w-4" />,
-			onClick: () => CreatePersonDialog.call(),
+			onClick: () => EnrollStudentDialog.call({}),
 		},
 		{
 			key: "exams",

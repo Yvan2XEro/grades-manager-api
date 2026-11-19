@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 import type { StudentExport, StudentListItem } from "../types";
@@ -108,3 +109,36 @@ export const sortStudentsByName = <
 			a.last_name.localeCompare(b.last_name) ||
 			a.first_name.localeCompare(b.first_name),
 	);
+
+/**
+ * Course average of the given (score, exam weight) pairs: weighted by the
+ * exam percentages, renormalised over the exams present, so a CC 40% + final
+ * 60% course gives 0.4·CC + 0.6·final. Falls back to a plain mean when no
+ * exam carries a weight.
+ */
+export function weightedCourseAverage(
+	grades: { score: number; percentage: number | string | null | undefined }[],
+): number | null {
+	if (grades.length === 0) return null;
+	let weighted = 0;
+	let weights = 0;
+	for (const g of grades) {
+		const w = Number(g.percentage) || 0;
+		weighted += g.score * w;
+		weights += w;
+	}
+	const avg =
+		weights > 0
+			? weighted / weights
+			: grades.reduce((sum, g) => sum + g.score, 0) / grades.length;
+	return Number(avg.toFixed(2));
+}
+
+/** Translated label of a stored gender value ("male" / "female"). */
+export function genderLabel(t: TFunction, value?: string | null) {
+	return value === "male"
+		? t("common.gender.male")
+		: value === "female"
+			? t("common.gender.female")
+			: "";
+}
