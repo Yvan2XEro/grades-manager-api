@@ -398,8 +398,31 @@ export async function getPromoTargets(
 				).items
 			: [];
 
+	// Classes of the same program and option in the target year: where
+	// repeaters go (same level) and what a manual destination can be.
+	const programClasses = targetAcademicYearId
+		? (
+				await repo.list(institutionId, {
+					programId: source.program,
+					academicYearId: targetAcademicYearId,
+					limit: 200,
+				})
+			).items
+				.filter((c) => c.programOptionId === source.programOptionId)
+				.sort(
+					(a, b) =>
+						(a.cycleLevel?.orderIndex ?? 0) - (b.cycleLevel?.orderIndex ?? 0) ||
+						a.name.localeCompare(b.name),
+				)
+		: [];
+	const sameLevelClasses = source.cycleLevelId
+		? programClasses.filter((c) => c.cycleLevelId === source.cycleLevelId)
+		: [];
+
 	return {
 		targetClasses,
+		sameLevelClasses,
+		programClasses,
 		isLastLevel,
 		sourceClass: source,
 		nextLevel: nextLevel ?? null,
@@ -408,26 +431,38 @@ export async function getPromoTargets(
 }
 
 /**
- * Creates (or returns, when it already exists) the class that promoted
- * students of `sourceClassId` join in `targetAcademicYearId`: same program and
- * option, next level of the cycle. Its code and name are generated so a dean
- * never has to invent them.
+ * Creates (or returns, when it already exists) the class that students of
+ * `sourceClassId` join in `targetAcademicYearId`: same program and option,
+ * next level of the cycle for promoted students (`level: "next"`) or the same
+ * level for repeaters (`level: "same"`). Its code and name are generated so a
+ * dean never has to invent them.
  */
 export async function createPromotionTarget(
 	sourceClassId: string,
 	targetAcademicYearId: string,
 	institutionId: string,
+	level: "next" | "same" = "next",
 ) {
 	const targets = await getPromoTargets(
 		sourceClassId,
 		institutionId,
 		targetAcademicYearId,
 	);
-	const { sourceClass: source, nextLevel } = targets;
+	const { sourceClass: source } = targets;
+	const sameLevel =
+		level === "same" && source.cycleLevel
+			? await db.query.cycleLevels.findFirst({
+					where: eq(schema.cycleLevels.id, source.cycleLevel.id),
+				})
+			: undefined;
+	const nextLevel = level === "same" ? sameLevel : targets.nextLevel;
 	if (!nextLevel) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: "The source class is on the last level of its cycle",
+			message:
+				level === "same"
+					? "The source class has no cycle level"
+					: "The source class is on the last level of its cycle",
 		});
 	}
 	const targetYear = targets.availableYears.find(
@@ -440,9 +475,9 @@ export async function createPromotionTarget(
 				"The target academic year must come after the source class's year",
 		});
 	}
-	const existing = targets.targetClasses.find(
-		(c) => c.programOptionId === source.programOptionId,
-	);
+	const existing = (
+		level === "same" ? targets.sameLevelClasses : targets.targetClasses
+	).find((c) => c.programOptionId === source.programOptionId);
 	if (existing) return { klass: existing, created: false };
 
 	// e.g. "SFM-BTS2-2627": program code, next level code, years of the target year

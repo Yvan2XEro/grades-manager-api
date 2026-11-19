@@ -197,6 +197,11 @@ export async function getById(id: string, institutionId: string) {
 		promotedCount?: number;
 		targetClassName?: string;
 		graduated?: boolean;
+		repeatCount?: number;
+		repeatClassName?: string;
+		repeatUnplacedCount?: number;
+		excludedCount?: number;
+		undecidedCount?: number;
 	};
 	return {
 		...delib,
@@ -207,6 +212,11 @@ export async function getById(id: string, institutionId: string) {
 					promotedCount: promotionDetails.promotedCount ?? 0,
 					targetClassName: promotionDetails.targetClassName ?? null,
 					graduated: promotionDetails.graduated ?? false,
+					repeatCount: promotionDetails.repeatCount ?? 0,
+					repeatClassName: promotionDetails.repeatClassName ?? null,
+					repeatUnplacedCount: promotionDetails.repeatUnplacedCount ?? 0,
+					excludedCount: promotionDetails.excludedCount ?? 0,
+					undecidedCount: promotionDetails.undecidedCount ?? 0,
 				}
 			: null,
 	};
@@ -1227,76 +1237,90 @@ export async function promoteAdmitted(
 		});
 	}
 
-	// Get admitted/compensated students
+	// The jury's final decisions split the class in four groups: admitted
+	// (promoted, or graduated on the last level), repeaters (the jury page
+	// treats "deferred" as repeating), excluded, and students still without a
+	// decision, who are left untouched.
 	const allResults = await repo.findStudentResultsByDeliberationId(
 		input.deliberationId,
 	);
-	const admittedResults = allResults.filter(
-		(r) => r.finalDecision === "admitted" || r.finalDecision === "compensated",
-	);
+	const idsWith = (...decisions: DeliberationDecision[]) =>
+		allResults
+			.filter((r) => r.finalDecision && decisions.includes(r.finalDecision))
+			.map((r) => r.studentId);
+	const admittedIds = idsWith("admitted", "compensated");
+	const repeatIds = idsWith("repeat", "deferred");
+	const excludedIds = idsWith("excluded");
+	const undecidedCount =
+		allResults.length -
+		admittedIds.length -
+		repeatIds.length -
+		excludedIds.length;
 
-	if (admittedResults.length === 0) {
+	if (
+		admittedIds.length === 0 &&
+		excludedIds.length === 0 &&
+		(repeatIds.length === 0 || !input.repeatClassId)
+	) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "No admitted students to promote",
 		});
 	}
 
-	const admittedIds = admittedResults.map((r) => r.studentId);
-
-	if (input.targetClassId) {
-		// --- Normal promotion: enroll students in the next class ---
-		const targetClass = await db.query.classes.findFirst({
-			where: and(
-				eq(schema.classes.id, input.targetClassId),
-				eq(schema.classes.institutionId, institutionId),
-			),
-		});
-		if (!targetClass) {
-			throw new TRPCError({
-				code: "NOT_FOUND",
-				message: "Target class not found",
-			});
-		}
-		const [fromYear, toYear] = await Promise.all(
-			[delib.academicYearId, targetClass.academicYear].map((id) =>
-				db.query.academicYears.findFirst({
-					where: eq(schema.academicYears.id, id),
-					columns: { startDate: true },
-				}),
-			),
-		);
+	const sourceClass = delib.classId
+		? await db.query.classes.findFirst({
+				where: eq(schema.classes.id, delib.classId),
+			})
+		: undefined;
+	const targetClass = input.targetClassId
+		? await findLaterYearClass(input.targetClassId, delib, institutionId)
+		: null;
+	const repeatClass =
+		input.repeatClassId && repeatIds.length > 0
+			? await findLaterYearClass(input.repeatClassId, delib, institutionId)
+			: null;
+	if (repeatClass) {
 		if (
-			targetClass.academicYear === delib.academicYearId ||
-			(fromYear &&
-				toYear &&
-				new Date(toYear.startDate) <= new Date(fromYear.startDate))
+			!sourceClass ||
+			repeatClass.program !== sourceClass.program ||
+			repeatClass.cycleLevelId !== sourceClass.cycleLevelId
 		) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message:
-					"The target class must belong to a later academic year than the deliberation",
+					"The repeat class must be a class of the same program and level",
 			});
 		}
-		const targetClassId = targetClass.id;
-		const targetYearId = targetClass.academicYear;
+		if (targetClass && targetClass.academicYear !== repeatClass.academicYear) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Promoted and repeating students must join the same year",
+			});
+		}
+	}
 
-		const promotedIds = await db.transaction(async (tx) => {
-			// Idempotence: students that already have an enrollment in the target
-			// year (a previous promotion, or an enrollment made by hand) are skipped.
+	const outcome = await db.transaction(async (tx) => {
+		// Moves students into `classId` for the class's year. Idempotent:
+		// students that already have an enrollment in that year (a previous
+		// run, the transition plan, or an enrollment made by hand) are skipped.
+		const enrollInto = async (
+			studentIds: string[],
+			klass: { id: string; academicYear: string },
+		) => {
+			if (studentIds.length === 0) return [];
 			const existing = await tx
 				.select({ studentId: schema.enrollments.studentId })
 				.from(schema.enrollments)
 				.where(
 					and(
-						inArray(schema.enrollments.studentId, admittedIds),
-						eq(schema.enrollments.academicYearId, targetYearId),
+						inArray(schema.enrollments.studentId, studentIds),
+						eq(schema.enrollments.academicYearId, klass.academicYear),
 					),
 				);
 			const alreadyEnrolled = new Set(existing.map((e) => e.studentId));
-			const toPromote = admittedIds.filter((sid) => !alreadyEnrolled.has(sid));
-
-			for (const studentId of toPromote) {
+			const moved = studentIds.filter((sid) => !alreadyEnrolled.has(sid));
+			for (const studentId of moved) {
 				// Close the enrollment of the deliberated year only: it stays the
 				// record of that year (class lists, transcripts).
 				await tx
@@ -1311,70 +1335,127 @@ export async function promoteAdmitted(
 					);
 				await tx.insert(schema.enrollments).values({
 					studentId,
-					classId: targetClassId,
-					academicYearId: targetYearId,
+					classId: klass.id,
+					academicYearId: klass.academicYear,
 					institutionId,
 					status: "active",
 				});
 				await tx
 					.update(schema.students)
-					.set({ class: targetClassId })
+					.set({ class: klass.id })
 					.where(eq(schema.students.id, studentId));
 			}
-			return toPromote;
-		});
-
-		if (promotedIds.length > 0) {
-			await repo.createLog({
-				deliberationId: input.deliberationId,
-				action: "promoted",
-				actorId,
-				details: {
-					promotedCount: promotedIds.length,
-					targetClassId,
-					targetClassName: targetClass.name,
-				},
-			});
-		}
-
-		return {
-			promotedCount: promotedIds.length,
-			alreadyPromotedCount: admittedIds.length - promotedIds.length,
+			return moved;
 		};
-	}
+		// Closes the active enrollment of the deliberated year.
+		const closeSourceEnrollments = async (
+			studentIds: string[],
+			status: "graduated" | "withdrawn",
+		) => {
+			if (studentIds.length === 0) return [];
+			const closed = await tx
+				.update(schema.enrollments)
+				.set({ status, exitedAt: new Date() })
+				.where(
+					and(
+						inArray(schema.enrollments.studentId, studentIds),
+						eq(schema.enrollments.academicYearId, delib.academicYearId),
+						eq(schema.enrollments.status, "active"),
+					),
+				)
+				.returning({ studentId: schema.enrollments.studentId });
+			return [...new Set(closed.map((row) => row.studentId))];
+		};
 
-	// --- Graduation: last cycle level — close enrollments as graduated ---
-	const graduatedIds = await db.transaction(async (tx) => {
-		const closed = await tx
-			.update(schema.enrollments)
-			.set({ status: "graduated", exitedAt: new Date() })
-			.where(
-				and(
-					inArray(schema.enrollments.studentId, admittedIds),
-					eq(schema.enrollments.academicYearId, delib.academicYearId),
-					eq(schema.enrollments.status, "active"),
-				),
-			)
-			.returning({ studentId: schema.enrollments.studentId });
-		return [...new Set(closed.map((row) => row.studentId))];
+		// targetClassId omitted: last cycle level, admitted students graduate
+		const promoted = targetClass
+			? await enrollInto(admittedIds, targetClass)
+			: await closeSourceEnrollments(admittedIds, "graduated");
+		const repeating = repeatClass
+			? await enrollInto(repeatIds, repeatClass)
+			: [];
+		const excluded = await closeSourceEnrollments(excludedIds, "withdrawn");
+		return { promoted, repeating, excluded };
 	});
 
-	if (graduatedIds.length > 0) {
+	const summary = {
+		promotedCount: outcome.promoted.length,
+		alreadyPromotedCount: admittedIds.length - outcome.promoted.length,
+		graduated: !targetClass && admittedIds.length > 0,
+		repeatCount: outcome.repeating.length,
+		alreadyRepeatingCount: repeatClass
+			? repeatIds.length - outcome.repeating.length
+			: 0,
+		// Repeaters left without a class because none was chosen
+		repeatUnplacedCount: repeatClass ? 0 : repeatIds.length,
+		excludedCount: outcome.excluded.length,
+		undecidedCount,
+	};
+
+	if (
+		outcome.promoted.length +
+			outcome.repeating.length +
+			outcome.excluded.length >
+		0
+	) {
 		await repo.createLog({
 			deliberationId: input.deliberationId,
 			action: "promoted",
 			actorId,
 			details: {
-				promotedCount: graduatedIds.length,
-				graduated: true,
+				...summary,
+				...(targetClass
+					? { targetClassId: targetClass.id, targetClassName: targetClass.name }
+					: {}),
+				...(repeatClass
+					? { repeatClassId: repeatClass.id, repeatClassName: repeatClass.name }
+					: {}),
 			},
 		});
 	}
 
-	return {
-		promotedCount: graduatedIds.length,
-		alreadyPromotedCount: admittedIds.length - graduatedIds.length,
-	};
+	return summary;
+}
+
+/** A class of the institution whose year comes after the deliberated one. */
+async function findLaterYearClass(
+	classId: string,
+	delib: { academicYearId: string },
+	institutionId: string,
+) {
+	const klass = await db.query.classes.findFirst({
+		where: and(
+			eq(schema.classes.id, classId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+	});
+	if (!klass) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Target class not found",
+		});
+	}
+	const [fromYear, toYear] = await Promise.all(
+		[delib.academicYearId, klass.academicYear].map((id) =>
+			db.query.academicYears.findFirst({
+				where: eq(schema.academicYears.id, id),
+				columns: { startDate: true },
+			}),
+		),
+	);
+	if (
+		klass.academicYear === delib.academicYearId ||
+		(fromYear &&
+			toYear &&
+			new Date(toYear.startDate) <= new Date(fromYear.startDate))
+	) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message:
+				"The target class must belong to a later academic year than the deliberation",
+		});
+	}
+	return klass;
 }
 
 // ---------------------------------------------------------------------------

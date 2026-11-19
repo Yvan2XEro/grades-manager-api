@@ -276,6 +276,42 @@ describe("users.listPaged", () => {
 		expect(result.items.some((i) => i.id === student.domainUserId)).toBe(false);
 	});
 
+	test("a promoted student is found by registration number and shows the new class", async () => {
+		const registrationNumber = `PROMO-${randomUUID().slice(0, 8)}`;
+		const student = await createStudent({ registrationNumber });
+		const nextYear = await createAcademicYear();
+		const nextClass = await createClass({
+			academicYear: nextYear.id,
+			name: `Next ${registrationNumber}`,
+		});
+		await db
+			.update(enrollments)
+			.set({ status: "completed", exitedAt: new Date() })
+			.where(eq(enrollments.studentId, student.id));
+		await db.insert(enrollments).values({
+			studentId: student.id,
+			classId: nextClass.id,
+			academicYearId: nextYear.id,
+			institutionId: nextClass.institutionId,
+			status: "active",
+			enrolledAt: new Date(Date.now() + 1000),
+		});
+
+		const caller = appRouter.createCaller(await asAdmin());
+		const result = await caller.users.listPaged({
+			page: 1,
+			pageSize: 25,
+			audience: "students",
+			search: registrationNumber.toLowerCase(),
+		});
+		expect(result.items).toHaveLength(1);
+		expect(result.items[0]).toMatchObject({
+			id: student.domainUserId,
+			currentClassName: nextClass.name,
+			currentEnrollmentStatus: "active",
+		});
+	});
+
 	test("student with multiple enrollments appears exactly once", async () => {
 		// Create a user with role "student" so they show up in listPaged with role filter
 		const { profile } = await createUser({

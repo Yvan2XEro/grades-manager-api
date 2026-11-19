@@ -18,6 +18,7 @@ import type {
 	ListTransitionItemsInput,
 	ListTransitionsInput,
 	ResolveTransitionItemInput,
+	ResolveTransitionItemsInput,
 } from "./academic-year-transitions.zod";
 
 type PlannedItem = schema.NewAcademicYearTransitionItem;
@@ -670,19 +671,35 @@ export async function resolveItem(
 	institutionId: string,
 	actorId: string,
 ) {
+	const { itemId, ...rest } = input;
+	return resolveItems({ ...rest, itemIds: [itemId] }, institutionId, actorId);
+}
+
+/**
+ * Gives several items of a draft plan the same outcome (and destination
+ * class), with one reason: how the jury's pending or incomplete students are
+ * decided in bulk.
+ */
+export async function resolveItems(
+	input: ResolveTransitionItemsInput,
+	institutionId: string,
+	actorId: string,
+) {
 	const transition = await findTransition(input.transitionId, institutionId);
 	if (!transition) notFound("Academic year transition not found");
 	if (!["draft", "ready"].includes(transition.status)) {
 		invalid("Only a draft transition can be changed");
 	}
-	const item = await db.query.academicYearTransitionItems.findFirst({
+	const itemIds = [...new Set(input.itemIds)];
+	const items = await db.query.academicYearTransitionItems.findMany({
 		where: and(
-			eq(schema.academicYearTransitionItems.id, input.itemId),
+			inArray(schema.academicYearTransitionItems.id, itemIds),
 			eq(schema.academicYearTransitionItems.transitionId, input.transitionId),
 			eq(schema.academicYearTransitionItems.institutionId, institutionId),
 		),
+		columns: { id: true },
 	});
-	if (!item) notFound("Transition item not found");
+	if (items.length !== itemIds.length) notFound("Transition item not found");
 
 	const requiresTarget =
 		input.outcome === "promote" || input.outcome === "repeat";
@@ -717,7 +734,7 @@ export async function resolveItem(
 			overriddenAt: new Date(),
 			updatedAt: new Date(),
 		})
-		.where(eq(schema.academicYearTransitionItems.id, input.itemId));
+		.where(inArray(schema.academicYearTransitionItems.id, itemIds));
 	await refreshSummary(input.transitionId);
 	return getById(input.transitionId, institutionId);
 }

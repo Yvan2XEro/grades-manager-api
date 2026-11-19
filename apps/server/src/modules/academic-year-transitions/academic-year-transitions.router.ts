@@ -5,6 +5,7 @@ import {
 	listTransitionItemsSchema,
 	listTransitionsSchema,
 	resolveTransitionItemSchema,
+	resolveTransitionItemsSchema,
 	transitionIdSchema,
 } from "./academic-year-transitions.zod";
 
@@ -45,6 +46,11 @@ export const academicYearTransitionsRouter = router({
 		.input(resolveTransitionItemSchema)
 		.mutation(({ input, ctx }) =>
 			service.resolveItem(input, ctx.institution.id, actorId(ctx.profile)),
+		),
+	resolveItems: tenantAdminProcedure
+		.input(resolveTransitionItemsSchema)
+		.mutation(({ input, ctx }) =>
+			service.resolveItems(input, ctx.institution.id, actorId(ctx.profile)),
 		),
 	submit: tenantAdminProcedure
 		.input(transitionIdSchema)

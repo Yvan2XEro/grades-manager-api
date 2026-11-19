@@ -37,6 +37,10 @@ export const resolveTransitionItemSchema = z.object({
 	reason: z.string().trim().min(5).max(500),
 });
 
+export const resolveTransitionItemsSchema = resolveTransitionItemSchema
+	.omit({ itemId: true })
+	.extend({ itemIds: z.array(z.string().min(1)).min(1).max(500) });
+
 export type CreateTransitionInput = z.infer<typeof createTransitionSchema>;
 export type ListTransitionsInput = z.infer<typeof listTransitionsSchema>;
 export type ListTransitionItemsInput = z.infer<
@@ -44,4 +48,7 @@ export type ListTransitionItemsInput = z.infer<
 >;
 export type ResolveTransitionItemInput = z.infer<
 	typeof resolveTransitionItemSchema
+>;
+export type ResolveTransitionItemsInput = z.infer<
+	typeof resolveTransitionItemsSchema
 >;
