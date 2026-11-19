@@ -920,12 +920,26 @@ export function compileAndRender(
 ) {
 	ensureHelpers();
 	const template = Handlebars.compile(templateBody, { noEscape: false });
-	if (mentionRanges && mentionRanges.length > 0) {
-		return template(data, {
-			helpers: { getAppreciation: appreciationHelperFromRanges(mentionRanges) },
-		});
-	}
-	return template(data);
+	const html =
+		mentionRanges && mentionRanges.length > 0
+			? template(data, {
+					helpers: {
+						getAppreciation: appreciationHelperFromRanges(mentionRanges),
+					},
+				})
+			: template(data);
+	return html;
+}
+
+/**
+ * Demo documents carry a diagonal "SPECIMEN" mark on every page, whatever the
+ * template, so a test print can never pass for an official document.
+ */
+export function withSpecimenWatermark(html: string) {
+	const mark = `<style>.tkams-specimen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:9999}.tkams-specimen span{transform:rotate(-35deg);font:700 64px/1.1 Arial,sans-serif;color:rgba(200,0,0,.16);text-align:center;letter-spacing:.08em;white-space:nowrap}</style><div class="tkams-specimen" aria-hidden="true"><span>SPÉCIMEN — NON VALABLE<br>SPECIMEN — NOT VALID</span></div>`;
+	return html.includes("</body>")
+		? html.replace("</body>", `${mark}</body>`)
+		: `${html}${mark}`;
 }
 
 // ---------------- Public API ----------------
@@ -1031,11 +1045,13 @@ export async function generateDocument(
 			enrollmentStatus: eligibility.enrollmentStatus,
 		});
 
-		const html = compileAndRender(
+		const rendered = compileAndRender(
 			resolved.templateBody,
 			data,
 			gradeScale.mentionRanges,
 		);
+		// Demo documents are never valid: a SPECIMEN mark on every page
+		const html = input.demoMode ? withSpecimenWatermark(rendered) : rendered;
 
 		if (input.format === "html") {
 			return {

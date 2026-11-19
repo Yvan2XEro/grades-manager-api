@@ -778,6 +778,13 @@
         "title": "Statut des inscriptions",
         "subtitle": "Répartition par état",
         "empty": "Aucune inscription"
+      },
+      "yearEnded": {
+        "title": "L'année académique active {{year}} est terminée depuis le {{date}}",
+        "createNext": "Les nouvelles inscriptions, les frais et les imports vont encore dans cette année terminée. Créez l'année suivante, puis activez-la.",
+        "activateNext": "L'année {{year}} existe déjà : activez-la pour que les nouvelles inscriptions, les frais et les imports y soient rattachés.",
+        "createButton": "Créer l'année suivante",
+        "openYears": "Ouvrir les années académiques"
       }
     },
     "statistics": {
@@ -4441,7 +4448,7 @@
           "selected_one": "{{count}} sélectionné.",
           "selected_other": "{{count}} sélectionnés.",
           "zip": "ZIP",
-          "demoMode": "Mode démo",
+          "demoMode": "Spécimen (test d'impression)",
           "previewHint": "Aperçu du document pour le premier étudiant sélectionné",
           "preview": "Aperçu",
           "generate": "Générer {{count}}",
@@ -4449,7 +4456,8 @@
           "empty": "Aucun étudiant inscrit dans cette classe.",
           "eligible_one": "{{count}} peut recevoir ce document.",
           "eligible_other": "{{count}} peuvent recevoir ce document.",
-          "ineligibleHint": "Les autres sont listés avec la raison et ne peuvent pas être sélectionnés."
+          "ineligibleHint": "Les autres sont listés avec la raison et ne peuvent pas être sélectionnés.",
+          "demoModeHint": "Ajoute la mention SPÉCIMEN — NON VALABLE sur chaque page et n'utilise aucun numéro de référence : pour vérifier la mise en page avant de délivrer les vrais documents."
         },
         "table": {
           "selectAll": "Tout sélectionner",
@@ -6598,7 +6606,8 @@
       "scheduleHint": "Cochez les tranches à payer, puis générez un ordre de paiement à présenter à la banque.",
       "dueOn": "À payer avant le {{date}}",
       "receiptHint": "Le reçu est téléchargeable dès que le paiement est enregistré par le service financier.",
-      "noPayments": "Aucun paiement enregistré pour le moment."
+      "noPayments": "Aucun paiement enregistré pour le moment.",
+      "overdueSince": "En retard depuis le {{date}}"
     },
     "history": {
       "title": "Historique financier",

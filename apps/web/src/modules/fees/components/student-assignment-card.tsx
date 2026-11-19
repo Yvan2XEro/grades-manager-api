@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/date-format";
 import { formatMoney } from "../services/fee-format";
 import type { PayableInstallment, StudentFeeAssignment } from "../types";
 import { GenerateOrderPanel } from "./generate-order-panel";
+import { InstallmentDue } from "./installment-due";
 import { AssignmentStatusBadge } from "./status-badges";
 import {
 	DownloadOrderButton,
@@ -121,13 +122,7 @@ export function StudentAssignmentCard({
 								>
 									<span className="min-w-0 flex-1">
 										<span className="block">{installment.label}</span>
-										{installment.dueDate && (
-											<span className="block text-muted-foreground text-xs">
-												{t("feeClearance.student.dueOn", {
-													date: formatDate(installment.dueDate, "PP"),
-												})}
-											</span>
-										)}
+										<InstallmentDue installment={installment} />
 									</span>
 									<span className="shrink-0 font-medium">
 										{money(installment.amount)}

@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import i18n from "@/i18n";
 import { fileDateStamp } from "@/lib/download";
-import { formatPercent } from "@/lib/number-format";
+import { formatDecimal, formatPercent } from "@/lib/number-format";
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
@@ -107,10 +107,7 @@ export function exportDeliberationExcel(data: any) {
 				],
 				[
 					t("admin.deliberations.excel.classAverage", {
-						value:
-							stats.classAverage != null
-								? round2(stats.classAverage).toFixed(2)
-								: "—",
+						value: formatDecimal(stats.classAverage),
 					}),
 				],
 			]

@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatDate } from "@/lib/date-format";
 import { formatMoney } from "@/lib/money";
 import { useCreateMyOrder } from "../hooks/use-my-fees";
 import type { PayableInstallment } from "../types";
+import { InstallmentDue } from "./installment-due";
 
 /** Installment checkboxes and the button generating a payment order (student view). */
 export function GenerateOrderPanel({
@@ -52,13 +52,7 @@ export function GenerateOrderPanel({
 							/>
 							<span className="min-w-0 flex-1">
 								<span className="block">{installment.label}</span>
-								{installment.dueDate && (
-									<span className="block text-muted-foreground text-xs">
-										{t("feeClearance.student.dueOn", {
-											date: formatDate(installment.dueDate, "PP"),
-										})}
-									</span>
-								)}
+								<InstallmentDue installment={installment} />
 							</span>
 							<span className="shrink-0 font-medium">
 								{formatMoney(installment.amount, currency)}

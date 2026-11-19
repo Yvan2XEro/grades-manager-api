@@ -1,7 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { createStudent } from "@/lib/test-utils";
 import * as repo from "../academic-documents.repo";
-import { buildRenderData } from "../academic-documents.service";
+import {
+	buildRenderData,
+	withSpecimenWatermark,
+} from "../academic-documents.service";
 
 describe("academic documents render data", () => {
 	it("exposes the document block used by the templates", async () => {
@@ -26,5 +29,15 @@ describe("academic documents render data", () => {
 		// Templates print {{document.referenceNumber}} and {{document.issueDate}}
 		expect(data.document?.referenceNumber).toBeTruthy();
 		expect(data.document?.issueDate).toBeTruthy();
+	});
+});
+
+describe("specimen watermark", () => {
+	it("marks demo documents inside the body", () => {
+		const html = withSpecimenWatermark("<html><body><p>x</p></body></html>");
+		expect(html).toContain("SPÉCIMEN");
+		expect(html.indexOf("tkams-specimen")).toBeLessThan(
+			html.indexOf("</body>"),
+		);
 	});
 });

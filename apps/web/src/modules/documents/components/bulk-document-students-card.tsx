@@ -80,6 +80,7 @@ export function BulkDocumentStudentsCard({ state }: { state: State }) {
 							<Label
 								htmlFor="demo"
 								className="cursor-pointer font-normal text-sm"
+								title={t("admin.documents.bulk.students.demoModeHint")}
 							>
 								{t("admin.documents.bulk.students.demoMode")}
 							</Label>

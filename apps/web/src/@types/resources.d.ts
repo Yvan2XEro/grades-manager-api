@@ -1734,6 +1734,13 @@ interface Resources {
 					"subtitle": "Breakdown by status";
 					"empty": "No enrollments";
 				};
+				"yearEnded": {
+					"title": "The active academic year {{year}} ended on {{date}}";
+					"createNext": "New enrollments, fees and imports still go to this finished year. Create the next year, then activate it.";
+					"activateNext": "The year {{year}} already exists: activate it so new enrollments, fees and imports go to it.";
+					"createButton": "Create the next year";
+					"openYears": "Open academic years";
+				};
 			};
 			"statistics": {
 				"title": "Statistics";
@@ -5531,7 +5538,7 @@ interface Resources {
 						"selected_one": "{{count}} selected.";
 						"selected_other": "{{count}} selected.";
 						"zip": "ZIP";
-						"demoMode": "Demo mode";
+						"demoMode": "Specimen (test print)";
 						"previewHint": "Preview the document for the first selected student";
 						"preview": "Preview";
 						"generate": "Generate {{count}}";
@@ -5540,6 +5547,7 @@ interface Resources {
 						"eligible_one": "{{count}} can receive this document.";
 						"eligible_other": "{{count}} can receive this document.";
 						"ineligibleHint": "The others are listed with the reason and cannot be selected.";
+						"demoModeHint": "Adds a SPECIMEN — NOT VALID mark on every page and uses no reference number: to check the layout before issuing the real documents.";
 					};
 					"table": {
 						"selectAll": "Select all";
@@ -6595,6 +6603,7 @@ interface Resources {
 				"dueOn": "Due {{date}}";
 				"receiptHint": "Receipts can be downloaded once the payment is recorded by the finance office.";
 				"noPayments": "No payment recorded yet.";
+				"overdueSince": "Overdue since {{date}}";
 			};
 			"history": {
 				"title": "Financial history";

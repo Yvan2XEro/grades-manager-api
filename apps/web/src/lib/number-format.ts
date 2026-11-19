@@ -17,3 +17,15 @@ export function formatPercent(
 		maximumFractionDigits: fractionDigits,
 	}).format(ratio);
 }
+
+/** A grade or average in the UI language: "12,46" / "12.46"; "—" if missing. */
+export function formatDecimal(
+	value: number | null | undefined,
+	fractionDigits = 2,
+): string {
+	if (value === null || value === undefined || Number.isNaN(value)) return "—";
+	return new Intl.NumberFormat(locale(), {
+		minimumFractionDigits: fractionDigits,
+		maximumFractionDigits: fractionDigits,
+	}).format(value);
+}
