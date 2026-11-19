@@ -285,6 +285,79 @@ describe("deliberations router", () => {
 	});
 
 	// -----------------------------------------------------------------------
+	// Jury composition
+	// -----------------------------------------------------------------------
+
+	describe("jury composition", () => {
+		it("stores free-text president and members until the report is signed", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { academicYear, klass } = await setupDeliberationFixture();
+
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			const juryMembers = [
+				{ name: "Pr. NDONGO Paul", role: "president" },
+				{ name: "Dr. ATANGANA Marie", role: "member" },
+			];
+
+			// Editable while open and closed, not only in draft
+			await admin.deliberations.transition({ id: delib.id, action: "open" });
+			await admin.deliberations.update({ id: delib.id, juryMembers });
+			await admin.deliberations.transition({ id: delib.id, action: "close" });
+			await admin.deliberations.update({
+				id: delib.id,
+				juryMembers: [...juryMembers, { name: "M. EKANI", role: "member" }],
+			});
+
+			const fetched = await admin.deliberations.getById({ id: delib.id });
+			expect(fetched.juryMembers).toHaveLength(3);
+			expect(fetched.juryMembers?.[0]).toMatchObject({
+				name: "Pr. NDONGO Paul",
+				role: "president",
+			});
+
+			// The PV export reads the free-text president
+			const exported = await admin.deliberations.exportDiplomation({
+				id: delib.id,
+			});
+			expect(exported.jury.president?.name).toBe("Pr. NDONGO Paul");
+			expect(exported.jury.members.map((m) => m.role)).toEqual([
+				"Membre",
+				"Membre",
+			]);
+
+			await admin.deliberations.transition({ id: delib.id, action: "sign" });
+			await expect(
+				admin.deliberations.update({ id: delib.id, juryMembers }),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		});
+
+		it("refuses two presidents", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { academicYear, klass } = await setupDeliberationFixture();
+			const delib = await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+			await expect(
+				admin.deliberations.update({
+					id: delib.id,
+					juryMembers: [
+						{ name: "A", role: "president" },
+						{ name: "B", role: "president" },
+					],
+				}),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		});
+	});
+
+	// -----------------------------------------------------------------------
 	// Duplicate guard (JVL-7)
 	// -----------------------------------------------------------------------
 

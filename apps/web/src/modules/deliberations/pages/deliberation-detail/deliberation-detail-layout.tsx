@@ -13,6 +13,7 @@ import { PromoteAdmittedDialog } from "../../components/promote-admitted-dialog"
 import { useDeliberation } from "../../hooks/use-deliberation";
 import { DeliberationContext } from "../../hooks/use-deliberation-context";
 import { statusVariants } from "../../services/deliberation-status";
+import { JURY_PRESIDENT_ROLE } from "../../services/jury";
 import type { StudentResult } from "../../types";
 
 const TABS = [
@@ -126,6 +127,12 @@ export default function DeliberationDetail() {
 							).length
 						}
 						promoted={!!delib.promotion}
+						hasPresident={
+							!!delib.presidentId ||
+							(delib.juryMembers ?? []).some(
+								(m) => m.role === JURY_PRESIDENT_ROLE,
+							)
+						}
 						onPromoteAdmitted={promoteAdmitted}
 					/>
 				</div>

@@ -9,11 +9,19 @@ import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.t
 export type UeDecision = "ADM" | "CMP" | "AJ" | "INC";
 
 /** A member of the deliberation jury. */
+/**
+ * A jury member. Names are free text (external members have no account);
+ * `domainUserId` links a member to a staff profile when known. The role
+ * `"president"` marks the jury president when no `presidentId` is set.
+ */
 export type JuryMember = {
-	domainUserId: string;
+	domainUserId?: string | null;
 	name: string;
 	role: string;
 };
+
+/** Role of the jury president inside `juryMembers`. */
+export const JURY_PRESIDENT_ROLE = "president";
 
 /** Aggregate statistics computed after a deliberation run. */
 export type DeliberationStats = {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
+import { deliberationErrorMessage } from "../services/deliberation-errors";
 import type { DeliberationType } from "../services/deliberation-status";
 
 export type CreateDeliberationTab = "single" | "multi";
@@ -94,7 +95,7 @@ export function useCreateDeliberation(onDone: () => void) {
 			});
 			close();
 		},
-		onError: (err) => toast.error((err as Error).message),
+		onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 	});
 
 	const initAndComputeMutation = useMutation({
@@ -109,7 +110,7 @@ export function useCreateDeliberation(onDone: () => void) {
 			});
 			close();
 		},
-		onError: (err) => toast.error((err as Error).message),
+		onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 	});
 
 	const submitSingle = () =>

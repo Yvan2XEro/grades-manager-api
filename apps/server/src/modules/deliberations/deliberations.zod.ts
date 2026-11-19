@@ -11,9 +11,9 @@ export const idSchema = z.object({ id: z.string() });
 
 // Jury member schema
 const juryMemberSchema = z.object({
-	domainUserId: z.string(),
-	name: z.string(),
-	role: z.string(),
+	domainUserId: z.string().optional().nullable(),
+	name: z.string().trim().min(1).max(200),
+	role: z.string().trim().min(1).max(100),
 });
 
 // Deliberation CRUD
@@ -31,7 +31,13 @@ export const createDeliberationSchema = z.object({
 export const updateDeliberationSchema = z.object({
 	id: z.string(),
 	presidentId: z.string().optional(),
-	juryMembers: z.array(juryMemberSchema).optional(),
+	juryMembers: z
+		.array(juryMemberSchema)
+		.max(30)
+		.refine((m) => m.filter((x) => x.role === "president").length <= 1, {
+			message: "A jury has at most one president",
+		})
+		.optional(),
 	deliberationDate: z.string().datetime().optional(),
 	juryNumber: z.string().optional().nullable(),
 });

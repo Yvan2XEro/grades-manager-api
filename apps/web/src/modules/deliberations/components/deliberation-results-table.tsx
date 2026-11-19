@@ -10,12 +10,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { formatDecimal } from "@/lib/number-format";
 import {
 	decisionVariants,
 	incompleteUeCount,
 	isIncompleteResult,
 } from "../services/deliberation-status";
 import type { StudentResult, UeResult } from "../types";
+import { StudentResultSheet } from "./student-result-sheet";
 import { UeBadgesSummary } from "./ue-badges-summary";
 
 function StudentResultRow({
@@ -45,13 +47,20 @@ function StudentResultRow({
 				{r.rank ?? "—"}
 			</TableCell>
 			<TableCell>
-				<div className="font-medium">{name || "—"}</div>
+				<button
+					type="button"
+					className="text-left font-medium hover:text-primary hover:underline focus-visible:underline focus-visible:outline-none"
+					onClick={() => StudentResultSheet.call({ result: r })}
+					title={t("admin.deliberations.studentSheet.show", { name })}
+				>
+					{name || "—"}
+				</button>
 				<div className="font-mono text-muted-foreground text-xs">
 					{r.student?.registrationNumber ?? ""}
 				</div>
 			</TableCell>
 			<TableCell className="text-right font-mono">
-				{r.generalAverage != null ? Number(r.generalAverage).toFixed(2) : "—"}
+				{formatDecimal(r.generalAverage)}
 			</TableCell>
 			<TableCell className="text-right">
 				{t("admin.deliberations.detail.creditsFormat", {

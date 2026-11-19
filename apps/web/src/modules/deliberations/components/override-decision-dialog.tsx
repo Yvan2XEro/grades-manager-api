@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { useInvalidateDeliberation } from "../hooks/use-deliberation";
+import { deliberationErrorMessage } from "../services/deliberation-errors";
 import {
 	DELIBERATION_DECISIONS,
 	type DeliberationDecision,
@@ -39,6 +40,13 @@ interface Props {
 	deliberationId: string;
 	result: StudentResult;
 }
+
+/** Decisions whose effect deserves a one-line explanation. */
+const HELP_DECISIONS: readonly DeliberationDecision[] = [
+	"deferred",
+	"repeat",
+	"excluded",
+];
 
 const formatAverage = (value: number | null | undefined) =>
 	value != null ? Number(value).toFixed(2) : "—";
@@ -63,6 +71,13 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 		const facts = (result.factsSnapshot ?? {}) as {
 			partialAverage?: number | null;
 		};
+		const selectableDecisions = DELIBERATION_DECISIONS.filter(
+			(d) => d !== currentDecision,
+		);
+		// Help lines only for the decisions the jury can actually pick here
+		const helpDecisions = selectableDecisions.filter((d) =>
+			HELP_DECISIONS.includes(d),
+		);
 		const canRestore =
 			result.isOverridden &&
 			computedDecision !== "pending" &&
@@ -81,7 +96,7 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 				invalidateDeliberation();
 				call.end();
 			},
-			onError: (err) => toast.error((err as Error).message),
+			onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 		});
 
 		return (
@@ -217,9 +232,7 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{DELIBERATION_DECISIONS.filter(
-										(d) => d !== currentDecision,
-									).map((d) => (
+									{selectableDecisions.map((d) => (
 										<SelectItem key={d} value={d}>
 											{t(`admin.deliberations.decision.${d}`)}
 											{d === computedDecision &&
@@ -228,16 +241,28 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 									))}
 								</SelectContent>
 							</Select>
-							<ul className="space-y-0.5 text-muted-foreground text-xs">
-								<li>{t("admin.deliberations.override.help.deferred")}</li>
-								<li>{t("admin.deliberations.override.help.repeat")}</li>
-								<li>{t("admin.deliberations.override.help.excluded")}</li>
-							</ul>
+							{helpDecisions.length > 0 && (
+								<ul className="space-y-0.5 text-muted-foreground text-xs">
+									{helpDecisions.map((d) => (
+										<li key={d}>
+											{t(`admin.deliberations.override.help.${d}`)}
+										</li>
+									))}
+								</ul>
+							)}
 						</div>
 
 						<div className="space-y-2">
-							<Label>{t("admin.deliberations.override.reason")}</Label>
+							<Label htmlFor="override-reason">
+								{t("admin.deliberations.override.reason")}
+								<span className="text-destructive" aria-hidden="true">
+									*
+								</span>
+							</Label>
 							<Textarea
+								id="override-reason"
+								required
+								aria-required="true"
 								value={reason}
 								onChange={(e) => setReason(e.target.value)}
 								placeholder={t(
@@ -245,6 +270,9 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 								)}
 								rows={3}
 							/>
+							<p className="text-muted-foreground text-xs">
+								{t("admin.deliberations.override.reasonRequired")}
+							</p>
 						</div>
 					</DialogBody>
 

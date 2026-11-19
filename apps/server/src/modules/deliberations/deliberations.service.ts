@@ -19,13 +19,15 @@ import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.t
 import { getStudentPromotionFacts } from "../promotion-rules/student-facts.service";
 import { evaluateStudent } from "./deliberation-rules-engine";
 import * as repo from "./deliberations.repo";
-import type {
-	DeliberationCourseResult,
-	DeliberationFacts,
-	DeliberationStats,
-	DeliberationUeResult,
-	DiplomationExportData,
-	UeDecision,
+import {
+	type DeliberationCourseResult,
+	type DeliberationFacts,
+	type DeliberationStats,
+	type DeliberationUeResult,
+	type DiplomationExportData,
+	JURY_PRESIDENT_ROLE,
+	type JuryMember,
+	type UeDecision,
 } from "./deliberations.types";
 import type {
 	CreateDeliberationInput,
@@ -140,10 +142,12 @@ export async function update(
 			message: "Deliberation not found",
 		});
 	}
-	if (existing.status !== "draft") {
+	// The jury composition, number and date stay editable until the report
+	// (PV) is signed; a signed deliberation is final.
+	if (existing.status === "signed") {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: "Can only update deliberations in draft status",
+			message: "A signed deliberation cannot be modified",
 		});
 	}
 
@@ -1024,6 +1028,10 @@ export async function exportDiplomation(
 		await gradeScalesService.getForInstitution(institutionId);
 
 	const results = await repo.findStudentResultsByDeliberationId(input.id);
+	const juryMembers = (delib.juryMembers ?? []) as JuryMember[];
+	const freeTextPresident = juryMembers.find(
+		(m) => m.role === JURY_PRESIDENT_ROLE,
+	);
 
 	// Sort by rank
 	const sortedResults = [...results].sort(
@@ -1099,8 +1107,15 @@ export async function exportDiplomation(
 							: "",
 						role: "Président",
 					}
-				: null,
-			members: (delib.juryMembers as any[]) ?? [],
+				: freeTextPresident
+					? { name: freeTextPresident.name, role: "Président" }
+					: null,
+			members: juryMembers
+				.filter((m) => m.role !== JURY_PRESIDENT_ROLE)
+				.map((m) => ({
+					...m,
+					role: m.role === "member" ? "Membre" : m.role,
+				})),
 		},
 		students: sortedResults.map((r) => ({
 			rank: r.rank,
