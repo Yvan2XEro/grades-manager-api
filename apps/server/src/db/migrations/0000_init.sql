@@ -938,6 +938,21 @@ CREATE TABLE "institutions" (
 	CONSTRAINT "uq_institutions_code" UNIQUE("code")
 );
 --> statement-breakpoint
+CREATE TABLE "issued_documents" (
+	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
+	"student_id" text NOT NULL,
+	"kind" text NOT NULL,
+	"issue_year" integer NOT NULL,
+	"sequence" integer NOT NULL,
+	"reference_number" text NOT NULL,
+	"class_id" text,
+	"academic_year_id" text,
+	"issued_by" text,
+	"issued_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "uq_issued_documents_sequence" UNIQUE("institution_id","kind","issue_year","sequence")
+);
+--> statement-breakpoint
 CREATE TABLE "notifications" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"recipient_id" text,
@@ -1519,6 +1534,11 @@ ALTER TABLE "institutions" ADD CONSTRAINT "institutions_parent_institution_id_in
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_default_academic_year_id_academic_years_id_fk" FOREIGN KEY ("default_academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_registration_format_id_registration_number_formats_id_fk" FOREIGN KEY ("registration_format_id") REFERENCES "public"."registration_number_formats"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_issued_by_domain_users_id_fk" FOREIGN KEY ("issued_by") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_domain_users_id_fk" FOREIGN KEY ("recipient_id") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "program_export_templates" ADD CONSTRAINT "program_export_templates_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "program_export_templates" ADD CONSTRAINT "program_export_templates_program_id_programs_id_fk" FOREIGN KEY ("program_id") REFERENCES "public"."programs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -1725,6 +1745,7 @@ CREATE INDEX "idx_guardian_comm_events_student" ON "guardian_communication_event
 CREATE INDEX "idx_guardian_comm_events_institution" ON "guardian_communication_events" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_guardians_institution" ON "guardians" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_import_journal_job" ON "import_journal_entries" USING btree ("job_id","seq");--> statement-breakpoint
+CREATE INDEX "idx_issued_documents_student" ON "issued_documents" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "idx_notifications_recipient" ON "notifications" USING btree ("recipient_id");--> statement-breakpoint
 CREATE INDEX "idx_notifications_status" ON "notifications" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "idx_program_export_templates_program" ON "program_export_templates" USING btree ("program_id");--> statement-breakpoint

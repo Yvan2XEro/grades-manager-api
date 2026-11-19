@@ -1,5 +1,5 @@
 {
-  "id": "77e7ada3-d706-4cd4-938e-ee7f710e3e46",
+  "id": "b43c9e45-ede9-4a33-879b-901d12373bce",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10636,6 +10636,180 @@
           "nullsNotDistinct": false,
           "columns": [
             "code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.issued_documents": {
+      "name": "issued_documents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issue_year": {
+          "name": "issue_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reference_number": {
+          "name": "reference_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "class_id": {
+          "name": "class_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "academic_year_id": {
+          "name": "academic_year_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "issued_by": {
+          "name": "issued_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "issued_at": {
+          "name": "issued_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_issued_documents_student": {
+          "name": "idx_issued_documents_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "issued_documents_institution_id_institutions_id_fk": {
+          "name": "issued_documents_institution_id_institutions_id_fk",
+          "tableFrom": "issued_documents",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "issued_documents_student_id_students_id_fk": {
+          "name": "issued_documents_student_id_students_id_fk",
+          "tableFrom": "issued_documents",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "issued_documents_class_id_classes_id_fk": {
+          "name": "issued_documents_class_id_classes_id_fk",
+          "tableFrom": "issued_documents",
+          "tableTo": "classes",
+          "columnsFrom": [
+            "class_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "issued_documents_academic_year_id_academic_years_id_fk": {
+          "name": "issued_documents_academic_year_id_academic_years_id_fk",
+          "tableFrom": "issued_documents",
+          "tableTo": "academic_years",
+          "columnsFrom": [
+            "academic_year_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "issued_documents_issued_by_domain_users_id_fk": {
+          "name": "issued_documents_issued_by_domain_users_id_fk",
+          "tableFrom": "issued_documents",
+          "tableTo": "domain_users",
+          "columnsFrom": [
+            "issued_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_issued_documents_sequence": {
+          "name": "uq_issued_documents_sequence",
+          "nullsNotDistinct": false,
+          "columns": [
+            "institution_id",
+            "kind",
+            "issue_year",
+            "sequence"
           ]
         }
       },
