@@ -2242,7 +2242,8 @@
         "statusSuccess": "Academic year status updated",
         "statusError": "Could not update the academic year status",
         "createNextYearSuccess": "Next year created: {{name}}",
-        "createNextYearError": "Failed to create next year"
+        "createNextYearError": "Failed to create next year",
+        "yearExists": "This academic year already exists. Open it from the list of years."
       },
       "validation": {
         "startDate": "Start date is required",

@@ -1106,7 +1106,8 @@
         "statusSuccess": "Statut de l'année académique mis à jour",
         "statusError": "Impossible de mettre à jour le statut de l'année académique",
         "createNextYearSuccess": "Année suivante créée : {{name}}",
-        "createNextYearError": "Erreur lors de la création de l'année suivante"
+        "createNextYearError": "Erreur lors de la création de l'année suivante",
+        "yearExists": "Cette année académique existe déjà. Ouvrez-la depuis la liste des années."
       },
       "validation": {
         "startDate": "La date de début est obligatoire",

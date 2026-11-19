@@ -9,10 +9,29 @@ type CreateInput = Omit<Parameters<typeof repo.create>[0], "institutionId">;
 type UpdateInput = Partial<CreateInput>;
 type ListInput = Parameters<typeof repo.list>[1];
 
+/** Year names are unique per institution; a duplicate is a CONFLICT, not a 500. */
+async function assertNameFree(
+	name: string,
+	institutionId: string,
+	exceptId?: string,
+) {
+	const taken = await db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.institutionId, institutionId),
+			eq(schema.academicYears.name, name),
+		),
+		columns: { id: true },
+	});
+	if (taken && taken.id !== exceptId) {
+		throw conflict(`The academic year ${name} already exists`);
+	}
+}
+
 export async function createAcademicYear(
 	data: CreateInput,
 	institutionId: string,
 ) {
+	await assertNameFree(data.name, institutionId);
 	return repo.create({ ...data, institutionId });
 }
 
@@ -23,6 +42,7 @@ export async function updateAcademicYear(
 ) {
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
+	if (data.name) await assertNameFree(data.name, institutionId, id);
 	return repo.update(id, institutionId, data);
 }
 
@@ -81,6 +101,7 @@ export async function createNextYear(
 	const startY = nextStart.getFullYear();
 	const endY = nextEnd.getFullYear();
 	const name = `${startY}-${endY}`;
+	await assertNameFree(name, institutionId);
 
 	return repo.create({
 		institutionId,

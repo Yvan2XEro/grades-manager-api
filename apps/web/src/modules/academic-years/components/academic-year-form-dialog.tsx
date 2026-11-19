@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
+import { yearSaveErrorMessage } from "../hooks/use-academic-years";
 
 export type AcademicYearFormResult = RouterOutputs["academicYears"]["create"];
 
@@ -123,13 +124,15 @@ export const AcademicYearFormDialog = createCallable<
 			);
 			call.end(saved as AcademicYearFormResult);
 		} catch (error) {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: year
+			toast.error(
+				yearSaveErrorMessage(
+					error,
+					year
 						? t("admin.academicYears.toast.updateError")
-						: t("admin.academicYears.toast.createError");
-			toast.error(message);
+						: t("admin.academicYears.toast.createError"),
+					t,
+				),
+			);
 		}
 	});
 

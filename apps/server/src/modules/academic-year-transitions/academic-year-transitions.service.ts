@@ -812,9 +812,20 @@ export async function execute(
 					),
 				});
 				if (duplicate) {
-					throw new Error(
-						`Student ${item.studentId} already has a target-year enrollment`,
-					);
+					// The student was placed in the target year since the plan was
+					// drafted (promotion from the jury page, or by hand): keep that
+					// placement instead of failing the whole plan.
+					await tx
+						.update(schema.academicYearTransitionItems)
+						.set({
+							status: "succeeded",
+							targetEnrollmentId: duplicate.id,
+							finalTargetClassId: duplicate.classId,
+							processedAt: new Date(),
+							updatedAt: new Date(),
+						})
+						.where(eq(schema.academicYearTransitionItems.id, item.id));
+					continue;
 				}
 				await tx
 					.update(schema.enrollments)

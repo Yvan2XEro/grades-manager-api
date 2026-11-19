@@ -1258,7 +1258,20 @@ export async function promoteAdmitted(
 				message: "Target class not found",
 			});
 		}
-		if (targetClass.academicYear === delib.academicYearId) {
+		const [fromYear, toYear] = await Promise.all(
+			[delib.academicYearId, targetClass.academicYear].map((id) =>
+				db.query.academicYears.findFirst({
+					where: eq(schema.academicYears.id, id),
+					columns: { startDate: true },
+				}),
+			),
+		);
+		if (
+			targetClass.academicYear === delib.academicYearId ||
+			(fromYear &&
+				toYear &&
+				new Date(toYear.startDate) <= new Date(fromYear.startDate))
+		) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message:

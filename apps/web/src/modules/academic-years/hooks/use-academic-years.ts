@@ -6,6 +6,20 @@ import { trpc, trpcClient } from "@/utils/trpc";
 const errorMessage = (error: unknown, fallback: string) =>
 	error instanceof Error && error.message ? error.message : fallback;
 
+/**
+ * Message for a failed create / update / create-next: a year whose name is
+ * already used comes back as CONFLICT and is explained in the UI language.
+ */
+export function yearSaveErrorMessage(
+	error: unknown,
+	fallback: string,
+	t: (key: "admin.academicYears.toast.yearExists") => string,
+) {
+	const code = (error as { data?: { code?: string } } | null)?.data?.code;
+	if (code === "CONFLICT") return t("admin.academicYears.toast.yearExists");
+	return errorMessage(error, fallback);
+}
+
 /** One page of academic years. */
 export function useAcademicYears({
 	page,
@@ -93,7 +107,11 @@ export function useCreateNextAcademicYear(
 		},
 		onError: (error) =>
 			toast.error(
-				errorMessage(error, t("admin.academicYears.toast.createNextYearError")),
+				yearSaveErrorMessage(
+					error,
+					t("admin.academicYears.toast.createNextYearError"),
+					t,
+				),
 			),
 	});
 }
