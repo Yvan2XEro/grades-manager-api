@@ -1,7 +1,7 @@
 import {
-	adminProcedure,
 	router as createRouter,
-	protectedProcedure,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
 } from "../../lib/trpc";
 import * as service from "./courses.service";
 import {
@@ -16,22 +16,22 @@ import {
 } from "./courses.zod";
 
 export const router = createRouter({
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(baseSchema)
 		.mutation(({ input, ctx }) =>
 			service.createCourse(input, ctx.institution.id),
 		),
-	update: adminProcedure
+	update: tenantAdminProcedure
 		.input(updateSchema)
 		.mutation(({ input, ctx }) =>
 			service.updateCourse(input.id, ctx.institution.id, input),
 		),
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(idSchema)
 		.mutation(({ input, ctx }) =>
 			service.deleteCourse(input.id, ctx.institution.id),
 		),
-	assignDefaultTeacher: adminProcedure
+	assignDefaultTeacher: tenantAdminProcedure
 		.input(assignSchema)
 		.mutation(({ input, ctx }) =>
 			service.assignDefaultTeacher(
@@ -40,25 +40,25 @@ export const router = createRouter({
 				input.teacherId,
 			),
 		),
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(listSchema)
 		.query(({ input, ctx }) => service.listCourses(input, ctx.institution.id)),
-	listPaged: protectedProcedure
+	listPaged: tenantProtectedProcedure
 		.input(listPagedSchema)
 		.query(({ ctx, input }) =>
 			service.listCoursesPaged(input, ctx.institution.id),
 		),
-	search: protectedProcedure
+	search: tenantProtectedProcedure
 		.input(searchSchema)
 		.query(({ input, ctx }) =>
 			service.searchCourses(input, ctx.institution.id),
 		),
-	getById: protectedProcedure
+	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ input, ctx }) =>
 			service.getCourseById(input.id, ctx.institution.id),
 		),
-	getByCode: protectedProcedure
+	getByCode: tenantProtectedProcedure
 		.input(codeSchema)
 		.query(({ input, ctx }) =>
 			service.getCourseByCode(input.code, input.programId, ctx.institution.id),

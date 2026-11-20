@@ -25,8 +25,10 @@ export async function deleteExamType(id: string, institutionId: string) {
 	await repo.remove(id, institutionId);
 }
 
-export function getExamTypeById(id: string, institutionId: string) {
-	return repo.findById(id, institutionId);
+export async function getExamTypeById(id: string, institutionId: string) {
+	const examType = await repo.findById(id, institutionId);
+	if (!examType) throw new TRPCError({ code: "NOT_FOUND" });
+	return examType;
 }
 
 export function listExamTypes(opts: ListInput, institutionId: string) {

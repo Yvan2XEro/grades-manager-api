@@ -35,12 +35,13 @@ describe("institutions router", () => {
 		});
 		expect(updated?.code).toBe("SGN");
 		expect(updated?.nameEn).toBe("Demo Institute");
-		// get() returns the first institution, which may be any of them
+		// get() returns the caller's own institution
 		const read = await admin.institutions.get();
-		expect(read).toBeTruthy();
+		expect(read?.id).toBe(asAdmin().institution.id);
+		expect(read?.code).toBe("SGN");
 	});
 
-	it("stores organization linkage when provided", async () => {
+	it("never rewrites the organization linkage", async () => {
 		const org = await createOrganization({
 			name: "Tenant",
 			slug: "tenant",
@@ -55,7 +56,8 @@ describe("institutions router", () => {
 			addressEn: "Yaounde",
 			organizationId: org.id,
 		});
-		expect(saved?.organizationId).toBe(org.id);
+		expect(saved?.organizationId).toBe(asAdmin().institution.organizationId);
+		expect(saved?.organizationId).not.toBe(org.id);
 	});
 
 	it("derives academic year and registration format from active related records", async () => {

@@ -2,15 +2,10 @@ import { and, count, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
-async function getContextOrganizationId(institutionId: string) {
-	const [contextInst] = await db
-		.select({ organizationId: schema.institutions.organizationId })
-		.from(schema.institutions)
-		.where(eq(schema.institutions.id, institutionId))
-		.limit(1);
-
-	return contextInst?.organizationId ?? null;
-}
+/*
+ * Study cycles (and their levels) are scoped to the institution itself, not
+ * to its organization: several institutions may share one organization.
+ */
 
 export async function createCycle(data: schema.NewStudyCycle) {
 	const [cycle] = await db.insert(schema.studyCycles).values(data).returning();
@@ -43,24 +38,13 @@ export async function deleteCycle(id: string, institutionId: string) {
 }
 
 export async function findCycleById(id: string, institutionId: string) {
-	const organizationId = await getContextOrganizationId(institutionId);
-	if (!organizationId) return null;
-
-	const result = await db
-		.select()
-		.from(schema.studyCycles)
-		.innerJoin(
-			schema.institutions,
-			eq(schema.studyCycles.institutionId, schema.institutions.id),
-		)
-		.where(
-			and(
-				eq(schema.studyCycles.id, id),
-				eq(schema.institutions.organizationId, organizationId),
-			),
-		)
-		.limit(1);
-	return result[0]?.study_cycles ?? null;
+	const cycle = await db.query.studyCycles.findFirst({
+		where: and(
+			eq(schema.studyCycles.id, id),
+			eq(schema.studyCycles.institutionId, institutionId),
+		),
+	});
+	return cycle ?? null;
 }
 
 export async function listCycles(
@@ -71,12 +55,9 @@ export async function listCycles(
 		limit?: number;
 	},
 ) {
-	const organizationId = await getContextOrganizationId(institutionId);
-	if (!organizationId) return { items: [], nextCursor: undefined };
-
 	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
 	const conditions = [
-		eq(schema.institutions.organizationId, organizationId),
+		eq(schema.studyCycles.institutionId, institutionId),
 		opts.institutionId
 			? eq(schema.studyCycles.institutionId, opts.institutionId)
 			: undefined,
@@ -101,10 +82,6 @@ export async function listCycles(
 			createdAt: schema.studyCycles.createdAt,
 		})
 		.from(schema.studyCycles)
-		.innerJoin(
-			schema.institutions,
-			eq(schema.studyCycles.institutionId, schema.institutions.id),
-		)
 		.where(condition)
 		.orderBy(schema.studyCycles.id)
 		.limit(limit + 1);
@@ -184,9 +161,6 @@ export async function deleteLevel(id: string, institutionId: string) {
 }
 
 export async function findLevelById(id: string, institutionId: string) {
-	const organizationId = await getContextOrganizationId(institutionId);
-	if (!organizationId) return null;
-
 	const result = await db
 		.select()
 		.from(schema.cycleLevels)
@@ -194,14 +168,10 @@ export async function findLevelById(id: string, institutionId: string) {
 			schema.studyCycles,
 			eq(schema.cycleLevels.cycleId, schema.studyCycles.id),
 		)
-		.innerJoin(
-			schema.institutions,
-			eq(schema.studyCycles.institutionId, schema.institutions.id),
-		)
 		.where(
 			and(
 				eq(schema.cycleLevels.id, id),
-				eq(schema.institutions.organizationId, organizationId),
+				eq(schema.studyCycles.institutionId, institutionId),
 			),
 		)
 		.limit(1);
@@ -209,9 +179,6 @@ export async function findLevelById(id: string, institutionId: string) {
 }
 
 export async function listLevels(cycleId: string, institutionId: string) {
-	const organizationId = await getContextOrganizationId(institutionId);
-	if (!organizationId) return [];
-
 	const rows = await db
 		.select({
 			id: schema.cycleLevels.id,
@@ -226,14 +193,10 @@ export async function listLevels(cycleId: string, institutionId: string) {
 			schema.studyCycles,
 			eq(schema.cycleLevels.cycleId, schema.studyCycles.id),
 		)
-		.innerJoin(
-			schema.institutions,
-			eq(schema.studyCycles.institutionId, schema.institutions.id),
-		)
 		.where(
 			and(
 				eq(schema.cycleLevels.cycleId, cycleId),
-				eq(schema.institutions.organizationId, organizationId),
+				eq(schema.studyCycles.institutionId, institutionId),
 			),
 		)
 		.orderBy(schema.cycleLevels.orderIndex);

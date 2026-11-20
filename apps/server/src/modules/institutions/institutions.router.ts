@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "@/lib/trpc";
 import * as service from "./institutions.service";
 import {
 	createInstitutionSchema,
@@ -8,22 +12,37 @@ import {
 	upsertInstitutionSchema,
 } from "./institutions.zod";
 
+/* Every procedure is scoped to the caller's organization (see the service). */
 export const institutionsRouter = router({
-	get: protectedProcedure.query(() => service.getInstitution()),
-	getById: protectedProcedure
+	get: tenantProtectedProcedure.query(({ ctx }) =>
+		service.getInstitution(ctx.institution),
+	),
+	getById: tenantProtectedProcedure
 		.input(z.object({ id: z.string().min(1) }))
-		.query(({ input }) => service.getInstitutionById(input.id)),
-	list: protectedProcedure.query(() => service.listInstitutions()),
-	upsert: adminProcedure
+		.query(({ ctx, input }) =>
+			service.getInstitutionById(input.id, ctx.institution),
+		),
+	list: tenantProtectedProcedure.query(({ ctx }) =>
+		service.listInstitutions(ctx.institution),
+	),
+	upsert: tenantAdminProcedure
 		.input(upsertInstitutionSchema)
-		.mutation(({ input }) => service.upsertInstitution(input)),
-	create: adminProcedure
+		.mutation(({ ctx, input }) =>
+			service.upsertInstitution(input, ctx.institution),
+		),
+	create: tenantAdminProcedure
 		.input(createInstitutionSchema)
-		.mutation(({ input }) => service.createInstitution(input)),
-	update: adminProcedure
+		.mutation(({ ctx, input }) =>
+			service.createInstitution(input, ctx.institution),
+		),
+	update: tenantAdminProcedure
 		.input(updateInstitutionSchema)
-		.mutation(({ input }) => service.updateInstitution(input.id, input.data)),
-	delete: adminProcedure
+		.mutation(({ ctx, input }) =>
+			service.updateInstitution(input.id, input.data, ctx.institution),
+		),
+	delete: tenantAdminProcedure
 		.input(deleteInstitutionSchema)
-		.mutation(({ input }) => service.deleteInstitution(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteInstitution(input.id, ctx.institution),
+		),
 });

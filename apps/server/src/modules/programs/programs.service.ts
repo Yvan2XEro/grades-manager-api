@@ -3,6 +3,11 @@ import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { normalizeCode, slugify } from "@/lib/strings";
+import {
+	requireCenterInInstitution,
+	requireExportTemplatesInInstitution,
+	requireStudyCycleInInstitution,
+} from "../_shared/tenant-guards";
 import * as programOptionsRepo from "../program-options/program-options.repo";
 import * as repo from "./programs.repo";
 
@@ -34,7 +39,22 @@ function normalizeCenterFields<
 	return next;
 }
 
+/** Every id a program write refers to must belong to the institution. */
+async function assertReferencesOwned(data: UpdateInput, institutionId: string) {
+	if (data.cycleId)
+		await requireStudyCycleInInstitution(data.cycleId, institutionId);
+	if (data.centerId)
+		await requireCenterInInstitution(data.centerId, institutionId);
+	if (data.exportTemplates?.length) {
+		await requireExportTemplatesInInstitution(
+			data.exportTemplates.map((t) => t.templateId),
+			institutionId,
+		);
+	}
+}
+
 export async function createProgram(data: CreateInput, institutionId: string) {
+	await assertReferencesOwned(data, institutionId);
 	const slug = slugify(data.name);
 	const { exportTemplates, ...programData } = normalizeCenterFields(data);
 	const program = await repo.create({
@@ -63,6 +83,7 @@ export async function updateProgram(
 ) {
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+	await assertReferencesOwned(data, institutionId);
 	const { exportTemplates, ...rest } = normalizeCenterFields(data);
 	const payload = {
 		...rest,
@@ -83,6 +104,10 @@ export async function setProgramExportTemplates(
 ) {
 	const existing = await repo.findById(programId, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+	await requireExportTemplatesInInstitution(
+		templates.map((t) => t.templateId),
+		institutionId,
+	);
 	return repo.setExportTemplates(programId, institutionId, templates);
 }
 
@@ -96,6 +121,8 @@ export async function listProgramExportTemplates(
 }
 
 export async function deleteProgram(id: string, institutionId: string) {
+	const existing = await repo.findById(id, institutionId);
+	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
 	await repo.remove(id, institutionId);
 }
 

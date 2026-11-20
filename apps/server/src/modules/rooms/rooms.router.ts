@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "@/lib/trpc";
 import * as service from "./rooms.service";
 import {
 	createRoomSchema,
@@ -8,23 +12,23 @@ import {
 } from "./rooms.zod";
 
 export const roomsRouter = router({
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(listRoomsSchema)
 		.query(({ ctx, input }) => service.listRooms(ctx.institution.id, input)),
 
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(createRoomSchema)
 		.mutation(({ ctx, input }) =>
 			service.createRoom(ctx.institution.id, input),
 		),
 
-	update: adminProcedure
+	update: tenantAdminProcedure
 		.input(updateRoomSchema)
 		.mutation(({ ctx, input }) =>
 			service.updateRoom(ctx.institution.id, input),
 		),
 
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(deleteRoomSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteRoom(input.id, ctx.institution.id),

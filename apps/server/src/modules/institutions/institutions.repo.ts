@@ -2,32 +2,6 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
-export async function getFirst() {
-	// Prefer the institution explicitly marked as main
-	const [main] = await db
-		.select()
-		.from(schema.institutions)
-		.where(eq(schema.institutions.isMain, true))
-		.limit(1);
-	if (main) return main;
-
-	// Fallback: oldest institution (most likely created first via InstitutionSettings)
-	// and auto-promote it so subsequent calls never reach this branch again
-	const [oldest] = await db
-		.select()
-		.from(schema.institutions)
-		.orderBy(asc(schema.institutions.createdAt))
-		.limit(1);
-	if (!oldest) return null;
-
-	await db
-		.update(schema.institutions)
-		.set({ isMain: true })
-		.where(eq(schema.institutions.id, oldest.id));
-
-	return { ...oldest, isMain: true };
-}
-
 export async function getById(id: string) {
 	const [institution] = await db
 		.select()
@@ -36,8 +10,12 @@ export async function getById(id: string) {
 	return institution ?? null;
 }
 
-export async function list() {
-	return db.select().from(schema.institutions);
+export async function listByOrganization(organizationId: string) {
+	return db
+		.select()
+		.from(schema.institutions)
+		.where(eq(schema.institutions.organizationId, organizationId))
+		.orderBy(asc(schema.institutions.createdAt));
 }
 
 export async function create(data: schema.NewInstitution) {
