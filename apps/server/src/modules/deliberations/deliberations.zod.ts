@@ -139,14 +139,16 @@ export const createDeliberationRuleSchema = z.object({
 export const updateDeliberationRuleSchema = z.object({
 	id: z.string(),
 	name: z.string().min(1).optional(),
-	description: z.string().optional(),
+	description: z.string().nullable().optional(),
 	category: z
 		.enum(deliberationRuleCategories as unknown as [string, ...string[]])
 		.optional(),
-	programId: z.string().optional(),
-	cycleLevelId: z.string().optional(),
+	/** `null` clears the scope: the rule then applies to every program. */
+	programId: z.string().nullable().optional(),
+	cycleLevelId: z.string().nullable().optional(),
 	deliberationType: z
 		.enum(deliberationTypes as unknown as [string, ...string[]])
+		.nullable()
 		.optional(),
 	priority: z.number().int().optional(),
 	ruleset: z.record(z.string(), z.unknown()).optional(),

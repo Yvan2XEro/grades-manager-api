@@ -372,4 +372,48 @@ describe("a jury decided by the institution's rules", () => {
 			}),
 		).rejects.toHaveProperty("code", "BAD_REQUEST");
 	});
+
+	it("clears a rule's scope and description when updated with null", async () => {
+		const admin = await adminContext();
+		const api = caller(admin);
+		const program = await createProgram({
+			institutionId: admin.institution.id,
+		});
+		const cycle = await createStudyCycle({
+			institutionId: admin.institution.id,
+		});
+		const level = await createCycleLevel({ cycleId: cycle.id });
+		const rule = await api.deliberations.rules.create({
+			name: "Scoped",
+			description: "Only for one level",
+			category: "repeat",
+			decision: "repeat",
+			programId: program.id,
+			cycleLevelId: level.id,
+			deliberationType: "retake",
+			ruleset: ruleset([cond("overallAverage", "lessThan", 7)], "low"),
+		});
+		expect(rule.programId).toBe(program.id);
+		expect(rule.deliberationType).toBe("retake");
+
+		const updated = await api.deliberations.rules.update({
+			id: rule.id,
+			programId: null,
+			cycleLevelId: null,
+			deliberationType: null,
+			description: null,
+		});
+		expect(updated.programId).toBeNull();
+		expect(updated.cycleLevelId).toBeNull();
+		expect(updated.deliberationType).toBeNull();
+		expect(updated.description).toBeNull();
+
+		// Omitted fields stay as they are.
+		const renamed = await api.deliberations.rules.update({
+			id: rule.id,
+			name: "Scoped (renamed)",
+		});
+		expect(renamed.priority).toBe(rule.priority);
+		expect(renamed.programId).toBeNull();
+	});
 });
