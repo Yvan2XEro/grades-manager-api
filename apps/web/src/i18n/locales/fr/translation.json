@@ -3779,7 +3779,11 @@
         "reason": "Expliquez pourquoi cette correction est valide"
       },
       "scope": {
-        "allClasses": "Toutes les classes de l'année source"
+        "allClasses": "Toutes les classes de l'année source",
+        "classCount_one": "{{count}} classe",
+        "classCount_other": "{{count}} classes",
+        "search": "Rechercher une classe",
+        "hint": "Cochez une ou plusieurs classes, ou laissez vide pour toute l'année. Plusieurs plans peuvent coexister pour les mêmes années tant qu'ils portent sur des classes différentes."
       },
       "deferred": {
         "review": "Envoyer les ajournés en revue",
@@ -3904,11 +3908,12 @@
         "signed": "Signée",
         "missing": "Manquante",
         "empty": "Aucune donnée — le plan n'a pas encore d'éléments.",
-        "enrollments": "Étudiants inscrits",
+        "enrollments": "Étudiants inscrits dans l'année source",
         "incompleteCourses": "Inscriptions aux cours en cours",
         "preflightTitle": "Diagnostic avant lancement",
         "signedDelibs": "Délibérations signées",
-        "unlockedExams": "Examens approuvés non verrouillés"
+        "unlockedExams": "Examens approuvés non verrouillés",
+        "toMove": "Encore à placer (pas encore promus, redoublants ou diplômés)"
       },
       "audit": {
         "comingSoon": "Journal d'audit — bientôt disponible.",
@@ -3940,9 +3945,8 @@
         "createClassError": "La classe n'a pas pu être créée.",
         "actionError": "L'action a échoué. Rechargez le plan et réessayez.",
         "submitBlocked": "Certains étudiants attendent encore une décision avant la soumission.",
-        "planExists": "Un plan existe déjà pour ces deux années. Ouvrez-le depuis la liste, ou annulez-le pour recommencer."
+        "planOverlap": "{{classes}} font déjà partie d'un autre plan en cours pour ces années. Retirez-les ou annulez ce plan."
       },
-      "duplicateWarning": "Un plan actif existe déjà pour cette paire d'années.",
       "duplicateWarningLink": "Voir le plan existant",
       "step": {
         "draft": "Brouillon",
@@ -3953,15 +3957,42 @@
       },
       "howTo": {
         "title": "Lequel utiliser ?",
-        "transition": "Le passage d'année (cette page) est la voie normale : un plan pour toutes les classes de l'année, qui traite admis, redoublants, diplômés et exclus, avec revue et approbation avant exécution.",
-        "shortcut": "« Promouvoir les admis » sur une délibération clôturée est un raccourci pour une seule classe : il n'inscrit que ses étudiants admis et compensés au niveau suivant. Un étudiant déjà inscrit dans l'année cible n'est jamais inscrit deux fois."
+        "transition": "Le passage d'année (cette page) traite des classes entières : choisissez les années et une ou plusieurs classes, revoyez le devenir de chaque étudiant (promu, redoublant, diplômé — éventuellement vers le cycle suivant — ou exclu), puis soumettez, approuvez et exécutez. Plusieurs plans peuvent coexister pour les mêmes années sur des classes différentes.",
+        "shortcut": "« Promouvoir et réinscrire » sur un jury clôturé fait la même chose pour cette seule classe, sans approbation : les admis passent au niveau suivant (ou sont diplômés au dernier niveau), les redoublants sont réinscrits au même niveau, les exclus quittent l'établissement. Un étudiant déjà inscrit dans l'année cible n'est jamais inscrit deux fois, et une classe traitée ainsi n'a plus besoin de plan."
       },
       "submitBlockedReason_one": "Soumission impossible pour l'instant : {{count}} étudiant attend encore une décision. Affichez les étudiants bloqués et résolvez-les ; plusieurs peuvent être résolus en une fois.",
       "submitBlockedReason_other": "Soumission impossible pour l'instant : {{count}} étudiants attendent encore une décision. Affichez les étudiants bloqués et résolvez-les ; plusieurs peuvent être résolus en une fois.",
       "cancelConfirm": {
         "title": "Annuler ce plan ?",
         "message": "Le plan et les décisions prises dedans sont abandonnés ; aucun étudiant n'est déplacé. Un nouveau plan pourra ensuite être préparé pour ces années.",
-        "confirm": "Annuler le plan"
+        "confirm": "Annuler le plan",
+        "keep": "Garder le plan"
+      },
+      "overlapWarning": "{{classes}} font déjà partie du plan du {{date}} ({{status}}). Retirez ces classes du périmètre, ou annulez ce plan.",
+      "otherPlansHint_one": "{{count}} autre plan est en cours pour ces années, sur d'autres classes.",
+      "otherPlansHint_other": "{{count}} autres plans sont en cours pour ces années, sur d'autres classes.",
+      "submitConfirm": {
+        "title": "Soumettre le plan pour approbation ?",
+        "message_one": "Le plan pour {{count}} étudiant est figé et envoyé pour approbation. Personne n'est encore déplacé ; il peut toujours être annulé.",
+        "message_other": "Le plan pour {{count}} étudiants est figé et envoyé pour approbation. Personne n'est encore déplacé ; il peut toujours être annulé."
+      },
+      "approveConfirm": {
+        "title": "Approuver le plan ?",
+        "message": "Vous validez le devenir de chaque étudiant. Le plan pourra ensuite être exécuté ; personne n'est déplacé avant."
+      },
+      "executeConfirm": {
+        "title": "Exécuter le plan vers {{target}} ?",
+        "message_one": "{{count}} étudiant sera placé pour {{target}} :",
+        "message_other": "{{count}} étudiants seront placés pour {{target}} :",
+        "promote_one": "{{count}} promu au niveau suivant",
+        "promote_other": "{{count}} promus au niveau suivant",
+        "repeat_one": "{{count}} redoublant",
+        "repeat_other": "{{count}} redoublants",
+        "graduate_one": "{{count}} diplômé(e) (inscrit(e) dans le cycle suivant si une classe a été choisie)",
+        "graduate_other": "{{count}} diplômé(e)s (inscrit(e)s dans le cycle suivant si une classe a été choisie)",
+        "exclude_one": "{{count}} exclu(e) : inscription clôturée, pas de nouvelle inscription",
+        "exclude_other": "{{count}} exclu(e)s : inscriptions clôturées, pas de nouvelle inscription",
+        "final": "Les inscriptions de l'année source sont clôturées et les nouvelles créées. Cette opération ne peut pas être annulée d'ici."
       }
     },
     "gradeScale": {

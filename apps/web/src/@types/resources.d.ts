@@ -4870,7 +4870,11 @@ interface Resources {
 					"reason": "Explain why this override is correct";
 				};
 				"scope": {
-					"allClasses": "All classes in source year";
+					"allClasses": "All classes of the source year";
+					"classCount_one": "{{count}} class";
+					"classCount_other": "{{count}} classes";
+					"search": "Search a class";
+					"hint": "Tick one or more classes, or leave empty for the whole year. Several plans can run for the same years as long as they cover different classes.";
 				};
 				"deferred": {
 					"review": "Send deferred students to review";
@@ -4995,11 +4999,12 @@ interface Resources {
 					"signed": "Signed";
 					"missing": "Missing";
 					"empty": "No class data — plan has no items yet.";
-					"enrollments": "Enrolled students";
+					"enrollments": "Students enrolled in the source year";
 					"incompleteCourses": "Course enrollments still in progress";
 					"preflightTitle": "Pre-launch check";
 					"signedDelibs": "Signed deliberations";
 					"unlockedExams": "Approved exams not locked";
+					"toMove": "Still to place (not yet promoted, repeating or graduated)";
 				};
 				"audit": {
 					"comingSoon": "Audit trail — coming soon.";
@@ -5031,9 +5036,8 @@ interface Resources {
 					"createClassError": "The class could not be created.";
 					"actionError": "The action failed. Reload the plan and try again.";
 					"submitBlocked": "Some students still need a decision before submission.";
-					"planExists": "A plan already exists for these two years. Open it from the list, or cancel it to start again.";
+					"planOverlap": "{{classes}} already belong to another plan in progress for these years. Leave them out or cancel that plan.";
 				};
-				"duplicateWarning": "An active plan already exists for this year pair.";
 				"duplicateWarningLink": "View existing plan";
 				"step": {
 					"draft": "Draft";
@@ -5044,8 +5048,8 @@ interface Resources {
 				};
 				"howTo": {
 					"title": "Which one to use?";
-					"transition": "Year transition (this page) is the standard way: one plan for every class of the year, covering admitted, repeating, graduating and excluded students, with review and approval before execution.";
-					"shortcut": "“Promote admitted” on a closed deliberation is a shortcut for one class: it only enrolls its admitted and compensated students in the next level. Students already enrolled in the target year are never enrolled twice.";
+					"transition": "The year transition (this page) moves whole classes at once: pick the years and one or more classes, review each student's outcome (promoted, repeating, graduated — possibly into the next cycle — or excluded), then submit, approve and execute. Several plans can run for the same years on different classes.";
+					"shortcut": "\"Promote and re-enrol\" on a closed jury does the same for that one class, without approval: admitted students go to the next level (or graduate on the last level), repeaters are re-enrolled in the same level, excluded students leave. A student already enrolled in the target year is never enrolled twice, and a class handled there no longer needs a plan.";
 				};
 				"submitBlockedReason_one": "Submission is not possible yet: {{count}} student still needs a decision. Check the blocked students and resolve them; several can be resolved at once.";
 				"submitBlockedReason_other": "Submission is not possible yet: {{count}} students still need a decision. Check the blocked students and resolve them; several can be resolved at once.";
@@ -5053,6 +5057,33 @@ interface Resources {
 					"title": "Cancel this plan?";
 					"message": "The plan and the decisions made in it are dropped; no student is moved. A new plan can then be prepared for these years.";
 					"confirm": "Cancel the plan";
+					"keep": "Keep the plan";
+				};
+				"overlapWarning": "{{classes}} already belong to the plan of {{date}} ({{status}}). Leave these classes out, or cancel that plan.";
+				"otherPlansHint_one": "{{count}} other plan is in progress for these years, on other classes.";
+				"otherPlansHint_other": "{{count}} other plans are in progress for these years, on other classes.";
+				"submitConfirm": {
+					"title": "Submit the plan for approval?";
+					"message_one": "The plan for {{count}} student is frozen and sent for approval. Nobody is moved yet; it can still be cancelled.";
+					"message_other": "The plan for {{count}} students is frozen and sent for approval. Nobody is moved yet; it can still be cancelled.";
+				};
+				"approveConfirm": {
+					"title": "Approve the plan?";
+					"message": "You validate every student's outcome. The plan can then be executed; nobody is moved before that.";
+				};
+				"executeConfirm": {
+					"title": "Execute the plan into {{target}}?";
+					"message_one": "{{count}} student will be placed for {{target}}:";
+					"message_other": "{{count}} students will be placed for {{target}}:";
+					"promote_one": "{{count}} promoted to the next level";
+					"promote_other": "{{count}} promoted to the next level";
+					"repeat_one": "{{count}} repeating the year";
+					"repeat_other": "{{count}} repeating the year";
+					"graduate_one": "{{count}} graduated (enrolled in the next cycle when a class was chosen)";
+					"graduate_other": "{{count}} graduated (enrolled in the next cycle when a class was chosen)";
+					"exclude_one": "{{count}} excluded: enrollment closed, no new enrollment";
+					"exclude_other": "{{count}} excluded: enrollments closed, no new enrollment";
+					"final": "The source-year enrollments are closed and the new ones created. This cannot be undone from here.";
 				};
 			};
 			"gradeScale": {

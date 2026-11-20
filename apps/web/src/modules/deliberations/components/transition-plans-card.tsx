@@ -2,7 +2,12 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { count, statusVariant, summaryOf } from "../services/transition-status";
+import {
+	count,
+	formatDate,
+	statusVariant,
+	summaryOf,
+} from "../services/transition-status";
 import type { TransitionListItem } from "../types";
 
 /** Existing transition plans; each one opens its detail page. */
@@ -43,6 +48,8 @@ export function TransitionPlansCard({
 							<div className="mt-2 text-muted-foreground text-xs">
 								{count(summary, "total")}{" "}
 								{t("admin.academicYearTransitions.metrics.students")}
+								{" · "}
+								{formatDate(transition.generatedAt)}
 							</div>
 						</button>
 					);

@@ -2023,11 +2023,13 @@ export const academicYearTransitions = pgTable(
 			t.targetAcademicYearId,
 		),
 		index("idx_academic_year_transitions_status").on(t.status),
-		uniqueIndex("uq_active_academic_year_transition")
-			.on(t.institutionId, t.sourceAcademicYearId, t.targetAcademicYearId)
-			.where(
-				sql`${t.status} IN ('draft', 'ready', 'pending_approval', 'approved', 'running')`,
-			),
+		// Several plans may run for one year pair, on distinct classes (checked
+		// by the service): no unique index on the pair.
+		index("idx_academic_year_transitions_pair").on(
+			t.institutionId,
+			t.sourceAcademicYearId,
+			t.targetAcademicYearId,
+		),
 	],
 );
 

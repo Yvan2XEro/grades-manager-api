@@ -124,20 +124,26 @@ async function setupTwoLevelTransition() {
 }
 
 describe("academicYearTransitions", () => {
-	it("enforces one active plan per institution and academic-year pair at the database boundary", async () => {
+	it("never lets two concurrent plans claim the same class", async () => {
 		const fixture = await setupTwoLevelTransition();
-		const values = {
-			institutionId: fixture.admin.institution.id,
+		const student = await createStudent({ class: fixture.sourceClass.id });
+		await createSignedDeliberation(
+			fixture.sourceClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			[{ studentId: student.id, decision: "admitted" }],
+		);
+		const input = {
 			sourceAcademicYearId: fixture.sourceYear.id,
 			targetAcademicYearId: fixture.targetYear.id,
-			generatedBy: fixture.admin.profile!.id,
-		} satisfies schema.NewAcademicYearTransition;
-
+			classIds: [fixture.sourceClass.id],
+			deferredOutcome: "review" as const,
+		};
+		const api = caller(fixture.admin);
 		const results = await Promise.allSettled([
-			db.insert(schema.academicYearTransitions).values(values).returning(),
-			db.insert(schema.academicYearTransitions).values(values).returning(),
+			api.academicYearTransitions.createDraft(input),
+			api.academicYearTransitions.createDraft(input),
 		]);
-
 		expect(
 			results.filter((result) => result.status === "fulfilled"),
 		).toHaveLength(1);
@@ -1021,5 +1027,106 @@ describe("academicYearTransitions", () => {
 		expect(actions.indexOf("submitted")).toBeLessThan(
 			actions.indexOf("approved"),
 		);
+	});
+
+	it("runs several plans for one year pair on distinct classes, never overlapping", async () => {
+		const fixture = await setupTwoLevelTransition();
+		const api = caller(fixture.admin);
+		const otherClass = await createClass({
+			program: fixture.program.id,
+			academicYear: fixture.sourceYear.id,
+			cycleLevelId: fixture.l1.id,
+			programOptionId: fixture.sourceClass.programOptionId,
+		});
+		const a = await createStudent({ class: fixture.sourceClass.id });
+		const b = await createStudent({ class: otherClass.id });
+		await createSignedDeliberation(
+			fixture.sourceClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			[{ studentId: a.id, decision: "admitted" }],
+		);
+		await createSignedDeliberation(
+			otherClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			[{ studentId: b.id, decision: "admitted" }],
+		);
+		const scope = (classIds: string[]) => ({
+			sourceAcademicYearId: fixture.sourceYear.id,
+			targetAcademicYearId: fixture.targetYear.id,
+			classIds,
+			deferredOutcome: "review" as const,
+		});
+
+		const first = await api.academicYearTransitions.createDraft(
+			scope([fixture.sourceClass.id]),
+		);
+		// Another class, same years: a second plan is fine.
+		const second = await api.academicYearTransitions.createDraft(
+			scope([otherClass.id]),
+		);
+		expect(second.id).not.toBe(first.id);
+
+		// Both classes again: refused, naming the plan that has them.
+		const readiness = await api.academicYearTransitions.readiness(
+			scope([fixture.sourceClass.id, otherClass.id]),
+		);
+		expect(readiness.canGenerate).toBe(false);
+		expect(readiness.overlappingPlans.map((p) => p.id).sort()).toEqual(
+			[first.id, second.id].sort(),
+		);
+		let message = "";
+		try {
+			await api.academicYearTransitions.createDraft(
+				scope([fixture.sourceClass.id]),
+			);
+		} catch (err) {
+			message = (err as Error).message;
+			expect(err).toHaveProperty("code", "CONFLICT");
+		}
+		expect(message).toBe(
+			`TRANSITION_PLAN_OVERLAP:${first.id}:${fixture.sourceClass.code}`,
+		);
+
+		// Once the first plan is cancelled, its class can be planned again.
+		await api.academicYearTransitions.cancel({ id: first.id });
+		const again = await api.academicYearTransitions.createDraft(
+			scope([fixture.sourceClass.id]),
+		);
+		expect(again.id).not.toBe(first.id);
+	});
+
+	it("counts a class whose jury was already applied in the diagnostic", async () => {
+		const fixture = await setupTwoLevelTransition();
+		const student = await createStudent({ class: fixture.sourceClass.id });
+		await createSignedDeliberation(
+			fixture.sourceClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			[{ studentId: student.id, decision: "admitted" }],
+		);
+		// The jury page promoted the student: the source enrollment is closed.
+		await db
+			.update(schema.enrollments)
+			.set({ status: "completed", exitedAt: new Date() })
+			.where(eq(schema.enrollments.studentId, student.id));
+
+		const readiness = await caller(
+			fixture.admin,
+		).academicYearTransitions.readiness({
+			sourceAcademicYearId: fixture.sourceYear.id,
+			targetAcademicYearId: fixture.targetYear.id,
+			classIds: [fixture.sourceClass.id],
+			deferredOutcome: "review",
+		});
+		expect(readiness).toMatchObject({
+			enrollmentCount: 1,
+			activeEnrollmentCount: 0,
+			classCount: 1,
+			signedDeliberationCount: 1,
+			missingDeliberationClassCount: 0,
+			canGenerate: false,
+		});
 	});
 });

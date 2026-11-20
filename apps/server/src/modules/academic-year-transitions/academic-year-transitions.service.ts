@@ -10,6 +10,7 @@ import {
 	inArray,
 	notInArray,
 	or,
+	sql,
 } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -141,20 +142,25 @@ export async function readiness(
 		input.classIds.length > 0
 			? inArray(schema.enrollments.classId, input.classIds)
 			: undefined;
+	// Every enrollment of the source year, whatever its status: a class whose
+	// jury was already applied (students promoted or graduated) still counts.
 	const sourceEnrollments = await db
 		.select({
 			id: schema.enrollments.id,
 			classId: schema.enrollments.classId,
+			status: schema.enrollments.status,
 		})
 		.from(schema.enrollments)
 		.where(
 			and(
 				eq(schema.enrollments.institutionId, institutionId),
 				eq(schema.enrollments.academicYearId, input.sourceAcademicYearId),
-				eq(schema.enrollments.status, "active"),
 				scopeCondition,
 			),
 		);
+	const activeEnrollmentCount = sourceEnrollments.filter(
+		(row) => row.status === "active",
+	).length;
 	const classIds = [...new Set(sourceEnrollments.map((row) => row.classId))];
 	const signedDeliberations =
 		classIds.length === 0
@@ -219,10 +225,19 @@ export async function readiness(
 					);
 	const incompleteStudentCourseCount = Number(sceRow?.total ?? 0);
 
+	const overlappingPlans = await findOverlappingPlans(
+		institutionId,
+		input.sourceAcademicYearId,
+		input.targetAcademicYearId,
+		classIds,
+	);
+
 	return {
 		sourceYear: source,
 		targetYear: target,
 		enrollmentCount: sourceEnrollments.length,
+		/** Students still to move (active enrollment in the source year). */
+		activeEnrollmentCount,
 		classCount: classIds.length,
 		signedDeliberationCount: signedClasses.size,
 		missingDeliberationClassCount: classIds.filter(
@@ -230,9 +245,90 @@ export async function readiness(
 		).length,
 		unlockedApprovedExamCount,
 		incompleteStudentCourseCount,
-		canGenerate: sourceEnrollments.length > 0,
+		/** Plans in progress for the same years sharing classes with this scope. */
+		overlappingPlans,
+		canGenerate: activeEnrollmentCount > 0 && overlappingPlans.length === 0,
 	};
 }
+
+/**
+ * Plans in progress for the same year pair that already cover some of
+ * `classIds`, with the shared classes. Several plans may run for one year
+ * pair as long as their classes don't overlap.
+ */
+async function findOverlappingPlans(
+	institutionId: string,
+	sourceAcademicYearId: string,
+	targetAcademicYearId: string,
+	classIds: string[],
+	executor: Pick<typeof db, "query" | "selectDistinct"> = db,
+) {
+	if (classIds.length === 0) return [];
+	const activePlans = await executor.query.academicYearTransitions.findMany({
+		where: and(
+			eq(schema.academicYearTransitions.institutionId, institutionId),
+			eq(
+				schema.academicYearTransitions.sourceAcademicYearId,
+				sourceAcademicYearId,
+			),
+			eq(
+				schema.academicYearTransitions.targetAcademicYearId,
+				targetAcademicYearId,
+			),
+			notInArray(schema.academicYearTransitions.status, TERMINAL_STATUSES),
+		),
+		columns: { id: true, status: true, generatedAt: true },
+	});
+	if (activePlans.length === 0) return [];
+	const planClasses = await executor
+		.selectDistinct({
+			transitionId: schema.academicYearTransitionItems.transitionId,
+			classId: schema.classes.id,
+			classCode: schema.classes.code,
+			className: schema.classes.name,
+		})
+		.from(schema.academicYearTransitionItems)
+		.innerJoin(
+			schema.enrollments,
+			eq(
+				schema.enrollments.id,
+				schema.academicYearTransitionItems.sourceEnrollmentId,
+			),
+		)
+		.innerJoin(
+			schema.classes,
+			eq(schema.classes.id, schema.enrollments.classId),
+		)
+		.where(
+			and(
+				inArray(
+					schema.academicYearTransitionItems.transitionId,
+					activePlans.map((p) => p.id),
+				),
+				inArray(schema.classes.id, classIds),
+			),
+		);
+	return activePlans
+		.map((plan) => ({
+			id: plan.id,
+			status: plan.status,
+			generatedAt: plan.generatedAt,
+			classes: planClasses
+				.filter((row) => row.transitionId === plan.id)
+				.map((row) => ({
+					id: row.classId,
+					code: row.classCode,
+					name: row.className,
+				})),
+		}))
+		.filter((plan) => plan.classes.length > 0);
+}
+
+/**
+ * Error message prefix when a new plan shares classes with a plan in
+ * progress: `TRANSITION_PLAN_OVERLAP:<planId>:<class codes>`.
+ */
+export const TRANSITION_PLAN_OVERLAP = "TRANSITION_PLAN_OVERLAP";
 
 const TERMINAL_STATUSES: schema.AcademicYearTransitionStatus[] = [
 	"completed",
@@ -247,28 +343,6 @@ export async function createDraft(
 	actorId: string,
 ) {
 	await readiness(input, institutionId);
-
-	const existing = await db.query.academicYearTransitions.findFirst({
-		where: and(
-			eq(schema.academicYearTransitions.institutionId, institutionId),
-			eq(
-				schema.academicYearTransitions.sourceAcademicYearId,
-				input.sourceAcademicYearId,
-			),
-			eq(
-				schema.academicYearTransitions.targetAcademicYearId,
-				input.targetAcademicYearId,
-			),
-			notInArray(schema.academicYearTransitions.status, TERMINAL_STATUSES),
-		),
-		columns: { id: true, status: true },
-	});
-	if (existing) {
-		throw new TRPCError({
-			code: "CONFLICT",
-			message: `An active transition plan already exists for this year pair (id: ${existing.id}, status: ${existing.status}). Cancel or complete it before creating a new one.`,
-		});
-	}
 
 	const scopeCondition =
 		input.classIds.length > 0
@@ -379,133 +453,138 @@ export async function createDraft(
 		);
 	}
 
-	let transition: schema.AcademicYearTransition;
-	try {
-		transition = await db.transaction(async (tx) => {
-			const [created] = await tx
-				.insert(schema.academicYearTransitions)
-				.values({
-					institutionId,
-					sourceAcademicYearId: input.sourceAcademicYearId,
-					targetAcademicYearId: input.targetAcademicYearId,
-					scopeClassIds: input.classIds,
-					deferredOutcome: input.deferredOutcome,
-					generatedBy: actorId,
-				})
-				.returning();
+	const transition = await db.transaction(async (tx) => {
+		// One plan per class: another plan in progress for these years must
+		// not cover the same classes. The lock serialises concurrent creations
+		// for the year pair so two plans can't both claim a class.
+		await tx.execute(
+			sql`select pg_advisory_xact_lock(hashtext(${`${institutionId}:${input.sourceAcademicYearId}:${input.targetAcademicYearId}`}))`,
+		);
+		const [overlap] = await findOverlappingPlans(
+			institutionId,
+			input.sourceAcademicYearId,
+			input.targetAcademicYearId,
+			classIds,
+			tx,
+		);
+		if (overlap) {
+			throw new TRPCError({
+				code: "CONFLICT",
+				message: `${TRANSITION_PLAN_OVERLAP}:${overlap.id}:${overlap.classes
+					.map((c) => c.code)
+					.join(", ")}`,
+			});
+		}
+		const [created] = await tx
+			.insert(schema.academicYearTransitions)
+			.values({
+				institutionId,
+				sourceAcademicYearId: input.sourceAcademicYearId,
+				targetAcademicYearId: input.targetAcademicYearId,
+				scopeClassIds: input.classIds,
+				deferredOutcome: input.deferredOutcome,
+				generatedBy: actorId,
+			})
+			.returning();
 
-			const items: PlannedItem[] = population.map((row) => {
-				const deliberation = deliberationByClass.get(row.classId);
-				const result = deliberation
-					? resultByKey.get(`${deliberation.id}:${row.studentId}`)
-					: undefined;
-				let outcome: schema.AcademicYearTransitionOutcome = "review";
-				let targetClassId: string | null = null;
-				let blockerCode: string | null = null;
-				let blockerDetails: Record<string, unknown> = {};
+		const items: PlannedItem[] = population.map((row) => {
+			const deliberation = deliberationByClass.get(row.classId);
+			const result = deliberation
+				? resultByKey.get(`${deliberation.id}:${row.studentId}`)
+				: undefined;
+			let outcome: schema.AcademicYearTransitionOutcome = "review";
+			let targetClassId: string | null = null;
+			let blockerCode: string | null = null;
+			let blockerDetails: Record<string, unknown> = {};
 
-				if (!deliberation) {
-					blockerCode = "missing_signed_deliberation";
-				} else if (!result?.finalDecision) {
-					blockerCode = "missing_student_decision";
-				} else if (existingTargetStudents.has(row.studentId)) {
-					blockerCode = "existing_target_enrollment";
-					blockerDetails = { targetAcademicYearId: input.targetAcademicYearId };
-				} else if (
-					result.finalDecision === "admitted" ||
-					result.finalDecision === "compensated"
-				) {
-					const nextLevel = levelByCycleOrder.get(
-						`${row.cycleId}:${row.levelOrder + 1}`,
-					);
-					if (!nextLevel) {
-						outcome = "graduate";
-					} else {
-						outcome = "promote";
-						const candidates = resolveTarget(row, nextLevel.id);
-						if (candidates.length === 1) targetClassId = candidates[0].id;
-						else {
-							outcome = "review";
-							blockerCode =
-								candidates.length === 0
-									? "missing_promotion_target"
-									: "ambiguous_promotion_target";
-							blockerDetails = {
-								candidateIds: candidates.map((item) => item.id),
-							};
-						}
-					}
-				} else if (
-					result.finalDecision === "repeat" ||
-					(result.finalDecision === "deferred" &&
-						input.deferredOutcome === "repeat")
-				) {
-					outcome = "repeat";
-					const candidates = resolveTarget(row, row.cycleLevelId);
+			if (!deliberation) {
+				blockerCode = "missing_signed_deliberation";
+			} else if (!result?.finalDecision) {
+				blockerCode = "missing_student_decision";
+			} else if (existingTargetStudents.has(row.studentId)) {
+				blockerCode = "existing_target_enrollment";
+				blockerDetails = { targetAcademicYearId: input.targetAcademicYearId };
+			} else if (
+				result.finalDecision === "admitted" ||
+				result.finalDecision === "compensated"
+			) {
+				const nextLevel = levelByCycleOrder.get(
+					`${row.cycleId}:${row.levelOrder + 1}`,
+				);
+				if (!nextLevel) {
+					outcome = "graduate";
+				} else {
+					outcome = "promote";
+					const candidates = resolveTarget(row, nextLevel.id);
 					if (candidates.length === 1) targetClassId = candidates[0].id;
 					else {
 						outcome = "review";
 						blockerCode =
 							candidates.length === 0
-								? "missing_repeat_target"
-								: "ambiguous_repeat_target";
+								? "missing_promotion_target"
+								: "ambiguous_promotion_target";
 						blockerDetails = {
 							candidateIds: candidates.map((item) => item.id),
 						};
 					}
-				} else if (result.finalDecision === "excluded") {
-					outcome = "exclude";
-				} else {
-					blockerCode =
-						result.finalDecision === "deferred"
-							? "deferred_requires_review"
-							: "pending_decision";
 				}
+			} else if (
+				result.finalDecision === "repeat" ||
+				(result.finalDecision === "deferred" &&
+					input.deferredOutcome === "repeat")
+			) {
+				outcome = "repeat";
+				const candidates = resolveTarget(row, row.cycleLevelId);
+				if (candidates.length === 1) targetClassId = candidates[0].id;
+				else {
+					outcome = "review";
+					blockerCode =
+						candidates.length === 0
+							? "missing_repeat_target"
+							: "ambiguous_repeat_target";
+					blockerDetails = {
+						candidateIds: candidates.map((item) => item.id),
+					};
+				}
+			} else if (result.finalDecision === "excluded") {
+				outcome = "exclude";
+			} else {
+				blockerCode =
+					result.finalDecision === "deferred"
+						? "deferred_requires_review"
+						: "pending_decision";
+			}
 
-				return {
-					institutionId,
-					transitionId: created.id,
-					studentId: row.studentId,
-					sourceEnrollmentId: row.enrollmentId,
-					deliberationId: deliberation?.id ?? null,
-					deliberationStudentResultId: result?.id ?? null,
-					decision: result?.finalDecision ?? null,
-					proposedOutcome: outcome,
-					finalOutcome: outcome,
-					proposedTargetClassId: targetClassId,
-					finalTargetClassId: targetClassId,
-					status: blockerCode ? "blocked" : "ready",
-					blockerCode,
-					blockerDetails,
-				};
-			});
-			await tx.insert(schema.academicYearTransitionItems).values(items);
-			const summary = summarize(items);
-			const [updated] = await tx
-				.update(schema.academicYearTransitions)
-				.set({
-					summary,
-					status: summary.blocked === 0 ? "ready" : "draft",
-					updatedAt: new Date(),
-				})
-				.where(eq(schema.academicYearTransitions.id, created.id))
-				.returning();
-			return updated;
+			return {
+				institutionId,
+				transitionId: created.id,
+				studentId: row.studentId,
+				sourceEnrollmentId: row.enrollmentId,
+				deliberationId: deliberation?.id ?? null,
+				deliberationStudentResultId: result?.id ?? null,
+				decision: result?.finalDecision ?? null,
+				proposedOutcome: outcome,
+				finalOutcome: outcome,
+				proposedTargetClassId: targetClassId,
+				finalTargetClassId: targetClassId,
+				status: blockerCode ? "blocked" : "ready",
+				blockerCode,
+				blockerDetails,
+			};
 		});
-	} catch (error: unknown) {
-		const pgError = (error as { cause?: unknown })?.cause ?? error;
-		if (
-			(pgError as { constraint?: string })?.constraint ===
-			"uq_active_academic_year_transition"
-		) {
-			throw new TRPCError({
-				code: "CONFLICT",
-				message:
-					"An active transition plan already exists for this academic-year pair. Cancel or complete it before creating another one.",
-			});
-		}
-		throw error;
-	}
+		await tx.insert(schema.academicYearTransitionItems).values(items);
+		const summary = summarize(items);
+		const [updated] = await tx
+			.update(schema.academicYearTransitions)
+			.set({
+				summary,
+				status: summary.blocked === 0 ? "ready" : "draft",
+				updatedAt: new Date(),
+			})
+			.where(eq(schema.academicYearTransitions.id, created.id))
+			.returning();
+		return updated;
+	});
 
 	return getById(transition.id, institutionId);
 }
