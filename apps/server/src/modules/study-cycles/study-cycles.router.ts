@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "@/lib/trpc";
 import * as service from "./study-cycles.service";
 import {
 	cycleBaseSchema,
@@ -12,55 +16,55 @@ import {
 } from "./study-cycles.zod";
 
 export const studyCyclesRouter = router({
-	createCycle: adminProcedure
+	createCycle: tenantAdminProcedure
 		.input(cycleBaseSchema)
 		.mutation(({ ctx, input }) =>
 			service.createCycle(input, ctx.institution.id),
 		),
-	updateCycle: adminProcedure
+	updateCycle: tenantAdminProcedure
 		.input(updateCycleSchema)
 		.mutation(({ ctx, input }) =>
 			service.updateCycle(input.id, ctx.institution.id, input),
 		),
-	deleteCycle: adminProcedure
+	deleteCycle: tenantAdminProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteCycle(input.id, ctx.institution.id),
 		),
-	listCycles: protectedProcedure
+	listCycles: tenantProtectedProcedure
 		.input(cycleListSchema)
 		.query(({ ctx, input }) => service.listCycles(input, ctx.institution.id)),
-	listPaged: protectedProcedure
+	listPaged: tenantProtectedProcedure
 		.input(listCyclesPagedSchema)
 		.query(({ ctx, input }) =>
 			service.listCyclesPaged(input, ctx.institution.id),
 		),
-	getCycle: protectedProcedure
+	getCycle: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getCycleById(input.id, ctx.institution.id),
 		),
-	createLevel: adminProcedure
+	createLevel: tenantAdminProcedure
 		.input(levelBaseSchema)
 		.mutation(({ ctx, input }) =>
 			service.createLevel(input, ctx.institution.id),
 		),
-	updateLevel: adminProcedure
+	updateLevel: tenantAdminProcedure
 		.input(updateLevelSchema)
 		.mutation(({ ctx, input }) =>
 			service.updateLevel(input.id, ctx.institution.id, input),
 		),
-	deleteLevel: adminProcedure
+	deleteLevel: tenantAdminProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteLevel(input.id, ctx.institution.id),
 		),
-	listLevels: protectedProcedure
+	listLevels: tenantProtectedProcedure
 		.input(levelListSchema)
 		.query(({ ctx, input }) =>
 			service.listLevels(input.cycleId, ctx.institution.id),
 		),
-	getLevel: protectedProcedure
+	getLevel: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getLevelById(input.id, ctx.institution.id),

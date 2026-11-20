@@ -58,12 +58,13 @@ export function generatedLevels(args: {
 
 export async function createCycle(
 	input: Omit<schema.NewStudyCycle, "institutionId"> & {
+		institutionId?: string;
 		levelPrefix?: string;
 	},
 	institutionId: string,
 ) {
-	const { levelPrefix, ...data } = input;
-	// Auto-inject institutionId from context if not provided
+	// The institution always comes from the context; a client-sent one is ignored.
+	const { levelPrefix, institutionId: _ignored, ...data } = input;
 	const cycle = await repo.createCycle({ ...data, institutionId });
 
 	// Auto-create cycle levels based on durationYears
@@ -87,7 +88,9 @@ export async function updateCycle(
 	data: Partial<schema.NewStudyCycle>,
 ) {
 	await ensureCycle(id, institutionId);
-	return repo.updateCycle(id, institutionId, data);
+	// A cycle can never be moved to another institution.
+	const { institutionId: _ignored, ...rest } = data;
+	return repo.updateCycle(id, institutionId, rest);
 }
 
 export async function deleteCycle(id: string, institutionId: string) {

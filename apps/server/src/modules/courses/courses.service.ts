@@ -4,6 +4,10 @@ import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
+import {
+	requireCoursesInInstitution,
+	requireProfileInInstitution,
+} from "../_shared/tenant-guards";
 import * as repo from "./courses.repo";
 
 type CourseInput = Omit<schema.NewCourse, "defaultCoefficient"> & {
@@ -64,6 +68,22 @@ async function syncPrerequisites(
 	);
 }
 
+/** The default teacher and the prerequisites must be the institution's. */
+async function assertReferencesOwned(
+	data: Partial<CourseInput>,
+	institutionId: string,
+) {
+	if (data.defaultTeacher) {
+		await requireProfileInInstitution(data.defaultTeacher, institutionId);
+	}
+	if (data.prerequisiteCourseIds?.length) {
+		await requireCoursesInInstitution(
+			data.prerequisiteCourseIds,
+			institutionId,
+		);
+	}
+}
+
 export async function createCourse(data: CourseInput, institutionId: string) {
 	const { prerequisiteCourseIds, ...courseData } = data;
 	await ensureTeachingUnit(
@@ -71,6 +91,7 @@ export async function createCourse(data: CourseInput, institutionId: string) {
 		courseData.program,
 		institutionId,
 	);
+	await assertReferencesOwned(data, institutionId);
 	const created = await repo.create({
 		...courseData,
 		code: normalizeCode(courseData.code),
@@ -91,16 +112,16 @@ export async function updateCourse(
 	const { prerequisiteCourseIds, ...courseData } = data;
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
-	if (
-		(courseData.program && courseData.teachingUnitId) ||
-		courseData.teachingUnitId
-	) {
+	// Re-check the unit/program pair whenever either changes: a program alone
+	// could otherwise move the course to another institution's program.
+	if (courseData.program || courseData.teachingUnitId) {
 		await ensureTeachingUnit(
 			courseData.teachingUnitId ?? existing.teachingUnitId,
 			courseData.program ?? existing.program,
 			institutionId,
 		);
 	}
+	await assertReferencesOwned(data, institutionId);
 	const updated = await repo.update(id, institutionId, {
 		...courseData,
 		code: courseData.code ? normalizeCode(courseData.code) : undefined,
@@ -117,6 +138,8 @@ export async function updateCourse(
 }
 
 export async function deleteCourse(id: string, institutionId: string) {
+	const existing = await repo.findById(id, institutionId);
+	if (!existing) throw notFound();
 	await repo.remove(id, institutionId);
 }
 
@@ -166,6 +189,7 @@ export async function assignDefaultTeacher(
 ) {
 	const existing = await repo.findById(courseId, institutionId);
 	if (!existing) throw notFound();
+	await requireProfileInInstitution(teacherId, institutionId);
 	return repo.assignDefaultTeacher(courseId, institutionId, teacherId);
 }
 

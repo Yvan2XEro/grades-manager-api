@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "../../lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "../../lib/trpc";
 import * as service from "./exam-types.service";
 import {
 	baseSchema,
@@ -9,32 +13,32 @@ import {
 } from "./exam-types.zod";
 
 export const examTypesRouter = router({
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(baseSchema)
 		.mutation(({ ctx, input }) =>
 			service.createExamType(input, ctx.institution.id),
 		),
-	update: adminProcedure
+	update: tenantAdminProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) =>
 			service.updateExamType(input.id, ctx.institution.id, input),
 		),
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteExamType(input.id, ctx.institution.id),
 		),
-	getById: protectedProcedure
+	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getExamTypeById(input.id, ctx.institution.id),
 		),
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) =>
 			service.listExamTypes(input, ctx.institution.id),
 		),
-	listPaged: protectedProcedure
+	listPaged: tenantProtectedProcedure
 		.input(listPagedSchema)
 		.query(({ ctx, input }) =>
 			service.listExamTypesPaged(input, ctx.institution.id),

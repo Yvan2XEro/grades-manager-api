@@ -1,7 +1,7 @@
 import {
-	adminProcedure,
 	router as createRouter,
-	protectedProcedure,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
 } from "../../lib/trpc";
 import * as service from "./programs.service";
 import {
@@ -18,40 +18,40 @@ import {
 } from "./programs.zod";
 
 export const router = createRouter({
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(baseSchema)
 		.mutation(({ ctx, input }) =>
 			service.createProgram(input, ctx.institution.id),
 		),
-	update: adminProcedure
+	update: tenantAdminProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) =>
 			service.updateProgram(input.id, ctx.institution.id, input),
 		),
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteProgram(input.id, ctx.institution.id),
 		),
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) => service.listPrograms(input, ctx.institution.id)),
-	getById: protectedProcedure
+	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getProgramById(input.id, ctx.institution.id),
 		),
-	getByCode: protectedProcedure
+	getByCode: tenantProtectedProcedure
 		.input(codeSchema)
 		.query(({ ctx, input }) =>
 			service.getProgramByCode(input.code, ctx.institution.id),
 		),
-	search: protectedProcedure
+	search: tenantProtectedProcedure
 		.input(searchSchema)
 		.query(({ ctx, input }) =>
 			service.searchPrograms(input, ctx.institution.id),
 		),
-	cloneCurriculum: adminProcedure
+	cloneCurriculum: tenantAdminProcedure
 		.input(cloneCurriculumSchema)
 		.mutation(({ ctx, input }) =>
 			service.cloneCurriculum(
@@ -60,7 +60,7 @@ export const router = createRouter({
 				ctx.institution.id,
 			),
 		),
-	duplicateForCycles: adminProcedure
+	duplicateForCycles: tenantAdminProcedure
 		.input(duplicateForCyclesSchema)
 		.mutation(({ ctx, input }) =>
 			service.duplicateForCycles(
@@ -70,12 +70,12 @@ export const router = createRouter({
 				{ cloneCurriculum: input.cloneCurriculum },
 			),
 		),
-	listExportTemplates: protectedProcedure
+	listExportTemplates: tenantProtectedProcedure
 		.input(programIdSchema)
 		.query(({ ctx, input }) =>
 			service.listProgramExportTemplates(input.programId, ctx.institution.id),
 		),
-	setExportTemplates: adminProcedure
+	setExportTemplates: tenantAdminProcedure
 		.input(setExportTemplatesSchema)
 		.mutation(({ ctx, input }) =>
 			service.setProgramExportTemplates(

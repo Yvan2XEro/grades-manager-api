@@ -1,8 +1,8 @@
 import {
-	adminProcedure,
 	router as createRouter,
-	protectedProcedure,
-	superAdminProcedure,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+	tenantSuperAdminProcedure,
 } from "../../lib/trpc";
 import * as service from "./academic-years.service";
 import {
@@ -16,7 +16,7 @@ import {
 } from "./academic-years.zod";
 
 export const router = createRouter({
-	create: adminProcedure.input(baseSchema).mutation(({ ctx, input }) =>
+	create: tenantAdminProcedure.input(baseSchema).mutation(({ ctx, input }) =>
 		service.createAcademicYear(
 			{
 				...input,
@@ -26,44 +26,44 @@ export const router = createRouter({
 			ctx.institution.id,
 		),
 	),
-	update: adminProcedure.input(updateSchema).mutation(({ ctx, input }) =>
+	update: tenantAdminProcedure.input(updateSchema).mutation(({ ctx, input }) =>
 		service.updateAcademicYear(input.id, ctx.institution.id, {
 			...input,
 			startDate: input.startDate?.toISOString(),
 			endDate: input.endDate?.toISOString(),
 		}),
 	),
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteAcademicYear(input.id, ctx.institution.id),
 		),
-	setActive: superAdminProcedure
+	setActive: tenantSuperAdminProcedure
 		.input(setActiveSchema)
 		.mutation(({ ctx, input }) =>
 			service.setActive(input.id, input.isActive, ctx.institution.id),
 		),
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) =>
 			service.listAcademicYears(input, ctx.institution.id),
 		),
-	listPaged: protectedProcedure
+	listPaged: tenantProtectedProcedure
 		.input(listPagedSchema)
 		.query(({ ctx, input }) =>
 			service.listAcademicYearsPaged(input, ctx.institution.id),
 		),
-	getById: protectedProcedure
+	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getAcademicYearById(input.id, ctx.institution.id),
 		),
-	activationChecklist: adminProcedure
+	activationChecklist: tenantAdminProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.activationChecklist(input.id, ctx.institution.id),
 		),
-	createNextYear: adminProcedure
+	createNextYear: tenantAdminProcedure
 		.input(createNextYearSchema)
 		.mutation(({ ctx, input }) =>
 			service.createNextYear(input.sourceYearId, ctx.institution.id),

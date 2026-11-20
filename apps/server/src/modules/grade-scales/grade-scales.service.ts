@@ -3,6 +3,7 @@ import {
 	type GradeScale,
 	type MentionRange,
 } from "@/db/schema/app-schema";
+import { requireProgramInInstitution } from "../_shared/tenant-guards";
 import * as repo from "./grade-scales.repo";
 
 export type ResolvedScale = {
@@ -75,6 +76,7 @@ export async function getRawForInstitution(
 	institutionId: string,
 	programId?: string | null,
 ) {
+	if (programId) await requireProgramInInstitution(programId, institutionId);
 	// null (not undefined) when no scale is configured: tRPC/React Query reject undefined data
 	const row = programId
 		? await repo.findByProgram(institutionId, programId)
@@ -91,6 +93,9 @@ export async function upsert(
 		programId?: string | null;
 	},
 ) {
+	if (data.programId) {
+		await requireProgramInInstitution(data.programId, institutionId);
+	}
 	return repo.upsert(institutionId, data);
 }
 

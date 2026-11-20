@@ -188,8 +188,12 @@ export async function issueRegistrationNumber(opts: {
 	throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 }
 
-export async function previewFormat(input: PreviewInput) {
-	const klass = await classesRepo.findById(input.classId);
+export async function previewFormat(
+	input: PreviewInput,
+	institutionId: string,
+) {
+	// A foreign class reads as missing: its data and counters stay private.
+	const klass = await classesRepo.findById(input.classId, institutionId);
 	if (!klass) throw notFound("Class not found");
 	const format =
 		input.definition !== undefined
