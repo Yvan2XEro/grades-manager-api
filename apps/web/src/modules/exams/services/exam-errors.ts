@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import { gradeErrorMessage } from "@/lib/grade-errors";
 
 /** Codes the server puts in the message of a refused exam. */
 const NO_STUDENTS = "EXAM_NO_STUDENTS";
@@ -14,6 +15,8 @@ export function examErrorMessage(
 	fallback: string,
 ): string {
 	const message = error instanceof Error ? error.message : "";
+	const frozen = gradeErrorMessage(t, error);
+	if (frozen) return frozen;
 	if (message === NO_STUDENTS) return t("admin.exams.errors.noStudents");
 	if (message === PERCENTAGE_EXCEEDED) {
 		return t("admin.exams.errors.percentageExceeded");

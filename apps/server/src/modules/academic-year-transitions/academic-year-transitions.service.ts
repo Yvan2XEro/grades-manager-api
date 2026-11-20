@@ -387,14 +387,13 @@ export async function createDraft(
 	const studentIds = population.map((row) => row.studentId);
 	const cycleIds = [...new Set(population.map((row) => row.cycleId))];
 
-	const [deliberations, targetClasses, levels, existingTargets] =
+	const [yearEndJuries, targetClasses, levels, existingTargets] =
 		await Promise.all([
 			db.query.deliberations.findMany({
 				where: and(
 					eq(schema.deliberations.institutionId, institutionId),
 					eq(schema.deliberations.academicYearId, input.sourceAcademicYearId),
-					eq(schema.deliberations.type, "annual"),
-					eq(schema.deliberations.status, "signed"),
+					inArray(schema.deliberations.type, ["annual", "retake"]),
 					inArray(schema.deliberations.classId, classIds),
 				),
 			}),
@@ -419,10 +418,25 @@ export async function createDraft(
 				),
 		]);
 
+	const deliberations = yearEndJuries.filter(
+		(row) => row.type === "annual" && row.status === "signed",
+	);
 	const deliberationByClass = new Map(
 		deliberations.map((deliberation) => [deliberation.classId, deliberation]),
 	);
-	const deliberationIds = deliberations.map((row) => row.id);
+	// The retake jury of a class decides for the students the annual jury
+	// sent to the retake session.
+	const retakeByClass = new Map(
+		yearEndJuries
+			.filter((row) => row.type === "retake")
+			.map((row) => [row.classId, row]),
+	);
+	const deliberationIds = [
+		...deliberations.map((row) => row.id),
+		...[...retakeByClass.values()]
+			.filter((row) => row.status === "signed")
+			.map((row) => row.id),
+	];
 	const results =
 		deliberationIds.length === 0
 			? []
@@ -490,9 +504,18 @@ export async function createDraft(
 
 		const items: PlannedItem[] = population.map((row) => {
 			const deliberation = deliberationByClass.get(row.classId);
-			const result = deliberation
+			let result = deliberation
 				? resultByKey.get(`${deliberation.id}:${row.studentId}`)
 				: undefined;
+			const retake = retakeByClass.get(row.classId);
+			const retakeResult = retake
+				? resultByKey.get(`${retake.id}:${row.studentId}`)
+				: undefined;
+			const sentToRetake =
+				!!retake &&
+				(result?.finalDecision === "deferred" ||
+					result?.finalDecision === "pending");
+			if (sentToRetake && retakeResult) result = retakeResult;
 			let outcome: schema.AcademicYearTransitionOutcome = "review";
 			let targetClassId: string | null = null;
 			let blockerCode: string | null = null;
@@ -500,6 +523,10 @@ export async function createDraft(
 
 			if (!deliberation) {
 				blockerCode = "missing_signed_deliberation";
+			} else if (sentToRetake && !retakeResult) {
+				// The retake jury is not signed yet (or did not deliberate them)
+				blockerCode = "retake_jury_pending";
+				blockerDetails = { retakeDeliberationId: retake.id };
 			} else if (!result?.finalDecision) {
 				blockerCode = "missing_student_decision";
 			} else if (existingTargetStudents.has(row.studentId)) {

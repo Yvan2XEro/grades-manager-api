@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
+import { examErrorMessage } from "../services/exam-errors";
 import type { ExamRow } from "../types";
 import { examFormKeys, fetchExamClassCourses } from "./use-exam-form";
 
@@ -194,7 +195,9 @@ export function useExamMutations(onBulkDeleted: () => void) {
 			toast.success(t("admin.exams.toast.deleteSuccess"));
 		},
 		onError: (error: unknown) =>
-			toast.error(errorMessage(error, t("admin.exams.toast.deleteError"))),
+			toast.error(
+				examErrorMessage(t, error, t("admin.exams.toast.deleteError")),
+			),
 	});
 
 	const bulkDelete = useMutation({

@@ -1,4 +1,4 @@
-import { and, eq, gt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -8,7 +8,8 @@ export async function upsert(data: schema.NewGrade) {
 		.values(data)
 		.onConflictDoUpdate({
 			target: [schema.grades.student, schema.grades.exam],
-			set: { score: data.score, updatedAt: new Date() },
+			// Database clock, like the jury logs it is compared with
+			set: { score: data.score, updatedAt: sql`now()` },
 		})
 		.returning();
 	return item;
@@ -17,7 +18,7 @@ export async function upsert(data: schema.NewGrade) {
 export async function update(id: string, score: string) {
 	const [item] = await db
 		.update(schema.grades)
-		.set({ score, updatedAt: new Date() })
+		.set({ score, updatedAt: sql`now()` })
 		.where(eq(schema.grades.id, id))
 		.returning();
 	return item;
@@ -25,6 +26,51 @@ export async function update(id: string, score: string) {
 
 export async function remove(id: string) {
 	await db.delete(schema.grades).where(eq(schema.grades.id, id));
+}
+
+export async function findByStudentAndExam(studentId: string, examId: string) {
+	return db.query.grades.findFirst({
+		where: and(
+			eq(schema.grades.student, studentId),
+			eq(schema.grades.exam, examId),
+		),
+	});
+}
+
+/** Audit trail of the marks of an exam, most recent first. */
+export async function listEditLogs(examId: string, institutionId: string) {
+	return db
+		.select({
+			id: schema.gradeEditLogs.id,
+			action: schema.gradeEditLogs.action,
+			studentId: schema.gradeEditLogs.studentId,
+			registrationNumber: schema.students.registrationNumber,
+			scoreBefore: schema.gradeEditLogs.scoreBefore,
+			scoreAfter: schema.gradeEditLogs.scoreAfter,
+			actorProfileId: schema.gradeEditLogs.actorProfileId,
+			actorFirstName: schema.domainUsers.firstName,
+			actorLastName: schema.domainUsers.lastName,
+			actorRole: schema.gradeEditLogs.actorRole,
+			isDelegate: schema.gradeEditLogs.isDelegate,
+			metadata: schema.gradeEditLogs.metadata,
+			createdAt: schema.gradeEditLogs.createdAt,
+		})
+		.from(schema.gradeEditLogs)
+		.leftJoin(
+			schema.students,
+			eq(schema.students.id, schema.gradeEditLogs.studentId),
+		)
+		.leftJoin(
+			schema.domainUsers,
+			eq(schema.domainUsers.id, schema.gradeEditLogs.actorProfileId),
+		)
+		.where(
+			and(
+				eq(schema.gradeEditLogs.examId, examId),
+				eq(schema.gradeEditLogs.institutionId, institutionId),
+			),
+		)
+		.orderBy(desc(schema.gradeEditLogs.createdAt));
 }
 
 export async function findById(id: string) {

@@ -7,6 +7,7 @@ import { transaction } from "../_shared/db-transaction";
 import { notFound } from "../_shared/errors";
 import type { MemberRole } from "../authz";
 import { ADMIN_ROLES, roleSatisfies } from "../authz";
+import { assertExamMarksNotFrozen } from "../deliberations/jury-freeze";
 import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
 import * as gradeAccessRepo from "../grade-access-grants/grade-access-grants.repo";
 import * as gradeScalesService from "../grade-scales/grade-scales.service";
@@ -207,6 +208,8 @@ export async function updateExam(
 		);
 		assertTeacherOwnership(classCourse, actor);
 	}
+	// Its weight (or course) feeds the averages of a closed jury
+	await assertExamMarksNotFrozen(existing);
 	const payload = { ...data };
 	if (data.classCourse && data.classCourse !== existing.classCourse) {
 		await requireClassCourse(data.classCourse, institutionId);
@@ -376,6 +379,7 @@ export async function deleteExam(
 		}
 	}
 	assertEditable(existing);
+	await assertExamMarksNotFrozen(existing);
 	await repo.remove(id, institutionId);
 }
 
@@ -616,6 +620,14 @@ export async function setLock(
 	actor?: ActorContext,
 ) {
 	const existing = await requireExam(examId, institutionId);
+	// Locking is irreversible: a locked exam's marks are only changed through
+	// the audited correction of a super admin.
+	if (!lock && existing.isLocked) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "A locked exam cannot be unlocked",
+		});
+	}
 	const isAdmin = roleSatisfies(actor?.memberRole ?? null, ADMIN_ROLES);
 	if (lock && existing.status !== "approved" && !isAdmin) {
 		throw new TRPCError({

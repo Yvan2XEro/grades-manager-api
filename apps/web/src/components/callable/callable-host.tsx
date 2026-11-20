@@ -21,6 +21,7 @@ import { DeliberationRuleFormDialog } from "@/modules/deliberations/components/d
 import { JuryCompositionDialog } from "@/modules/deliberations/components/jury-composition-dialog";
 import { OverrideDecisionDialog } from "@/modules/deliberations/components/override-decision-dialog";
 import { PromoteAdmittedDialog } from "@/modules/deliberations/components/promote-admitted-dialog";
+import { ReopenSignedDialog } from "@/modules/deliberations/components/reopen-signed-dialog";
 import { ResolveItemSheet } from "@/modules/deliberations/components/resolve-item-sheet";
 import { StudentResultSheet } from "@/modules/deliberations/components/student-result-sheet";
 import { BulkClassExportDialog } from "@/modules/documents/components/bulk-class-export-dialog";
@@ -106,6 +107,7 @@ export function CallableHost() {
 			<OverrideDecisionDialog />
 			<StudentResultSheet />
 			<PromoteAdmittedDialog />
+			<ReopenSignedDialog />
 			<TimetableImportDialog />
 			<CopyTimetableDialog />
 			<BankImportDialog />

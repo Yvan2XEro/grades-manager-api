@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { gradeErrorMessage } from "@/lib/grade-errors";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import type { GradeInput } from "../types";
@@ -31,7 +32,10 @@ export function useSaveGrades(selectedExam: string) {
 			}
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("teacher.gradeEntry.toast.saveError"));
+			toast.error(
+				gradeErrorMessage(t, error) ??
+					(error.message || t("teacher.gradeEntry.toast.saveError")),
+			);
 		},
 	});
 }

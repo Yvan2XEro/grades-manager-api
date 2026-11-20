@@ -14,6 +14,8 @@ type SemesterSelectProps = {
 	onChange: (value: string | null) => void;
 	disabled?: boolean;
 	placeholder?: string;
+	/** Offers "all semesters" (a filter); off when a semester is required. */
+	allowAll?: boolean;
 };
 
 export function SemesterSelect({
@@ -21,6 +23,7 @@ export function SemesterSelect({
 	onChange,
 	disabled,
 	placeholder,
+	allowAll = true,
 }: SemesterSelectProps) {
 	const { t } = useTranslation();
 	const { data, isLoading } = useQuery({
@@ -30,7 +33,7 @@ export function SemesterSelect({
 
 	return (
 		<Select
-			value={value ?? "__all"}
+			value={value ?? (allowAll ? "__all" : "")}
 			onValueChange={(next) => onChange(next === "__all" ? null : next)}
 			disabled={disabled || isLoading}
 		>
@@ -42,9 +45,11 @@ export function SemesterSelect({
 				/>
 			</SelectTrigger>
 			<SelectContent>
-				<SelectItem value="__all">
-					{t("admin.exams.filters.semesterPlaceholder")}
-				</SelectItem>
+				{allowAll && (
+					<SelectItem value="__all">
+						{t("admin.exams.filters.semesterPlaceholder")}
+					</SelectItem>
+				)}
 				{options.map((semester) => (
 					<SelectItem key={semester.id} value={semester.id}>
 						{semester.name}

@@ -336,7 +336,12 @@ export async function getStudentYearResults(
 				),
 			)
 			.where(and(...conditions))
-			.orderBy(desc(schema.deliberations.createdAt))
+			// The retake jury, when the student went through it, is the year's
+			// final word; then the most recent jury.
+			.orderBy(
+				sql`case when ${schema.deliberations.type} = 'retake' then 0 else 1 end`,
+				desc(schema.deliberations.createdAt),
+			)
 			.limit(1);
 		return row ?? null;
 	})();

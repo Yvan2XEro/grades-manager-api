@@ -6,13 +6,16 @@ import {
 	Loader2,
 	Lock,
 	Play,
+	Unlock,
 	UserCheck,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { confirmAction } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
+import { useStore } from "@/store";
 import { useDeliberationActions } from "../hooks/use-deliberation";
 import type { DeliberationAction } from "../types";
+import { ReopenSignedDialog } from "./reopen-signed-dialog";
 
 interface DeliberationDetailActionsProps {
 	deliberationId: string;
@@ -21,6 +24,10 @@ interface DeliberationDetailActionsProps {
 	pendingCount: number;
 	/** Whether the admitted students were already promoted. */
 	promoted: boolean;
+	/** Year-end juries promote; a semester jury does not. */
+	canPromote: boolean;
+	/** Marks changed since the last computation: recompute before closing. */
+	outdated: boolean;
 	/** Whether a jury president is named (warned about before signing). */
 	hasPresident: boolean;
 	onPromoteAdmitted: () => void;
@@ -32,6 +39,8 @@ export function DeliberationDetailActions({
 	status,
 	pendingCount,
 	promoted,
+	canPromote,
+	outdated,
 	hasPresident,
 	onPromoteAdmitted,
 }: DeliberationDetailActionsProps) {
@@ -42,14 +51,21 @@ export function DeliberationDetailActions({
 	const confirmTransition = (
 		action: Exclude<DeliberationAction, "open">,
 		texts: { title: string; message: string; confirmText: string },
-	) => confirmAction({ ...texts, onConfirm: () => transition.mutate(action) });
+	) =>
+		confirmAction({
+			...texts,
+			onConfirm: () => transition.mutate({ action }),
+		});
 
-	const promoteButton = promoted ? null : (
-		<Button variant="outline" onClick={onPromoteAdmitted}>
-			<UserCheck className="mr-2 h-4 w-4" />
-			{t("admin.deliberations.promote.button")}
-		</Button>
-	);
+	const { user } = useStore();
+	const isSuperAdmin = user?.role === "super_admin" || user?.role === "owner";
+	const promoteButton =
+		promoted || !canPromote ? null : (
+			<Button variant="outline" onClick={onPromoteAdmitted}>
+				<UserCheck className="mr-2 h-4 w-4" />
+				{t("admin.deliberations.promote.button")}
+			</Button>
+		);
 
 	const exportButtons = (
 		<>
@@ -84,7 +100,7 @@ export function DeliberationDetailActions({
 		<div className="flex items-center gap-2">
 			{status === "draft" && (
 				<Button
-					onClick={() => transition.mutate("open")}
+					onClick={() => transition.mutate({ action: "open" })}
 					disabled={transition.isPending}
 				>
 					<Play className="mr-2 h-4 w-4" />
@@ -118,7 +134,12 @@ export function DeliberationDetailActions({
 								confirmText: t("admin.deliberations.actions.close"),
 							})
 						}
-						disabled={transition.isPending}
+						disabled={transition.isPending || outdated}
+						title={
+							outdated
+								? t("admin.deliberations.staleness.recompute")
+								: undefined
+						}
 					>
 						<Lock className="mr-2 h-4 w-4" />
 						{t("admin.deliberations.actions.close")}
@@ -161,6 +182,21 @@ export function DeliberationDetailActions({
 			)}
 			{status === "signed" && (
 				<>
+					{isSuperAdmin && (
+						<Button
+							variant="outline"
+							onClick={() =>
+								ReopenSignedDialog.call({
+									onConfirm: (reason) =>
+										transition.mutateAsync({ action: "reopen", reason }),
+								})
+							}
+							disabled={transition.isPending}
+						>
+							<Unlock className="mr-2 h-4 w-4" />
+							{t("admin.deliberations.actions.reopenSigned")}
+						</Button>
+					)}
 					{promoteButton}
 					{exportButtons}
 				</>

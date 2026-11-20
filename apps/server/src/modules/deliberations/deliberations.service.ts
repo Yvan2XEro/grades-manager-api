@@ -9,6 +9,11 @@ import type {
 import * as schema from "@/db/schema/app-schema";
 import { dispatchWebhook } from "@/lib/webhook-dispatch";
 import { conflict } from "@/modules/_shared/errors";
+import {
+	type MemberRole,
+	roleSatisfies,
+	SUPER_ADMIN_ROLES,
+} from "@/modules/authz";
 import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.types";
 import { getStudentPromotionFacts } from "../promotion-rules/student-facts.service";
@@ -41,6 +46,7 @@ import type {
 	UpdateDeliberationInput,
 	UpdateDeliberationRuleInput,
 } from "./deliberations.zod";
+import { getJuryStaleness } from "./jury-freeze";
 import { buildUeInputs, computeStudentUeResults } from "./ue-results";
 
 // ---------------------------------------------------------------------------
@@ -51,8 +57,39 @@ const VALID_TRANSITIONS: Record<string, Record<string, DeliberationStatus>> = {
 	draft: { open: "open" },
 	open: { close: "closed" },
 	closed: { sign: "signed", reopen: "open" },
-	signed: {},
+	// A signed jury is final; only a super admin can reopen it, with a reason
+	// (e.g. a mark to correct), and it then has to be closed and signed again.
+	signed: { reopen: "open" },
 };
+
+/** Decisions that send a student to the retake session. */
+const RETAKE_CANDIDATE_DECISIONS: ReadonlySet<DeliberationDecision> = new Set([
+	"deferred",
+	"pending",
+]);
+
+/**
+ * The annual jury a retake jury follows: same class and year, closed or
+ * signed. Its non-admitted students are the retake jury's population.
+ */
+async function findAnnualJuryFor(
+	delib: { classId: string; academicYearId: string },
+	institutionId: string,
+) {
+	return db.query.deliberations.findFirst({
+		where: and(
+			eq(schema.deliberations.institutionId, institutionId),
+			eq(schema.deliberations.classId, delib.classId),
+			eq(schema.deliberations.academicYearId, delib.academicYearId),
+			eq(schema.deliberations.type, "annual"),
+			inArray(schema.deliberations.status, ["closed", "signed"]),
+		),
+	});
+}
+
+function badRequest(message: string): never {
+	throw new TRPCError({ code: "BAD_REQUEST", message });
+}
 
 // ---------------------------------------------------------------------------
 // Deliberation CRUD
@@ -86,6 +123,38 @@ export async function create(
 			code: "NOT_FOUND",
 			message: "Academic year not found",
 		});
+	}
+	if (klass.academicYear !== input.academicYearId) {
+		badRequest("The class does not belong to this academic year");
+	}
+
+	// A semester jury deliberates one semester; annual and retake juries
+	// cover the whole year (the retake session follows the annual jury).
+	if (input.type === "semester") {
+		if (!input.semesterId) {
+			badRequest("SEMESTER_REQUIRED: a semester jury needs a semester");
+		}
+		const semester = await db.query.semesters.findFirst({
+			where: eq(schema.semesters.id, input.semesterId),
+		});
+		if (!semester) {
+			throw new TRPCError({ code: "NOT_FOUND", message: "Semester not found" });
+		}
+	} else if (input.semesterId) {
+		badRequest(
+			"SEMESTER_NOT_ALLOWED: annual and retake juries cover the whole year",
+		);
+	}
+	if (input.type === "retake") {
+		const annual = await findAnnualJuryFor(
+			{ classId: input.classId, academicYearId: input.academicYearId },
+			institutionId,
+		);
+		if (!annual) {
+			badRequest(
+				"ANNUAL_JURY_REQUIRED: the retake jury follows a closed annual jury",
+			);
+		}
 	}
 
 	let delib: schema.Deliberation;
@@ -206,9 +275,26 @@ export async function getById(id: string, institutionId: string) {
 		excludedCount?: number;
 		undecidedCount?: number;
 	};
+	const staleness = await getJuryStaleness(delib);
+	// The retake jury following an annual one: its deferred students wait for
+	// it instead of repeating.
+	const retakeJury =
+		delib.type === "annual"
+			? ((await db.query.deliberations.findFirst({
+					where: and(
+						eq(schema.deliberations.institutionId, institutionId),
+						eq(schema.deliberations.classId, delib.classId),
+						eq(schema.deliberations.academicYearId, delib.academicYearId),
+						eq(schema.deliberations.type, "retake"),
+					),
+					columns: { id: true, status: true },
+				})) ?? null)
+			: null;
 	return {
 		...delib,
 		studentResults,
+		staleness,
+		retakeJury,
 		promotion: lastPromotion
 			? {
 					at: lastPromotion.createdAt,
@@ -247,6 +333,7 @@ export async function transition(
 	input: TransitionDeliberationInput,
 	institutionId: string,
 	actorId: string,
+	actorRole: MemberRole | null = null,
 ) {
 	const delib = await repo.findDeliberationById(input.id, institutionId);
 	if (!delib) {
@@ -264,6 +351,29 @@ export async function transition(
 			message: `Cannot ${input.action} a deliberation in '${delib.status}' status`,
 		});
 	}
+	const reopensSigned = input.action === "reopen" && delib.status === "signed";
+	if (reopensSigned) {
+		if (!roleSatisfies(actorRole, SUPER_ADMIN_ROLES)) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Only a super admin can reopen a signed deliberation",
+			});
+		}
+		if (!input.reason?.trim()) {
+			badRequest("REASON_REQUIRED: reopening a signed jury needs a reason");
+		}
+	}
+	// Results that no longer match the marks are recomputed before they
+	// become official.
+	if (input.action === "close" || input.action === "sign") {
+		const staleness = await getJuryStaleness(delib);
+		if (staleness.isOutdated) {
+			throw new TRPCError({
+				code: "PRECONDITION_FAILED",
+				message: `JURY_OUTDATED: ${staleness.changedMarks} mark(s) changed since the last computation`,
+			});
+		}
+	}
 
 	const updates: Partial<schema.NewDeliberation> = {
 		status: targetStatus,
@@ -278,6 +388,8 @@ export async function transition(
 		updates.signedBy = actorId;
 	} else if (input.action === "reopen") {
 		updates.closedAt = null;
+		updates.signedAt = null;
+		updates.signedBy = null;
 	}
 
 	const updated = await repo.updateDeliberation(
@@ -299,6 +411,13 @@ export async function transition(
 		deliberationId: input.id,
 		action: logAction as schema.DeliberationLogAction,
 		actorId,
+		details:
+			input.action === "reopen"
+				? {
+						fromStatus: delib.status,
+						...(input.reason?.trim() ? { reason: input.reason.trim() } : {}),
+					}
+				: undefined,
 	});
 
 	if (input.action === "sign" && updates.signedAt) {
@@ -408,7 +527,7 @@ export async function compute(
 	const formerIds = enrolledIds
 		.map((e) => e.studentId)
 		.filter((sid) => !currentIds.has(sid));
-	const population =
+	let population =
 		formerIds.length > 0
 			? [
 					...klass.students,
@@ -418,6 +537,30 @@ export async function compute(
 					})),
 				]
 			: klass.students;
+
+	// The retake session only concerns the students the annual jury did not
+	// admit (deferred, or left without a decision): the others keep the
+	// annual decision, which stays their final one.
+	if (delib.type === "retake") {
+		const annual = await findAnnualJuryFor(delib, institutionId);
+		if (!annual) {
+			badRequest(
+				"ANNUAL_JURY_REQUIRED: the retake jury follows a closed annual jury",
+			);
+		}
+		const annualResults = await db.query.deliberationStudentResults.findMany({
+			where: eq(schema.deliberationStudentResults.deliberationId, annual.id),
+			columns: { studentId: true, finalDecision: true },
+		});
+		const candidates = new Set(
+			annualResults
+				.filter((r) =>
+					RETAKE_CANDIDATE_DECISIONS.has(r.finalDecision ?? "pending"),
+				)
+				.map((r) => r.studentId),
+		);
+		population = population.filter((s) => candidates.has(s.id));
+	}
 
 	// Filter classCourses by semester if semester-specific deliberation
 	let classCourses = klass.classCourses;
@@ -685,6 +828,18 @@ export async function compute(
 
 	// Compute stats
 	const stats = computeStats(studentResults);
+
+	// Students no longer in the population (e.g. admitted by the annual jury
+	// after it was reopened) lose their result in this jury.
+	const kept = new Set(studentResults.map((r) => r.studentId));
+	const dropped = previous
+		.filter((r) => !kept.has(r.studentId))
+		.map((r) => r.id);
+	if (dropped.length > 0) {
+		await db
+			.delete(schema.deliberationStudentResults)
+			.where(inArray(schema.deliberationStudentResults.id, dropped));
+	}
 
 	// Upsert results
 	await repo.upsertStudentResults(
@@ -1081,6 +1236,27 @@ export async function promoteAdmitted(
 			message: "Deliberation must be closed or signed to promote students",
 		});
 	}
+	// A semester jury is an intermediate one: the year-end (annual or
+	// retake) jury decides the progression.
+	if (delib.type === "semester") {
+		badRequest(
+			"SEMESTER_JURY_NO_PROMOTION: promotion follows the annual or retake jury",
+		);
+	}
+	// With a retake session for this class and year, the students the annual
+	// jury did not admit wait for the retake jury instead of repeating.
+	const retakeJury =
+		delib.type === "annual"
+			? await db.query.deliberations.findFirst({
+					where: and(
+						eq(schema.deliberations.institutionId, institutionId),
+						eq(schema.deliberations.classId, delib.classId),
+						eq(schema.deliberations.academicYearId, delib.academicYearId),
+						eq(schema.deliberations.type, "retake"),
+					),
+					columns: { id: true },
+				})
+			: undefined;
 
 	// The jury's final decisions split the class in four groups: admitted
 	// (promoted, or graduated on the last level), repeaters (the jury page
@@ -1094,11 +1270,15 @@ export async function promoteAdmitted(
 			.filter((r) => r.finalDecision && decisions.includes(r.finalDecision))
 			.map((r) => r.studentId);
 	const admittedIds = idsWith("admitted", "compensated");
-	const repeatIds = idsWith("repeat", "deferred");
+	const awaitingRetakeIds = retakeJury ? idsWith("deferred") : [];
+	const repeatIds = retakeJury
+		? idsWith("repeat")
+		: idsWith("repeat", "deferred");
 	const excludedIds = idsWith("excluded");
 	const undecidedCount =
 		allResults.length -
 		admittedIds.length -
+		awaitingRetakeIds.length -
 		repeatIds.length -
 		excludedIds.length;
 
@@ -1248,6 +1428,8 @@ export async function promoteAdmitted(
 		repeatUnplacedCount: repeatClass ? 0 : repeatIds.length,
 		excludedCount: outcome.excluded.length,
 		undecidedCount,
+		// Deferred students left to the retake jury of the class
+		awaitingRetakeCount: awaitingRetakeIds.length,
 	};
 
 	if (

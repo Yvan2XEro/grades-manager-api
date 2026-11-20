@@ -98,7 +98,8 @@ export async function loadDeliberationResult(
 	deliberationId?: string,
 ) {
 	if (!deliberationId) {
-		// Fallback: pick the most recent annual deliberation for this student
+		// Fallback: the most recent closed year-end jury of the student (the
+		// retake jury before the annual one of the same year)
 		const result = await db
 			.select({
 				result: schema.deliberationStudentResults,
@@ -112,13 +113,21 @@ export async function loadDeliberationResult(
 					schema.deliberationStudentResults.deliberationId,
 				),
 			)
+			.innerJoin(
+				schema.academicYears,
+				eq(schema.academicYears.id, schema.deliberations.academicYearId),
+			)
 			.where(
 				and(
 					eq(schema.deliberationStudentResults.studentId, studentId),
 					eq(schema.deliberations.institutionId, institutionId),
+					inArray(schema.deliberations.type, ["annual", "retake"]),
+					inArray(schema.deliberations.status, ["closed", "signed"]),
 				),
 			)
 			.orderBy(
+				desc(schema.academicYears.startDate),
+				sql`case when ${schema.deliberations.type} = 'retake' then 0 else 1 end`,
 				sql`${schema.deliberations.deliberationDate} desc nulls last`,
 				desc(schema.deliberations.createdAt),
 			)
@@ -504,6 +513,8 @@ export async function listFinalDeliberationResults(
 		.where(and(...conditions))
 		.orderBy(
 			desc(schema.academicYears.startDate),
+			// Within a year, the retake jury supersedes the annual one
+			sql`case when ${schema.deliberations.type} = 'retake' then 0 else 1 end`,
 			sql`${schema.deliberations.deliberationDate} desc nulls last`,
 			desc(schema.deliberations.createdAt),
 		);

@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { gradeErrorMessage } from "@/lib/grade-errors";
 import { trpcClient } from "@/utils/trpc";
 import { cellKey, isValidScore } from "../services/score-cells";
 import type { CellKey, CellState } from "../types";
@@ -104,7 +105,10 @@ export function useSpreadsheetCells(grades: SavedGrade[] | undefined) {
 				}, 1500);
 			} catch (err: any) {
 				setStates((s) => ({ ...s, [k]: "error" }));
-				setErrors((e) => ({ ...e, [k]: err?.message ?? t("common.error") }));
+				setErrors((e) => ({
+					...e,
+					[k]: gradeErrorMessage(t, err) ?? err?.message ?? t("common.error"),
+				}));
 			}
 		},
 		[gradeIds, deleteMutation, upsertMutation, t],

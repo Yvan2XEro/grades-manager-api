@@ -60,3 +60,12 @@ export const consolidatedSchema = z.object({
 	/** Only the marks of this class (the current year's enrollment). */
 	classId: z.string().optional(),
 });
+
+export const correctLockedSchema = z.object({
+	examId: z.string(),
+	studentId: z.string(),
+	score: z.number().min(0),
+	reason: z.string().trim().min(3).max(500),
+});
+
+export const editLogsSchema = z.object({ examId: z.string() });

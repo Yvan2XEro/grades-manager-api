@@ -88,7 +88,12 @@ export const deliberationsRouter = router({
 			if (!ctx.profile) {
 				throw new Error("Profile required");
 			}
-			return service.transition(input, ctx.institution.id, ctx.profile.id);
+			return service.transition(
+				input,
+				ctx.institution.id,
+				ctx.profile.id,
+				ctx.memberRole ?? null,
+			);
 		}),
 
 	compute: tenantAdminProcedure
