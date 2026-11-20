@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import {
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -10,8 +11,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudyCycleForm } from "../hooks/use-study-cycle-form";
 
-/** Name, code, description, credits and duration of a study cycle. */
-export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
+/**
+ * Name, code, description, credits and duration of a study cycle; on
+ * creation, the prefix of the generated levels (`levelPrefixPlaceholder`).
+ */
+export function StudyCycleFormFields({
+	form,
+	levelPrefixPlaceholder,
+}: {
+	form: StudyCycleForm;
+	/** Shown on creation only: the prefix used when the field is left empty. */
+	levelPrefixPlaceholder?: string;
+}) {
 	const { t } = useTranslation();
 	return (
 		<>
@@ -57,6 +68,29 @@ export function StudyCycleFormFields({ form }: { form: StudyCycleForm }) {
 						</FormItem>
 					)}
 				/>
+				{levelPrefixPlaceholder !== undefined && (
+					<FormField
+						control={form.control}
+						name="levelPrefix"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("admin.studyCycles.form.levelPrefix")}</FormLabel>
+								<FormControl>
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										placeholder={levelPrefixPlaceholder}
+										maxLength={6}
+									/>
+								</FormControl>
+								<FormDescription>
+									{t("admin.studyCycles.form.levelPrefixHint")}
+								</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				)}
 			</div>
 			<FormField
 				control={form.control}

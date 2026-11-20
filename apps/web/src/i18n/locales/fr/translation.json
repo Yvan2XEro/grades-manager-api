@@ -1538,7 +1538,9 @@
         "minCredits": "Crédits minimum",
         "autoLevelsPreview": "Aperçu des niveaux auto-générés",
         "nameEn": "Name (English)",
-        "creditsShort": "{{value}} cr"
+        "creditsShort": "{{value}} cr",
+        "levelPrefix": "Préfixe des niveaux",
+        "levelPrefixHint": "Codes des niveaux générés (L → L1, L2, L3). Vide : première lettre du nom."
       },
       "toast": {
         "createSuccess": "Cycle créé",

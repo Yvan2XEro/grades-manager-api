@@ -23,27 +23,58 @@ async function ensureLevel(levelId: string, institutionId: string) {
 	return level;
 }
 
+/** Default level prefix of a cycle: its first letter (Licence → L, Master → M). */
+export function defaultLevelPrefix(cycleName: string) {
+	const letter = cycleName
+		.normalize("NFD")
+		.replace(/[^A-Za-z]/g, "")
+		.charAt(0);
+	return (letter || "N").toUpperCase();
+}
+
+/**
+ * Levels generated with a new cycle, one per year: "Licence 1" (L1),
+ * "Licence 2" (L2)… named after the cycle so they read the same in French
+ * and English and stay distinct from one cycle to the next.
+ */
+export function generatedLevels(args: {
+	name: string;
+	durationYears: number;
+	totalCreditsRequired?: number | null;
+	levelPrefix?: string | null;
+}) {
+	const prefix =
+		args.levelPrefix?.trim().toUpperCase() || defaultLevelPrefix(args.name);
+	const minCredits = Math.floor(
+		(args.totalCreditsRequired ?? 180) / args.durationYears,
+	);
+	return Array.from({ length: args.durationYears }, (_, i) => ({
+		orderIndex: i + 1,
+		code: `${prefix}${i + 1}`,
+		name: `${args.name.trim()} ${i + 1}`,
+		minCredits,
+	}));
+}
+
 export async function createCycle(
-	data: Omit<schema.NewStudyCycle, "institutionId">,
+	input: Omit<schema.NewStudyCycle, "institutionId"> & {
+		levelPrefix?: string;
+	},
 	institutionId: string,
 ) {
+	const { levelPrefix, ...data } = input;
 	// Auto-inject institutionId from context if not provided
 	const cycle = await repo.createCycle({ ...data, institutionId });
 
 	// Auto-create cycle levels based on durationYears
 	if (data.durationYears && data.durationYears > 0) {
-		const creditsPerLevel = Math.floor(
-			(data.totalCreditsRequired ?? 180) / data.durationYears,
-		);
-
-		for (let i = 1; i <= data.durationYears; i++) {
-			await repo.createLevel({
-				cycleId: cycle.id,
-				code: `${data.code}-L${i}`,
-				name: `Level ${i}`,
-				minCredits: creditsPerLevel,
-				orderIndex: i,
-			});
+		for (const level of generatedLevels({
+			name: data.name,
+			durationYears: data.durationYears,
+			totalCreditsRequired: data.totalCreditsRequired,
+			levelPrefix,
+		})) {
+			await repo.createLevel({ cycleId: cycle.id, ...level });
 		}
 	}
 

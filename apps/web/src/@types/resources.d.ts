@@ -2677,6 +2677,8 @@ interface Resources {
 					autoLevelsPreview: "Auto-generated levels preview";
 					nameEn: "Name (English)";
 					creditsShort: "{{value}} cr";
+					levelPrefix: "Level prefix";
+					levelPrefixHint: "Codes of the generated levels (L → L1, L2, L3). Empty: first letter of the name.";
 				};
 				toast: {
 					createSuccess: "Study cycle created";

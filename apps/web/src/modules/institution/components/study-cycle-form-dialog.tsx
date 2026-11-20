@@ -30,18 +30,22 @@ export const StudyCycleFormDialog = createCallable<
 >(({ call, cycle }) => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const { form, autoLevelsPreview } = useStudyCycleForm(cycle);
+	const { form, autoLevelsPreview, defaultPrefix } = useStudyCycleForm(cycle);
 
 	const submit = useMutationFlow(
 		call,
 		async (call, data: StudyCycleFormData) => {
 			try {
+				const { levelPrefix, ...cycleData } = data;
 				const saved = cycle
 					? await trpcClient.studyCycles.updateCycle.mutate({
-							...data,
+							...cycleData,
 							id: cycle.id,
 						})
-					: await trpcClient.studyCycles.createCycle.mutate(data);
+					: await trpcClient.studyCycles.createCycle.mutate({
+							...cycleData,
+							levelPrefix: levelPrefix || undefined,
+						});
 				toast.success(
 					cycle
 						? t("admin.studyCycles.toast.updateSuccess")
@@ -72,7 +76,10 @@ export const StudyCycleFormDialog = createCallable<
 		>
 			<Form {...form}>
 				<form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-					<StudyCycleFormFields form={form} />
+					<StudyCycleFormFields
+						form={form}
+						levelPrefixPlaceholder={cycle ? undefined : defaultPrefix}
+					/>
 					{!cycle && autoLevelsPreview.length > 0 && (
 						<div className="rounded-lg border border-dashed bg-muted/40 p-3">
 							<p className="mb-2 font-medium text-muted-foreground text-xs">
@@ -84,7 +91,7 @@ export const StudyCycleFormDialog = createCallable<
 										key={lvl.code}
 										className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary text-xs"
 									>
-										{lvl.code} ·{" "}
+										{lvl.name} ({lvl.code}) ·{" "}
 										{t("admin.studyCycles.form.creditsShort", {
 											value: lvl.minCredits,
 										})}

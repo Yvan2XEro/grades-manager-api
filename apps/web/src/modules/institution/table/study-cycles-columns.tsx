@@ -12,6 +12,11 @@ export function getStudyCyclesColumns(
 			cell: ({ row }) => (
 				<span className="font-semibold text-foreground">
 					{row.original.name}
+					{row.original.code && (
+						<span className="ml-2 font-mono font-normal text-muted-foreground text-xs">
+							{row.original.code}
+						</span>
+					)}
 				</span>
 			),
 		},

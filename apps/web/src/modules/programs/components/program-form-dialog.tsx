@@ -36,6 +36,7 @@ import { type RouterOutputs, trpcClient } from "@/utils/trpc";
 import {
 	STUDY_CYCLES_SELECT_KEY,
 	type StudyCyclesSelect,
+	studyCycleLabel,
 	useStudyCycles,
 } from "../hooks/use-study-cycles";
 
@@ -177,7 +178,7 @@ export const ProgramFormDialog = createCallable<
 											</SelectItem>
 											{(cycles?.items ?? []).map((cyc) => (
 												<SelectItem key={cyc.id} value={cyc.id}>
-													{cyc.name}
+													{studyCycleLabel(cyc)}
 												</SelectItem>
 											))}
 										</SelectContent>

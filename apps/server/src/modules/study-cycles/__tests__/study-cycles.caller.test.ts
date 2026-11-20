@@ -14,6 +14,25 @@ describe("study cycles router", () => {
 		);
 	});
 
+	it("names generated levels after the cycle, with a chosen prefix", async () => {
+		const admin = createCaller(asAdmin());
+		const licence = await admin.studyCycles.createCycle({
+			code: `LIC-${crypto.randomUUID().slice(0, 4)}`,
+			name: "Licence",
+			durationYears: 3,
+		});
+		const doctorat = await admin.studyCycles.createCycle({
+			code: `DOC-${crypto.randomUUID().slice(0, 4)}`,
+			name: "Doctorat",
+			durationYears: 3,
+			levelPrefix: "phd",
+		});
+		const codes = async (cycleId: string) =>
+			(await admin.studyCycles.listLevels({ cycleId })).map((l) => l.code);
+		expect(await codes(licence.id)).toEqual(["L1", "L2", "L3"]);
+		expect(await codes(doctorat.id)).toEqual(["PHD1", "PHD2", "PHD3"]);
+	});
+
 	it("manages cycles and levels", async () => {
 		const admin = createCaller(asAdmin());
 		// institutionId is auto-filled from context, no need to pass it
@@ -31,7 +50,12 @@ describe("study cycles router", () => {
 		});
 		const expectedLevelCount = cycle.durationYears ?? 0;
 		expect(preloadedLevels.length).toBe(expectedLevelCount);
-		expect(preloadedLevels[0]?.code).toBe("bachelor-L1");
+		// Levels are named after the cycle: "Bachelor 1" (B1)…
+		expect(preloadedLevels.map((l) => [l.code, l.name])).toEqual([
+			["B1", "Bachelor 1"],
+			["B2", "Bachelor 2"],
+			["B3", "Bachelor 3"],
+		]);
 
 		const level = await admin.studyCycles.createLevel({
 			cycleId: cycle.id,
