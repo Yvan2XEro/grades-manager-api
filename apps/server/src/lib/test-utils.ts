@@ -339,6 +339,7 @@ export async function createStudyCycle(
 			institutionId: faculty.id,
 			code: data.code ?? `cycle-${randomUUID().slice(0, 6)}`,
 			name: data.name ?? `Cycle-${randomUUID().slice(0, 4)}`,
+			nameEn: data.nameEn ?? null,
 			description: data.description ?? null,
 			totalCreditsRequired: data.totalCreditsRequired ?? 180,
 			durationYears: data.durationYears ?? 3,

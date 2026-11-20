@@ -462,6 +462,19 @@ export async function listFinalDeliberationResults(
 			deliberationStatus: schema.deliberations.status,
 			classId: schema.deliberations.classId,
 			academicYearId: schema.deliberations.academicYearId,
+			className: schema.classes.name,
+			academicYearName: schema.academicYears.name,
+			programName: schema.programs.name,
+			cycleId: schema.studyCycles.id,
+			cycleName: schema.studyCycles.name,
+			cycleCode: schema.studyCycles.code,
+			levelName: schema.cycleLevels.name,
+			// The jury's date: the one set on the jury, else when it was signed
+			// or closed.
+			juryDate: sql<Date | null>`coalesce(${schema.deliberations.deliberationDate}, ${schema.deliberations.signedAt}, ${schema.deliberations.closedAt})`,
+			// Last level of its cycle (no higher level). A class without a cycle
+			// level counts as final: nothing tells otherwise.
+			isFinalLevel: sql<boolean>`(${schema.cycleLevels.id} is null or not exists (select 1 from ${schema.cycleLevels} as next_level where next_level.cycle_id = ${schema.cycleLevels.cycleId} and next_level.order_index > ${schema.cycleLevels.orderIndex}))`,
 		})
 		.from(schema.deliberationStudentResults)
 		.innerJoin(
@@ -471,11 +484,55 @@ export async function listFinalDeliberationResults(
 				schema.deliberationStudentResults.deliberationId,
 			),
 		)
+		.innerJoin(
+			schema.classes,
+			eq(schema.classes.id, schema.deliberations.classId),
+		)
+		.innerJoin(
+			schema.academicYears,
+			eq(schema.academicYears.id, schema.deliberations.academicYearId),
+		)
+		.innerJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+		)
 		.where(and(...conditions))
 		.orderBy(
+			desc(schema.academicYears.startDate),
 			sql`${schema.deliberations.deliberationDate} desc nulls last`,
 			desc(schema.deliberations.createdAt),
 		);
+}
+
+/**
+ * Cycle of a class and whether its level is the last one of the cycle
+ * (a final-level jury awards the cycle's degree).
+ */
+export async function loadClassCycleInfo(classId: string) {
+	const [row] = await db
+		.select({
+			cycleName: schema.studyCycles.name,
+			cycleNameEn: schema.studyCycles.nameEn,
+			cycleCode: schema.studyCycles.code,
+			isFinalLevel: sql<boolean>`not exists (select 1 from ${schema.cycleLevels} as next_level where next_level.cycle_id = ${schema.cycleLevels.cycleId} and next_level.order_index > ${schema.cycleLevels.orderIndex})`,
+		})
+		.from(schema.classes)
+		.innerJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.innerJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+		)
+		.where(eq(schema.classes.id, classId))
+		.limit(1);
+	return row ?? null;
 }
 
 /**

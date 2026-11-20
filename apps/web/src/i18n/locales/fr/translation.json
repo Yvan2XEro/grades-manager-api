@@ -4643,7 +4643,10 @@
         "preview": "Aperçu",
         "academicYear": "Année académique",
         "yearWithJury": "décision du jury",
-        "yearWithoutGrades": "aucune note"
+        "yearWithoutGrades": "aucune note",
+        "diplomaChoice": "Diplôme",
+        "diplomaOption": "{{cycle}} — {{program}} ({{year}})",
+        "resultChoice": "Année attestée"
       },
       "theme": {
         "groups": {
@@ -7563,7 +7566,8 @@
       "deliberation_not_closed": "Délibération du jury non clôturée",
       "decision_pending": "Décision du jury en attente",
       "decision_unfavourable": "Décision du jury : {{decision}}",
-      "decision_unfavourable_generic": "Décision du jury défavorable"
+      "decision_unfavourable_generic": "Décision du jury défavorable",
+      "not_final_level": "Aucun cycle achevé : un diplôme exige une décision favorable du jury sur le dernier niveau du cycle"
     },
     "decisions": {
       "admitted": "admis(e)",

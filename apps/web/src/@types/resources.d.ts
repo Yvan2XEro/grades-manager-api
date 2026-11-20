@@ -5735,6 +5735,9 @@ interface Resources {
 					academicYear: "Academic year";
 					yearWithJury: "jury decision";
 					yearWithoutGrades: "no marks yet";
+					diplomaChoice: "Diploma";
+					diplomaOption: "{{cycle}} — {{program}} ({{year}})";
+					resultChoice: "Year attested";
 				};
 				theme: {
 					groups: {
@@ -7560,6 +7563,7 @@ interface Resources {
 				decision_pending: "Jury decision pending";
 				decision_unfavourable: "Jury decision: {{decision}}";
 				decision_unfavourable_generic: "Unfavourable jury decision";
+				not_final_level: "No cycle completed yet: a diploma needs a favourable jury on the last level of the cycle";
 			};
 			decisions: {
 				admitted: "admitted";

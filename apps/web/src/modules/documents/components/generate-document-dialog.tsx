@@ -91,6 +91,7 @@ export const GenerateDocumentDialog = createCallable<{
 	);
 	const [classId, setClassId] = useState<string>("");
 	const [academicYearId, setAcademicYearId] = useState<string>("");
+	const [deliberationId, setDeliberationId] = useState<string>("");
 
 	const { data: options, isLoading } = useQuery({
 		queryKey: ["academic-documents", "student-options", studentId],
@@ -110,6 +111,19 @@ export const GenerateDocumentDialog = createCallable<{
 	const transcriptYears = options?.transcript.years ?? [];
 	const selectedYearId =
 		academicYearId || options?.transcript.defaultAcademicYearId || "";
+
+	// Pass certificate: one per year with a favourable jury. Diploma: one per
+	// cycle completed. Default to the latest.
+	const juryChoices =
+		kind === "diploma"
+			? (options?.diploma.earned ?? [])
+			: kind === "attestation"
+				? (options?.attestation.results ?? [])
+				: [];
+	const selectedDeliberationId =
+		(juryChoices.some((j) => j.deliberationId === deliberationId)
+			? deliberationId
+			: juryChoices[0]?.deliberationId) ?? "";
 
 	const verdict =
 		kind === "enrollment_certificate"
@@ -140,6 +154,10 @@ export const GenerateDocumentDialog = createCallable<{
 					: {}),
 				...(kind === "transcript" && selectedYearId
 					? { academicYearId: selectedYearId }
+					: {}),
+				...((kind === "diploma" || kind === "attestation") &&
+				selectedDeliberationId
+					? { deliberationId: selectedDeliberationId }
 					: {}),
 			}),
 		onSuccess: (result) => {
@@ -239,6 +257,36 @@ export const GenerateDocumentDialog = createCallable<{
 												: !y.hasGrades
 													? ` (${t("admin.documents.generate.yearWithoutGrades")})`
 													: ""}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+					{juryChoices.length > 0 && (
+						<div className="space-y-1">
+							<Label>
+								{kind === "diploma"
+									? t("admin.documents.generate.diplomaChoice")
+									: t("admin.documents.generate.resultChoice")}
+							</Label>
+							<Select
+								value={selectedDeliberationId}
+								onValueChange={setDeliberationId}
+							>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{juryChoices.map((j) => (
+										<SelectItem key={j.deliberationId} value={j.deliberationId}>
+											{kind === "diploma"
+												? t("admin.documents.generate.diplomaOption", {
+														cycle: j.cycleName ?? j.programName,
+														program: j.programName,
+														year: j.academicYearName,
+													})
+												: `${j.academicYearName} — ${j.className}`}
 										</SelectItem>
 									))}
 								</SelectContent>

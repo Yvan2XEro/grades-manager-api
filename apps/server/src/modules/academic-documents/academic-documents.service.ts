@@ -486,6 +486,32 @@ function mentionLabel(
 	}
 }
 
+/** English label of a mention ("Very Good"), for the bilingual lines. */
+function mentionLabelEn(
+	mention: string | null | undefined,
+	mentionRanges?: MentionRange[],
+): string {
+	if (!mention) return "—";
+	const range =
+		mentionRanges?.find((r) => r.key === mention) ??
+		DEFAULT_MENTION_RANGES.find((r) => r.key === mention);
+	return range?.labelEn || range?.label || mention;
+}
+
+/**
+ * The option auto-created with a program ("Default option", code `default` /
+ * `default-xxxx`) is a technical placeholder: documents print no option line
+ * for it.
+ */
+export function printableOptionName(
+	option: { name?: string | null; code?: string | null } | null | undefined,
+) {
+	if (!option?.name) return "";
+	const code = (option.code ?? "").toLowerCase();
+	if (code === "default" || code.startsWith("default-")) return "";
+	return option.name;
+}
+
 function decisionLabel(decision: string | null | undefined): string {
 	switch (decision) {
 		case "admitted":
@@ -637,6 +663,42 @@ export async function buildRenderData(args: {
 	}`.trim();
 
 	const titles = diplomaTitleFor(kind, program?.name ?? "", period);
+	const optionName = printableOptionName(cls?.programOption);
+	const mentionFr = mentionLabel(
+		deliberation?.result.mention,
+		args.mentionRanges,
+	);
+	const mentionEn = mentionLabelEn(
+		deliberation?.result.mention,
+		args.mentionRanges,
+	);
+	// A pass certificate of the last level of a cycle attests the degree
+	// ("Licence"), an intermediate year its level ("Licence 2").
+	const cycleInfo = cls?.id ? await repo.loadClassCycleInfo(cls.id) : null;
+	const decisionKey =
+		deliberation?.result.finalDecision ?? deliberation?.result.autoDecision;
+	const attestsDegree =
+		(kind === "attestation" || kind === "diploma") &&
+		!!cycleInfo?.isFinalLevel &&
+		(decisionKey === "admitted" || decisionKey === "compensated");
+	const levelLabel = attestsDegree
+		? cycleInfo.cycleName
+		: (cls?.cycleLevel?.name ?? "");
+	const levelLabelEn = attestsDegree
+		? (cycleInfo.cycleNameEn ?? cycleInfo.cycleName)
+		: (cls?.cycleLevel?.name ?? "");
+	// The jury's own date: set on the jury, else when it was signed / closed.
+	const juryRow = deliberation?.deliberation as
+		| {
+				deliberationDate?: Date | string | null;
+				signedAt?: Date | string | null;
+				closedAt?: Date | string | null;
+				openedAt?: Date | string | null;
+		  }
+		| null
+		| undefined;
+	const juryDate =
+		juryRow?.deliberationDate ?? juryRow?.signedAt ?? juryRow?.closedAt;
 
 	const universityName =
 		supervisingUniversity?.nameFr ?? institution?.nameFr ?? "";
@@ -788,13 +850,13 @@ export async function buildRenderData(args: {
 				?.name ??
 			cls?.cycleLevel?.name ??
 			"",
-		NIVEAU: cls?.cycleLevel?.name ?? "",
+		NIVEAU: levelLabel,
 		FILIERE: program?.name ?? "",
 		SEMESTRE: cls?.semester?.name ?? "",
-		OPTION: cls?.programOption?.name ?? "",
-		OPTION_EN: cls?.programOption?.name ?? "",
-		MENTION: mentionLabel(deliberation?.result.mention, args.mentionRanges),
-		MENTION_EN: mentionLabel(deliberation?.result.mention, args.mentionRanges),
+		OPTION: optionName,
+		OPTION_EN: optionName,
+		MENTION: mentionFr,
+		MENTION_EN: mentionEn,
 		GRADE: deliberation?.result.mention ?? "",
 		TOTAL_CREDITS: deliberation?.result.totalCreditsEarned ?? 0,
 		MOYENNE: deliberation?.result.generalAverage ?? 0,
@@ -802,8 +864,8 @@ export async function buildRenderData(args: {
 		DOMAINE_EN: program?.name ?? "",
 		PARCOURS: program?.name ?? "",
 		PARCOURS_EN: program?.name ?? "",
-		SPECIALITE: cls?.programOption?.name ?? "",
-		SPECIALITE_EN: cls?.programOption?.name ?? "",
+		SPECIALITE: optionName,
+		SPECIALITE_EN: optionName,
 		FINALITE: "",
 		FINALITE_EN: "",
 	};
@@ -891,9 +953,9 @@ export async function buildRenderData(args: {
 			// `{{#each tutelleChain}}` instead.
 		},
 		jury: {
-			admissionDate: formatDate(deliberation?.deliberation?.openedAt) || "—",
-			deliberationDate:
-				formatDate(deliberation?.deliberation?.deliberationDate) || "—",
+			// The admission panel is the year-end jury itself: same session.
+			admissionDate: formatDate(juryDate ?? juryRow?.openedAt) || "—",
+			deliberationDate: formatDate(juryDate) || "—",
 			number: deliberation?.deliberation?.juryNumber ?? "",
 		},
 		legalGrounds: [
@@ -925,17 +987,20 @@ export async function buildRenderData(args: {
 			lastName: student.profile.lastName,
 			birthDate: student.profile.dateOfBirth ?? "—",
 			birthPlace: student.profile.placeOfBirth ?? "—",
-			mentionFr: mentionLabel(deliberation?.result.mention, args.mentionRanges),
-			mentionEn: mentionLabel(deliberation?.result.mention, args.mentionRanges),
-			option: cls?.programOption?.name ?? "",
-			optionEn: cls?.programOption?.name ?? "",
+			mentionFr,
+			mentionEn,
+			option: optionName,
+			optionEn: optionName,
 			// DIPLOMATION-shape uppercase keys (used by releve_template.html
 			// and attestation_template.html).
 			...dipStudent,
 		},
 		program: {
 			name: program?.name ?? "",
-			level: cls?.cycleLevel?.name ?? "",
+			level: levelLabel,
+			levelEn: levelLabelEn,
+			/** The document attests a whole cycle (final level, favourable jury). */
+			isDegree: attestsDegree,
 		},
 		class: {
 			name: cls?.name ?? "",

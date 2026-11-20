@@ -18,7 +18,8 @@ export type IneligibilityReason =
 	| "no_deliberation"
 	| "deliberation_not_closed"
 	| "decision_pending"
-	| "decision_unfavourable";
+	| "decision_unfavourable"
+	| "not_final_level";
 
 export type DocumentEligibility = {
 	eligible: boolean;
@@ -86,24 +87,41 @@ type ResultRow = {
 	deliberationStatus: DeliberationStatus;
 	classId: string;
 	academicYearId: string;
+	/** Last level of its cycle: the jury awards the cycle's degree. */
+	isFinalLevel?: boolean | null;
 };
+
+const decisionOf = (r: ResultRow) => r.finalDecision ?? r.autoDecision;
+
+/** Closed jury with a favourable decision. */
+export function isFavourableResult(r: ResultRow) {
+	const d = decisionOf(r);
+	return CLOSED.has(r.deliberationStatus) && d != null && FAVOURABLE.has(d);
+}
 
 /**
  * Pass certificate / diploma: the student needs a favourable decision
  * (admitted or compensated) of a closed or signed year-end jury. Rows are the
  * student's annual/retake results, most recent first; when the year is not
  * fixed, any year with a favourable decision qualifies (latest wins).
+ *
+ * A diploma (`finalLevelOnly`) certifies a whole cycle: only a jury of the
+ * last level of the cycle counts (an admitted L1 student is no Licence
+ * graduate).
  */
-export function resultEligibility(rows: ResultRow[]): DocumentEligibility {
+export function resultEligibility(
+	rows: ResultRow[],
+	opts: { finalLevelOnly?: boolean } = {},
+): DocumentEligibility {
 	if (rows.length === 0) {
 		return { eligible: false, reason: "no_deliberation" };
 	}
 	const closed = rows.filter((r) => CLOSED.has(r.deliberationStatus));
-	const decisionOf = (r: ResultRow) => r.finalDecision ?? r.autoDecision;
-	const favourable = closed.find((r) => {
-		const d = decisionOf(r);
-		return d != null && FAVOURABLE.has(d);
-	});
+	const favourable = closed.find(
+		(r) =>
+			isFavourableResult(r) &&
+			(!opts.finalLevelOnly || r.isFinalLevel !== false),
+	);
 	if (favourable) {
 		return {
 			eligible: true,
@@ -112,6 +130,19 @@ export function resultEligibility(rows: ResultRow[]): DocumentEligibility {
 			academicYearId: favourable.academicYearId,
 			deliberationId: favourable.deliberationId,
 		};
+	}
+	if (opts.finalLevelOnly) {
+		const intermediate = closed.find(isFavourableResult);
+		if (intermediate) {
+			return {
+				eligible: false,
+				reason: "not_final_level",
+				decision: decisionOf(intermediate),
+				classId: intermediate.classId,
+				academicYearId: intermediate.academicYearId,
+				deliberationId: intermediate.deliberationId,
+			};
+		}
 	}
 	const latest = closed[0];
 	if (!latest) {
@@ -135,6 +166,53 @@ export function resultEligibility(rows: ResultRow[]): DocumentEligibility {
 		academicYearId: latest.academicYearId,
 		deliberationId: latest.deliberationId,
 	};
+}
+
+/**
+ * Favourable closed juries of one student, most recent first: what a pass
+ * certificate can attest (one per year) and, on the last level of a cycle,
+ * the diplomas earned (one per cycle — the latest jury of that cycle).
+ */
+export async function listStudentResultDocuments(
+	institutionId: string,
+	studentId: string,
+) {
+	const rows = await repo.listFinalDeliberationResults(institutionId, [
+		studentId,
+	]);
+	const results = [];
+	const seenYears = new Set<string>();
+	for (const r of rows) {
+		if (!isFavourableResult(r)) continue;
+		// Latest jury of the year (a retake after the annual one)
+		const key = `${r.classId}:${r.academicYearId}`;
+		if (seenYears.has(key)) continue;
+		seenYears.add(key);
+		results.push({
+			deliberationId: r.deliberationId,
+			classId: r.classId,
+			className: r.className,
+			academicYearId: r.academicYearId,
+			academicYearName: r.academicYearName,
+			programName: r.programName,
+			cycleId: r.cycleId ?? null,
+			cycleName: r.cycleName ?? null,
+			cycleCode: r.cycleCode ?? null,
+			levelName: r.levelName ?? null,
+			isFinalLevel: r.isFinalLevel !== false,
+			decision: decisionOf(r),
+			juryDate: r.juryDate ? new Date(r.juryDate).toISOString() : null,
+		});
+	}
+	const seenCycles = new Set<string>();
+	const diplomas = results.filter((r) => {
+		if (!r.isFinalLevel) return false;
+		const key = r.cycleId ?? `program:${r.programName}`;
+		if (seenCycles.has(key)) return false;
+		seenCycles.add(key);
+		return true;
+	});
+	return { results, diplomas };
 }
 
 /**
@@ -169,7 +247,7 @@ export async function checkDocumentEligibility(
 		if (opts.deliberationId) {
 			rows = rows.filter((r) => r.deliberationId === opts.deliberationId);
 		}
-		return resultEligibility(rows);
+		return resultEligibility(rows, { finalLevelOnly: kind === "diploma" });
 	}
 	return { eligible: true, classId: opts.classId ?? null };
 }
@@ -212,7 +290,9 @@ export async function classDocumentRoster(
 				classId,
 			);
 		} else if (RESULT_KINDS.has(kind)) {
-			eligibility = resultEligibility(resultsByStudent.get(e.studentId) ?? []);
+			eligibility = resultEligibility(resultsByStudent.get(e.studentId) ?? [], {
+				finalLevelOnly: kind === "diploma",
+			});
 		} else {
 			eligibility = { eligible: true };
 		}

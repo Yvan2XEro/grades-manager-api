@@ -11,7 +11,8 @@ export type IneligibilityReason =
 	| "no_deliberation"
 	| "deliberation_not_closed"
 	| "decision_pending"
-	| "decision_unfavourable";
+	| "decision_unfavourable"
+	| "not_final_level";
 
 /** Why a student cannot get a document, in words ("Jury decision: deferred"). */
 export function ineligibilityLabel(
@@ -32,6 +33,8 @@ export function ineligibilityLabel(
 			return t("documents.ineligible.deliberation_not_closed");
 		case "decision_pending":
 			return t("documents.ineligible.decision_pending");
+		case "not_final_level":
+			return t("documents.ineligible.not_final_level");
 		case "decision_unfavourable":
 			return decision
 				? t("documents.ineligible.decision_unfavourable", {
