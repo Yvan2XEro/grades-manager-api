@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
+import { and, eq, gt, ilike, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -45,13 +45,18 @@ export async function findByCode(code: string, cycleId: string) {
 }
 
 export async function list(opts: {
+	/** Cycles the caller may see (its institution's). */
+	cycleIds: string[];
 	cycleId?: string;
 	q?: string;
 	cursor?: string;
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 50;
-	const conditions: SQL<unknown>[] = [];
+	if (opts.cycleIds.length === 0) return { items: [], nextCursor: undefined };
+	const conditions: SQL<unknown>[] = [
+		inArray(schema.cycleLevels.cycleId, opts.cycleIds),
+	];
 	if (opts.cycleId) {
 		conditions.push(eq(schema.cycleLevels.cycleId, opts.cycleId));
 	}
@@ -61,12 +66,7 @@ export async function list(opts: {
 	if (opts.cursor) {
 		conditions.push(gt(schema.cycleLevels.id, opts.cursor));
 	}
-	const condition =
-		conditions.length === 0
-			? undefined
-			: conditions.length === 1
-				? conditions[0]
-				: and(...conditions);
+	const condition = and(...conditions);
 	const items = await db
 		.select()
 		.from(schema.cycleLevels)
@@ -80,17 +80,21 @@ export async function list(opts: {
 
 export async function search(opts: {
 	query: string;
+	cycleIds: string[];
 	cycleId?: string;
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 20;
+	if (opts.cycleIds.length === 0) return [];
 	const searchCondition = or(
 		ilike(schema.cycleLevels.code, `%${opts.query}%`),
 		ilike(schema.cycleLevels.name, `%${opts.query}%`),
 	);
-	const condition = opts.cycleId
-		? and(eq(schema.cycleLevels.cycleId, opts.cycleId), searchCondition)
-		: searchCondition;
+	const condition = and(
+		inArray(schema.cycleLevels.cycleId, opts.cycleIds),
+		opts.cycleId ? eq(schema.cycleLevels.cycleId, opts.cycleId) : undefined,
+		searchCondition,
+	);
 
 	const items = await db
 		.select()
