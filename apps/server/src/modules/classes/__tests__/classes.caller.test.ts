@@ -18,6 +18,26 @@ describe("classes router", () => {
 		);
 	});
 
+	it("keeps a class without semester when none is chosen", async () => {
+		const admin = createCaller(asAdmin());
+		const cls = await createClass();
+		const annual = await admin.classes.create({
+			name: `Annual ${crypto.randomUUID().slice(0, 4)}`,
+			program: cls.program,
+			academicYear: cls.academicYear,
+			code: `ANN-${crypto.randomUUID().slice(0, 4)}`,
+			semesterId: null,
+		});
+		expect(annual.semesterId).toBeNull();
+		// Clearing the semester of an existing class
+		expect(cls.semesterId).not.toBeNull();
+		const cleared = await admin.classes.update({
+			id: cls.id,
+			semesterId: null,
+		});
+		expect(cleared?.semesterId).toBeNull();
+	});
+
 	it("supports CRUD and transfer", async () => {
 		const admin = createCaller(asAdmin());
 		const cls = await createClass();

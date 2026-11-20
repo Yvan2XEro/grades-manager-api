@@ -3129,8 +3129,8 @@
       },
       "semesters": {
         "annual": "Annuel",
-        "fall": "Semestre 1",
-        "spring": "Semestre 2"
+        "fall": "1er semestre de l'année",
+        "spring": "2e semestre de l'année"
       },
       "actions": {
         "create": "Créer l'UE",
@@ -3224,7 +3224,8 @@
       },
       "programFacultySummary": "Faculté : {{value}}",
       "noLevel": "Non renseigné",
-      "levelHint": "Les classes de ce niveau reçoivent les EC de l'UE lors de l'import d'une année."
+      "levelHint": "Les classes de ce niveau reçoivent les EC de l'UE lors de l'import d'une année.",
+      "semesterHint": "Le semestre de la classe (S1 à S6) situe l'UE dans le cycle : une UE du 1er semestre d'une classe de Licence 2 est enseignée en S3."
     },
     "deliberations": {
       "title": "Délibérations",

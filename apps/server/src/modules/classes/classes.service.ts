@@ -120,7 +120,12 @@ async function ensureProgramOption(
 	return option.id;
 }
 
+/**
+ * Semester of a class: the given one, none when `null` (the registrar chose
+ * "None"), the first semester of the catalog when omitted.
+ */
 async function ensureSemester(semesterId?: string | null) {
+	if (semesterId === null) return null;
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -205,9 +210,12 @@ export async function updateClass(
 		program,
 		desiredProgramOptionId,
 	);
-	const semesterId = data.semesterId
-		? await ensureSemester(data.semesterId)
-		: undefined;
+	const semesterId =
+		data.semesterId === null
+			? null
+			: data.semesterId
+				? await ensureSemester(data.semesterId)
+				: undefined;
 	return repo.update(id, institutionId, {
 		...data,
 		program: program.id,

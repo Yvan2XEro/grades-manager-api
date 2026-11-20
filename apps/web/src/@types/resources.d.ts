@@ -4091,8 +4091,8 @@ interface Resources {
 				};
 				"semesters": {
 					"annual": "Annual";
-					"fall": "Semester 1";
-					"spring": "Semester 2";
+					"fall": "1st semester of the year";
+					"spring": "2nd semester of the year";
 				};
 				"actions": {
 					"create": "Create UE";
@@ -4187,6 +4187,7 @@ interface Resources {
 				"programCycleSummary": "Cycle : {{value}}";
 				"noLevel": "Not set";
 				"levelHint": "Classes of this level receive the unit's courses when a year is imported.";
+				"semesterHint": "The class's semester (S1 to S6) places the unit in the cycle: a 1st-semester unit of a Licence 2 class is taught in S3.";
 			};
 			"retake": {
 				"actions": {
