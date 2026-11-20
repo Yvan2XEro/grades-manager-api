@@ -4475,6 +4475,12 @@ interface Resources {
 						stillToPlace_one: "{{count}} student still has no class for next year:";
 						stillToPlace_other: "{{count}} students still have no class for next year:";
 					};
+					cycleCredits: {
+						title: "Credits earned in the {{cycle}} cycle ({{required}} required)";
+						warning_one: "{{count}} graduate has fewer than the {{required}} credits the cycle requires. Check the earlier years before issuing the diploma.";
+						warning_other: "{{count}} graduates have fewer than the {{required}} credits the cycle requires. Check the earlier years before issuing the diploma.";
+						value: "{{earned}} / {{required}}";
+					};
 				};
 				ueDecision: {
 					ADM: "Acquired";

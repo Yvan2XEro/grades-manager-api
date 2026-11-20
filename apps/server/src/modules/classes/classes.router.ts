@@ -74,6 +74,12 @@ export const router = createRouter({
 		.query(({ ctx, input }) =>
 			service.searchClasses(input, ctx.institution.id),
 		),
+	/** Cycle credits of a last-level jury's admitted students (graduation check). */
+	graduationCredits: tenantProtectedProcedure
+		.input(z.object({ deliberationId: z.string() }))
+		.query(({ ctx, input }) =>
+			service.getGraduationCredits(input.deliberationId, ctx.institution.id),
+		),
 	promoTargets: tenantProtectedProcedure
 		.input(promoTargetsSchema)
 		.query(({ ctx, input }) =>

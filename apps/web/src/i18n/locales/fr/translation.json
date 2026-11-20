@@ -3452,6 +3452,12 @@
           "undecided_other": "{{count}} étudiants encore à décider",
           "stillToPlace_one": "{{count}} étudiant n'a pas encore de classe pour l'année suivante :",
           "stillToPlace_other": "{{count}} étudiants n'ont pas encore de classe pour l'année suivante :"
+        },
+        "cycleCredits": {
+          "title": "Crédits acquis dans le cycle {{cycle}} ({{required}} requis)",
+          "warning_one": "{{count}} diplômé(e) a moins des {{required}} crédits exigés par le cycle. Vérifiez les années précédentes avant de délivrer le diplôme.",
+          "warning_other": "{{count}} diplômé(e)s ont moins des {{required}} crédits exigés par le cycle. Vérifiez les années précédentes avant de délivrer le diplôme.",
+          "value": "{{earned}} / {{required}}"
         }
       },
       "ueDecision": {

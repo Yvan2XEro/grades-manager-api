@@ -125,6 +125,22 @@ describe("LMD: from one cycle to the next", () => {
 		expect(decision(stops.id)).toBe("admitted");
 		expect(decision(fails.id)).toBe("deferred");
 
+		// Graduation check: the admitted students earned 10 of the Licence's
+		// 180 credits (only the L3 year is on record) — flagged, not blocked.
+		const credits = await api.classes.graduationCredits({
+			deliberationId: juryL3.id,
+		});
+		expect(credits.cycle?.totalCreditsRequired).toBe(180);
+		expect(
+			credits.students.map((s) => [s.studentId, s.creditsEarned]).sort(),
+		).toEqual(
+			[
+				[goesOn.id, 10],
+				[stops.id, 10],
+			].sort(),
+		);
+		expect(credits.students.every((s) => s.belowRequired)).toBe(true);
+
 		// L3 is the last level of the Licence: no next level, no promotion class.
 		const targets = await api.classes.promoTargets({
 			sourceClassId: l3A.id,
@@ -272,6 +288,12 @@ describe("LMD: from one cycle to the next", () => {
 			{ studentId: goesOn.id, cc: 15, ex: 15 },
 		]);
 		const { jury: juryM2 } = await closedJury(api, m2C.id, yearC.id);
+		// Master credits add up over M1 and M2 (15 + 30), Licence ones don't count.
+		const masterCredits = await api.classes.graduationCredits({
+			deliberationId: juryM2.id,
+		});
+		expect(masterCredits.students).toHaveLength(1);
+		expect(masterCredits.students[0].creditsEarned).toBe(45);
 		const m2Targets = await api.classes.promoTargets({
 			sourceClassId: m2C.id,
 			targetAcademicYearId: yearD.id,
