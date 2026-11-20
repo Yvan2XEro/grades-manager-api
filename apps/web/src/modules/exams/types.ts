@@ -30,6 +30,10 @@ export interface ExamFormValuesIn {
 	date: string;
 	percentage: number;
 	classCourse: string;
+	/** Labels of the exam's course, shown by the picker. */
+	classCourseCode?: string | null;
+	courseName?: string | null;
+	className?: string | null;
 }
 
 // ── Exam scheduler ──
@@ -43,6 +47,8 @@ export type PreviewClass = {
 export type SchedulerHistoryItem =
 	RouterOutputs["examScheduler"]["history"]["items"][number];
 export type SchedulerRunDetails = RouterOutputs["examScheduler"]["details"];
+export type SchedulerResult = RouterOutputs["examScheduler"]["schedule"];
+export type SchedulingConflict = SchedulerResult["conflictDetails"][number];
 export type SchedulerRunExam =
 	NonNullable<SchedulerRunDetails>["exams"][number];
 export type SchedulerRetakeExam =

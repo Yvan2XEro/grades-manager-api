@@ -60,7 +60,8 @@ export default function ExamsPage() {
 		[t, resolveLabels],
 	);
 
-	const openExamForm = (exam?: ExamRow) => ExamFormDialog.call({ exam });
+	const openExamForm = (exam?: ExamRow) =>
+		ExamFormDialog.call({ exam, academicYearId: filters.academicYearId });
 
 	const confirmDelete = (id: string) =>
 		confirmAction({
@@ -193,6 +194,9 @@ export default function ExamsPage() {
 				data={exams}
 				isLoading={isLoading}
 				selection={selection}
+				onRowClick={(exam) =>
+					navigate(`/grades/${exam.classCourse}?exam=${exam.id}`)
+				}
 				rowActions={rowActions}
 				empty={
 					<Empty className="m-4 border border-dashed">

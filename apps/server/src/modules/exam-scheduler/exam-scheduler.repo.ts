@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, type gt, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { paginate } from "@/modules/_shared/pagination";
@@ -192,7 +192,10 @@ export async function listRuns(filters: HistoryFilters, institutionId: string) {
 		filters.examTypeId
 			? eq(schema.examScheduleRuns.examTypeId, filters.examTypeId)
 			: undefined,
-		filters.cursor ? gt(schema.examScheduleRuns.id, filters.cursor) : undefined,
+		// Latest runs first: the next page is the runs before the cursor's
+		filters.cursor
+			? sql`(${schema.examScheduleRuns.createdAt}, ${schema.examScheduleRuns.id}) < (select created_at, id from exam_schedule_runs where id = ${filters.cursor})`
+			: undefined,
 		eq(schema.examScheduleRuns.institutionId, institutionId),
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
 	const condition =
@@ -237,7 +240,10 @@ export async function listRuns(filters: HistoryFilters, institutionId: string) {
 			eq(schema.examTypes.id, schema.examScheduleRuns.examTypeId),
 		)
 		.where(condition)
-		.orderBy(schema.examScheduleRuns.id)
+		.orderBy(
+			desc(schema.examScheduleRuns.createdAt),
+			desc(schema.examScheduleRuns.id),
+		)
 		.limit(limit);
 	return paginate(rows, limit);
 }

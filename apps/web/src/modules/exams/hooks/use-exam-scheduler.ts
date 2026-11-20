@@ -3,9 +3,10 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { upsertInList } from "@/lib/query-cache";
 import { toast } from "@/lib/toast";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 import type { ExamType, Semester } from "@/utils/type";
 import { ExamTypeFormDialog } from "../components/exam-type-form-dialog";
+import { ScheduleResultDialog } from "../components/schedule-result-dialog";
 import type {
 	PreviewClass,
 	SchedulerRetakeExam,
@@ -199,7 +200,7 @@ export function useScheduleExams(mode: SessionMode, onDone: () => void) {
 			) {
 				throw new Error(t("admin.examScheduler.toast.error"));
 			}
-			await trpcClient.examScheduler.schedule.mutate({
+			return trpcClient.examScheduler.schedule.mutate({
 				academicYearId,
 				examTypeId,
 				semesterId: semesterId || undefined,
@@ -209,10 +210,23 @@ export function useScheduleExams(mode: SessionMode, onDone: () => void) {
 				classIds: Array.from(classSelection.selected),
 			});
 		},
-		onSuccess: () => {
-			toast.success(t("admin.examScheduler.toast.success"));
+		onSuccess: (result) => {
 			queryClient.invalidateQueries({ queryKey: HISTORY_KEY });
+			queryClient.invalidateQueries(trpc.exams.listPaged.queryFilter());
 			onDone();
+			// Only a run that created every exam is a plain success; otherwise
+			// say what was left out and why
+			if (result.conflicts === 0 && result.created > 0) {
+				toast.success(
+					t("admin.examScheduler.toast.successCount", {
+						count: result.created,
+					}),
+				);
+			} else if (result.conflicts === 0) {
+				toast.info(t("admin.examScheduler.toast.nothingNew"));
+			} else {
+				ScheduleResultDialog.call({ result });
+			}
 		},
 		onError: (error: unknown) => {
 			const message =

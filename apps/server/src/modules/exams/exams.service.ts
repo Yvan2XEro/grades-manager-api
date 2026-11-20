@@ -26,6 +26,28 @@ type CreateExamInput = {
 	classCourse: string;
 };
 
+/**
+ * Error message (a code the web translates) of an exam whose weight would
+ * bring its course's exams over 100%.
+ */
+export const PERCENTAGE_EXCEEDED_ERROR = "EXAM_PERCENTAGE_EXCEEDED";
+
+/** Sum of the weights of a course's normal-session exams. */
+export async function getCoursePercentageTotal(classCourseId: string) {
+	const [{ total }] = await db
+		.select({
+			total: sql<number>`coalesce(sum(${schema.exams.percentage}),0)`,
+		})
+		.from(schema.exams)
+		.where(
+			and(
+				eq(schema.exams.classCourse, classCourseId),
+				eq(schema.exams.sessionType, "normal"),
+			),
+		);
+	return Number(total);
+}
+
 function assertEditable(exam: schema.Exam) {
 	if (exam.isLocked || exam.status === "approved") {
 		throw new TRPCError({ code: "FORBIDDEN" });
@@ -88,7 +110,7 @@ async function assertPercentageLimit(
 	if (aggregated + newPercentage > 100) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: "Percentage exceeds 100",
+			message: PERCENTAGE_EXCEEDED_ERROR,
 		});
 	}
 }
@@ -147,7 +169,7 @@ export async function createExam(
 		if (Number(total) + Number(data.percentage) > 100) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "Percentage exceeds 100",
+				message: PERCENTAGE_EXCEEDED_ERROR,
 			});
 		}
 		[created] = await tx

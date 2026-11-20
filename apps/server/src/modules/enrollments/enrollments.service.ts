@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./enrollments.repo";
 
 async function ensureStudent(studentId: string, institutionId: string) {
@@ -82,7 +83,15 @@ export async function createEnrollment(
 			});
 		}
 	}
-	return repo.create({ ...data, institutionId });
+	const created = await repo.create({ ...data, institutionId });
+	// A student of a class takes its courses
+	if (status === "active" && klass.academicYear === data.academicYearId) {
+		await courseEnrollments.syncClassRosters({
+			classIds: [data.classId],
+			studentIds: [data.studentId],
+		});
+	}
+	return created;
 }
 
 export async function updateEnrollment(

@@ -4,7 +4,8 @@ export const baseSchema = z.object({
 	code: z.string().trim().min(1),
 	class: z.string(),
 	course: z.string(),
-	teacher: z.string(),
+	/** Omitted or empty: the course's default teacher, else none yet. */
+	teacher: z.string().optional(),
 	/** Coefficient for weighted average calculation within a Teaching Unit (UE).
 	 * Default is 1.0, meaning equal weight for all courses.
 	 * Used to calculate: UE_average = Σ(EC_grade × coefficient) / Σ(coefficient)
@@ -36,14 +37,19 @@ export const codeSchema = z.object({
 });
 
 export const searchSchema = z.object({
+	/** Matched against the course code/name, class name and assignment code. */
 	query: z.string().trim(),
 	classId: z.string().optional(),
-	limit: z.number().optional(),
+	/** Courses of the classes of that year only. */
+	academicYearId: z.string().optional(),
+	limit: z.number().int().min(1).max(200).optional(),
 });
 
 export const listPagedSchema = z.object({
 	page: z.number().int().min(1).default(1),
 	pageSize: z.number().int().min(1).max(100).default(25),
+	/** Matched against the assignment code, the course code/name, the class name. */
+	query: z.string().trim().optional(),
 	classId: z.string().optional(),
 	academicYearId: z.string().optional(),
 	semesterId: z.string().optional(),

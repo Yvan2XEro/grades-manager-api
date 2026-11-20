@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as creditLedger from "../student-credit-ledger";
@@ -352,12 +352,140 @@ export async function getById(id: string, institutionId: string) {
 	return item;
 }
 
+/**
+ * Puts the students enrolled in a class that year on the roster of the
+ * class's courses: a student of a class takes its courses. Only missing
+ * (student, course, year) pairs are added, so a student withdrawn or exempted
+ * from a course stays off it, and the call is safe to repeat.
+ *
+ * Scope it with `classCourseIds` (a course just added to a class), or with
+ * `classIds` (+ `studentIds` for students just enrolled in a class).
+ * Returns the number of course enrollments created.
+ */
+export async function syncClassRosters(scope: {
+	classIds?: string[];
+	classCourseIds?: string[];
+	studentIds?: string[];
+}) {
+	if (!scope.classIds?.length && !scope.classCourseIds?.length) return 0;
+	if (scope.studentIds && scope.studentIds.length === 0) return 0;
+	const classCourses = await db
+		.select({
+			id: schema.classCourses.id,
+			classId: schema.classCourses.class,
+			courseId: schema.classCourses.course,
+			academicYearId: schema.classes.academicYear,
+			credits: schema.teachingUnits.credits,
+		})
+		.from(schema.classCourses)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.innerJoin(
+			schema.courses,
+			eq(schema.courses.id, schema.classCourses.course),
+		)
+		.innerJoin(
+			schema.teachingUnits,
+			eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+		)
+		.where(
+			scope.classCourseIds?.length
+				? inArray(schema.classCourses.id, scope.classCourseIds)
+				: inArray(schema.classCourses.class, scope.classIds ?? []),
+		);
+	if (!classCourses.length) return 0;
+	const classIds = [...new Set(classCourses.map((cc) => cc.classId))];
+	const enrollments = await db
+		.select({
+			studentId: schema.enrollments.studentId,
+			classId: schema.enrollments.classId,
+			academicYearId: schema.enrollments.academicYearId,
+		})
+		.from(schema.enrollments)
+		.where(
+			and(
+				inArray(schema.enrollments.classId, classIds),
+				ne(schema.enrollments.status, "withdrawn"),
+				scope.studentIds
+					? inArray(schema.enrollments.studentId, scope.studentIds)
+					: undefined,
+			),
+		);
+	if (!enrollments.length) return 0;
+	const studentIds = [...new Set(enrollments.map((e) => e.studentId))];
+	const courseIds = [...new Set(classCourses.map((cc) => cc.courseId))];
+	const existing = await db
+		.select({
+			studentId: schema.studentCourseEnrollments.studentId,
+			courseId: schema.studentCourseEnrollments.courseId,
+			academicYearId: schema.studentCourseEnrollments.academicYearId,
+		})
+		.from(schema.studentCourseEnrollments)
+		.where(
+			and(
+				inArray(schema.studentCourseEnrollments.studentId, studentIds),
+				inArray(schema.studentCourseEnrollments.courseId, courseIds),
+			),
+		);
+	const key = (studentId: string, courseId: string, yearId: string) =>
+		`${studentId}|${courseId}|${yearId}`;
+	const taken = new Set(
+		existing.map((e) => key(e.studentId, e.courseId, e.academicYearId)),
+	);
+	const rows: schema.NewStudentCourseEnrollment[] = [];
+	for (const enrollment of enrollments) {
+		for (const cc of classCourses) {
+			// The enrollment in that class for the class's own year only
+			if (cc.classId !== enrollment.classId) continue;
+			if (cc.academicYearId !== enrollment.academicYearId) continue;
+			const k = key(enrollment.studentId, cc.courseId, cc.academicYearId);
+			if (taken.has(k)) continue;
+			taken.add(k);
+			rows.push({
+				studentId: enrollment.studentId,
+				classCourseId: cc.id,
+				courseId: cc.courseId,
+				sourceClassId: cc.classId,
+				academicYearId: cc.academicYearId,
+				status: "active",
+				attempt: 1,
+				creditsAttempted: cc.credits,
+			});
+		}
+	}
+	if (!rows.length) return 0;
+	let created = 0;
+	for (let i = 0; i < rows.length; i += 500) {
+		const inserted = await db
+			.insert(schema.studentCourseEnrollments)
+			.values(rows.slice(i, i + 500))
+			.onConflictDoNothing()
+			.returning({ id: schema.studentCourseEnrollments.id });
+		created += inserted.length;
+	}
+	const ledgers = new Map(
+		rows.map((row) => [`${row.studentId}|${row.academicYearId}`, row]),
+	);
+	for (const row of ledgers.values()) {
+		await creditLedger.ensureLedger(row.studentId, row.academicYearId);
+	}
+	return created;
+}
+
+/** Error message (a code the web translates) of a course without students. */
+export const NO_STUDENTS_ERROR = "EXAM_NO_STUDENTS";
+
+/**
+ * An exam needs students: brings the class's students onto the course's
+ * roster (courses added before or after the students), then refuses a course
+ * nobody is enrolled in.
+ */
 export async function ensureRosterForClassCourse(classCourseId: string) {
+	await syncClassRosters({ classCourseIds: [classCourseId] });
 	const count = await repo.countRosterForClassCourse(classCourseId);
 	if (count === 0) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: "No active enrollments exist for this class course",
+			message: NO_STUDENTS_ERROR,
 		});
 	}
 	return count;

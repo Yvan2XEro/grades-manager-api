@@ -7,7 +7,12 @@ import { notFound } from "../_shared/errors";
 import type { MemberRole } from "../authz";
 import * as classesRepo from "../classes/classes.repo";
 import * as coursesRepo from "../courses/courses.repo";
+import {
+	isUnassignedTeacherEmail,
+	unassignedTeacher,
+} from "../domain-users/unassigned-teacher";
 import * as examsService from "../exams/exams.service";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./class-courses.repo";
 
 type ClassCourseInput = Omit<
@@ -164,21 +169,22 @@ async function resolveSemesterId(
 }
 
 export async function createClassCourse(
-	data: ClassCourseInput,
+	data: Omit<ClassCourseInput, "teacher"> & { teacher?: string | null },
 	institutionId: string,
 ) {
 	const { allowTeacherOverride, ...payload } = data;
 	const { semesterId, klass } = await validateConfig(payload, institutionId);
 	const resolvedInstitutionId = klass.institutionId ?? institutionId;
-	// Use defaultTeacher from the course if no teacher specified
-	let teacher = payload.teacher;
+	// No teacher given: the course's default one, else "not known yet" — the
+	// course is added anyway and shows as without teacher until one is set
+	let teacher = payload.teacher || null;
 	if (!teacher) {
 		const course = await coursesRepo.findById(payload.course, institutionId);
-		if (course?.defaultTeacher) {
-			teacher = course.defaultTeacher;
-		}
+		teacher =
+			course?.defaultTeacher ??
+			(await unassignedTeacher(resolvedInstitutionId));
 	}
-	return repo.create({
+	const created = await repo.create({
 		...payload,
 		teacher,
 		institutionId: resolvedInstitutionId,
@@ -189,6 +195,11 @@ export async function createClassCourse(
 				: undefined,
 		semesterId,
 	});
+	// The class's students take the course
+	if (created) {
+		await courseEnrollments.syncClassRosters({ classCourseIds: [created.id] });
+	}
+	return created;
 }
 
 export async function updateClassCourse(
@@ -241,7 +252,14 @@ export async function listClassCourses(
 export async function getClassCourseById(id: string, institutionId: string) {
 	const item = await repo.findById(id, institutionId);
 	if (!item) throw notFound();
-	return item;
+	const teacher = await db.query.domainUsers.findFirst({
+		where: eq(schema.domainUsers.id, item.teacher),
+		columns: { primaryEmail: true },
+	});
+	return {
+		...item,
+		hasTeacher: !isUnassignedTeacherEmail(teacher?.primaryEmail),
+	};
 }
 
 export async function getClassCourseByCode(
@@ -305,6 +323,7 @@ export async function listClassCoursesPaged(
 	input: {
 		page: number;
 		pageSize: number;
+		query?: string;
 		classId?: string;
 		academicYearId?: string;
 		semesterId?: string;

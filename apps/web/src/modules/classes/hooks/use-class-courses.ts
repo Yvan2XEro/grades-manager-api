@@ -19,6 +19,8 @@ interface ClassCoursesFilters {
 	pageSize: number;
 	academicYearId: string | null;
 	semesterId: string | null;
+	classId?: string | null;
+	query?: string;
 }
 
 /** One page of course assignments, with class, program and teacher names resolved. */
@@ -27,6 +29,8 @@ export function useClassCourses({
 	pageSize,
 	academicYearId,
 	semesterId,
+	classId,
+	query: search,
 }: ClassCoursesFilters) {
 	const { data: classes = [] } = useQuery({
 		queryKey: CLASSES_KEY,
@@ -43,6 +47,8 @@ export function useClassCourses({
 			pageSize,
 			academicYearId: academicYearId || undefined,
 			semesterId: semesterId || undefined,
+			classId: classId || undefined,
+			query: search?.trim() || undefined,
 		}),
 	);
 
@@ -65,6 +71,7 @@ export function useClassCourses({
 			className: cls?.name,
 			programName: cls ? programs.get(cls.program)?.name : undefined,
 			teacherName: teacher ? formatTeacherName(teacher) : undefined,
+			hasTeacher: cc.hasTeacher,
 		};
 	});
 	return { ...query, classCourses };

@@ -1,6 +1,7 @@
 import { and, asc, count, eq, gt, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
+import { isUnassignedTeacherEmail } from "../domain-users/unassigned-teacher";
 
 export async function create(data: schema.NewClassCourse) {
 	const [item] = await db.insert(schema.classCourses).values(data).returning();
@@ -34,6 +35,23 @@ export async function remove(id: string, institutionId: string) {
 				eq(schema.classCourses.institutionId, institutionId),
 			),
 		);
+}
+
+/**
+ * Teacher name of a class course, empty with `hasTeacher: false` while the
+ * teacher is the "not known yet" placeholder.
+ */
+function teacherFields(
+	firstName: string | null | undefined,
+	lastName: string | null | undefined,
+	email: string | null | undefined,
+) {
+	const hasTeacher = !isUnassignedTeacherEmail(email);
+	return {
+		teacherFirstName: hasTeacher ? (firstName ?? null) : null,
+		teacherLastName: hasTeacher ? (lastName ?? null) : null,
+		hasTeacher,
+	};
 }
 
 export async function findById(id: string, institutionId?: string) {
@@ -245,8 +263,11 @@ export async function list(opts: {
 		courseName: row.courseRef?.name,
 		courseCode: row.courseRef?.code,
 		ueSemester: row.courseRef?.teachingUnit?.semester ?? null,
-		teacherFirstName: row.teacherRef?.firstName,
-		teacherLastName: row.teacherRef?.lastName,
+		...teacherFields(
+			row.teacherRef?.firstName,
+			row.teacherRef?.lastName,
+			row.teacherRef?.primaryEmail,
+		),
 		className: row.classRef?.name ?? null,
 		programId: row.classRef?.program?.id ?? null,
 		programName: row.classRef?.program?.name ?? null,
@@ -265,6 +286,7 @@ export async function listPaged(opts: {
 	institutionId: string;
 	page: number;
 	pageSize: number;
+	query?: string;
 	classId?: string;
 	academicYearId?: string;
 	semesterId?: string;
@@ -272,6 +294,7 @@ export async function listPaged(opts: {
 	classCourseIds?: string[];
 }) {
 	const size = Math.min(Math.max(opts.pageSize, 1), 100);
+	const term = opts.query ? `%${opts.query}%` : null;
 	const offset = (Math.max(opts.page, 1) - 1) * size;
 
 	// If filtering by academicYearId, resolve matching class IDs first.
@@ -295,6 +318,30 @@ export async function listPaged(opts: {
 
 	const where = and(
 		eq(schema.classCourses.institutionId, opts.institutionId),
+		term
+			? or(
+					ilike(schema.classCourses.code, term),
+					inArray(
+						schema.classCourses.course,
+						db
+							.select({ id: schema.courses.id })
+							.from(schema.courses)
+							.where(
+								or(
+									ilike(schema.courses.name, term),
+									ilike(schema.courses.code, term),
+								),
+							),
+					),
+					inArray(
+						schema.classCourses.class,
+						db
+							.select({ id: schema.classes.id })
+							.from(schema.classes)
+							.where(ilike(schema.classes.name, term)),
+					),
+				)
+			: undefined,
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
 		classIdsFromYear
 			? inArray(schema.classCourses.class, classIdsFromYear)
@@ -324,6 +371,7 @@ export async function listPaged(opts: {
 				courseCode: schema.courses.code,
 				teacherFirstName: schema.domainUsers.firstName,
 				teacherLastName: schema.domainUsers.lastName,
+				teacherEmail: schema.domainUsers.primaryEmail,
 				ueSemester: schema.teachingUnits.semester,
 				createdAt: schema.classCourses.createdAt,
 			})
@@ -349,7 +397,12 @@ export async function listPaged(opts: {
 
 	const totalCount = Number(total ?? 0);
 	return {
-		items: rows,
+		items: rows.map(
+			({ teacherFirstName, teacherLastName, teacherEmail, ...row }) => ({
+				...row,
+				...teacherFields(teacherFirstName, teacherLastName, teacherEmail),
+			}),
+		),
 		total: totalCount,
 		pageCount: Math.ceil(totalCount / size),
 	};
@@ -380,6 +433,7 @@ export async function search(opts: {
 	institutionId: string;
 	query: string;
 	classId?: string;
+	academicYearId?: string;
 	teacherId?: string;
 	classCourseIds?: string[];
 	limit?: number;
@@ -395,6 +449,9 @@ export async function search(opts: {
 			ilike(schema.classes.name, searchTerm),
 		),
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
+		opts.academicYearId
+			? eq(schema.classes.academicYear, opts.academicYearId)
+			: undefined,
 		opts.teacherId
 			? eq(schema.classCourses.teacher, opts.teacherId)
 			: undefined,
@@ -429,7 +486,11 @@ export async function search(opts: {
 			eq(schema.domainUsers.id, schema.classCourses.teacher),
 		)
 		.where(condition)
-		.orderBy(asc(schema.classCourses.code))
+		.orderBy(
+			asc(schema.classes.name),
+			asc(schema.courses.name),
+			asc(schema.classCourses.id),
+		)
 		.limit(limit);
 
 	return rows.map((row) => ({
@@ -444,8 +505,11 @@ export async function search(opts: {
 		semesterId: row.classCourse.semesterId,
 		courseName: row.courseName ?? null,
 		courseCode: row.courseCode ?? null,
-		teacherFirstName: row.teacherFirstName ?? null,
-		teacherLastName: row.teacherLastName ?? null,
+		...teacherFields(
+			row.teacherFirstName,
+			row.teacherLastName,
+			row.teacherEmail,
+		),
 		teacherPrimaryEmail: row.teacherEmail ?? null,
 	}));
 }

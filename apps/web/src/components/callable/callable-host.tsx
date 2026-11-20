@@ -38,6 +38,7 @@ import { RetakeExamDialog } from "@/modules/exams/components/retake-exam-dialog"
 import { RetakeOverrideDialog } from "@/modules/exams/components/retake-override-dialog";
 import { RunDetailsDialog } from "@/modules/exams/components/run-details-dialog";
 import { ScheduleExamsDialog } from "@/modules/exams/components/schedule-exams-dialog";
+import { ScheduleResultDialog } from "@/modules/exams/components/schedule-result-dialog";
 import { AddInstallmentDialog } from "@/modules/fees/components/add-installment-dialog";
 import { AssignStudentDialog } from "@/modules/fees/components/assign-student-dialog";
 import { BankImportDialog } from "@/modules/fees/components/bank-import-dialog";
@@ -147,6 +148,7 @@ export function CallableHost() {
 			<ExcuseAbsenceDialog />
 			<BulkExportReportDialog />
 			<ScheduleExamsDialog />
+			<ScheduleResultDialog />
 			<RunDetailsDialog />
 			<AvatarCropModal />
 			<DeanRejectExamDialog />

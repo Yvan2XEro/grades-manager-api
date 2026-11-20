@@ -2317,10 +2317,11 @@ interface Resources {
 					ueLabel: "Teaching unit";
 					uePlaceholder: "Select a UE";
 					noUe: "No UE found for this program";
-					hint: "All ECs from this UE will be assigned to the class with their default teacher and coefficient. ECs without a default teacher will be skipped.";
+					hint: "All the courses of the unit are added to the class with their default teacher and coefficient, and the class's students are enrolled in them. A course without a default teacher is added without teacher.";
 					submit: "Assign courses";
-					skippedTitle: "Some courses were not assigned";
-					skippedDesc: "The following courses have no default teacher and were skipped:";
+					noTeacherTitle_one: "{{count}} course added without teacher";
+					noTeacherTitle_other: "{{count}} courses added without teacher";
+					noTeacherDesc: "These courses have no default teacher. Exams can already be created; assign a teacher from the course assignments so they can enter the grades:";
 				};
 				empty: {
 					title: "No course assignments yet";
@@ -2404,6 +2405,12 @@ interface Resources {
 					code: "Code";
 					course: "Course";
 					teacher: "Teacher";
+				};
+				noTeacher: "No teacher";
+				filters: {
+					search: "Search";
+					searchPlaceholder: "Course, class or code…";
+					class: "Class";
 				};
 			};
 			classes: {
@@ -3038,6 +3045,9 @@ interface Resources {
 					classLabel: "Class";
 					submit: "Save exam";
 					coursePlaceholder: "Select a course and class";
+					courseSearchPlaceholder: "Search a course or a class…";
+					courseEmpty: "No course of this year matches. Add the courses to the class first.";
+					courseTruncated: "Only the first 50 courses are listed: type a course or class name to find the others.";
 				};
 				toast: {
 					createSuccess: "Exam created successfully";
@@ -3086,6 +3096,10 @@ interface Resources {
 					offTotal: "The exams of this course add up to {{total}} instead of 100%: the course average will be wrong.";
 					formOff: "With this exam, the course's exams add up to {{total}}. They should make 100% for a correct course average.";
 					formOk: "The course's exams add up to 100%.";
+				};
+				errors: {
+					noStudents: "No student is enrolled in this class yet: enroll the students in the class, then add the exam.";
+					percentageExceeded: "The exams of this course would weigh more than 100%: lower this exam's weight or the other exams'.";
 				};
 			};
 			examTypes: {
@@ -3335,7 +3349,7 @@ interface Resources {
 			};
 			examScheduler: {
 				title: "Exam scheduler";
-				subtitle: "Plan exams for entire faculties and academic years in a single step.";
+				subtitle: "Schedule the exams of several classes in a single operation.";
 				sessionMode: {
 					label: "Scheduling type";
 					normal: "Exams";
@@ -3345,7 +3359,7 @@ interface Resources {
 				};
 				form: {
 					title: "Schedule parameters";
-					description: "Choose the faculty, academic year, exam type, weight, and time window.";
+					description: "Choose the academic year, the exam type, the weight and the date range, then the classes.";
 					facultyLabel: "Faculty";
 					facultyPlaceholder: "Select faculty";
 					academicYearLabel: "Academic year";
@@ -3393,10 +3407,12 @@ interface Resources {
 					quickRetakes: "Quick retakes";
 				};
 				toast: {
-					success: "Exams scheduled";
 					error: "Unable to schedule exams";
 					retakeSuccess: "Retakes scheduled ({{count}} created)";
 					retakeError: "Unable to schedule retakes";
+					successCount_one: "{{count}} exam scheduled";
+					successCount_other: "{{count}} exams scheduled";
+					nothingNew: "Nothing to schedule: these courses already have an exam of this type.";
 				};
 				history: {
 					title: "Scheduling history";
@@ -3425,6 +3441,20 @@ interface Resources {
 							status: "Status";
 							locked: "Locked";
 						};
+					};
+				};
+				result: {
+					noneTitle: "No exam was scheduled";
+					partialTitle: "Some exams could not be scheduled";
+					created_one: "{{count}} exam created";
+					created_other: "{{count}} exams created";
+					duplicates_one: "{{count}} course already had an exam of this type";
+					duplicates_other: "{{count}} courses already had an exam of this type";
+					conflictsTitle_one: "{{count}} course left out";
+					conflictsTitle_other: "{{count}} courses left out";
+					reasons: {
+						noStudents: "No student is enrolled in this class.";
+						percentageExceeded: "Its exams already weigh {{current}}%: with this weight the total would exceed 100%.";
 					};
 				};
 			};
