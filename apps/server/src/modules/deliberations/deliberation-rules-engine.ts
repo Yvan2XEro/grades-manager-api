@@ -109,3 +109,111 @@ export async function evaluateStudent(
 
 	return { decision: finalDecision, traces };
 }
+
+/**
+ * Facts a deliberation rule can test: the student's promotion facts (for
+ * the deliberated year) plus the jury's own facts.
+ */
+export const DELIBERATION_FACTS = [
+	"overallAverage",
+	"overallAverageUnweighted",
+	"averageByTeachingUnit",
+	"averageByCourse",
+	"lowestScore",
+	"highestScore",
+	"lowestUnitAverage",
+	"scoresAbove10",
+	"scoresBelow10",
+	"scoresBelow8",
+	"failedCoursesCount",
+	"failedTeachingUnitsCount",
+	"compensableFailures",
+	"eliminatoryFailures",
+	"validatedCoursesCount",
+	"validatedUnitsCount",
+	"successRate",
+	"unitValidationRate",
+	"creditsEarned",
+	"creditsEarnedThisYear",
+	"creditsInProgress",
+	"creditsAttempted",
+	"requiredCredits",
+	"creditDeficit",
+	"creditCompletionRate",
+	"creditSuccessRate",
+	"coursesWithMultipleAttempts",
+	"maxAttemptCount",
+	"totalAttempts",
+	"failedCourseAttempts",
+	"firstAttemptSuccessRate",
+	"retakeSuccessRate",
+	"enrollmentStatus",
+	"previousEnrollmentsCount",
+	"completedYears",
+	"activeYearsCount",
+	"performanceIndex",
+	"isOnTrack",
+	"progressionRate",
+	"admissionType",
+	"isTransferStudent",
+	"isDirectAdmission",
+	"hasAcademicHistory",
+	"transferCredits",
+	"programCode",
+	"compensableUECount",
+	"allUEsComplete",
+	"consecutiveRepeats",
+	"previousDeliberationDecision",
+	"totalUECount",
+	"validatedUECount",
+	"failedUECount",
+] as const;
+
+const OPERATORS = new Set([
+	"equal",
+	"notEqual",
+	"lessThan",
+	"lessThanInclusive",
+	"greaterThan",
+	"greaterThanInclusive",
+	"in",
+	"notIn",
+	"contains",
+	"doesNotContain",
+]);
+
+/**
+ * Problems of a ruleset, in plain words (empty when it is valid): unknown
+ * facts or operators would otherwise never match, silently.
+ */
+export function validateRuleset(ruleset: unknown): string[] {
+	const problems: string[] = [];
+	const known = new Set<string>(DELIBERATION_FACTS);
+	const conditions = (ruleset as { conditions?: unknown })?.conditions;
+	let leaves = 0;
+	const walk = (node: unknown) => {
+		if (!node || typeof node !== "object") {
+			problems.push("A condition is not an object");
+			return;
+		}
+		const n = node as Record<string, unknown>;
+		const group = n.all ?? n.any;
+		if (Array.isArray(group)) {
+			for (const child of group) walk(child);
+			return;
+		}
+		if (n.not) return walk(n.not);
+		leaves++;
+		if (typeof n.fact !== "string" || !known.has(n.fact)) {
+			problems.push(`Unknown fact: ${String(n.fact)}`);
+		}
+		if (typeof n.operator !== "string" || !OPERATORS.has(n.operator)) {
+			problems.push(`Unknown operator: ${String(n.operator)}`);
+		}
+		if (!("value" in n)) problems.push(`No value for ${String(n.fact)}`);
+	};
+	if (!conditions) problems.push("The rule has no conditions");
+	else walk(conditions);
+	if (conditions && leaves === 0) problems.push("The rule has no conditions");
+	return problems;
+}

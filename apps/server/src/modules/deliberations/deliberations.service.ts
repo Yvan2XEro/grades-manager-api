@@ -12,7 +12,11 @@ import { conflict } from "@/modules/_shared/errors";
 import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.types";
 import { getStudentPromotionFacts } from "../promotion-rules/student-facts.service";
-import { evaluateStudent } from "./deliberation-rules-engine";
+import {
+	juryHistoryBefore,
+	yearFactsFromUeResults,
+} from "./deliberation-facts";
+import { evaluateStudent, validateRuleset } from "./deliberation-rules-engine";
 import * as repo from "./deliberations.repo";
 import {
 	type DeliberationFacts,
@@ -453,6 +457,11 @@ export async function compute(
 	}> = [];
 
 	const includeRetakes = delib.type === "retake";
+	const juryHistory = await juryHistoryBefore(
+		population.map((s) => s.id),
+		delib.academicYearId,
+		institutionId,
+	);
 
 	for (const student of population) {
 		const {
@@ -551,14 +560,25 @@ export async function compute(
 				ue.ueAverage < gradeScale.passThreshold,
 		).length;
 
+		const history = juryHistory.get(student.id);
 		const deliberationFacts: DeliberationFacts = {
 			...promotionFacts,
+			// Marks and credits of the deliberated year only
+			...yearFactsFromUeResults(
+				ueResults,
+				{
+					creditsEarned: totalCreditsEarned,
+					creditsPossible: totalCreditsPossible,
+				},
+				gradeScale.passThreshold,
+			),
 			overallAverage: generalAverage ?? promotionFacts.overallAverage,
 			creditsEarned: totalCreditsEarned,
 			compensableUECount,
 			allUEsComplete: allComplete,
-			consecutiveRepeats: 0, // Would need historical data
-			previousDeliberationDecision: null, // Would need previous deliberation lookup
+			consecutiveRepeats: history?.consecutiveRepeats ?? 0,
+			previousDeliberationDecision:
+				history?.previousDeliberationDecision ?? null,
 			totalUECount: ueResults.length,
 			validatedUECount: ueResults.filter((ue) => ue.isValidated).length,
 			failedUECount: ueResults.filter((ue) => ue.isComplete && !ue.isValidated)
@@ -955,10 +975,18 @@ export async function getLogs(input: GetLogsInput) {
 // Deliberation Rules CRUD
 // ---------------------------------------------------------------------------
 
+function assertValidRuleset(ruleset: unknown) {
+	const problems = validateRuleset(ruleset);
+	if (problems.length > 0) {
+		throw new TRPCError({ code: "BAD_REQUEST", message: problems.join("; ") });
+	}
+}
+
 export async function createRule(
 	input: CreateDeliberationRuleInput,
 	institutionId: string,
 ) {
+	assertValidRuleset(input.ruleset);
 	return repo.createRule({
 		...input,
 		institutionId,
@@ -981,6 +1009,7 @@ export async function updateRule(
 			message: "Deliberation rule not found",
 		});
 	}
+	if (input.ruleset) assertValidRuleset(input.ruleset);
 
 	const { id, ...updateData } = input;
 	return repo.updateRule(id, institutionId, updateData as any);
