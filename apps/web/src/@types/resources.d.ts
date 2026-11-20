@@ -6152,6 +6152,7 @@ interface Resources {
 				ueCreditsEarned: "{{earned}}/{{total}} credits";
 				noMarksYet: "No marks yet";
 				noMarks: "No marks";
+				graduated: "Graduated — {{name}}";
 			};
 			exams: {
 				title: "Exam calendar";
@@ -6256,6 +6257,7 @@ interface Resources {
 					promotion: "Promoted / Graduated";
 					deliberation: "Deliberation result";
 					fee_cleared: "Financial clearance obtained";
+					graduated: "Graduated — {{name}}";
 				};
 				decision: {
 					admitted: "Admitted";
@@ -7476,6 +7478,7 @@ interface Resources {
 				decision: "Jury decision";
 				notDeliberated: "Not deliberated yet";
 				mention: "Mention";
+				graduated: "Graduated — {{name}}";
 			};
 			finances: {
 				academicYear: "Academic Year";

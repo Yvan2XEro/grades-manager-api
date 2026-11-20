@@ -504,6 +504,9 @@ export type TimelineEvent = {
 	finalDecision?: string | null;
 	generalAverage?: number | null;
 	mention?: string | null;
+	/** Program / cycle of the class (what a graduate earned). */
+	programName?: string | null;
+	cycleName?: string | null;
 };
 
 export async function getStudentTimeline(
@@ -523,7 +526,9 @@ export async function getStudentTimeline(
 				: undefined,
 		),
 		with: {
-			classRef: true,
+			classRef: {
+				with: { program: true, cycleLevel: { with: { cycle: true } } },
+			},
 			academicYear: true,
 		},
 		orderBy: desc(schema.enrollments.enrolledAt),
@@ -552,6 +557,8 @@ export async function getStudentTimeline(
 				academicYear: e.academicYear?.name ?? null,
 				className: e.classRef?.name ?? null,
 				status: e.status,
+				programName: e.classRef?.program?.name ?? null,
+				cycleName: e.classRef?.cycleLevel?.cycle?.name ?? null,
 			});
 		}
 	}

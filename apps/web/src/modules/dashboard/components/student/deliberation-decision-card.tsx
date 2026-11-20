@@ -15,6 +15,7 @@ import { PageLink } from "@/components/navigation/page-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date-format";
+import { formatDecimal } from "@/lib/number-format";
 import type { DecisionResult } from "../../types";
 
 const DECISION_CONFIG: Record<
@@ -115,6 +116,13 @@ export function DeliberationDecisionCard({
 		},
 	};
 	const { wrap: wrapCls, badge: badgeCls, icon: iconCls, Icon } = TONES[tone];
+	// A graduate left the last level of the cycle: no "next year" for them.
+	const graduated = cfg.isSuccess && decision.enrollmentStatus === "graduated";
+	const title = graduated
+		? t("student.performance.graduated", {
+				name: decision.programName ?? decision.cycleName ?? "",
+			})
+		: t(cfg.labelKey);
 
 	return (
 		<div className={`rounded-xl border shadow-sm ${wrapCls}`}>
@@ -127,7 +135,7 @@ export function DeliberationDecisionCard({
 				<div className="min-w-0 flex-1">
 					<div className="flex flex-wrap items-center gap-2">
 						<span className="font-semibold text-foreground text-sm">
-							{t(cfg.labelKey)}
+							{title}
 						</span>
 						{isLatest && (
 							<Badge variant="secondary" className="text-xs">
@@ -146,13 +154,16 @@ export function DeliberationDecisionCard({
 						{decision.generalAverage !== null && (
 							<span>
 								{t("student.performance.average")}:{" "}
-								{decision.generalAverage.toFixed(2)}/20
+								{formatDecimal(decision.generalAverage)}/20
 							</span>
 						)}
 						{decision.mention && (
 							<span>
 								{t("student.performance.mention", {
-									mention: decision.mention,
+									mention: t(
+										`admin.deliberations.mention.${decision.mention}` as never,
+										{ defaultValue: decision.mention },
+									),
 								})}
 							</span>
 						)}
@@ -215,7 +226,7 @@ export function DeliberationDecisionCard({
 									<div className="flex shrink-0 items-center gap-2">
 										{ue.ueAverage !== null && (
 											<span className="font-semibold text-foreground text-xs tabular-nums">
-												{ue.ueAverage.toFixed(2)}
+												{formatDecimal(ue.ueAverage)}
 											</span>
 										)}
 										{ue.isComplete === false || ue.ueAverage === null ? (

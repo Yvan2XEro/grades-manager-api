@@ -23,7 +23,14 @@ import {
  */
 export type StudentYearResults = {
 	academicYear: { id: string; name: string };
-	class: { id: string; name: string; code: string };
+	class: {
+		id: string;
+		name: string;
+		code: string;
+		/** Program and cycle, to name what a graduate earned. */
+		programName: string | null;
+		cycleName: string | null;
+	};
 	enrollmentStatus: EnrollmentStatus | null;
 	scope: "annual" | "semester";
 	semester: { id: string; name: string } | null;
@@ -59,6 +66,8 @@ type YearEnrollment = {
 	classId: string;
 	className: string;
 	classCode: string;
+	programName: string | null;
+	cycleName: string | null;
 	academicYearId: string;
 	academicYearName: string;
 	startDate: string;
@@ -75,6 +84,8 @@ async function listYearEnrollments(
 			classId: schema.enrollments.classId,
 			className: schema.classes.name,
 			classCode: schema.classes.code,
+			programName: schema.programs.name,
+			cycleName: schema.studyCycles.name,
 			academicYearId: schema.enrollments.academicYearId,
 			academicYearName: schema.academicYears.name,
 			startDate: schema.academicYears.startDate,
@@ -88,6 +99,15 @@ async function listYearEnrollments(
 		.innerJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.enrollments.academicYearId),
+		)
+		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
 		)
 		.where(
 			and(
@@ -237,11 +257,13 @@ export async function getStudentYearResults(
 		: enrollments.find((e) => e.academicYearId === academicYearId);
 
 	// A jury pins its class even without an enrollment row (legacy data)
-	let klass: { id: string; name: string; code: string } | null = enrollment
+	let klass: StudentYearResults["class"] | null = enrollment
 		? {
 				id: enrollment.classId,
 				name: enrollment.className,
 				code: enrollment.classCode,
+				programName: enrollment.programName ?? null,
+				cycleName: enrollment.cycleName ?? null,
 			}
 		: null;
 	let year = enrollment
@@ -256,7 +278,13 @@ export async function getStudentYearResults(
 			with: { academicYear: true },
 		});
 		if (row && pinnedJury) {
-			klass = { id: row.id, name: row.name, code: row.code };
+			klass = {
+				id: row.id,
+				name: row.name,
+				code: row.code,
+				programName: null,
+				cycleName: null,
+			};
 			year = { id: row.academicYear.id, name: row.academicYear.name };
 		}
 	}

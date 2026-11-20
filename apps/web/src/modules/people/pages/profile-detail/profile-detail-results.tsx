@@ -192,9 +192,15 @@ function ResultsSummary({ results }: { results: ProfileYearResults }) {
 		},
 		{
 			label: t("profileHub.results.decision"),
-			value: results.decision
-				? t(`admin.deliberations.decision.${results.decision}`)
-				: t("profileHub.results.notDeliberated"),
+			value:
+				results.enrollmentStatus === "graduated" &&
+				(results.decision === "admitted" || results.decision === "compensated")
+					? t("profileHub.results.graduated", {
+							name: results.class.programName ?? results.class.cycleName ?? "",
+						})
+					: results.decision
+						? t(`admin.deliberations.decision.${results.decision}`)
+						: t("profileHub.results.notDeliberated"),
 		},
 		{
 			label: t("profileHub.results.mention"),

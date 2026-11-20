@@ -6150,7 +6150,8 @@
       "coefficient": "Coeff. {{value}}",
       "ueCreditsEarned": "{{earned}}/{{total}} credits",
       "noMarksYet": "No marks yet",
-      "noMarks": "No marks"
+      "noMarks": "No marks",
+      "graduated": "Graduated — {{name}}"
     },
     "exams": {
       "title": "Exam calendar",
@@ -6254,7 +6255,8 @@
         "enrollment_withdrawn": "Withdrawn",
         "promotion": "Promoted / Graduated",
         "deliberation": "Deliberation result",
-        "fee_cleared": "Financial clearance obtained"
+        "fee_cleared": "Financial clearance obtained",
+        "graduated": "Graduated — {{name}}"
       },
       "decision": {
         "admitted": "Admitted",
@@ -7474,7 +7476,8 @@
       "creditsEarned": "Credits earned",
       "decision": "Jury decision",
       "notDeliberated": "Not deliberated yet",
-      "mention": "Mention"
+      "mention": "Mention",
+      "graduated": "Graduated — {{name}}"
     },
     "finances": {
       "academicYear": "Academic Year",

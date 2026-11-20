@@ -6155,7 +6155,8 @@
       "coefficient": "Coeff. {{value}}",
       "ueCreditsEarned": "{{earned}}/{{total}} crédits",
       "noMarksYet": "Aucune note pour l'instant",
-      "noMarks": "Sans note"
+      "noMarks": "Sans note",
+      "graduated": "Diplômé(e) — {{name}}"
     },
     "exams": {
       "title": "Calendrier des examens",
@@ -6259,7 +6260,8 @@
         "enrollment_withdrawn": "Retrait",
         "promotion": "Promu / Diplômé",
         "deliberation": "Résultat de délibération",
-        "fee_cleared": "Quitus financier obtenu"
+        "fee_cleared": "Quitus financier obtenu",
+        "graduated": "Diplômé(e) — {{name}}"
       },
       "decision": {
         "admitted": "Admis",
@@ -7479,7 +7481,8 @@
       "creditsEarned": "Crédits acquis",
       "decision": "Décision du jury",
       "notDeliberated": "Pas encore délibéré",
-      "mention": "Mention"
+      "mention": "Mention",
+      "graduated": "Diplômé(e) — {{name}}"
     },
     "finances": {
       "academicYear": "Année académique",
