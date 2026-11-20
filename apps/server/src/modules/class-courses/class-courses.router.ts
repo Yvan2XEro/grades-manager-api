@@ -3,6 +3,10 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
 import {
+	assertCanReadClassCourse,
+	recordActorFromCtx,
+} from "@/modules/authz/record-access";
+import {
 	router as createRouter,
 	tenantAdminProcedure,
 	tenantProtectedProcedure,
@@ -136,9 +140,14 @@ export const router = createRouter({
 		),
 	roster: tenantProtectedProcedure
 		.input(idSchema)
-		.query(({ ctx, input }) =>
-			service.getClassCourseRoster(input.id, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			await assertCanReadClassCourse(
+				recordActorFromCtx(ctx),
+				input.id,
+				ctx.institution.id,
+			);
+			return service.getClassCourseRoster(input.id, ctx.institution.id);
+		}),
 	search: tenantProtectedProcedure
 		.input(searchSchema)
 		.query(async ({ ctx, input }) => {

@@ -1,12 +1,14 @@
 import type React from "react";
 import { useEffect } from "react";
-import { Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { useStore } from "../../store";
 import Header from "../navigation/Header";
+import { isPathAllowedForRoleGroup, roleGroupOf } from "../navigation/RoleView";
 import Sidebar from "../navigation/Sidebar";
 
 const DashboardLayout: React.FC = () => {
 	const { user, setSidebarOpen } = useStore();
+	const { pathname } = useLocation();
 
 	// Close sidebar on mobile when navigating
 	useEffect(() => {
@@ -19,6 +21,11 @@ const DashboardLayout: React.FC = () => {
 	// login with a return URL); the store user follows the session on the next tick
 	if (!user) {
 		return null;
+	}
+
+	// Students only reach their own pages; staff URLs bounce to the dashboard
+	if (!isPathAllowedForRoleGroup(roleGroupOf(user.role), pathname)) {
+		return <Navigate to="/" replace />;
 	}
 
 	return (

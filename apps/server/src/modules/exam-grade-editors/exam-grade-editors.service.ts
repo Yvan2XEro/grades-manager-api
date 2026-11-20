@@ -4,7 +4,14 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
 import { notFound } from "@/modules/_shared/errors";
-import { ADMIN_ROLES, type MemberRole, roleSatisfies } from "@/modules/authz";
+import {
+	ADMIN_ROLES,
+	hasInstitutionWideGradeAccess,
+	isStaffRole,
+	type MemberRole,
+	roleSatisfies,
+} from "@/modules/authz";
+import { assertGradeDelegationCandidate } from "@/modules/authz/record-access";
 import * as gradeAccessRepo from "@/modules/grade-access-grants/grade-access-grants.repo";
 import * as repo from "./exam-grade-editors.repo";
 
@@ -56,10 +63,13 @@ async function resolveActorAccess(params: {
 }) {
 	const isAdmin = roleSatisfies(params.actor.memberRole, ADMIN_ROLES);
 	if (isAdmin) return "admin";
-	const isGradeEditor = roleSatisfies(params.actor.memberRole, [
-		"grade_editor",
-	]);
-	if (isGradeEditor) return "delegate";
+	// Exact match: teachers satisfy `grade_editor` through the role hierarchy
+	// but must stay limited to their own (or delegated) exams.
+	if (hasInstitutionWideGradeAccess(params.actor.memberRole)) {
+		return "delegate";
+	}
+	// Students never edit grades, even if a delegation row points at them.
+	if (!isStaffRole(params.actor.memberRole)) return null;
 	const profileId = params.actor.profileId;
 	if (!profileId) return null;
 	if (params.exam.classCourseRef?.teacher === profileId) {
@@ -84,6 +94,7 @@ async function requireEditorCandidate(
 		.select({
 			id: schema.domainUsers.id,
 			memberOrg: authSchema.member.organizationId,
+			memberRole: authSchema.member.role,
 		})
 		.from(schema.domainUsers)
 		.leftJoin(
@@ -96,6 +107,7 @@ async function requireEditorCandidate(
 	if (!row) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Editor not found" });
 	}
+	await assertGradeDelegationCandidate(row.id, row.memberRole);
 	const institution = await db.query.institutions.findFirst({
 		where: eq(schema.institutions.id, institutionId),
 		columns: { organizationId: true },

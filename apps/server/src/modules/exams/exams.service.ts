@@ -209,7 +209,9 @@ export async function updateExam(
 	}
 	const payload = { ...data };
 	if (data.classCourse && data.classCourse !== existing.classCourse) {
-		await requireClassCourse(data.classCourse, institutionId);
+		const target = await requireClassCourse(data.classCourse, institutionId);
+		// A teacher cannot move an exam into a course they do not teach
+		if (actor) assertTeacherOwnership(target, actor);
 		await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 		payload.institutionId = institutionId;
 	}

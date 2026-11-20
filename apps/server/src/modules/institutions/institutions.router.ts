@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import { administratorProcedure, protectedProcedure, router } from "@/lib/trpc";
+import { assertRole, SUPER_ADMIN_ROLES } from "@/modules/authz";
+import * as repo from "./institutions.repo";
 import * as service from "./institutions.service";
 import {
 	createInstitutionSchema,
@@ -14,16 +16,30 @@ export const institutionsRouter = router({
 		.input(z.object({ id: z.string().min(1) }))
 		.query(({ input }) => service.getInstitutionById(input.id)),
 	list: protectedProcedure.query(() => service.listInstitutions()),
-	upsert: adminProcedure
+	// Institution identity: administrators, not deans.
+	upsert: administratorProcedure
 		.input(upsertInstitutionSchema)
 		.mutation(({ input }) => service.upsertInstitution(input)),
-	create: adminProcedure
+	// Administrators manage faculties; a top-level institution (or university)
+	// is created or deleted by a super admin only.
+	create: administratorProcedure
 		.input(createInstitutionSchema)
-		.mutation(({ input }) => service.createInstitution(input)),
-	update: adminProcedure
+		.mutation(({ ctx, input }) => {
+			if (input.type !== "faculty") {
+				assertRole(ctx.memberRole, SUPER_ADMIN_ROLES);
+			}
+			return service.createInstitution(input);
+		}),
+	update: administratorProcedure
 		.input(updateInstitutionSchema)
 		.mutation(({ input }) => service.updateInstitution(input.id, input.data)),
-	delete: adminProcedure
+	delete: administratorProcedure
 		.input(deleteInstitutionSchema)
-		.mutation(({ input }) => service.deleteInstitution(input.id)),
+		.mutation(async ({ ctx, input }) => {
+			const target = await repo.getById(input.id);
+			if (target && target.type !== "faculty") {
+				assertRole(ctx.memberRole, SUPER_ADMIN_ROLES);
+			}
+			return service.deleteInstitution(input.id);
+		}),
 });

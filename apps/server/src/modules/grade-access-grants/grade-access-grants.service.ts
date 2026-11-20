@@ -4,6 +4,7 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
 import { notFound } from "@/modules/_shared/errors";
+import { assertGradeDelegationCandidate } from "@/modules/authz/record-access";
 import * as repo from "./grade-access-grants.repo";
 
 async function requireProfileInInstitution(
@@ -14,6 +15,7 @@ async function requireProfileInInstitution(
 		.select({
 			id: schema.domainUsers.id,
 			memberOrg: authSchema.member.organizationId,
+			memberRole: authSchema.member.role,
 		})
 		.from(schema.domainUsers)
 		.leftJoin(
@@ -26,6 +28,7 @@ async function requireProfileInInstitution(
 
 	if (!row)
 		throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+	await assertGradeDelegationCandidate(row.id, row.memberRole);
 
 	const institution = await db
 		.select({ organizationId: schema.institutions.organizationId })

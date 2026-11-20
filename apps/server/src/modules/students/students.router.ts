@@ -3,6 +3,7 @@ import {
 	router,
 	tenantAdminProcedure,
 	tenantProtectedProcedure,
+	tenantStaffProcedure,
 } from "../../lib/trpc";
 import * as service from "./students.service";
 import {
@@ -112,10 +113,10 @@ export const studentsRouter = router({
 				ctx.institution.id,
 			),
 		),
-	list: tenantProtectedProcedure
+	list: tenantStaffProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) => service.listStudents(input, ctx.institution.id)),
-	getById: tenantProtectedProcedure
+	getById: tenantStaffProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getStudentById(input.id, ctx.institution.id),

@@ -7,6 +7,10 @@ import type { Context } from "@/lib/context";
 import { conflict, notFound } from "@/modules/_shared/errors";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
 import {
+	assertCanAssignRole,
+	assertCanManageProfile,
+} from "@/modules/authz/record-access";
+import {
 	getStudentYearResults,
 	listStudentResultYears,
 } from "@/modules/deliberations/student-year-results";
@@ -145,6 +149,7 @@ export async function createAuthForProfile(
 	ctx: Context,
 ) {
 	assertAdmin(ctx);
+	assertCanAssignRole(ctx.memberRole, data.memberRole);
 	try {
 		return await usersService.createAuthForProfile(profileId, data, {
 			organizationId: ctx.organizationId!,
@@ -188,6 +193,7 @@ export async function setBanStatus(
 	ctx: Context,
 ) {
 	assertAdmin(ctx);
+	await assertCanManageProfile(ctx.memberRole, profileId);
 	const authAccount = await getAuthAccount(profileId, ctx);
 	if (!authAccount) throw notFound("No auth account linked to this profile");
 

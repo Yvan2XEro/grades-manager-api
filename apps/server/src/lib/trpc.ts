@@ -1,5 +1,11 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import { ADMIN_ROLES, assertRole, SUPER_ADMIN_ROLES } from "../modules/authz";
+import {
+	ADMIN_ROLES,
+	ADMINISTRATOR_ROLES,
+	assertRole,
+	STAFF_ROLES,
+	SUPER_ADMIN_ROLES,
+} from "../modules/authz";
 import type { Context } from "./context";
 
 export const t = initTRPC.context<Context>().create();
@@ -58,6 +64,20 @@ export const superAdminProcedure = t.procedure.use(({ ctx, next }) => {
 	});
 });
 
+/** Any institution employee — refuses students and guests. */
+export const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
+	assertRole(ctx.memberRole, STAFF_ROLES);
+	return next();
+});
+
+/** Administrator and above — refuses deans (institution identity, accounts). */
+export const administratorProcedure = protectedProcedure.use(
+	({ ctx, next }) => {
+		assertRole(ctx.memberRole, ADMINISTRATOR_ROLES);
+		return next();
+	},
+);
+
 export const gradingProcedure = protectedProcedure.use(({ ctx, next }) => {
 	if (!ctx.permissions?.canGrade) {
 		throw new TRPCError({
@@ -86,7 +106,10 @@ const tenantMiddleware = t.middleware(({ ctx, next }) => {
 export const tenantProcedure = publicProcedure.use(tenantMiddleware);
 export const tenantProtectedProcedure =
 	protectedProcedure.use(tenantMiddleware);
+export const tenantStaffProcedure = staffProcedure.use(tenantMiddleware);
 export const tenantAdminProcedure = adminProcedure.use(tenantMiddleware);
+export const tenantAdministratorProcedure =
+	administratorProcedure.use(tenantMiddleware);
 export const tenantSuperAdminProcedure =
 	superAdminProcedure.use(tenantMiddleware);
 export const tenantGradingProcedure = gradingProcedure.use(tenantMiddleware);

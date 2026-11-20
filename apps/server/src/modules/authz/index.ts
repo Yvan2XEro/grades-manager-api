@@ -63,6 +63,57 @@ export const ADMIN_ROLES: MemberRole[] = [
 	"owner",
 ];
 export const SUPER_ADMIN_ROLES: MemberRole[] = ["super_admin", "owner"];
+/** Administrator and above — excludes deans (institution settings, accounts). */
+export const ADMINISTRATOR_ROLES: MemberRole[] = [
+	"administrator",
+	"super_admin",
+	"owner",
+];
+/**
+ * Every institution employee. Students (and guests) are excluded: they only
+ * reach self-service procedures that resolve their own records.
+ */
+export const STAFF_ROLES: MemberRole[] = [
+	"staff",
+	"grade_editor",
+	"teacher",
+	"dean",
+	"administrator",
+	"super_admin",
+	"owner",
+];
+
+/** True when the role belongs to an employee (anything but student/guest). */
+export function isStaffRole(role: MemberRole | null | undefined) {
+	return roleSatisfies(role, STAFF_ROLES);
+}
+
+/**
+ * Roles that read every student record of the institution, not only the
+ * students of their own courses. The hierarchy makes a teacher satisfy
+ * `staff` and `grade_editor`, so the two non-admin roles are matched exactly:
+ * teachers stay scoped to their courses.
+ */
+export function hasInstitutionWideRecordAccess(
+	role: MemberRole | null | undefined,
+) {
+	return (
+		roleSatisfies(role, ADMIN_ROLES) ||
+		role === "staff" ||
+		role === "grade_editor"
+	);
+}
+
+/**
+ * Roles that edit the grades of every exam of the institution. A teacher
+ * satisfies `grade_editor` through the hierarchy but only edits the exams of
+ * their own courses (or delegated ones), hence the exact match.
+ */
+export function hasInstitutionWideGradeAccess(
+	role: MemberRole | null | undefined,
+) {
+	return roleSatisfies(role, ADMIN_ROLES) || role === "grade_editor";
+}
 
 export function roleSatisfies(
 	role: MemberRole | null | undefined,

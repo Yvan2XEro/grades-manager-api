@@ -4,7 +4,6 @@ import type { ExportTemplateType, FeeGate } from "../../db/schema/app-schema";
 import {
 	router,
 	tenantAdminProcedure,
-	tenantGradingProcedure,
 	tenantProcedure,
 	tenantProtectedProcedure,
 } from "../../lib/trpc";
@@ -259,8 +258,8 @@ const SYSTEM_TEMPLATES: ReadonlyArray<{
 ];
 
 export const academicDocumentsRouter = router({
-	/** Generate a single diploma/transcript/attestation for a student. */
-	generate: tenantGradingProcedure
+	/** Generate a single diploma/transcript/attestation (official documents are issued by the administration, not teachers). */
+	generate: tenantAdminProcedure
 		.input(zod.generateDocumentSchema)
 		.mutation(async ({ ctx, input }) => {
 			const gate = DOCUMENT_GATES[input.kind];
@@ -294,7 +293,7 @@ export const academicDocumentsRouter = router({
 	 * studentIds). Uses the `student_list` template assigned to the class
 	 * (when classId is given), otherwise the institution default.
 	 */
-	generateStudentList: tenantGradingProcedure
+	generateStudentList: tenantAdminProcedure
 		.input(zod.generateStudentListSchema)
 		.mutation(async ({ ctx, input }) => {
 			const result = await service.generateStudentList(
@@ -317,7 +316,7 @@ export const academicDocumentsRouter = router({
 	 * Students enrolled in a class with, for the chosen kind, whether the
 	 * document may be issued and why not. Drives the batch page.
 	 */
-	classRoster: tenantGradingProcedure
+	classRoster: tenantAdminProcedure
 		.input(zod.classDocumentRosterSchema)
 		.query(async ({ ctx, input }) => {
 			return await classDocumentRoster(
@@ -332,7 +331,7 @@ export const academicDocumentsRouter = router({
 	 * enrollments (each one an enrollment certificate) and whether a pass
 	 * certificate / diploma may be issued.
 	 */
-	studentOptions: tenantGradingProcedure
+	studentOptions: tenantAdminProcedure
 		.input(zod.studentDocumentOptionsSchema)
 		.query(async ({ ctx, input }) => {
 			const enrollments = await repo.listStudentEnrollments(
@@ -389,7 +388,7 @@ export const academicDocumentsRouter = router({
 		}),
 
 	/** Preview as HTML using the resolved/saved template (read-only). */
-	preview: tenantGradingProcedure
+	preview: tenantAdminProcedure
 		.input(zod.previewDocumentSchema)
 		.query(async ({ ctx, input }) => {
 			const gate = DOCUMENT_GATES[input.kind];

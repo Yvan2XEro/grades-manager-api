@@ -1,5 +1,13 @@
 import type { Context } from "@/lib/context";
 import {
+	assertCanReadClass,
+	assertCanReadClassCourse,
+	assertCanReadCourse,
+	assertCanReadExam,
+	assertCanReadStudent,
+	recordActorFromCtx,
+} from "@/modules/authz/record-access";
+import {
 	router as createRouter,
 	tenantGradingProcedure,
 	tenantProtectedProcedure,
@@ -67,51 +75,103 @@ export const router = createRouter({
 		),
 	exportClassCourseCsv: tenantGradingProcedure
 		.input(exportClassCourseSchema)
-		.mutation(({ ctx, input }) =>
-			service.exportClassCourseCsv(input.classCourseId, ctx.institution.id),
-		),
+		.mutation(async ({ ctx, input }) => {
+			await assertCanReadClassCourse(
+				recordActorFromCtx(ctx),
+				input.classCourseId,
+				ctx.institution.id,
+			);
+			return service.exportClassCourseCsv(
+				input.classCourseId,
+				ctx.institution.id,
+			);
+		}),
 	listByExam: tenantProtectedProcedure
 		.input(listExamSchema)
-		.query(({ ctx, input }) => service.listByExam(input, ctx.institution.id)),
+		.query(async ({ ctx, input }) => {
+			await assertCanReadExam(
+				recordActorFromCtx(ctx),
+				input.examId,
+				ctx.institution.id,
+			);
+			return service.listByExam(input, ctx.institution.id);
+		}),
 	listByStudent: tenantProtectedProcedure
 		.input(listStudentSchema)
-		.query(({ ctx, input }) =>
-			service.listByStudent(input, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			await assertCanReadStudent(
+				recordActorFromCtx(ctx),
+				input.studentId,
+				ctx.institution.id,
+			);
+			return service.listByStudent(input, ctx.institution.id);
+		}),
 	listByClassCourse: tenantProtectedProcedure
 		.input(listClassCourseSchema)
-		.query(({ ctx, input }) =>
-			service.listByClassCourse(input, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			await assertCanReadClassCourse(
+				recordActorFromCtx(ctx),
+				input.classCourseId,
+				ctx.institution.id,
+			);
+			return service.listByClassCourse(input, ctx.institution.id);
+		}),
 	listByClass: tenantProtectedProcedure
 		.input(listClassSchema)
-		.query(({ ctx, input }) => service.listByClass(input, ctx.institution.id)),
+		.query(async ({ ctx, input }) => {
+			await assertCanReadClass(
+				recordActorFromCtx(ctx),
+				input.classId,
+				ctx.institution.id,
+			);
+			return service.listByClass(input, ctx.institution.id);
+		}),
 	avgForExam: tenantProtectedProcedure
 		.input(avgExamSchema)
-		.query(({ ctx, input }) =>
-			service.avgForExam(input.examId, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			await assertCanReadExam(
+				recordActorFromCtx(ctx),
+				input.examId,
+				ctx.institution.id,
+			);
+			return service.avgForExam(input.examId, ctx.institution.id);
+		}),
 	avgForCourse: tenantProtectedProcedure
 		.input(avgCourseSchema)
-		.query(({ ctx, input }) =>
-			service.avgForCourse(input.courseId, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			await assertCanReadCourse(
+				recordActorFromCtx(ctx),
+				input.courseId,
+				ctx.institution.id,
+			);
+			return service.avgForCourse(input.courseId, ctx.institution.id);
+		}),
 	avgForStudentInCourse: tenantProtectedProcedure
 		.input(avgStudentCourseSchema)
-		.query(({ ctx, input }) =>
-			service.avgForStudentInCourse(
+		.query(async ({ ctx, input }) => {
+			await assertCanReadStudent(
+				recordActorFromCtx(ctx),
+				input.studentId,
+				ctx.institution.id,
+			);
+			return service.avgForStudentInCourse(
 				input.studentId,
 				input.courseId,
 				ctx.institution.id,
-			),
-		),
+			);
+		}),
 	consolidatedByStudent: tenantProtectedProcedure
 		.input(consolidatedSchema)
-		.query(({ ctx, input }) =>
-			service.getStudentTranscript(
+		.query(async ({ ctx, input }) => {
+			await assertCanReadStudent(
+				recordActorFromCtx(ctx),
+				input.studentId,
+				ctx.institution.id,
+			);
+			return service.getStudentTranscript(
 				input.studentId,
 				ctx.institution.id,
 				input.classId,
-			),
-		),
+			);
+		}),
 });

@@ -4,6 +4,18 @@ import {
 	tenantAdminProcedure,
 	tenantGradingProcedure,
 } from "../../lib/trpc";
+import {
+	ADMIN_ROLES,
+	assertRole,
+	hasInstitutionWideRecordAccess,
+	type MemberRole,
+} from "../authz";
+import {
+	assertCanReadClass,
+	assertCanReadClassCourse,
+	assertCanReadExam,
+	recordActorFromCtx,
+} from "../authz/record-access";
 import * as deliberationsService from "../deliberations/deliberations.service";
 import * as eligibility from "../export-eligibility/export-eligibility.service";
 import { ExportsService } from "./exports.service";
@@ -24,13 +36,32 @@ import {
 } from "./exports.zod";
 
 /**
- * Router for grade exports (PV, evaluation, UE)
+ * Bulk ZIP exports span every class of the institution: teachers export
+ * their own courses one by one instead.
+ */
+function assertInstitutionWideExport(role: MemberRole | null | undefined) {
+	if (!hasInstitutionWideRecordAccess(role)) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Bulk exports are reserved to administration",
+		});
+	}
+}
+
+/**
+ * Router for grade exports (PV, evaluation, UE). Teachers are scoped to the
+ * classes/courses/exams they teach (see authz/record-access).
  */
 export const exportsRouter = router({
 	/** Generate PV (official minutes) for a class/semester and return PDF or HTML */
 	generatePV: tenantGradingProcedure
 		.input(generatePVSchema)
 		.mutation(async ({ ctx, input }) => {
+			await assertCanReadClass(
+				recordActorFromCtx(ctx),
+				input.classId,
+				ctx.institution.id,
+			);
 			const pv = await eligibility.checkPvEligibility({
 				classId: input.classId,
 				semesterId: input.semesterId,
@@ -55,6 +86,11 @@ export const exportsRouter = router({
 	getPVData: tenantGradingProcedure
 		.input(previewPVSchema)
 		.query(async ({ ctx, input }) => {
+			await assertCanReadClass(
+				recordActorFromCtx(ctx),
+				input.classId,
+				ctx.institution.id,
+			);
 			const service = new ExportsService(ctx.institution.id);
 			return service.getPVDataStructured(input);
 		}),
@@ -65,6 +101,11 @@ export const exportsRouter = router({
 	previewPV: tenantGradingProcedure
 		.input(previewPVSchema)
 		.query(async ({ ctx, input }) => {
+			await assertCanReadClass(
+				recordActorFromCtx(ctx),
+				input.classId,
+				ctx.institution.id,
+			);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generatePV({
 				...input,
@@ -81,6 +122,11 @@ export const exportsRouter = router({
 	generateEvaluation: tenantGradingProcedure
 		.input(generateEvaluationSchema)
 		.mutation(async ({ ctx, input }) => {
+			await assertCanReadExam(
+				recordActorFromCtx(ctx),
+				input.examId,
+				ctx.institution.id,
+			);
 			// Per-évaluation export is intentionally NOT gated on the EC reaching
 			// 100%. Publishing a single CC / TP / Examen result is valid even if
 			// the EC isn't fully evaluated yet — the 100% rule only applies to EC,
@@ -103,6 +149,11 @@ export const exportsRouter = router({
 	previewEvaluation: tenantGradingProcedure
 		.input(previewEvaluationSchema)
 		.query(async ({ ctx, input }) => {
+			await assertCanReadExam(
+				recordActorFromCtx(ctx),
+				input.examId,
+				ctx.institution.id,
+			);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generateEvaluation({
 				...input,
@@ -123,6 +174,11 @@ export const exportsRouter = router({
 	generateEc: tenantGradingProcedure
 		.input(generateEcSchema)
 		.mutation(async ({ ctx, input }) => {
+			await assertCanReadClassCourse(
+				recordActorFromCtx(ctx),
+				input.classCourseId,
+				ctx.institution.id,
+			);
 			const ec = await eligibility.checkEcEligibility(
 				input.classCourseId,
 				ctx.institution.id,
@@ -144,6 +200,11 @@ export const exportsRouter = router({
 	previewEc: tenantGradingProcedure
 		.input(previewEcSchema)
 		.query(async ({ ctx, input }) => {
+			await assertCanReadClassCourse(
+				recordActorFromCtx(ctx),
+				input.classCourseId,
+				ctx.institution.id,
+			);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generateEc({
 				...input,
@@ -160,6 +221,7 @@ export const exportsRouter = router({
 	bulkExportEvaluations: tenantGradingProcedure
 		.input(bulkExportFiltersSchema)
 		.mutation(async ({ ctx, input }) => {
+			assertInstitutionWideExport(ctx.memberRole);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.bulkExportEvaluations(input);
 			return {
@@ -181,6 +243,7 @@ export const exportsRouter = router({
 	bulkExportEcs: tenantGradingProcedure
 		.input(bulkExportFiltersSchema)
 		.mutation(async ({ ctx, input }) => {
+			assertInstitutionWideExport(ctx.memberRole);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.bulkExportEcs(input);
 			return {
@@ -201,6 +264,7 @@ export const exportsRouter = router({
 	bulkExportUes: tenantGradingProcedure
 		.input(bulkExportFiltersSchema)
 		.mutation(async ({ ctx, input }) => {
+			assertInstitutionWideExport(ctx.memberRole);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.bulkExportUes(input);
 			return {
@@ -220,6 +284,11 @@ export const exportsRouter = router({
 	generateUE: tenantGradingProcedure
 		.input(generateUESchema)
 		.mutation(async ({ ctx, input }) => {
+			await assertCanReadClass(
+				recordActorFromCtx(ctx),
+				input.classId,
+				ctx.institution.id,
+			);
 			const ue = await eligibility.checkUeEligibility({
 				teachingUnitId: input.teachingUnitId,
 				classId: input.classId,
@@ -245,6 +314,11 @@ export const exportsRouter = router({
 	previewUE: tenantGradingProcedure
 		.input(previewUESchema)
 		.query(async ({ ctx, input }) => {
+			await assertCanReadClass(
+				recordActorFromCtx(ctx),
+				input.classId,
+				ctx.institution.id,
+			);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generateUE({
 				...input,
@@ -258,6 +332,7 @@ export const exportsRouter = router({
 	generateDeliberation: tenantGradingProcedure
 		.input(generateDeliberationSchema)
 		.mutation(async ({ ctx, input }) => {
+			assertRole(ctx.memberRole, ADMIN_ROLES);
 			if (!ctx.profile?.id) {
 				throw new Error("Profile context is missing");
 			}
@@ -279,6 +354,7 @@ export const exportsRouter = router({
 	getDeliberationData: tenantGradingProcedure
 		.input(previewDeliberationSchema)
 		.query(async ({ ctx, input }) => {
+			assertRole(ctx.memberRole, ADMIN_ROLES);
 			if (!ctx.profile?.id) {
 				throw new Error("Profile context is missing");
 			}
@@ -298,6 +374,7 @@ export const exportsRouter = router({
 	previewDeliberation: tenantGradingProcedure
 		.input(previewDeliberationSchema)
 		.query(async ({ ctx, input }) => {
+			assertRole(ctx.memberRole, ADMIN_ROLES);
 			if (!ctx.profile?.id) {
 				throw new Error("Profile context is missing");
 			}
