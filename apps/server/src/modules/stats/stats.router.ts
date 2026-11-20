@@ -1,31 +1,31 @@
 import { z } from "zod";
-import { adminProcedure, router } from "@/lib/trpc";
+import { router, tenantAdminProcedure } from "@/lib/trpc";
 import { statsService } from "./stats.service";
 
 const yearInput = z.object({ academicYearId: z.string().optional() });
 
 export const statsRouter = router({
-	overview: adminProcedure
+	overview: tenantAdminProcedure
 		.input(yearInput)
 		.query(({ ctx, input }) =>
 			statsService.overview(ctx.institution.id, input.academicYearId),
 		),
-	enrollmentStats: adminProcedure
+	enrollmentStats: tenantAdminProcedure
 		.input(yearInput)
 		.query(({ ctx, input }) =>
 			statsService.enrollmentStats(ctx.institution.id, input.academicYearId),
 		),
-	performanceStats: adminProcedure
+	performanceStats: tenantAdminProcedure
 		.input(yearInput)
 		.query(({ ctx, input }) =>
 			statsService.performanceStats(ctx.institution.id, input.academicYearId),
 		),
-	financeStats: adminProcedure
+	financeStats: tenantAdminProcedure
 		.input(yearInput)
 		.query(({ ctx, input }) =>
 			statsService.financeStats(ctx.institution.id, input.academicYearId),
 		),
-	admissionsStats: adminProcedure
+	admissionsStats: tenantAdminProcedure
 		.input(yearInput)
 		.query(({ ctx, input }) =>
 			statsService.admissionsStats(ctx.institution.id, input.academicYearId),

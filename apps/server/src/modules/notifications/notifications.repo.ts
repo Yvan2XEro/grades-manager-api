@@ -9,10 +9,38 @@ import {
 	lt,
 	lte,
 	or,
+	type SQL,
 	sql,
 } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import {
+	type InstitutionScope,
+	profileInInstitution,
+} from "../_shared/tenant-ownership";
+
+/**
+ * A notification belongs to its `institutionId`; older rows without one belong
+ * to the institution of their recipient (none without a recipient).
+ */
+function inInstitution(scope: InstitutionScope) {
+	return or(
+		eq(schema.notifications.institutionId, scope.id),
+		and(
+			isNull(schema.notifications.institutionId),
+			profileInInstitution(schema.notifications.recipientId, scope),
+		),
+	) as SQL;
+}
+
+export async function findByIdInInstitution(
+	id: string,
+	scope: InstitutionScope,
+) {
+	return db.query.notifications.findFirst({
+		where: and(eq(schema.notifications.id, id), inInstitution(scope)),
+	});
+}
 
 export async function createNotification(data: schema.NewNotification) {
 	const [created] = await db
@@ -66,6 +94,7 @@ function cursorCondition(cursor: string) {
 }
 
 export async function listNotificationsPaged(opts: {
+	scope: InstitutionScope;
 	page: number;
 	pageSize: number;
 	status?: schema.NotificationStatus;
@@ -73,11 +102,11 @@ export async function listNotificationsPaged(opts: {
 }) {
 	const size = Math.min(Math.max(opts.pageSize, 1), 100);
 	const offset = (Math.max(opts.page, 1) - 1) * size;
-	const conditions = [
+	const where = and(
+		inInstitution(opts.scope),
 		opts.status ? eq(schema.notifications.status, opts.status) : undefined,
 		opts.channel ? eq(schema.notifications.channel, opts.channel) : undefined,
-	].filter(Boolean) as ReturnType<typeof eq>[];
-	const where = conditions.length > 1 ? and(...conditions) : conditions[0];
+	);
 
 	const [items, [{ total }]] = await Promise.all([
 		db.query.notifications.findMany({
@@ -96,13 +125,14 @@ export async function listNotificationsPaged(opts: {
 }
 
 export async function listNotifications(
+	scope: InstitutionScope,
 	status?: schema.NotificationStatus,
 	limit = 50,
 	cursor?: string,
 	channel?: schema.NotificationChannel,
 ) {
 	const pageLimit = Math.min(Math.max(limit, 1), 100);
-	const conditions = [];
+	const conditions = [inInstitution(scope)];
 
 	if (status) {
 		conditions.push(eq(schema.notifications.status, status));
@@ -116,7 +146,7 @@ export async function listNotifications(
 	}
 
 	const items = await db.query.notifications.findMany({
-		where: conditions.length > 0 ? and(...conditions) : undefined,
+		where: and(...conditions),
 		limit: pageLimit,
 		orderBy: [
 			desc(schema.notifications.createdAt),
@@ -137,8 +167,11 @@ export async function findPending(limit = 25) {
 	});
 }
 
-/** Returns pending + retrying-but-due notifications with recipient email. */
-export async function findReadyToSend(limit = 25) {
+/**
+ * Returns pending + retrying-but-due notifications with recipient email —
+ * all of them for the background job, or one institution's for a manual flush.
+ */
+export async function findReadyToSend(limit = 25, scope?: InstitutionScope) {
 	const now = new Date();
 	// For both pending and retrying: only pick up when nextRetryAt is null or in the past.
 	// This lets claimForDelivery set a future nextRetryAt to act as a processing lock,
@@ -148,9 +181,12 @@ export async function findReadyToSend(limit = 25) {
 		lte(schema.notifications.nextRetryAt, now),
 	);
 	return db.query.notifications.findMany({
-		where: or(
-			and(eq(schema.notifications.status, "pending"), readyCondition),
-			and(eq(schema.notifications.status, "retrying"), readyCondition),
+		where: and(
+			or(
+				and(eq(schema.notifications.status, "pending"), readyCondition),
+				and(eq(schema.notifications.status, "retrying"), readyCondition),
+			),
+			scope ? inInstitution(scope) : undefined,
 		),
 		with: { recipient: { columns: { primaryEmail: true } } },
 		limit,
@@ -280,10 +316,11 @@ export async function markAllReadInApp(recipientId: string) {
 		);
 }
 
-export async function getStats() {
+export async function getStats(scope: InstitutionScope) {
 	const rows = await db
 		.select({ status: schema.notifications.status, total: count() })
 		.from(schema.notifications)
+		.where(inInstitution(scope))
 		.groupBy(schema.notifications.status);
 	const result: Record<string, number> = {
 		pending: 0,
@@ -302,7 +339,7 @@ export async function getStats() {
 	};
 }
 
-export async function requeueFailed(id: string) {
+export async function requeueFailed(id: string, scope: InstitutionScope) {
 	const [updated] = await db
 		.update(schema.notifications)
 		.set({
@@ -315,6 +352,7 @@ export async function requeueFailed(id: string) {
 			and(
 				eq(schema.notifications.id, id),
 				eq(schema.notifications.status, "failed"),
+				inInstitution(scope),
 			),
 		)
 		.returning();

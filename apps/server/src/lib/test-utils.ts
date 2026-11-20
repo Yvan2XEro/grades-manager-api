@@ -157,6 +157,7 @@ const defaultProfilePayload = (
 	gender: data.gender ?? "other",
 	nationality: data.nationality ?? null,
 	status: data.status ?? "active",
+	institutionId: data.institutionId ?? null,
 });
 
 export async function createDomainUser(data: Partial<NewDomainUser> = {}) {

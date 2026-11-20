@@ -4,7 +4,11 @@ import {
 	type ExportTemplateType,
 	exportTemplateTypes,
 } from "../../db/schema/app-schema";
-import { adminProcedure, protectedProcedure, router } from "../../lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "../../lib/trpc";
 import {
 	documentThemeKinds,
 	isDocumentThemeKind,
@@ -38,7 +42,7 @@ function requireManageCatalog(ctx: {
 }
 
 export const exportTemplatesRouter = router({
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(zod.listExportTemplatesSchema)
 		.query(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -48,7 +52,7 @@ export const exportTemplatesRouter = router({
 			return await service.listTemplates(ctx.institution.id, input);
 		}),
 
-	listPaged: protectedProcedure
+	listPaged: tenantProtectedProcedure
 		.input(zod.listExportTemplatesPagedSchema)
 		.query(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -58,17 +62,17 @@ export const exportTemplatesRouter = router({
 			return service.listTemplatesPaged(ctx.institution.id, input);
 		}),
 
-	getById: protectedProcedure
+	getById: tenantProtectedProcedure
 		.input(zod.getExportTemplateSchema)
 		.query(async ({ ctx, input }) => {
 			requireManageCatalog({
 				permissions: ctx.permissions,
 				action: "view export templates",
 			});
-			return await service.getTemplate(input);
+			return await service.getTemplate(input, ctx.institution.id);
 		}),
 
-	getDefault: protectedProcedure
+	getDefault: tenantProtectedProcedure
 		.input(
 			zod.listExportTemplatesSchema
 				.pick({ type: true })
@@ -78,7 +82,7 @@ export const exportTemplatesRouter = router({
 			return await service.getDefaultTemplate(ctx.institution.id, input.type);
 		}),
 
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(zod.createExportTemplateSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -89,7 +93,7 @@ export const exportTemplatesRouter = router({
 			return await service.createTemplate(ctx.institution.id, userId, input);
 		}),
 
-	update: adminProcedure
+	update: tenantAdminProcedure
 		.input(zod.updateExportTemplateSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -97,21 +101,21 @@ export const exportTemplatesRouter = router({
 				action: "update export templates",
 			});
 			const userId = requireProfileId(ctx);
-			return await service.updateTemplate(userId, input);
+			return await service.updateTemplate(ctx.institution.id, userId, input);
 		}),
 
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(zod.deleteExportTemplateSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
 				permissions: ctx.permissions,
 				action: "delete export templates",
 			});
-			await service.deleteTemplate(input);
+			await service.deleteTemplate(input, ctx.institution.id);
 			return { success: true };
 		}),
 
-	setDefault: adminProcedure
+	setDefault: tenantAdminProcedure
 		.input(zod.setDefaultTemplateSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -123,7 +127,7 @@ export const exportTemplatesRouter = router({
 		}),
 
 	// ---------- Class assignment ----------
-	assignToClass: adminProcedure
+	assignToClass: tenantAdminProcedure
 		.input(zod.assignClassTemplateSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -138,7 +142,7 @@ export const exportTemplatesRouter = router({
 			);
 		}),
 
-	updateClassAssignment: adminProcedure
+	updateClassAssignment: tenantAdminProcedure
 		.input(zod.updateClassTemplateAssignmentSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -153,25 +157,25 @@ export const exportTemplatesRouter = router({
 			);
 		}),
 
-	removeClassAssignment: adminProcedure
+	removeClassAssignment: tenantAdminProcedure
 		.input(zod.removeClassTemplateAssignmentSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
 				permissions: ctx.permissions,
 				action: "remove class template assignments",
 			});
-			await service.removeClassTemplateAssignment(input);
+			await service.removeClassTemplateAssignment(input, ctx.institution.id);
 			return { success: true };
 		}),
 
-	listClassAssignments: protectedProcedure
+	listClassAssignments: tenantProtectedProcedure
 		.input(zod.listClassTemplateAssignmentsSchema)
 		.query(async ({ ctx, input }) => {
 			return await service.listClassAssignments(ctx.institution.id, input);
 		}),
 
 	// ---------- Program assignment (with theme overrides) ----------
-	assignToProgram: adminProcedure
+	assignToProgram: tenantAdminProcedure
 		.input(zod.assignProgramTemplateSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
@@ -181,32 +185,32 @@ export const exportTemplatesRouter = router({
 			return await service.assignProgramTemplate(ctx.institution.id, input);
 		}),
 
-	removeProgramAssignment: adminProcedure
+	removeProgramAssignment: tenantAdminProcedure
 		.input(zod.removeProgramTemplateAssignmentSchema)
 		.mutation(async ({ ctx, input }) => {
 			requireManageCatalog({
 				permissions: ctx.permissions,
 				action: "remove program template assignments",
 			});
-			await service.removeProgramTemplateAssignment(input);
+			await service.removeProgramTemplateAssignment(input, ctx.institution.id);
 			return { success: true };
 		}),
 
 	// ---------- Themes ----------
-	getThemePresets: protectedProcedure
+	getThemePresets: tenantProtectedProcedure
 		.input(zod.getThemePresetsSchema)
 		.query(({ input }) => {
 			return getPresetDescriptors(input.kind);
 		}),
 
-	listSupportedKinds: protectedProcedure.query(() => {
+	listSupportedKinds: tenantProtectedProcedure.query(() => {
 		return {
 			allTypes: exportTemplateTypes as readonly ExportTemplateType[],
 			documentKinds: documentThemeKinds,
 		};
 	}),
 
-	getKindMetadata: protectedProcedure
+	getKindMetadata: tenantProtectedProcedure
 		.input(z.object({ kind: z.string() }))
 		.query(({ input }) => {
 			return {

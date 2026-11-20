@@ -83,6 +83,7 @@ export async function validateGrades(
 		"grade_validated",
 		{ examId },
 		approverId,
+		institutionId,
 	);
 	// Teacher notification is handled inside validateExam() with dedupeKey
 	return updated;
@@ -116,11 +117,12 @@ export async function toggleEnrollmentWindow(
 		nextStatus,
 		institutionId,
 	);
-	await notifications.registerWorkflowAlert(`enrollment_${nextStatus}`, {
-		classId,
-		academicYearId,
-		status: nextStatus,
-	});
+	await notifications.registerWorkflowAlert(
+		`enrollment_${nextStatus}`,
+		{ classId, academicYearId, status: nextStatus },
+		null,
+		institutionId,
+	);
 	return window;
 }
 
@@ -140,6 +142,7 @@ export async function triggerAttendanceAlert(
 		"attendance_alert",
 		{ classCourseId, severity, message },
 		recipientId,
+		institutionId,
 	);
 	return { status: "queued" };
 }
@@ -162,6 +165,7 @@ export async function rejectGrades(
 		"grade_validated",
 		{ examId, rejected: true, reason },
 		rejectorId,
+		institutionId,
 	);
 	// Teacher notification is handled inside validateExam() with dedupeKey
 	return updated;
@@ -519,9 +523,12 @@ export async function closeExpiredApprovedExams() {
 	});
 	for (const exam of staleExams) {
 		await examsService.setLock(exam.id, true, exam.institutionId);
-		await notifications.registerWorkflowAlert("exam_locked", {
-			examId: exam.id,
-		});
+		await notifications.registerWorkflowAlert(
+			"exam_locked",
+			{ examId: exam.id },
+			null,
+			exam.institutionId,
+		);
 	}
 	return staleExams.length;
 }

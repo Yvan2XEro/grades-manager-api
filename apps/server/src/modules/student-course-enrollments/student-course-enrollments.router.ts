@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "@/lib/trpc";
 import { findGatingRule } from "@/modules/fee-clearance/fee-clearance.repo";
 import * as service from "./student-course-enrollments.service";
 import {
@@ -12,18 +16,22 @@ import {
 } from "./student-course-enrollments.zod";
 
 export const studentCourseEnrollmentsRouter = router({
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(createSchema)
-		.mutation(({ input }) => service.createEnrollment(input)),
-	bulkEnroll: adminProcedure
+		.mutation(({ input, ctx }) =>
+			service.createEnrollment(input, ctx.institution.id),
+		),
+	bulkEnroll: tenantAdminProcedure
 		.input(bulkSchema)
-		.mutation(({ input }) => service.bulkEnroll(input)),
-	updateStatus: adminProcedure
+		.mutation(({ input, ctx }) =>
+			service.bulkEnroll(input, ctx.institution.id),
+		),
+	updateStatus: tenantAdminProcedure
 		.input(updateStatusSchema)
 		.mutation(({ input, ctx }) =>
 			service.updateStatus(input.id, ctx.institution.id, input.status),
 		),
-	autoEnrollClass: adminProcedure
+	autoEnrollClass: tenantAdminProcedure
 		.input(autoEnrollClassSchema)
 		.mutation(async ({ input, ctx }) => {
 			const gateEnabled =
@@ -34,15 +42,15 @@ export const studentCourseEnrollmentsRouter = router({
 				checkFeeGate: gateEnabled && !ctx.permissions.canOverrideFeeGates,
 			});
 		}),
-	closeForStudent: adminProcedure
+	closeForStudent: tenantAdminProcedure
 		.input(closeSchema)
 		.mutation(({ input, ctx }) =>
 			service.closeForStudent(input, ctx.institution.id),
 		),
-	getById: protectedProcedure
+	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ input, ctx }) => service.getById(input.id, ctx.institution.id)),
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(listSchema)
 		.query(({ input, ctx }) => service.list(input, ctx.institution.id)),
 });

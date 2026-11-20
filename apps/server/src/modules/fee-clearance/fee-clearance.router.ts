@@ -4,8 +4,8 @@ import {
 	feeConfigProcedure,
 	feeManageProcedure,
 	feePaymentProcedure,
-	protectedProcedure,
 	router,
+	tenantProtectedProcedure,
 } from "@/lib/trpc";
 import * as service from "./fee-clearance.service";
 import {
@@ -360,7 +360,7 @@ export const feeClearanceRouter = router({
 			),
 		),
 
-	checkGate: protectedProcedure
+	checkGate: tenantProtectedProcedure
 		.input(checkGateSchema)
 		.query(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new Error("Profile required to check gate");
@@ -380,7 +380,7 @@ export const feeClearanceRouter = router({
 
 	// ── Student-facing ─────────────────────────────────────────────────
 
-	myFinancialHistory: protectedProcedure.query(({ ctx }) => {
+	myFinancialHistory: tenantProtectedProcedure.query(({ ctx }) => {
 		if (!ctx.profile?.id) return [];
 		return service.getStudentFinancialHistory(
 			ctx.profile.id,
@@ -388,7 +388,7 @@ export const feeClearanceRouter = router({
 		);
 	}),
 
-	myStatus: protectedProcedure
+	myStatus: tenantProtectedProcedure
 		.input(getMyFeeStatusSchema)
 		.query(({ ctx, input }) => {
 			if (!ctx.profile?.id) return null;
@@ -399,7 +399,7 @@ export const feeClearanceRouter = router({
 			);
 		}),
 
-	myCreateOrder: protectedProcedure
+	myCreateOrder: tenantProtectedProcedure
 		.input(
 			z.object({
 				feeAssignmentId: z.string(),
@@ -417,7 +417,7 @@ export const feeClearanceRouter = router({
 			);
 		}),
 
-	myDownloadOrder: protectedProcedure
+	myDownloadOrder: tenantProtectedProcedure
 		.input(z.object({ orderId: z.string() }))
 		.query(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new Error("Profile required");
@@ -428,7 +428,7 @@ export const feeClearanceRouter = router({
 			);
 		}),
 
-	myDownloadReceipt: protectedProcedure
+	myDownloadReceipt: tenantProtectedProcedure
 		.input(z.object({ paymentId: z.string() }))
 		.query(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new Error("Profile required");

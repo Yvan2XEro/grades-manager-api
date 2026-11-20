@@ -17,6 +17,7 @@ async function run() {
 			id: schema.classes.id,
 			name: schema.classes.name,
 			academicYearId: schema.classes.academicYear,
+			institutionId: schema.classes.institutionId,
 		})
 		.from(schema.classes);
 
@@ -32,11 +33,14 @@ async function run() {
 
 	for (const klass of classes) {
 		try {
-			const result = await autoEnrollClass({
+			const result = await autoEnrollClass(
+				{
 				classId: klass.id,
 				academicYearId: klass.academicYearId,
-				status: "active",
-			});
+					status: "active",
+				},
+				{ institutionId: klass.institutionId },
+			);
 			totalCreated += result.createdCount;
 			totalSkipped += result.skippedCount;
 			console.log(

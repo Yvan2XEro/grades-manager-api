@@ -4,6 +4,10 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { computeUeCredits } from "@/modules/student-credit-ledger/compute-ue-credits";
 import * as repo from "@/modules/student-credit-ledger/student-credit-ledger.repo";
+import {
+	requireAcademicYearInInstitution,
+	requireClassInInstitution,
+} from "../../_shared/tenant-ownership";
 import type { BatchJobDefinition, PreviewResult } from "../batch-jobs.types";
 
 const paramsSchema = z.object({
@@ -22,7 +26,8 @@ export const creditLedgerRecomputeJob: BatchJobDefinition<Params> = {
 	},
 
 	async preview(params, ctx) {
-		const students = await getTargetStudents(params);
+		await assertScope(params, ctx.institutionId);
+		const students = await getTargetStudents(params, ctx.institutionId);
 
 		await ctx.log("info", `Found ${students.length} students to recompute`, {
 			academicYearId: params.academicYearId,
@@ -52,7 +57,9 @@ export const creditLedgerRecomputeJob: BatchJobDefinition<Params> = {
 	},
 
 	async executeStep(params, step, ctx) {
-		const students = await getTargetStudents(params);
+		// Re-checked at execution: params are stored and replayed later
+		await assertScope(params, ctx.institutionId);
+		const students = await getTargetStudents(params, ctx.institutionId);
 
 		if (step.stepIndex === 0) {
 			// Step 1: Reset ledgers to zero
@@ -124,9 +131,17 @@ export const creditLedgerRecomputeJob: BatchJobDefinition<Params> = {
 	},
 };
 
-async function getTargetStudents(params: Params) {
+/** The year (and class) must be the institution's. */
+async function assertScope(params: Params, institutionId: string) {
+	await requireAcademicYearInInstitution(params.academicYearId, institutionId);
+	if (params.classId)
+		await requireClassInInstitution(params.classId, institutionId);
+}
+
+async function getTargetStudents(params: Params, institutionId: string) {
 	const conditions = [
 		eq(schema.enrollments.academicYearId, params.academicYearId),
+		eq(schema.enrollments.institutionId, institutionId),
 	];
 	if (params.classId) {
 		conditions.push(eq(schema.enrollments.classId, params.classId));

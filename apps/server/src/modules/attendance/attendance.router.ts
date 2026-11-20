@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
-	adminProcedure,
 	router as createRouter,
-	gradingProcedure,
+	tenantAdminProcedure,
+	tenantGradingProcedure,
 } from "@/lib/trpc";
 import * as service from "./attendance.service";
 import {
@@ -48,7 +48,7 @@ async function assertTeacherOwnsCourse(
 
 export const router = createRouter({
 	/** Create (or get) an attendance session for a classCourse on a date. */
-	createSession: gradingProcedure
+	createSession: tenantGradingProcedure
 		.input(createSessionSchema)
 		.mutation(async ({ ctx, input }) => {
 			if (!ctx.permissions.canManageCatalog) {
@@ -66,7 +66,7 @@ export const router = createRouter({
 		}),
 
 	/** Get one session with its full roster of records. */
-	getSession: gradingProcedure
+	getSession: tenantGradingProcedure
 		.input(getSessionSchema)
 		.query(async ({ ctx, input }) => {
 			const session = await service.getSession(input.id, ctx.institution.id);
@@ -82,7 +82,7 @@ export const router = createRouter({
 
 	/** List sessions (optionally filtered by classCourse, year, date range).
 	 *  Non-admin callers must supply classCourseId and must own that course. */
-	listSessions: gradingProcedure
+	listSessions: tenantGradingProcedure
 		.input(listSessionsSchema)
 		.query(async ({ ctx, input }) => {
 			if (!ctx.permissions.canManageCatalog) {
@@ -101,14 +101,14 @@ export const router = createRouter({
 		}),
 
 	/** Delete an attendance session (admin only). */
-	deleteSession: adminProcedure
+	deleteSession: tenantAdminProcedure
 		.input(deleteSessionSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteSession(input.id, ctx.institution.id),
 		),
 
 	/** Replace all records for a session (bulk mark). */
-	bulkMark: gradingProcedure
+	bulkMark: tenantGradingProcedure
 		.input(bulkMarkSchema)
 		.mutation(async ({ ctx, input }) => {
 			if (!ctx.permissions.canManageCatalog) {
@@ -131,7 +131,7 @@ export const router = createRouter({
 		}),
 
 	/** Update a single student's attendance status. */
-	updateRecord: gradingProcedure
+	updateRecord: tenantGradingProcedure
 		.input(updateRecordSchema)
 		.mutation(async ({ ctx, input }) => {
 			if (!ctx.permissions.canManageCatalog) {
@@ -155,7 +155,7 @@ export const router = createRouter({
 		}),
 
 	/** Approve/set an excuse reason for an absent or late record. */
-	excuseAbsence: gradingProcedure
+	excuseAbsence: tenantGradingProcedure
 		.input(excuseAbsenceSchema)
 		.mutation(async ({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -182,7 +182,7 @@ export const router = createRouter({
 		}),
 
 	/** Per-student attendance rates for a class course. */
-	getAttendanceRates: gradingProcedure
+	getAttendanceRates: tenantGradingProcedure
 		.input(attendanceRatesSchema)
 		.query(async ({ ctx, input }) => {
 			if (!ctx.permissions.canManageCatalog) {
@@ -204,7 +204,7 @@ export const router = createRouter({
 		}),
 
 	/** Active student roster for a class course. */
-	getRoster: gradingProcedure
+	getRoster: tenantGradingProcedure
 		.input(z.object({ classCourseId: z.string() }))
 		.query(async ({ ctx, input }) => {
 			if (!ctx.permissions.canManageCatalog) {
@@ -219,7 +219,7 @@ export const router = createRouter({
 
 	/** Check attendance eligibility for a student in a class course.
 	 *  Teachers may only check students enrolled in their own courses. */
-	checkEligibility: gradingProcedure
+	checkEligibility: tenantGradingProcedure
 		.input(eligibilityCheckSchema)
 		.query(async ({ ctx, input }) => {
 			if (!ctx.permissions.canManageCatalog) {
@@ -237,7 +237,7 @@ export const router = createRouter({
 		}),
 
 	/** Set or clear the attendance threshold and excused-absence policy on a class course (admin only). */
-	setThreshold: adminProcedure
+	setThreshold: tenantAdminProcedure
 		.input(setThresholdSchema)
 		.mutation(async ({ ctx, input }) => {
 			const { db } = await import("@/db");
@@ -263,7 +263,7 @@ export const router = createRouter({
 		}),
 
 	/** Grant an attendance exemption so a below-threshold student can sit exams (admin only). */
-	grantExemption: adminProcedure
+	grantExemption: tenantAdminProcedure
 		.input(grantExemptionSchema)
 		.mutation(({ ctx, input }) =>
 			service.grantExemption(
@@ -276,7 +276,7 @@ export const router = createRouter({
 		),
 
 	/** Revoke a previously-granted attendance exemption (admin only). */
-	revokeExemption: adminProcedure
+	revokeExemption: tenantAdminProcedure
 		.input(revokeExemptionSchema)
 		.mutation(({ ctx, input }) =>
 			service.revokeExemption(
@@ -289,7 +289,7 @@ export const router = createRouter({
 
 	/** Summary of attendance rates across all class courses assigned to the calling teacher.
 	 *  Teachers use this to review their own courses without admin navigation. */
-	myCoursesRates: gradingProcedure
+	myCoursesRates: tenantGradingProcedure
 		.input(z.object({ academicYearId: z.string().optional() }))
 		.query(async ({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -347,7 +347,7 @@ export const router = createRouter({
 			return results;
 		}),
 
-	getSessionSummary: gradingProcedure
+	getSessionSummary: tenantGradingProcedure
 		.input(z.object({ sessionId: z.string().uuid() }))
 		.query(async ({ ctx, input }) => {
 			const summary = await service.getSessionSummary(
@@ -366,7 +366,7 @@ export const router = createRouter({
 			return summary;
 		}),
 
-	getClassAttendanceOverview: gradingProcedure
+	getClassAttendanceOverview: tenantGradingProcedure
 		.input(
 			z.object({
 				classId: z.string().uuid(),
@@ -383,14 +383,14 @@ export const router = createRouter({
 		}),
 
 	/** Generate (or regenerate) the participation roster for an exam from attendance data. */
-	generateExamRoster: adminProcedure
+	generateExamRoster: tenantAdminProcedure
 		.input(z.object({ examId: z.string().uuid() }))
 		.mutation(({ ctx, input }) =>
 			service.generateExamRoster(input.examId, ctx.institution.id),
 		),
 
 	/** Lock the participation roster — no further overrides allowed after this. */
-	lockExamRoster: adminProcedure
+	lockExamRoster: tenantAdminProcedure
 		.input(z.object({ examId: z.string().uuid() }))
 		.mutation(({ ctx, input }) =>
 			service.lockExamRoster(
@@ -401,14 +401,14 @@ export const router = createRouter({
 		),
 
 	/** Retrieve the full participation roster for an exam. */
-	getExamRoster: adminProcedure
+	getExamRoster: tenantAdminProcedure
 		.input(z.object({ examId: z.string().uuid() }))
 		.query(({ ctx, input }) =>
 			service.getExamRoster(input.examId, ctx.institution.id),
 		),
 
 	/** Override a single student's eligibility in an unlocked roster. */
-	overrideEligibility: adminProcedure
+	overrideEligibility: tenantAdminProcedure
 		.input(
 			z.object({
 				examId: z.string().uuid(),
@@ -428,7 +428,7 @@ export const router = createRouter({
 		),
 
 	/** Get roster existence + lock status for an exam. */
-	getExamRosterStatus: adminProcedure
+	getExamRosterStatus: tenantAdminProcedure
 		.input(z.object({ examId: z.string().uuid() }))
 		.query(({ ctx, input }) =>
 			service.getExamRosterStatus(input.examId, ctx.institution.id),

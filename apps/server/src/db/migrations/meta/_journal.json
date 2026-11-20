@@ -15,6 +15,13 @@
       "when": 1795165911876,
       "tag": "0001_transition_plans_per_class",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795173168849,
+      "tag": "0002_notifications_institution",
+      "breakpoints": true
     }
   ]
 }

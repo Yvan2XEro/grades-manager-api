@@ -1,9 +1,9 @@
 import { z } from "zod";
 import type { DayOfWeek } from "@/db/schema/app-schema";
 import {
-	adminProcedure,
 	router as createRouter,
-	protectedProcedure,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
 } from "@/lib/trpc";
 import * as service from "./timetable.service";
 import {
@@ -16,7 +16,7 @@ import {
 } from "./timetable.zod";
 
 export const router = createRouter({
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(createSessionSchema)
 		.mutation(({ ctx, input }) =>
 			service.createSession(
@@ -25,7 +25,7 @@ export const router = createRouter({
 			),
 		),
 
-	update: adminProcedure
+	update: tenantAdminProcedure
 		.input(updateSessionSchema)
 		.mutation(({ ctx, input }) =>
 			service.updateSession(
@@ -34,20 +34,20 @@ export const router = createRouter({
 			),
 		),
 
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(deleteSessionSchema)
 		.mutation(({ ctx, input }) =>
 			service.deleteSession(input.id, ctx.institution.id),
 		),
 
-	list: adminProcedure.input(listSessionsSchema).query(({ ctx, input }) =>
+	list: tenantAdminProcedure.input(listSessionsSchema).query(({ ctx, input }) =>
 		service.listSessions(ctx.institution.id, {
 			...input,
 			dayOfWeek: input.dayOfWeek as DayOfWeek | undefined,
 		}),
 	),
 
-	myTeacherTimetable: protectedProcedure
+	myTeacherTimetable: tenantProtectedProcedure
 		.input(
 			z.object({
 				academicYearId: z.string().optional(),
@@ -64,7 +64,7 @@ export const router = createRouter({
 			);
 		}),
 
-	myStudentTimetable: protectedProcedure
+	myStudentTimetable: tenantProtectedProcedure
 		.input(
 			z.object({
 				academicYearId: z.string().optional(),
@@ -90,13 +90,13 @@ export const router = createRouter({
 			);
 		}),
 
-	previewBulkImport: adminProcedure
+	previewBulkImport: tenantAdminProcedure
 		.input(previewBulkImportSchema)
 		.mutation(({ ctx, input }) =>
 			service.previewBulkImport(input.rows, ctx.institution.id, input.mode),
 		),
 
-	executeBulkImport: adminProcedure
+	executeBulkImport: tenantAdminProcedure
 		.input(executeBulkImportSchema)
 		.mutation(({ ctx, input }) =>
 			service.executeBulkImport(

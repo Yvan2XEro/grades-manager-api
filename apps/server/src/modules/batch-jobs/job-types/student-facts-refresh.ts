@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { refreshStudentPromotionSummary } from "@/modules/promotion-rules/student-facts.service";
+import { requireClassInInstitution } from "../../_shared/tenant-ownership";
 import type { BatchJobDefinition, PreviewResult } from "../batch-jobs.types";
 
 const paramsSchema = z.object({
@@ -22,22 +23,17 @@ export const studentFactsRefreshJob: BatchJobDefinition<Params> = {
 
 	async preview(params, ctx) {
 		// Validate class exists and belongs to the academic year
-		const klass = await db.query.classes.findFirst({
-			where: eq(schema.classes.id, params.classId),
-		});
-		if (!klass) {
-			throw new Error(`Class not found: ${params.classId}`);
-		}
+		const klass = await requireClassInInstitution(
+			params.classId,
+			ctx.institutionId,
+		);
 		if (klass.academicYear !== params.academicYearId) {
 			throw new Error(
 				`Class ${params.classId} belongs to year ${klass.academicYear}, not ${params.academicYearId}`,
 			);
 		}
 
-		const students = await db
-			.select({ id: schema.students.id })
-			.from(schema.students)
-			.where(eq(schema.students.class, params.classId));
+		const students = await classStudents(params.classId, ctx.institutionId);
 
 		await ctx.log(
 			"info",
@@ -64,10 +60,9 @@ export const studentFactsRefreshJob: BatchJobDefinition<Params> = {
 	},
 
 	async executeStep(params, step, ctx) {
-		const students = await db
-			.select({ id: schema.students.id })
-			.from(schema.students)
-			.where(eq(schema.students.class, params.classId));
+		// Re-checked at execution: params are stored and replayed later
+		await requireClassInInstitution(params.classId, ctx.institutionId);
+		const students = await classStudents(params.classId, ctx.institutionId);
 
 		let processed = 0;
 		let failed = 0;
@@ -103,3 +98,15 @@ export const studentFactsRefreshJob: BatchJobDefinition<Params> = {
 		}
 	},
 };
+
+function classStudents(classId: string, institutionId: string) {
+	return db
+		.select({ id: schema.students.id })
+		.from(schema.students)
+		.where(
+			and(
+				eq(schema.students.class, classId),
+				eq(schema.students.institutionId, institutionId),
+			),
+		);
+}

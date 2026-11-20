@@ -23,6 +23,19 @@ function generateReceiptNumber(): string {
 	return `RCT-${yymm}-${rand}`;
 }
 
+/**
+ * Installments named in input must be installments of the assignment's own fee
+ * structure — never another structure's, let alone another institution's.
+ */
+function requireOwnInstallments(
+	assignment: { feeStructure: { installments: { id: string }[] } },
+	installmentIds: string[],
+) {
+	const own = new Set(assignment.feeStructure.installments.map((i) => i.id));
+	if (installmentIds.some((id) => !own.has(id)))
+		throw notFound("Installment not found for this fee assignment");
+}
+
 function computeStatus(
 	paidAmount: number,
 	effectiveAmount: number,
@@ -901,6 +914,8 @@ export async function recordPayment(
 		institutionId,
 	);
 	if (!assignment) throw notFound("Fee assignment not found");
+	if (input.installmentId)
+		requireOwnInstallments(assignment, [input.installmentId]);
 	if (assignment.status === "exempt")
 		throw new TRPCError({
 			code: "BAD_REQUEST",
@@ -1187,6 +1202,7 @@ export async function createOrder(
 		institutionId,
 	);
 	if (!assignment) throw notFound("Fee assignment not found");
+	requireOwnInstallments(assignment, input.installmentIds);
 	if (assignment.status === "exempt")
 		throw new TRPCError({
 			code: "BAD_REQUEST",

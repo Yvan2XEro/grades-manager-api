@@ -13,6 +13,11 @@ type StorageInput = {
 	buffer: Buffer;
 	filename: string;
 	mimeType: string;
+	/**
+	 * Owner folder of the file — the institution id for tenant uploads — so
+	 * keys say which institution a file belongs to (`<folder>/<uuid>.<ext>`).
+	 */
+	folder?: string;
 };
 
 export interface StorageAdapter {
@@ -26,17 +31,40 @@ const serverPublicUrl = process.env.SERVER_PUBLIC_URL
 	? process.env.SERVER_PUBLIC_URL.replace(/\/$/, "")
 	: "";
 
-async function ensureLocalDir() {
-	await mkdir(localRoot, { recursive: true });
+/** A folder name or a stored file name: no separators, no dot segments. */
+const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9_-]*(\.[A-Za-z0-9]+)?$/;
+
+/**
+ * Whether `key` is a key this storage can have produced (`<file>` or
+ * `<folder>/<file>`). Anything else — `..`, absolute paths, deeper paths — is
+ * refused before touching the disk.
+ */
+export function isSafeStorageKey(key: string) {
+	const parts = key.split("/");
+	return (
+		parts.length >= 1 &&
+		parts.length <= 2 &&
+		parts.every((part) => SAFE_SEGMENT.test(part))
+	);
+}
+
+/** Absolute path of a local upload, or null when it would leave the uploads root. */
+export function resolveLocalUploadPath(relativePath: string): string | null {
+	const root = path.resolve(localRoot);
+	const resolved = path.resolve(root, relativePath.replace(/^\/+/, ""));
+	return resolved.startsWith(`${root}${path.sep}`) ? resolved : null;
 }
 
 const localAdapter: StorageAdapter = {
-	async save({ buffer, filename, mimeType }) {
-		await ensureLocalDir();
-		const ext = path.extname(filename) || "";
-		const key = `${randomUUID()}${ext}`;
-		const filePath = path.join(localRoot, key);
-		await writeFile(filePath, buffer);
+	async save({ buffer, filename, mimeType, folder }) {
+		if (folder !== undefined && !SAFE_SEGMENT.test(folder))
+			throw new Error("Invalid storage folder");
+		const dir = folder ? path.join(localRoot, folder) : localRoot;
+		await mkdir(dir, { recursive: true });
+		const ext = path.extname(filename).replace(/[^A-Za-z0-9.]/g, "") || "";
+		const name = `${randomUUID()}${ext}`;
+		const key = folder ? `${folder}/${name}` : name;
+		await writeFile(path.join(localRoot, key), buffer);
 		const relativeUrl = `${localPublicPath}/${key}`;
 		const normalizedRelative = relativeUrl.replace(/^\/+/, "/");
 		const publicUrl =
@@ -51,8 +79,11 @@ const localAdapter: StorageAdapter = {
 		};
 	},
 	async delete(key) {
+		if (!isSafeStorageKey(key)) return;
+		const filePath = resolveLocalUploadPath(key);
+		if (!filePath) return;
 		try {
-			await unlink(path.join(localRoot, key));
+			await unlink(filePath);
 		} catch {
 			// ignore missing file
 		}

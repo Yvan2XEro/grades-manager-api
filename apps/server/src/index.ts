@@ -7,15 +7,15 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { db } from "./db";
 import * as schema from "./db/schema/app-schema";
-import {
-	type DiplomationApiKey,
-	diplomationDocuments,
-	institutions,
-} from "./db/schema/app-schema";
+import { type DiplomationApiKey, institutions } from "./db/schema/app-schema";
 import { organization } from "./db/schema/auth";
 import { apiKeyMiddleware } from "./lib/api-key-auth";
 import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
+import {
+	logoUrlToBase64,
+	recordDiplomationDocument,
+} from "./lib/diplomation-rest";
 import { startBackgroundJobs } from "./lib/jobs";
 import { exportDiplomation } from "./modules/deliberations/deliberations.service";
 import { buildTranscriptExport } from "./modules/exports/transcript-export.service";
@@ -28,6 +28,9 @@ app.use("/static/*", serveStatic({ root: "./" }));
 if ((process.env.STORAGE_DRIVER ?? "local") === "local") {
 	const uploadsPath = process.env.STORAGE_LOCAL_PUBLIC_PATH ?? "/uploads";
 	const uploadsRoot = process.env.STORAGE_LOCAL_ROOT ?? "./storage/uploads";
+	// Guided-import workbooks live under the uploads root but are private:
+	// they are only read back through the institution-scoped import API.
+	app.use(`${uploadsPath}/imports/*`, async (c) => c.notFound());
 	app.use(
 		`${uploadsPath}/*`,
 		serveStatic({
@@ -417,42 +420,6 @@ diplomationApi.get("/classes", async (c) => {
 });
 
 /**
- * Resolve a logoUrl (relative path or full URL) and return its base64 data-URL.
- * Returns null if the file doesn't exist or the fetch fails.
- */
-async function logoUrlToBase64(logoUrl: string): Promise<string | null> {
-	try {
-		let buffer: ArrayBuffer;
-		let mimeType = "image/png";
-
-		if (logoUrl.startsWith("http://") || logoUrl.startsWith("https://")) {
-			const res = await fetch(logoUrl);
-			if (!res.ok) return null;
-			buffer = await res.arrayBuffer();
-			const ct = res.headers.get("content-type");
-			if (ct) mimeType = ct.split(";")[0].trim();
-		} else {
-			const uploadsPublicPath =
-				process.env.STORAGE_LOCAL_PUBLIC_PATH ?? "/uploads";
-			const uploadsRoot = process.env.STORAGE_LOCAL_ROOT ?? "./storage/uploads";
-			const relativePath = logoUrl.startsWith(uploadsPublicPath)
-				? logoUrl.slice(uploadsPublicPath.length)
-				: logoUrl;
-			const filePath = `${uploadsRoot.replace(/\/$/, "")}/${relativePath.replace(/^\//, "")}`;
-			const file = Bun.file(filePath);
-			if (!(await file.exists())) return null;
-			buffer = await file.arrayBuffer();
-			mimeType = file.type || "image/png";
-		}
-
-		const base64 = Buffer.from(buffer).toString("base64");
-		return `data:${mimeType};base64,${base64}`;
-	} catch {
-		return null;
-	}
-}
-
-/**
  * GET /api/diplomation/logo?level=self|parent|grandparent
  *
  * Returns the institution logo (or a parent's logo) as a base64 data-URL.
@@ -507,18 +474,10 @@ diplomationApi.get("/logo", async (c) => {
 });
 
 diplomationApi.post("/documents", async (c) => {
-	const apiKey = c.get("apiKeyRecord") as any;
-	const body = await c.req.json();
-	await db.insert(diplomationDocuments).values({
-		institutionId: apiKey.institutionId,
-		sourceId: body.sourceId,
-		documentType: body.documentType,
-		studentId: body.studentId ?? null,
-		generatedAt: new Date(body.generatedAt ?? Date.now()),
-		fileReference: body.fileReference ?? null,
-		generatedByApiKeyId: apiKey.id,
-	});
-	return c.json({ ok: true });
+	const apiKey = c.get("apiKeyRecord");
+	const body = await c.req.json().catch(() => null);
+	const result = await recordDiplomationDocument(apiKey, body);
+	return c.json(result.body, result.status);
 });
 
 app.route("/api/diplomation", diplomationApi);

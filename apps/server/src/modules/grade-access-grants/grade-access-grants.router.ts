@@ -1,23 +1,23 @@
 import { z } from "zod";
-import { adminProcedure, router } from "@/lib/trpc";
+import { router, tenantAdminProcedure } from "@/lib/trpc";
 import * as service from "./grade-access-grants.service";
 
 export const gradeAccessGrantsRouter = router({
-	list: adminProcedure.query(({ ctx }) =>
+	list: tenantAdminProcedure.query(({ ctx }) =>
 		service.listGrants(ctx.institution.id),
 	),
 
-	grant: adminProcedure
+	grant: tenantAdminProcedure
 		.input(z.object({ profileId: z.string() }))
 		.mutation(({ ctx, input }) =>
 			service.grantAccess({
 				profileId: input.profileId,
-				institutionId: ctx.institution.id,
+				institution: ctx.institution,
 				grantedByProfileId: ctx.profile?.id ?? null,
 			}),
 		),
 
-	revoke: adminProcedure
+	revoke: tenantAdminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(({ ctx, input }) =>
 			service.revokeAccess({
