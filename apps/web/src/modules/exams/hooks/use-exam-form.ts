@@ -1,19 +1,40 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { upsertInList } from "@/lib/query-cache";
 import { ClassCourseFormDialog } from "@/modules/classes/components/class-course-form-dialog";
 import {
 	CLASSES_KEY,
 	COURSES_KEY,
-	fetchClassOptions,
-	fetchCourseOptions,
 } from "@/modules/classes/hooks/use-class-options";
-import { trpcClient } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 import type { ClassCourseOption, ExamFormValuesIn } from "../types";
+
+/** Courses listed by the picker at once; more are reached by searching. */
+const CLASS_COURSE_PICKER_LIMIT = 50;
+
+export type ClassCoursePickerOption = {
+	id: string;
+	code: string;
+	name: string;
+};
+
+/**
+ * Picker entry of a class course: "code · class" (unique — the same course
+ * code is used in every class of a program) over the course name.
+ */
+const pickerOption = (
+	id: string,
+	code: string,
+	courseName: string | null | undefined,
+	className: string | null | undefined,
+): ClassCoursePickerOption => ({
+	id,
+	code: className ? `${code} · ${className}` : code,
+	name: courseName || code,
+});
 
 /** Query keys of the lists feeding the exam form (shared with the exams list). */
 export const examFormKeys = {
@@ -48,10 +69,14 @@ function useExamSchema() {
 export type ExamFormData = z.infer<ReturnType<typeof useExamSchema>>;
 
 /**
- * Form state of the exam dialog: values, class-course options (labelled
- * "course - class") and in-place creation of a missing class-course.
+ * Form state of the exam dialog: values, the course picker (class courses of
+ * the year, "course — class", searched on the server) and in-place creation
+ * of a missing class-course.
  */
-export function useExamForm(exam?: ExamFormValuesIn) {
+export function useExamForm(
+	exam?: ExamFormValuesIn,
+	academicYearId?: string | null,
+) {
 	const queryClient = useQueryClient();
 	const schema = useExamSchema();
 
@@ -98,46 +123,73 @@ export function useExamForm(exam?: ExamFormValuesIn) {
 				(Number(watchedPercentage) || 0)
 			: null;
 
-	const { data: classCourses = [] } = useQuery({
-		queryKey: examFormKeys.classCourses,
-		queryFn: fetchExamClassCourses,
+	// Course picker: the class courses of the year (the page's, else the
+	// active one), searched on the server
+	const yearsQuery = useQuery({
+		...trpc.academicYears.list.queryOptions({}),
+		enabled: !academicYearId,
 	});
-	const { data: classes = [] } = useQuery({
-		queryKey: examFormKeys.classes,
-		queryFn: fetchClassOptions,
+	const yearId =
+		academicYearId ?? yearsQuery.data?.items.find((y) => y.isActive)?.id;
+	const [classCourseSearch, setClassCourseSearch] = useState("");
+	const searchQuery = useQuery({
+		queryKey: ["exam-form-class-courses", yearId ?? null, classCourseSearch],
+		enabled: Boolean(academicYearId) || !yearsQuery.isLoading,
+		queryFn: () =>
+			trpcClient.classCourses.search.query({
+				query: classCourseSearch,
+				academicYearId: yearId,
+				limit: CLASS_COURSE_PICKER_LIMIT,
+			}),
 	});
-	const { data: courses = [] } = useQuery({
-		queryKey: examFormKeys.courses,
-		queryFn: () => fetchCourseOptions(),
-	});
-	const classMap = new Map(classes.map((c) => [c.id, c.name]));
-	const courseMap = new Map(courses.map((c) => [c.id, c.name]));
-	const classCourseOptions = classCourses.map((cc) => ({
-		id: cc.id,
-		label: `${courseMap.get(cc.course) ?? ""} - ${classMap.get(cc.class) ?? ""}`,
-	}));
+	// The chosen course stays displayed whatever the search lists
+	const [picked, setPicked] = useState<ClassCoursePickerOption | null>(
+		exam?.classCourseCode
+			? pickerOption(
+					exam.classCourse,
+					exam.classCourseCode,
+					exam.courseName,
+					exam.className,
+				)
+			: null,
+	);
+	const results = (searchQuery.data ?? []).map((cc) =>
+		pickerOption(cc.id, cc.code, cc.courseName, cc.className),
+	);
+	const classCourseOptions =
+		picked && !results.some((option) => option.id === picked.id)
+			? [picked, ...results]
+			: results;
+	const classCoursePicker = {
+		options: classCourseOptions,
+		isLoading: searchQuery.isLoading || yearsQuery.isLoading,
+		onSearch: setClassCourseSearch,
+		/** More courses match than listed: the user should type to narrow. */
+		truncated: results.length >= CLASS_COURSE_PICKER_LIMIT,
+		select: (option: ClassCoursePickerOption | null) => {
+			setPicked(option);
+			form.setValue("classCourseId", option?.id ?? "", {
+				shouldValidate: true,
+			});
+		},
+	};
 
 	const createClassCourse = async () => {
 		const created = await ClassCourseFormDialog.call({
 			existingCodes: [],
+			academicYearId: yearId,
 		});
-		if (!created) return;
-		// The labels come from the class and course lists: refresh them too
-		await Promise.all([
-			queryClient.invalidateQueries({ queryKey: examFormKeys.classes }),
-			queryClient.invalidateQueries({ queryKey: examFormKeys.courses }),
-		]);
-		queryClient.setQueryData<ClassCourseOption[]>(
-			examFormKeys.classCourses,
-			(old) =>
-				upsertInList(old ?? [], {
-					id: created.id,
-					class: created.class,
-					course: created.course,
-				}),
-		);
-		form.setValue("classCourseId", created.id, { shouldValidate: true });
+		if (!created) return null;
+		queryClient.invalidateQueries({ queryKey: ["exam-form-class-courses"] });
+		queryClient.invalidateQueries({ queryKey: examFormKeys.classCourses });
+		const option = pickerOption(created.id, created.code, null, null);
+		classCoursePicker.select(option);
+		return option;
 	};
 
-	return { form, classCourseOptions, createClassCourse, weightTotal };
+	return { form, classCoursePicker, createClassCourse, weightTotal };
 }
+
+export type ClassCoursePicker = ReturnType<
+	typeof useExamForm
+>["classCoursePicker"];

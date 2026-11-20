@@ -39,4 +39,6 @@ export interface ClassCourseRow {
 	className?: string;
 	programName?: string;
 	teacherName?: string;
+	/** False while the course waits for a teacher. */
+	hasTeacher: boolean;
 }

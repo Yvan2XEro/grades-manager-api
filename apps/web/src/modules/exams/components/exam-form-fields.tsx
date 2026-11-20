@@ -1,6 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { QuickCreate } from "@/components/callable/quick-create";
+import { CodedEntitySelect } from "@/components/forms";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
 	FormControl,
@@ -10,21 +10,18 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { formatPercent } from "@/lib/number-format";
 import { cn } from "@/lib/utils";
-import type { ExamFormData } from "../hooks/use-exam-form";
+import type {
+	ClassCoursePicker,
+	ClassCoursePickerOption,
+	ExamFormData,
+} from "../hooks/use-exam-form";
 
 interface ExamFormFieldsProps {
 	form: UseFormReturn<ExamFormData>;
-	classCourseOptions: { id: string; label: string }[];
-	onCreateClassCourse: () => Promise<void>;
+	classCoursePicker: ClassCoursePicker;
+	onCreateClassCourse: () => Promise<ClassCoursePickerOption | null>;
 	/** Course total with this exam's weight, or null before a course is chosen. */
 	weightTotal: number | null;
 }
@@ -32,7 +29,7 @@ interface ExamFormFieldsProps {
 /** Fields of the exam form: class-course, name, type, date, weight. */
 export function ExamFormFields({
 	form,
-	classCourseOptions,
+	classCoursePicker,
 	onCreateClassCourse,
 	weightTotal,
 }: ExamFormFieldsProps) {
@@ -45,30 +42,34 @@ export function ExamFormFields({
 				render={({ field }) => (
 					<FormItem>
 						<FormLabel>{t("admin.exams.form.courseLabel")}</FormLabel>
-						<QuickCreate
+						<CodedEntitySelect
+							id="classCourseId"
+							items={classCoursePicker.options}
+							isLoading={classCoursePicker.isLoading}
+							onSearch={classCoursePicker.onSearch}
+							searchMode="server"
+							minSearchLength={0}
+							value={
+								classCoursePicker.options.find((o) => o.id === field.value)
+									?.code ?? null
+							}
+							onChange={(code) =>
+								classCoursePicker.select(
+									classCoursePicker.options.find((o) => o.code === code) ??
+										null,
+								)
+							}
+							placeholder={t("admin.exams.form.coursePlaceholder")}
+							searchPlaceholder={t("admin.exams.form.courseSearchPlaceholder")}
+							emptyMessage={t("admin.exams.form.courseEmpty")}
 							onCreate={onCreateClassCourse}
-							label={t("admin.classCourses.form.createTitle")}
-						>
-							<Select onValueChange={field.onChange} value={field.value}>
-								<FormControl>
-									<SelectTrigger
-										id="classCourseId"
-										data-testid="class-course-select"
-									>
-										<SelectValue
-											placeholder={t("admin.exams.form.coursePlaceholder")}
-										/>
-									</SelectTrigger>
-								</FormControl>
-								<SelectContent>
-									{classCourseOptions.map((option) => (
-										<SelectItem key={option.id} value={option.id}>
-											{option.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</QuickCreate>
+							createLabel={t("admin.classCourses.form.createTitle")}
+						/>
+						{classCoursePicker.truncated && (
+							<p className="text-muted-foreground text-xs">
+								{t("admin.exams.form.courseTruncated")}
+							</p>
+						)}
 						<FormMessage />
 					</FormItem>
 				)}

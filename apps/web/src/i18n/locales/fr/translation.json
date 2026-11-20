@@ -1179,10 +1179,11 @@
         "ueLabel": "Unité d'enseignement",
         "uePlaceholder": "Sélectionner une UE",
         "noUe": "Aucune UE trouvée pour ce programme",
-        "hint": "Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
+        "hint": "Tous les EC de l'UE sont ajoutés à la classe avec leur enseignant et coefficient par défaut, et les étudiants de la classe y sont inscrits. Un EC sans enseignant par défaut est ajouté sans enseignant.",
         "submit": "Assigner les cours",
-        "skippedTitle": "Certains cours n'ont pas été assignés",
-        "skippedDesc": "Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :"
+        "noTeacherTitle_one": "{{count}} cours ajouté sans enseignant",
+        "noTeacherTitle_other": "{{count}} cours ajoutés sans enseignant",
+        "noTeacherDesc": "Ces cours n'ont pas d'enseignant par défaut. Les évaluations peuvent déjà être créées ; affectez un enseignant depuis les affectations de cours pour qu'il saisisse les notes :"
       },
       "empty": {
         "title": "Aucune affectation de cours",
@@ -1266,6 +1267,12 @@
         "code": "Code",
         "course": "Cours",
         "teacher": "Enseignant"
+      },
+      "noTeacher": "Sans enseignant",
+      "filters": {
+        "search": "Rechercher",
+        "searchPlaceholder": "Cours, classe ou code…",
+        "class": "Classe"
       }
     },
     "classes": {
@@ -1934,7 +1941,10 @@
         "courseLabel": "Cours",
         "classLabel": "Classe",
         "submit": "Enregistrer l'évaluation",
-        "coursePlaceholder": "Sélectionner un cours et une classe"
+        "coursePlaceholder": "Sélectionner un cours et une classe",
+        "courseSearchPlaceholder": "Rechercher un cours ou une classe…",
+        "courseEmpty": "Aucun cours de cette année ne correspond. Ajoutez d'abord les cours à la classe.",
+        "courseTruncated": "Seuls les 50 premiers cours sont listés : tapez un nom de cours ou de classe pour trouver les autres."
       },
       "toast": {
         "createSuccess": "Évaluation créée avec succès",
@@ -1980,6 +1990,10 @@
         "offTotal": "Les évaluations de ce cours totalisent {{total}} au lieu de 100 % : la moyenne du cours sera faussée.",
         "formOff": "Avec cette évaluation, les évaluations du cours totalisent {{total}}. Il faut 100 % pour une moyenne de cours correcte.",
         "formOk": "Les évaluations du cours totalisent 100 %."
+      },
+      "errors": {
+        "noStudents": "Aucun étudiant n'est encore inscrit dans cette classe : inscrivez les étudiants dans la classe, puis ajoutez l'évaluation.",
+        "percentageExceeded": "Les évaluations de ce cours pèseraient plus de 100 % : réduisez la pondération de cette évaluation ou celle des autres."
       }
     },
     "retake": {
@@ -2289,7 +2303,7 @@
     },
     "examScheduler": {
       "title": "Programmation des examens",
-      "subtitle": "Planifiez les examens pour une faculté entière en une seule opération.",
+      "subtitle": "Programmez les examens de plusieurs classes en une seule opération.",
       "sessionMode": {
         "label": "Type de programmation",
         "normal": "Examens",
@@ -2299,7 +2313,7 @@
       },
       "form": {
         "title": "Paramètres de programmation",
-        "description": "Sélectionnez la faculté, l'année académique, le type d'examen, la pondération et la plage de dates.",
+        "description": "Choisissez l'année académique, le type d'examen, la pondération et la plage de dates, puis les classes.",
         "facultyLabel": "Faculté",
         "facultyPlaceholder": "Sélectionner une faculté",
         "academicYearLabel": "Année académique",
@@ -2347,10 +2361,12 @@
         "quickRetakes": "Rattrapages rapides"
       },
       "toast": {
-        "success": "Examens programmés",
         "error": "Impossible de programmer les examens",
         "retakeSuccess": "Rattrapages programmés ({{count}} créés)",
-        "retakeError": "Impossible de programmer les rattrapages"
+        "retakeError": "Impossible de programmer les rattrapages",
+        "successCount_one": "{{count}} examen programmé",
+        "successCount_other": "{{count}} examens programmés",
+        "nothingNew": "Rien à programmer : ces cours ont déjà un examen de ce type."
       },
       "history": {
         "title": "Historique des programmations",
@@ -2379,6 +2395,20 @@
             "status": "Statut",
             "locked": "Verrouillé"
           }
+        }
+      },
+      "result": {
+        "noneTitle": "Aucun examen n'a été programmé",
+        "partialTitle": "Certains examens n'ont pas pu être programmés",
+        "created_one": "{{count}} examen créé",
+        "created_other": "{{count}} examens créés",
+        "duplicates_one": "{{count}} cours avait déjà un examen de ce type",
+        "duplicates_other": "{{count}} cours avaient déjà un examen de ce type",
+        "conflictsTitle_one": "{{count}} cours non programmé",
+        "conflictsTitle_other": "{{count}} cours non programmés",
+        "reasons": {
+          "noStudents": "Aucun étudiant n'est inscrit dans cette classe.",
+          "percentageExceeded": "Ses évaluations pèsent déjà {{current}} % : avec cette pondération, le total dépasserait 100 %."
         }
       }
     },

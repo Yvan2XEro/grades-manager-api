@@ -6,6 +6,7 @@ import { transaction } from "../_shared/db-transaction";
 import * as classesRepo from "../classes/classes.repo";
 import * as enrollmentsRepo from "../enrollments/enrollments.repo";
 import * as registrationNumbersService from "../registration-numbers/registration-numbers.service";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as studentCreditLedgerService from "../student-credit-ledger/student-credit-ledger.service";
 import * as repo from "./students.repo";
 
@@ -160,6 +161,11 @@ export async function createStudent(
 				input.transferCredits,
 			);
 		}
+		// A student of a class takes its courses
+		await courseEnrollments.syncClassRosters({
+			classIds: [input.classId],
+			studentIds: [studentId],
+		});
 		const created = await repo.findById(studentId, institutionId);
 		if (!created) {
 			throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -237,6 +243,10 @@ export async function enrollExistingPerson(
 			status: "active",
 		});
 		return student.id;
+	});
+	await courseEnrollments.syncClassRosters({
+		classIds: [input.classId],
+		studentIds: [studentId],
 	});
 	const created = await repo.findById(studentId, institutionId);
 	if (!created) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -355,6 +365,8 @@ export async function bulkCreateStudents(
 		);
 	}
 
+	await courseEnrollments.syncClassRosters({ classIds: [data.classId] });
+
 	return { createdCount, conflicts, errors };
 }
 
@@ -412,6 +424,10 @@ export async function updateStudent(
 				academicYearId: newClass.academicYear,
 				institutionId: newClass.institutionId,
 				status: "active",
+			});
+			await courseEnrollments.syncClassRosters({
+				classIds: [data.classId],
+				studentIds: [id],
 			});
 		} else {
 			await repo.update(id, payload, institutionId);

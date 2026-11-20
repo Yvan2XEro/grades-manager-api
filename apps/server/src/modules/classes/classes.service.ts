@@ -8,6 +8,7 @@ import { transaction } from "../_shared/db-transaction";
 import { conflict, notFound } from "../_shared/errors";
 import * as enrollmentsRepo from "../enrollments/enrollments.repo";
 import * as programOptionsRepo from "../program-options/program-options.repo";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./classes.repo";
 
 async function loadProgram(programId: string, institutionId: string) {
@@ -345,6 +346,10 @@ export async function transferStudent(
 		institutionId,
 		status: "active",
 	});
+	await courseEnrollments.syncClassRosters({
+		classIds: [toClassId],
+		studentIds: [studentId],
+	});
 	return studentsRepo.findById(studentId, institutionId);
 }
 
@@ -661,6 +666,11 @@ export async function bulkTransfer(
 			status: "active",
 		});
 	}
+
+	await courseEnrollments.syncClassRosters({
+		classIds: [toClassId],
+		studentIds: students.map((student) => student.id),
+	});
 
 	return { transferred: students.length };
 }

@@ -11,11 +11,14 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { confirmAction } from "@/components/callable/confirm";
 import { DataTable, type RowAction } from "@/components/data-table";
+import { ClassSelect } from "@/components/inputs/ClassSelect";
+import { DebouncedSearchField } from "@/components/inputs/DebouncedSearchField";
 import { ListLayout } from "@/components/layouts/ListLayout";
 import { PeriodFilters } from "@/components/period-filters";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
@@ -34,6 +37,8 @@ export default function ClassCoursesPage() {
 	const { t } = useTranslation();
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [semesterId, setSemesterId] = useState<string | null>(null);
+	const [classId, setClassId] = useState<string | null>(null);
+	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 
@@ -42,6 +47,8 @@ export default function ClassCoursesPage() {
 		pageSize,
 		academicYearId,
 		semesterId,
+		classId,
+		query: search,
 	});
 	const selection = useRowSelection(classCourses);
 	const deleteClassCourses = useDeleteClassCourses();
@@ -143,12 +150,37 @@ export default function ClassCoursesPage() {
 			}
 			toolbar={
 				<>
-					<PeriodFilters
-						academicYearId={academicYearId}
-						semesterId={semesterId}
-						onAcademicYearChange={resetPage(setAcademicYearId)}
-						onSemesterChange={resetPage(setSemesterId)}
-					/>
+					<div className="flex flex-wrap items-end gap-4">
+						<div className="w-64 space-y-1">
+							<Label className="text-muted-foreground text-xs">
+								{t("admin.classCourses.filters.search")}
+							</Label>
+							<DebouncedSearchField
+								value={search}
+								onChange={resetPage(setSearch)}
+								placeholder={t("admin.classCourses.filters.searchPlaceholder")}
+							/>
+						</div>
+						<PeriodFilters
+							academicYearId={academicYearId}
+							semesterId={semesterId}
+							onAcademicYearChange={(value) => {
+								setClassId(null);
+								resetPage(setAcademicYearId)(value);
+							}}
+							onSemesterChange={resetPage(setSemesterId)}
+						/>
+						<div className="w-56 space-y-1">
+							<Label className="text-muted-foreground text-xs">
+								{t("admin.classCourses.filters.class")}
+							</Label>
+							<ClassSelect
+								academicYearId={academicYearId}
+								value={classId}
+								onChange={resetPage(setClassId)}
+							/>
+						</div>
+					</div>
 
 					<BulkActionBar
 						selectedCount={selection.selectedCount}
@@ -185,6 +217,7 @@ export default function ClassCoursesPage() {
 				data={classCourses}
 				isLoading={isLoading}
 				selection={selection}
+				onRowClick={openForm}
 				rowActions={rowActions}
 				empty={
 					<EmptyState

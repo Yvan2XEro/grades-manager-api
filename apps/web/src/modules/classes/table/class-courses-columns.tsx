@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { NoTeacherBadge } from "../components/no-teacher-badge";
 import type { ClassCourseRow } from "../types";
 
 export function getClassCoursesColumns(
@@ -58,7 +59,8 @@ export function getClassCoursesColumns(
 		{
 			id: "teacher",
 			header: t("admin.classCourses.table.teacher"),
-			cell: ({ row }) => row.original.teacherName,
+			cell: ({ row }) =>
+				row.original.hasTeacher ? row.original.teacherName : <NoTeacherBadge />,
 		},
 	];
 }

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type { ExamRow } from "../types";
@@ -16,46 +17,71 @@ export interface ExamFilters {
 	dateTo: string | null;
 }
 
-const EMPTY_FILTERS: ExamFilters = {
-	searchTerm: "",
-	academicYearId: null,
-	classId: null,
-	semesterId: null,
-	dateFrom: null,
-	dateTo: null,
+/** URL parameter of each filter. */
+const FILTER_PARAMS: Record<keyof ExamFilters, string> = {
+	searchTerm: "q",
+	academicYearId: "year",
+	classId: "class",
+	semesterId: "semester",
+	dateFrom: "from",
+	dateTo: "to",
 };
 
-/** Filters + pagination of the exams list; the active academic year is preselected. */
+/**
+ * Filters + pagination of the exams list; the active academic year is
+ * preselected. Filters and page live in the URL, so coming back from the
+ * grade entry of an exam finds the list as it was left.
+ */
 export function useExamFilters() {
-	const [filters, setFilters] = useState<ExamFilters>(EMPTY_FILTERS);
-	const [page, setPage] = useState(1);
+	const [params, setParams] = useSearchParams();
+	const filters: ExamFilters = {
+		searchTerm: params.get(FILTER_PARAMS.searchTerm) ?? "",
+		academicYearId: params.get(FILTER_PARAMS.academicYearId),
+		classId: params.get(FILTER_PARAMS.classId),
+		semesterId: params.get(FILTER_PARAMS.semesterId),
+		dateFrom: params.get(FILTER_PARAMS.dateFrom),
+		dateTo: params.get(FILTER_PARAMS.dateTo),
+	};
+	const page = Number(params.get("page")) || 1;
 	const [pageSize, setPageSize] = useState(25);
+
+	const update = (changes: Partial<Record<string, string | null>>) =>
+		setParams(
+			(prev) => {
+				const next = new URLSearchParams(prev);
+				for (const [key, value] of Object.entries(changes)) {
+					if (value) next.set(key, value);
+					else next.delete(key);
+				}
+				return next;
+			},
+			{ replace: true },
+		);
+	const setPage = (value: number) =>
+		update({ page: value > 1 ? String(value) : null });
 
 	const yearsQuery = useQuery({
 		...trpc.academicYears.list.queryOptions({}),
 	});
+	const activeYearId = yearsQuery.data?.items.find((y) => y.isActive)?.id;
 	useEffect(() => {
-		if (!filters.academicYearId && yearsQuery.data?.items) {
-			const active = yearsQuery.data.items.find((y) => y.isActive);
-			if (active) {
-				setFilters((prev) => ({ ...prev, academicYearId: active.id }));
-				setPage(1);
-			}
+		if (!filters.academicYearId && activeYearId) {
+			update({ [FILTER_PARAMS.academicYearId]: activeYearId, page: null });
 		}
-	}, [yearsQuery.data, filters.academicYearId]);
+	}, [activeYearId, filters.academicYearId]);
 
 	const setFilter = <K extends keyof ExamFilters>(
 		key: K,
 		value: ExamFilters[K],
-	) => {
-		setFilters((prev) => ({ ...prev, [key]: value }));
-		setPage(1);
-	};
+	) => update({ [FILTER_PARAMS[key]]: value || null, page: null });
 
-	const reset = () => {
-		setFilters(EMPTY_FILTERS);
-		setPage(1);
-	};
+	const reset = () =>
+		update({
+			...Object.fromEntries(
+				Object.values(FILTER_PARAMS).map((param) => [param, null]),
+			),
+			page: null,
+		});
 
 	return {
 		filters,

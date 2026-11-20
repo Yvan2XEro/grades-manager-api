@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 import { type ExamFormData, useExamForm } from "../hooks/use-exam-form";
+import { examErrorMessage } from "../services/exam-errors";
 import type { ExamFormValuesIn } from "../types";
 import { ExamFormFields } from "./exam-form-fields";
 
@@ -22,13 +23,17 @@ export type { ExamFormValuesIn };
  * in place from the "+", which itself lets you create the class or course.
  */
 export const ExamFormDialog = createCallable<
-	{ exam?: ExamFormValuesIn },
+	{
+		exam?: ExamFormValuesIn;
+		/** Year whose class courses the picker lists (the page's year). */
+		academicYearId?: string | null;
+	},
 	boolean
->(({ call, exam }) => {
+>(({ call, exam, academicYearId }) => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const { form, classCourseOptions, createClassCourse, weightTotal } =
-		useExamForm(exam);
+	const { form, classCoursePicker, createClassCourse, weightTotal } =
+		useExamForm(exam, academicYearId);
 
 	const submit = useMutationFlow(call, async (call, data: ExamFormData) => {
 		try {
@@ -51,13 +56,15 @@ export const ExamFormDialog = createCallable<
 			});
 			call.end(true);
 		} catch (error) {
-			const message =
-				error instanceof Error && error.message
-					? error.message
-					: exam
+			toast.error(
+				examErrorMessage(
+					t,
+					error,
+					exam
 						? t("admin.exams.toast.updateError")
-						: t("admin.exams.toast.createError");
-			toast.error(message);
+						: t("admin.exams.toast.createError"),
+				),
+			);
 		}
 	});
 
@@ -76,7 +83,7 @@ export const ExamFormDialog = createCallable<
 				<form onSubmit={form.handleSubmit(submit)} className="space-y-4">
 					<ExamFormFields
 						form={form}
-						classCourseOptions={classCourseOptions}
+						classCoursePicker={classCoursePicker}
 						onCreateClassCourse={createClassCourse}
 						weightTotal={weightTotal}
 					/>

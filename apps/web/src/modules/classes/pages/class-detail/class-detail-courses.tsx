@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { BookOpen, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { confirmAction } from "@/components/callable/confirm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,7 @@ import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 import { useAddTeachingUnitCourses } from "../../components/class-no-courses-hint";
+import { NoTeacherBadge } from "../../components/no-teacher-badge";
 import { useClassContext } from "../../hooks/use-class-context";
 import { useCoursesOfClass } from "../../hooks/use-class-courses";
 
@@ -40,6 +41,7 @@ function teacherName(cc: ClassCourse): string {
 export default function ClassDetailCourses() {
 	const { t } = useTranslation();
 	const { cls } = useClassContext();
+	const navigate = useNavigate();
 
 	const { courses, isLoading, invalidate } = useCoursesOfClass(cls.id);
 	const addTeachingUnitCourses = useAddTeachingUnitCourses(cls);
@@ -102,17 +104,25 @@ export default function ClassDetailCourses() {
 						</TableHeader>
 						<TableBody>
 							{courses.map((cc) => (
-								<TableRow key={cc.id}>
+								<TableRow
+									key={cc.id}
+									className="cursor-pointer"
+									onClick={() => navigate(`/grades/${cc.id}`)}
+								>
 									<TableCell className="font-mono text-sm">{cc.code}</TableCell>
 									<TableCell>{cc.courseName ?? cc.courseCode ?? "—"}</TableCell>
 									<TableCell className="text-muted-foreground">
-										{teacherName(cc)}
+										{cc.hasTeacher ? teacherName(cc) : <NoTeacherBadge />}
 									</TableCell>
 									<TableCell>
 										<Button
 											variant="ghost"
 											size="icon"
-											onClick={() => confirmDelete(cc.id)}
+											aria-label={t("common.actions.delete")}
+											onClick={(event) => {
+												event.stopPropagation();
+												confirmDelete(cc.id);
+											}}
 										>
 											<Trash2 className="h-4 w-4 text-destructive" />
 										</Button>

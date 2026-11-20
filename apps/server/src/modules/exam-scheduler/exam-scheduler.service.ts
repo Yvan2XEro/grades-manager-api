@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { notFound } from "@/modules/_shared/errors";
 import * as examsService from "@/modules/exams/exams.service";
+import { NO_STUDENTS_ERROR } from "@/modules/student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./exam-scheduler.repo";
 import type {
 	HistoryInput,
@@ -28,6 +29,49 @@ async function ensureExamType(examTypeId: string, institutionId: string) {
 		throw notFound("Exam type not found");
 	}
 	return examType;
+}
+
+/** A course the scheduler could not create the exam of, and why. */
+export type SchedulingConflict = {
+	classCourseId: string;
+	courseName: string;
+	className: string;
+	/**
+	 * noStudents: nobody is enrolled in the class; percentageExceeded: the
+	 * course's exams already weigh `currentPercentage`% and the new one would
+	 * go over 100%; other: `message` says why.
+	 */
+	reason: "noStudents" | "percentageExceeded" | "other";
+	currentPercentage?: number;
+	message?: string;
+};
+
+async function describeConflict(
+	error: TRPCError,
+	target: repo.SchedulerClassCourse,
+	classNames: Map<string, string>,
+	percentage: number,
+): Promise<SchedulingConflict> {
+	const base = {
+		classCourseId: target.id,
+		courseName: target.courseName,
+		className: classNames.get(target.classId) ?? "",
+	};
+	if (error.message === NO_STUDENTS_ERROR) {
+		return { ...base, reason: "noStudents" };
+	}
+	if (error.message === examsService.PERCENTAGE_EXCEEDED_ERROR) {
+		const currentPercentage = await examsService.getCoursePercentageTotal(
+			target.id,
+		);
+		return {
+			...base,
+			reason: "percentageExceeded",
+			currentPercentage,
+			message: `${currentPercentage}% + ${percentage}%`,
+		};
+	}
+	return { ...base, reason: "other", message: error.message };
 }
 
 async function resolveContext(input: PreviewInput, institutionId: string) {
@@ -97,7 +141,8 @@ export async function scheduleExams(
 	const targets = classCourses.filter((cc) => !existingSet.has(cc.id));
 	const duplicates = classCourses.length - targets.length;
 	const createdIds: string[] = [];
-	let conflicts = 0;
+	const conflictDetails: SchedulingConflict[] = [];
+	const classNames = new Map(classes.map((klass) => [klass.id, klass.name]));
 	const startMs = input.dateStart.getTime();
 	const endMs = input.dateEnd.getTime();
 	const range = Math.max(endMs - startMs, 0);
@@ -121,18 +166,22 @@ export async function scheduleExams(
 			if (exam) createdIds.push(exam.id);
 		} catch (error) {
 			if (error instanceof TRPCError && error.code === "BAD_REQUEST") {
-				conflicts += 1;
+				conflictDetails.push(
+					await describeConflict(error, target, classNames, input.percentage),
+				);
 				continue;
 			}
 			throw error;
 		}
 	}
+	const conflicts = conflictDetails.length;
 
 	const summary = {
 		created: createdIds.length,
 		skipped: classCourses.length - createdIds.length,
 		duplicates,
 		conflicts,
+		conflictDetails,
 		classCount: classes.length,
 		classCourseCount: classCourses.length,
 		examIds: createdIds,

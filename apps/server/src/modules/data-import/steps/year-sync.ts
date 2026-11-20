@@ -3,34 +3,7 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { ImportJournal } from "../import-journal";
 
-const UNASSIGNED_TEACHER_EMAIL = (institutionId: string) =>
-	`unassigned-teacher@${institutionId}.invalid`;
-
-/**
- * Profile standing for "teacher not known yet": a class course needs a
- * teacher, and history files often have none. Created once per institution,
- * without an account; replaced by the real teacher whenever it is given.
- */
-export async function unassignedTeacher(institutionId: string) {
-	const email = UNASSIGNED_TEACHER_EMAIL(institutionId);
-	const existing = await db.query.domainUsers.findFirst({
-		where: and(
-			eq(schema.domainUsers.institutionId, institutionId),
-			eq(schema.domainUsers.primaryEmail, email),
-		),
-	});
-	if (existing) return existing.id;
-	const [created] = await db
-		.insert(schema.domainUsers)
-		.values({
-			firstName: "—",
-			lastName: "Unassigned teacher",
-			primaryEmail: email,
-			institutionId,
-		})
-		.returning({ id: schema.domainUsers.id });
-	return created.id;
-}
+export { unassignedTeacher } from "@/modules/domain-users/unassigned-teacher";
 
 /**
  * Enrolls every student enrolled in a class that year in every course of the

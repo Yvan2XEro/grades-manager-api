@@ -31,7 +31,10 @@ import {
 
 /**
  * Assigns every course (EC) of a teaching unit to a class with its default
- * teacher and coefficient. A missing class can be created in place.
+ * teacher and coefficient; a course without a default teacher is added too,
+ * without teacher, and listed afterwards so one gets assigned. The class's
+ * students are enrolled in the courses by the server. A missing class can be
+ * created in place.
  */
 export const AssignTeachingUnitDialog = createCallable<
 	{
@@ -48,7 +51,7 @@ export const AssignTeachingUnitDialog = createCallable<
 	const [classSearch, setClassSearch] = useState(defaultClass?.code ?? "");
 	const [classId, setClassId] = useState(defaultClass?.id ?? "");
 	const [teachingUnitId, setTeachingUnitId] = useState("");
-	const [skippedCourses, setSkippedCourses] = useState<string[]>([]);
+	const [withoutTeacher, setWithoutTeacher] = useState<string[]>([]);
 
 	const classes = useClassOptions(classSearch);
 	const programMap = useProgramNames();
@@ -82,20 +85,17 @@ export const AssignTeachingUnitDialog = createCallable<
 				teachingUnitId,
 				limit: 200,
 			});
-			const skipped: string[] = [];
+			const noTeacher: string[] = [];
 			const toCreate: Array<{
 				code: string;
 				class: string;
 				course: string;
-				teacher: string;
+				teacher?: string;
 				coefficient: number;
 				semesterId?: string;
 			}> = [];
 			for (const course of courses) {
-				if (!course.defaultTeacher) {
-					skipped.push(course.name);
-					continue;
-				}
+				if (!course.defaultTeacher) noTeacher.push(course.name);
 				const programCode =
 					selectedClass.programCode ??
 					programMap.get(selectedClass.program)?.code;
@@ -108,7 +108,7 @@ export const AssignTeachingUnitDialog = createCallable<
 					}),
 					class: selectedClass.id,
 					course: course.id,
-					teacher: course.defaultTeacher,
+					teacher: course.defaultTeacher ?? undefined,
 					coefficient: Number(course.defaultCoefficient) || 1,
 					semesterId: selectedClass.semesterId ?? undefined,
 				});
@@ -126,8 +126,8 @@ export const AssignTeachingUnitDialog = createCallable<
 					}),
 				);
 			}
-			// Keep the dialog open to list the skipped courses
-			if (skipped.length > 0) setSkippedCourses(skipped);
+			// Keep the dialog open to list the courses still needing a teacher
+			if (noTeacher.length > 0) setWithoutTeacher(noTeacher);
 			else call.end(true);
 		} catch (error) {
 			const message =
@@ -141,23 +141,25 @@ export const AssignTeachingUnitDialog = createCallable<
 	return (
 		<CallableDialog
 			call={call}
-			dismissValue={skippedCourses.length > 0}
+			dismissValue={withoutTeacher.length > 0}
 			preventDismiss={assign.pending}
 			title={t("admin.classCourses.ueAssign.title")}
 		>
-			{skippedCourses.length > 0 ? (
+			{withoutTeacher.length > 0 ? (
 				<div className="space-y-4">
 					<div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
 						<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
 						<div>
 							<p className="font-medium text-yellow-800">
-								{t("admin.classCourses.ueAssign.skippedTitle")}
+								{t("admin.classCourses.ueAssign.noTeacherTitle", {
+									count: withoutTeacher.length,
+								})}
 							</p>
 							<p className="mt-1 text-sm text-yellow-700">
-								{t("admin.classCourses.ueAssign.skippedDesc")}
+								{t("admin.classCourses.ueAssign.noTeacherDesc")}
 							</p>
 							<ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
-								{skippedCourses.map((name) => (
+								{withoutTeacher.map((name) => (
 									<li key={name}>{name}</li>
 								))}
 							</ul>
