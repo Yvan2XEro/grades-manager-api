@@ -14,6 +14,7 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { formatDecimal } from "@/lib/number-format";
+import { decisionLabel } from "../services/decision-explanation";
 import {
 	decisionVariants,
 	ueDecisionVariants,
@@ -73,7 +74,9 @@ export const StudentResultSheet = createCallable<
 							</dt>
 							<dd>
 								<Badge variant={decisionVariants[decision] ?? "outline"}>
-									{t(`admin.deliberations.decision.${decision}`)}
+									{t(
+										`admin.deliberations.decision.${decisionLabel(decision, result)}`,
+									)}
 								</Badge>
 							</dd>
 						</div>

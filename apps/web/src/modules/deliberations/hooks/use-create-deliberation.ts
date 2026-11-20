@@ -23,6 +23,13 @@ export interface BatchProgress {
 	errors: string[];
 }
 
+/** What was created, so the caller can show it. */
+export interface CreatedDeliberation {
+	academicYearId: string;
+	/** Set when a single deliberation was created. */
+	deliberationId?: string;
+}
+
 const initialFields: SharedFields = {
 	academicYearId: null,
 	type: "",
@@ -35,9 +42,11 @@ const initialFields: SharedFields = {
 /**
  * State of the create-deliberation dialog: shared fields, the single class or
  * the selected classes, and the create / init-and-compute / batch actions.
- * `onDone` is called once the deliberation(s) are created.
+ * `onDone` is called when the dialog closes, with what was created (if any).
  */
-export function useCreateDeliberation(onDone: () => void) {
+export function useCreateDeliberation(
+	onDone: (created?: CreatedDeliberation) => void,
+) {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [tab, setTab] = useState<CreateDeliberationTab>("single");
@@ -66,10 +75,22 @@ export function useCreateDeliberation(onDone: () => void) {
 		setTab("single");
 	}
 
-	function close() {
+	function close(created?: CreatedDeliberation) {
 		reset();
-		onDone();
+		onDone(created);
 	}
+
+	const createdSingle = (deliberationId: string): CreatedDeliberation => ({
+		academicYearId: fields.academicYearId!,
+		deliberationId,
+	});
+
+	/** A jury on a class without students computes nothing: say so. */
+	const warnIfNoStudents = (studentCount: number) => {
+		if (studentCount === 0) {
+			toast.warning(t("admin.deliberations.toast.noStudents"));
+		}
+	};
 
 	function buildInput(classId: string) {
 		return {
@@ -88,12 +109,12 @@ export function useCreateDeliberation(onDone: () => void) {
 	const createMutation = useMutation({
 		mutationFn: () =>
 			trpcClient.deliberations.create.mutate(buildInput(singleClassId!)),
-		onSuccess: () => {
+		onSuccess: (created) => {
 			toast.success(t("admin.deliberations.toast.createSuccess"));
 			queryClient.invalidateQueries({
 				queryKey: trpc.deliberations.listPaged.queryKey(),
 			});
-			close();
+			close(createdSingle(created.id));
 		},
 		onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 	});
@@ -103,12 +124,14 @@ export function useCreateDeliberation(onDone: () => void) {
 			trpcClient.deliberations.initAndCompute.mutate(
 				buildInput(singleClassId!),
 			),
-		onSuccess: () => {
-			toast.success(t("admin.deliberations.toast.initAndComputeSuccess"));
+		onSuccess: (created) => {
+			const studentCount = created.studentResults?.length ?? 0;
+			if (studentCount === 0) warnIfNoStudents(0);
+			else toast.success(t("admin.deliberations.toast.initAndComputeSuccess"));
 			queryClient.invalidateQueries({
 				queryKey: trpc.deliberations.listPaged.queryKey(),
 			});
-			close();
+			close(createdSingle(created.id));
 		},
 		onError: (err) => toast.error(deliberationErrorMessage(t, err)),
 	});
@@ -182,7 +205,7 @@ export function useCreateDeliberation(onDone: () => void) {
 					count: selectedClassIds.length,
 				}),
 			);
-			close();
+			close({ academicYearId: fields.academicYearId });
 		} else {
 			toast.error(
 				t("admin.deliberations.toast.batchCreatedPartial", {

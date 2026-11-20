@@ -24,9 +24,11 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDecimal } from "@/lib/number-format";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { useInvalidateDeliberation } from "../hooks/use-deliberation";
+import { decisionLabel } from "../services/decision-explanation";
 import { deliberationErrorMessage } from "../services/deliberation-errors";
 import {
 	DELIBERATION_DECISIONS,
@@ -35,6 +37,7 @@ import {
 	ueDecisionVariants,
 } from "../services/deliberation-status";
 import type { StudentResult, UeResult } from "../types";
+import { DecisionExplanation } from "./decision-explanation";
 
 interface Props {
 	deliberationId: string;
@@ -46,9 +49,6 @@ const HELP_DECISIONS = ["deferred", "repeat", "excluded"] as const;
 type HelpDecision = (typeof HELP_DECISIONS)[number];
 const hasHelp = (d: string): d is HelpDecision =>
 	(HELP_DECISIONS as readonly string[]).includes(d);
-
-const formatAverage = (value: number | null | undefined) =>
-	value != null ? Number(value).toFixed(2) : "—";
 
 /**
  * Overrides the final decision of one student result, with a reason. Shows
@@ -70,11 +70,10 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 		const facts = (result.factsSnapshot ?? {}) as {
 			partialAverage?: number | null;
 		};
-		const selectableDecisions = DELIBERATION_DECISIONS.filter(
-			(d) => d !== currentDecision,
+		// Every decision is listed; the current one is shown but not selectable
+		const helpDecisions = DELIBERATION_DECISIONS.filter(
+			(d): d is HelpDecision => d !== currentDecision && hasHelp(d),
 		);
-		// Help lines only for the decisions the jury can actually pick here
-		const helpDecisions = selectableDecisions.filter(hasHelp);
 		const canRestore =
 			result.isOverridden &&
 			computedDecision !== "pending" &&
@@ -117,10 +116,10 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 								</dt>
 								<dd className="font-mono font-semibold">
 									{result.generalAverage != null
-										? formatAverage(result.generalAverage)
+										? formatDecimal(result.generalAverage)
 										: facts.partialAverage != null
 											? t("admin.deliberations.override.partialAverage", {
-													value: formatAverage(facts.partialAverage),
+													value: formatDecimal(facts.partialAverage),
 												})
 											: "—"}
 								</dd>
@@ -142,11 +141,14 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 								</dt>
 								<dd>
 									<Badge variant={decisionVariants[computedDecision]}>
-										{t(`admin.deliberations.decision.${computedDecision}`)}
+										{t(
+											`admin.deliberations.decision.${decisionLabel(computedDecision, result)}`,
+										)}
 									</Badge>
 								</dd>
 							</div>
 						</dl>
+						<DecisionExplanation result={result} computed className="-mt-2" />
 
 						{ueResults.length > 0 && (
 							<div className="max-h-40 overflow-y-auto rounded-lg border">
@@ -161,7 +163,7 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 													{ue.ueName}
 												</td>
 												<td className="px-2 py-1.5 text-right font-mono">
-													{formatAverage(ue.ueAverage)}
+													{formatDecimal(ue.ueAverage)}
 												</td>
 												<td className="px-2 py-1.5 text-right">
 													<Badge
@@ -187,7 +189,9 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 								</Label>
 								<div className="flex items-center gap-2">
 									<Badge variant={decisionVariants[currentDecision]}>
-										{t(`admin.deliberations.decision.${currentDecision}`)}
+										{t(
+											`admin.deliberations.decision.${decisionLabel(currentDecision, result)}`,
+										)}
 									</Badge>
 									{result.isOverridden && (
 										<span className="text-muted-foreground text-xs">
@@ -195,6 +199,7 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 										</span>
 									)}
 								</div>
+								{result.isOverridden && <DecisionExplanation result={result} />}
 							</div>
 							{canRestore && (
 								<Button
@@ -229,11 +234,17 @@ export const OverrideDecisionDialog = createCallable<Props, void>(
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{selectableDecisions.map((d) => (
-										<SelectItem key={d} value={d}>
+									{DELIBERATION_DECISIONS.map((d) => (
+										<SelectItem
+											key={d}
+											value={d}
+											disabled={d === currentDecision}
+										>
 											{t(`admin.deliberations.decision.${d}`)}
-											{d === computedDecision &&
-												` (${t("admin.deliberations.override.computed")})`}
+											{d === currentDecision
+												? ` (${t("admin.deliberations.override.current")})`
+												: d === computedDecision &&
+													` (${t("admin.deliberations.override.computed")})`}
 										</SelectItem>
 									))}
 								</SelectContent>

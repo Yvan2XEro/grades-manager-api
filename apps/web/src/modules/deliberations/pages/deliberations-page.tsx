@@ -61,6 +61,18 @@ export default function DeliberationsList() {
 	const deleteMutation = useDeleteDeliberation();
 	const columns = useMemo(() => getDeliberationsColumns(t), [t]);
 
+	/** Opens the new jury, or shows the year the juries were created for. */
+	const createDeliberation = async () => {
+		const created = await CreateDeliberationDialog.call({});
+		if (!created) return;
+		if (created.deliberationId) {
+			navigate(`/academic-results/deliberations/${created.deliberationId}`);
+		} else if (created.academicYearId !== academicYearId) {
+			setAcademicYearId(created.academicYearId);
+			setPage(1);
+		}
+	};
+
 	const openDetail = (d: DeliberationListItem) =>
 		navigate(`/academic-results/deliberations/${d.id}`);
 
@@ -96,7 +108,7 @@ export default function DeliberationsList() {
 					title={t("admin.deliberations.title")}
 					description={t("admin.deliberations.subtitle")}
 					actions={
-						<Button onClick={() => CreateDeliberationDialog.call({})}>
+						<Button onClick={createDeliberation}>
 							<Plus className="mr-2 h-4 w-4" />
 							{t("admin.deliberations.actions.create")}
 						</Button>

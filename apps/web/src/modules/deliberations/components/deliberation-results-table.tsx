@@ -11,12 +11,14 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { formatDecimal } from "@/lib/number-format";
+import { decisionLabel } from "../services/decision-explanation";
 import {
 	decisionVariants,
 	incompleteUeCount,
 	isIncompleteResult,
 } from "../services/deliberation-status";
 import type { StudentResult, UeResult } from "../types";
+import { DecisionExplanation } from "./decision-explanation";
 import { StudentResultSheet } from "./student-result-sheet";
 import { UeBadgesSummary } from "./ue-badges-summary";
 
@@ -78,7 +80,7 @@ function StudentResultRow({
 							{decision === "pending" && (
 								<AlertTriangle className="mr-1 h-3 w-3" />
 							)}
-							{t(`admin.deliberations.decision.${decision}`)}
+							{t(`admin.deliberations.decision.${decisionLabel(decision, r)}`)}
 						</Badge>
 						{r.isOverridden && (
 							<Pen
@@ -87,6 +89,7 @@ function StudentResultRow({
 							/>
 						)}
 					</div>
+					<DecisionExplanation result={r} className="max-w-64" />
 					{incomplete && missingUes > 0 && (
 						<span className="text-amber-700 text-xs dark:text-amber-400">
 							{t("admin.deliberations.detail.missingUes", {

@@ -61,8 +61,13 @@ export function useDeliberationActions(deliberationId: string) {
 	const compute = useMutation({
 		mutationFn: () =>
 			trpcClient.deliberations.compute.mutate({ id: deliberationId }),
-		onSuccess: () => {
-			toast.success(t("admin.deliberations.toast.computeSuccess"));
+		onSuccess: (data) => {
+			// A jury on a class without students has nothing to compute
+			if (data.results.length === 0) {
+				toast.warning(t("admin.deliberations.toast.noStudents"));
+			} else {
+				toast.success(t("admin.deliberations.toast.computeSuccess"));
+			}
 			invalidateAll();
 		},
 		onError: (err) => toast.error(deliberationErrorMessage(t, err)),

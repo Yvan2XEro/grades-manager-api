@@ -4286,7 +4286,8 @@
         "deferred": "Deferred",
         "repeat": "Repeat",
         "excluded": "Excluded",
-        "pending": "Incomplete"
+        "pending": "Incomplete",
+        "undecided": "To decide"
       },
       "mention": {
         "passable": "Pass",
@@ -4393,7 +4394,8 @@
           "repeat": "Repeat: the student repeats the same level next year.",
           "excluded": "Excluded: the student may not continue in the program."
         },
-        "reasonRequired": "Required: the reason is kept in the jury's activity log."
+        "reasonRequired": "Required: the reason is kept in the jury's activity log.",
+        "current": "current"
       },
       "logs": {
         "title": "Activity log",
@@ -4498,7 +4500,8 @@
           "close": "Jury closed: results published to students",
           "sign": "Report signed: the jury is final",
           "reopen": "Jury reopened: results hidden from students"
-        }
+        },
+        "noStudents": "This class has no enrolled students: there are no results to compute."
       },
       "confirm": {
         "delete": "Are you sure you want to delete this deliberation?",
@@ -4532,18 +4535,12 @@
         },
         "decision": "Decision produced",
         "priority": "Priority",
-        "priorityHelp": "Lower number = evaluated first within the category",
-        "program": "Program scope",
-        "programPlaceholder": "All programs",
-        "cycleLevel": "Cycle level scope",
-        "cycleLevelPlaceholder": "All levels",
-        "deliberationType": "Deliberation type scope",
-        "deliberationTypePlaceholder": "All types",
+        "priorityHelp": "Lower number = tried first within the category (0 allowed)",
         "ruleset": "Rule definition (JSON)",
-        "rulesetHelp": "json-rules-engine format",
+        "rulesetHelp": "json-rules-engine format: { \"conditions\": { \"all\": [ … ] }, \"event\": { \"type\": \"decision\", \"params\": { \"message\": \"…\" } } }",
         "active": "Active",
         "inactive": "Inactive",
-        "invalidJson": "Invalid JSON ruleset",
+        "invalidJson": "The JSON is not valid.",
         "empty": {
           "title": "No rules configured",
           "description": "Add rules to automatically compute decisions during deliberations."
@@ -4556,7 +4553,180 @@
         },
         "confirmDelete": {
           "title": "Delete this rule?",
-          "message": "message"
+          "message": "The rule “{{name}}” will no longer be applied to the next jury computations. Decisions already computed are kept."
+        },
+        "editTitle": "Edit rule",
+        "dialogDescription": "When its conditions are met, the rule gives the student its decision.",
+        "decisionPlaceholder": "Select a decision",
+        "descriptionPlaceholder": "Optional: why the institution applies this rule",
+        "cascadeHint": "Categories are tried in the order shown (1 = first); within a category, the lowest priority number first. The first rule that applies decides.",
+        "priorityShort": "Priority {{value}}",
+        "conditions": "Conditions",
+        "advancedMode": "Advanced (JSON)",
+        "builderMode": "Simple editor",
+        "builderUnavailable": "This rule uses conditions the simple editor cannot show (nested groups, other facts or operators). Edit it in JSON.",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "errors": {
+          "name": "Give the rule a name.",
+          "category": "Choose a category.",
+          "decision": "Choose the decision the rule gives.",
+          "priority": "The priority is a whole number, 0 or more.",
+          "noConditions": "The rule needs conditions (\"conditions\")."
+        },
+        "scope": {
+          "title": "Applies to",
+          "help": "Limit the rule to a program, a level or a type of jury. Leave \"All\" to apply it everywhere.",
+          "program": "Program",
+          "level": "Level",
+          "type": "Jury type",
+          "allPrograms": "All programs",
+          "allLevels": "All levels",
+          "allTypes": "All jury types",
+          "unknownProgram": "One program",
+          "unknownLevel": "One level"
+        },
+        "factGroups": {
+          "averages": "Averages",
+          "ues": "Teaching units (UE)",
+          "credits": "Credits",
+          "history": "History"
+        },
+        "facts": {
+          "overallAverage": {
+            "label": "General average",
+            "help": "The year's weighted general average (out of 20)."
+          },
+          "lowestUnitAverage": {
+            "label": "Lowest UE average",
+            "help": "Average of the student's weakest UE this year."
+          },
+          "lowestScore": {
+            "label": "Lowest course average",
+            "help": "Average of the student's weakest course (EC) this year."
+          },
+          "failedTeachingUnitsCount": {
+            "label": "UEs below 10",
+            "help": "Number of UEs with an average below 10, compensated or not."
+          },
+          "failedUECount": {
+            "label": "UEs not validated",
+            "help": "Number of UEs not validated, even by compensation."
+          },
+          "compensableUECount": {
+            "label": "Compensable UEs",
+            "help": "Number of UEs below 10 but at or above the compensation threshold (e.g. 8)."
+          },
+          "validatedUECount": {
+            "label": "Validated UEs",
+            "help": "Number of UEs validated, directly or by compensation."
+          },
+          "totalUECount": {
+            "label": "UEs of the year",
+            "help": "Total number of UEs of the year."
+          },
+          "eliminatoryFailures": {
+            "label": "Eliminatory marks",
+            "help": "Number of courses (EC) with an average below 8."
+          },
+          "creditsEarned": {
+            "label": "Credits earned",
+            "help": "ECTS credits earned this year."
+          },
+          "creditsAttempted": {
+            "label": "Credits attempted",
+            "help": "ECTS credits of the UEs taken this year."
+          },
+          "creditCompletionRate": {
+            "label": "Share of required credits",
+            "help": "Credits earned as a percentage of the credits required."
+          },
+          "consecutiveRepeats": {
+            "label": "Repeats in a row",
+            "help": "Years in a row, just before this one, the student had to repeat or was deferred."
+          },
+          "previousDeliberationDecision": {
+            "label": "Previous jury decision",
+            "help": "Decision of the student's last jury before this year."
+          }
+        },
+        "builder": {
+          "matchPrefix": "The rule applies when",
+          "matchSuffix": "are met:",
+          "match": {
+            "all": "all the conditions",
+            "any": "at least one of the conditions"
+          },
+          "joiner": {
+            "all": "and",
+            "any": "or"
+          },
+          "fact": "Criterion",
+          "factPlaceholder": "Choose a criterion",
+          "operator": "Comparison",
+          "value": "Value",
+          "remove": "Remove this condition",
+          "add": "Add a condition",
+          "message": "Reason shown to the jury",
+          "messagePlaceholder": "e.g. General average below 7",
+          "messageHelp": "Shown next to the decision in the jury results, so everyone knows why.",
+          "operators": {
+            "lessThan": "less than",
+            "lessThanInclusive": "at most",
+            "equal": "equal to",
+            "greaterThanInclusive": "at least",
+            "greaterThan": "more than",
+            "notEqual": "different from"
+          },
+          "problems": {
+            "fact": "Choose a criterion.",
+            "operator": "Choose a comparison.",
+            "value": "Enter a value.",
+            "value_number": "Enter a number, 0 or more (e.g. 9.5).",
+            "value_count": "Enter a whole number, 0 or more.",
+            "value_percent": "Enter a percentage between 0 and 100.",
+            "value_decision": "Choose a decision."
+          }
+        },
+        "summary": {
+          "title": "Summary",
+          "if": "If",
+          "advanced": "Advanced rule (JSON)",
+          "useAsDescription": "Use the summary as description"
+        },
+        "help": {
+          "title": "How the jury applies these rules",
+          "order": "Categories are tried in this order:",
+          "priority": "Within a category, rules are tried by priority: the lowest number first.",
+          "firstMatch": "The first rule whose conditions are met gives the decision; the following rules are not tried.",
+          "noMatch": "If no rule applies to a student, the decision is left \"to decide\" for the jury.",
+          "incomplete": "Students with missing marks are never decided by the rules.",
+          "noRules": "When no active rule applies to a jury (program, level, type), the default LMD computation decides.",
+          "examplesTitle": "Examples",
+          "useExample": "Use",
+          "examples": {
+            "exclusion": {
+              "name": "Excluded after two repeats",
+              "message": "Already repeated two years in a row"
+            },
+            "repeat": {
+              "name": "Repeat if average below 7",
+              "message": "General average below 7"
+            },
+            "compensation": {
+              "name": "Compensation: average ≥ 10, at most 2 UEs below 10",
+              "message": "Average of at least 10 compensates up to 2 UEs, no eliminatory mark"
+            }
+          }
+        },
+        "serverErrors": {
+          "title": "The rule could not be saved",
+          "unknownFact": "Unknown criterion: {{name}}",
+          "unknownOperator": "Unknown comparison: {{name}}",
+          "noValue": "No value for {{name}}",
+          "noConditions": "The rule has no conditions",
+          "notAnObject": "A condition is malformed",
+          "notFound": "This rule no longer exists."
         }
       },
       "filters": {
@@ -4631,7 +4801,21 @@
         "openFile": "Open the student file",
         "show": "Show the marks of {{name}}"
       },
-      "statusProgress": "Step {{step}} of {{total}}: {{status}}"
+      "statusProgress": "Step {{step}} of {{total}}: {{status}}",
+      "why": {
+        "override": "Changed by the jury: {{reason}}",
+        "overrideNoReason": "Changed by the jury",
+        "rule": "Rule “{{rule}}”: {{reason}}",
+        "ruleNoReason": "Rule “{{rule}}”",
+        "noRuleMatched": "No rule applies — for the jury to decide",
+        "default": "Default LMD computation"
+      },
+      "undecided": {
+        "title_one": "{{count}} student is not decided by any rule",
+        "title_other": "{{count}} students are not decided by any rule",
+        "hintOpen": "None of the institution's rules applies to them: give their decision with “Override decision”, or adjust the rules and compute again.",
+        "hintClosed": "No rule applied to these students and the jury gave them no decision."
+      }
     },
     "gradeAccessGrants": {
       "actions": {
@@ -7513,9 +7697,9 @@
     "title": "Configuration",
     "description": "Registration number formats, grade scale, export templates and rules engine",
     "tabs": {
-      "regNumbers": "Registration Numbers",
-      "gradeScale": "Grade Scale",
-      "templates": "Export Templates",
+      "regNumbers": "Registration numbers",
+      "gradeScale": "Grade scale",
+      "templates": "Export templates",
       "rules": "Deliberation rules"
     }
   },
