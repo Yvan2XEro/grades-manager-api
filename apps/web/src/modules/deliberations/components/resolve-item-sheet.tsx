@@ -30,6 +30,9 @@ import {
 } from "../services/transition-status";
 import type { TransitionItem, TransitionOutcome } from "../types";
 
+/** Select value for "no class": the graduate leaves the institution. */
+const NO_CLASS = "__none__";
+
 /**
  * Resolves one or several items of a transition plan with the same outcome,
  * destination and reason; resolves `true` once saved.
@@ -101,10 +104,12 @@ export const ResolveItemSheet = createCallable<
 								</SelectContent>
 							</Select>
 						</div>
-						{form.needsTarget && (
+						{form.allowsTarget && (
 							<div className="space-y-2">
 								<Label>
-									{t("admin.academicYearTransitions.resolve.targetClass")}
+									{form.continuesInNextCycle
+										? t("admin.academicYearTransitions.resolve.continueIn")
+										: t("admin.academicYearTransitions.resolve.targetClass")}
 								</Label>
 								{form.mixedSources ? (
 									<p className="rounded-md bg-amber-500/10 p-3 text-amber-700 text-sm dark:text-amber-300">
@@ -115,8 +120,14 @@ export const ResolveItemSheet = createCallable<
 								) : (
 									<>
 										<Select
-											value={form.targetClassId}
-											onValueChange={form.setTargetClassId}
+											value={
+												form.continuesInNextCycle && !form.targetClassId
+													? NO_CLASS
+													: form.targetClassId
+											}
+											onValueChange={(value) =>
+												form.setTargetClassId(value === NO_CLASS ? "" : value)
+											}
 										>
 											<SelectTrigger>
 												<SelectValue
@@ -126,12 +137,21 @@ export const ResolveItemSheet = createCallable<
 												/>
 											</SelectTrigger>
 											<SelectContent>
+												{form.continuesInNextCycle && (
+													<SelectItem value={NO_CLASS}>
+														{t("admin.academicYearTransitions.resolve.leaves")}
+													</SelectItem>
+												)}
 												{form.suggestedClasses.length > 0 && (
 													<SelectGroup>
 														<SelectLabel>
-															{t(
-																"admin.academicYearTransitions.resolve.suggested",
-															)}
+															{form.continuesInNextCycle
+																? t(
+																		"admin.academicYearTransitions.resolve.nextCycleClasses",
+																	)
+																: t(
+																		"admin.academicYearTransitions.resolve.suggested",
+																	)}
 														</SelectLabel>
 														{form.suggestedClasses.map((klass) => (
 															<SelectItem key={klass.id} value={klass.id}>
@@ -157,7 +177,13 @@ export const ResolveItemSheet = createCallable<
 											</SelectContent>
 										</Select>
 										<p className="text-muted-foreground text-xs">
-											{t("admin.academicYearTransitions.resolve.targetHint")}
+											{form.continuesInNextCycle
+												? t(
+														form.suggestedClasses.length > 0
+															? "admin.academicYearTransitions.resolve.continueHint"
+															: "admin.academicYearTransitions.resolve.noNextCycleClass",
+													)
+												: t("admin.academicYearTransitions.resolve.targetHint")}
 										</p>
 										{form.canCreateSuggested && (
 											<Button

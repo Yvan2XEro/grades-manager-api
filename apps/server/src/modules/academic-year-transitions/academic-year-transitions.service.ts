@@ -706,7 +706,10 @@ export async function resolveItems(
 	if (requiresTarget && !input.targetClassId) {
 		invalid("A target class is required for this outcome");
 	}
-	if (!requiresTarget && input.targetClassId) {
+	// A graduate may go on to the first level of another cycle (Licence →
+	// Master 1): the target class is optional for that outcome only.
+	const acceptsTarget = requiresTarget || input.outcome === "graduate";
+	if (!acceptsTarget && input.targetClassId) {
 		invalid("This outcome does not accept a target class");
 	}
 	if (input.targetClassId) {
@@ -813,7 +816,11 @@ export async function execute(
 
 		for (const item of items) {
 			let targetEnrollmentId: string | null = null;
-			if (item.finalOutcome === "promote" || item.finalOutcome === "repeat") {
+			const enrollsInTarget =
+				item.finalOutcome === "promote" ||
+				item.finalOutcome === "repeat" ||
+				(item.finalOutcome === "graduate" && item.finalTargetClassId);
+			if (enrollsInTarget) {
 				if (!item.finalTargetClassId) {
 					throw new Error(
 						`Missing target class for transition item ${item.id}`,
@@ -832,6 +839,17 @@ export async function execute(
 					// The student was placed in the target year since the plan was
 					// drafted (promotion from the jury page, or by hand): keep that
 					// placement instead of failing the whole plan.
+					if (item.finalOutcome === "graduate") {
+						await tx
+							.update(schema.enrollments)
+							.set({ status: "graduated", exitedAt: new Date() })
+							.where(
+								and(
+									eq(schema.enrollments.id, item.sourceEnrollmentId),
+									eq(schema.enrollments.status, "active"),
+								),
+							);
+					}
 					await tx
 						.update(schema.academicYearTransitionItems)
 						.set({
@@ -846,7 +864,13 @@ export async function execute(
 				}
 				await tx
 					.update(schema.enrollments)
-					.set({ status: "completed", exitedAt: new Date() })
+					.set({
+						// A graduate going on to the next cycle keeps the record of
+						// having completed the previous one.
+						status:
+							item.finalOutcome === "graduate" ? "graduated" : "completed",
+						exitedAt: new Date(),
+					})
 					.where(eq(schema.enrollments.id, item.sourceEnrollmentId));
 				const [createdEnrollment] = await tx
 					.insert(schema.enrollments)

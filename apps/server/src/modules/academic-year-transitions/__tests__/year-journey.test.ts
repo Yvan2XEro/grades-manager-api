@@ -5,21 +5,22 @@ setDefaultTimeout(120_000);
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
-import type { Context } from "@/lib/context";
 import {
 	createAcademicYear,
 	createClass,
-	createClassCourse,
-	createCourse,
 	createCycleLevel,
-	createDomainUser,
 	createProgram,
 	createStudent,
 	createStudyCycle,
-	createTeachingUnit,
 	makeTestContext,
 } from "@/lib/test-utils";
-import { appRouter } from "@/routers";
+import {
+	adminContext,
+	caller,
+	curriculum,
+	enrollmentsOf,
+	gradeCourse,
+} from "./journey-helpers";
 
 /*
  * One cohort across two academic years, through the public procedures only:
@@ -27,80 +28,6 @@ import { appRouter } from "@/routers";
  * the year transition for the others (repeaters), the switch of the active
  * year, then the jury of year 2 and the graduation of the final level.
  */
-
-const caller = (ctx: Context) => appRouter.createCaller(ctx);
-
-async function adminContext() {
-	const profile = await createDomainUser();
-	return makeTestContext({
-		role: "administrator",
-		profileOverrides: { id: profile.id },
-	});
-}
-
-let examSeq = 0;
-/** One CC (40%) and one final exam (60%) for a class course; scores per student. */
-async function gradeCourse(
-	classCourseId: string,
-	institutionId: string,
-	scores: Array<{ studentId: string; cc: number; ex: number }>,
-) {
-	const exams = await db
-		.insert(schema.exams)
-		.values(
-			(["CC", "EXAMEN"] as const).map((type) => ({
-				name: `${type}-${++examSeq}`,
-				type,
-				date: new Date(),
-				percentage: type === "CC" ? "40" : "60",
-				classCourse: classCourseId,
-				status: "approved" as const,
-				isLocked: false,
-				scheduledAt: new Date(),
-				validatedAt: new Date(),
-				institutionId,
-			})),
-		)
-		.returning();
-	const [cc, ex] = exams;
-	if (scores.length === 0) return;
-	await db.insert(schema.grades).values(
-		scores.flatMap((s) => [
-			{ student: s.studentId, exam: cc.id, score: s.cc.toString() },
-			{ student: s.studentId, exam: ex.id, score: s.ex.toString() },
-		]),
-	);
-}
-
-/** Two UEs (6 + 4 credits), one course each, attached to a class. */
-async function curriculum(programId: string, classId: string) {
-	const klass = await db.query.classes.findFirst({
-		where: eq(schema.classes.id, classId),
-	});
-	const ues = [];
-	for (const credits of [6, 4]) {
-		const ue = await createTeachingUnit({ programId, credits });
-		const course = await createCourse({
-			program: programId,
-			teachingUnitId: ue.id,
-		});
-		ues.push(
-			await createClassCourse({
-				class: classId,
-				course: course.id,
-				coefficient: "1",
-				semesterId: klass!.semesterId!,
-			}),
-		);
-	}
-	return ues;
-}
-
-async function enrollmentsOf(studentId: string) {
-	return db.query.enrollments.findMany({
-		where: eq(schema.enrollments.studentId, studentId),
-	});
-}
 
 describe("a cohort across two academic years", () => {
 	it("deliberates, opens the next year, promotes, keeps repeaters, then graduates", async () => {

@@ -40,6 +40,9 @@ export function useResolveItems({
 	const sourceClassIds = [...new Set(items.map((i) => i.sourceClass.id))];
 	const sourceClassId = sourceClassIds.length === 1 ? sourceClassIds[0] : null;
 	const needsTarget = outcome === "promote" || outcome === "repeat";
+	// A graduate may go on to the first level of another cycle (optional).
+	const continuesInNextCycle = outcome === "graduate";
+	const allowsTarget = needsTarget || continuesInNextCycle;
 
 	const targetsKey = ["promo-targets", sourceClassId, targetAcademicYearId];
 	const targetsQuery = useQuery({
@@ -61,14 +64,21 @@ export function useResolveItems({
 		).map((c) => c.id),
 	);
 	const programClasses = targets?.programClasses ?? [];
-	const suggestedClasses = programClasses.filter((c) => suggestedIds.has(c.id));
-	const otherClasses = programClasses.filter((c) => !suggestedIds.has(c.id));
+	const suggestedClasses = continuesInNextCycle
+		? (targets?.nextCycleClasses ?? [])
+		: programClasses.filter((c) => suggestedIds.has(c.id));
+	const otherClasses = continuesInNextCycle
+		? []
+		: programClasses.filter((c) => !suggestedIds.has(c.id));
 	const suggestedLevel =
 		outcome === "promote"
 			? targets?.nextLevel
 			: targets?.sourceClass.cycleLevel;
 	const canCreateSuggested =
-		!!targets && suggestedClasses.length === 0 && !!suggestedLevel;
+		!continuesInNextCycle &&
+		!!targets &&
+		suggestedClasses.length === 0 &&
+		!!suggestedLevel;
 
 	const createMutation = useMutation({
 		mutationFn: () =>
@@ -101,7 +111,7 @@ export function useResolveItems({
 				transitionId: items[0].transitionId,
 				itemIds: items.map((i) => i.id),
 				outcome,
-				targetClassId: needsTarget ? targetClassId : null,
+				targetClassId: allowsTarget && targetClassId ? targetClassId : null,
 				reason: reason.trim(),
 			}),
 		onSuccess: () => {
@@ -116,7 +126,7 @@ export function useResolveItems({
 			toast.error(t("admin.academicYearTransitions.toast.resolveError")),
 	});
 
-	const mixedSources = needsTarget && !sourceClassId;
+	const mixedSources = allowsTarget && !sourceClassId;
 	const canSubmit =
 		!mutation.isPending &&
 		reason.trim().length >= 5 &&
@@ -132,6 +142,8 @@ export function useResolveItems({
 		reason,
 		setReason,
 		needsTarget,
+		allowsTarget,
+		continuesInNextCycle,
 		mixedSources,
 		targetsLoading: targetsQuery.isLoading,
 		suggestedClasses,

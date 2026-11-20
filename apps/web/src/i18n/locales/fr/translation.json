@@ -3811,7 +3811,12 @@
         "mixedSources": "Ces étudiants viennent de classes différentes : sélectionnez les étudiants d'une seule classe pour choisir une classe de destination.",
         "suggested": "Suggérées",
         "otherClasses": "Autres classes de la filière",
-        "targetHint": "Classes de l'année cible, même filière et même option : le niveau suivant pour promouvoir, le même niveau pour redoubler."
+        "targetHint": "Classes de l'année cible, même filière et même option : le niveau suivant pour promouvoir, le même niveau pour redoubler.",
+        "continueIn": "Poursuit en (facultatif)",
+        "leaves": "Ne poursuit pas dans l'établissement",
+        "nextCycleClasses": "Première année du cycle suivant",
+        "continueHint": "L'étudiant est diplômé de ce cycle et inscrit dans la classe choisie (ex. Licence → Master 1).",
+        "noNextCycleClass": "Aucune classe de première année d'un autre cycle n'existe dans l'année cible. Créez-la depuis Classes pour y inscrire directement le diplômé."
       },
       "status": {
         "draft": "Brouillon",

@@ -418,11 +418,35 @@ export async function getPromoTargets(
 	const sameLevelClasses = source.cycleLevelId
 		? programClasses.filter((c) => c.cycleLevelId === source.cycleLevelId)
 		: [];
+	// On the last level, graduates may go on to another cycle (Licence →
+	// Master, Master → Doctorat): the first-level classes of the other cycles
+	// in the target year.
+	const nextCycleClasses =
+		targetAcademicYearId && isLastLevel
+			? (
+					await repo.list(institutionId, {
+						academicYearId: targetAcademicYearId,
+						limit: 500,
+					})
+				).items
+					.filter(
+						(c) =>
+							c.cycleLevel?.orderIndex === 1 &&
+							c.cycle?.id &&
+							c.cycle.id !== source.cycle?.id,
+					)
+					.sort(
+						(a, b) =>
+							(a.cycle?.name ?? "").localeCompare(b.cycle?.name ?? "") ||
+							a.name.localeCompare(b.name),
+					)
+			: [];
 
 	return {
 		targetClasses,
 		sameLevelClasses,
 		programClasses,
+		nextCycleClasses,
 		isLastLevel,
 		sourceClass: source,
 		nextLevel: nextLevel ?? null,

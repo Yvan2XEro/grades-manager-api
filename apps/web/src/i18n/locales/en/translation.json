@@ -4901,7 +4901,12 @@
         "mixedSources": "These students come from different classes: select students of one class to choose a destination class.",
         "suggested": "Suggested",
         "otherClasses": "Other classes of the program",
-        "targetHint": "Classes of the target year, same program and option: the next level to promote, the same level to repeat."
+        "targetHint": "Classes of the target year, same program and option: the next level to promote, the same level to repeat.",
+        "continueIn": "Continues in (optional)",
+        "leaves": "Does not continue in the institution",
+        "nextCycleClasses": "First year of the next cycle",
+        "continueHint": "The student graduates from this cycle and is enrolled in the chosen class (e.g. Licence → Master 1).",
+        "noNextCycleClass": "No first-year class of another cycle exists in the target year. Create it from Classes to enroll the graduate directly."
       },
       "status": {
         "draft": "Draft",

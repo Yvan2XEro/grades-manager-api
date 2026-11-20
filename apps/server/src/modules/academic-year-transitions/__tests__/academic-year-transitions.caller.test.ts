@@ -782,9 +782,9 @@ describe("academicYearTransitions", () => {
 			caller(fixture.admin).academicYearTransitions.resolveItem({
 				transitionId: draft.id,
 				itemId: item.id,
-				outcome: "graduate",
+				outcome: "exclude",
 				targetClassId: fixture.promotionClass.id,
-				reason: "Target not allowed for graduation",
+				reason: "Target not allowed for an exclusion",
 			}),
 		).rejects.toThrow("This outcome does not accept a target class");
 		await expect(
