@@ -12,14 +12,28 @@ import {
 } from "@/lib/trpc";
 import { notFound } from "../_shared/errors";
 
+/**
+ * Uploads are served from the API origin: only documents and images, never
+ * HTML or scripts (a stored page would run with the API's origin).
+ */
+const DOCUMENT_EXTENSIONS =
+	/\.(pdf|png|jpe?g|gif|webp|svg|docx?|xlsx?|csv|txt|odt|ods)$/i;
+const IMAGE_EXTENSIONS = /\.(png|jpe?g|gif|webp|svg)$/i;
+
 const uploadSchema = z.object({
-	filename: z.string().min(1),
+	filename: z
+		.string()
+		.min(1)
+		.regex(DOCUMENT_EXTENSIONS, "Only documents and images are allowed"),
 	mimeType: z.string().min(1),
 	base64: z.string().min(1),
 });
 
 const avatarUploadSchema = z.object({
-	filename: z.string().min(1),
+	filename: z
+		.string()
+		.min(1)
+		.regex(IMAGE_EXTENSIONS, "Only image files are allowed"),
 	mimeType: z.string().regex(/^image\//, "Only image files are allowed"),
 	base64: z.string().min(1),
 });

@@ -92,9 +92,13 @@ export async function loadExportTemplate(
 	let template: ExportTemplate | undefined;
 
 	// Resolve programId once — used both for template lookup AND center branding.
-	const programId =
+	// Only the institution's own class / program can pick a template or a
+	// center's branding.
+	const programId = await ownProgramId(
+		institutionId,
 		scope.programId ??
-		(scope.classId ? await resolveProgramIdFromClass(scope.classId) : null);
+			(scope.classId ? await resolveProgramIdFromClass(scope.classId) : null),
+	);
 	const center = programId ? await resolveCenterFromProgram(programId) : null;
 
 	// 1. Explicit override wins.
@@ -193,6 +197,24 @@ export type CenterBranding = {
 	}>;
 	legalTexts: Array<{ textFr: string; textEn: string }>;
 };
+
+async function ownProgramId(
+	institutionId: string,
+	programId: string | null,
+): Promise<string | null> {
+	if (!programId) return null;
+	const [row] = await db
+		.select({ id: schema.programs.id })
+		.from(schema.programs)
+		.where(
+			and(
+				eq(schema.programs.id, programId),
+				eq(schema.programs.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	return row?.id ?? null;
+}
 
 async function resolveProgramIdFromClass(
 	classId: string,

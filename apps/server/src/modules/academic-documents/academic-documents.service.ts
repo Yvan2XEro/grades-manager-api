@@ -141,10 +141,17 @@ export async function resolveDocumentTemplate(
 	let template: ExportTemplate | null = null;
 	let classOverrides: Record<string, unknown> | null = null;
 	let programOverrides: Record<string, unknown> | null = null;
+	// A template of another institution is never used, whatever points to it.
+	const own = (t: ExportTemplate | null | undefined) =>
+		t && t.institutionId === institutionId ? t : null;
 
 	if (options.templateIdOverride) {
-		template =
-			(await expoTplRepo.findTemplateById(options.templateIdOverride)) ?? null;
+		template = own(
+			await expoTplRepo.findTemplateById(options.templateIdOverride),
+		);
+		if (!template) {
+			throw new TRPCError({ code: "NOT_FOUND", message: "Template not found" });
+		}
 	}
 
 	if (!template && classId) {
@@ -153,9 +160,9 @@ export async function resolveDocumentTemplate(
 			type,
 		);
 		if (classAssignment) {
-			template =
-				(await expoTplRepo.findTemplateById(classAssignment.templateId)) ??
-				null;
+			template = own(
+				await expoTplRepo.findTemplateById(classAssignment.templateId),
+			);
 			classOverrides = (classAssignment.themeOverrides ?? null) as Record<
 				string,
 				unknown
@@ -179,9 +186,9 @@ export async function resolveDocumentTemplate(
 				type,
 			);
 			if (programAssignment) {
-				template =
-					(await expoTplRepo.findTemplateById(programAssignment.templateId)) ??
-					null;
+				template = own(
+					await expoTplRepo.findTemplateById(programAssignment.templateId),
+				);
 				programOverrides = (programAssignment.themeOverrides ?? null) as Record<
 					string,
 					unknown

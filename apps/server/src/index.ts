@@ -31,6 +31,17 @@ if ((process.env.STORAGE_DRIVER ?? "local") === "local") {
 	// Guided-import workbooks live under the uploads root but are private:
 	// they are only read back through the institution-scoped import API.
 	app.use(`${uploadsPath}/imports/*`, async (c) => c.notFound());
+	// Uploaded files are data, never active content on the API origin: no
+	// type sniffing, and a sandbox so an SVG or a mislabelled file can't run
+	// scripts when opened directly.
+	app.use(`${uploadsPath}/*`, async (c, next) => {
+		await next();
+		c.header("X-Content-Type-Options", "nosniff");
+		c.header(
+			"Content-Security-Policy",
+			"default-src 'none'; style-src 'unsafe-inline'; sandbox",
+		);
+	});
 	app.use(
 		`${uploadsPath}/*`,
 		serveStatic({
