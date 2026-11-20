@@ -570,7 +570,7 @@ export async function compute(
 					creditsEarned: totalCreditsEarned,
 					creditsPossible: totalCreditsPossible,
 				},
-				gradeScale.passThreshold,
+				gradeScale,
 			),
 			overallAverage: generalAverage ?? promotionFacts.overallAverage,
 			creditsEarned: totalCreditsEarned,
@@ -618,10 +618,10 @@ export async function compute(
 		if (allComplete && rules.length > 0) {
 			const evalResult = await evaluateStudent(rules, deliberationFacts);
 			rulesEvaluated = evalResult.traces;
-			// Only override if rule engine produced a non-pending decision
-			if (evalResult.decision !== "pending") {
-				autoDecision = evalResult.decision;
-			}
+			// The institution's rules replace the LMD default: a student no rule
+			// matches is left to the jury ("pending") instead of silently getting
+			// the default decision.
+			autoDecision = evalResult.decision;
 		}
 
 		studentResults.push({
@@ -671,6 +671,17 @@ export async function compute(
 		}
 	}
 
+	// Decisions the jury changed by hand survive a recompute: the computed
+	// decision is refreshed, the jury's one is kept.
+	const previous = await repo.findStudentResultsByDeliberationId(id);
+	const overridden = new Map(
+		previous.filter((r) => r.isOverridden).map((r) => [r.studentId, r]),
+	);
+	for (const r of studentResults) {
+		const kept = overridden.get(r.studentId);
+		if (kept?.finalDecision) r.finalDecision = kept.finalDecision;
+	}
+
 	// Compute stats
 	const stats = computeStats(studentResults);
 
@@ -685,7 +696,7 @@ export async function compute(
 			ueResults: r.ueResults,
 			autoDecision: r.autoDecision,
 			finalDecision: r.finalDecision,
-			isOverridden: false,
+			isOverridden: overridden.has(r.studentId),
 			rank: r.rank,
 			mention: r.mention,
 			rulesEvaluated: r.rulesEvaluated,

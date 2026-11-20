@@ -306,10 +306,9 @@ describe("a jury decided by the institution's rules", () => {
 		});
 		const recomputed = await api.deliberations.compute({ id: current.id });
 		const after = recomputed.results.find((r) => r.studentId === oneFailed.id)!;
-		// 11.6 no longer compensates and no other rule matches: the LMD default
-		// applies (every UE validated or compensated by the year → admitted).
+		// 11.6 no longer compensates and no other rule matches: the jury decides.
 		expect((after.rulesEvaluated ?? []).some((t) => t.matched)).toBe(false);
-		expect(after.autoDecision).toBe("admitted");
+		expect(after.autoDecision).toBe("pending");
 
 		// --- The jury overrides one decision ----------------------------------
 		const stored = await api.deliberations.getById({ id: current.id });
@@ -328,6 +327,17 @@ describe("a jury decided by the institution's rules", () => {
 			autoDecision: "deferred",
 			finalDecision: "compensated",
 			isOverridden: true,
+		});
+		// Computing again keeps the jury's decision.
+		await api.deliberations.compute({ id: current.id });
+		const afterRecompute = await api.deliberations.getById({ id: current.id });
+		expect(
+			afterRecompute.studentResults.find((r) => r.studentId === lowUe.id),
+		).toMatchObject({
+			autoDecision: "deferred",
+			finalDecision: "compensated",
+			isOverridden: true,
+			overrideReason: "Medical certificate for the UE exam",
 		});
 	});
 

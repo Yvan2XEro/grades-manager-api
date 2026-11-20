@@ -13,8 +13,9 @@ import type { DeliberationUeResult } from "./deliberations.types";
 export function yearFactsFromUeResults(
 	ueResults: DeliberationUeResult[],
 	totals: { creditsEarned: number; creditsPossible: number },
-	passThreshold: number,
+	scale: { passThreshold: number; compensationThreshold: number },
 ) {
+	const { passThreshold, compensationThreshold } = scale;
 	const ueAverages = ueResults
 		.map((ue) => ue.ueAverage)
 		.filter((v): v is number => v !== null);
@@ -59,6 +60,12 @@ export function yearFactsFromUeResults(
 		scoresAbove10: courseAverages.filter((v) => v >= 10).length,
 		scoresBelow10: courseAverages.filter((v) => v < 10).length,
 		scoresBelow8: courseAverages.filter((v) => v < 8).length,
+		// Course marks under the compensation bar / compensable ones
+		eliminatoryFailures: courseAverages.filter((v) => v < compensationThreshold)
+			.length,
+		compensableFailures: courseAverages.filter(
+			(v) => v >= compensationThreshold && v < passThreshold,
+		).length,
 		failedCoursesCount: courseAverages.filter((v) => v < passThreshold).length,
 		validatedCoursesCount: courseAverages.filter((v) => v >= passThreshold)
 			.length,

@@ -154,7 +154,7 @@ const DELIBERATION_RULES: DelibRuleDef[] = [
 	{
 		name: "Ajourné — moyenne < 10 sans compensation possible",
 		description:
-			"Ajourné si moyenne entre 8 et 10 avec trop d'UE non compensables",
+			"Ajourné si la moyenne générale est inférieure à 10 (après les règles de redoublement)",
 		category: "deferral",
 		decision: "deferred",
 		priority: 0,
@@ -174,7 +174,7 @@ const DELIBERATION_RULES: DelibRuleDef[] = [
 	{
 		name: "Admis par compensation d'UE",
 		description:
-			"Admis par compensation si moyenne >= 10 et au moins une UE compensable (8 ≤ moy UE < 10)",
+			"Admis par compensation si moyenne >= 10, au moins une UE sous 10 et aucune UE non compensable",
 		category: "compensation",
 		decision: "compensated",
 		priority: 0,
@@ -187,8 +187,12 @@ const DELIBERATION_RULES: DelibRuleDef[] = [
 						operator: "greaterThanInclusive",
 						value: 10,
 					},
-					{ fact: "compensableUECount", operator: "greaterThan", value: 0 },
-					{ fact: "eliminatoryFailures", operator: "equal", value: 0 },
+					{
+						fact: "failedTeachingUnitsCount",
+						operator: "greaterThan",
+						value: 0,
+					},
+					{ fact: "failedUECount", operator: "equal", value: 0 },
 				],
 			},
 			event: {
@@ -213,6 +217,11 @@ const DELIBERATION_RULES: DelibRuleDef[] = [
 						fact: "overallAverage",
 						operator: "greaterThanInclusive",
 						value: 10,
+					},
+					{
+						fact: "failedTeachingUnitsCount",
+						operator: "equal",
+						value: 0,
 					},
 				],
 			},
