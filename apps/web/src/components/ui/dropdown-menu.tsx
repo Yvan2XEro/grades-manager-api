@@ -4,10 +4,23 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Non-modal by default: the menu primitives ship their own copy of Radix's
+ * DismissableLayer, so a modal menu and a dialog opened from one of its items
+ * each save and restore `body { pointer-events }` without seeing the other —
+ * the dialog then restores "none" and the page stops taking clicks.
+ */
 function DropdownMenu({
+	modal = false,
 	...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-	return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
+	return (
+		<DropdownMenuPrimitive.Root
+			data-slot="dropdown-menu"
+			modal={modal}
+			{...props}
+		/>
+	);
 }
 
 function DropdownMenuPortal({
