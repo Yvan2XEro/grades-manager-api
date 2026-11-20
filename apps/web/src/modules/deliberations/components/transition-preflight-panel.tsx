@@ -16,6 +16,12 @@ export function TransitionPreflightPanel({
 			warn: readiness.enrollmentCount === 0,
 		},
 		{
+			// Still in the source year (not yet promoted, repeating or graduated)
+			label: t("admin.academicYearTransitions.readiness.toMove"),
+			value: readiness.activeEnrollmentCount,
+			warn: readiness.activeEnrollmentCount === 0,
+		},
+		{
 			label: t("admin.academicYearTransitions.readiness.signedDelibs"),
 			value: `${readiness.signedDeliberationCount}/${readiness.classCount}`,
 			warn: readiness.missingDeliberationClassCount > 0,

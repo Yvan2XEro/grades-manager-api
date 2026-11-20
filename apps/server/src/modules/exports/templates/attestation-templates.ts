@@ -174,7 +174,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 
 		<div class="header-row2">
 			<h1 class="main-title">ATTESTATION DE REUSSITE — {{program.level}}</h1>
-			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.level}}</h2>
+			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.levelEn}}</h2>
 			<p style="margin-top: 6px;"><strong>Ref N° {{document.referenceNumber}}</strong></p>
 		</div>
 	</div>
@@ -471,7 +471,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 		<div class="header-row2">
 			<h1 class="main-title">ATTESTATION DE REUSSITE — {{program.level}}</h1>
-			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.level}}</h2>
+			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.levelEn}}</h2>
 			<p style="margin-top: 6px;"><strong>Ref N° {{document.referenceNumber}}</strong></p>
 		</div>
 	</div>
@@ -742,7 +742,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 		<div class="header-row2">
 			<h1 class="main-title">ATTESTATION DE REUSSITE — {{program.level}}</h1>
-			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.level}}</h2>
+			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.levelEn}}</h2>
 			<p style="margin-top: 6px;"><strong>Ref N° {{document.referenceNumber}}</strong></p>
 		</div>
 	</div>
@@ -1277,7 +1277,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 		<div class="header-row2">
 			<h1 class="main-title">ATTESTATION DE REUSSITE — {{program.level}}</h1>
-			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.level}}</h2>
+			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.levelEn}}</h2>
 			<p style="margin-top: 6px;"><strong>Ref N°&nbsp;&nbsp;_____________&nbsp;/{{document.year}}{{#each center.administrativeInstances}}{{#if acronymFr}}/{{acronymFr}}{{/if}}{{/each}}/{{#if center.shortName}}{{center.shortName}}{{else}}{{center.code}}{{/if}}</strong></p>
 		</div>
 	</div>

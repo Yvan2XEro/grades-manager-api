@@ -28,9 +28,13 @@ export default function AcademicTimeline() {
 				description={t("student.timeline.description")}
 			/>
 			<div className="w-64">
+				{/* The whole journey by default; a year narrows it down */}
 				<AcademicYearSelect
 					value={academicYearId}
 					onChange={setAcademicYearId}
+					autoSelectActive={false}
+					allowAll
+					allLabel={t("student.timeline.allAcademicYears")}
 					placeholder={t("student.timeline.allAcademicYears")}
 				/>
 			</div>

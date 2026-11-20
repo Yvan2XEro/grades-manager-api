@@ -14,7 +14,7 @@ import { useRowSelection } from "@/hooks/useRowSelection";
 import { DuplicateProgramsDialog } from "../components/duplicate-programs-dialog";
 import { ProgramFormDialog } from "../components/program-form-dialog";
 import { useDeletePrograms, usePrograms } from "../hooks/use-programs";
-import { useStudyCycles } from "../hooks/use-study-cycles";
+import { studyCycleLabel, useStudyCycles } from "../hooks/use-study-cycles";
 import { getProgramsColumns } from "../table/programs-columns";
 import type { ProgramRow } from "../types";
 
@@ -32,7 +32,7 @@ export default function ProgramsPage() {
 		() =>
 			getProgramsColumns(
 				t,
-				new Map((cycles?.items ?? []).map((c) => [c.id, c.name])),
+				new Map((cycles?.items ?? []).map((c) => [c.id, studyCycleLabel(c)])),
 			),
 		[t, cycles],
 	);

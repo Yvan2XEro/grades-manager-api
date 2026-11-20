@@ -8,11 +8,19 @@ export const cycleBaseSchema = z.object({
 	description: z.string().optional(),
 	totalCreditsRequired: z.number().int().positive().optional(),
 	durationYears: z.number().int().positive().optional(),
+	/**
+	 * Prefix of the levels generated with a new cycle ("L" → L1, L2, L3).
+	 * Defaults to the first letter of the cycle name.
+	 */
+	levelPrefix: z.string().trim().max(6).optional(),
 });
 
-export const updateCycleSchema = cycleBaseSchema.partial().extend({
-	id: z.string(),
-});
+export const updateCycleSchema = cycleBaseSchema
+	.omit({ levelPrefix: true })
+	.partial()
+	.extend({
+		id: z.string(),
+	});
 
 export const cycleListSchema = z.object({
 	institutionId: z.string().optional(),

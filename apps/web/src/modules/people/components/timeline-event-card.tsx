@@ -10,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/date-format";
+import { formatDecimal } from "@/lib/number-format";
 import type { TimelineEvent } from "../types";
 
 // ── Icon & colour per event type ──────────────────────────────────────────────
@@ -84,8 +85,11 @@ export function TimelineEventCard({ event }: { event: TimelineEvent }) {
 	const { t } = useTranslation();
 
 	function label() {
+		// Leaving the last level of a cycle: the student graduated
 		if (event.type === "promotion")
-			return t("student.timeline.event.promotion");
+			return t("student.timeline.event.graduated", {
+				name: event.programName ?? event.cycleName ?? "",
+			});
 		if (event.type === "fee_cleared")
 			return t("student.timeline.event.fee_cleared");
 		if (event.type === "deliberation")
@@ -147,11 +151,20 @@ export function TimelineEventCard({ event }: { event: TimelineEvent }) {
 						event.generalAverage !== undefined && (
 							<span>
 								{t("student.timeline.average")}{" "}
-								{event.generalAverage.toFixed(2)}
+								{formatDecimal(event.generalAverage)}
 								/20
 							</span>
 						)}
-					{event.mention && <span>{event.mention}</span>}
+					{event.mention && (
+						<span>
+							{t("student.performance.mention", {
+								mention: t(
+									`admin.deliberations.mention.${event.mention}` as never,
+									{ defaultValue: event.mention },
+								),
+							})}
+						</span>
+					)}
 				</div>
 			</div>
 		</div>

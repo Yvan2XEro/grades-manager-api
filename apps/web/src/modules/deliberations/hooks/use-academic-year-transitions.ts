@@ -2,11 +2,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { sortYearsRecentFirst } from "@/lib/academic-years";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import { TERMINAL_STATUSES } from "../services/transition-status";
 
 export type DeferredOutcome = "review" | "repeat";
+
+/** Server error prefix when a new plan shares classes with a plan in progress. */
+const PLAN_OVERLAP = "TRANSITION_PLAN_OVERLAP";
 
 /** Existing transition plans. */
 export function useTransitionPlans() {
@@ -28,7 +32,8 @@ export function useCreateTransitionPlan(
 	const queryClient = useQueryClient();
 	const [sourceAcademicYearId, setSourceAcademicYearId] = useState("");
 	const [targetAcademicYearId, setTargetAcademicYearId] = useState("");
-	const [sourceClassId, setSourceClassId] = useState("all");
+	// Empty: every class of the source year
+	const [sourceClassIds, setSourceClassIds] = useState<string[]>([]);
 	const [deferredOutcome, setDeferredOutcome] =
 		useState<DeferredOutcome>("review");
 
@@ -57,13 +62,13 @@ export function useCreateTransitionPlan(
 			"academic-year-transition-preflight",
 			sourceAcademicYearId,
 			targetAcademicYearId,
-			sourceClassId,
+			sourceClassIds,
 		],
 		queryFn: () =>
 			trpcClient.academicYearTransitions.readiness.query({
 				sourceAcademicYearId,
 				targetAcademicYearId,
-				classIds: sourceClassId === "all" ? [] : [sourceClassId],
+				classIds: sourceClassIds,
 				deferredOutcome,
 			}),
 		enabled: distinctYears,
@@ -74,7 +79,7 @@ export function useCreateTransitionPlan(
 			trpcClient.academicYearTransitions.createDraft.mutate({
 				sourceAcademicYearId,
 				targetAcademicYearId,
-				classIds: sourceClassId === "all" ? [] : [sourceClassId],
+				classIds: sourceClassIds,
 				deferredOutcome,
 			}),
 		onSuccess: async (transition) => {
@@ -84,19 +89,30 @@ export function useCreateTransitionPlan(
 			});
 			void navigate(`/promotion/${transition.id}`);
 		},
-		onError: (error) =>
-			toast.error(
-				(error as { data?: { code?: string } }).data?.code === "CONFLICT"
-					? t("admin.academicYearTransitions.toast.planExists")
-					: t("admin.academicYearTransitions.toast.actionError"),
-			),
+		onError: (error) => {
+			// TRANSITION_PLAN_OVERLAP:<planId>:<class codes>
+			const message = (error as Error).message ?? "";
+			if (message.startsWith(`${PLAN_OVERLAP}:`)) {
+				const [, , classes] = message.split(":");
+				toast.error(
+					t("admin.academicYearTransitions.toast.planOverlap", { classes }),
+				);
+				return;
+			}
+			toast.error(t("admin.academicYearTransitions.toast.actionError"));
+		},
 	});
 
-	const duplicatePlan = (plans.data?.items ?? []).find(
+	// Plans in progress for these years that already cover some of the classes
+	const overlappingPlans = readinessQuery.data?.overlappingPlans ?? [];
+	// Other plans in progress for these years (on other classes): shown for
+	// information, several plans may run side by side.
+	const otherPlans = (plans.data?.items ?? []).filter(
 		(p) =>
 			p.sourceAcademicYearId === sourceAcademicYearId &&
 			p.targetAcademicYearId === targetAcademicYearId &&
-			!TERMINAL_STATUSES.includes(p.status),
+			!TERMINAL_STATUSES.includes(p.status) &&
+			!overlappingPlans.some((o) => o.id === p.id),
 	);
 
 	return {
@@ -104,15 +120,20 @@ export function useCreateTransitionPlan(
 		setSourceAcademicYearId,
 		targetAcademicYearId,
 		setTargetAcademicYearId,
-		sourceClassId,
-		setSourceClassId,
+		sourceClassIds,
+		setSourceClassIds,
 		deferredOutcome,
 		setDeferredOutcome,
-		years: yearsQuery.data?.items ?? [],
+		// Most recent year first
+		years: sortYearsRecentFirst(yearsQuery.data?.items ?? []),
 		classes: classesQuery.data?.items ?? [],
 		readiness: readinessQuery.data,
-		duplicatePlan,
-		canCreate: distinctYears && !duplicatePlan,
+		overlappingPlans,
+		otherPlans,
+		canCreate:
+			distinctYears &&
+			overlappingPlans.length === 0 &&
+			readinessQuery.data?.canGenerate === true,
 		createMutation,
 	};
 }

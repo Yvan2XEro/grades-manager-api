@@ -14,7 +14,7 @@ import { TransitionItemsCard } from "../components/transition-items-card";
 import { TransitionReadinessCard } from "../components/transition-readiness-card";
 import { TransitionSummaryMetrics } from "../components/transition-summary-metrics";
 import { useTransitionDetail } from "../hooks/use-transition-detail";
-import { summaryOf } from "../services/transition-status";
+import { count, summaryOf } from "../services/transition-status";
 import type { TransitionAction, TransitionItem } from "../types";
 
 export default function TransitionDetail() {
@@ -77,25 +77,94 @@ export default function TransitionDetail() {
 			(itemsQuery.data?.items ?? []).filter((item) => selectedIds.has(item.id)),
 		);
 
-	const runAction = async (action: TransitionAction) => {
-		if (action === "cancel") {
-			await Confirm.call({
-				title: t("admin.academicYearTransitions.cancelConfirm.title"),
-				description: t("admin.academicYearTransitions.cancelConfirm.message"),
-				confirmLabel: t("admin.academicYearTransitions.cancelConfirm.confirm"),
-				mutationFn: async (call) => {
-					try {
-						await actionMutation.mutateAsync({ action });
-						call.end(true);
-					} catch {
-						// error toast shown by the mutation
-						call.end(false);
-					}
-				},
-			});
-			return;
+	// Every workflow step is confirmed with what it does; execution states
+	// how many students are moved.
+	const confirmCopy = (action: TransitionAction) => {
+		const counts = {
+			total: count(summary, "total"),
+			promote: count(summary, "promote"),
+			repeat: count(summary, "repeat"),
+			graduate: count(summary, "graduate"),
+			exclude: count(summary, "exclude"),
+		};
+		switch (action) {
+			case "cancel":
+				return {
+					title: t("admin.academicYearTransitions.cancelConfirm.title"),
+					description: t("admin.academicYearTransitions.cancelConfirm.message"),
+					confirmLabel: t(
+						"admin.academicYearTransitions.cancelConfirm.confirm",
+					),
+					cancelLabel: t("admin.academicYearTransitions.cancelConfirm.keep"),
+					destructive: true,
+				};
+			case "submit":
+				return {
+					title: t("admin.academicYearTransitions.submitConfirm.title"),
+					description: t(
+						"admin.academicYearTransitions.submitConfirm.message",
+						{ count: counts.total },
+					),
+					confirmLabel: t("admin.academicYearTransitions.actions.submit"),
+					destructive: false,
+				};
+			case "approve":
+				return {
+					title: t("admin.academicYearTransitions.approveConfirm.title"),
+					description: t(
+						"admin.academicYearTransitions.approveConfirm.message",
+					),
+					confirmLabel: t("admin.academicYearTransitions.actions.approve"),
+					destructive: false,
+				};
+			case "execute":
+				return {
+					title: t("admin.academicYearTransitions.executeConfirm.title", {
+						target: transition.targetYear?.name ?? "",
+					}),
+					description: (
+						<div className="space-y-2">
+							<p>
+								{t("admin.academicYearTransitions.executeConfirm.message", {
+									count: counts.total,
+									target: transition.targetYear?.name ?? "",
+								})}
+							</p>
+							<ul className="list-disc space-y-0.5 pl-5">
+								{(["promote", "repeat", "graduate", "exclude"] as const).map(
+									(key) =>
+										counts[key] > 0 ? (
+											<li key={key}>
+												{t(
+													`admin.academicYearTransitions.executeConfirm.${key}`,
+													{ count: counts[key] },
+												)}
+											</li>
+										) : null,
+								)}
+							</ul>
+							<p>{t("admin.academicYearTransitions.executeConfirm.final")}</p>
+						</div>
+					),
+					confirmLabel: t("admin.academicYearTransitions.actions.execute"),
+					destructive: false,
+				};
 		}
-		actionMutation.mutate({ action });
+	};
+
+	const runAction = async (action: TransitionAction) => {
+		await Confirm.call({
+			...confirmCopy(action),
+			mutationFn: async (call) => {
+				try {
+					await actionMutation.mutateAsync({ action });
+					call.end(true);
+				} catch {
+					// error toast shown by the mutation
+					call.end(false);
+				}
+			},
+		});
 	};
 
 	const showBlocked = () => {

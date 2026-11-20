@@ -77,6 +77,10 @@ export type DecisionResult = {
 	rank: number | null;
 	ueResults: UeResult[];
 	closedAt?: string | Date | null;
+	/** Outcome of the year's enrollment ("graduated" on the last level). */
+	enrollmentStatus?: string | null;
+	programName?: string | null;
+	cycleName?: string | null;
 };
 
 export type ClassInfo = {

@@ -24,6 +24,7 @@ import {
 	checkDocumentEligibility,
 	classDocumentRoster,
 	enrollmentEligibility,
+	listStudentResultDocuments,
 } from "./academic-documents.eligibility";
 import * as repo from "./academic-documents.repo";
 import * as service from "./academic-documents.service";
@@ -338,19 +339,22 @@ export const academicDocumentsRouter = router({
 				ctx.institution.id,
 				input.studentId,
 			);
-			const [attestation, diploma, transcriptYears] = await Promise.all([
-				checkDocumentEligibility(
-					ctx.institution.id,
-					"attestation",
-					input.studentId,
-				),
-				checkDocumentEligibility(
-					ctx.institution.id,
-					"diploma",
-					input.studentId,
-				),
-				listStudentResultYears(ctx.institution.id, input.studentId),
-			]);
+			const [attestation, diploma, transcriptYears, earned] = await Promise.all(
+				[
+					checkDocumentEligibility(
+						ctx.institution.id,
+						"attestation",
+						input.studentId,
+					),
+					checkDocumentEligibility(
+						ctx.institution.id,
+						"diploma",
+						input.studentId,
+					),
+					listStudentResultYears(ctx.institution.id, input.studentId),
+					listStudentResultDocuments(ctx.institution.id, input.studentId),
+				],
+			);
 			return {
 				enrollments: enrollments.map((e) => {
 					const elig = enrollmentEligibility([e], e.classId);
@@ -363,15 +367,20 @@ export const academicDocumentsRouter = router({
 						reason: elig.reason ?? null,
 					};
 				}),
+				// Pass certificates: one per year with a favourable closed jury.
 				attestation: {
 					eligible: attestation.eligible,
 					reason: attestation.reason ?? null,
 					decision: attestation.decision ?? null,
+					results: earned.results,
 				},
+				// Diplomas: one per cycle completed (favourable jury on its last
+				// level), latest first — the dialog offers the choice.
 				diploma: {
 					eligible: diploma.eligible,
 					reason: diploma.reason ?? null,
 					decision: diploma.decision ?? null,
+					earned: earned.diplomas,
 				},
 				// A transcript is for one year: the years the student was enrolled
 				// in, and the one to offer first (latest with a jury, else marks).

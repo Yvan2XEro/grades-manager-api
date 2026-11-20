@@ -99,7 +99,15 @@ export function PeopleDirectory({ audience }: { audience: PeopleAudience }) {
 					}
 					actions={
 						isStudent ? (
-							<Button onClick={() => EnrollStudentDialog.call({})}>
+							<Button
+								onClick={() =>
+									EnrollStudentDialog.call({
+										// Enroll in the year (and class) the list is filtered on
+										classId: filters.classId ?? undefined,
+										academicYearId: filters.academicYearId ?? undefined,
+									})
+								}
+							>
 								<UserPlus className="mr-2 h-4 w-4" />
 								{t("admin.students.enroll.title")}
 							</Button>

@@ -6,11 +6,15 @@ import type { DecisionResult, NotifItem, UpcomingExam } from "../types";
 export function useStudentDashboard() {
 	const studentQuery = useQuery(trpc.students.me.queryOptions());
 	const studentId = studentQuery.data?.id ?? "";
+	const classId = studentQuery.data?.class ?? "";
 
+	// The figures are those of the current enrollment (class of the year):
+	// a student who just started Master 1 does not see their Licence marks.
 	const transcriptQuery = useQuery({
-		queryKey: ["student-transcript", studentId],
-		queryFn: () => trpcClient.grades.consolidatedByStudent.query({ studentId }),
-		enabled: Boolean(studentId),
+		queryKey: ["student-transcript", studentId, classId],
+		queryFn: () =>
+			trpcClient.grades.consolidatedByStudent.query({ studentId, classId }),
+		enabled: Boolean(studentId && classId),
 	});
 
 	const ledgerQuery = useQuery({
@@ -18,7 +22,6 @@ export function useStudentDashboard() {
 		enabled: Boolean(studentId),
 	});
 
-	const classId = studentQuery.data?.class ?? "";
 	const classQuery = useQuery({
 		...trpc.classes.getById.queryOptions({ id: classId }),
 		enabled: Boolean(classId),
@@ -55,12 +58,18 @@ export function useStudentDashboard() {
 
 	const isLoading =
 		studentQuery.isPending ||
-		transcriptQuery.isPending ||
+		(Boolean(classId) && transcriptQuery.isPending) ||
 		ledgerQuery.isPending;
 
-	const creditsEarned = ledger?.creditsEarned ?? 0;
-	const creditsRequired = ledger?.requiredCredits ?? 0;
-	const creditsInProgress = ledger?.creditsInProgress ?? 0;
+	// Credits of the current year only (the ledger keeps one row per year).
+	const currentYearId = classQuery.data?.academicYear ?? "";
+	const yearLedger = ledger?.ledgers.find(
+		(l) => l.academicYearId === currentYearId,
+	);
+	const creditsEarned = yearLedger?.creditsEarned ?? 0;
+	const creditsRequired =
+		yearLedger?.requiredCredits ?? ledger?.requiredCredits ?? 0;
+	const creditsInProgress = yearLedger?.creditsInProgress ?? 0;
 	const creditProgress =
 		creditsRequired > 0
 			? Math.min(100, (creditsEarned / creditsRequired) * 100)

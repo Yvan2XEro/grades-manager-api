@@ -121,7 +121,12 @@ async function ensureProgramOption(
 	return option.id;
 }
 
+/**
+ * Semester of a class: the given one, none when `null` (the registrar chose
+ * "None"), the first semester of the catalog when omitted.
+ */
 async function ensureSemester(semesterId?: string | null) {
+	if (semesterId === null) return null;
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -206,9 +211,12 @@ export async function updateClass(
 		program,
 		desiredProgramOptionId,
 	);
-	const semesterId = data.semesterId
-		? await ensureSemester(data.semesterId)
-		: undefined;
+	const semesterId =
+		data.semesterId === null
+			? null
+			: data.semesterId
+				? await ensureSemester(data.semesterId)
+				: undefined;
 	return repo.update(id, institutionId, {
 		...data,
 		program: program.id,
@@ -1035,4 +1043,136 @@ export async function bulkGenerateClasses(
 	}
 
 	return { created, skipped };
+}
+
+/**
+ * Credits the admitted students of a jury have earned in its cycle, for the
+ * graduation check on the last level: the sum, over the years of the cycle,
+ * of the credits of the year's final closed jury (a retake replaces the
+ * annual jury of its year). Compared with the cycle's required credits.
+ */
+export async function getGraduationCredits(
+	deliberationId: string,
+	institutionId: string,
+) {
+	const jury = await db.query.deliberations.findFirst({
+		where: and(
+			eq(schema.deliberations.id, deliberationId),
+			eq(schema.deliberations.institutionId, institutionId),
+		),
+		with: {
+			classRef: { with: { cycleLevel: { with: { cycle: true } } } },
+		},
+	});
+	if (!jury) throw notFound("Deliberation not found");
+	const cycle = jury.classRef?.cycleLevel?.cycle ?? null;
+	const juryResults = await db.query.deliberationStudentResults.findMany({
+		where: eq(schema.deliberationStudentResults.deliberationId, jury.id),
+	});
+	const admittedIds = juryResults
+		.filter((r) => {
+			const d = r.finalDecision ?? r.autoDecision;
+			return d === "admitted" || d === "compensated";
+		})
+		.map((r) => r.studentId);
+	if (!cycle || admittedIds.length === 0) {
+		return { cycle: null, students: [] };
+	}
+
+	const rows = await db
+		.select({
+			studentId: schema.deliberationStudentResults.studentId,
+			credits: schema.deliberationStudentResults.totalCreditsEarned,
+			academicYearId: schema.deliberations.academicYearId,
+			type: schema.deliberations.type,
+			createdAt: schema.deliberations.createdAt,
+		})
+		.from(schema.deliberationStudentResults)
+		.innerJoin(
+			schema.deliberations,
+			eq(
+				schema.deliberations.id,
+				schema.deliberationStudentResults.deliberationId,
+			),
+		)
+		.innerJoin(
+			schema.classes,
+			eq(schema.classes.id, schema.deliberations.classId),
+		)
+		.innerJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.where(
+			and(
+				eq(schema.deliberations.institutionId, institutionId),
+				eq(schema.cycleLevels.cycleId, cycle.id),
+				inArray(schema.deliberations.type, ["annual", "retake"]),
+				inArray(schema.deliberationStudentResults.studentId, admittedIds),
+				or(
+					inArray(schema.deliberations.status, ["closed", "signed"]),
+					eq(schema.deliberations.id, jury.id),
+				),
+			),
+		);
+
+	// One jury per student and year: the retake, else the latest one
+	const yearly = new Map<string, (typeof rows)[number]>();
+	for (const row of rows) {
+		const key = `${row.studentId}:${row.academicYearId}`;
+		const current = yearly.get(key);
+		const better =
+			!current ||
+			(row.type === "retake" && current.type !== "retake") ||
+			(row.type === current.type && row.createdAt > current.createdAt);
+		if (better) yearly.set(key, row);
+	}
+	const earned = new Map<string, number>();
+	for (const row of yearly.values()) {
+		earned.set(
+			row.studentId,
+			(earned.get(row.studentId) ?? 0) + Number(row.credits ?? 0),
+		);
+	}
+
+	const students = await db
+		.select({
+			id: schema.students.id,
+			registrationNumber: schema.students.registrationNumber,
+			firstName: schema.domainUsers.firstName,
+			lastName: schema.domainUsers.lastName,
+		})
+		.from(schema.students)
+		.innerJoin(
+			schema.domainUsers,
+			eq(schema.domainUsers.id, schema.students.domainUserId),
+		)
+		.where(inArray(schema.students.id, admittedIds));
+
+	const required = cycle.totalCreditsRequired;
+	return {
+		cycle: {
+			id: cycle.id,
+			name: cycle.name,
+			code: cycle.code,
+			totalCreditsRequired: required,
+		},
+		students: students
+			.map((s) => {
+				const creditsEarned = earned.get(s.id) ?? 0;
+				return {
+					studentId: s.id,
+					registrationNumber: s.registrationNumber,
+					firstName: s.firstName,
+					lastName: s.lastName,
+					creditsEarned,
+					belowRequired: creditsEarned < required,
+				};
+			})
+			.sort(
+				(a, b) =>
+					Number(b.belowRequired) - Number(a.belowRequired) ||
+					(a.lastName ?? "").localeCompare(b.lastName ?? ""),
+			),
+	};
 }

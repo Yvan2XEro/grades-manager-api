@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { BookOpen, GraduationCap, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { staggerItem } from "@/lib/animations";
+import { formatDecimal } from "@/lib/number-format";
 import { SummaryCard } from "./summary-card";
 
 export function StudentSummaryCards({
@@ -28,7 +29,7 @@ export function StudentSummaryCards({
 			<SummaryCard
 				icon={<Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
 				label={t("student.performance.generalAverage")}
-				value={overallAvg !== null ? `${overallAvg.toFixed(2)} / 20` : "—"}
+				value={overallAvg !== null ? `${formatDecimal(overallAvg)} / 20` : "—"}
 				sub={
 					overallAvg === null
 						? t("student.performance.noMarksYet")

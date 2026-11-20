@@ -8,7 +8,7 @@ import i18n from "@/i18n";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type { ProgramData } from "../types";
-import { useStudyCycles } from "./use-study-cycles";
+import { studyCycleLabel, useStudyCycles } from "./use-study-cycles";
 
 // Mirrors the server update schema: these text fields are not nullable there
 const schema = z.object({
@@ -114,7 +114,10 @@ export function useProgramDetailsForm(
 	return {
 		form,
 		update,
-		cycles: cycles?.items ?? [],
+		cycles: (cycles?.items ?? []).map((c) => ({
+			...c,
+			name: studyCycleLabel(c),
+		})),
 		centers: centersData?.items ?? [],
 		selectedCenterId: form.watch("centerId"),
 	};

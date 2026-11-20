@@ -58,4 +58,6 @@ export type TimelineEvent = {
 	finalDecision?: string | null;
 	generalAverage?: number | null;
 	mention?: string | null;
+	programName?: string | null;
+	cycleName?: string | null;
 };

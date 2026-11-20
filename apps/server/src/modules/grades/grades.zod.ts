@@ -57,4 +57,6 @@ export const importCsvSchema = z.object({
 
 export const consolidatedSchema = z.object({
 	studentId: z.string(),
+	/** Only the marks of this class (the current year's enrollment). */
+	classId: z.string().optional(),
 });

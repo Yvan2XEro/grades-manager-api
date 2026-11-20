@@ -49,6 +49,31 @@ export function useProgramLevels(programId?: string) {
 	return program?.cycleId ? (levels?.items ?? []) : [];
 }
 
+/**
+ * Semester choices of a unit, labelled with the class semester catalog (the
+ * one the class form offers): a unit of the year's first half is taught in
+ * S1, S3, S5…, of the second half in S2, S4, S6…
+ */
+export function useUnitSemesterLabels() {
+	const { t } = useTranslation();
+	const { data } = useQuery(trpc.semesters.list.queryOptions());
+	const catalog = [...(data?.items ?? [])].sort(
+		(a, b) => a.orderIndex - b.orderIndex,
+	);
+	const codes = (odd: boolean) =>
+		catalog
+			.filter((s) => (s.orderIndex % 2 === 1) === odd)
+			.map((s) => s.code)
+			.join(", ");
+	const withCodes = (label: string, list: string) =>
+		list ? `${label} (${list})` : label;
+	return {
+		annual: t("admin.teachingUnits.semesters.annual"),
+		fall: withCodes(t("admin.teachingUnits.semesters.fall"), codes(true)),
+		spring: withCodes(t("admin.teachingUnits.semesters.spring"), codes(false)),
+	};
+}
+
 /** Form state of a teaching unit, shared by the create dialog and the detail page. */
 export function useTeachingUnitFormState(
 	values?: Partial<TeachingUnitFormData>,

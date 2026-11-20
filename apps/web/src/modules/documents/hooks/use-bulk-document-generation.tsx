@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { DocumentPreviewDialog } from "@/components/callable/DocumentPreviewDialog";
+import { sortYearsRecentFirst } from "@/lib/academic-years";
 import { documentErrorMessage } from "@/lib/document-errors";
 import { fileDateStamp } from "@/lib/download";
 import { toast } from "@/lib/toast";
@@ -66,7 +67,10 @@ export function useBulkDocumentGeneration() {
 		queryKey: ["bulk-academic-years"],
 		queryFn: async () => {
 			const res = await trpcClient.academicYears.list.query({ limit: 100 });
-			return (res as { items: Array<{ id: string; name: string }> }).items;
+			return sortYearsRecentFirst(res.items) as Array<{
+				id: string;
+				name: string;
+			}>;
 		},
 	});
 

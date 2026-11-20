@@ -7,7 +7,8 @@ export const baseSchema = z.object({
 	academicYear: z.string(),
 	cycleLevelId: z.string().optional(),
 	programOptionId: z.string().optional(),
-	semesterId: z.string().optional(),
+	/** `null`: no semester (an annual class); omitted: the first semester. */
+	semesterId: z.string().nullable().optional(),
 	totalCredits: z.number().int().min(0).default(0),
 });
 

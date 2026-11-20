@@ -100,6 +100,22 @@ export const EnrollStudentDialog = createCallable<
 	const selectedStudent = selected
 		? studentByProfile.get(selected.id)
 		: undefined;
+	// A student whose last enrollment is over (graduated, completed) goes on
+	// to a new enrollment; otherwise the running one is closed (transfer).
+	const enrollmentsQuery = useQuery({
+		...trpc.enrollments.list.queryOptions({
+			studentId: selectedStudent?.id ?? "",
+			limit: 100,
+		}),
+		enabled: Boolean(selectedStudent?.id),
+	});
+	const latestEnrollment = [...(enrollmentsQuery.data?.items ?? [])].sort(
+		(a, b) =>
+			new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime(),
+	)[0];
+	const continuesStudies =
+		latestEnrollment?.status === "graduated" ||
+		latestEnrollment?.status === "completed";
 
 	const set = (key: keyof typeof EMPTY_PERSON, value: string) =>
 		setPerson((p) => ({ ...p, [key]: value }));
@@ -356,17 +372,30 @@ export const EnrollStudentDialog = createCallable<
 							)}
 						</div>
 						{selected ? (
-							<p className="rounded-md bg-muted px-3 py-2 text-xs">
-								{selectedStudent
-									? selectedStudent.class === classId
-										? t("admin.students.enroll.alreadyInClass")
-										: t("admin.students.enroll.willMove", {
+							<div className="space-y-1 rounded-md bg-muted px-3 py-2 text-xs">
+								<p>
+									{selectedStudent
+										? selectedStudent.class === classId
+											? t("admin.students.enroll.alreadyInClass")
+											: continuesStudies
+												? t("admin.students.enroll.willContinue", {
+														className: targetClass?.name ?? "…",
+													})
+												: t("admin.students.enroll.willMove", {
+														className: targetClass?.name ?? "…",
+													})
+										: t("admin.students.enroll.willEnroll", {
 												className: targetClass?.name ?? "…",
-											})
-									: t("admin.students.enroll.willEnroll", {
-											className: targetClass?.name ?? "…",
+											})}
+								</p>
+								{selectedStudent && selectedStudent.class !== classId && (
+									<p className="text-muted-foreground">
+										{t("admin.students.enroll.registrationKept", {
+											registrationNumber: selectedStudent.registrationNumber,
 										})}
-							</p>
+									</p>
+								)}
+							</div>
 						) : null}
 					</div>
 				)}

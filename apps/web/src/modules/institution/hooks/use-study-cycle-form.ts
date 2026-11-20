@@ -11,6 +11,8 @@ export const studyCycleSchema = z.object({
 	description: z.string().optional(),
 	totalCreditsRequired: z.coerce.number().int().min(30),
 	durationYears: z.coerce.number().int().min(1),
+	/** Prefix of the generated level codes (creation only). */
+	levelPrefix: z.string().trim().max(6).optional(),
 });
 
 export type StudyCycleFormInput = z.input<typeof studyCycleSchema>;
@@ -28,6 +30,7 @@ export const studyCycleDefaultValues: StudyCycleFormInput = {
 	description: "",
 	totalCreditsRequired: 180,
 	durationYears: 3,
+	levelPrefix: "",
 };
 
 export const studyCycleToFormValues = (
@@ -40,6 +43,15 @@ export const studyCycleToFormValues = (
 	totalCreditsRequired: cycle.totalCreditsRequired,
 	durationYears: cycle.durationYears,
 });
+
+/** Default level prefix: first letter of the cycle name (Licence → L). */
+export function defaultLevelPrefix(cycleName: string) {
+	const letter = cycleName
+		.normalize("NFD")
+		.replace(/[^A-Za-z]/g, "")
+		.charAt(0);
+	return (letter || "N").toUpperCase();
+}
 
 /** Form state of a study cycle, shared by the create/edit dialog and the details tab. */
 export function useStudyCycleForm(cycle?: StudyCycle | null) {
@@ -54,19 +66,25 @@ export function useStudyCycleForm(cycle?: StudyCycle | null) {
 			: studyCycleDefaultValues,
 	});
 
-	const code = form.watch("code");
+	const name = form.watch("name") ?? "";
+	const levelPrefix = form.watch("levelPrefix") ?? "";
 	const duration = Number(form.watch("durationYears"));
 	const credits = Number(form.watch("totalCreditsRequired"));
+	const defaultPrefix = defaultLevelPrefix(name);
 
-	/** Levels the server creates along with a new cycle (one per year). */
+	/**
+	 * Levels the server creates along with a new cycle (one per year), named
+	 * after the cycle: "Licence 1" (L1), "Licence 2" (L2)…
+	 */
 	const autoLevelsPreview = useMemo(() => {
 		if (!duration || duration < 1 || duration > 20) return [];
+		const prefix = levelPrefix.trim().toUpperCase() || defaultPrefix;
 		return Array.from({ length: duration }, (_, i) => ({
-			code: code ? `${code}-L${i + 1}` : `L${i + 1}`,
-			name: `Level ${i + 1}`,
+			code: `${prefix}${i + 1}`,
+			name: name.trim() ? `${name.trim()} ${i + 1}` : `${prefix}${i + 1}`,
 			minCredits: credits ? Math.floor(credits / duration) : 0,
 		}));
-	}, [code, duration, credits]);
+	}, [name, levelPrefix, defaultPrefix, duration, credits]);
 
-	return { form, autoLevelsPreview };
+	return { form, autoLevelsPreview, defaultPrefix };
 }

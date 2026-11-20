@@ -9,6 +9,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { sortYearsRecentFirst } from "@/lib/academic-years";
 import { trpc } from "@/utils/trpc";
 
 type AcademicYearSelectProps = {
@@ -40,7 +41,8 @@ export function AcademicYearSelect({
 	const yearQuery = useQuery({
 		...trpc.academicYears.list.queryOptions({}),
 	});
-	const allYears = yearQuery.data?.items ?? [];
+	// Most recent year first
+	const allYears = sortYearsRecentFirst(yearQuery.data?.items ?? []);
 	const years = excludeIds
 		? allYears.filter((y) => !excludeIds.includes(y.id))
 		: allYears;

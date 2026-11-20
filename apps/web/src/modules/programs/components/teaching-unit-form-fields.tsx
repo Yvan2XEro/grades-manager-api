@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
 	type TeachingUnitFormData,
 	useProgramLevels,
+	useUnitSemesterLabels,
 } from "../hooks/use-teaching-unit-form";
 
 const NO_LEVEL = "__none";
@@ -36,6 +37,7 @@ export function TeachingUnitFormFields({
 	programs,
 }: TeachingUnitFormFieldsProps) {
 	const { t } = useTranslation();
+	const semesterLabels = useUnitSemesterLabels();
 	const levels = useProgramLevels(
 		useWatch({ control: form.control, name: "programId" }),
 	);
@@ -163,16 +165,17 @@ export function TeachingUnitFormFields({
 								</FormControl>
 								<SelectContent>
 									<SelectItem value="annual">
-										{t("admin.teachingUnits.semesters.annual")}
+										{semesterLabels.annual}
 									</SelectItem>
-									<SelectItem value="fall">
-										{t("admin.teachingUnits.semesters.fall")}
-									</SelectItem>
+									<SelectItem value="fall">{semesterLabels.fall}</SelectItem>
 									<SelectItem value="spring">
-										{t("admin.teachingUnits.semesters.spring")}
+										{semesterLabels.spring}
 									</SelectItem>
 								</SelectContent>
 							</Select>
+							<FormDescription>
+								{t("admin.teachingUnits.semesterHint")}
+							</FormDescription>
 							<FormMessage />
 						</FormItem>
 					)}

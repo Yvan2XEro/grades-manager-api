@@ -426,6 +426,7 @@ export async function importGradesFromCsv(
 export async function getStudentTranscript(
 	studentId: string,
 	institutionId: string,
+	classId?: string,
 ) {
 	const student = await studentsRepo.findById(studentId, institutionId);
 	if (!student) {
@@ -462,7 +463,12 @@ export async function getStudentTranscript(
 			schema.teachingUnits,
 			eq(schema.courses.teachingUnitId, schema.teachingUnits.id),
 		)
-		.where(eq(schema.grades.student, studentId))
+		.where(
+			and(
+				eq(schema.grades.student, studentId),
+				classId ? eq(schema.classCourses.class, classId) : undefined,
+			),
+		)
 		.groupBy(
 			schema.courses.id,
 			schema.classCourses.coefficient,

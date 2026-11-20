@@ -1,4 +1,9 @@
-import { ArrowRight, GraduationCap, Loader2 } from "lucide-react";
+import {
+	AlertTriangle,
+	ArrowRight,
+	GraduationCap,
+	Loader2,
+} from "lucide-react";
 import { createCallable } from "react-call";
 import { useTranslation } from "react-i18next";
 import { DIALOG_EXIT_MS } from "@/components/callable/callable-dialog";
@@ -20,6 +25,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGraduationCredits } from "../hooks/use-graduation-credits";
 import { usePromoteAdmitted } from "../hooks/use-promote-admitted";
 import type { DecisionGroups } from "../services/decision-groups";
 import { PromoteDecisionGroups } from "./promote-decision-groups";
@@ -95,6 +101,10 @@ export const PromoteAdmittedDialog = createCallable<Props, void>(
 									</p>
 								</div>
 							</div>
+						)}
+
+						{!baseLoading && isLastLevel && groups.admitted > 0 && (
+							<GraduationCreditsCheck deliberationId={deliberationId} />
 						)}
 
 						{/* Target academic year: needed to place promoted or repeating students */}
@@ -199,6 +209,69 @@ export const PromoteAdmittedDialog = createCallable<Props, void>(
 	},
 	DIALOG_EXIT_MS,
 );
+
+/**
+ * Graduation check on the last level: per graduate, the credits earned over
+ * the cycle against the credits it requires. Warns, never blocks — the jury
+ * decided.
+ */
+function GraduationCreditsCheck({
+	deliberationId,
+}: {
+	deliberationId: string;
+}) {
+	const { t } = useTranslation();
+	const { data, isLoading } = useGraduationCredits(deliberationId, true);
+	if (isLoading) return <Skeleton className="h-16 w-full" />;
+	if (!data?.cycle || data.students.length === 0) return null;
+	const required = data.cycle.totalCreditsRequired;
+	const below = data.students.filter((s) => s.belowRequired);
+	return (
+		<div className="space-y-2 rounded-lg border p-3">
+			<p className="font-medium text-sm">
+				{t("admin.deliberations.promote.cycleCredits.title", {
+					cycle: data.cycle.name,
+					required,
+				})}
+			</p>
+			{below.length > 0 && (
+				<div className="flex items-start gap-2 text-amber-700 text-xs dark:text-amber-400">
+					<AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+					<span>
+						{t("admin.deliberations.promote.cycleCredits.warning", {
+							count: below.length,
+							required,
+						})}
+					</span>
+				</div>
+			)}
+			<ul className="max-h-40 space-y-1 overflow-y-auto text-xs">
+				{data.students.map((s) => (
+					<li
+						key={s.studentId}
+						className="flex items-center justify-between gap-2"
+					>
+						<span className="truncate">
+							{`${s.lastName ?? ""} ${s.firstName ?? ""}`.trim()}
+						</span>
+						<span
+							className={
+								s.belowRequired
+									? "shrink-0 font-semibold text-amber-700 tabular-nums dark:text-amber-400"
+									: "shrink-0 text-muted-foreground tabular-nums"
+							}
+						>
+							{t("admin.deliberations.promote.cycleCredits.value", {
+								earned: s.creditsEarned,
+								required,
+							})}
+						</span>
+					</li>
+				))}
+			</ul>
+		</div>
+	);
+}
 
 /** Destination class select, or what to do when the class is missing. */
 function ClassChoice({

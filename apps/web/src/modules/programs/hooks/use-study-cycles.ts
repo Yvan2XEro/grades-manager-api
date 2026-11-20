@@ -10,6 +10,13 @@ export type StudyCyclesSelect = { items: StudyCycleOption[] };
 export const fetchStudyCyclesSelect = (): Promise<StudyCyclesSelect> =>
 	trpcClient.studyCycles.listCycles.query({});
 
+/**
+ * Label of a cycle in lists and selects: its name and code, so cycles with
+ * the same name ("Doctorat") stay distinct.
+ */
+export const studyCycleLabel = (cycle: { name: string; code: string }) =>
+	cycle.code ? `${cycle.name} (${cycle.code})` : cycle.name;
+
 /** Study cycles feeding the program selects (shared cache key). */
 export function useStudyCycles() {
 	return useQuery({

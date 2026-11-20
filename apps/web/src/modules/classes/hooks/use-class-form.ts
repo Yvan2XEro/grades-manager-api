@@ -104,7 +104,8 @@ export const toClassPayload = (data: ClassFormData) => ({
 	academicYear: data.academicYearId,
 	cycleLevelId: data.cycleLevelId,
 	programOptionId: data.programOptionId,
-	semesterId: data.semesterId || undefined,
+	// "None" is kept: an annual class has no semester
+	semesterId: data.semesterId || null,
 	code: data.code,
 	totalCredits: data.totalCredits,
 });

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { sortYearsRecentFirst } from "@/lib/academic-years";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 import type {
@@ -71,7 +72,7 @@ export function useGradeExportData({
 		queryKey: ["academicYears", "items"],
 		queryFn: async () => {
 			const { items } = await trpcClient.academicYears.list.query({});
-			return items as Array<{ id: string; name: string }>;
+			return sortYearsRecentFirst(items) as Array<{ id: string; name: string }>;
 		},
 	});
 

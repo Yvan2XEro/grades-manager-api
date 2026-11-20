@@ -325,11 +325,24 @@ export async function getStudentDecision(
 		where: eq(schema.deliberationStudentResults.studentId, student.id),
 		with: {
 			deliberation: {
-				with: { classRef: true, academicYear: true },
+				with: {
+					classRef: {
+						with: { program: true, cycleLevel: { with: { cycle: true } } },
+					},
+					academicYear: true,
+				},
 			},
 		},
 		orderBy: (t, { desc }) => [desc(t.createdAt)],
 	});
+	// Outcome of the year: a graduate left the last level of the cycle.
+	const enrollments = await db.query.enrollments.findMany({
+		where: eq(schema.enrollments.studentId, student.id),
+	});
+	const statusOf = (classId: string, academicYearId: string) =>
+		enrollments.find(
+			(e) => e.classId === classId && e.academicYearId === academicYearId,
+		)?.status ?? null;
 	return results
 		.filter((r) => r.deliberation.closedAt !== null)
 		.map((r) => ({
@@ -337,6 +350,12 @@ export async function getStudentDecision(
 			deliberationId: r.deliberationId,
 			academicYear: r.deliberation.academicYear?.name ?? null,
 			className: r.deliberation.classRef?.name ?? null,
+			programName: r.deliberation.classRef?.program?.name ?? null,
+			cycleName: r.deliberation.classRef?.cycleLevel?.cycle?.name ?? null,
+			enrollmentStatus: statusOf(
+				r.deliberation.classId,
+				r.deliberation.academicYearId,
+			),
 			generalAverage: r.generalAverage,
 			totalCreditsEarned: r.totalCreditsEarned,
 			totalCreditsPossible: r.totalCreditsPossible,

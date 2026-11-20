@@ -27,7 +27,7 @@ export default function StudyCycleDetailDetails() {
 	}, [cycle, form]);
 
 	const updateMutation = useMutation({
-		mutationFn: (data: StudyCycleFormData) =>
+		mutationFn: ({ levelPrefix: _prefix, ...data }: StudyCycleFormData) =>
 			trpcClient.studyCycles.updateCycle.mutate({ id: cycleId!, ...data }),
 		onSuccess: () => {
 			toast.success(t("admin.studyCycles.toast.updateSuccess"));

@@ -108,6 +108,10 @@ export const router = createRouter({
 	consolidatedByStudent: tenantProtectedProcedure
 		.input(consolidatedSchema)
 		.query(({ ctx, input }) =>
-			service.getStudentTranscript(input.studentId, ctx.institution.id),
+			service.getStudentTranscript(
+				input.studentId,
+				ctx.institution.id,
+				input.classId,
+			),
 		),
 });

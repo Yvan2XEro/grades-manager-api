@@ -1,0 +1,2 @@
+DROP INDEX "uq_active_academic_year_transition";--> statement-breakpoint
+CREATE INDEX "idx_academic_year_transitions_pair" ON "academic_year_transitions" USING btree ("institution_id","source_academic_year_id","target_academic_year_id");
