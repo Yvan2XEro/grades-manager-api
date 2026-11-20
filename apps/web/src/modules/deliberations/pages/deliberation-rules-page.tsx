@@ -11,12 +11,15 @@ import {
 } from "@/components/ui/empty";
 import { DeliberationRuleCard } from "../components/deliberation-rule-card";
 import { DeliberationRuleFormDialog } from "../components/deliberation-rule-form-dialog";
+import { DeliberationRulesHelp } from "../components/deliberation-rules-help";
 import {
 	useDeliberationRuleMutations,
 	useDeliberationRules,
 } from "../hooks/use-deliberation-rules";
+import { useRuleScopeOptions } from "../hooks/use-rule-scope-options";
 import {
 	type DeliberationRule,
+	exampleRuleForm,
 	groupRules,
 	toRuleForm,
 } from "../services/deliberation-rules";
@@ -25,6 +28,7 @@ export default function DeliberationRules() {
 	const { t } = useTranslation();
 	const { rules, isLoading } = useDeliberationRules();
 	const { setActive, remove } = useDeliberationRuleMutations();
+	const { programLabel, levelLabel } = useRuleScopeOptions();
 
 	const confirmDelete = (rule: { id: string; name: string }) =>
 		confirmAction({
@@ -42,6 +46,8 @@ export default function DeliberationRules() {
 		<DeliberationRuleCard
 			key={rule.id}
 			rule={rule}
+			programLabel={rule.programId ? programLabel(rule.programId) : undefined}
+			levelLabel={rule.cycleLevelId ? levelLabel(rule.cycleLevelId) : undefined}
 			onEdit={() =>
 				DeliberationRuleFormDialog.call({ initial: toRuleForm(rule) })
 			}
@@ -54,7 +60,7 @@ export default function DeliberationRules() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center space-x-3">
 					<FileCog className="h-6 w-6 text-primary" />
 					<div>
@@ -71,6 +77,23 @@ export default function DeliberationRules() {
 					{t("admin.deliberations.rules.create")}
 				</Button>
 			</div>
+
+			<DeliberationRulesHelp
+				key={isLoading ? "loading" : "ready"}
+				defaultOpen={!isLoading && rules.length === 0}
+				onUseExample={(example) =>
+					DeliberationRuleFormDialog.call({
+						initial: exampleRuleForm(example, {
+							name: t(
+								`admin.deliberations.rules.help.examples.${example.key}.name`,
+							),
+							message: t(
+								`admin.deliberations.rules.help.examples.${example.key}.message`,
+							),
+						}),
+					})
+				}
+			/>
 
 			{isLoading ? (
 				<div className="flex items-center justify-center py-12">
@@ -97,7 +120,7 @@ export default function DeliberationRules() {
 							<h2 className="mb-3 font-semibold text-foreground text-sm uppercase tracking-wide">
 								{t(`admin.deliberations.rules.categories.${group.category}`)}
 							</h2>
-							<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+							<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
 								{group.rules.map(renderCard)}
 							</div>
 						</div>
@@ -109,13 +132,15 @@ export default function DeliberationRules() {
 							<h2 className="mb-3 font-semibold text-foreground text-sm uppercase tracking-wide">
 								{t("admin.deliberations.rules.categories.other")}
 							</h2>
-							<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+							<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
 								{other.map((rule) => (
 									<div
 										key={rule.id}
 										className="rounded-xl border bg-card p-4 shadow-sm"
 									>
-										<p className="font-medium text-sm">{rule.name}</p>
+										<p className="break-words font-medium text-sm">
+											{rule.name}
+										</p>
 									</div>
 								))}
 							</div>

@@ -1,4 +1,5 @@
 import type { RouterOutputs } from "@/utils/trpc";
+import type { RuleBuilder } from "./services/rule-conditions";
 
 // ─── Deliberations ──────────────────────────────────────────────────────────
 
@@ -19,8 +20,15 @@ export interface RuleFormState {
 	category: string;
 	decision: string;
 	priority: number;
-	ruleset: string;
 	isActive: boolean;
+	/** Scope: `null` means every program / level / jury type. */
+	programId: string | null;
+	cycleLevelId: string | null;
+	deliberationType: string | null;
+	/** Conditions edited with the builder, or as raw JSON ("advanced"). */
+	mode: "builder" | "json";
+	builder: RuleBuilder;
+	ruleset: string;
 }
 
 export type GraduatedStudentItem =

@@ -43,7 +43,7 @@
       "create": "Créer",
       "update": "Mettre à jour",
       "delete": "Supprimer",
-      "edit": "Editer",
+      "edit": "Modifier",
       "save": "Enregistrer",
       "saveChanges": "Enregistrer les modifications",
       "close": "Fermer",
@@ -3265,7 +3265,8 @@
         "deferred": "Ajourné",
         "repeat": "Redoublant",
         "excluded": "Exclu",
-        "pending": "Incomplet"
+        "pending": "Incomplet",
+        "undecided": "À décider"
       },
       "mention": {
         "passable": "Passable",
@@ -3372,7 +3373,8 @@
           "repeat": "Redoublant : l'étudiant reprend le même niveau l'année suivante.",
           "excluded": "Exclu : l'étudiant ne peut pas poursuivre dans la filière."
         },
-        "reasonRequired": "Obligatoire : le motif est conservé dans l'historique du jury."
+        "reasonRequired": "Obligatoire : le motif est conservé dans l'historique du jury.",
+        "current": "actuelle"
       },
       "logs": {
         "title": "Journal d'activité",
@@ -3477,7 +3479,8 @@
           "close": "Jury clôturé : résultats publiés aux étudiants",
           "sign": "PV signé : le jury est définitif",
           "reopen": "Jury rouvert : résultats masqués aux étudiants"
-        }
+        },
+        "noStudents": "Cette classe n'a aucun étudiant inscrit : il n'y a aucun résultat à calculer."
       },
       "confirm": {
         "delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
@@ -3511,18 +3514,12 @@
         },
         "decision": "Décision produite",
         "priority": "Priorité",
-        "priorityHelp": "Nombre plus petit = évalué en premier dans la catégorie",
-        "program": "Programme",
-        "programPlaceholder": "Tous les programmes",
-        "cycleLevel": "Niveau de cycle",
-        "cycleLevelPlaceholder": "Tous les niveaux",
-        "deliberationType": "Type de délibération",
-        "deliberationTypePlaceholder": "Tous les types",
+        "priorityHelp": "Plus petit = essayée en premier dans la catégorie (0 autorisé)",
         "ruleset": "Définition de la règle (JSON)",
-        "rulesetHelp": "Format json-rules-engine",
+        "rulesetHelp": "Format json-rules-engine : { \"conditions\": { \"all\": [ … ] }, \"event\": { \"type\": \"decision\", \"params\": { \"message\": \"…\" } } }",
         "active": "Active",
         "inactive": "Inactive",
-        "invalidJson": "Définition de règle JSON invalide",
+        "invalidJson": "Le JSON n'est pas valide.",
         "empty": {
           "title": "Aucune règle configurée",
           "description": "Ajoutez des règles pour calculer automatiquement les décisions lors des délibérations."
@@ -3535,7 +3532,180 @@
         },
         "confirmDelete": {
           "title": "Supprimer cette règle ?",
-          "message": "message"
+          "message": "La règle « {{name}} » ne sera plus appliquée aux prochains calculs de jury. Les décisions déjà calculées sont conservées."
+        },
+        "editTitle": "Modifier la règle",
+        "dialogDescription": "Quand ses conditions sont remplies, la règle donne sa décision à l'étudiant.",
+        "decisionPlaceholder": "Choisir une décision",
+        "descriptionPlaceholder": "Facultatif : pourquoi l'établissement applique cette règle",
+        "cascadeHint": "Les catégories sont essayées dans l'ordre affiché (1 = en premier) ; dans une catégorie, la priorité la plus petite d'abord. La première règle qui s'applique décide.",
+        "priorityShort": "Priorité {{value}}",
+        "conditions": "Conditions",
+        "advancedMode": "Avancé (JSON)",
+        "builderMode": "Éditeur simple",
+        "builderUnavailable": "Cette règle utilise des conditions que l'éditeur simple ne sait pas afficher (groupes imbriqués, autres faits ou opérateurs). Modifiez-la en JSON.",
+        "activate": "Activer",
+        "deactivate": "Désactiver",
+        "errors": {
+          "name": "Donnez un nom à la règle.",
+          "category": "Choisissez une catégorie.",
+          "decision": "Choisissez la décision donnée par la règle.",
+          "priority": "La priorité est un nombre entier, 0 ou plus.",
+          "noConditions": "La règle doit avoir des conditions (« conditions »)."
+        },
+        "scope": {
+          "title": "S'applique à",
+          "help": "Limitez la règle à une filière, un niveau ou un type de jury. Laissez « Tous » pour l'appliquer partout.",
+          "program": "Filière",
+          "level": "Niveau",
+          "type": "Type de jury",
+          "allPrograms": "Toutes les filières",
+          "allLevels": "Tous les niveaux",
+          "allTypes": "Tous les types de jury",
+          "unknownProgram": "Une filière",
+          "unknownLevel": "Un niveau"
+        },
+        "factGroups": {
+          "averages": "Moyennes",
+          "ues": "Unités d'enseignement (UE)",
+          "credits": "Crédits",
+          "history": "Parcours"
+        },
+        "facts": {
+          "overallAverage": {
+            "label": "Moyenne générale",
+            "help": "Moyenne générale pondérée de l'année (sur 20)."
+          },
+          "lowestUnitAverage": {
+            "label": "Plus faible moyenne d'UE",
+            "help": "Moyenne de l'UE la plus faible de l'étudiant cette année."
+          },
+          "lowestScore": {
+            "label": "Plus faible moyenne d'EC",
+            "help": "Moyenne de l'EC (matière) le plus faible de l'étudiant cette année."
+          },
+          "failedTeachingUnitsCount": {
+            "label": "UE sous la moyenne",
+            "help": "Nombre d'UE dont la moyenne est inférieure à 10, compensées ou non."
+          },
+          "failedUECount": {
+            "label": "UE non validées",
+            "help": "Nombre d'UE non validées, même par compensation."
+          },
+          "compensableUECount": {
+            "label": "UE compensables",
+            "help": "Nombre d'UE sous 10 mais au-dessus du seuil de compensation (par ex. 8)."
+          },
+          "validatedUECount": {
+            "label": "UE validées",
+            "help": "Nombre d'UE validées, directement ou par compensation."
+          },
+          "totalUECount": {
+            "label": "UE de l'année",
+            "help": "Nombre total d'UE de l'année."
+          },
+          "eliminatoryFailures": {
+            "label": "Notes éliminatoires",
+            "help": "Nombre d'EC (matières) dont la moyenne est inférieure à 8."
+          },
+          "creditsEarned": {
+            "label": "Crédits acquis",
+            "help": "Crédits ECTS acquis cette année."
+          },
+          "creditsAttempted": {
+            "label": "Crédits présentés",
+            "help": "Crédits ECTS des UE suivies cette année."
+          },
+          "creditCompletionRate": {
+            "label": "Part des crédits requis",
+            "help": "Crédits acquis en pourcentage des crédits requis."
+          },
+          "consecutiveRepeats": {
+            "label": "Redoublements consécutifs",
+            "help": "Années consécutives, juste avant celle-ci, où l'étudiant a redoublé ou été ajourné."
+          },
+          "previousDeliberationDecision": {
+            "label": "Décision du jury précédent",
+            "help": "Décision du dernier jury de l'étudiant avant cette année."
+          }
+        },
+        "builder": {
+          "matchPrefix": "La règle s'applique quand",
+          "matchSuffix": "sont remplies :",
+          "match": {
+            "all": "toutes les conditions",
+            "any": "au moins une des conditions"
+          },
+          "joiner": {
+            "all": "et",
+            "any": "ou"
+          },
+          "fact": "Critère",
+          "factPlaceholder": "Choisir un critère",
+          "operator": "Comparaison",
+          "value": "Valeur",
+          "remove": "Retirer cette condition",
+          "add": "Ajouter une condition",
+          "message": "Motif affiché au jury",
+          "messagePlaceholder": "ex. Moyenne générale inférieure à 7",
+          "messageHelp": "Affiché à côté de la décision dans les résultats du jury, pour que chacun sache pourquoi.",
+          "operators": {
+            "lessThan": "inférieur à",
+            "lessThanInclusive": "inférieur ou égal à",
+            "equal": "égal à",
+            "greaterThanInclusive": "supérieur ou égal à",
+            "greaterThan": "supérieur à",
+            "notEqual": "différent de"
+          },
+          "problems": {
+            "fact": "Choisissez un critère.",
+            "operator": "Choisissez une comparaison.",
+            "value": "Saisissez une valeur.",
+            "value_number": "Saisissez un nombre, 0 ou plus (ex. 9,5).",
+            "value_count": "Saisissez un nombre entier, 0 ou plus.",
+            "value_percent": "Saisissez un pourcentage entre 0 et 100.",
+            "value_decision": "Choisissez une décision."
+          }
+        },
+        "summary": {
+          "title": "Résumé",
+          "if": "Si",
+          "advanced": "Règle avancée (JSON)",
+          "useAsDescription": "Reprendre le résumé comme description"
+        },
+        "help": {
+          "title": "Comment le jury applique ces règles",
+          "order": "Les catégories sont essayées dans cet ordre :",
+          "priority": "Dans une catégorie, les règles sont essayées par priorité : le plus petit nombre d'abord.",
+          "firstMatch": "La première règle dont les conditions sont remplies donne la décision ; les suivantes ne sont pas essayées.",
+          "noMatch": "Si aucune règle ne s'applique à un étudiant, la décision reste « à décider » par le jury.",
+          "incomplete": "Les étudiants dont des notes manquent ne sont jamais décidés par les règles.",
+          "noRules": "Quand aucune règle active ne concerne un jury (filière, niveau, type), le calcul LMD par défaut décide.",
+          "examplesTitle": "Exemples",
+          "useExample": "Utiliser",
+          "examples": {
+            "exclusion": {
+              "name": "Exclusion après deux redoublements",
+              "message": "A déjà redoublé deux années de suite"
+            },
+            "repeat": {
+              "name": "Redoublement si moyenne < 7",
+              "message": "Moyenne générale inférieure à 7"
+            },
+            "compensation": {
+              "name": "Compensation : moyenne ≥ 10, au plus 2 UE sous la moyenne",
+              "message": "Moyenne d'au moins 10 qui compense jusqu'à 2 UE, sans note éliminatoire"
+            }
+          }
+        },
+        "serverErrors": {
+          "title": "La règle n'a pas pu être enregistrée",
+          "unknownFact": "Critère inconnu : {{name}}",
+          "unknownOperator": "Comparaison inconnue : {{name}}",
+          "noValue": "Aucune valeur pour {{name}}",
+          "noConditions": "La règle n'a aucune condition",
+          "notAnObject": "Une condition est mal formée",
+          "notFound": "Cette règle n'existe plus."
         }
       },
       "filters": {
@@ -3610,7 +3780,21 @@
         "openFile": "Ouvrir la fiche étudiant",
         "show": "Voir les notes de {{name}}"
       },
-      "statusProgress": "Étape {{step}} sur {{total}} : {{status}}"
+      "statusProgress": "Étape {{step}} sur {{total}} : {{status}}",
+      "why": {
+        "override": "Modifiée par le jury : {{reason}}",
+        "overrideNoReason": "Modifiée par le jury",
+        "rule": "Règle « {{rule}} » : {{reason}}",
+        "ruleNoReason": "Règle « {{rule}} »",
+        "noRuleMatched": "Aucune règle ne s'applique — à décider par le jury",
+        "default": "Calcul LMD par défaut"
+      },
+      "undecided": {
+        "title_one": "{{count}} étudiant n'est décidé par aucune règle",
+        "title_other": "{{count}} étudiants ne sont décidés par aucune règle",
+        "hintOpen": "Aucune règle de l'établissement ne s'applique à eux : donnez leur décision avec « Modifier la décision », ou ajustez les règles puis recalculez.",
+        "hintClosed": "Aucune règle ne s'est appliquée à ces étudiants et le jury ne leur a donné aucune décision."
+      }
     },
     "centers": {
       "tabs": {
