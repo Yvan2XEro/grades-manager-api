@@ -1,6 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "@/lib/trpc";
 import * as service from "./notifications.service";
 import {
 	idSchema,
@@ -11,33 +15,48 @@ import {
 
 export const notificationsRouter = router({
 	// ── Admin ──────────────────────────────────────────────────────────────────
-	queue: adminProcedure.input(queueSchema).mutation(({ input }) =>
-		service.queueNotification({
+	// A notification belongs to the institution of its recipient.
+	queue: tenantAdminProcedure.input(queueSchema).mutation(({ ctx, input }) =>
+		service.queueForInstitution(ctx.institution, {
 			recipientId: input.recipientId,
 			channel: input.channel,
 			type: input.type,
 			payload: input.payload,
 		}),
 	),
-	list: adminProcedure
+	list: tenantAdminProcedure
 		.input(listSchema)
-		.query(({ input }) =>
-			service.list(input.status, input.limit, input.cursor, input.channel),
+		.query(({ ctx, input }) =>
+			service.list(
+				ctx.institution,
+				input.status,
+				input.limit,
+				input.cursor,
+				input.channel,
+			),
 		),
-	listPaged: adminProcedure
+	listPaged: tenantAdminProcedure
 		.input(listNotificationsPagedSchema)
-		.query(({ input }) => service.listPaged(input)),
-	flush: adminProcedure.mutation(() => service.sendPending()),
-	acknowledge: adminProcedure
+		.query(({ ctx, input }) =>
+			service.listPaged({ ...input, scope: ctx.institution }),
+		),
+	flush: tenantAdminProcedure.mutation(({ ctx }) =>
+		service.sendPending(25, undefined, ctx.institution),
+	),
+	acknowledge: tenantAdminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.acknowledge(input.id)),
-	stats: adminProcedure.query(() => service.stats()),
-	retry: adminProcedure
+		.mutation(({ ctx, input }) =>
+			service.acknowledge(input.id, ctx.institution),
+		),
+	stats: tenantAdminProcedure.query(({ ctx }) =>
+		service.stats(ctx.institution),
+	),
+	retry: tenantAdminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.requeue(input.id)),
+		.mutation(({ ctx, input }) => service.requeue(input.id, ctx.institution)),
 
 	// ── Self-service in-app ────────────────────────────────────────────────────
-	myNotifications: protectedProcedure
+	myNotifications: tenantProtectedProcedure
 		.input(
 			z.object({
 				limit: z.number().int().min(1).max(50).optional(),
@@ -53,19 +72,19 @@ export const notificationsRouter = router({
 			);
 		}),
 
-	unreadCount: protectedProcedure.query(({ ctx }) => {
+	unreadCount: tenantProtectedProcedure.query(({ ctx }) => {
 		if (!ctx.profile?.id) return 0;
 		return service.unreadCount(ctx.profile.id);
 	}),
 
-	markRead: protectedProcedure
+	markRead: tenantProtectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
 			return service.markRead(input.id, ctx.profile.id);
 		}),
 
-	markAllRead: protectedProcedure.mutation(({ ctx }) => {
+	markAllRead: tenantProtectedProcedure.mutation(({ ctx }) => {
 		if (!ctx.profile?.id) return;
 		return service.markAllRead(ctx.profile.id);
 	}),

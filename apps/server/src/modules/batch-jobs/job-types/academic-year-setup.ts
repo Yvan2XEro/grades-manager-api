@@ -2,6 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import { requireAcademicYearInInstitution } from "../../_shared/tenant-ownership";
 import * as repo from "../batch-jobs.repo";
 import type {
 	BatchJobDefinition,
@@ -17,6 +18,19 @@ const paramsSchema = z.object({
 
 type Params = z.infer<typeof paramsSchema>;
 
+/** Both years must be the institution's (checked at preview, run and rollback). */
+async function requireYears(params: Params, institutionId: string) {
+	const sourceYear = await requireAcademicYearInInstitution(
+		params.sourceAcademicYearId,
+		institutionId,
+	);
+	const targetYear = await requireAcademicYearInInstitution(
+		params.targetAcademicYearId,
+		institutionId,
+	);
+	return { sourceYear, targetYear };
+}
+
 export const academicYearSetupJob: BatchJobDefinition<Params> = {
 	type: "academicYear.setup",
 	label: "Academic Year Setup",
@@ -26,21 +40,10 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 	},
 
 	async preview(params, ctx) {
-		const sourceYear = await db.query.academicYears.findFirst({
-			where: eq(schema.academicYears.id, params.sourceAcademicYearId),
-		});
-		if (!sourceYear)
-			throw new Error(
-				`Source academic year not found: ${params.sourceAcademicYearId}`,
-			);
-
-		const targetYear = await db.query.academicYears.findFirst({
-			where: eq(schema.academicYears.id, params.targetAcademicYearId),
-		});
-		if (!targetYear)
-			throw new Error(
-				`Target academic year not found: ${params.targetAcademicYearId}`,
-			);
+		const { sourceYear, targetYear } = await requireYears(
+			params,
+			ctx.institutionId,
+		);
 
 		if (params.sourceAcademicYearId === params.targetAcademicYearId) {
 			throw new Error("Source and target academic years must be different");
@@ -121,6 +124,7 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 	},
 
 	async executeStep(params, step, ctx) {
+		await requireYears(params, ctx.institutionId);
 		if (step.stepIndex === 0) {
 			await executeCopyClasses(params, step, ctx);
 		} else if (step.stepIndex === 1) {
@@ -131,6 +135,7 @@ export const academicYearSetupJob: BatchJobDefinition<Params> = {
 	},
 
 	async rollback(params, ctx) {
+		await requireYears(params, ctx.institutionId);
 		await ctx.log("info", "Rolling back academic year setup...");
 
 		// Find classes created for the target year by this institution
@@ -196,6 +201,7 @@ async function executeCopyClasses(
 			where: and(
 				eq(schema.classes.code, src.code),
 				eq(schema.classes.academicYear, params.targetAcademicYearId),
+				eq(schema.classes.institutionId, ctx.institutionId),
 			),
 		});
 

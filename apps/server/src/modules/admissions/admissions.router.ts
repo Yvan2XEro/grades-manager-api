@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { adminProcedure, router, tenantProcedure } from "@/lib/trpc";
+import { router, tenantAdminProcedure, tenantProcedure } from "@/lib/trpc";
 import * as service from "./admissions.service";
 import {
 	convertApplicationSchema,
@@ -54,35 +54,35 @@ export const admissionsRouter = router({
 		),
 
 	/** Admin: paginated list of applications with optional filters. */
-	list: adminProcedure
+	list: tenantAdminProcedure
 		.input(listApplicationsSchema)
 		.query(({ ctx, input }) =>
 			service.listApplications(ctx.institution.id, input),
 		),
 
 	/** Admin: full detail of a single application. */
-	get: adminProcedure
+	get: tenantAdminProcedure
 		.input(z.object({ id: z.string().uuid() }))
 		.query(({ ctx, input }) =>
 			service.getApplication(ctx.institution.id, input.id),
 		),
 
 	/** Admin: configure admission supporting-document requirements. */
-	upsertRequirement: adminProcedure
+	upsertRequirement: tenantAdminProcedure
 		.input(upsertRequirementSchema)
 		.mutation(({ ctx, input }) =>
 			service.upsertDocumentRequirement(ctx.institution.id, input),
 		),
 
 	/** Admin: checklist view with missing/invalid documents. */
-	getChecklist: adminProcedure
+	getChecklist: tenantAdminProcedure
 		.input(z.object({ applicationId: z.string().uuid() }))
 		.query(({ ctx, input }) =>
 			service.getApplicationChecklist(ctx.institution.id, input.applicationId),
 		),
 
 	/** Admin: move a submitted application to "under review". */
-	setUnderReview: adminProcedure
+	setUnderReview: tenantAdminProcedure
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new Error("Profile required");
@@ -94,7 +94,7 @@ export const admissionsRouter = router({
 		}),
 
 	/** Admin: accept, reject, or waitlist an application. */
-	review: adminProcedure
+	review: tenantAdminProcedure
 		.input(reviewApplicationSchema)
 		.mutation(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new Error("Profile required");
@@ -106,7 +106,7 @@ export const admissionsRouter = router({
 		}),
 
 	/** Admin: validate or invalidate an uploaded application document. */
-	reviewDocument: adminProcedure
+	reviewDocument: tenantAdminProcedure
 		.input(reviewDocumentSchema)
 		.mutation(({ ctx, input }) => {
 			if (!ctx.profile?.id) throw new Error("Profile required");
@@ -118,7 +118,7 @@ export const admissionsRouter = router({
 		}),
 
 	/** Admin: convert an accepted application into a student + enrollment once. */
-	convert: adminProcedure
+	convert: tenantAdminProcedure
 		.input(convertApplicationSchema)
 		.mutation(({ ctx, input }) =>
 			service.convertAcceptedApplication(ctx.institution.id, input),

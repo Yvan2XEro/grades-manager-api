@@ -1505,6 +1505,13 @@ export const notifications = pgTable(
 		recipientId: text("recipient_id").references(() => domainUsers.id, {
 			onDelete: "set null",
 		}),
+		/**
+		 * Institution the notification belongs to. Null on older rows, which
+		 * are then scoped by their recipient's institution.
+		 */
+		institutionId: text("institution_id").references(() => institutions.id, {
+			onDelete: "cascade",
+		}),
 		channel: text("channel")
 			.$type<NotificationChannel>()
 			.notNull()
@@ -1527,6 +1534,7 @@ export const notifications = pgTable(
 	(t) => [
 		index("idx_notifications_recipient").on(t.recipientId),
 		index("idx_notifications_status").on(t.status),
+		index("idx_notifications_institution").on(t.institutionId),
 	],
 );
 

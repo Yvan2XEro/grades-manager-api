@@ -7,6 +7,7 @@ import { resolveAcademicYearIdForGate } from "@/modules/academic-documents/acade
 import * as academicDocs from "@/modules/academic-documents/academic-documents.service";
 import { assertFeeClearance } from "@/modules/fee-clearance/fee-clearance.gates";
 import { findGatingRule } from "@/modules/fee-clearance/fee-clearance.repo";
+import { notFound } from "../../_shared/errors";
 import type { BatchJobDefinition, PreviewResult } from "../batch-jobs.types";
 
 const DOCUMENT_KIND_TO_GATE = {
@@ -25,6 +26,27 @@ const paramsSchema = z.object({
 });
 
 type Params = z.infer<typeof paramsSchema>;
+
+/** The class must be the institution's and every student one of its students. */
+async function requireScope(params: Params, institutionId: string) {
+	const cls = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, params.classId),
+	});
+	if (!cls || cls.institutionId !== institutionId) {
+		throw notFound(`Class not found: ${params.classId}`);
+	}
+	const studentRows = await db.query.students.findMany({
+		where: eq(schema.students.class, params.classId),
+	});
+	const validIds = new Set(studentRows.map((s) => s.id));
+	const missing = params.studentIds.filter((id) => !validIds.has(id));
+	if (missing.length > 0) {
+		throw new Error(
+			`${missing.length} studentId(s) do not belong to class ${params.classId}`,
+		);
+	}
+	return cls;
+}
 
 /**
  * Bulk PDF document generation.
@@ -50,25 +72,7 @@ export const bulkDocumentGenerationJob: BatchJobDefinition<Params> = {
 	},
 
 	async preview(params, ctx) {
-		// Validate the class belongs to the institution.
-		const cls = await db.query.classes.findFirst({
-			where: eq(schema.classes.id, params.classId),
-		});
-		if (!cls || cls.institutionId !== ctx.institutionId) {
-			throw new Error(`Class not found: ${params.classId}`);
-		}
-
-		// Sanity-check that all studentIds are part of this class.
-		const studentRows = await db.query.students.findMany({
-			where: eq(schema.students.class, params.classId),
-		});
-		const validIds = new Set(studentRows.map((s) => s.id));
-		const missing = params.studentIds.filter((id) => !validIds.has(id));
-		if (missing.length > 0) {
-			throw new Error(
-				`${missing.length} studentId(s) do not belong to class ${params.classId}`,
-			);
-		}
+		const cls = await requireScope(params, ctx.institutionId);
 
 		await ctx.log(
 			"info",
@@ -106,6 +110,8 @@ export const bulkDocumentGenerationJob: BatchJobDefinition<Params> = {
 		// by jobId — fine for in-process workers, and the cache is cleared at
 		// the end of step 1.
 		if (step.stepIndex === 0) {
+			// Re-checked at execution: params are stored and replayed later
+			await requireScope(params, ctx.institutionId);
 			const generated: GeneratedPdf[] = [];
 			let processed = 0;
 			let failed = 0;
@@ -221,6 +227,7 @@ export const bulkDocumentGenerationJob: BatchJobDefinition<Params> = {
 				buffer: zipBuffer,
 				filename,
 				mimeType: "application/zip",
+				folder: ctx.institutionId,
 			});
 
 			// Persist the download URL on the job so the UI can grab it.

@@ -279,7 +279,7 @@ export const dataImportRouter = router({
 	/** Stores an uploaded workbook (base64) and returns its id for the batch job. */
 	upload: tenantAdminProcedure
 		.input(z.object({ name: z.string(), data: z.string() }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			if (!/\.xlsx$/i.test(input.name))
 				throw new TRPCError({
 					code: "BAD_REQUEST",
@@ -291,7 +291,9 @@ export const dataImportRouter = router({
 					code: "BAD_REQUEST",
 					message: "The file exceeds 10 MB.",
 				});
-			return { fileId: await saveImportFile(buffer, ".xlsx") };
+			return {
+				fileId: await saveImportFile(buffer, ".xlsx", ctx.institution.id),
+			};
 		}),
 
 	/** End of the import of a year: lock (past year), credits, deliberations. */
@@ -332,8 +334,8 @@ export const dataImportRouter = router({
 					.max(20000),
 			}),
 		)
-		.mutation(async ({ input }) => {
-			const buffer = await readImportFile(input.fileId);
+		.mutation(async ({ ctx, input }) => {
+			const buffer = await readImportFile(input.fileId, ctx.institution.id);
 			return {
 				data: (await annotateWorkbook(buffer, input.notes)).toString("base64"),
 				mimeType:
@@ -355,7 +357,10 @@ export const dataImportRouter = router({
 			});
 			const wb = new ExcelJS.Workbook();
 			await wb.xlsx.load(
-				(await readImportFile(input.fileId)) as unknown as ArrayBuffer,
+				(await readImportFile(
+					input.fileId,
+					ctx.institution.id,
+				)) as unknown as ArrayBuffer,
 			);
 			const names = new Set(
 				wb.worksheets

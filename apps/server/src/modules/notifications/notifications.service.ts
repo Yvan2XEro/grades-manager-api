@@ -1,6 +1,13 @@
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
 import type * as schema from "@/db/schema/app-schema";
+import { institutions } from "@/db/schema/app-schema";
 import { defaultEmailSend, type EmailSendFn } from "@/lib/email";
+import {
+	type InstitutionScope,
+	requireProfileInInstitution,
+} from "../_shared/tenant-ownership";
 import * as repo from "./notifications.repo";
 
 const MAX_ATTEMPTS = 3;
@@ -33,11 +40,22 @@ export async function queueNotification(
 	return repo.createNotification({ ...data, status: "pending" });
 }
 
+/** Queues a notification on behalf of an institution: the recipient must be one of its users. */
+export async function queueForInstitution(
+	scope: InstitutionScope,
+	data: Omit<schema.NewNotification, "status" | "createdAt">,
+) {
+	if (data.recipientId)
+		await requireProfileInInstitution(data.recipientId, scope);
+	return queueNotification({ ...data, institutionId: scope.id });
+}
+
 export async function sendPending(
 	limit = 25,
 	emailSend: EmailSendFn = defaultEmailSend,
+	scope?: InstitutionScope,
 ) {
-	const ready = await repo.findReadyToSend(limit);
+	const ready = await repo.findReadyToSend(limit, scope);
 	const delivered: schema.Notification[] = [];
 
 	for (const notification of ready) {
@@ -90,15 +108,17 @@ export async function sendPending(
 }
 
 export async function list(
+	scope: InstitutionScope,
 	status?: schema.NotificationStatus,
 	limit?: number,
 	cursor?: string,
 	channel?: schema.NotificationChannel,
 ) {
-	return repo.listNotifications(status, limit ?? 50, cursor, channel);
+	return repo.listNotifications(scope, status, limit ?? 50, cursor, channel);
 }
 
 export async function listPaged(opts: {
+	scope: InstitutionScope;
 	page: number;
 	pageSize: number;
 	status?: schema.NotificationStatus;
@@ -107,7 +127,9 @@ export async function listPaged(opts: {
 	return repo.listNotificationsPaged(opts);
 }
 
-export async function acknowledge(id: string) {
+export async function acknowledge(id: string, scope: InstitutionScope) {
+	if (!(await repo.findByIdInInstitution(id, scope)))
+		throw new TRPCError({ code: "NOT_FOUND" });
 	const updated = await repo.updateStatus(id, "sent");
 	if (!updated) {
 		throw new TRPCError({ code: "NOT_FOUND" });
@@ -119,12 +141,23 @@ export async function registerWorkflowAlert(
 	type: string,
 	payload: Record<string, unknown>,
 	recipientId?: string | null,
+	institutionId?: string,
 ) {
+	if (institutionId && recipientId) {
+		// The recipient must be one of the institution's users
+		const institution = await db.query.institutions.findFirst({
+			where: eq(institutions.id, institutionId),
+			columns: { id: true, organizationId: true },
+		});
+		if (!institution) throw new TRPCError({ code: "NOT_FOUND" });
+		await requireProfileInInstitution(recipientId, institution);
+	}
 	return queueNotification({
 		channel: "email",
 		type,
 		payload,
 		recipientId: recipientId ?? undefined,
+		institutionId: institutionId ?? null,
 	});
 }
 
@@ -175,12 +208,12 @@ export async function markAllRead(recipientId: string) {
 	await repo.markAllReadInApp(recipientId);
 }
 
-export async function stats() {
-	return repo.getStats();
+export async function stats(scope: InstitutionScope) {
+	return repo.getStats(scope);
 }
 
-export async function requeue(id: string) {
-	const updated = await repo.requeueFailed(id);
+export async function requeue(id: string, scope: InstitutionScope) {
+	const updated = await repo.requeueFailed(id, scope);
 	if (!updated) {
 		throw new TRPCError({ code: "NOT_FOUND" });
 	}

@@ -19,7 +19,7 @@ type Params = z.infer<typeof paramsSchema>;
 /** Plans a guided-import step from its uploaded workbook. */
 async function planStep(params: Params, institutionId: string, jobId: string) {
 	const step = getImportStep(params.step);
-	const buffer = await readImportFile(params.fileId);
+	const buffer = await readImportFile(params.fileId, institutionId);
 	const job = await db.query.batchJobs.findFirst({
 		where: eq(schema.batchJobs.id, jobId),
 		columns: { createdBy: true },

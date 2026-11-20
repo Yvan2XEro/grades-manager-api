@@ -120,9 +120,10 @@ export async function loadExportTemplate(
 	}
 
 	if (resolvedTemplateId) {
-		template = await exportTemplatesService.getTemplate({
-			id: resolvedTemplateId,
-		});
+		template = await exportTemplatesService.getTemplate(
+			{ id: resolvedTemplateId },
+			institutionId,
+		);
 	} else {
 		// 3. Institution-wide default for this type — variant-aware so a center
 		//    class falls back to a "center" default before the standard one.

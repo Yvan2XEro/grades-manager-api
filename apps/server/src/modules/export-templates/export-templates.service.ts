@@ -2,6 +2,11 @@ import type {
 	ExportTemplate,
 	ExportTemplateType,
 } from "../../db/schema/app-schema";
+import { notFound } from "../_shared/errors";
+import {
+	requireClassInInstitution,
+	requireProgramInInstitution,
+} from "../_shared/tenant-ownership";
 import { loadTemplate } from "../exports/template-helper";
 import {
 	getDefaultTheme,
@@ -45,14 +50,21 @@ export async function listTemplatesPaged(
 	return repo.findTemplatesByInstitutionPaged(institutionId, input);
 }
 
+/** A template of the institution; another institution's is NOT_FOUND. */
+async function requireTemplate(
+	id: string,
+	institutionId: string,
+): Promise<ExportTemplate> {
+	const template = await repo.findTemplateByIdForInstitution(id, institutionId);
+	if (!template) throw notFound(`Export template with id ${id} not found`);
+	return template;
+}
+
 export async function getTemplate(
 	input: GetExportTemplateInput,
+	institutionId: string,
 ): Promise<ExportTemplate> {
-	const template = await repo.findTemplateById(input.id);
-	if (!template) {
-		throw new Error(`Export template with id ${input.id} not found`);
-	}
-	return template;
+	return requireTemplate(input.id, institutionId);
 }
 
 export async function getDefaultTemplate(
@@ -103,15 +115,13 @@ export async function createTemplate(
 }
 
 export async function updateTemplate(
+	institutionId: string,
 	userId: string,
 	input: UpdateExportTemplateInput,
 ): Promise<ExportTemplate> {
-	const existing = await repo.findTemplateById(input.id);
-	if (!existing) {
-		throw new Error(`Export template with id ${input.id} not found`);
-	}
+	const existing = await requireTemplate(input.id, institutionId);
 
-	const updated = await repo.updateTemplate(input.id, {
+	const updated = await repo.updateTemplate(input.id, institutionId, {
 		...(input.name && { name: input.name }),
 		...(input.variant && { variant: input.variant }),
 		...(input.isDefault !== undefined && { isDefault: input.isDefault }),
@@ -144,32 +154,21 @@ export async function updateTemplate(
 
 export async function deleteTemplate(
 	input: DeleteExportTemplateInput,
+	institutionId: string,
 ): Promise<void> {
-	const existing = await repo.findTemplateById(input.id);
-	if (!existing) {
-		throw new Error(`Export template with id ${input.id} not found`);
-	}
+	await requireTemplate(input.id, institutionId);
 	// System defaults can be deleted — `seedSystemDefaults` is idempotent and
 	// will recreate them on demand from the "Initialiser modèles officiels"
 	// button.
-	const deleted = await repo.deleteTemplate(input.id);
-	if (!deleted) {
-		throw new Error(`Export template with id ${input.id} not found`);
-	}
+	const deleted = await repo.deleteTemplate(input.id, institutionId);
+	if (!deleted) throw notFound(`Export template with id ${input.id} not found`);
 }
 
 export async function setDefault(
 	institutionId: string,
 	input: SetDefaultTemplateInput,
 ): Promise<void> {
-	const template = await repo.findTemplateById(input.id);
-	if (!template) {
-		throw new Error(`Export template with id ${input.id} not found`);
-	}
-
-	if (template.institutionId !== institutionId) {
-		throw new Error("Template does not belong to this institution");
-	}
+	const template = await requireTemplate(input.id, institutionId);
 
 	if (template.type !== input.type) {
 		throw new Error("Template type mismatch");
@@ -185,10 +184,7 @@ async function assertOwnership(
 	templateId: string,
 	type: ExportTemplateType,
 ) {
-	const tpl = await repo.findTemplateById(templateId);
-	if (!tpl) throw new Error(`Template ${templateId} not found`);
-	if (tpl.institutionId !== institutionId)
-		throw new Error("Template does not belong to this institution");
+	const tpl = await requireTemplate(templateId, institutionId);
 	if (tpl.type !== type) throw new Error("Template type mismatch");
 }
 
@@ -197,6 +193,7 @@ export async function assignClassTemplate(
 	userId: string,
 	input: AssignClassTemplateInput,
 ) {
+	await requireClassInInstitution(input.classId, institutionId);
 	await assertOwnership(institutionId, input.templateId, input.templateType);
 	return await repo.upsertClassAssignment({
 		institutionId,
@@ -214,12 +211,14 @@ export async function updateClassTemplateAssignment(
 	userId: string,
 	input: UpdateClassTemplateAssignmentInput,
 ) {
-	const existing = await repo.findClassAssignment(
+	await requireClassInInstitution(input.classId, institutionId);
+	const existing = await repo.findClassAssignmentForInstitution(
 		input.classId,
 		input.templateType,
+		institutionId,
 	);
 	if (!existing) {
-		throw new Error(
+		throw notFound(
 			`No assignment exists for class ${input.classId} / ${input.templateType}`,
 		);
 	}
@@ -241,8 +240,14 @@ export async function updateClassTemplateAssignment(
 
 export async function removeClassTemplateAssignment(
 	input: RemoveClassTemplateAssignmentInput,
+	institutionId: string,
 ) {
-	return await repo.deleteClassAssignment(input.classId, input.templateType);
+	await requireClassInInstitution(input.classId, institutionId);
+	return await repo.deleteClassAssignment(
+		input.classId,
+		input.templateType,
+		institutionId,
+	);
 }
 
 export async function listClassAssignments(
@@ -258,6 +263,7 @@ export async function assignProgramTemplate(
 	institutionId: string,
 	input: AssignProgramTemplateInput,
 ) {
+	await requireProgramInInstitution(input.programId, institutionId);
 	await assertOwnership(institutionId, input.templateId, input.templateType);
 	return await repo.upsertProgramAssignment({
 		institutionId,
@@ -270,10 +276,13 @@ export async function assignProgramTemplate(
 
 export async function removeProgramTemplateAssignment(
 	input: RemoveProgramTemplateAssignmentInput,
+	institutionId: string,
 ) {
+	await requireProgramInInstitution(input.programId, institutionId);
 	return await repo.deleteProgramAssignment(
 		input.programId,
 		input.templateType,
+		institutionId,
 	);
 }
 

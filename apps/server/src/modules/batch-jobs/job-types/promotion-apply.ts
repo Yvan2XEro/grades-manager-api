@@ -5,6 +5,11 @@ import * as schema from "@/db/schema/app-schema";
 import * as enrollmentsService from "@/modules/enrollments/enrollments.service";
 import type { StudentPromotionFacts } from "@/modules/promotion-rules/promotion-rules.types";
 import { getStudentPromotionFacts } from "@/modules/promotion-rules/student-facts.service";
+import { notFound } from "../../_shared/errors";
+import {
+	requireAcademicYearInInstitution,
+	requireClassInInstitution,
+} from "../../_shared/tenant-ownership";
 import type { BatchJobDefinition, PreviewResult } from "../batch-jobs.types";
 
 const paramsSchema = z.object({
@@ -18,6 +23,41 @@ const paramsSchema = z.object({
 
 type Params = z.infer<typeof paramsSchema>;
 
+/**
+ * Rule, classes, year and students must all be the institution's — checked
+ * at preview, at each run step and at rollback (params are stored and replayed).
+ */
+async function requireScope(params: Params, institutionId: string) {
+	const rule = await db.query.promotionRules.findFirst({
+		where: and(
+			eq(schema.promotionRules.id, params.ruleId),
+			eq(schema.promotionRules.institutionId, institutionId),
+		),
+	});
+	if (!rule) throw notFound(`Rule not found: ${params.ruleId}`);
+	const sourceClass = await requireClassInInstitution(
+		params.sourceClassId,
+		institutionId,
+	);
+	const targetClass = await requireClassInInstitution(
+		params.targetClassId,
+		institutionId,
+	);
+	await requireAcademicYearInInstitution(params.academicYearId, institutionId);
+	const students = await db
+		.select({ id: schema.students.id })
+		.from(schema.students)
+		.where(
+			and(
+				inArray(schema.students.id, params.studentIds),
+				eq(schema.students.institutionId, institutionId),
+			),
+		);
+	if (students.length !== new Set(params.studentIds).size)
+		throw notFound("Student not found");
+	return { rule, sourceClass, targetClass };
+}
+
 export const promotionApplyJob: BatchJobDefinition<Params> = {
 	type: "promotion.applyBatch",
 	label: "Batch Promotion Apply",
@@ -27,28 +67,10 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 	},
 
 	async preview(params, ctx) {
-		// Validate rule
-		const rule = await db.query.promotionRules.findFirst({
-			where: and(
-				eq(schema.promotionRules.id, params.ruleId),
-				eq(schema.promotionRules.institutionId, ctx.institutionId),
-			),
-		});
-		if (!rule) throw new Error(`Rule not found: ${params.ruleId}`);
-
-		// Validate source class
-		const sourceClass = await db.query.classes.findFirst({
-			where: eq(schema.classes.id, params.sourceClassId),
-		});
-		if (!sourceClass)
-			throw new Error(`Source class not found: ${params.sourceClassId}`);
-
-		// Validate target class
-		const targetClass = await db.query.classes.findFirst({
-			where: eq(schema.classes.id, params.targetClassId),
-		});
-		if (!targetClass)
-			throw new Error(`Target class not found: ${params.targetClassId}`);
+		const { rule, sourceClass, targetClass } = await requireScope(
+			params,
+			ctx.institutionId,
+		);
 
 		// Check for duplicates
 		const existingEnrollments = await db
@@ -98,6 +120,7 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 
 	async executeStep(params, step, ctx) {
 		if (step.stepIndex === 0) {
+			await requireScope(params, ctx.institutionId);
 			// Step 0: Evaluate students
 			let processed = 0;
 			let failed = 0;
@@ -125,17 +148,10 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 			});
 		} else if (step.stepIndex === 1) {
 			// Step 1: Apply promotions in a transaction
-			const rule = await db.query.promotionRules.findFirst({
-				where: eq(schema.promotionRules.id, params.ruleId),
-			});
-			if (!rule) throw new Error(`Rule not found: ${params.ruleId}`);
-
-			const sourceClass = await db.query.classes.findFirst({
-				where: eq(schema.classes.id, params.sourceClassId),
-			});
-			const targetClass = await db.query.classes.findFirst({
-				where: eq(schema.classes.id, params.targetClassId),
-			});
+			const { rule, sourceClass, targetClass } = await requireScope(
+				params,
+				ctx.institutionId,
+			);
 
 			await db.transaction(async (tx) => {
 				// Check duplicates inside tx
@@ -249,6 +265,7 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 	},
 
 	async rollback(params, ctx) {
+		await requireScope(params, ctx.institutionId);
 		await ctx.log("info", "Rolling back batch promotion...");
 
 		await db.transaction(async (tx) => {

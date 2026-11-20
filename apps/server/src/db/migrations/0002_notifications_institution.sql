@@ -1,0 +1,3 @@
+ALTER TABLE "notifications" ADD COLUMN "institution_id" text;--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_notifications_institution" ON "notifications" USING btree ("institution_id");

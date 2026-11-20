@@ -1,63 +1,22 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import * as schema from "@/db/schema/app-schema";
-import * as authSchema from "@/db/schema/auth";
 import { notFound } from "@/modules/_shared/errors";
+import {
+	type InstitutionScope,
+	requireProfileInInstitution,
+} from "@/modules/_shared/tenant-ownership";
 import * as repo from "./grade-access-grants.repo";
-
-async function requireProfileInInstitution(
-	profileId: string,
-	institutionId: string,
-) {
-	const row = await db
-		.select({
-			id: schema.domainUsers.id,
-			memberOrg: authSchema.member.organizationId,
-		})
-		.from(schema.domainUsers)
-		.leftJoin(
-			authSchema.member,
-			eq(authSchema.member.id, schema.domainUsers.memberId),
-		)
-		.where(eq(schema.domainUsers.id, profileId))
-		.limit(1)
-		.then((rows) => rows[0]);
-
-	if (!row)
-		throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-
-	const institution = await db
-		.select({ organizationId: schema.institutions.organizationId })
-		.from(schema.institutions)
-		.where(eq(schema.institutions.id, institutionId))
-		.limit(1)
-		.then((rows) => rows[0]);
-	if (!institution)
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Institution not found",
-		});
-
-	if (row.memberOrg && row.memberOrg !== institution.organizationId) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "User does not belong to this institution",
-		});
-	}
-	return row.id;
-}
 
 export async function grantAccess(opts: {
 	profileId: string;
-	institutionId: string;
+	institution: InstitutionScope;
 	grantedByProfileId: string | null;
 }) {
-	await requireProfileInInstitution(opts.profileId, opts.institutionId);
+	// A profile of another institution is NOT_FOUND, like an unknown one.
+	await requireProfileInInstitution(opts.profileId, opts.institution);
 	try {
 		return await repo.create({
 			profileId: opts.profileId,
-			institutionId: opts.institutionId,
+			institutionId: opts.institution.id,
 			grantedByProfileId: opts.grantedByProfileId,
 		});
 	} catch {

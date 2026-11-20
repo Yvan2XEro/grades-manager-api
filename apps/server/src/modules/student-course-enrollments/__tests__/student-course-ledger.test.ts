@@ -105,11 +105,14 @@ describe("student course enrollments – credit ledger (UE validation)", () => {
 
 		// Enroll but don't grade
 		for (const { classCourse } of courses) {
-			await enrollmentsService.createEnrollment({
-				studentId: student.id,
-				classCourseId: classCourse.id,
-				status: "active",
-			});
+			await enrollmentsService.createEnrollment(
+				{
+					studentId: student.id,
+					classCourseId: classCourse.id,
+					status: "active",
+				},
+				student.institutionId,
+			);
 		}
 
 		const summary = await summarizeStudent(student.id);

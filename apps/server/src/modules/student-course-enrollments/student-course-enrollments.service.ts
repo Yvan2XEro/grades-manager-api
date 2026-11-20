@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import { requireStudentInInstitution } from "../_shared/tenant-ownership";
 import * as creditLedger from "../student-credit-ledger";
 import * as repo from "./student-course-enrollments.repo";
 
@@ -60,7 +61,7 @@ type EnrollmentWithWarnings = {
 	warnings: PrerequisiteWarning[];
 };
 
-async function fetchStudentContext(studentId: string) {
+async function fetchStudentContext(studentId: string, institutionId: string) {
 	const [row] = await db
 		.select({
 			id: schema.students.id,
@@ -69,7 +70,12 @@ async function fetchStudentContext(studentId: string) {
 		})
 		.from(schema.students)
 		.innerJoin(schema.classes, eq(schema.students.class, schema.classes.id))
-		.where(eq(schema.students.id, studentId))
+		.where(
+			and(
+				eq(schema.students.id, studentId),
+				eq(schema.students.institutionId, institutionId),
+			),
+		)
 		.limit(1);
 	if (!row) {
 		throw new TRPCError({
@@ -80,7 +86,10 @@ async function fetchStudentContext(studentId: string) {
 	return row;
 }
 
-async function fetchClassCourseContext(classCourseId: string) {
+async function fetchClassCourseContext(
+	classCourseId: string,
+	institutionId: string,
+) {
 	const [row] = await db
 		.select({
 			id: schema.classCourses.id,
@@ -104,7 +113,12 @@ async function fetchClassCourseContext(classCourseId: string) {
 			schema.teachingUnits,
 			eq(schema.courses.teachingUnitId, schema.teachingUnits.id),
 		)
-		.where(eq(schema.classCourses.id, classCourseId))
+		.where(
+			and(
+				eq(schema.classCourses.id, classCourseId),
+				eq(schema.classCourses.institutionId, institutionId),
+			),
+		)
 		.limit(1);
 	if (!row) {
 		throw new TRPCError({
@@ -221,10 +235,14 @@ async function assertAttemptAvailability(input: {
 
 export async function createEnrollment(
 	input: CreateInput,
+	institutionId: string,
 ): Promise<EnrollmentWithWarnings> {
 	const status = input.status ?? "planned";
-	const student = await fetchStudentContext(input.studentId);
-	const classCourse = await fetchClassCourseContext(input.classCourseId);
+	const student = await fetchStudentContext(input.studentId, institutionId);
+	const classCourse = await fetchClassCourseContext(
+		input.classCourseId,
+		institutionId,
+	);
 	await ensureSameProgram(student.programId, classCourse.courseProgramId);
 	const warnings = await collectPrerequisiteWarnings(student.id, classCourse);
 	let attempt = input.attempt;
@@ -271,7 +289,7 @@ export async function createEnrollment(
 	return { record, warnings };
 }
 
-export async function bulkEnroll(input: BulkInput) {
+export async function bulkEnroll(input: BulkInput, institutionId: string) {
 	const uniqueCourseIds = Array.from(new Set(input.classCourseIds));
 	if (!uniqueCourseIds.length) {
 		throw new TRPCError({
@@ -284,12 +302,15 @@ export async function bulkEnroll(input: BulkInput) {
 	const skipped: { classCourseId: string; reason: string }[] = [];
 	for (const classCourseId of uniqueCourseIds) {
 		try {
-			const result = await createEnrollment({
-				studentId: input.studentId,
-				classCourseId,
-				status,
-				attempt: input.attempt,
-			});
+			const result = await createEnrollment(
+				{
+					studentId: input.studentId,
+					classCourseId,
+					status,
+					attempt: input.attempt,
+				},
+				institutionId,
+			);
 			created.push(result);
 		} catch (error) {
 			if (error instanceof TRPCError && error.code === "CONFLICT") {
@@ -328,6 +349,7 @@ export async function closeForStudent(
 	input: CloseInput,
 	institutionId: string,
 ) {
+	await requireStudentInInstitution(input.studentId, institutionId);
 	const status = input.status ?? "withdrawn";
 	const activeRecords = await repo.findByStudentAndStatuses(input.studentId, [
 		"planned",
@@ -510,10 +532,13 @@ export async function ensureStudentRegistered(
 
 export async function autoEnrollClass(
 	input: AutoEnrollClassInput,
-	opts?: { institutionId?: string; checkFeeGate?: boolean },
+	opts: { institutionId: string; checkFeeGate?: boolean },
 ) {
 	const klass = await db.query.classes.findFirst({
-		where: eq(schema.classes.id, input.classId),
+		where: and(
+			eq(schema.classes.id, input.classId),
+			eq(schema.classes.institutionId, opts.institutionId),
+		),
 		columns: {
 			id: true,
 			academicYear: true,
@@ -573,7 +598,7 @@ export async function autoEnrollClass(
 	const feeBlockedStudentIds = new Set<string>();
 
 	// If fee gate enabled, check clearance per student (skip non-cleared ones)
-	if (opts?.checkFeeGate && opts.institutionId) {
+	if (opts.checkFeeGate) {
 		const { findAssignmentForStudent } = await import(
 			"../fee-clearance/fee-clearance.repo"
 		);
@@ -606,11 +631,14 @@ export async function autoEnrollClass(
 		}
 		for (const classCourse of classCourses) {
 			try {
-				const { warnings: localWarnings } = await createEnrollment({
-					studentId: student.id,
-					classCourseId: classCourse.id,
-					status,
-				});
+				const { warnings: localWarnings } = await createEnrollment(
+					{
+						studentId: student.id,
+						classCourseId: classCourse.id,
+						status,
+					},
+					opts.institutionId,
+				);
 				createdCount++;
 				if (localWarnings.length) {
 					warnings.push(...localWarnings);

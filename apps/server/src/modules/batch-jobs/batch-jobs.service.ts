@@ -68,6 +68,8 @@ export async function previewJob(
 			failedAt: new Date(),
 		});
 		await ctx.log("error", `Preview failed: ${msg}`);
+		// A refused id (e.g. NOT_FOUND for another institution's) keeps its code
+		if (err instanceof TRPCError) throw err;
 		throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: msg });
 	}
 

@@ -5,10 +5,19 @@ setDefaultTimeout(60_000);
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { notifications } from "@/db/schema/app-schema";
-import { asAdmin, createDomainUser, makeTestContext } from "@/lib/test-utils";
+import {
+	asAdmin,
+	createDomainUser as createAnyDomainUser,
+	makeTestContext,
+} from "@/lib/test-utils";
 import { appRouter } from "@/routers";
 import * as repo from "../notifications.repo";
 import * as service from "../notifications.service";
+
+// Recipients belong to the test institution: admins only reach their own users.
+const createDomainUser = (
+	data: Parameters<typeof createAnyDomainUser>[0] = {},
+) => createAnyDomainUser({ institutionId: asAdmin().institution.id, ...data });
 
 describe("notifications — retry and failure handling", () => {
 	it("flush with no recipient marks email notification as sent immediately", async () => {
@@ -49,7 +58,7 @@ describe("notifications — retry and failure handling", () => {
 		// First attempt → should become "retrying"
 		await service.sendPending(25, failSend);
 
-		const { items } = await service.list("retrying");
+		const { items } = await service.list(asAdmin().institution, "retrying");
 		const retrying = items.find((n) => n.type === "retry_test");
 		expect(retrying).toBeDefined();
 		expect(retrying?.attemptCount).toBe(1);
@@ -87,7 +96,7 @@ describe("notifications — retry and failure handling", () => {
 			await service.sendPending(25, failSend);
 		}
 
-		const { items } = await service.list("failed");
+		const { items } = await service.list(asAdmin().institution, "failed");
 		const failed = items.find((n) => n.type === "exhaust_test");
 		expect(failed).toBeDefined();
 		expect(failed?.attemptCount).toBe(3);
@@ -123,7 +132,7 @@ describe("notifications — retry and failure handling", () => {
 		await service.sendPending(25, guardSend);
 		// The guard send should not have been called for this notification
 		// (delivered count should not include future_retry_test)
-		const { items } = await service.list("retrying");
+		const { items } = await service.list(asAdmin().institution, "retrying");
 		const stillRetrying = items.find((n) => n.type === "future_retry_test");
 		expect(stillRetrying?.status).toBe("retrying");
 	});
@@ -171,7 +180,10 @@ describe("notifications — retry and failure handling", () => {
 		await service.sendPending(25, failSend);
 		const after1 = Date.now();
 
-		const { items: items1 } = await service.list("retrying");
+		const { items: items1 } = await service.list(
+			asAdmin().institution,
+			"retrying",
+		);
 		const n1 = items1.find((n) => n.type === "backoff_order_test");
 		expect(n1?.attemptCount).toBe(1);
 		const delay1Ms = new Date(n1!.nextRetryAt!).getTime() - before1;
@@ -190,7 +202,10 @@ describe("notifications — retry and failure handling", () => {
 		await service.sendPending(25, failSend);
 		const after2 = Date.now();
 
-		const { items: items2 } = await service.list("retrying");
+		const { items: items2 } = await service.list(
+			asAdmin().institution,
+			"retrying",
+		);
 		const n2 = items2.find((n) => n.type === "backoff_order_test");
 		expect(n2?.attemptCount).toBe(2);
 		const delay2Ms = new Date(n2!.nextRetryAt!).getTime() - before2;
@@ -503,12 +518,14 @@ describe("notifications.listPaged", () => {
 
 	it("respects page/pageSize and returns correct pageCount", async () => {
 		const admin = appRouter.createCaller(asAdmin());
+		const recipient = await createDomainUser();
 		// Queue 3 notifications
 		for (let i = 0; i < 3; i++) {
 			await admin.notifications.queue({
 				channel: "email",
 				type: `paged_count_test_${i}`,
 				payload: {},
+				recipientId: recipient.id,
 			});
 		}
 

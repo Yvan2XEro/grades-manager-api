@@ -1,14 +1,21 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "@/lib/trpc";
+import { router, tenantProtectedProcedure } from "@/lib/trpc";
+import { requireStudentInInstitution } from "../_shared/tenant-ownership";
 import * as service from "./student-credit-ledger.service";
 
 const studentSchema = z.object({ studentId: z.string() });
 
 export const studentCreditLedgerRouter = router({
-	summary: protectedProcedure
+	summary: tenantProtectedProcedure
 		.input(studentSchema)
-		.query(({ input }) => service.summarizeStudent(input.studentId)),
-	list: protectedProcedure
+		.query(async ({ ctx, input }) => {
+			await requireStudentInInstitution(input.studentId, ctx.institution.id);
+			return service.summarizeStudent(input.studentId);
+		}),
+	list: tenantProtectedProcedure
 		.input(studentSchema)
-		.query(({ input }) => service.listByStudent(input.studentId)),
+		.query(async ({ ctx, input }) => {
+			await requireStudentInInstitution(input.studentId, ctx.institution.id);
+			return service.listByStudent(input.studentId);
+		}),
 });

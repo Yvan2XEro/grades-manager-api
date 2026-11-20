@@ -21,6 +21,18 @@ export async function findTemplateById(
 	});
 }
 
+export async function findTemplateByIdForInstitution(
+	id: string,
+	institutionId: string,
+): Promise<ExportTemplate | undefined> {
+	return await db.query.exportTemplates.findFirst({
+		where: and(
+			eq(schema.exportTemplates.id, id),
+			eq(schema.exportTemplates.institutionId, institutionId),
+		),
+	});
+}
+
 export async function findTemplatesByInstitution(
 	institutionId: string,
 	type?: ExportTemplateType,
@@ -104,20 +116,34 @@ export async function createTemplate(
 
 export async function updateTemplate(
 	id: string,
+	institutionId: string,
 	updates: Partial<NewExportTemplate>,
 ): Promise<ExportTemplate | undefined> {
 	const [updated] = await db
 		.update(schema.exportTemplates)
 		.set({ ...updates, updatedAt: new Date() })
-		.where(eq(schema.exportTemplates.id, id))
+		.where(
+			and(
+				eq(schema.exportTemplates.id, id),
+				eq(schema.exportTemplates.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return updated;
 }
 
-export async function deleteTemplate(id: string): Promise<boolean> {
+export async function deleteTemplate(
+	id: string,
+	institutionId: string,
+): Promise<boolean> {
 	const result = await db
 		.delete(schema.exportTemplates)
-		.where(eq(schema.exportTemplates.id, id))
+		.where(
+			and(
+				eq(schema.exportTemplates.id, id),
+				eq(schema.exportTemplates.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return result.length > 0;
 }
@@ -143,7 +169,12 @@ export async function setDefaultTemplate(
 		await db
 			.update(schema.exportTemplates)
 			.set({ isDefault: true, updatedAt: new Date() })
-			.where(eq(schema.exportTemplates.id, templateId));
+			.where(
+				and(
+					eq(schema.exportTemplates.id, templateId),
+					eq(schema.exportTemplates.institutionId, institutionId),
+				),
+			);
 	}
 }
 
@@ -227,9 +258,24 @@ export async function upsertClassAssignment(
 	return created;
 }
 
+export async function findClassAssignmentForInstitution(
+	classId: string,
+	type: ExportTemplateType,
+	institutionId: string,
+): Promise<ClassExportTemplate | undefined> {
+	return await db.query.classExportTemplates.findFirst({
+		where: and(
+			eq(schema.classExportTemplates.classId, classId),
+			eq(schema.classExportTemplates.templateType, type),
+			eq(schema.classExportTemplates.institutionId, institutionId),
+		),
+	});
+}
+
 export async function deleteClassAssignment(
 	classId: string,
 	type: ExportTemplateType,
+	institutionId: string,
 ): Promise<boolean> {
 	const result = await db
 		.delete(schema.classExportTemplates)
@@ -237,6 +283,7 @@ export async function deleteClassAssignment(
 			and(
 				eq(schema.classExportTemplates.classId, classId),
 				eq(schema.classExportTemplates.templateType, type),
+				eq(schema.classExportTemplates.institutionId, institutionId),
 			),
 		)
 		.returning();
@@ -280,6 +327,7 @@ export async function upsertProgramAssignment(
 export async function deleteProgramAssignment(
 	programId: string,
 	type: ExportTemplateType,
+	institutionId: string,
 ): Promise<boolean> {
 	const result = await db
 		.delete(schema.programExportTemplates)
@@ -287,6 +335,7 @@ export async function deleteProgramAssignment(
 			and(
 				eq(schema.programExportTemplates.programId, programId),
 				eq(schema.programExportTemplates.templateType, type),
+				eq(schema.programExportTemplates.institutionId, institutionId),
 			),
 		)
 		.returning();
