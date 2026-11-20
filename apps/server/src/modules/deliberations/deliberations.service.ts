@@ -12,6 +12,7 @@ import { conflict } from "@/modules/_shared/errors";
 import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.types";
 import { getStudentPromotionFacts } from "../promotion-rules/student-facts.service";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import {
 	juryHistoryBefore,
 	yearFactsFromUeResults,
@@ -1221,6 +1222,19 @@ export async function promoteAdmitted(
 		const excluded = await closeSourceEnrollments(excludedIds, "withdrawn");
 		return { promoted, repeating, excluded };
 	});
+	// Students placed in a class take its courses (so exams can be created).
+	if (targetClass && outcome.promoted.length > 0) {
+		await courseEnrollments.syncClassRosters({
+			classIds: [targetClass.id],
+			studentIds: outcome.promoted,
+		});
+	}
+	if (repeatClass && outcome.repeating.length > 0) {
+		await courseEnrollments.syncClassRosters({
+			classIds: [repeatClass.id],
+			studentIds: outcome.repeating,
+		});
+	}
 
 	const summary = {
 		promotedCount: outcome.promoted.length,

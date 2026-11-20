@@ -250,12 +250,18 @@ describe("LMD: from one cycle to the next", () => {
 		});
 		expect(m2C.program).toBe(master.program.id);
 		expect(m2C.cycleLevelId).toBe(m2.id);
+		// M2's courses exist before the promotion: promoted students take them.
+		const [ueM2a] = await curriculum(master.program.id, m2C.id, [30]);
 		await api.deliberations.promoteAdmitted({
 			deliberationId: juryM1.id,
 			targetClassId: m2C.id,
 		});
-
-		const [ueM2a] = await curriculum(master.program.id, m2C.id, [30]);
+		const m2Courses = await db.query.studentCourseEnrollments.findMany({
+			where: eq(schema.studentCourseEnrollments.studentId, goesOn.id),
+		});
+		expect(m2Courses.filter((e) => e.academicYearId === yearC.id)).toHaveLength(
+			1,
+		);
 		await gradeCourse(ueM2a.id, institutionId, [
 			{ studentId: goesOn.id, cc: 15, ex: 15 },
 		]);

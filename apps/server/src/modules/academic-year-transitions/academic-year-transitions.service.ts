@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import type {
 	CreateTransitionInput,
 	ListTransitionItemsInput,
@@ -921,6 +922,27 @@ export async function execute(
 			})
 			.where(eq(schema.academicYearTransitions.id, id));
 	});
+	// Students placed in a class take its courses (so exams can be created).
+	const placed = await db.query.academicYearTransitionItems.findMany({
+		where: and(
+			eq(schema.academicYearTransitionItems.transitionId, id),
+			eq(schema.academicYearTransitionItems.status, "succeeded"),
+		),
+		columns: { studentId: true, finalTargetClassId: true },
+	});
+	const byClass = new Map<string, string[]>();
+	for (const item of placed) {
+		if (!item.finalTargetClassId) continue;
+		const list = byClass.get(item.finalTargetClassId) ?? [];
+		list.push(item.studentId);
+		byClass.set(item.finalTargetClassId, list);
+	}
+	for (const [classId, studentIds] of byClass) {
+		await courseEnrollments.syncClassRosters({
+			classIds: [classId],
+			studentIds,
+		});
+	}
 	return getById(id, institutionId);
 }
 
