@@ -18,6 +18,8 @@ const juryMemberSchema = z.object({
 
 // Deliberation CRUD
 export const createDeliberationSchema = z.object({
+	// A semester jury needs `semesterId`; annual and retake juries must not
+	// have one (checked by the service).
 	classId: z.string(),
 	semesterId: z.string().optional(),
 	academicYearId: z.string(),
@@ -46,6 +48,8 @@ export const updateDeliberationSchema = z.object({
 export const transitionDeliberationSchema = z.object({
 	id: z.string(),
 	action: z.enum(["open", "close", "sign", "reopen"]),
+	/** Why the jury is reopened (required to reopen a signed jury). */
+	reason: z.string().trim().max(500).optional(),
 });
 
 // Compute

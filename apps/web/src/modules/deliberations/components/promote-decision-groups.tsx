@@ -48,6 +48,19 @@ export function PromoteDecisionGroups({
 				.filter(Boolean)
 				.join(" "),
 		},
+		...(groups.awaitingRetake > 0
+			? [
+					{
+						key: "awaitingRetake",
+						count: groups.awaitingRetake,
+						dot: "bg-sky-500",
+						label: t("admin.deliberations.promote.groups.awaitingRetake"),
+						effect: t(
+							"admin.deliberations.promote.groups.awaitingRetakeEffect",
+						),
+					},
+				]
+			: []),
 		{
 			key: "excluded",
 			count: groups.excluded,

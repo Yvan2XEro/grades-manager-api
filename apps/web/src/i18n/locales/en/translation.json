@@ -95,7 +95,11 @@
       "perPage": "{{count}} / page"
     },
     "errors": {
-      "unknown": "Unknown error"
+      "unknown": "Unknown error",
+      "juryClosed": {
+        "closed": "These marks were deliberated by a closed jury: reopen the jury to change them.",
+        "signed": "These marks were deliberated by a signed jury: only a super admin can reopen it (with a reason) to correct them."
+      }
     },
     "gender": {
       "male": "M",
@@ -4292,7 +4296,8 @@
         "export": "Export diplomation",
         "exporting": "Exporting...",
         "override": "Override decision",
-        "delete": "Delete"
+        "delete": "Delete",
+        "reopenSigned": "Reopen signed jury"
       },
       "columns": {
         "class": "Class",
@@ -4481,7 +4486,9 @@
           "excluded": "Excluded",
           "excludedEffect": "Their enrollment for this year is closed (withdrawn); no enrollment next year.",
           "undecided": "Still to decide",
-          "undecidedEffect": "No final decision (pending or incomplete results): left as they are. Decide them later in the year transition."
+          "undecidedEffect": "No final decision (pending or incomplete results): left as they are. Decide them later in the year transition.",
+          "awaitingRetake": "Retake session",
+          "awaitingRetakeEffect": "Deferred: they sit the retake session; the retake jury decides their year."
         },
         "repeatClass": "Class for repeating students",
         "repeatClassHint_one": "{{count}} repeating student will be enrolled in this class.",
@@ -4814,7 +4821,15 @@
         "duplicate": "A jury already exists for this class, academic year and type (and semester). Open it from the list instead of creating a new one.",
         "notFound": "This jury or student result no longer exists. Reload the page.",
         "forbidden": "You are not allowed to do this on this jury.",
-        "wrongStatus": "This action is not possible in the jury's current status. Reload the page to see its latest state."
+        "wrongStatus": "This action is not possible in the jury's current status. Reload the page to see its latest state.",
+        "refusal": {
+          "SEMESTER_REQUIRED": "Choose the semester of a semester jury.",
+          "SEMESTER_NOT_ALLOWED": "Annual and retake juries cover the whole year: no semester.",
+          "ANNUAL_JURY_REQUIRED": "The retake jury follows the annual jury: close the annual jury of this class first.",
+          "JURY_OUTDATED": "Marks changed since the last computation: recompute the results first.",
+          "REASON_REQUIRED": "Give the reason for reopening a signed jury.",
+          "SEMESTER_JURY_NO_PROMOTION": "A semester jury does not promote: promotion follows the annual or retake jury."
+        }
       },
       "juryEdit": {
         "title": "Jury composition",
@@ -4856,6 +4871,18 @@
         "title_other": "{{count}} students are not decided by any rule",
         "hintOpen": "None of the institution's rules applies to them: give their decision with “Override decision”, or adjust the rules and compute again.",
         "hintClosed": "No rule applied to these students and the jury gave them no decision."
+      },
+      "staleness": {
+        "title_one": "{{count}} mark changed since the last computation",
+        "title_other": "{{count}} marks changed since the last computation",
+        "recompute": "The results no longer match the marks: recompute them before closing the jury.",
+        "reopen": "The official results no longer match the marks: reopen the jury and recompute it."
+      },
+      "reopenSigned": {
+        "title": "Reopen a signed jury",
+        "description": "The signed report (PV) stops being official: the jury is recomputed, then closed and signed again. The reason is kept in the jury's activity.",
+        "reason": "Reason",
+        "reasonPlaceholder": "e.g. Transcription error on an exam sheet"
       }
     },
     "gradeAccessGrants": {
@@ -5185,7 +5212,8 @@
         "missing_repeat_target": "Missing repeat target class",
         "ambiguous_repeat_target": "Ambiguous repeat target",
         "deferred_requires_review": "Deferred decision requires review",
-        "pending_decision": "Pending decision"
+        "pending_decision": "Pending decision",
+        "retake_jury_pending": "Retake jury not signed yet"
       },
       "empty": {
         "noPlans": "No transition plan yet.",
@@ -5599,7 +5627,8 @@
             "programNameTaken": "This name is already used by program {{code}}.",
             "programWithoutCycleWarning": "Without a cycle, the program's levels cannot be offered to its classes.",
             "unknownProgramInFile": "Unknown program \"{{value}}\": add it to the {{sheet}} sheet.",
-            "courseWeightsOver100": "{{course}}: with its other exams ({{exams}}) the weights add up to {{total}} %. Remove those exams or adjust the model."
+            "courseWeightsOver100": "{{course}}: with its other exams ({{exams}}) the weights add up to {{total}} %. Remove those exams or adjust the model.",
+            "examJuryClosed": "The {{type}} exam of {{course}} was deliberated by a closed jury: left unchanged (reopen the jury to correct it)."
           },
           "changes": "Changes ({{count}})"
         },

@@ -1,8 +1,10 @@
 import type { Context } from "@/lib/context";
 import {
 	router as createRouter,
+	tenantAdminProcedure,
 	tenantGradingProcedure,
 	tenantProtectedProcedure,
+	tenantSuperAdminProcedure,
 } from "../../lib/trpc";
 import * as service from "./grades.service";
 import {
@@ -10,6 +12,8 @@ import {
 	avgExamSchema,
 	avgStudentCourseSchema,
 	consolidatedSchema,
+	correctLockedSchema,
+	editLogsSchema,
 	exportClassCourseSchema,
 	idSchema,
 	importCsvSchema,
@@ -64,6 +68,17 @@ export const router = createRouter({
 				ctx.institution.id,
 				actorFromCtx(ctx),
 			),
+		),
+	// Audited correction of a locked exam's mark (super admin, with a reason)
+	correctLocked: tenantSuperAdminProcedure
+		.input(correctLockedSchema)
+		.mutation(({ ctx, input }) =>
+			service.correctLockedGrade(input, ctx.institution.id, actorFromCtx(ctx)),
+		),
+	editLogs: tenantAdminProcedure
+		.input(editLogsSchema)
+		.query(({ ctx, input }) =>
+			service.listEditLogs(input.examId, ctx.institution.id),
 		),
 	exportClassCourseCsv: tenantGradingProcedure
 		.input(exportClassCourseSchema)

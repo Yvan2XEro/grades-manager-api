@@ -1686,7 +1686,13 @@ export const gradeAccessGrants = pgTable(
 	],
 );
 
-export const gradeEditLogActions = ["write", "delete", "import"] as const;
+/** `correction`: a super admin's audited change to a mark of a locked exam. */
+export const gradeEditLogActions = [
+	"write",
+	"delete",
+	"import",
+	"correction",
+] as const;
 export type GradeEditLogAction = (typeof gradeEditLogActions)[number];
 
 export const gradeEditActorRoles = ["admin", "teacher", "delegate"] as const;

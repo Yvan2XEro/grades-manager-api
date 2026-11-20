@@ -62,6 +62,7 @@ export function CreateDeliberationFields({
 							value={fields.semesterId}
 							onChange={(v) => patch({ semesterId: v })}
 							placeholder={t("admin.deliberations.form.semesterPlaceholder")}
+							allowAll={false}
 						/>
 					</div>
 				)}

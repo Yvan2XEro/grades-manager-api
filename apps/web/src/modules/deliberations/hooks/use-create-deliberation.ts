@@ -97,7 +97,8 @@ export function useCreateDeliberation(
 			classId,
 			academicYearId: fields.academicYearId!,
 			type: fields.type as DeliberationType,
-			semesterId: fields.semesterId || undefined,
+			semesterId:
+				fields.type === "semester" ? fields.semesterId || undefined : undefined,
 			deliberationDate: fields.deliberationDate
 				? new Date(fields.deliberationDate).toISOString()
 				: undefined,
@@ -170,7 +171,7 @@ export function useCreateDeliberation(
 	}
 
 	async function submitBatch() {
-		if (!selectedClassIds.length || !fields.academicYearId || !fields.type)
+		if (!selectedClassIds.length || !fieldsComplete || !fields.academicYearId)
 			return;
 		const errors: string[] = [];
 		setBatchProgress({ done: 0, total: selectedClassIds.length, errors: [] });
@@ -216,6 +217,12 @@ export function useCreateDeliberation(
 		}
 	}
 
+	// A semester jury needs its semester
+	const fieldsComplete =
+		!!fields.academicYearId &&
+		!!fields.type &&
+		(fields.type !== "semester" || !!fields.semesterId);
+
 	return {
 		tab,
 		setTab,
@@ -233,10 +240,8 @@ export function useCreateDeliberation(
 		close,
 		submitSingle,
 		submitBatch,
-		singleCanSubmit:
-			!!singleClassId && !!fields.academicYearId && !!fields.type,
-		multiCanSubmit:
-			!!selectedClassIds.length && !!fields.academicYearId && !!fields.type,
+		singleCanSubmit: !!singleClassId && fieldsComplete,
+		multiCanSubmit: !!selectedClassIds.length && fieldsComplete,
 		singlePending: createMutation.isPending || initAndComputeMutation.isPending,
 		batchRunning: !!batchProgress && batchProgress.done < batchProgress.total,
 	};

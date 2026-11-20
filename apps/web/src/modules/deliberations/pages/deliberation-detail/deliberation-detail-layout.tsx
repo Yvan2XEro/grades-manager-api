@@ -1,8 +1,9 @@
-import { ArrowLeft } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { HubLayout } from "@/components/layouts/ListLayout";
 import { HubNav } from "@/components/navigation/HubNav";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -67,7 +68,9 @@ export default function DeliberationDetail() {
 		PromoteAdmittedDialog.call({
 			deliberationId: deliberationId!,
 			sourceClassId: delib.classId,
-			groups: decisionGroups(results),
+			groups: decisionGroups(results, {
+				retakeFollows: !!delib.retakeJury,
+			}),
 		});
 	};
 
@@ -125,6 +128,8 @@ export default function DeliberationDetail() {
 							).length
 						}
 						promoted={!!delib.promotion}
+						canPromote={delib.type !== "semester"}
+						outdated={!!delib.staleness?.isOutdated}
 						hasPresident={
 							!!delib.presidentId ||
 							(delib.juryMembers ?? []).some(
@@ -134,6 +139,22 @@ export default function DeliberationDetail() {
 						onPromoteAdmitted={promoteAdmitted}
 					/>
 				</div>
+
+				{delib.staleness?.isOutdated && (
+					<Alert className="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-200">
+						<AlertTriangle className="h-4 w-4" />
+						<AlertTitle>
+							{t("admin.deliberations.staleness.title", {
+								count: delib.staleness.changedMarks,
+							})}
+						</AlertTitle>
+						<AlertDescription>
+							{status === "open"
+								? t("admin.deliberations.staleness.recompute")
+								: t("admin.deliberations.staleness.reopen")}
+						</AlertDescription>
+					</Alert>
+				)}
 
 				<HubNav tabs={TABS} basePath={basePath} />
 			</HubLayout>

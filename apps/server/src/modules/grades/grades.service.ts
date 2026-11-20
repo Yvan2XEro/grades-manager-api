@@ -3,6 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
+import { assertExamMarksNotFrozen } from "../deliberations/jury-freeze";
 import {
 	type ExamEditorActor,
 	ensureActorCanEditExam,
@@ -73,9 +74,14 @@ async function requireCourseForInstitution(
 	return course;
 }
 
-function ensureExamEditable(exam: schema.Exam | undefined | null) {
+/**
+ * Marks can be written while the exam is not locked (locking is
+ * irreversible) and no closed/signed jury was computed from them.
+ */
+async function ensureExamEditable(exam: schema.Exam | undefined | null) {
 	if (!exam) throw notFound();
 	if (exam.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
+	await assertExamMarksNotFrozen(exam);
 }
 
 /** Recompute credit ledger for a student after a grade change. */
@@ -115,8 +121,9 @@ export async function upsertNote(
 		institutionId,
 		actor,
 	});
-	ensureExamEditable(exam);
+	await ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
+	const previous = await repo.findByStudentAndExam(studentId, examId);
 
 	try {
 		const saved = await repo.upsert({
@@ -131,6 +138,7 @@ export async function upsertNote(
 			action: "write",
 			studentId,
 			gradeId: saved.id,
+			scoreBefore: previous ? Number(previous.score) : null,
 			scoreAfter: score,
 		});
 		// Trigger recalculation for retake exams to update UE averages and promotion facts
@@ -158,7 +166,7 @@ export async function updateNote(
 		institutionId,
 		actor,
 	});
-	ensureExamEditable(exam);
+	await ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(
 		grade.student,
 		exam.classCourse,
@@ -196,7 +204,7 @@ export async function deleteNote(
 		institutionId,
 		actor,
 	});
-	ensureExamEditable(exam);
+	await ensureExamEditable(exam);
 	await logGradeEdit({
 		access,
 		actor,
@@ -329,7 +337,7 @@ export async function importGradesFromCsv(
 		institutionId,
 		actor,
 	});
-	ensureExamEditable(exam);
+	await ensureExamEditable(exam);
 	const lines = csv
 		.split(/\r?\n/)
 		.map((line) => line.trim())
@@ -387,6 +395,7 @@ export async function importGradesFromCsv(
 			);
 			continue;
 		}
+		const previous = await repo.findByStudentAndExam(student.id, examId);
 		const saved = await repo.upsert({
 			exam: examId,
 			student: student.id,
@@ -401,6 +410,7 @@ export async function importGradesFromCsv(
 			action: "import",
 			studentId: student.id,
 			gradeId: saved.id,
+			scoreBefore: previous ? Number(previous.score) : null,
 			scoreAfter: scoreValue,
 			metadata: { source: "csv" },
 		});
@@ -558,9 +568,19 @@ type GradeEditLogInput = {
 	metadata?: Record<string, unknown>;
 };
 
+/**
+ * Every change to a mark leaves an audit row: who, when, before and after.
+ * An actor without a domain profile row (system or legacy session) is
+ * recorded as unknown rather than dropping the row on the foreign key.
+ */
 async function logGradeEdit(input: GradeEditLogInput) {
-	const actorProfileId = input.actor.profileId;
-	if (!actorProfileId) return;
+	const profileId = input.actor.profileId;
+	const knownActor = profileId
+		? await db.query.domainUsers.findFirst({
+				where: eq(schema.domainUsers.id, profileId),
+				columns: { id: true },
+			})
+		: undefined;
 	try {
 		await db.insert(schema.gradeEditLogs).values({
 			institutionId: input.exam.institutionId,
@@ -568,7 +588,7 @@ async function logGradeEdit(input: GradeEditLogInput) {
 			classCourseId: input.exam.classCourse,
 			studentId: input.studentId,
 			gradeId: input.gradeId ?? null,
-			actorProfileId,
+			actorProfileId: knownActor?.id ?? null,
 			actorRole: input.access as schema.GradeEditActorRole,
 			isDelegate: input.access === "delegate",
 			action: input.action,
@@ -580,9 +600,67 @@ async function logGradeEdit(input: GradeEditLogInput) {
 				typeof input.scoreAfter === "number"
 					? input.scoreAfter.toString()
 					: null,
-			metadata: input.metadata ?? {},
+			metadata: {
+				...(input.metadata ?? {}),
+				...(profileId && !knownActor ? { unresolvedActorId: profileId } : {}),
+			},
 		});
 	} catch (err) {
 		console.error("Failed to write grade edit log", err);
 	}
+}
+
+/**
+ * Audited correction of a mark of a locked exam (locking stays
+ * irreversible for ordinary entry). Only a super admin, with a reason, and
+ * never under a closed or signed jury: the jury is reopened first so it is
+ * recomputed from the corrected mark.
+ */
+export async function correctLockedGrade(
+	input: { examId: string; studentId: string; score: number; reason: string },
+	institutionId: string,
+	actor: ExamEditorActor,
+) {
+	const exam = await requireExamForInstitution(input.examId, institutionId);
+	if (!exam.isLocked) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "The exam is not locked: edit the mark from grade entry",
+		});
+	}
+	await assertExamMarksNotFrozen(exam);
+	await courseEnrollments.ensureStudentRegistered(
+		input.studentId,
+		exam.classCourse,
+	);
+	const previous = await repo.findByStudentAndExam(
+		input.studentId,
+		input.examId,
+	);
+	const saved = await repo.upsert({
+		student: input.studentId,
+		exam: input.examId,
+		score: input.score.toString(),
+	});
+	await logGradeEdit({
+		access: "admin",
+		actor,
+		exam,
+		action: "correction",
+		studentId: input.studentId,
+		gradeId: saved.id,
+		scoreBefore: previous ? Number(previous.score) : null,
+		scoreAfter: input.score,
+		metadata: { reason: input.reason },
+	});
+	if (exam.sessionType === "retake") {
+		await refreshAfterRetakeGrade(input.studentId, input.examId);
+	}
+	await recomputeCreditsAfterGradeChange(input.studentId, exam.classCourse);
+	return saved;
+}
+
+export async function listEditLogs(examId: string, institutionId: string) {
+	await requireExamForInstitution(examId, institutionId);
+	return repo.listEditLogs(examId, institutionId);
 }

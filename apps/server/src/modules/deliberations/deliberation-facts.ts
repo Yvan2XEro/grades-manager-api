@@ -88,6 +88,21 @@ export function yearFactsFromUeResults(
 	};
 }
 
+/**
+ * Order of two year-end juries of the same year: a retake jury supersedes
+ * the annual one, then the most recent wins. Positive when `a` is decisive.
+ */
+export function compareYearEndJuries(
+	a: { type: string; createdAt: Date },
+	b: { type: string; createdAt: Date },
+) {
+	const rank = (t: string) => (t === "retake" ? 1 : 0);
+	return (
+		rank(a.type) - rank(b.type) ||
+		new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+	);
+}
+
 /** Decisions that make a student do the year again. */
 const REPEATING: ReadonlySet<DeliberationDecision> = new Set([
 	"repeat",
@@ -124,6 +139,7 @@ export async function juryHistoryBefore(
 			finalDecision: schema.deliberationStudentResults.finalDecision,
 			academicYearId: schema.deliberations.academicYearId,
 			startDate: schema.academicYears.startDate,
+			type: schema.deliberations.type,
 			createdAt: schema.deliberations.createdAt,
 		})
 		.from(schema.deliberationStudentResults)
@@ -150,12 +166,15 @@ export async function juryHistoryBefore(
 		(r) =>
 			new Date(r.startDate).getTime() < new Date(current.startDate).getTime(),
 	);
-	// One decision per student and year: the latest jury of that year.
+	// One decision per student and year: the retake jury's when the student
+	// went through it (it is the year's final decision), else the latest one.
 	const byStudentYear = new Map<string, (typeof before)[number]>();
 	for (const row of before) {
 		const key = `${row.studentId}:${row.academicYearId}`;
 		const seen = byStudentYear.get(key);
-		if (!seen || seen.createdAt < row.createdAt) byStudentYear.set(key, row);
+		if (!seen || compareYearEndJuries(row, seen) > 0) {
+			byStudentYear.set(key, row);
+		}
 	}
 	const byStudent = new Map<string, (typeof before)[number][]>();
 	for (const row of byStudentYear.values()) {

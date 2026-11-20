@@ -46,12 +46,20 @@ export function useDeliberationActions(deliberationId: string) {
 	const invalidateAll = useInvalidateDeliberation(deliberationId);
 
 	const transition = useMutation({
-		mutationFn: (action: DeliberationAction) =>
+		mutationFn: ({
+			action,
+			reason,
+		}: {
+			action: DeliberationAction;
+			/** Required to reopen a signed jury. */
+			reason?: string;
+		}) =>
 			trpcClient.deliberations.transition.mutate({
 				id: deliberationId,
 				action,
+				reason,
 			}),
-		onSuccess: (_data, action) => {
+		onSuccess: (_data, { action }) => {
 			toast.success(t(`admin.deliberations.toast.transition.${action}`));
 			invalidateAll();
 		},

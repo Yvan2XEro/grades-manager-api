@@ -3,6 +3,10 @@ import ExcelJS from "exceljs";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { normalizeCode } from "@/lib/strings";
+import {
+	juryCoversExam,
+	listFrozenJuries,
+} from "@/modules/deliberations/jury-freeze";
 import { recomputeForStudent } from "@/modules/student-credit-ledger/student-credit-ledger.service";
 import type {
 	ImportIssue,
@@ -75,6 +79,7 @@ async function loadYear(institutionId: string, academicYearId: string) {
 				classId: schema.classCourses.class,
 				courseCode: schema.courses.code,
 				courseName: schema.courses.name,
+				semesterId: schema.classCourses.semesterId,
 			})
 			.from(schema.classCourses)
 			.innerJoin(
@@ -376,6 +381,8 @@ export const gradesStep: ImportStepDef = {
 			]),
 		);
 		const examIds = exams.map((e) => e.id);
+		// Marks a closed or signed jury was computed from stay as they are
+		const frozenJuries = await listFrozenJuries(classes.map((c) => c.id));
 		const existing = examIds.length
 			? await db.query.grades.findMany({
 					where: inArray(schema.grades.exam, examIds),
@@ -488,6 +495,21 @@ export const gradesStep: ImportStepDef = {
 					);
 					continue;
 				}
+				if (
+					frozenJuries.some(
+						(jury) =>
+							jury.classId === klass.id &&
+							juryCoversExam(jury, exam, cc.semesterId),
+					)
+				) {
+					error(
+						r,
+						"examJuryClosed",
+						{ course: cc.courseCode, type: exam.type },
+						`The ${exam.type} exam of ${cc.courseCode} was deliberated by a closed jury.`,
+					);
+					continue;
+				}
 				const raw = (v.score ?? "").trim();
 				let score: number;
 				if (ABSENT.has(normalize(raw))) {
@@ -567,7 +589,7 @@ export const gradesStep: ImportStepDef = {
 							target: [schema.grades.student, schema.grades.exam],
 							set: {
 								score: sql`excluded.score`,
-								updatedAt: new Date(),
+								updatedAt: sql`now()`,
 							},
 						})
 						.returning({

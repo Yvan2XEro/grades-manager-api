@@ -95,7 +95,11 @@
       "perPage": "{{count}} / page"
     },
     "errors": {
-      "unknown": "Erreur inconnue"
+      "unknown": "Erreur inconnue",
+      "juryClosed": {
+        "closed": "Ces notes ont été délibérées par un jury clôturé : rouvrez le jury pour les modifier.",
+        "signed": "Ces notes ont été délibérées par un jury signé : seul un super administrateur peut le rouvrir (avec un motif) pour les corriger."
+      }
     },
     "gender": {
       "male": "M",
@@ -3271,7 +3275,8 @@
         "export": "Exporter diplomation",
         "exporting": "Exportation...",
         "override": "Modifier la décision",
-        "delete": "Supprimer"
+        "delete": "Supprimer",
+        "reopenSigned": "Rouvrir le jury signé"
       },
       "columns": {
         "class": "Classe",
@@ -3460,7 +3465,9 @@
           "excluded": "Exclus",
           "excludedEffect": "Leur inscription de cette année est clôturée (retiré) ; pas d'inscription l'année suivante.",
           "undecided": "Encore à décider",
-          "undecidedEffect": "Sans décision finale (en attente ou résultats incomplets) : laissés tels quels. À décider ensuite dans le passage d'année."
+          "undecidedEffect": "Sans décision finale (en attente ou résultats incomplets) : laissés tels quels. À décider ensuite dans le passage d'année.",
+          "awaitingRetake": "Session de rattrapage",
+          "awaitingRetakeEffect": "Ajournés : ils passent la session de rattrapage ; le jury de rattrapage décide de leur année."
         },
         "repeatClass": "Classe des redoublants",
         "repeatClassHint_one": "{{count}} redoublant sera inscrit dans cette classe.",
@@ -3793,7 +3800,15 @@
         "duplicate": "Un jury existe déjà pour cette classe, cette année et ce type (et ce semestre). Ouvrez-le depuis la liste au lieu d'en créer un nouveau.",
         "notFound": "Ce jury ou ce résultat n'existe plus. Rechargez la page.",
         "forbidden": "Vous n'êtes pas autorisé à effectuer cette action sur ce jury.",
-        "wrongStatus": "Cette action n'est pas possible dans l'état actuel du jury. Rechargez la page pour voir son dernier état."
+        "wrongStatus": "Cette action n'est pas possible dans l'état actuel du jury. Rechargez la page pour voir son dernier état.",
+        "refusal": {
+          "SEMESTER_REQUIRED": "Choisissez le semestre d'un jury semestriel.",
+          "SEMESTER_NOT_ALLOWED": "Les jurys annuels et de rattrapage couvrent toute l'année : pas de semestre.",
+          "ANNUAL_JURY_REQUIRED": "Le jury de rattrapage suit le jury annuel : clôturez d'abord le jury annuel de cette classe.",
+          "JURY_OUTDATED": "Des notes ont changé depuis le dernier calcul : recalculez d'abord les résultats.",
+          "REASON_REQUIRED": "Indiquez le motif de réouverture d'un jury signé.",
+          "SEMESTER_JURY_NO_PROMOTION": "Un jury semestriel ne promeut pas : la promotion suit le jury annuel ou de rattrapage."
+        }
       },
       "juryEdit": {
         "title": "Composition du jury",
@@ -3835,6 +3850,18 @@
         "title_other": "{{count}} étudiants ne sont décidés par aucune règle",
         "hintOpen": "Aucune règle de l'établissement ne s'applique à eux : donnez leur décision avec « Modifier la décision », ou ajustez les règles puis recalculez.",
         "hintClosed": "Aucune règle ne s'est appliquée à ces étudiants et le jury ne leur a donné aucune décision."
+      },
+      "staleness": {
+        "title_one": "{{count}} note modifiée depuis le dernier calcul",
+        "title_other": "{{count}} notes modifiées depuis le dernier calcul",
+        "recompute": "Les résultats ne correspondent plus aux notes : recalculez-les avant de clôturer le jury.",
+        "reopen": "Les résultats officiels ne correspondent plus aux notes : rouvrez le jury et recalculez-le."
+      },
+      "reopenSigned": {
+        "title": "Rouvrir un jury signé",
+        "description": "Le procès-verbal signé n'est plus officiel : le jury est recalculé, puis clôturé et signé à nouveau. Le motif est conservé dans l'activité du jury.",
+        "reason": "Motif",
+        "reasonPlaceholder": "ex. Erreur de report sur une copie d'examen"
       }
     },
     "centers": {
@@ -4095,7 +4122,8 @@
         "missing_repeat_target": "Classe de redoublement manquante",
         "ambiguous_repeat_target": "Destination de redoublement ambiguë",
         "deferred_requires_review": "Décision « Ajourné » à examiner",
-        "pending_decision": "Décision en attente (résultats incomplets)"
+        "pending_decision": "Décision en attente (résultats incomplets)",
+        "retake_jury_pending": "Jury de rattrapage pas encore signé"
       },
       "empty": {
         "noPlans": "Aucun plan de transition.",
@@ -4509,7 +4537,8 @@
             "programNameTaken": "Ce nom est déjà utilisé par le programme « {{code}} ».",
             "programWithoutCycleWarning": "Sans cycle, les niveaux du programme ne seront pas proposés pour ses classes.",
             "unknownProgramInFile": "Programme « {{value}} » inconnu : ajoutez-le dans la feuille « {{sheet}} ».",
-            "courseWeightsOver100": "{{course}} : avec ses autres évaluations ({{exams}}), les pondérations totalisent {{total}} %. Supprimez ces évaluations ou ajustez le modèle."
+            "courseWeightsOver100": "{{course}} : avec ses autres évaluations ({{exams}}), les pondérations totalisent {{total}} %. Supprimez ces évaluations ou ajustez le modèle.",
+            "examJuryClosed": "L'examen {{type}} de {{course}} a été délibéré par un jury clôturé : laissé inchangé (rouvrez le jury pour le corriger)."
           },
           "changes": "Modifications ({{count}})"
         },

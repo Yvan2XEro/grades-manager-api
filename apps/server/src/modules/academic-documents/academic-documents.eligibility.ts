@@ -93,6 +93,23 @@ type ResultRow = {
 
 const decisionOf = (r: ResultRow) => r.finalDecision ?? r.autoDecision;
 
+/**
+ * The jury that decides each year: rows come most recent year first, the
+ * retake jury before the annual one, so the first closed row of a class and
+ * year is the decisive one. An annual decision superseded by the retake
+ * jury no longer counts (either way).
+ */
+function decisiveClosedRows<T extends ResultRow>(rows: T[]): T[] {
+	const seen = new Set<string>();
+	return rows.filter((r) => {
+		if (!CLOSED.has(r.deliberationStatus)) return false;
+		const key = `${r.classId}:${r.academicYearId}`;
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
 /** Closed jury with a favourable decision. */
 export function isFavourableResult(r: ResultRow) {
 	const d = decisionOf(r);
@@ -116,7 +133,7 @@ export function resultEligibility(
 	if (rows.length === 0) {
 		return { eligible: false, reason: "no_deliberation" };
 	}
-	const closed = rows.filter((r) => CLOSED.has(r.deliberationStatus));
+	const closed = decisiveClosedRows(rows);
 	const favourable = closed.find(
 		(r) =>
 			isFavourableResult(r) &&
@@ -181,13 +198,9 @@ export async function listStudentResultDocuments(
 		studentId,
 	]);
 	const results = [];
-	const seenYears = new Set<string>();
-	for (const r of rows) {
+	// The decisive jury of each year (a retake after the annual one)
+	for (const r of decisiveClosedRows(rows)) {
 		if (!isFavourableResult(r)) continue;
-		// Latest jury of the year (a retake after the annual one)
-		const key = `${r.classId}:${r.academicYearId}`;
-		if (seenYears.has(key)) continue;
-		seenYears.add(key);
 		results.push({
 			deliberationId: r.deliberationId,
 			classId: r.classId,
