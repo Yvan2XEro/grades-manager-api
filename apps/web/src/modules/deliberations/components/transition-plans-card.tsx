@@ -46,8 +46,9 @@ export function TransitionPlansCard({
 								</Badge>
 							</div>
 							<div className="mt-2 text-muted-foreground text-xs">
-								{count(summary, "total")}{" "}
-								{t("admin.academicYearTransitions.metrics.students")}
+								{t("admin.academicYearTransitions.metrics.studentCount", {
+									count: count(summary, "total"),
+								})}
 								{" · "}
 								{formatDate(transition.generatedAt)}
 							</div>

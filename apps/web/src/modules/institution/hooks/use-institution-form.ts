@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
 import { z } from "zod";
+import { sortYearsRecentFirst } from "@/lib/academic-years";
 import { type RouterOutputs, trpc } from "@/utils/trpc";
 import type { Institution, InstitutionType } from "../types";
 
@@ -187,7 +188,7 @@ export function useInstitutionSystemOptions() {
 	const formatsQuery = useQuery(
 		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
-	const years = yearsQuery.data?.items ?? [];
+	const years = sortYearsRecentFirst(yearsQuery.data?.items ?? []);
 	const formats = formatsQuery.data ?? [];
 	return {
 		years,

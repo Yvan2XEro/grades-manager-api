@@ -2526,7 +2526,7 @@ interface Resources {
 					"sourceYearPlaceholder": "None (optional)";
 				};
 				"studentsEmpty": {
-					"description": "Enroll students via the Enrollments tab.";
+					"description": "Use \"Enroll a student\" above, or place last year's students from their jury page (Promote and re-enrol) or the year transition.";
 					"title": "No students enrolled";
 				};
 				"noCoursesHint": {
@@ -4882,7 +4882,8 @@ interface Resources {
 					"repeat": "Treat deferred students as repeaters";
 				};
 				"metrics": {
-					"students": "students";
+					"studentCount_one": "{{count}} student";
+					"studentCount_other": "{{count}} students";
 				};
 				"summary": {
 					"total": "Total";

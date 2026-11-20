@@ -43,7 +43,7 @@
       "create": "Créer",
       "update": "Mettre à jour",
       "delete": "Supprimer",
-      "edit": "Editer",
+      "edit": "Modifier",
       "save": "Enregistrer",
       "saveChanges": "Enregistrer les modifications",
       "close": "Fermer",
@@ -334,7 +334,7 @@
       },
       "groups": {
         "overview": "Vue d'ensemble",
-        "structure": "Structure acadé...",
+        "structure": "Structure académique",
         "users": "Utilisateurs",
         "teaching": "Enseignement",
         "evaluation": "Évaluations",
@@ -1388,7 +1388,7 @@
         "sourceYearPlaceholder": "Aucune (optionnel)"
       },
       "studentsEmpty": {
-        "description": "Inscrivez des étudiants depuis l'onglet Inscriptions.",
+        "description": "Utilisez « Inscrire un étudiant » ci-dessus, ou placez les étudiants de l'année précédente depuis leur page de jury (Promouvoir et réinscrire) ou le passage d'année.",
         "title": "Aucun étudiant inscrit"
       },
       "noCoursesHint": {
@@ -2133,7 +2133,7 @@
       },
       "actions": {
         "setDefault": "Définir par défaut",
-        "edit": "Éditer le modèle",
+        "edit": "Modifier le modèle",
         "rename": "Renommer",
         "add": "Ajouter un modèle",
         "delete": "Supprimer"
@@ -3791,7 +3791,8 @@
         "repeat": "Traiter les ajournés comme redoublants"
       },
       "metrics": {
-        "students": "étudiants"
+        "studentCount_one": "{{count}} étudiant",
+        "studentCount_other": "{{count}} étudiants"
       },
       "summary": {
         "total": "Total",

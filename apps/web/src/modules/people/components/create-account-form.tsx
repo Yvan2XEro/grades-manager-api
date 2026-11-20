@@ -21,6 +21,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useCreateAuthAccount } from "../hooks/use-profile-auth";
+import { useProfileContext } from "../hooks/use-profile-context";
 import {
 	ASSIGNABLE_ROLES,
 	type CreateAccountValues,
@@ -29,9 +30,15 @@ import {
 
 export function CreateAccountForm({ profileId }: { profileId: string }) {
 	const { t } = useTranslation();
+	// The account usually signs in with the profile's e-mail
+	const { profile } = useProfileContext();
 	const form = useForm<CreateAccountValues>({
 		resolver: zodResolver(createAccountSchema),
-		defaultValues: { email: "", password: "", memberRole: "student" },
+		defaultValues: {
+			email: profile.primaryEmail ?? "",
+			password: "",
+			memberRole: "student",
+		},
 	});
 
 	const mutation = useCreateAuthAccount(profileId);
