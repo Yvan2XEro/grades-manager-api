@@ -3,7 +3,12 @@ import {
 	router,
 	tenantAdminProcedure,
 	tenantProtectedProcedure,
+	tenantStaffProcedure,
 } from "@/lib/trpc";
+import {
+	assertCanReadClassCourse,
+	recordActorFromCtx,
+} from "@/modules/authz/record-access";
 import * as service from "./workflows.service";
 import {
 	attendanceAlertSchema,
@@ -51,17 +56,22 @@ export const workflowsRouter = router({
 		service.listEnrollmentWindows(ctx.institution.id),
 	),
 
-	attendanceAlert: tenantProtectedProcedure
+	attendanceAlert: tenantStaffProcedure
 		.input(attendanceAlertSchema)
-		.mutation(({ ctx, input }) =>
-			service.triggerAttendanceAlert(
+		.mutation(async ({ ctx, input }) => {
+			await assertCanReadClassCourse(
+				recordActorFromCtx(ctx),
+				input.classCourseId,
+				ctx.institution.id,
+			);
+			return service.triggerAttendanceAlert(
 				input.classCourseId,
 				input.severity,
 				input.message,
 				input.recipientId,
 				ctx.institution.id,
-			),
-		),
+			);
+		}),
 
 	// ── Student self-enrollment ───────────────────────────────────────────────
 	studentSelfEnroll: tenantProtectedProcedure

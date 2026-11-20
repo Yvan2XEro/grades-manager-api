@@ -20,8 +20,11 @@ export const admissionsRouter = router({
 			service.submitApplication(ctx.institution.id, input),
 		),
 
-	/** Public: look up application status by reference code. */
-	getByReferenceCode: tenantProcedure
+	/**
+	 * Full applicant record (personal data, internal fields) by reference code.
+	 * Staff only — applicants use the redacted `getStatus`.
+	 */
+	getByReferenceCode: tenantAdminProcedure
 		.input(z.object({ referenceCode: z.string().min(1) }))
 		.query(({ ctx, input }) =>
 			service.getByReferenceCode(ctx.institution.id, input.referenceCode),

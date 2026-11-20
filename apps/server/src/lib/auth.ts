@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { domainUsersRepo } from "@/modules/domain-users";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
+import { guardOrgRoleChanges } from "./auth-org-guard";
 import { adminRoles, superadminRoles } from "./auth-roles";
 import {
 	defaultEmailSend,
@@ -27,7 +28,11 @@ export { adminRoles, superadminRoles };
  */
 const pendingOrgByUser = new Map<string, string>();
 
-const orgScopedLoginHook = createAuthMiddleware(async (ctx) => {
+type AuthHookContext = Parameters<
+	Parameters<typeof createAuthMiddleware>[0]
+>[0];
+
+async function orgScopedLoginHook(ctx: AuthHookContext) {
 	if (ctx.path !== "/sign-in/email") return;
 	const slug = ctx.request?.headers.get("X-Organization-Slug");
 	if (!slug) return;
@@ -68,7 +73,7 @@ const orgScopedLoginHook = createAuthMiddleware(async (ctx) => {
 	}
 
 	pendingOrgByUser.set(foundUser.id, org.id);
-});
+}
 
 type SessionWithActiveOrganization = {
 	activeOrganizationId?: string | null;
@@ -196,7 +201,10 @@ export const auth = betterAuth({
 		},
 	},
 	hooks: {
-		before: orgScopedLoginHook,
+		before: createAuthMiddleware(async (ctx) => {
+			await orgScopedLoginHook(ctx);
+			await guardOrgRoleChanges(ctx);
+		}),
 	},
 	databaseHooks: {
 		session: {

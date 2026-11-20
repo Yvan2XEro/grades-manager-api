@@ -1,8 +1,4 @@
-import {
-	router,
-	tenantAdminProcedure,
-	tenantProtectedProcedure,
-} from "@/lib/trpc";
+import { router, tenantAdminProcedure, tenantStaffProcedure } from "@/lib/trpc";
 import * as service from "./deliberations.service";
 import {
 	computeDeliberationSchema,
@@ -41,13 +37,13 @@ const rulesRouter = router({
 			service.deleteRule(input.id, ctx.institution.id),
 		),
 
-	getById: tenantProtectedProcedure
+	getById: tenantStaffProcedure
 		.input(idSchema)
 		.query(({ input, ctx }) =>
 			service.getRuleById(input.id, ctx.institution.id),
 		),
 
-	list: tenantProtectedProcedure
+	list: tenantStaffProcedure
 		.input(listDeliberationRulesSchema)
 		.query(({ input, ctx }) => service.listRules(input, ctx.institution.id)),
 });
@@ -70,15 +66,15 @@ export const deliberationsRouter = router({
 		.input(idSchema)
 		.mutation(({ input, ctx }) => service.remove(input.id, ctx.institution.id)),
 
-	getById: tenantProtectedProcedure
+	getById: tenantAdminProcedure
 		.input(idSchema)
 		.query(({ input, ctx }) => service.getById(input.id, ctx.institution.id)),
 
-	list: tenantProtectedProcedure
+	list: tenantAdminProcedure
 		.input(listDeliberationsSchema)
 		.query(({ input, ctx }) => service.list(input, ctx.institution.id)),
 
-	listPaged: tenantProtectedProcedure
+	listPaged: tenantAdminProcedure
 		.input(listDeliberationsPagedSchema)
 		.query(({ input, ctx }) => service.listPaged(input, ctx.institution.id)),
 
@@ -127,7 +123,7 @@ export const deliberationsRouter = router({
 			return service.promoteAdmitted(input, ctx.institution.id, ctx.profile.id);
 		}),
 
-	exportDiplomation: tenantProtectedProcedure
+	exportDiplomation: tenantAdminProcedure
 		.input(exportDiplomationSchema)
 		.query(({ input, ctx }) => {
 			if (!ctx.profile) {
@@ -140,7 +136,7 @@ export const deliberationsRouter = router({
 			);
 		}),
 
-	getLogs: tenantProtectedProcedure
+	getLogs: tenantAdminProcedure
 		.input(getLogsSchema)
 		.query(({ input }) => service.getLogs(input)),
 

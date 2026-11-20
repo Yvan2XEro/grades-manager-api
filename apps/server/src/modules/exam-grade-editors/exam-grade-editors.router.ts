@@ -1,8 +1,12 @@
 import {
 	router as createRouter,
 	tenantGradingProcedure,
-	tenantProtectedProcedure,
+	tenantStaffProcedure,
 } from "@/lib/trpc";
+import {
+	assertCanReadExam,
+	recordActorFromCtx,
+} from "@/modules/authz/record-access";
 import * as service from "./exam-grade-editors.service";
 import {
 	assignSchema,
@@ -11,12 +15,17 @@ import {
 } from "./exam-grade-editors.zod";
 
 export const examGradeEditorsRouter = createRouter({
-	list: tenantProtectedProcedure.input(listSchema).query(({ ctx, input }) =>
-		service.listEditors({
+	list: tenantStaffProcedure.input(listSchema).query(async ({ ctx, input }) => {
+		await assertCanReadExam(
+			recordActorFromCtx(ctx),
+			input.examId,
+			ctx.institution.id,
+		);
+		return service.listEditors({
 			examId: input.examId,
 			institutionId: ctx.institution.id,
-		}),
-	),
+		});
+	}),
 	assign: tenantGradingProcedure
 		.input(assignSchema)
 		.mutation(({ ctx, input }) =>

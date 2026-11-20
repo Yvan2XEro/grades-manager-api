@@ -9,8 +9,13 @@ import {
 	adminProcedure,
 	protectedProcedure,
 	router,
+	staffProcedure,
 	tenantAdminProcedure,
 } from "../../lib/trpc";
+import {
+	assertCanAssignRole,
+	assertCanManageProfile,
+} from "../authz/record-access";
 import * as service from "./users.service";
 import {
 	createUserProfileSchema,
@@ -29,7 +34,7 @@ const listSchema = z.object({
 const idSchema = z.object({ id: z.string() });
 
 export const usersRouter = router({
-	list: protectedProcedure
+	list: staffProcedure
 		.input(listSchema)
 		.query(({ input }) => service.listUsers(input)),
 	listPaged: tenantAdminProcedure
@@ -63,13 +68,17 @@ export const usersRouter = router({
 		),
 	updateProfile: adminProcedure
 		.input(updateUserProfileSchema)
-		.mutation(({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			const { id, ...payload } = input;
+			await assertCanManageProfile(ctx.memberRole, id);
 			return service.updateUserProfile(id, payload);
 		}),
 	deleteProfile: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteUserProfile(input.id)),
+		.mutation(async ({ input, ctx }) => {
+			await assertCanManageProfile(ctx.memberRole, input.id);
+			return service.deleteUserProfile(input.id);
+		}),
 	createWithAuth: adminProcedure
 		.input(createUserWithAuthSchema)
 		.mutation(async ({ input, ctx }) => {
@@ -78,6 +87,9 @@ export const usersRouter = router({
 					code: "BAD_REQUEST",
 					message: "No active organization context",
 				});
+			}
+			if (input.canConnect && input.memberRole) {
+				assertCanAssignRole(ctx.memberRole, input.memberRole);
 			}
 			try {
 				return await service.createUserWithAuth(input, {

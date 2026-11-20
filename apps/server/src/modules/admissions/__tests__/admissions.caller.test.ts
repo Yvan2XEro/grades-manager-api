@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, setDefaultTimeout } from "bun:test";
 import type { Context } from "@/lib/context";
 import {
+	asAdmin,
 	createAcademicYear,
 	createClass,
 	createDomainUser,
@@ -111,7 +112,11 @@ describe("admissions.getByReferenceCode", () => {
 			academicYearId,
 		});
 
-		const found = await caller(ctx).admissions.getByReferenceCode({
+		// The full record is staff-only; the public caller is refused
+		await expect(
+			caller(ctx).admissions.getByReferenceCode({ referenceCode }),
+		).rejects.toHaveProperty("code", "UNAUTHORIZED");
+		const found = await caller(asAdmin()).admissions.getByReferenceCode({
 			referenceCode,
 		});
 
@@ -121,9 +126,8 @@ describe("admissions.getByReferenceCode", () => {
 	});
 
 	it("throws NOT_FOUND for an unknown reference code", async () => {
-		const ctx = makeTestContext();
 		await expect(
-			caller(ctx).admissions.getByReferenceCode({
+			caller(asAdmin()).admissions.getByReferenceCode({
 				referenceCode: "APP-2026-ZZZZ-ZZZZ",
 			}),
 		).rejects.toThrow();

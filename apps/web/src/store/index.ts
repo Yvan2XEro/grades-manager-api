@@ -69,6 +69,8 @@ export const roleGuards = {
 		"super_admin",
 		"owner",
 	] as BusinessRole[],
+	/** Issue/revoke diplomation API keys (administrators only audit them). */
+	manageApiKeys: ["super_admin", "owner"] as BusinessRole[],
 };
 
 type StoreState = {

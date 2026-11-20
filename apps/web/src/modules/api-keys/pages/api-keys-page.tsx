@@ -13,6 +13,7 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { PageHeader } from "@/components/ui/page-header";
+import { roleGuards, useStore } from "@/store";
 import { ApiActivityChart } from "../components/api-activity-chart";
 import { CreateApiKeyDialog } from "../components/create-api-key-dialog";
 import { EditWebhookDialog } from "../components/edit-webhook-dialog";
@@ -31,6 +32,9 @@ export default function ApiKeysPage() {
 	const { activity, calls } = useApiKeyActivity();
 	const revokeMutation = useRevokeApiKey();
 	const columns = useMemo(() => getApiKeysColumns(t), [t]);
+	// Administrators audit keys; issuing, revoking and webhooks are super admin
+	const role = useStore((state) => state.user?.role);
+	const canManage = !!role && roleGuards.manageApiKeys.includes(role);
 
 	const createKey = async () => {
 		const rawKey = await CreateApiKeyDialog.call();
@@ -44,7 +48,10 @@ export default function ApiKeysPage() {
 			onConfirm: () => revokeMutation.mutateAsync(id).catch(() => undefined),
 		});
 
-	const rowActions = (key: ApiKey): RowAction[] => [
+	const rowActions = (key: ApiKey): RowAction[] =>
+		canManage ? manageActions(key) : [];
+
+	const manageActions = (key: ApiKey): RowAction[] => [
 		{
 			label: t("admin.apiKeys.actions.editWebhook"),
 			icon: Webhook,
@@ -67,10 +74,12 @@ export default function ApiKeysPage() {
 					title={t("admin.apiKeys.title")}
 					description={t("admin.apiKeys.subtitle")}
 					actions={
-						<Button onClick={createKey}>
-							<Plus className="mr-2 h-4 w-4" />
-							{t("admin.apiKeys.actions.create")}
-						</Button>
+						canManage ? (
+							<Button onClick={createKey}>
+								<Plus className="mr-2 h-4 w-4" />
+								{t("admin.apiKeys.actions.create")}
+							</Button>
+						) : undefined
 					}
 				/>
 			}

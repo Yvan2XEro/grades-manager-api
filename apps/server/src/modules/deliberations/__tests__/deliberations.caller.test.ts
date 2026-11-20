@@ -1547,21 +1547,15 @@ describe("deliberations.listPaged", () => {
 		expect(result.items.length).toBeLessThanOrEqual(1);
 	});
 
-	it("is accessible to any authenticated member (tenantProtectedProcedure)", async () => {
+	it("is refused to students (deliberation results are staff-only)", async () => {
 		const profile = await createDomainUser();
 		const ctx = makeTestContext({
 			role: "student",
 			profileOverrides: { id: profile.id },
 		});
 		const caller = createCaller(ctx);
-		const result = await caller.deliberations.listPaged({
-			page: 1,
-			pageSize: 25,
-		});
-		expect(result).toMatchObject({
-			items: expect.any(Array),
-			total: expect.any(Number),
-			pageCount: expect.any(Number),
-		});
+		await expect(
+			caller.deliberations.listPaged({ page: 1, pageSize: 25 }),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
 	});
 });

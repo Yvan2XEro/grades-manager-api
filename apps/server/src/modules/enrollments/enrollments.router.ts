@@ -1,8 +1,4 @@
-import {
-	router,
-	tenantAdminProcedure,
-	tenantProtectedProcedure,
-} from "@/lib/trpc";
+import { router, tenantAdminProcedure, tenantStaffProcedure } from "@/lib/trpc";
 import { resolveAcademicYearIdForGate } from "@/modules/academic-documents/academic-documents.repo";
 import { assertFeeClearance } from "@/modules/fee-clearance/fee-clearance.gates";
 import * as service from "./enrollments.service";
@@ -46,17 +42,17 @@ export const enrollmentsRouter = router({
 		.mutation(({ ctx, input }) =>
 			service.deleteEnrollment(input.id, ctx.institution.id),
 		),
-	getById: tenantProtectedProcedure
+	getById: tenantStaffProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getEnrollmentById(input.id, ctx.institution.id),
 		),
-	list: tenantProtectedProcedure
+	list: tenantStaffProcedure
 		.input(listSchema)
 		.query(({ ctx, input }) =>
 			service.listEnrollments(input, ctx.institution.id),
 		),
-	listPaged: tenantProtectedProcedure
+	listPaged: tenantStaffProcedure
 		.input(listPagedSchema)
 		.query(({ ctx, input }) =>
 			service.listEnrollmentsPaged(input, ctx.institution.id),

@@ -105,7 +105,7 @@ export const router = createRouter({
 				input.level,
 			),
 		),
-	promotionPreview: tenantProtectedProcedure
+	promotionPreview: tenantAdminProcedure
 		.input(promotionPreviewSchema)
 		.query(({ ctx, input }) =>
 			service.promotionPreview(input.sourceClassId, ctx.institution.id, {
@@ -132,7 +132,7 @@ export const router = createRouter({
 		.query(({ ctx, input }) =>
 			service.listGraduatedStudentsPaged(ctx.institution.id, input),
 		),
-	promotionPreviewPaged: tenantProtectedProcedure
+	promotionPreviewPaged: tenantAdminProcedure
 		.input(promotionPreviewPagedSchema)
 		.query(({ ctx, input }) =>
 			service.promotionPreviewPaged(

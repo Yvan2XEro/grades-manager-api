@@ -1,8 +1,16 @@
+import { TRPCError } from "@trpc/server";
 import {
 	router,
 	tenantAdminProcedure,
 	tenantProtectedProcedure,
 } from "@/lib/trpc";
+import { hasInstitutionWideRecordAccess } from "@/modules/authz";
+import {
+	assertCanReadClassCourse,
+	assertCanReadCourse,
+	assertCanReadStudent,
+	recordActorFromCtx,
+} from "@/modules/authz/record-access";
 import { findGatingRule } from "@/modules/fee-clearance/fee-clearance.repo";
 import * as service from "./student-course-enrollments.service";
 import {
@@ -49,8 +57,35 @@ export const studentCourseEnrollmentsRouter = router({
 		),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
-		.query(({ input, ctx }) => service.getById(input.id, ctx.institution.id)),
+		.query(async ({ input, ctx }) => {
+			const item = await service.getById(input.id, ctx.institution.id);
+			await assertCanReadStudent(
+				recordActorFromCtx(ctx),
+				item.studentId,
+				ctx.institution.id,
+			);
+			return item;
+		}),
 	list: tenantProtectedProcedure
 		.input(listSchema)
-		.query(({ input, ctx }) => service.list(input, ctx.institution.id)),
+		.query(async ({ input, ctx }) => {
+			const actor = recordActorFromCtx(ctx);
+			const institutionId = ctx.institution.id;
+			// Scope by the most specific filter; unfiltered listings are for
+			// institution-wide readers only.
+			if (input.studentId) {
+				await assertCanReadStudent(actor, input.studentId, institutionId);
+			} else if (input.classCourseId) {
+				await assertCanReadClassCourse(
+					actor,
+					input.classCourseId,
+					institutionId,
+				);
+			} else if (input.courseId) {
+				await assertCanReadCourse(actor, input.courseId, institutionId);
+			} else if (!hasInstitutionWideRecordAccess(actor.memberRole)) {
+				throw new TRPCError({ code: "FORBIDDEN" });
+			}
+			return service.list(input, institutionId);
+		}),
 });

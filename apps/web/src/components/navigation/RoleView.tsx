@@ -36,3 +36,30 @@ export function RoleView({ fallback, ...views }: RoleViewProps) {
 	const group = useRoleGroup();
 	return <>{(group && views[group]) ?? fallback}</>;
 }
+
+/**
+ * Pages a student may open. Every other path renders a staff view, so a
+ * student who types `/classes` or `/admin/...` is sent back to the dashboard.
+ * The server stays the source of truth: staff procedures refuse students.
+ */
+const STUDENT_PATHS = [
+	"/exams",
+	"/timetable",
+	"/enrollments",
+	"/fees",
+	"/documents",
+	"/timeline",
+	"/settings",
+];
+
+export function isPathAllowedForRoleGroup(
+	group: RoleGroup | null,
+	pathname: string,
+) {
+	if (group !== "student") return true;
+	const path = pathname.replace(/\/+$/, "") || "/";
+	if (path === "/" || path === "/notifications") return true;
+	return STUDENT_PATHS.some(
+		(allowed) => path === allowed || path.startsWith(`${allowed}/`),
+	);
+}

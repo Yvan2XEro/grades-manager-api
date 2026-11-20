@@ -1,8 +1,4 @@
-import {
-	router,
-	tenantAdminProcedure,
-	tenantProtectedProcedure,
-} from "@/lib/trpc";
+import { router, tenantAdminProcedure, tenantStaffProcedure } from "@/lib/trpc";
 import * as service from "./promotion-rules.service";
 import {
 	applyPromotionSchema,
@@ -36,13 +32,13 @@ export const promotionRulesRouter = router({
 			service.deleteRule(input.id, ctx.institution.id),
 		),
 
-	getById: tenantProtectedProcedure
+	getById: tenantStaffProcedure
 		.input(idSchema)
 		.query(({ input, ctx }) =>
 			service.getRuleById(input.id, ctx.institution.id),
 		),
 
-	list: tenantProtectedProcedure
+	list: tenantStaffProcedure
 		.input(listRulesSchema)
 		.query(({ input, ctx }) => service.listRules(input, ctx.institution.id)),
 
@@ -53,7 +49,7 @@ export const promotionRulesRouter = router({
 		),
 
 	// Evaluation (requires protection, but not necessarily admin)
-	evaluateClass: tenantProtectedProcedure
+	evaluateClass: tenantAdminProcedure
 		.input(evaluateClassSchema)
 		.query(({ input, ctx }) =>
 			service.evaluateClassForPromotion(input, ctx.institution.id),
@@ -70,11 +66,11 @@ export const promotionRulesRouter = router({
 		}),
 
 	// Execution history
-	listExecutions: tenantProtectedProcedure
+	listExecutions: tenantAdminProcedure
 		.input(listExecutionsSchema)
 		.query(({ input }) => service.listExecutions(input)),
 
-	getExecutionDetails: tenantProtectedProcedure
+	getExecutionDetails: tenantAdminProcedure
 		.input(executionDetailsSchema)
 		.query(({ input }) => service.getExecutionDetails(input.executionId)),
 });
