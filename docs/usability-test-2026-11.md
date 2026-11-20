@@ -160,3 +160,39 @@ Two more non-technical testers drove the browser: a registrar following one coho
 - The scheduler's left-out courses are shown after a run but not stored with it.
 - When a student moves to a sibling class in the same year, their enrollments in courses shared by both classes stay with the old class.
 - The local demo rules (seeded before this round) keep their old conditions; the seed script is fixed for new databases.
+
+## Fourth round: security and result integrity
+
+Four audits, each written as failing tests first, then fixed: isolation between institutions (academic structure, then operations), access by role and by record inside one institution, and the integrity of marks around the jury (with retake sessions and semester juries). Tests: `_shared/__tests__/tenant-isolation-structure.test.ts`, `_shared/__tests__/tenant-isolation-operations.test.ts`, `authz/__tests__/access-matrix.test.ts`, `lib/__tests__/auth-org-guard.test.ts`, `deliberations/__tests__/jury-integrity.test.ts`, `cycle-levels/__tests__/cycle-levels.caller.test.ts`, `files/__tests__/upload-types.caller.test.ts`.
+
+**Between institutions (critical holes fixed):**
+- Institutions: any admin could list, edit or delete any institution and change its organization, taking over another tenant.
+- Cycle levels, notifications (read, acknowledge, send), export templates and their assignments, student course enrollments, credit ledgers: read or written across institutions.
+- Batch jobs (credit recompute, student facts, year setup, promotion) could rewrite another institution's data.
+- Files: `files.delete` accepted `../` paths; uploads of any type (including HTML) were served from the API origin. Uploads are now per institution, documents and images only, served with `nosniff` and a sandboxing CSP.
+- Diplomation REST: `/logo` could read any server file (`.env` included) or fetch any URL; `POST /documents` linked any student.
+- Import workbooks were readable by any institution with the file id.
+- Document templates: an override or assignment could use another institution's template.
+
+**By role and record:**
+- A teacher could edit the marks of any exam (teacher inherited the institution-wide grade-editor rights).
+- A student could read another student's marks, credits, course enrollments, student file and enrollments, and every deliberation.
+- An administrator could make anyone (themselves included) super admin through the authentication API; a dean could create administrators.
+- Diplomation API keys, root institutions: super admin only. Public admission lookup no longer returns the full applicant record.
+- The web app sends a student away from any non-student URL.
+
+**Marks and juries:**
+- Marks under a closed or signed jury could still be entered, changed, deleted or imported, and exams changed; a locked exam could be unlocked. All refused now.
+- A correction after signing goes through an audited path: a super admin reopens the jury, or corrects a mark with a reason. A jury whose marks changed since its computation shows as outdated and can't be closed.
+- Retake jury: requires the closed annual jury, deliberates only deferred and undecided students, applies the retake marks only to the retaken exams, and becomes the year's final decision (transcript, diploma, year transition, jury history).
+- Semester juries require a semester and never promote; the annual jury combines both semesters.
+
+**Migrations:** regenerated as a single drizzle-kit file, `apps/server/src/db/migrations/0000_init.sql`.
+
+**Still open:**
+- Teachers can still list all students, enrollments and exams of the institution (names and numbers, no marks).
+- A teacher of one course of a class can export the class PV.
+- Reopening a signed jury does not undo a promotion already made.
+- No UI yet for the audited mark correction and the edit log (API only).
+- Uploaded files are public to whoever has their (unguessable) URL.
+- Better-Auth lets any signed-in user create an organization (`allowUserToCreateOrganization`).
