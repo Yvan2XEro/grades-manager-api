@@ -956,6 +956,7 @@ CREATE TABLE "issued_documents" (
 CREATE TABLE "notifications" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"recipient_id" text,
+	"institution_id" text,
 	"channel" text DEFAULT 'email' NOT NULL,
 	"type" text NOT NULL,
 	"payload" jsonb DEFAULT '{}'::jsonb,
@@ -1540,6 +1541,7 @@ ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_class_id_classes
 ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "issued_documents" ADD CONSTRAINT "issued_documents_issued_by_domain_users_id_fk" FOREIGN KEY ("issued_by") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_domain_users_id_fk" FOREIGN KEY ("recipient_id") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "program_export_templates" ADD CONSTRAINT "program_export_templates_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "program_export_templates" ADD CONSTRAINT "program_export_templates_program_id_programs_id_fk" FOREIGN KEY ("program_id") REFERENCES "public"."programs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "program_export_templates" ADD CONSTRAINT "program_export_templates_template_id_export_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "public"."export_templates"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -1607,7 +1609,7 @@ CREATE INDEX "idx_academic_year_transitions_institution" ON "academic_year_trans
 CREATE INDEX "idx_academic_year_transitions_source_year" ON "academic_year_transitions" USING btree ("source_academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_academic_year_transitions_target_year" ON "academic_year_transitions" USING btree ("target_academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_academic_year_transitions_status" ON "academic_year_transitions" USING btree ("status");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_active_academic_year_transition" ON "academic_year_transitions" USING btree ("institution_id","source_academic_year_id","target_academic_year_id") WHERE "academic_year_transitions"."status" IN ('draft', 'ready', 'pending_approval', 'approved', 'running');--> statement-breakpoint
+CREATE INDEX "idx_academic_year_transitions_pair" ON "academic_year_transitions" USING btree ("institution_id","source_academic_year_id","target_academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_academic_years_institution" ON "academic_years" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_admission_app_docs_application" ON "admission_application_documents" USING btree ("application_id");--> statement-breakpoint
 CREATE INDEX "idx_admission_app_docs_institution" ON "admission_application_documents" USING btree ("institution_id");--> statement-breakpoint
@@ -1748,6 +1750,7 @@ CREATE INDEX "idx_import_journal_job" ON "import_journal_entries" USING btree ("
 CREATE INDEX "idx_issued_documents_student" ON "issued_documents" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "idx_notifications_recipient" ON "notifications" USING btree ("recipient_id");--> statement-breakpoint
 CREATE INDEX "idx_notifications_status" ON "notifications" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "idx_notifications_institution" ON "notifications" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_program_export_templates_program" ON "program_export_templates" USING btree ("program_id");--> statement-breakpoint
 CREATE INDEX "idx_program_export_templates_template" ON "program_export_templates" USING btree ("template_id");--> statement-breakpoint
 CREATE INDEX "idx_program_options_program_id" ON "program_options" USING btree ("program_id");--> statement-breakpoint

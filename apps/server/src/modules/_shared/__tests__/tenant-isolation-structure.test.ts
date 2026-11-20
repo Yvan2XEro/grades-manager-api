@@ -745,6 +745,8 @@ describe("tenant isolation: institutions", () => {
 			code: `NEW-${randomUUID().slice(0, 4)}`,
 			nameFr: "Nouvelle faculté",
 			nameEn: "New faculty",
+			// Administrators create faculties; other types are for super admins.
+			type: "faculty",
 			organizationId: f.institution.organizationId ?? undefined,
 		});
 		expect(created?.organizationId).toBe(orgId);
@@ -753,6 +755,7 @@ describe("tenant isolation: institutions", () => {
 				code: `NEW-${randomUUID().slice(0, 4)}`,
 				nameFr: "Injectée",
 				nameEn: "Injected",
+				type: "faculty",
 				parentInstitutionId: f.institution.id,
 			}),
 		).rejects.toHaveProperty(...NOT_FOUND);

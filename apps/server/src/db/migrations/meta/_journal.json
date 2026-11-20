@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1795089269578,
+      "when": 1795174036946,
       "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1795165911876,
-      "tag": "0001_transition_plans_per_class",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1795173168849,
-      "tag": "0002_notifications_institution",
       "breakpoints": true
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "id": "b43c9e45-ede9-4a33-879b-901d12373bce",
+  "id": "70efaad3-d45c-4899-a432-ef70cc3a59f5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -577,8 +577,8 @@
           "method": "btree",
           "with": {}
         },
-        "uq_active_academic_year_transition": {
-          "name": "uq_active_academic_year_transition",
+        "idx_academic_year_transitions_pair": {
+          "name": "idx_academic_year_transitions_pair",
           "columns": [
             {
               "expression": "institution_id",
@@ -599,8 +599,7 @@
               "nulls": "last"
             }
           ],
-          "isUnique": true,
-          "where": "\"academic_year_transitions\".\"status\" IN ('draft', 'ready', 'pending_approval', 'approved', 'running')",
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -10834,6 +10833,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "channel": {
           "name": "channel",
           "type": "text",
@@ -10930,6 +10935,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "idx_notifications_institution": {
+          "name": "idx_notifications_institution",
+          "columns": [
+            {
+              "expression": "institution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -10944,6 +10964,19 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "notifications_institution_id_institutions_id_fk": {
+          "name": "notifications_institution_id_institutions_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
