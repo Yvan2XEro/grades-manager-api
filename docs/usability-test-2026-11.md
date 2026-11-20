@@ -127,3 +127,36 @@ A non-technical tester playing the head of the registrar's office closed 2025-20
 - PDF generation needs Chromium's system libraries on the server; in the test sandbox it fails, now with a translated message.
 - INSES first and last names are swapped in existing data, including the PV Excel.
 - Level names in the data are inconsistent ("BTS Santé 2ème année" vs "BTS 2ème année").
+
+## Third round: LMD cycles and rule-based juries
+
+Two more non-technical testers drove the browser: a registrar following one cohort through Licence 3 → Master 1 → Master 2 → Doctorat 1, and a director of studies setting up the jury rules of the institution. Two server tests follow the same journeys through the public procedures: `academic-year-transitions/__tests__/lmd-cycles.test.ts` and `deliberations/__tests__/rules-journey.test.ts`.
+
+**What the testers confirmed was right:** the jury figures (checked by hand), "Promouvoir et réinscrire" on the last level of a cycle (graduates, repeaters, missing class created on the spot), one person and one registration number across the three cycles, and a rule taking effect at the next computation.
+
+**Fixed:**
+
+| Problem found | Fix |
+|---|---|
+| The facts a jury rule tests mixed every year of the student: a UE failed two years earlier (or in the previous cycle) set the lowest UE average and the failed-UE counts. | UE, course and credit facts come from the deliberated year's own results (`deliberations/deliberation-facts.ts`). |
+| "Excluded after repeating twice" could not work: the repeat counter and the previous decision were hard-coded to 0 / empty. | `consecutiveRepeats` and `previousDeliberationDecision` come from the student's closed juries of earlier years. |
+| A rule with a misspelt fact or operator was saved, then silently never matched. | Such rules are refused with the reason. |
+| Computing a jury again wiped the jury's manual decisions, while the activity log still showed them. | Overridden decisions and their reason are kept. |
+| With rules in place, a student no rule matched still got the built-in decision (compensated against the institution's rules). | Such a student is "to decide by the jury". |
+| Rules were raw JSON, with no list of facts, no help and no scope; closing the edit dialog froze the page. | A condition editor in plain words (criterion, comparison, value), help on the order of evaluation with examples, scope by program, level and jury type, an automatic summary, and JSON only as an advanced mode. Menus no longer lock the page after a dialog (`modal={false}`). |
+| Nothing said which rule produced a decision. | The results table and the override dialog show the rule and its reason, "default LMD computation", "no rule applies", or the override reason. |
+| A Licence graduate could not be sent on to Master 1 from the year transition plan. | The "graduate" outcome takes an optional class: the first-year classes of the other cycles are offered. |
+| A diploma could be issued after any favourable jury (an L1 student was "eligible"), and a Master graduate could not get their Licence diploma any more. | Diplomas need a favourable jury on the last level of the cycle; the dialog lists one diploma per completed cycle. The pass certificate of a final year names the degree. "Default option", the untranslated mention and today's date as the jury date were removed from documents. |
+| A Licence was awarded with 6 credits out of 180 without a word. | The promote dialog of a last level shows each graduate's credits in the cycle against the cycle's requirement and warns when short. |
+| Graduates were called "Admis — vous passez en année supérieure"; the new year's dashboard showed the previous year's figures. | The student portal says "Diplômé(e) — <program>" and shows the current enrollment's figures only. |
+| New cycles generated "Level 1 / <CODE>-L1" for Master and Doctorat. | Levels are named after the cycle with a prefix (M1, D1, …); cycles show their code in lists. |
+| Enrolling a graduate in Master read as a transfer; "Enroll a student" ignored the filtered year. | The dialog says the student continues with a new enrollment and keeps their history and number; the filtered year is used. |
+| Only one year transition plan per pair of years, for one class. | Several plans may coexist when their classes don't overlap (migration `0001_transition_plans_per_class.sql`); a plan can cover several classes; submit, approve and execute ask for confirmation. |
+| No exam could be created for a new class: its students were never put on its course lists, and the scheduler reported "Examens programmés" with 0 exams and unexplained conflicts. | Students take their class's courses when they are enrolled, promoted, moved by a year plan, or when a course is added. The scheduler lists each left-out course with the reason; the course picker is limited to the year and searchable. |
+| The cycle levels API was not scoped to the institution (any admin could rename another institution's levels). | Every cycle level procedure checks the institution. |
+
+**Still open:**
+- Teaching units still store "first half / second half / annual" rather than the class semester catalog (S1–S10).
+- The scheduler's left-out courses are shown after a run but not stored with it.
+- When a student moves to a sibling class in the same year, their enrollments in courses shared by both classes stay with the old class.
+- The local demo rules (seeded before this round) keep their old conditions; the seed script is fixed for new databases.
