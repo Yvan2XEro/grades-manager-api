@@ -3832,7 +3832,9 @@
         "alreadyInClass": "Already enrolled in this class.",
         "submit": "Enroll",
         "success": "{{name}} enrolled in {{className}} — registration number {{registrationNumber}}",
-        "conflict": "This e-mail or registration number is already used by another person."
+        "conflict": "This e-mail or registration number is already used by another person.",
+        "willContinue": "Continues in {{className}}: a new enrollment; the history of previous years is kept.",
+        "registrationKept": "The registration number {{registrationNumber}} stays the same for life."
       }
     },
     "users": {

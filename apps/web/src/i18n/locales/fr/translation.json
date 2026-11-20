@@ -2821,7 +2821,9 @@
         "alreadyInClass": "Déjà inscrit(e) dans cette classe.",
         "submit": "Inscrire",
         "success": "{{name}} inscrit(e) en {{className}} — matricule {{registrationNumber}}",
-        "conflict": "Cet e-mail ou ce matricule est déjà utilisé par une autre personne."
+        "conflict": "Cet e-mail ou ce matricule est déjà utilisé par une autre personne.",
+        "willContinue": "Poursuit en {{className}} : nouvelle inscription, l'historique est conservé.",
+        "registrationKept": "Le matricule {{registrationNumber}} reste le même à vie."
       }
     },
     "users": {
